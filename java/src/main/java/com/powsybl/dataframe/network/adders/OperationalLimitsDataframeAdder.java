@@ -17,14 +17,14 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.*;
 public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("element_id"),
-            SeriesMetadata.strings("name"),
-            SeriesMetadata.strings("element_type"),
-            SeriesMetadata.strings("side"),
-            SeriesMetadata.strings("type"),
-            SeriesMetadata.doubles("value"),
-            SeriesMetadata.ints("acceptable_duration"),
-            SeriesMetadata.booleans("is_fictitious")
+        SeriesMetadata.stringIndex("element_id"),
+        SeriesMetadata.strings("name"),
+        SeriesMetadata.strings("element_type"),
+        SeriesMetadata.strings("side"),
+        SeriesMetadata.strings("type"),
+        SeriesMetadata.doubles("value"),
+        SeriesMetadata.ints("acceptable_duration"),
+        SeriesMetadata.booleans("is_fictitious")
     );
 
     @Override
@@ -106,7 +106,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
     private static void addElements(Network network, OperationalLimitsSeries series, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
         indexMap.forEach((key, indexList) -> createLimits(network, series, key.getElementId(),
-                key.getSide(), key.getLimitType(), indexList));
+            key.getSide(), key.getLimitType(), indexList));
     }
 
     private static void createLimits(Network network, OperationalLimitsSeries series, String elementId, String side, String type,
@@ -128,7 +128,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             applyIfPresent(series.getValues(), row, adder::setPermanentLimit);
         } else {
             LoadingLimitsAdder.TemporaryLimitAdder<?> temporaryLimitAdder = adder.beginTemporaryLimit()
-                    .setAcceptableDuration(acceptableDuration);
+                .setAcceptableDuration(acceptableDuration);
             applyIfPresent(series.getNames(), row, temporaryLimitAdder::setName);
             applyIfPresent(series.getValues(), row, temporaryLimitAdder::setValue);
             applyBooleanIfPresent(series.getFictitious(), row, temporaryLimitAdder::setFictitious);
@@ -139,12 +139,59 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     /**
      * Wraps a branch in a flows limits holder view
      */
-    private static FlowsLimitsHolder getBranchAsFlowsLimitsHolder(Branch<?> branch, Branch.Side side) {
+    private static FlowsLimitsHolder getBranchAsFlowsLimitsHolder(Branch<?> branch, TwoSides side) {
         return new FlowsLimitsHolder() {
 
             @Override
-            public Collection<OperationalLimits> getOperationalLimits() {
-                return side == Branch.Side.ONE ? branch.getOperationalLimits1() : branch.getOperationalLimits2();
+            public Collection<OperationalLimitsGroup> getOperationalLimitsGroups() {
+                return side == TwoSides.ONE ? branch.getOperationalLimitsGroups1() : branch.getOperationalLimitsGroups2();
+            }
+
+            @Override
+            public Optional<String> getSelectedOperationalLimitsGroupId() {
+                return side == TwoSides.ONE ? branch.getSelectedOperationalLimitsGroupId1() : branch.getSelectedOperationalLimitsGroupId2();
+            }
+
+            @Override
+            public Optional<OperationalLimitsGroup> getOperationalLimitsGroup(String s) {
+                return side == TwoSides.ONE ? branch.getOperationalLimitsGroup1(s) : branch.getOperationalLimitsGroup2(s);
+            }
+
+            @Override
+            public Optional<OperationalLimitsGroup> getSelectedOperationalLimitsGroup() {
+                return side == TwoSides.ONE ? branch.getSelectedOperationalLimitsGroup1() : branch.getSelectedOperationalLimitsGroup2();
+            }
+
+            @Override
+            public OperationalLimitsGroup newOperationalLimitsGroup(String s) {
+                return side == TwoSides.ONE ? branch.newOperationalLimitsGroup1(s) : branch.newOperationalLimitsGroup2(s);
+            }
+
+            @Override
+            public void setSelectedOperationalLimitsGroup(String s) {
+                if (side == TwoSides.ONE) {
+                    branch.setSelectedOperationalLimitsGroup1(s);
+                } else {
+                    branch.setSelectedOperationalLimitsGroup2(s);
+                }
+            }
+
+            @Override
+            public void removeOperationalLimitsGroup(String s) {
+                if (side == TwoSides.ONE) {
+                    branch.removeOperationalLimitsGroup1(s);
+                } else {
+                    branch.removeOperationalLimitsGroup2(s);
+                }
+            }
+
+            @Override
+            public void cancelSelectedOperationalLimitsGroup() {
+                if (side == TwoSides.ONE) {
+                    branch.cancelSelectedOperationalLimitsGroup1();
+                } else {
+                    branch.cancelSelectedOperationalLimitsGroup2();
+                }
             }
 
             @Override
@@ -154,7 +201,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimits getNullableCurrentLimits() {
-                return side == Branch.Side.ONE ? branch.getNullableCurrentLimits1() : branch.getNullableCurrentLimits2();
+                return side == TwoSides.ONE ? branch.getNullableCurrentLimits1() : branch.getNullableCurrentLimits2();
             }
 
             @Override
@@ -164,7 +211,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public ActivePowerLimits getNullableActivePowerLimits() {
-                return side == Branch.Side.ONE ? branch.getNullableActivePowerLimits1() : branch.getNullableActivePowerLimits2();
+                return side == TwoSides.ONE ? branch.getNullableActivePowerLimits1() : branch.getNullableActivePowerLimits2();
             }
 
             @Override
@@ -179,25 +226,25 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimitsAdder newCurrentLimits() {
-                return side == Branch.Side.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
+                return side == TwoSides.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
             }
 
             @Override
             public ApparentPowerLimitsAdder newApparentPowerLimits() {
-                return side == Branch.Side.ONE ? branch.newApparentPowerLimits1() : branch.newApparentPowerLimits2();
+                return side == TwoSides.ONE ? branch.newApparentPowerLimits1() : branch.newApparentPowerLimits2();
             }
 
             @Override
             public ActivePowerLimitsAdder newActivePowerLimits() {
-                return side == Branch.Side.ONE ? branch.newActivePowerLimits1() : branch.newActivePowerLimits2();
+                return side == TwoSides.ONE ? branch.newActivePowerLimits1() : branch.newActivePowerLimits2();
             }
         };
     }
 
-    private static Branch.Side toBranchSide(TemporaryLimitData.Side side) {
+    private static TwoSides toBranchSide(TemporaryLimitData.Side side) {
         return switch (side) {
-            case ONE -> Branch.Side.ONE;
-            case TWO -> Branch.Side.TWO;
+            case ONE -> TwoSides.ONE;
+            case TWO -> TwoSides.TWO;
             default -> throw new PowsyblException("Invalid value for branch side: " + side);
         };
     }
@@ -234,7 +281,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
                 };
             }
             default ->
-                    throw new PowsyblException("Cannot create operational limits for element of type " + identifiableType);
+                throw new PowsyblException("Cannot create operational limits for element of type " + identifiableType);
         }
     }
 

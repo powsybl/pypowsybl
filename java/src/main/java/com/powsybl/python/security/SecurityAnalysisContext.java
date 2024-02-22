@@ -12,17 +12,21 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
+import com.powsybl.security.action.*;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
 import com.powsybl.security.monitor.StateMonitor;
+import com.powsybl.security.strategy.OperatorStrategy;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 class SecurityAnalysisContext extends ContingencyContainerImpl {
+
+    private final List<Action> actions = new ArrayList<>();
+
+    private final List<OperatorStrategy> operatorStrategies = new ArrayList<>();
 
     private final List<StateMonitor> monitors = new ArrayList<>();
 
@@ -38,12 +42,20 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                         new LimitViolationFilter(),
                         new DefaultLimitViolationDetector(),
                         Collections.emptyList(),
-                        Collections.emptyList(),
-                        Collections.emptyList(),
+                        operatorStrategies,
+                        actions,
                         monitors,
                         (reporter == null) ? Reporter.NO_OP : reporter
                 );
         return report.getResult();
+    }
+
+    void addAction(Action action) {
+        actions.add(action);
+    }
+
+    void addOperatorStrategy(OperatorStrategy strategy) {
+        operatorStrategies.add(strategy);
     }
 
     void addMonitor(StateMonitor monitor) {

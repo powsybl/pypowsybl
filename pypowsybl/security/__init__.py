@@ -8,7 +8,7 @@
 from .impl.increased_violations_parameters import IncreasedViolationsParameters
 from .impl.parameters import Parameters
 from .impl.security_analysis_result import SecurityAnalysisResult
-from .impl.security import SecurityAnalysis, ComputationStatus
+from .impl.security import SecurityAnalysis, ComputationStatus, ContingencyContextType
 from .impl.util import (
     create_analysis,
     set_default_provider,

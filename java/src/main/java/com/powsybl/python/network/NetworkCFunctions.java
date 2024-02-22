@@ -29,6 +29,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
+import com.powsybl.nad.NadParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -60,6 +61,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.zip.ZipOutputStream;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
@@ -121,7 +123,7 @@ public final class NetworkCFunctions {
         ptr.setName(CTypeUtil.toCharPtr(network.getNameOrId()));
         ptr.setSourceFormat(CTypeUtil.toCharPtr(network.getSourceFormat()));
         ptr.setForecastDistance(network.getForecastDistance());
-        ptr.setCaseDate(network.getCaseDate().getMillis() / 1000.0d);
+        ptr.setCaseDate(network.getCaseDate().toInstant().toEpochMilli() / 1000.0d);
         return ptr;
     }
 
@@ -172,8 +174,8 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
     public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
-                                                           int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
-                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
+                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
             Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
@@ -210,8 +212,8 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "dumpNetwork")
-    public static void dumpNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
+    @CEntryPoint(name = "saveNetwork")
+    public static void saveNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                    ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -228,8 +230,8 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "dumpNetworkToString")
-    public static CCharPointer dumpNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
+    @CEntryPoint(name = "saveNetworkToString")
+    public static CCharPointer saveNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
                                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                    ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -258,6 +260,40 @@ public final class NetworkCFunctions {
                 throw new UncheckedIOException(e);
             }
         });
+    }
+
+    @CEntryPoint(name = "saveNetworkToBinaryBuffer")
+    public static ArrayPointer<CCharPointer> saveNetworkToBinaryBuffer(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
+                                                                       CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                                       CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                                       ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String formatStr = CTypeUtil.toString(format);
+            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+            var exporter = Exporter.find(formatStr);
+            if (exporter == null) {
+                throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
+            }
+            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            // to support all kind of export: simple file or multiple to an archive,
+            // best is to write to a zip file
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            try (ZipOutputStream zos = new ZipOutputStream(bos)) {
+                DataSource dataSource = new ZipMemDataSource("file", zos);
+                exporter.export(network, parameters, dataSource, reporter);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            byte[] bytes = bos.toByteArray();
+            return Util.createByteArray(bytes);
+        });
+    }
+
+    @CEntryPoint(name = "freeNetworkBinaryBuffer")
+    public static void freeNetworkBinaryBuffer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<CCharPointer> byteArrayPtr,
+                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> freeArrayPointer(byteArrayPtr));
     }
 
     @CEntryPoint(name = "reduceNetwork")
@@ -830,6 +866,7 @@ public final class NetworkCFunctions {
         cParameters.setDiagonalLabel(parameters.getSvgParameters().isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.getStyleProviderFactory() instanceof DefaultStyleProviderFactory);
         cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
+        cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
     }
 
@@ -844,29 +881,77 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> convertToSldParametersPointer(SingleLineDiagramUtil.createSldParameters()));
     }
 
+    public static NadParametersPointer convertToNadParametersPointer(NadParameters parameters) {
+        NadParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(NadParametersPointer.class));
+        copyToCNadParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
+        cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
+        cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
+        cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
+        cParameters.setPowerValuePrecision(parameters.getSvgParameters().getPowerValuePrecision());
+        cParameters.setCurrentValuePrecision(parameters.getSvgParameters().getCurrentValuePrecision());
+        cParameters.setAngleValuePrecision(parameters.getSvgParameters().getAngleValuePrecision());
+        cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
+        cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
+        cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
+    }
+
+    @CEntryPoint(name = "createNadParameters")
+    public static NadParametersPointer createNadParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToNadParametersPointer(NetworkAreaDiagramUtil.createNadParameters()));
+    }
+
     public static void freeSldParametersPointer(SldParametersPointer sldParametersPtr) {
         UnmanagedMemory.free(sldParametersPtr);
     }
 
     @CEntryPoint(name = "freeSldParameters")
     public static void freeSldParameters(IsolateThread thread, SldParametersPointer sldParametersPtr,
-                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             freeSldParametersPointer(sldParametersPtr);
+        });
+    }
+
+    @CEntryPoint(name = "freeNadParameters")
+    public static void freeNadParameters(IsolateThread thread, NadParametersPointer nadParametersPointer,
+                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            UnmanagedMemory.free(nadParametersPointer);
         });
     }
 
     public static SldParameters convertSldParameters(SldParametersPointer sldParametersPtr) {
         String componentLibraryName = CTypeUtil.toString(sldParametersPtr.getComponentLibrary());
         SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters()
-                .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory() : new NominalVoltageStyleProviderFactory())
+                .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory()
+                        : new NominalVoltageStyleProviderFactory())
                 .setComponentLibrary(ComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
         sldParameters.getSvgParameters()
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
-                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos());
+                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled());
         return sldParameters;
+    }
+
+    public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer) {
+        NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
+        nadParameters.getSvgParameters()
+                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
+                .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
+                .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
+                .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
+                .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
+                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
+                .setIdDisplayed(nadParametersPointer.isIdDisplayed())
+                .setBusLegend(nadParametersPointer.isBusLegend())
+                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed());
+        return nadParameters;
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
@@ -883,6 +968,22 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "writeMatrixMultiSubstationSingleLineDiagramSvg")
+    public static void writeMatrixMultiSubstationSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
+                                                                int substationIdCount, int substationIdRowCount,
+                                                 CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+            String svgFileStr = CTypeUtil.toString(svgFile);
+            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+
+            SingleLineDiagramUtil.writeMatrixMultiSubstationSvg(network, matrixIds, svgFileStr, metadataFileStr, sldParameters);
+        });
+    }
+
     @CEntryPoint(name = "getSingleLineDiagramSvg")
     public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -896,7 +997,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                                                        SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                       SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
@@ -914,24 +1015,26 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
-                                                  double highNominalVoltageBound, double lowNominalVoltageBound, boolean edgeNameDisplayed,
+                                                  double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramSvg")
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
-                                                        double lowNominalVoltageBound, boolean edgeNameDisplayed, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, edgeNameDisplayed);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer);
+            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return CTypeUtil.toCharPtr(svg);
         });
     }

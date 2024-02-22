@@ -47,12 +47,10 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 3.01, True, '', -3.03, -1.12641,
-               3.16461,
-               'VLGEN', 'VLGEN_0', True],
-              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True, '',
-               -3.03,
-               -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
+               -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
+              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
+               'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
     generators2 = pd.DataFrame(data=[[6.080, 3.02, 1.1, False, False]],
                                columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on', 'connected'],
@@ -64,11 +62,10 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, '', -3.03, -1.12641, NaN,
-               'VLGEN', '', False],
-              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True, '',
-               -3.03,
-               -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
+               -1.12641, NaN, 'VLGEN', '', False],
+              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
+               'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
 
 
@@ -202,17 +199,17 @@ def test_dangling_lines_per_unit():
 
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id', 'connected', 'ucte-x-node-code', 'tie_line_id'],
+                                     'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.5, 0.3, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
-                                   True, '', '']])
+                                   True, '', '', '']])
     dangling_lines = n.get_dangling_lines()
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -4)
     n.update_dangling_lines(pd.DataFrame(index=['DL'], columns=['p0', 'q0'], data=[[0.75, 0.25]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id', 'connected', 'ucte-x-node-code', 'tie_line_id'],
+                                     'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.75, 0.25, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
-                                   True, '', '']])
+                                   True, '', '', '']])
     dangling_lines = n.get_dangling_lines()
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -4)
 

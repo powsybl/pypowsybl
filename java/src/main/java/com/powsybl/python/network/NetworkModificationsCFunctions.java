@@ -33,7 +33,6 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -135,12 +134,12 @@ public final class NetworkModificationsCFunctions {
             } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_HVDC_LINE) {
                 UpdatingDataframe extraDataDf = createDataframe(extraDataDfPtr);
                 ids.forEach(hvdcId -> {
-                    List<String> shuntCompensatorList = Collections.EMPTY_LIST;
+                    List<String> shuntCompensatorList = Collections.emptyList();
                     if (extraDataDf != null) {
                         Optional<String> shuntCompensatorOptional = extraDataDf.getStringValue(hvdcId, 0);
                         String shuntCompensator = shuntCompensatorOptional.isEmpty() || shuntCompensatorOptional.get().isEmpty() ? "," :
                                 shuntCompensatorOptional.get();
-                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).collect(Collectors.toList());
+                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).toList();
                     }
                     new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
 

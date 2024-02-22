@@ -31,23 +31,29 @@ typedef struct network_metadata_struct {
     int forecast_distance;
 } network_metadata;
 
+typedef struct slack_bus_result_struct {
+    char* id;
+    double active_power_mismatch;
+} slack_bus_result;
+
 typedef struct loadflow_component_result_struct {
     int connected_component_num;
     int synchronous_component_num;
     int status;
+    char* status_text;
     int iteration_count;
-    char* slack_bus_id;
-    double slack_bus_active_power_mismatch;
+    char* reference_bus_id;
+    array slack_bus_results;
     double distributed_active_power;
 } loadflow_component_result;
 
 typedef struct loadflow_parameters_struct {
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
-    unsigned char no_generator_reactive_limits;
+    unsigned char use_reactive_limits;
     unsigned char phase_shifter_regulation_on;
     unsigned char twt_split_shunt_admittance;
-    unsigned char simul_shunt;
+    unsigned char shunt_compensator_voltage_control_on;
     unsigned char read_slack_bus;
     unsigned char write_slack_bus;
     unsigned char distributed_slack;
@@ -120,6 +126,12 @@ typedef struct pre_contingency_result_struct {
     array limit_violations;
 } pre_contingency_result;
 
+typedef struct operator_strategy_result_struct {
+    char* operator_strategy_id;
+    int status;
+    array limit_violations;
+} operator_strategy_result;
+
 typedef enum {
     BUS = 0,
     LINE,
@@ -167,6 +179,24 @@ typedef enum {
 } validation_type;
 
 typedef enum {
+    ACTIVE_POWER = 0,
+    APPARENT_POWER,
+    CURRENT,
+    LOW_VOLTAGE,
+    HIGH_VOLTAGE,
+    LOW_SHORT_CIRCUIT_CURRENT,
+    HIGH_SHORT_CIRCUIT_CURRENT,
+    OTHER,
+} violation_type;
+
+typedef enum {
+    TRUE_CONDITION = 0,
+    ALL_VIOLATION_CONDITION,
+    ANY_VIOLATION_CONDITION,
+    AT_LEAST_ONE_VIOLATION_CONDITION,
+} condition_type;
+
+typedef enum {
     EQUIPMENT = 0,
     STEADY_STATE_HYPOTHESIS,
 } validation_level_type;
@@ -175,7 +205,33 @@ typedef enum {
     ALL = 0,
     NONE,
     SPECIFIC,
+    ONLY_CONTINGENCIES,
 } contingency_context_type;
+
+typedef enum {
+    BRANCH_ACTIVE_POWER_1=0,
+    BRANCH_CURRENT_1,
+    BRANCH_REACTIVE_POWER_1,
+    BRANCH_ACTIVE_POWER_2,
+    BRANCH_CURRENT_2,
+    BRANCH_REACTIVE_POWER_2,
+    BRANCH_ACTIVE_POWER_3,
+    BRANCH_CURRENT_3,
+    BRANCH_REACTIVE_POWER_3,
+    BUS_VOLTAGE,
+} sensitivity_function_type;
+
+typedef enum {
+    AUTO_DETECT=0,
+    INJECTION_ACTIVE_POWER,
+    INJECTION_REACTIVE_POWER,
+    TRANSFORMER_PHASE,
+    BUS_TARGET_VOLTAGE,
+    HVDC_LINE_ACTIVE_POWER,
+    TRANSFORMER_PHASE_1,
+    TRANSFORMER_PHASE_2,
+    TRANSFORMER_PHASE_3,
+} sensitivity_variable_type;
 
 typedef enum {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION = 0,
@@ -279,9 +335,22 @@ typedef struct sld_parameters_struct {
     unsigned char center_name;
     unsigned char diagonal_label;
     unsigned char nodes_infos;
+    unsigned char tooltip_enabled;
     unsigned char topological_coloring;
     char* component_library;
 } sld_parameters;
+
+typedef struct nad_parameters_struct {
+    unsigned char edge_name_displayed;
+    unsigned char edge_info_along_edge;
+    unsigned char id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
+    unsigned char substation_description_displayed;
+    unsigned char bus_legend;
+} nad_parameters;
 
 typedef enum {
     ALPHA_BETA_LOAD = 0,

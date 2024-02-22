@@ -36,7 +36,7 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
                         deprecated_fictitious_voltage_level_name: str = None,
                         deprecated_fictitious_substation_id: str = None,
                         deprecated_fictitious_substation_name: str = None,
-                        df: DataFrame = None, raise_exception: bool = False,
+                        df: DataFrame = None, raise_exception: bool = True,
                         reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Connects an existing voltage level to an existing line through a tee point.
@@ -50,31 +50,33 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
     Args:
         network: the network
         df: attributes as a dataframe, it should contain:
-            bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
-            new_line_id: ID of the new line
-            new_line_r: resistance of the new line, in ohms
-            new_line_x: reactance of the new line, in ohms
-            new_line_b1: shunt susceptance on side 1 of the new line
-            new_line_b2: shunt susceptance on side 2 of the new line
-            new_line_g1: shunt conductance on side 1 of the new line
-            new_line_g2: shunt conductance on side 2 of the new line
-            line_id: the id on of the line on which we want to create a tee point.
-            line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
-            line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
-            line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
-            line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
-            position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
-                        and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
-                        between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-            create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
-            fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
-            fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
-            fictitious_substation_id: the ID of the fictitious substation (optional).
-            fictitious_substation_name: the name of the fictitious substation (optional).
+
+          - bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+          - new_line_id: ID of the new line
+          - new_line_r: resistance of the new line, in ohms
+          - new_line_x: reactance of the new line, in ohms
+          - new_line_b1: shunt susceptance on side 1 of the new line
+          - new_line_b2: shunt susceptance on side 2 of the new line
+          - new_line_g1: shunt conductance on side 1 of the new line
+          - new_line_g2: shunt conductance on side 2 of the new line
+          - line_id: the id on of the line on which we want to create a tee point.
+          - line1_id: when the initial line is cut, the line segment at side 1 has a given ID (optional).
+          - line1_name: when the initial line is cut, the line segment at side 1 has a given name (optional).
+          - line2_id: when the initial line is cut, the line segment at side 2 has a given ID (optional).
+          - line2_name: when the initial line is cut, the line segment at side 2 has a given name (optional).
+          - position_percent: when the existing line is cut in two lines, percent is equal to the ratio between the parameters of the first line
+            and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
+            between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
+          - create_fictitious_substation: True to create the fictitious voltage level inside a fictitious substation (false by default).
+          - fictitious_voltage_level_id: the ID of the fictitious voltage level (optional) containing the tee point.
+          - fictitious_voltage_level_name: the name of the fictitious voltage level (optional) containing the tee point.
+          - fictitious_substation_id: the ID of the fictitious substation (optional).
+          - fictitious_substation_name: the name of the fictitious substation (optional).
+
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+                         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-                    bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
+                  bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
         deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
         deprecated_new_line_id: this argument is deprecated, use the dataframe instead
         deprecated_new_line_r: this argument is deprecated, use the dataframe instead
@@ -191,7 +193,7 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
                                deprecated_line_to_be_merged2_id: str = None,
                                deprecated_line_to_be_deleted: str = None, deprecated_merged_line_id: str = None,
                                deprecated_merged_line_name: str = None, df: DataFrame = None,
-                               raise_exception: bool = False,
+                               raise_exception: bool = True,
                                reporter: Reporter = None, **kwargs: str) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
@@ -202,13 +204,15 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
     Args:
         network: the network
         df: attributes as a dataframe, it should contain:
-            line_to_be_merged1_id: The id of the first line connected to the tee point.
-            line_to_be_merged2_id: The id of the second line connected to the tee point.
-            line_to_be_deleted: The tee point line that will be deleted
-            merged_line_id: The id of the new line from the two lines to be merged
-            merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+
+          - line_to_be_merged1_id: The id of the first line connected to the tee point.
+          - line_to_be_merged2_id: The id of the second line connected to the tee point.
+          - line_to_be_deleted: The tee point line that will be deleted
+          - merged_line_id: The id of the new line from the two lines to be merged
+          - merged_line_name: The name of the new line from the two lines to be merged (default to line id)
+
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+                         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         deprecated_line_to_be_merged1_id: this argument is deprecated, use the dataframe instead
         deprecated_line_to_be_merged2_id: this argument is deprecated, use the dataframe instead
@@ -252,7 +256,7 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
                                   deprecated_position_percent: float = None, deprecated_line1_id: str = None,
                                   deprecated_line1_name: str = None, deprecated_line2_id: str = None,
                                   deprecated_line2_name: str = None, df: DataFrame = None,
-                                  raise_exception: bool = False,
+                                  raise_exception: bool = True,
                                   reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
@@ -263,17 +267,19 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
     Args:
         network: the network
         df: attributes as a dataframe, it should contain:
-            bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
-            line_id: the ID ot the line on which the voltage level should be connected.
-            position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
+
+          - bbs_or_bus_id: The ID of the configured bus or bus bar section to which the lines will be connected.
+          - line_id: the ID ot the line on which the voltage level should be connected.
+          - position_percent: when the existing line is cut, percent is equal to the ratio between the parameters of the first line
                               and the parameters of the line that is cut multiplied by 100. 100 minus percent is equal to the ratio
                               between the parameters of the second line and the parameters of the line that is cut multiplied by 100.
-            line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
-            line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
-            line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
-            line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
+          - line1_id: when the initial line is cut, the line segment at side 1 will receive this ID (optional).
+          - line1_name: when the initial line is cut, the line segment at side 1 will receive this name (optional).
+          - line2_id: when the initial line is cut, the line segment at side 2 will receive this ID (optional).
+          - line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
+
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+                         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
         deprecated_line_id: this argument is deprecated, use the dataframe instead
@@ -323,7 +329,7 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
 def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: str = None,
                                          deprecated_line2_id: str = None,
                                          deprecated_line_id: str = None, deprecated_line_name: str = None,
-                                         df: DataFrame = None, raise_exception: bool = False,
+                                         df: DataFrame = None, raise_exception: bool = True,
                                          reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     This method reverses the action done in the connect_voltage_level_on_line method.
@@ -339,7 +345,7 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
             line_id: The id of the new line to be created
             line_name: The name of the line to be created (default to line_id)
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         deprecated_line1_id: this argument is deprecated, use the dataframe instead
         deprecated_line2_id: this argument is deprecated, use the dataframe instead
@@ -372,7 +378,7 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def create_load_bay(network: Network, df: DataFrame = None, raise_exception: bool = False, reporter: Reporter = None,
+def create_load_bay(network: Network, df: DataFrame = None, raise_exception: bool = True, reporter: Reporter = None,
                     **kwargs: ArrayLike) -> None:
     """
     Creates a load, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -381,7 +387,7 @@ def create_load_bay(network: Network, df: DataFrame = None, raise_exception: boo
         network: the network to which we want to add the load
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
@@ -406,7 +412,7 @@ def create_load_bay(network: Network, df: DataFrame = None, raise_exception: boo
     return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
 
 
-def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
                        reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a battery, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -415,7 +421,7 @@ def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: 
         network: the network to which we want to add the battery
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
@@ -441,7 +447,7 @@ def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: 
     return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
 
 
-def create_generator_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_generator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
                          reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a generator, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -450,7 +456,7 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
         network: the network to which we want to add the generator
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
@@ -480,7 +486,7 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
                              reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a dangling line, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -489,7 +495,7 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         network: the network to which we want to add the dangling line
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
@@ -521,7 +527,7 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
 def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
                                  linear_model_df: Optional[DataFrame] = None,
                                  non_linear_model_df: Optional[DataFrame] = None,
-                                 raise_exception: bool = False, reporter: Reporter = None) -> None:
+                                 raise_exception: bool = True, reporter: Reporter = None) -> None:
     """
     Creates a shunt compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -531,7 +537,7 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
         linear_model_df: dataframe for linear model sections data
         non_linear_model_df: dataframe for sections data
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
@@ -577,7 +583,7 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
     return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter)
 
 
-def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
                                       reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a static var compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -586,7 +592,7 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
         network: the network to which we want to add the static var compensator
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
@@ -614,7 +620,7 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
     return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
 
 
-def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
                                      reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a lcc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -623,7 +629,7 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
         network: the network to which we want to add the lcc converter station
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
@@ -648,7 +654,7 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
     return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
 
 
-def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
                                      reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a vsc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -657,7 +663,7 @@ def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, rai
         network: the network to which we want to add the vsc converter station
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
@@ -721,7 +727,7 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
                                                deprecated_new_line2_id: str = None,
                                                deprecated_new_line1_name: str = None,
                                                deprecated_new_line2_name: str = None, df: DataFrame = None,
-                                               raise_exception: bool = False, reporter: Reporter = None,
+                                               raise_exception: bool = True, reporter: Reporter = None,
                                                **kwargs: ArrayLike) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
@@ -729,16 +735,18 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
     Args:
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe. It should contain:
-            tee_point_line1: The ID of the existing line connecting the first voltage level to the tee point
-            tee_point_line2: The ID of the existing line connecting the tee point to the second voltage level
-            tee_point_line_to_remove: The ID of the existing line connecting the tee point to the attached voltage level
-            bbs_or_bus_id: The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
-              where we want to connect the new lines new line 1 and new line 2
-            new_line1_id: The ID of the new line connecting the first voltage level to the attached voltage level
-            new_line2_id: The ID of the new line connecting the second voltage level to the attached voltage level
-            new_line1_name: The optional name of the new line connecting the first voltage level to the attached voltage level
-            new_line2_name: The optional name of the new line connecting the second voltage level to the attached voltage level
-        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+
+          - tee_point_line1: The ID of the existing line connecting the first voltage level to the tee point
+          - tee_point_line2: The ID of the existing line connecting the tee point to the second voltage level
+          - tee_point_line_to_remove: The ID of the existing line connecting the tee point to the attached voltage level
+          - bbs_or_bus_id: The ID of the existing bus or bus bar section in the attached voltage level voltageLevelId,
+            where we want to connect the new lines new line 1 and new line 2
+          - new_line1_id: The ID of the new line connecting the first voltage level to the attached voltage level
+          - new_line2_id: The ID of the new line connecting the second voltage level to the attached voltage level
+          - new_line1_name: The optional name of the new line connecting the first voltage level to the attached voltage level
+          - new_line2_name: The optional name of the new line connecting the second voltage level to the attached voltage level
+
+        raise_exception: whether an exception should be raised if a problem occurs. By default, true.
         reporter: an optional reporter to get functional logs.
         deprecated_tee_point_line1: this argument is deprecated, use the dataframe instead
         deprecated_tee_point_line2: this argument is deprecated, use the dataframe instead
@@ -796,7 +804,7 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_exception: bool = True,
                                   reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number
@@ -805,7 +813,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
     Args:
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe.
-        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+        raise_exception: whether an exception should be raised if a problem occurs. By default, true.
         reporter: an optional reporter to get functional logs.
         kwargs: attributes as keyword arguments.
     Notes:
@@ -831,7 +839,8 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
     Examples:
 
     .. code-block:: python
-        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL',
+
+       pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL',
                                                 aligned_buses_or_busbar_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
@@ -851,7 +860,7 @@ def transform_list_to_str(entry: Union[str, List[str]]) -> str:
         return entry.replace(' ', '')
 
 
-def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = True,
                            reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a coupling device on the network between two busbar sections of a same voltage level.
@@ -860,7 +869,7 @@ def create_coupling_device(network: Network, df: DataFrame = None, raise_excepti
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe.
         raise_exception: an optional boolean indicating if an exception should be raised in case an error occurs during
-        computation.
+        computation. By default, true.
         reporter: an optional reporter to store the funtional logs.
         kwargs: Attributes as keyword arguments.
 
@@ -941,7 +950,7 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[str]], raise_exception: bool = False,
+def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[str]], raise_exception: bool = True,
                           reporter: Reporter = None) -> None:
     """
     Remove all voltage levels from a list and all their connectables.
@@ -952,7 +961,7 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
         network: the network from which we want to remove the voltage levels
         voltage_level_ids: either a list or a single string to indicate which voltage levels should be removed.
         raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     if isinstance(voltage_level_ids, str):
@@ -964,7 +973,7 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
 
 def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
                       shunt_compensator_ids: Dict[str, Union[str, List[str]]] = None,
-                      raise_exception: bool = False, reporter: Reporter = None) -> None:
+                      raise_exception: bool = True, reporter: Reporter = None) -> None:
     """
     Removes hvdc lines and their LCC or SVC converter stations. In the case of a LCC converter station, a list of shunt
     compensators can be specified to be deleted as well.
@@ -974,7 +983,7 @@ def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
         hvdc_line_ids: the ids of the HVDC lines, either as a string or a list of strings.
         shunt_compensator_ids: the ids of the shunt compensators associated to
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     c_df = None
@@ -1041,7 +1050,7 @@ def get_unused_order_positions_before(network: Network, busbar_section_id: str) 
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bool = False, reporter: Reporter = None,
+def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bool = True, reporter: Reporter = None,
                      **kwargs: ArrayLike) -> None:
     """
     Creates a line and connects it to buses or busbar sections through standard feeder bays.
@@ -1054,8 +1063,8 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
     Args:
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
-                raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+        raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
+                         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
@@ -1095,7 +1104,7 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, raise_exception: bool = False,
+def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, raise_exception: bool = True,
                                        reporter: Reporter = None, **kwargs: ArrayLike) -> None:
     """
     Creates a transformer and connects it to buses or busbar sections through standard feeder bays.
@@ -1110,7 +1119,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
@@ -1151,7 +1160,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
 
 
-def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]], raise_exception: bool = False,
+def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]], raise_exception: bool = True,
                        reporter: Reporter = None) -> None:
     """
     Remove all feeders from a list as well as their bays: the connectables will be removed and all equipment connecting
@@ -1161,7 +1170,7 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
         network: the network to which we want to remove the feeder bay
         connectable_ids: either a list or a single string to indicate which equipment will be removed with their feeder bay.
         raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Examples:

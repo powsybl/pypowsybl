@@ -13,22 +13,22 @@ from .increased_violations_parameters import IncreasedViolationsParameters
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """
-    Parameters for a sensitivity analysis execution.
+    Parameters for a security analysis execution.
 
     All parameters are first read from you configuration file, then overridden with
     the constructor arguments.
 
-    Please note that sensitivity analysis providers may not honor all parameters, according to their capabilities.
+    Please note that security analysis providers may not honor all parameters, according to their capabilities.
     For example, some providers will not be able to simulate the voltage control of shunt compensators, etc.
-    The exact behaviour of some parameters may also depend on your sensitivity analysis provider.
+    The exact behaviour of some parameters may also depend on your security analysis provider.
     Please check the documentation of your provider for that information.
 
-    .. currentmodule:: pypowsybl.sensitivity
+    .. currentmodule:: pypowsybl.security
 
     Args:
-        load_flow_parameters: parameters that are common to loadflow and sensitivity analysis
+        load_flow_parameters: parameters that are common to loadflow and security analysis
         increased_violations_parameters: Define what violations should be considered increased between N and contingency situations
-        provider_parameters: Define parameters linked to the sensitivity analysis provider
+        provider_parameters: Define parameters linked to the security analysis provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 

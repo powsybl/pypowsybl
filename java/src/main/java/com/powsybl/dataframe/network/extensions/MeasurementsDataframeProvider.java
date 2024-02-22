@@ -13,6 +13,7 @@ import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Connectable;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.extensions.Measurement;
 import com.powsybl.iidm.network.extensions.Measurements;
 import org.jgrapht.alg.util.Pair;
@@ -86,7 +87,7 @@ public class MeasurementsDataframeProvider extends AbstractSingleDataframeNetwor
         private final String elementId;
         private final String id;
         private final Measurement.Type type;
-        private final Measurement.Side side;
+        private final ThreeSides side;
         private final double value;
         private final double standardDeviation;
         private final boolean valid;
@@ -109,7 +110,7 @@ public class MeasurementsDataframeProvider extends AbstractSingleDataframeNetwor
             return elementId;
         }
 
-        public Measurement.Side getSide() {
+        public ThreeSides getSide() {
             return side;
         }
 

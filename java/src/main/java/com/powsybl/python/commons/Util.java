@@ -6,12 +6,13 @@
  */
 package com.powsybl.python.commons;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
-import com.powsybl.iidm.network.Branch;
+import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
@@ -19,8 +20,12 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
+import com.powsybl.security.LimitViolationType;
+import com.powsybl.sensitivity.SensitivityFunctionType;
+import com.powsybl.sensitivity.SensitivityVariableType;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
@@ -31,7 +36,6 @@ import org.slf4j.LoggerFactory;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
@@ -54,7 +58,8 @@ public final class Util {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String nonNullMessage = Objects.toString(t.getMessage(), "");
+        String message = t.getMessage();
+        String nonNullMessage = message == null || message.isEmpty() ? t.toString() : message;
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
@@ -156,6 +161,10 @@ public final class Util {
         return allocArrayPointer(intListPtr, integerList.size());
     }
 
+    public static ArrayPointer<CCharPointer> createByteArray(byte[] bytes) {
+        return allocArrayPointer(CTypeUtil.toBytePtr(bytes), bytes.length);
+    }
+
     public static int convert(SeriesDataType type) {
         return switch (type) {
             case STRING -> CDataframeHandler.STRING_SERIES_TYPE;
@@ -242,11 +251,41 @@ public final class Util {
         };
     }
 
+    public static SensitivityFunctionType convert(PyPowsyblApiHeader.SensitivityFunctionType type) {
+        return switch (type) {
+            case BRANCH_ACTIVE_POWER_1 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_1;
+            case BRANCH_CURRENT_1 -> SensitivityFunctionType.BRANCH_CURRENT_1;
+            case BRANCH_REACTIVE_POWER_1 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_1;
+            case BRANCH_ACTIVE_POWER_2 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_2;
+            case BRANCH_CURRENT_2 -> SensitivityFunctionType.BRANCH_CURRENT_2;
+            case BRANCH_REACTIVE_POWER_2 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_2;
+            case BRANCH_ACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_ACTIVE_POWER_3;
+            case BRANCH_CURRENT_3 -> SensitivityFunctionType.BRANCH_CURRENT_3;
+            case BRANCH_REACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_3;
+            case BUS_VOLTAGE -> SensitivityFunctionType.BUS_VOLTAGE;
+        };
+    }
+
+    public static SensitivityVariableType convert(PyPowsyblApiHeader.SensitivityVariableType type) {
+        return switch (type) {
+            case AUTO_DETECT -> null;
+            case INJECTION_ACTIVE_POWER -> SensitivityVariableType.INJECTION_ACTIVE_POWER;
+            case INJECTION_REACTIVE_POWER -> SensitivityVariableType.INJECTION_REACTIVE_POWER;
+            case TRANSFORMER_PHASE -> SensitivityVariableType.TRANSFORMER_PHASE;
+            case BUS_TARGET_VOLTAGE -> SensitivityVariableType.BUS_TARGET_VOLTAGE;
+            case HVDC_LINE_ACTIVE_POWER -> SensitivityVariableType.HVDC_LINE_ACTIVE_POWER;
+            case TRANSFORMER_PHASE_1 -> SensitivityVariableType.TRANSFORMER_PHASE_1;
+            case TRANSFORMER_PHASE_2 -> SensitivityVariableType.TRANSFORMER_PHASE_2;
+            case TRANSFORMER_PHASE_3 -> SensitivityVariableType.TRANSFORMER_PHASE_3;
+        };
+    }
+
     public static ContingencyContextType convert(PyPowsyblApiHeader.RawContingencyContextType type) {
         return switch (type) {
             case ALL -> ContingencyContextType.ALL;
             case NONE -> ContingencyContextType.NONE;
             case SPECIFIC -> ContingencyContextType.SPECIFIC;
+            case ONLY_CONTINGENCIES -> ContingencyContextType.ONLY_CONTINGENCIES;
         };
     }
 
@@ -264,10 +303,10 @@ public final class Util {
         };
     }
 
-    public static Branch.Side convert(PyPowsyblApiHeader.BranchSide side) {
+    public static TwoSides convert(PyPowsyblApiHeader.BranchSide side) {
         return switch (side) {
-            case ONE -> Branch.Side.ONE;
-            case TWO -> Branch.Side.TWO;
+            case ONE -> TwoSides.ONE;
+            case TWO -> TwoSides.TWO;
         };
     }
 
@@ -338,6 +377,29 @@ public final class Util {
             return Optional.of(CompressionFormat.ZSTD);
         } else {
             return Optional.empty();
+        }
+    }
+
+    public static LimitViolationType convert(PyPowsyblApiHeader.LimitViolationType violationType) {
+        switch (violationType) {
+            case ACTIVE_POWER:
+                return LimitViolationType.ACTIVE_POWER;
+            case APPARENT_POWER:
+                return LimitViolationType.APPARENT_POWER;
+            case CURRENT:
+                return LimitViolationType.CURRENT;
+            case LOW_VOLTAGE:
+                return LimitViolationType.LOW_VOLTAGE;
+            case HIGH_VOLTAGE:
+                return LimitViolationType.HIGH_VOLTAGE;
+            case LOW_SHORT_CIRCUIT_CURRENT:
+                return LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
+            case HIGH_SHORT_CIRCUIT_CURRENT:
+                return LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
+            case OTHER:
+                return LimitViolationType.OTHER;
+            default:
+                throw new PowsyblException("Unknown limit violation type: " + violationType);
         }
     }
 }

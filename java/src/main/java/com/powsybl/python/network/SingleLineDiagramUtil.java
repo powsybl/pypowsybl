@@ -7,6 +7,7 @@
 package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.Network;
+import com.powsybl.sld.layout.MatrixZoneLayoutFactory;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ComponentLibrary;
@@ -17,8 +18,8 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -30,8 +31,17 @@ public final class SingleLineDiagramUtil {
 
     static void writeSvg(Network network, String containerId, String svgFile, String metadataFile, SldParameters sldParameters) {
         try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
-             Writer metadataWriter = metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
+             Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
             writeSvg(network, containerId, writer, metadataWriter, sldParameters);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, String svgFile, String metadataFile, SldParameters sldParameters) {
+        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile));
+             Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
+            writeMatrixMultiSubstationSvg(network, matrixIds, writer, metadataWriter, sldParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -72,10 +82,16 @@ public final class SingleLineDiagramUtil {
         SingleLineDiagram.draw(network, containerId, writer, metadataWriter, sldParameters);
     }
 
+    static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
+        sldParameters.setZoneLayoutFactory(new MatrixZoneLayoutFactory(matrixIds));
+        List<String> substationIds = Arrays.stream(matrixIds).flatMap(Arrays::stream).toList();
+        SingleLineDiagram.drawMultiSubstations(network, substationIds, writer, metadataWriter, sldParameters);
+    }
+
     static List<String> getComponentLibraryNames() {
         return ComponentLibrary.findAll()
                 .stream()
                 .map(ComponentLibrary::getName)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

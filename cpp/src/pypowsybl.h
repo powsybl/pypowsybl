@@ -71,8 +71,10 @@ private:
     array* delegate_;
 };
 
+typedef Array<slack_bus_result> SlackBusResultArray;
 typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
+typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
@@ -98,8 +100,8 @@ std::map<std::string, std::string> convertMapStructToStdMap(string_map* map);
 enum class LoadFlowComponentStatus {
     CONVERGED = 0,
     MAX_ITERATION_REACHED,
-    SOLVER_FAILED,
     FAILED,
+    NO_CALCULATION,
 };
 
 enum class PostContingencyComputationStatus {
@@ -111,9 +113,16 @@ enum class PostContingencyComputationStatus {
 };
 
 enum LimitType {
-    CURRENT = 0,
+    ACTIVE_POWER = 0,
+    APPARENT_POWER,
+    CURRENT,
     LOW_VOLTAGE,
     HIGH_VOLTAGE,
+    LOW_VOLTAGE_ANGLE,
+    HIGH_VOLTAGE_ANGLE,
+    LOW_SHORT_CIRCUIT_CURRENT,
+    HIGH_SHORT_CIRCUIT_CURRENT,
+    OTHER
 };
 
 enum Side {
@@ -191,10 +200,10 @@ public:
 
     VoltageInitMode voltage_init_mode;
     bool transformer_voltage_control_on;
-    bool no_generator_reactive_limits;
+    bool use_reactive_limits;
     bool phase_shifter_regulation_on;
     bool twt_split_shunt_admittance;
-    bool simul_shunt;
+    bool shunt_compensator_voltage_control_on;
     bool read_slack_bus;
     bool write_slack_bus;
     bool distributed_slack;
@@ -273,8 +282,26 @@ public:
     bool center_name;
     bool diagonal_label;
     bool nodes_infos;
+    bool tooltip_enabled;
     bool topological_coloring;
     std::string component_library;
+};
+
+class NadParameters {
+public:
+    NadParameters(nad_parameters* src);
+    std::shared_ptr<nad_parameters> to_c_struct() const;
+    void nad_to_c_struct(nad_parameters& params) const;
+
+    bool edge_name_displayed;
+    bool edge_info_along_edge;
+    bool id_displayed;
+    int power_value_precision;
+    int current_value_precision;
+    int angle_value_precision;
+    int voltage_value_precision;
+    bool bus_legend;
+    bool substation_description_displayed;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -346,7 +373,7 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
 
 JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
-void dumpNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 LoadFlowParameters* createLoadFlowParameters();
 
@@ -364,7 +391,9 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
 
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 
-std::string dumpNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+
+py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
@@ -374,15 +403,17 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
 
 void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters);
 
+void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters);
+
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
 std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters);
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
-std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, bool edgeNameDisplayed);
+std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -394,28 +425,34 @@ JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const 
 
 JavaHandle createSensitivityAnalysis();
 
+void addLoadActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double activePower);
+
+void addLoadReactivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& loadId, bool relativeValue, double reactivePower);
+
+void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& generatorId, bool relativeValue, double activePower);
+
+void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open);
+
+void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition);
+
+void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition);
+
+void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
+
+void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
+                         condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
+
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
-void addBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                               const std::vector<std::string>& variablesIds);
-
-void addPreContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                                             const std::vector<std::string>& variablesIds);
-
-void addPostContingencyBranchFlowFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
-                                              const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds);
-
-void setBusVoltageFactorMatrix(const JavaHandle& sensitivityAnalysisContext, const std::vector<std::string>& busIds, const std::vector<std::string>& targetVoltageIds);
+void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
+                     const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType,
+                     sensitivity_function_type sensitivityFunctionType, sensitivity_variable_type sensitivityVariableType);
 
 JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
 
-matrix* getBranchFlowsSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
+matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
-matrix* getBusVoltagesSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string &contingencyId);
-
-matrix* getReferenceFlows(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
-
-matrix* getReferenceVoltages(const JavaHandle& sensitivityAnalysisResultContext, const std::string& contingencyId);
+matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
 SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
 
@@ -446,6 +483,8 @@ void addMonitoredElements(const JavaHandle& securityAnalysisContext, contingency
 SeriesArray* getLimitViolations(const JavaHandle& securityAnalysisResult);
 
 PostContingencyResultArray* getPostContingencyResults(const JavaHandle& securityAnalysisResult);
+
+OperatorStrategyResultArray* getOperatorStrategyResults(const JavaHandle& securityAnalysisResult);
 
 pre_contingency_result* getPreContingencyResult(const JavaHandle& securityAnalysisResult);
 
@@ -545,6 +584,8 @@ void removeElementsModification(pypowsybl::JavaHandle network, const std::vector
 
 SldParameters* createSldParameters();
 
+NadParameters* createNadParameters();
+
 //=======dynamic modeling for dynawaltz package==========
 
 //handle creation
@@ -559,8 +600,7 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
 // events mapping
-void addEventBranchDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool disconnectOrigin, bool disconnectExtremity);
-void addEventInjectionDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, bool stateEvent);
+void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
 
 // dynamic model mapping
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
@@ -576,12 +616,11 @@ std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 //=======Voltage initializer mapping========
 
 JavaHandle createVoltageInitializerParams();
-JavaHandle createVoltageLimitOverride(double minVoltage, double maxVoltage);
-void voltageInitializerAddSpecificVoltageLimits(const std::string& idPtr, double minVoltage, const JavaHandle& paramsHandle, double maxVoltage);
+void voltageInitializerAddSpecificLowVoltageLimits(const JavaHandle& paramsHandle, const std::string& voltageLevelId, bool isRelative, double limit);
+void voltageInitializerAddSpecificHighVoltageLimits(const JavaHandle& paramsHandle, const std::string& voltageLevelId, bool isRelative, double limit);
 void voltageInitializerAddVariableShuntCompensators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
-void voltageInitializerAddAlgorithmParam(const JavaHandle& paramsHandle, const std::string& keyPtr, const std::string& valuePtr);
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
@@ -629,10 +668,10 @@ JavaHandle createShortCircuitAnalysis();
 JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
 std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType);
 void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType);
-SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult);
-SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
+SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
-SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult);
+SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 
 }
 #endif //PYPOWSYBL_H

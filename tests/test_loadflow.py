@@ -34,17 +34,38 @@ def test_config():
     assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
 
 
-def test_run_lf():
+def test_run_lf_ac():
     n = pp.network.create_ieee14()
     results = lf.run_ac(n)
     assert 1 == len(results)
     assert lf.ComponentStatus.CONVERGED == results[0].status
+    assert 'CONVERGED' == results[0].status_text
     assert 0 == results[0].connected_component_num
     assert 0 == results[0].synchronous_component_num
-    assert 'VL1_0' == results[0].slack_bus_id
-    assert abs(results[0].slack_bus_active_power_mismatch) < 0.01
+    assert 'VL1_0' == results[0].reference_bus_id
+    assert 1 == len(results[0].slack_bus_results)
+    assert 'VL1_0' == results[0].slack_bus_results[0].id
+    assert abs(results[0].slack_bus_results[0].active_power_mismatch) < 0.01
     assert 3 == results[0].iteration_count
 
+
+def test_run_lf_ac_2slacks():
+    n = pp.network.create_ieee14()
+    p = lf.Parameters(read_slack_bus=False, distributed_slack=False, provider_parameters={'maxSlackBusCount': '2'})
+    results = lf.run_ac(n, p)
+    assert 1 == len(results)
+    assert lf.ComponentStatus.CONVERGED == results[0].status
+    assert 2 == len(results[0].slack_bus_results)
+    sbr0 = results[0].slack_bus_results[0]
+    sbr1 = results[0].slack_bus_results[1]
+    assert 'VL4_0' == sbr0.id
+    assert abs(-0.75 - sbr0.active_power_mismatch) < 0.01
+    assert 'VL2_0' == sbr1.id
+    assert abs(-0.75 - sbr1.active_power_mismatch) < 0.01
+
+
+def test_run_lf_dc():
+    n = pp.network.create_ieee14()
     parameters = lf.Parameters(distributed_slack=False)
     results = lf.run_dc(n, parameters)
     assert 1 == len(results)
@@ -60,10 +81,10 @@ def test_lf_parameters():
     attributes = {
         'voltage_init_mode': [lf.VoltageInitMode.DC_VALUES, lf.VoltageInitMode.UNIFORM_VALUES],
         'transformer_voltage_control_on': [True, False],
-        'no_generator_reactive_limits': [True, False],
+        'use_reactive_limits': [True, False],
         'phase_shifter_regulation_on': [True, False],
         'twt_split_shunt_admittance': [True, False],
-        'simul_shunt': [True, False],
+        'shunt_compensator_voltage_control_on': [True, False],
         'read_slack_bus': [True, False],
         'write_slack_bus': [True, False],
         'distributed_slack': [True, False],
@@ -184,60 +205,74 @@ def test_provider_names():
 
 def test_get_provider_parameters_names():
     specific_parameters = pp.loadflow.get_provider_parameters_names()
-    assert specific_parameters == [
-        'slackBusSelectionMode',
-        'slackBusesIds',
-        'lowImpedanceBranchMode',
-        'voltageRemoteControl',
-        'throwsExceptionInCaseOfSlackDistributionFailure',
-        'loadPowerFactorConstant',
-        'plausibleActivePowerLimit',
-        'slackBusPMaxMismatch',
-        'voltagePerReactivePowerControl',
-        'reactivePowerRemoteControl',
-        'maxNewtonRaphsonIterations',
-        'maxOuterLoopIterations',
-        'newtonRaphsonConvEpsPerEq',
-        'voltageInitModeOverride',
-        'transformerVoltageControlMode',
-        'shuntVoltageControlMode',
-        'minPlausibleTargetVoltage',
-        'maxPlausibleTargetVoltage',
-        'minRealisticVoltage',
-        'maxRealisticVoltage',
-        'reactiveRangeCheckMode',
-        'lowImpedanceThreshold',
-        'networkCacheEnabled',
-        'svcVoltageMonitoring',
-        'stateVectorScalingMode',
-        'maxSlackBusCount',
-        'debugDir',
-        'incrementalTransformerVoltageControlOuterLoopMaxTapShift',
-        'secondaryVoltageControl',
-        'reactiveLimitsMaxPqPvSwitch',
-        'newtonRaphsonStoppingCriteriaType',
-        'maxActivePowerMismatch',
-        'maxReactivePowerMismatch',
-        'maxVoltageMismatch',
-        'maxAngleMismatch',
-        'maxRatioMismatch',
-        'maxSusceptanceMismatch',
-        'phaseShifterControlMode',
-        'alwaysUpdateNetwork',
-        'mostMeshedSlackBusSelectorMaxNominalVoltagePercentile',
-        'reportedFeatures',
-        'slackBusCountryFilter',
-        'actionableSwitchesIds',
-        'asymmetrical',
-        'minNominalVoltageTargetVoltageCheck',
-        'reactivePowerDispatchMode',
-        'outerLoopNames'
-    ]
+    assert specific_parameters == ['slackBusSelectionMode',
+                                   'slackBusesIds',
+                                   'lowImpedanceBranchMode',
+                                   'voltageRemoteControl',
+                                   'slackDistributionFailureBehavior',
+                                   'loadPowerFactorConstant',
+                                   'plausibleActivePowerLimit',
+                                   'slackBusPMaxMismatch',
+                                   'voltagePerReactivePowerControl',
+                                   'generatorReactivePowerRemoteControl',
+                                   'transformerReactivePowerControl',
+                                   'maxNewtonRaphsonIterations',
+                                   'maxOuterLoopIterations',
+                                   'newtonRaphsonConvEpsPerEq',
+                                   'voltageInitModeOverride',
+                                   'transformerVoltageControlMode',
+                                   'shuntVoltageControlMode',
+                                   'minPlausibleTargetVoltage',
+                                   'maxPlausibleTargetVoltage',
+                                   'minRealisticVoltage',
+                                   'maxRealisticVoltage',
+                                   'reactiveRangeCheckMode',
+                                   'lowImpedanceThreshold',
+                                   'networkCacheEnabled',
+                                   'svcVoltageMonitoring',
+                                   'stateVectorScalingMode',
+                                   'maxSlackBusCount',
+                                   'debugDir',
+                                   'incrementalTransformerRatioTapControlOuterLoopMaxTapShift',
+                                   'secondaryVoltageControl',
+                                   'reactiveLimitsMaxPqPvSwitch',
+                                   'newtonRaphsonStoppingCriteriaType',
+                                   'maxActivePowerMismatch',
+                                   'maxReactivePowerMismatch',
+                                   'maxVoltageMismatch',
+                                   'maxAngleMismatch',
+                                   'maxRatioMismatch',
+                                   'maxSusceptanceMismatch',
+                                   'phaseShifterControlMode',
+                                   'alwaysUpdateNetwork',
+                                   'mostMeshedSlackBusSelectorMaxNominalVoltagePercentile',
+                                   'reportedFeatures',
+                                   'slackBusCountryFilter',
+                                   'actionableSwitchesIds',
+                                   'asymmetrical',
+                                   'minNominalVoltageTargetVoltageCheck',
+                                   'reactivePowerDispatchMode',
+                                   'outerLoopNames',
+                                   'useActiveLimits',
+                                   'disableVoltageControlOfGeneratorsOutsideActivePowerLimits',
+                                   'lineSearchStateVectorScalingMaxIteration',
+                                   'lineSearchStateVectorScalingStepFold',
+                                   'maxVoltageChangeStateVectorScalingMaxDv',
+                                   'maxVoltageChangeStateVectorScalingMaxDphi',
+                                   'linePerUnitMode',
+                                   'useLoadModel',
+                                   'dcApproximationType',
+                                   'simulateAutomationSystems',
+                                   'acSolverType',
+                                   'maxNewtonKrylovIterations',
+                                   'newtonKrylovLineSearch',
+                                   'referenceBusSelectionMode',
+                                   'writeReferenceTerminals']
 
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 47 == len(specific_parameters)
+    assert 63 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']

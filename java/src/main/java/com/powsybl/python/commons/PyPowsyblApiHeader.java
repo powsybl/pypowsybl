@@ -14,10 +14,7 @@ import org.graalvm.nativeimage.c.constant.CEnum;
 import org.graalvm.nativeimage.c.constant.CEnumLookup;
 import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.struct.*;
-import org.graalvm.nativeimage.c.type.CCharPointer;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
-import org.graalvm.nativeimage.c.type.CDoublePointer;
-import org.graalvm.nativeimage.c.type.VoidPointer;
+import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.PointerBase;
 
 /**
@@ -130,6 +127,24 @@ public final class PyPowsyblApiHeader {
         void setForecastDistance(int forecastDistance);
     }
 
+    @CStruct("slack_bus_result")
+    public interface SlackBusResultPointer extends PointerBase {
+
+        @CField("id")
+        CCharPointer getId();
+
+        @CField("id")
+        void setId(CCharPointer id);
+
+        @CField("active_power_mismatch")
+        double getActivePowerMismatch();
+
+        @CField("active_power_mismatch")
+        void setActivePowerMismatch(double activePowerMismatch);
+
+        SlackBusResultPointer addressOf(int index);
+    }
+
     @CStruct("loadflow_component_result")
     public interface LoadFlowComponentResultPointer extends PointerBase {
 
@@ -151,23 +166,26 @@ public final class PyPowsyblApiHeader {
         @CField("status")
         void setStatus(int status);
 
+        @CField("status_text")
+        CCharPointer getStatusText();
+
+        @CField("status_text")
+        void setStatusText(CCharPointer statusText);
+
         @CField("iteration_count")
         int getIterationCount();
 
         @CField("iteration_count")
         void setIterationCount(int iterationCount);
 
-        @CField("slack_bus_id")
-        CCharPointer getSlackBusId();
+        @CField("reference_bus_id")
+        CCharPointer getReferenceBusId();
 
-        @CField("slack_bus_id")
-        void setSlackBusId(CCharPointer slackBusId);
+        @CField("reference_bus_id")
+        void setReferenceBusId(CCharPointer referenceBusId);
 
-        @CField("slack_bus_active_power_mismatch")
-        double getSlackBusActivePowerMismatch();
-
-        @CField("slack_bus_active_power_mismatch")
-        void setSlackBusActivePowerMismatch(double slackBusActivePowerMismatch);
+        @CFieldAddress("slack_bus_results")
+        ArrayPointer<SlackBusResultPointer> slackBusResults();
 
         @CField("distributed_active_power")
         double getDistributedActivePower();
@@ -193,11 +211,11 @@ public final class PyPowsyblApiHeader {
         @CField("transformer_voltage_control_on")
         void setTransformerVoltageControlOn(boolean transformerVoltageControlOn);
 
-        @CField("no_generator_reactive_limits")
-        boolean isNoGeneratorReactiveLimits();
+        @CField("use_reactive_limits")
+        boolean isUseReactiveLimits();
 
-        @CField("no_generator_reactive_limits")
-        void setNoGeneratorReactiveLimits(boolean noGeneratorReactiveLimits);
+        @CField("use_reactive_limits")
+        void setUseReactiveLimits(boolean useReactiveLimits);
 
         @CField("phase_shifter_regulation_on")
         boolean isPhaseShifterRegulationOn();
@@ -211,11 +229,11 @@ public final class PyPowsyblApiHeader {
         @CField("twt_split_shunt_admittance")
         void setTwtSplitShuntAdmittance(boolean twtSplitShuntAdmittance);
 
-        @CField("simul_shunt")
-        boolean isSimulShunt();
+        @CField("shunt_compensator_voltage_control_on")
+        boolean isShuntCompensatorVoltageControlOn();
 
-        @CField("simul_shunt")
-        void setSimulShunt(boolean simulShunt);
+        @CField("shunt_compensator_voltage_control_on")
+        void setShuntCompensatorVoltageControlOn(boolean shuntCompensatorVoltageControlOn);
 
         @CField("read_slack_bus")
         boolean isReadSlackBus();
@@ -543,6 +561,27 @@ public final class PyPowsyblApiHeader {
         PostContingencyResultPointer addressOf(int index);
     }
 
+    @CStruct("operator_strategy_result")
+    public interface OperatorStrategyResultPointer extends PointerBase {
+
+        @CField("operator_strategy_id")
+        CCharPointer getOperatorStrategyId();
+
+        @CField("operator_strategy_id")
+        void setOperatorStrategyId(CCharPointer contingencyId);
+
+        @CField("status")
+        int getStatus();
+
+        @CField("status")
+        void setStatus(int status);
+
+        @CFieldAddress("limit_violations")
+        ArrayPointer<LimitViolationPointer> limitViolations();
+
+        OperatorStrategyResultPointer addressOf(int index);
+    }
+
     @CEnum("element_type")
     public enum ElementType {
         BUS,
@@ -623,6 +662,23 @@ public final class PyPowsyblApiHeader {
         public static native NetworkModificationType fromCValue(int value);
     }
 
+    @CEnum("violation_type")
+    public enum LimitViolationType {
+        ACTIVE_POWER,
+        APPARENT_POWER,
+        CURRENT,
+        LOW_VOLTAGE,
+        HIGH_VOLTAGE,
+        LOW_SHORT_CIRCUIT_CURRENT,
+        HIGH_SHORT_CIRCUIT_CURRENT,
+        OTHER;
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native LimitViolationType fromCValue(int value);
+    }
+
     @CEnum("remove_modification_type")
     public enum RemoveModificationType {
         REMOVE_FEEDER,
@@ -634,6 +690,45 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native RemoveModificationType fromCValue(int value);
+    }
+
+    @CEnum("sensitivity_function_type")
+    public enum SensitivityFunctionType {
+        BRANCH_ACTIVE_POWER_1,
+        BRANCH_CURRENT_1,
+        BRANCH_REACTIVE_POWER_1,
+        BRANCH_ACTIVE_POWER_2,
+        BRANCH_CURRENT_2,
+        BRANCH_REACTIVE_POWER_2,
+        BRANCH_ACTIVE_POWER_3,
+        BRANCH_CURRENT_3,
+        BRANCH_REACTIVE_POWER_3,
+        BUS_VOLTAGE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native SensitivityFunctionType fromCValue(int value);
+    }
+
+    @CEnum("sensitivity_variable_type")
+    public enum SensitivityVariableType {
+        AUTO_DETECT,
+        INJECTION_ACTIVE_POWER,
+        INJECTION_REACTIVE_POWER,
+        TRANSFORMER_PHASE,
+        BUS_TARGET_VOLTAGE,
+        HVDC_LINE_ACTIVE_POWER,
+        TRANSFORMER_PHASE_1,
+        TRANSFORMER_PHASE_2,
+        TRANSFORMER_PHASE_3;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native SensitivityVariableType fromCValue(int value);
     }
 
     @CStruct("matrix")
@@ -847,7 +942,8 @@ public final class PyPowsyblApiHeader {
 
         ALL,
         NONE,
-        SPECIFIC;
+        SPECIFIC,
+        ONLY_CONTINGENCIES;
 
         @CEnumValue
         public native int getCValue();
@@ -947,6 +1043,12 @@ public final class PyPowsyblApiHeader {
         @CField("nodes_infos")
         void setAddNodesInfos(boolean addNodeInfos);
 
+        @CField("tooltip_enabled")
+        void setTooltipEnabled(boolean tooltipEnabled);
+
+        @CField("tooltip_enabled")
+        boolean getTooltipEnabled();
+
         @CField("topological_coloring")
         boolean isTopologicalColoring();
 
@@ -958,6 +1060,63 @@ public final class PyPowsyblApiHeader {
 
         @CField("component_library")
         void setComponentLibrary(CCharPointer componentLibrary);
+    }
+
+    @CStruct("nad_parameters")
+    public interface NadParametersPointer extends PointerBase {
+        @CField("edge_name_displayed")
+        void setEdgeNameDisplayed(boolean edgeNameDisplayed);
+
+        @CField("edge_name_displayed")
+        boolean isEdgeNameDisplayed();
+
+        @CField("id_displayed")
+        void setIdDisplayed(boolean idDisplayed);
+
+        @CField("id_displayed")
+        boolean isIdDisplayed();
+
+        @CField("edge_info_along_edge")
+        void setEdgeInfoAlongEdge(boolean edgeInfoAlongEdge);
+
+        @CField("edge_info_along_edge")
+        boolean isEdgeInfoAlongEdge();
+
+        @CField("power_value_precision")
+        void setPowerValuePrecision(int powerValuePrecision);
+
+        @CField("power_value_precision")
+        int getPowerValuePrecision();
+
+        @CField("current_value_precision")
+        void setCurrentValuePrecision(int currentValuePrecision);
+
+        @CField("current_value_precision")
+        int getCurrentValuePrecision();
+
+        @CField("angle_value_precision")
+        void setAngleValuePrecision(int angleValuePrecision);
+
+        @CField("angle_value_precision")
+        int getAngleValuePrecision();
+
+        @CField("voltage_value_precision")
+        void setVoltageValuePrecision(int voltageValuePrecision);
+
+        @CField("voltage_value_precision")
+        int getVoltageValuePrecision();
+
+        @CField("bus_legend")
+        void setBusLegend(boolean busLegend);
+
+        @CField("bus_legend")
+        boolean isBusLegend();
+
+        @CField("substation_description_displayed")
+        void setSubstationDescriptionDisplayed(boolean substationDescriptionDisplayed);
+
+        @CField("substation_description_displayed")
+        boolean isSubstationDescriptionDisplayed();
     }
 
     @CEnum("DynamicMappingType")
@@ -988,6 +1147,20 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native BranchSide fromCValue(int value);
+    }
+
+    @CEnum("condition_type")
+    public enum ConditionType {
+        TRUE_CONDITION,
+        ALL_VIOLATION_CONDITION,
+        ANY_VIOLATION_CONDITION,
+        AT_LEAST_ONE_VIOLATION_CONDITION;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ConditionType fromCValue(int value);
     }
 
     @CStruct("shortcircuit_analysis_parameters")

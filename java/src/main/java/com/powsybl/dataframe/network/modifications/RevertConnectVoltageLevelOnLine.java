@@ -24,11 +24,14 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  */
 public class RevertConnectVoltageLevelOnLine implements NetworkModification {
 
+    private static final String LINE_ID = "line_id";
+    private static final String LINE_NAME = "line_name";
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("line1_id"),
             SeriesMetadata.strings("line2_id"),
-            SeriesMetadata.strings("line_id"),
-            SeriesMetadata.strings("line_name")
+            SeriesMetadata.strings(LINE_ID),
+            SeriesMetadata.strings(LINE_NAME)
     );
 
     @Override
@@ -40,11 +43,11 @@ public class RevertConnectVoltageLevelOnLine implements NetworkModification {
         RevertConnectVoltageLevelOnLineBuilder builder = new RevertConnectVoltageLevelOnLineBuilder();
         applyIfPresent(dataframe.getStrings("line1_id"), row, builder::withLine1Id);
         applyIfPresent(dataframe.getStrings("line2_id"), row, builder::withLine2Id);
-        applyIfPresent(dataframe.getStrings("line_name"), row, builder::withLineName);
-        applyIfPresent(dataframe.getStrings("line_id"), row, builder::withLineId);
-        Optional<String> lineName = dataframe.getStringValue("line_name", row);
+        applyIfPresent(dataframe.getStrings(LINE_NAME), row, builder::withLineName);
+        applyIfPresent(dataframe.getStrings(LINE_ID), row, builder::withLineId);
+        Optional<String> lineName = dataframe.getStringValue(LINE_NAME, row);
         if (lineName.isEmpty()) {
-            applyIfPresent(dataframe.getStrings("line_id"), row, builder::withLineName);
+            applyIfPresent(dataframe.getStrings(LINE_ID), row, builder::withLineName);
         }
         return builder;
     }

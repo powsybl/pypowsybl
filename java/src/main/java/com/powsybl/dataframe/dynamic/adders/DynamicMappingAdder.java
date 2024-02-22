@@ -9,7 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.python.dynamic.DynamicModelMapper;
+import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 import java.util.List;
 
@@ -28,6 +28,6 @@ public interface DynamicMappingAdder {
      * The first dataframe is considered the "primary" dataframe, other dataframes
      * can provide additional data.
      */
-    void addElements(DynamicModelMapper modelMapping, UpdatingDataframe dataframe);
+    void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe);
 
 }

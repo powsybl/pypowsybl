@@ -12,6 +12,7 @@ import re
 import tempfile
 import unittest
 import io
+import zipfile
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -25,7 +26,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, LayoutParameters
+from pypowsybl.network import ValidationLevel, SldParameters, NadParameters, LayoutParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -60,72 +61,80 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_save_cgmes_zip():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buffer = n.save_to_binary_buffer(format='CGMES')
+    with zipfile.ZipFile(buffer, 'r') as zip_file:
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
+
+
 def test_load_zipped_xiidm():
     with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
         assert 2 == len(n.get_substations())
 
 
-def test_dump_to_string():
+def test_save_to_string():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     xml = bat_path.read_text()
     n = pp.network.load(str(bat_path))
-    assert xml == n.dump_to_string()
+    assert xml == n.save_to_string()
 
 
-def test_dump_ampl():
+def test_save_ampl():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         ampl_base_file = tmp_dir_path.joinpath('ampl')
-        n.dump(ampl_base_file, format='AMPL')
+        n.save(ampl_base_file, format='AMPL')
         file_names = os.listdir(tmp_dir_path)
         file_names_expected = ['ampl_network_vsc_converter_stations.txt', 'ampl_network_branches.txt',
                                'ampl_network_rtc.txt', 'ampl_network_generators.txt',
                                'ampl_network_substations.txt', 'ampl_network_tct.txt', 'ampl_network_loads.txt',
                                'ampl_network_lcc_converter_stations.txt', 'ampl_network_static_var_compensators.txt',
                                'ampl_network_hvdc.txt', 'ampl_network_limits.txt', 'ampl_network_shunts.txt',
-                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt']
+                               'ampl_network_batteries.txt', 'ampl_network_ptc.txt', 'ampl_network_buses.txt',
+                               'ampl_headers.txt']
         assert len(file_names) == len(file_names_expected)
         for file_name in file_names:
             assert file_name in file_names_expected
 
 
-def test_dump_import_iidm():
+def test_save_import_iidm():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         iidm_file = tmp_dir_path.joinpath('test.xiidm')
-        n.dump(iidm_file, format='XIIDM')
+        n.save(iidm_file, format='XIIDM')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.xiidm' in file_names
         n2 = pp.network.load(iidm_file)
-        assert n2.dump_to_string() == n.dump_to_string()
+        assert n2.save_to_string() == n.save_to_string()
         assert isinstance(n2, pp.network.Network)
 
 
-def test_dump_matpower():
+def test_save_matpower():
     n = pp.network.create_eurostag_tutorial_example1_network()
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         mat_file = tmp_dir_path.joinpath('test.mat')
-        n.dump(mat_file, format='MATPOWER')
+        n.save(mat_file, format='MATPOWER')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.mat' in file_names
         n2 = pp.network.load(mat_file)
         assert isinstance(n2, pp.network.Network)
-        # assert n2.dump_to_string() == n.dump_to_string() # problem import/export matpower
+        # assert n2.save_to_string() == n.save_to_string() # problem import/export matpower
 
 
-def test_dump_ucte():
+def test_save_ucte():
     ucte_local_path = TEST_DIR.joinpath('test.uct')
     n = pp.network.load(str(ucte_local_path))
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         ucte_temporary_path = tmp_dir_path.joinpath('test.uct')
-        n.dump(ucte_temporary_path, format='UCTE')
+        n.save(ucte_temporary_path, format='UCTE')
         file_names = os.listdir(tmp_dir_path)
         assert len(file_names) == 1
         assert 'test.uct' in file_names
@@ -139,7 +148,7 @@ def test_dump_ucte():
 
 def test_get_import_format():
     formats = pp.network.get_import_formats()
-    assert ['CGMES', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY'] == formats
+    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY', 'BIIDM'] == formats
 
 
 def test_get_import_parameters():
@@ -155,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 12 == len(parameters)
+    assert 19 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -166,7 +175,7 @@ def test_get_export_parameters():
 
 def test_get_export_format():
     formats = set(pp.network.get_export_formats())
-    assert set(['AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']).intersection(formats)
+    assert {'AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM', 'JIIDM'}.intersection(formats)
 
 
 def test_load_network():
@@ -551,7 +560,7 @@ def test_update_generators_data_frame():
     generators = n.get_generators()
     assert 607 == generators['target_p']['GEN']
     assert generators['voltage_regulator_on']['GEN']
-    assert '' == generators['regulated_element_id']['GEN']
+    assert 'GEN' == generators['regulated_element_id']['GEN']
     generators2 = pd.DataFrame(data=[[608.0, 302.0, 25.0, False]],
                                columns=['target_p', 'target_q', 'target_v', 'voltage_regulator_on'], index=['GEN'])
     n.update_generators(generators2)
@@ -578,12 +587,12 @@ def test_regulated_terminal_node_breaker():
 def test_regulated_terminal_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()
-    assert '' == generators['regulated_element_id']['GEN']
-
+    assert 'GEN' == generators['regulated_element_id']['GEN']
     with pytest.raises(pp.PyPowsyblError):
         n.update_generators(id='GEN', regulated_element_id='NHV1')
-    with pytest.raises(pp.PyPowsyblError):
-        n.update_generators(id='GEN', regulated_element_id='LOAD')
+    n.update_generators(id='GEN', regulated_element_id='LOAD')
+    generators = n.get_generators()
+    assert 'LOAD' == generators['regulated_element_id']['GEN']
 
 
 def test_update_unknown_data():
@@ -774,13 +783,18 @@ def test_sld_parameters():
     assert not parameters.diagonal_label
     assert not parameters.nodes_infos
     assert parameters.topological_coloring
-    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
-                               nodes_infos=True)
+    assert parameters.component_library == 'Convergence'
+
+    parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
+                               nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
+                               component_library='FlatDesign')
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
     assert parameters.nodes_infos
+    assert parameters.tool_tip_enabled
     assert not parameters.topological_coloring
+    assert parameters.component_library == 'FlatDesign'
 
 
 def test_layout_parameters():
@@ -805,11 +819,12 @@ def test_sld_svg():
     assert re.search('.*<svg.*', sld.svg)
     assert len(sld.metadata) > 0
     sld1 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                            topological_coloring=False))
+                                                            topological_coloring=False, tooltip_enabled=True))
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
     sld2 = n.get_single_line_diagram('S1VL1', SldParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                            nodes_infos=True, topological_coloring=True))
+                                                            nodes_infos=True, topological_coloring=True,
+                                                            tooltip_enabled=True))
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
 
@@ -826,22 +841,33 @@ def test_sld_svg_backward_compatibility():
     assert len(sld1.metadata) > 0
 
 
-def test_sld_nad():
+def test_nad():
     n = pp.network.create_ieee14()
-    sld = n.get_network_area_diagram()
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram(voltage_level_ids=None)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL1')
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram(['VL1', 'VL2'])
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', low_nominal_voltage_bound=10, depth=10)
-    assert re.search('.*<svg.*', sld.svg)
-    sld = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
-    assert re.search('.*<svg.*', sld.svg)
+    nad = n.get_network_area_diagram()
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram(voltage_level_ids=None)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL1')
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram(['VL1', 'VL2'])
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', low_nominal_voltage_bound=10, depth=10)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
+    assert re.search('.*<svg.*', nad.svg)
+    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True,
+                                                                         id_displayed=True,
+                                                                         edge_info_along_edge=False,
+                                                                         power_value_precision=1,
+                                                                         angle_value_precision=0,
+                                                                         current_value_precision=1,
+                                                                         voltage_value_precision=0,
+                                                                         bus_legend=False,
+                                                                         substation_description_displayed=True
+                                                                         ))
+    assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         test_svg = tmp_dir_name + "test.svg"
         n.write_network_area_diagram_svg(test_svg, None)
@@ -849,8 +875,19 @@ def test_sld_nad():
         n.write_network_area_diagram_svg(test_svg, ['VL1', 'VL2'])
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, low_nominal_voltage_bound=10,
                                          depth=10)
+        n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50)
+        n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
+        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True,
+                                                                            id_displayed=True,
+                                                                            edge_info_along_edge=False,
+                                                                            power_value_precision=1,
+                                                                            angle_value_precision=0,
+                                                                            current_value_precision=1,
+                                                                            voltage_value_precision=0,
+                                                                            bus_legend=False,
+                                                                            substation_description_displayed=True))
 
 
 def test_nad_displayed_voltage_levels():
@@ -925,18 +962,18 @@ def test_dangling_lines():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected', 'ucte-x-node-code', 'tie_line_id'],
+                                     'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True,
-                                   '', '']])
+                                   '', '', '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
         pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                      data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                    'bus_id',
-                                    'connected', 'ucte-x-node-code', 'tie_line_id'],
-                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False, '', '']])
+                                    'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
+                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False,
+                                  '', '', '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
@@ -1708,15 +1745,15 @@ def test_properties():
     assert 'dataframe can not contain NaN values' in str(exc)
 
 
-def test_pathlib_load_dump(tmpdir):
+def test_pathlib_load_save(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     n_path = pp.network.load(bat_path)
     n_str = pp.network.load(str(bat_path))
-    assert n_path.dump_to_string() == n_str.dump_to_string()
+    assert n_path.save_to_string() == n_str.save_to_string()
     data = tmpdir.mkdir('data')
-    n_path.dump(data.join('test.xiidm'))
+    n_path.save(data.join('test.xiidm'))
     n_path = pp.network.load(data.join('test.xiidm'))
-    assert n_path.dump_to_string() == n_str.dump_to_string()
+    assert n_path.save_to_string() == n_str.save_to_string()
 
 
 def test_write_svg_file(tmpdir):
@@ -1733,6 +1770,9 @@ def test_write_svg_file(tmpdir):
     net.write_single_line_diagram_svg('S1VL1', data.join('test2_sld.svg'), data.join('test2_sld.json'))
     assert exists(data.join('test2_sld.svg'))
     assert exists(data.join('test2_sld.json'))
+    net.write_matrix_multi_substation_single_line_diagram_svg([['S1', 'S2'], ['S3', 'S4']],
+                                                              data.join('test_sld_multi_substation.svg'))
+    assert exists(data.join('test_sld_multi_substation.svg'))
 
 
 def test_get_single_line_diagram_component_library_names():
@@ -1771,7 +1811,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     assert len(report2) > len(report1)
 
 
-def test_dump_to_string_with_report():
+def test_save_to_string_with_report():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     reporter = rp.Reporter()
     report1 = str(reporter)
