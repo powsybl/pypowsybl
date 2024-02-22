@@ -386,7 +386,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         if all_attributes:
             regulated_side_nominal_voltage = np.where(ratio_tap_changers['regulated_side'] == 'ONE', # type: ignore
                                                       nominal_v1, nominal_v2)
-        self._per_unit_v(ratio_tap_changers, ['target_v'], regulated_side_nominal_voltage)
+        self._per_unit_v(ratio_tap_changers, ['target_v', 'target_deadband'], regulated_side_nominal_voltage)
         return ratio_tap_changers
 
     def update_buses(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
@@ -527,6 +527,20 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         self._un_per_unit_p(to_update, ['p', 'q'])
         self._un_per_unit_i(to_update, ['i'], nominal_v)
         self._network.update_lcc_converter_stations(to_update)
+
+    def update_ratio_tap_changers(self, df: pd.DataFrame = None, **kwargs: ArrayLike) -> None:
+        to_update = _adapt_to_dataframe(ElementType.RATIO_TAP_CHANGER, df, **kwargs).copy()
+        ref = self._network.get_ratio_tap_changers(all_attributes=True)
+        voltage_levels = ref[[]].merge(
+            self.get_2_windings_transformers()[['voltage_level1_id', 'voltage_level2_id']],
+            left_index=True, right_index=True)
+        nominal_v1 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level1_id')
+        nominal_v2 = self._get_indexed_nominal_v(voltage_levels, 'voltage_level2_id')
+        regulated_side_nominal_voltage = nominal_v2
+        if 'target_v' in to_update.columns:
+            regulated_side_nominal_voltage = np.where(ref['regulated_side'] == 'ONE', nominal_v1, nominal_v2)  # type: ignore
+        self._un_per_unit_v(to_update, ['target_v', 'target_deadband'], regulated_side_nominal_voltage)  # type: ignore
+        self._network.update_ratio_tap_changers(to_update)
 
 
 def per_unit_view(network: Network, sn: float = 100) -> PerUnitView:

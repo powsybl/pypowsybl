@@ -417,6 +417,11 @@ def test_ratio_tap_changers_per_unit():
                                      'alpha'],
                             data=[[1, 0, 2, 3, True, True, 1.0533, 0.0, 'VLLOAD_0', 1.00, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
+    n.update_ratio_tap_changers(id='NHV2_NLOAD', target_v=1.06, target_deadband=1)
+    ratio_tap_changers = n.get_ratio_tap_changers(all_attributes=True)
+    assert ratio_tap_changers.loc['NHV2_NLOAD'].target_v == 1.06
+    assert ratio_tap_changers.loc['NHV2_NLOAD'].target_deadband == 1
+
 
 def test_lines_not_same_nominal_voltage_per_unit():
     n = pp.network.create_ieee14()
