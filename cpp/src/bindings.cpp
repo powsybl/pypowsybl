@@ -741,7 +741,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"), py::arg("per_unit"));
 
     m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));

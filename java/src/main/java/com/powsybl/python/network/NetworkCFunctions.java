@@ -407,9 +407,11 @@ public final class NetworkCFunctions {
                                                                                FilterAttributesType filterAttributesType,
                                                                                CCharPointerPointer attributesPtrPtr, int attributesCount,
                                                                                DataframePointer selectedElementsDataframe,
+                                                                               boolean perUnit,
                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return Util.doCatch(exceptionHandlerPtr, () -> {
-            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+            NetworkDataframeMapper mapper = perUnit ? NetworkDataframes.getPerUnitDataframeMapper(convert(elementType)) :
+                NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
             return Dataframes.createCDataframe(mapper, network, dataframeFilter);

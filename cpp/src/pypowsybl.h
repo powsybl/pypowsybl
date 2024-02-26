@@ -448,7 +448,7 @@ matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext,
 
 matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit);
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
 

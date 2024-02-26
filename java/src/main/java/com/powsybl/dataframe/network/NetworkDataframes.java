@@ -40,7 +40,8 @@ import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
  */
 public final class NetworkDataframes {
 
-    private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
+    private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers(false, 100);
+    private static final Map<DataframeElementType, NetworkDataframeMapper> PER_UNIT_MAPPERS = createMappers(true, 100);
 
     private static final Map<ExtensionDataframeKey, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
 
@@ -51,11 +52,15 @@ public final class NetworkDataframes {
         return MAPPERS.get(type);
     }
 
-    private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
+    public static NetworkDataframeMapper getPerUnitDataframeMapper(DataframeElementType type) {
+        return PER_UNIT_MAPPERS.get(type);
+    }
+
+    private static Map<DataframeElementType, NetworkDataframeMapper> createMappers(boolean perUnit, double sn) {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
         mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
         mappers.put(DataframeElementType.BUS, buses());
-        mappers.put(DataframeElementType.LINE, lines());
+        mappers.put(DataframeElementType.LINE, lines(perUnit, sn));
         mappers.put(DataframeElementType.TWO_WINDINGS_TRANSFORMER, twoWindingTransformers());
         mappers.put(DataframeElementType.THREE_WINDINGS_TRANSFORMER, threeWindingTransformers());
         mappers.put(DataframeElementType.GENERATOR, generators());
@@ -112,8 +117,16 @@ public final class NetworkDataframes {
         return b -> b.getTerminal1().getP();
     }
 
+    static <U extends Branch<U>> ToDoubleFunction<U> getP1(boolean perUnit, double sn) {
+        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal1().getP(), sn);
+    }
+
     static <U extends Branch<U>> ToDoubleFunction<U> getQ1() {
         return b -> b.getTerminal1().getQ();
+    }
+
+    static <U extends Branch<U>> ToDoubleFunction<U> getQ1(boolean perUnit, double sn) {
+        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal1().getQ(), sn);
     }
 
     static <U extends Branch<U>> DoubleUpdater<U> setP1() {
@@ -128,8 +141,16 @@ public final class NetworkDataframes {
         return b -> b.getTerminal2().getP();
     }
 
+    static <U extends Branch<U>> ToDoubleFunction<U> getP2(boolean perUnit, double sn) {
+        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal2().getP(), sn);
+    }
+
     static <U extends Branch<U>> ToDoubleFunction<U> getQ2() {
         return b -> b.getTerminal2().getQ();
+    }
+
+    static <U extends Branch<U>> ToDoubleFunction<U> getQ2(boolean perUnit, double sn) {
+        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal2().getQ(), sn);
     }
 
     static <U extends Branch<U>> DoubleUpdater<U> setP2() {
@@ -425,22 +446,36 @@ public final class NetworkDataframes {
         return (ShuntCompensatorLinearModel) shuntCompensator.getModel();
     }
 
-    static NetworkDataframeMapper lines() {
+    static NetworkDataframeMapper lines(boolean perunit, double sn) {
         return NetworkDataframeMapperBuilder.ofStream(Network::getLineStream, getOrThrow(Network::getLine, "Line"))
                 .stringsIndex("id", Line::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
-                .doubles("r", Line::getR, Line::setR)
-                .doubles("x", Line::getX, Line::setX)
-                .doubles("g1", Line::getG1, Line::setG1)
-                .doubles("b1", Line::getB1, Line::setB1)
-                .doubles("g2", Line::getG2, Line::setG2)
-                .doubles("b2", Line::getB2, Line::setB2)
-                .doubles("p1", getP1(), setP1())
-                .doubles("q1", getQ1(), setQ1())
-                .doubles("i1", l -> l.getTerminal1().getI())
-                .doubles("p2", getP2(), setP2())
-                .doubles("q2", getQ2(), setQ2())
-                .doubles("i2", l -> l.getTerminal2().getI())
+                .doubles("r", line ->
+                    PerUnitUtil.perUnitRXNotSameNominalV(perunit, line.getR(),
+                        sn, line.getTerminal1().getVoltageLevel().getNominalV(),
+                        line.getTerminal2().getVoltageLevel().getNominalV()),
+                    Line::setR)
+                .doubles("x", line ->
+                    PerUnitUtil.perUnitRXNotSameNominalV(perunit, line.getX(),
+                        sn, line.getTerminal1().getVoltageLevel().getNominalV(),
+                        line.getTerminal2().getVoltageLevel().getNominalV()),
+                    Line::setX)
+                .doubles("g1", line -> PerUnitUtil.perUnitGNotSameNominalV(perunit, line.getG1(), line.getR(), line.getX(), sn,
+                    line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV()), Line::setG1)
+                .doubles("b1", line -> PerUnitUtil.perUnitBNotSameNominalV(perunit, line.getB1(), line.getR(), line.getX(), sn,
+                    line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV()), Line::setB1)
+                .doubles("g2", line -> PerUnitUtil.perUnitGNotSameNominalV(perunit, line.getG2(), line.getR(), line.getX(), sn,
+                    line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV()), Line::setG2)
+                .doubles("b2", line -> PerUnitUtil.perUnitBNotSameNominalV(perunit, line.getB2(), line.getR(), line.getX(), sn,
+                    line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV()), Line::setB2)
+                .doubles("p1", getP1(perunit, sn), setP1())
+                .doubles("q1", getQ1(perunit, sn), setQ1())
+                .doubles("i1", l -> PerUnitUtil.perUnitI(perunit, l.getTerminal1().getI(), sn,
+                    l.getTerminal1().getVoltageLevel().getNominalV()))
+                .doubles("p2", getP2(perunit, sn), setP2())
+                .doubles("q2", getQ2(perunit, sn), setQ2())
+                .doubles("i2", l -> PerUnitUtil.perUnitI(perunit, l.getTerminal2().getI(), sn,
+                    l.getTerminal2().getVoltageLevel().getNominalV()))
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))

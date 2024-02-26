@@ -88,6 +88,13 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._forecast_distance
 
+    @property
+    def sn(self) -> float:
+        """
+        The nominal power to per unit the network (kVA)
+        """
+        return self.sn
+
     def __str__(self) -> str:
         return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
                f'forecast_distance={self.forecast_distance}, source_format={self.source_format})'
@@ -385,7 +392,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                             main_connected_component, main_synchronous_component,
                                             not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None,
+    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None, per_unit: bool = False,
                      **kwargs: ArrayLike) -> DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
@@ -421,7 +428,7 @@ class Network:  # pylint: disable=too-many-public-methods
             elements_array = None
 
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
-                                                                attributes, elements_array)
+                                                                attributes, elements_array, per_unit)
         result = create_data_frame_from_series_array(series_array)
         if attributes:
             result = result[attributes]
@@ -802,7 +809,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None,
+    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None, per_unit: bool = False,
                   **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of lines data.
@@ -892,7 +899,7 @@ class Network:  # pylint: disable=too-many-public-methods
             L1-5-1   NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
             ======== === === === === === === ================= ================= ======= ======= ========== ==========
         """
-        return self.get_elements(ElementType.LINE, all_attributes, attributes, **kwargs)
+        return self.get_elements(ElementType.LINE, all_attributes, attributes, per_unit, **kwargs)
 
     def get_2_windings_transformers(self, all_attributes: bool = False, attributes: List[str] = None,
                                     **kwargs: ArrayLike) -> DataFrame:

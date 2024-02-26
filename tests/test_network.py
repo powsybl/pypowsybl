@@ -1939,5 +1939,25 @@ def test_terminals():
     assert "No enum constant" in str(e)
 
 
+def test_lines_per_unit():
+    import logging
+    logging.basicConfig()
+    logging.getLogger('powsybl').setLevel(1)
+    net = pp.network.load('/home/lesoteti/Documents/c0af072f-f62a-4b0a-89e8-f71288450329/20240223T1727Z_20240223T1627Z_srmixte-hybride.xiidm')
+    import time
+    test1 = time.time()
+    net.get_lines()
+    print(time.time() - test1)
+    test2 = time.time()
+    net.get_lines(per_unit=True)
+    print(time.time() - test2)
+    net_test = pp.network.per_unit_view(net, 100)
+    test3 = time.time()
+    net_test.get_lines()
+    print(time.time() - test3)
+    print(net.get_lines(per_unit=True).head()[['r', 'x', 'b1', 'g1', 'b2', 'g2', 'p1', 'p2', 'q1', 'q2']])
+    print(net_test.get_lines().head()[['r', 'x', 'b1', 'g1', 'b2', 'g2', 'p1', 'p2', 'q1', 'q2']])
+
+
 if __name__ == '__main__':
     unittest.main()
