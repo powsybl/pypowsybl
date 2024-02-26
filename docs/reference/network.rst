@@ -236,12 +236,17 @@ I/O
 
    load
    load_from_string
+   load_from_binary_buffer
+   load_from_binary_buffers
    Network.dump
    Network.dump_to_string
    get_import_formats
    get_import_parameters
    get_export_formats
    get_export_parameters
+   save
+   save_to_string
+   save_to_binary_buffer
 
 
 Advanced network modifications
