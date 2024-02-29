@@ -91,7 +91,7 @@ class TwtValidationData {
     }
 
     Optional<TwoSides> getRegulatedSide() {
-        return Optional.of(regulatedSide);
+        return Optional.ofNullable(regulatedSide);
     }
 
     double getV() {
