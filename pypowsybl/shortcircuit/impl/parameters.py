@@ -7,7 +7,7 @@
 from typing import Dict
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
+from pypowsybl._pypowsybl import ShortCircuitStudyType
 
 ShortCircuitStudyType.__module__ = __name__
 ShortCircuitStudyType.__name__ = 'ShortCircuitStudyType'

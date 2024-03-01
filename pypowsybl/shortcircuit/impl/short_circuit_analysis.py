@@ -12,7 +12,7 @@ from pypowsybl.report import Reporter
 from pypowsybl.network import Network
 from pypowsybl.utils import _get_c_dataframes
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitFaultType, ShortCircuitStudyType
+from pypowsybl._pypowsybl import ShortCircuitStudyType
 from .parameters import Parameters
 from .short_circuit_analysis_result import ShortCircuitAnalysisResult
 
@@ -27,11 +27,16 @@ class ShortCircuitAnalysis:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def _set_faults(self, fault_type: ShortCircuitFaultType, dfs: List[Optional[DataFrame]],
-                    **kwargs: ArrayLike) -> None:
-        metadata = _pypowsybl.get_faults_dataframes_metadata(fault_type)
+    def set_branch_fault(self, id: str, element_id: str, r: float = None, x: float = None, proportional_location: float = None):
+        self.set_faults(id=id, element_id=element_id, r=r, x=x, proportional_location=proportional_location, fault_type='BRANCH_FAULT')
+
+    def set_bus_fault(self, id: str, element_id: str, r: float = None, x: float = None):
+        self.set_faults(id=id, element_id=element_id, r=r, x=x, fault_type='BUS_FAULT')
+
+    def _set_faults(self, dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
+        metadata = _pypowsybl.get_faults_dataframes_metadata()
         c_dfs = _get_c_dataframes(dfs, [metadata], **kwargs)
-        _pypowsybl.set_faults(self._handle, c_dfs[0], fault_type)
+        _pypowsybl.set_faults(self._handle, c_dfs[0])
 
     def set_faults(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
@@ -54,6 +59,8 @@ class ShortCircuitAnalysis:
             - **element_id**: the id of the bus on which the fault will be simulated (bus/view topology).
             - **r**: The fault resistance to ground, in Ohm (optional).
             - **x**: The fault reactance to ground, in Ohm (optional).
+            - **proportional_location**:  (optional, only for branch fault).
+            - **fault_type**: The fault type either BUS_FAULT or BRANCH_FAULT
 
         Examples:
 
@@ -73,7 +80,7 @@ class ShortCircuitAnalysis:
             # or, since resistance and reactance are not mandatory parameters
             analysis.set_faults(pd.DataFrame.from_records(index='id', data=[{'id': 'F1', 'element_id': buses.index[0]}]))
         """
-        self._set_faults(ShortCircuitFaultType.BUS_FAULT, [df], **kwargs)
+        self._set_faults([df], **kwargs)
 
     def run(self, network: Network, parameters: Parameters = None,
             provider: str = '', reporter: Reporter = None) -> ShortCircuitAnalysisResult:
@@ -83,6 +90,7 @@ class ShortCircuitAnalysis:
             network:    Network on which the short-circuit analysis will be computed
             parameters: short-circuit analysis parameters
             provider:   Name of the short-circuit analysis implementation provider to be used.
+            reporter:   Reporter for logs
 
         Returns:
             A short-circuit analysis result.

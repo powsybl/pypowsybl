@@ -1551,15 +1551,15 @@ ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters() {
     return new ShortCircuitAnalysisParameters(parameters.get());
 }
 
-std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType) {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getFaultsDataframeMetaData, faultType);
+std::vector<SeriesMetadata> getFaultsMetaData() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getFaultsDataframeMetaData);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 
-void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType) {
-    pypowsybl::callJava<>(::setFaults, analysisContext, faultType, dataframe);
+void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe) {
+    pypowsybl::callJava<>(::setFaults, analysisContext, dataframe);
 }
 
 SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult) {

@@ -943,12 +943,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("shortcircuit_analysis_context"), py::arg("network"), py::arg("parameters"),
           py::arg("provider"), py::arg("reporter"));
 
-    py::enum_<ShortCircuitFaultType>(m, "ShortCircuitFaultType")
-            .value("BUS_FAULT", ShortCircuitFaultType::BUS_FAULT)
-            .value("BRANCH_FAULT", ShortCircuitFaultType::BRANCH_FAULT);
-
-    m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata", py::arg("fault_type"));
-    m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"),  py::arg("faultType"));
+    m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata");
+    m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"));
     m.def("get_fault_results", &pypowsybl::getFaultResults, "gets the fault results computed after short-circuit analysis",
           py::arg("result"), py::arg("with_fortescue_result"));
     m.def("get_feeder_results", &pypowsybl::getFeederResults, "gets the feeder results computed after short-circuit analysis",

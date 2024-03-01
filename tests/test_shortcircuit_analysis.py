@@ -36,6 +36,19 @@ def test_default_provider():
     assert 'provider_test' == pp.shortcircuit.get_default_provider()
 
 
+def test_create_faults():
+    sc = pp.shortcircuit.create_analysis()
+    n = pp.network.create_four_substations_node_breaker_network()
+    buses = n.get_buses()
+    branches = n.get_branches()
+    sc.set_faults(pd.DataFrame.from_records(index='id', data=[
+        {'id': 'F1', 'element_id': buses.index[0], 'r': 1, 'x': 2, 'fault_type': 'BUS_FAULT'},
+        {'id': 'F2', 'element_id': branches.index[0], 'r': 1, 'x': 2, 'fault_type': 'BRANCH_FAULT'},
+    ]))
+    sc.set_bus_fault(id='F3', element_id=buses.index[1], r=1, x=2)
+    sc.set_branch_fault(id='F4', element_id=buses.index[1], r=1, x=2, proportional_location=3)
+
+
 def test_run_analysis():
     # reads a network with short'circuit extensions
     n = _create_network_with_sc_extensions()
@@ -61,8 +74,8 @@ def test_run_analysis():
     buses = n.get_buses()
 
     sc.set_faults(pd.DataFrame.from_records(index='id', data=[
-        {'id': 'F1', 'element_id': buses.index[0], 'r': 1, 'x': 2},
-        {'id': 'F2', 'element_id': buses.index[1], 'r': 1, 'x': 2},
+        {'id': 'F1', 'element_id': buses.index[0], 'r': 1, 'x': 2, 'fault_type': 'BUS_FAULT'},
+        {'id': 'F2', 'element_id': buses.index[1], 'r': 1, 'x': 2, 'fault_type': 'BUS_FAULT'},
     ]))
 
     # run the short-circuit analysis using a nonexistent provider
