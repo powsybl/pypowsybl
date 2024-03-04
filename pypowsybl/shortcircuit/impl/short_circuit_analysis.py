@@ -27,11 +27,13 @@ class ShortCircuitAnalysis:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def set_branch_fault(self, id: str, element_id: str, r: float = None, x: float = None, proportional_location: float = None):
-        self.set_faults(id=id, element_id=element_id, r=r, x=x, proportional_location=proportional_location, fault_type='BRANCH_FAULT')
+    def set_branch_fault(self, branch_id: ArrayLike, element_id: str, r: ArrayLike, x: ArrayLike,
+                         proportional_location: ArrayLike) -> None:
+        self.set_faults(id=branch_id, element_id=element_id, r=r, x=x,
+                        proportional_location=proportional_location, fault_type='BRANCH_FAULT')
 
-    def set_bus_fault(self, id: str, element_id: str, r: float = None, x: float = None):
-        self.set_faults(id=id, element_id=element_id, r=r, x=x, fault_type='BUS_FAULT')
+    def set_bus_fault(self, bus_id: str, element_id: str, r: ArrayLike, x: ArrayLike) -> None:
+        self.set_faults(id=bus_id, element_id=element_id, r=r, x=x, fault_type='BUS_FAULT')
 
     def _set_faults(self, dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
         metadata = _pypowsybl.get_faults_dataframes_metadata()
