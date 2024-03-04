@@ -45,8 +45,8 @@ def test_create_faults():
         {'id': 'F1', 'element_id': buses.index[0], 'r': 1, 'x': 2, 'fault_type': 'BUS_FAULT'},
         {'id': 'F2', 'element_id': branches.index[0], 'r': 1, 'x': 2, 'fault_type': 'BRANCH_FAULT'},
     ]))
-    sc.set_bus_fault(id='F3', element_id=buses.index[1], r=1, x=2)
-    sc.set_branch_fault(id='F4', element_id=buses.index[1], r=1, x=2, proportional_location=3)
+    sc.set_bus_fault(bus_id='F3', element_id=buses.index[1], r=1, x=2)
+    sc.set_branch_fault(branch_id='F4', element_id=buses.index[1], r=1, x=2, proportional_location=3)
 
 
 def test_run_analysis():
