@@ -162,7 +162,7 @@ public final class Validations {
                 .ints("low_tap_position", TwtValidationData::getLowTapPosition)
                 .ints("high_tap_position", TwtValidationData::getHighTapPosition)
                 .doubles("target_v", TwtValidationData::getTargetV)
-                .strings("regulated_side", d -> d.getRegulatedSide().name())
+                .strings("regulated_side", d -> d.getRegulatedSide().map(Enum::name).orElse(""))
                 .doubles("v", TwtValidationData::getV)
                 .booleans("connected", TwtValidationData::isConnected)
                 .booleans("main_component", TwtValidationData::isMainComponent)
