@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import unittest
+import pathlib
 import json
 
 import pypowsybl as pp
@@ -14,6 +14,7 @@ from pypowsybl.loadflow import ValidationType
 import pytest
 import pypowsybl.report as rp
 
+TEST_DIR = pathlib.Path(__file__).parent
 
 @pytest.fixture(autouse=True)
 def set_up():
@@ -310,3 +311,10 @@ def test_result_status_as_bool():
     n = pp.network.create_ieee14()
     r = pp.loadflow.run_ac(n)
     assert r[0].status
+
+
+def test_wrong_regulated_bus_id():
+    net = pp.network.load(str(TEST_DIR.joinpath('eurostag-example1_test_regulated_side_null.xiidm')))
+    pp.loadflow.run_ac(net)
+    parameters = lf.ValidationParameters()
+    validation = pp.loadflow.run_validation(net, validation_parameters=parameters)

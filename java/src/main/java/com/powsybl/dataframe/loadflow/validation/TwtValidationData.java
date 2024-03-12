@@ -2,6 +2,8 @@ package com.powsybl.dataframe.loadflow.validation;
 
 import com.powsybl.iidm.network.TwoSides;
 
+import java.util.Optional;
+
 /**
  * @author Yichen TANG <yichen.tang at rte-france.com>
  */
@@ -88,8 +90,8 @@ class TwtValidationData {
         return targetV;
     }
 
-    TwoSides getRegulatedSide() {
-        return regulatedSide;
+    Optional<TwoSides> getRegulatedSide() {
+        return Optional.ofNullable(regulatedSide);
     }
 
     double getV() {
