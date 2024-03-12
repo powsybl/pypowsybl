@@ -45,7 +45,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         twt_split_shunt_admittance: Split shunt admittance of transformers on both sides.
             Change the modelling of transformer legs. If you want to split the conductance and the susceptance in two,
             one at each side of the serie impedance, use ``True``.
-        shunt_compensator_voltage_control_on: Simulate voltage control of shunt compensators (previously named simul_shunt).
+        shunt_compensator_voltage_control_on: Simulate voltage control of shunt compensators (named simul_shunt before PyPowSyBl 1.3.0).
         read_slack_bus: Read slack bus from the network.
             The slack bus needs to be defined through a dedicate extension. Prefer ``False`` if you want to use
             your loadflow provider selection mechanism, typically the most meshed bus.
