@@ -40,7 +40,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
             and ``DC_VALUES`` for a DC load flow based starting point.
         transformer_voltage_control_on: Simulate transformer voltage control.
             The initial tap position is used as starting point for the resolution.
-        use_reactive_limits: Use reactive limits (previously named no_generator_reactive_limits).
+        use_reactive_limits: Use reactive limits (named no_generator_reactive_limits with inverted logic before PyPowSyBl 1.3.0).
         phase_shifter_regulation_on: Simulate phase shifters regulation.
         twt_split_shunt_admittance: Split shunt admittance of transformers on both sides.
             Change the modelling of transformer legs. If you want to split the conductance and the susceptance in two,
