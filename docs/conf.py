@@ -59,12 +59,12 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "pydata_sphinx_theme"
+html_theme = "furo"
 
 html_title = 'pypowsybl'
 html_short_title = 'pypowsybl'
 
-html_logo = '_static/logos/powsybl_logo.svg'
+html_logo = '_static/logos/logo_lfe_powsybl.svg'
 html_favicon = "_static/favicon.ico"
 
 html_theme_options = {
@@ -76,12 +76,17 @@ html_theme_options = {
         }
     ],
     "navbar_start": ["navbar-brand-pypowsybl"],
+    # the following 3 lines enable edit button
+    "source_repository": "https://github.com/powsybl/powsybl-open-rao/",
+    "source_branch": "main",
+    "source_directory": "docs/"
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = ['styles/styles.css']
 
 doctest_global_setup = '''
 try:
