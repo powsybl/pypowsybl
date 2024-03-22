@@ -183,6 +183,38 @@ class SecurityAnalysis(ContingencyContainer):
         """
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
 
+    def add_phase_tap_changer_position_action(self, action_id: str, transformer_id: str, is_relative: bool, tap_position: int) -> None:
+        """ Add a phase tap changer tap position action, modifying the tap position of the tap changer
+
+        Args:
+            action_id: unique ID for the action
+            transformer_id: transformer identifier
+            is_relative: True means the provided tap_position will be added to the current tap position, False means the provided tap_position will replace the previous one.
+            tap_position: The tap position (either a delta if is_relative is true, or the final value if is_relative if false)
+        """
+        _pypowsybl.add_phase_tap_changer_position_action(self._handle, action_id, transformer_id, is_relative, tap_position)
+
+    def add_ratio_tap_changer_position_action(self, action_id: str, transformer_id: str, is_relative: bool, tap_position: int) -> None:
+        """ Add a ratio tap changer tap position action, modifying the tap position of the tap changer
+
+        Args:
+            action_id: unique ID for the action
+            transformer_id: transformer identifier
+            is_relative: True means the provided tap_position will be added to the current tap position, False means the provide tap_position will replace the previous one.
+            tap_position: The tap position (either a delta if is_relative is true, or the final value if is_relative if false)
+        """
+        _pypowsybl.add_ratio_tap_changer_position_action(self._handle, action_id, transformer_id, is_relative, tap_position)
+
+    def add_shunt_compensator_position_action(self, action_id: str, shunt_id: str, section: int) -> None:
+        """ Add a shunt compensator section action, modifying the section of the shunt compensator
+
+        Args:
+            action_id: unique ID for the action
+            shunt_id: transformer identifier
+            section: The new section of the shunt compensator
+        """
+        _pypowsybl.add_shunt_compensator_position_action(self._handle, action_id, shunt_id, section)
+
     def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
                               condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] = None,
                               violation_types: List[ViolationType] = None) -> None:
