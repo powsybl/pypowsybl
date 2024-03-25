@@ -12,6 +12,7 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
+import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
@@ -401,5 +402,14 @@ public final class Util {
             default:
                 throw new PowsyblException("Unknown limit violation type: " + violationType);
         }
+    }
+
+    public static ThreeSides convert(PyPowsyblApiHeader.Side side) {
+        return switch (side.getCValue()) {
+            case 1 -> ThreeSides.ONE;
+            case 2 -> ThreeSides.TWO;
+            case 3 -> ThreeSides.THREE;
+            default -> null;
+        };
     }
 }
