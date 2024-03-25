@@ -77,7 +77,7 @@ html_theme_options = {
     ],
     "navbar_start": ["navbar-brand-pypowsybl"],
     # the following 3 lines enable edit button
-    "source_repository": "https://github.com/powsybl/powsybl-open-rao/",
+    "source_repository": "https://github.com/powsybl/pypowsybl/",
     "source_branch": "main",
     "source_directory": "docs/"
 }
