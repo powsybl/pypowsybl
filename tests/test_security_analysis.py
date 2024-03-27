@@ -351,6 +351,42 @@ def test_switch_action():
     assert df.loc['Breaker contingency', '', 'LINE_S3S4']['p1'] == pytest.approx(0.0, abs=1e-2)
     assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
 
+
+def test_tap_changer_action():
+    n = pp.network.create_micro_grid_be_network()
+
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
+
+    sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
+
+    sa.add_phase_tap_changer_position_action(action_id='PhaseTapChanger_Action', transformer_id='a708c3bc-465d-4fe7-b6ef-6fa6408a62b0', is_relative=True, tap_position=5)
+    sa.add_ratio_tap_changer_position_action(action_id='RatioTapChanger_Action', transformer_id='e482b89a-fa84-4ea9-8e70-a83d44790957', is_relative=True, tap_position=5)
+
+    sa.add_operator_strategy('Strategy_PhaseTapChanger', 'BE-G2_contingency', ['PhaseTapChanger_Action'])
+    sa.add_operator_strategy('Strategy_RatioTapChanger', 'BE-G2_contingency', ['RatioTapChanger_Action'])
+
+    sa_result = sa.run_ac(n)
+    df = sa_result.branch_results
+
+    assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
+    assert df.loc['BE-G2_contingency', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.305, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_PhaseTapChanger', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.312, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_RatioTapChanger', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.306, abs=1e-2)
+
+def test_shunt_action():
+    with pytest.raises(pp.PyPowsyblError) as excinfo:
+        n = pp.network.create_micro_grid_be_network()
+
+        sa = pp.security.create_analysis()
+        sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
+        sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
+
+        sa.add_shunt_compensator_position_action(action_id='ShuntCompensator_Action', shunt_id='d771118f-36e9-4115-a128-cc3d9ce3e3da', section=1)
+        sa.add_operator_strategy('Strategy_ShuntCompensator', 'BE-G2_contingency', ['ShuntCompensator_Action'])
+        sa.run_ac(n)
+    assert str(excinfo.value) == "java.lang.UnsupportedOperationException: Unsupported action type: SHUNT_COMPENSATOR_POSITION"
+
 def test_tie_line_contingency():
     n = pp.network._create_network("eurostag_tutorial_example1_with_tie_line")
     sa = pp.security.create_analysis()

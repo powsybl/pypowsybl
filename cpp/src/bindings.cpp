@@ -543,10 +543,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
 
     m.def("add_phase_tap_changer_position_action", &pypowsybl::addPhaseTapChangerPositionAction, "Add a phase tap changer position action",
-           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
     m.def("add_ratio_tap_changer_position_action", &pypowsybl::addRatioTapChangerPositionAction, "Add a ratio tap changer position action",
-           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
     m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
               py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
@@ -570,7 +570,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::Side>(m, "Side")
             .value("NONE", pypowsybl::Side::NONE)
             .value("ONE", pypowsybl::Side::ONE)
-            .value("TWO", pypowsybl::Side::TWO);
+            .value("TWO", pypowsybl::Side::TWO)
+            .value("THREE", pypowsybl::Side::THREE);
 
     py::enum_<violation_type>(m, "ViolationType")
             .value("ACTIVE_POWER", violation_type::ACTIVE_POWER)

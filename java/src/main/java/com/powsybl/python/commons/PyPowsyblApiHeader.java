@@ -1149,6 +1149,20 @@ public final class PyPowsyblApiHeader {
         public static native BranchSide fromCValue(int value);
     }
 
+    @CEnum("Side")
+    public enum Side {
+        NONE,
+        ONE,
+        TWO,
+        THREE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Side fromCValue(int value);
+    }
+
     @CEnum("condition_type")
     public enum ConditionType {
         TRUE_CONDITION,
