@@ -26,6 +26,7 @@ Note that a loadflow can be run before writing the diagram so that it displays r
     >>> network.write_single_line_diagram_svg('VL4', 'vl4.svg')
 
 .. image:: ../_static/images/ieee14_vl4.svg
+   :class: forced-white-background
 
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
@@ -36,6 +37,7 @@ It is also possible to display a multi-substation single line diagram (currently
     >>> network.write_matrix_multi_substation_single_line_diagram_svg([['S1', 'S2'],['S3','S4']], 's1_s2_s3_s4.svg')
 
 .. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
+   :class: forced-white-background
 
 Network area diagram
 --------------------
@@ -54,6 +56,7 @@ Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
     >>> network.get_network_area_diagram()
 
 .. image:: ../_static/images/ieee9.svg
+   :class: forced-white-background
 
 To render only a part of the network, we can specify a voltage level ID as the center of the sub network and a depth
 to control the size of the sub network:
@@ -64,6 +67,7 @@ to control the size of the sub network:
     >>> network.write_network_area_diagram_svg('ieee300.svg', 'VL1', 1)
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1.svg
+   :class: forced-white-background
 
 Nominal voltage bounds can be defined to further filter the output network:
 
@@ -73,6 +77,7 @@ Nominal voltage bounds can be defined to further filter the output network:
     >>> network.write_network_area_diagram_svg('ieee300.svg', 'VL1', 1, low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1_filtered.svg
+   :class: forced-white-background
 
 If no voltage level ID is given as an input, only nominal voltage bounds are used to filter the network:
 
@@ -82,6 +87,7 @@ If no voltage level ID is given as an input, only nominal voltage bounds are use
     >>> network.write_network_area_diagram_svg('ieee30.svg', low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
 
 .. image:: ../_static/images/ieee30_subnetwork_filtered_no_vl_id.svg
+   :class: forced-white-background
 
 Note that similarly to single-line diagrams, a loadflow can be run before writing the diagram so that it displays active powers, for instance:
 
