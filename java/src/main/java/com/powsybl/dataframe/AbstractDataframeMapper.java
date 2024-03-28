@@ -48,11 +48,11 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     }
 
     @Override
-    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter) {
+    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, boolean pu) {
         Collection<SeriesMapper<U>> mappers = getSeriesMappers(dataframeFilter);
         dataframeHandler.allocate(mappers.size());
         List<U> items = getItems(object);
-        mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
+        mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler, pu));
     }
 
     interface ColumnUpdater<U> {

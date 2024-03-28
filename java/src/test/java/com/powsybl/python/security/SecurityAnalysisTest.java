@@ -69,7 +69,7 @@ class SecurityAnalysisTest {
         analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
         SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", Reporter.NO_OP);
 
-        List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result);
+        List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result, false);
         Assertions.assertThat(series)
             .extracting(Series::getName)
             .containsExactly("contingency_id", "subject_id", "subject_name", "limit_type", "limit_name", "limit",

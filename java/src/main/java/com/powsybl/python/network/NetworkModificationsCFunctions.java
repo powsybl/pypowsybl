@@ -59,7 +59,7 @@ public final class NetworkModificationsCFunctions {
 
             VoltageLevel voltageLevel = network.getVoltageLevel(voltageLevelIdStr);
             Map<String, List<ConnectablePosition.Feeder>> feederPositionsOrders = getFeedersByConnectable(voltageLevel);
-            return Dataframes.createCDataframe(Dataframes.feederMapMapper(), feederPositionsOrders);
+            return Dataframes.createCDataframe(Dataframes.feederMapMapper(), feederPositionsOrders, false);
         });
     }
 

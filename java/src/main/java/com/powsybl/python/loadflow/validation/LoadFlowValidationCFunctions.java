@@ -93,17 +93,17 @@ public final class LoadFlowValidationCFunctions {
     private static ArrayPointer<SeriesPointer> createCDataFrame(InMemoryValidationWriter validationWriter, PyPowsyblApiHeader.ValidationType validationType) {
         return switch (validationType) {
             case FLOWS ->
-                    Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
+                    Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData(), false);
             case BUSES ->
-                    Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
+                    Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData(), false);
             case GENERATORS ->
-                    Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
-            case SVCS -> Dataframes.createCDataframe(Validations.svcsValidationMapper(), validationWriter.getSvcData());
+                    Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData(), false);
+            case SVCS -> Dataframes.createCDataframe(Validations.svcsValidationMapper(), validationWriter.getSvcData(), false);
             case SHUNTS ->
-                    Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
-            case TWTS -> Dataframes.createCDataframe(Validations.twtsValidationMapper(), validationWriter.getTwtData());
+                    Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData(), false);
+            case TWTS -> Dataframes.createCDataframe(Validations.twtsValidationMapper(), validationWriter.getTwtData(), false);
             case TWTS3W ->
-                    Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
+                    Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData(), false);
         };
     }
 

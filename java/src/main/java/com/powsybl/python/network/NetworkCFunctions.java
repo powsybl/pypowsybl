@@ -409,11 +409,12 @@ public final class NetworkCFunctions {
                                                                                CCharPointerPointer attributesPtrPtr, int attributesCount,
                                                                                DataframePointer selectedElementsDataframe,
                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
+        boolean pu = false;
         return Util.doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
-            return Dataframes.createCDataframe(mapper, network, dataframeFilter);
+            return Dataframes.createCDataframe(mapper, network, dataframeFilter, pu);
         });
     }
 
@@ -429,7 +430,7 @@ public final class NetworkCFunctions {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
-                return Dataframes.createCDataframe(mapper, network);
+                return Dataframes.createCDataframe(mapper, network, false);
             } else {
                 throw new PowsyblException("extension " + name + " not found");
             }
@@ -443,7 +444,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getExtensionsInformation")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, NetworkExtensions::getExtensionInformation);
+        return doCatch(exceptionHandlerPtr, () -> NetworkExtensions.getExtensionInformation(false));
     }
 
     @CEntryPoint(name = "createElement")
@@ -548,7 +549,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewSwitches(), nodeBreakerView);
+            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewSwitches(), nodeBreakerView, false);
         });
     }
 
@@ -558,7 +559,7 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
 
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewNodes(), nodeBreakerView);
+            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewNodes(), nodeBreakerView, false);
 
         });
     }
@@ -568,7 +569,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewInternalConnection(), nodeBreakerView);
+            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewInternalConnection(), nodeBreakerView, false);
         });
     }
 
@@ -577,7 +578,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel.BusBreakerView busBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getBusBreakerView();
-            return Dataframes.createCDataframe(Dataframes.busBreakerViewSwitches(), busBreakerView);
+            return Dataframes.createCDataframe(Dataframes.busBreakerViewSwitches(), busBreakerView, false);
         });
     }
 
@@ -586,7 +587,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel voltageLevel1 = network.getVoltageLevel(CTypeUtil.toString(voltageLevel));
-            return Dataframes.createCDataframe(Dataframes.busBreakerViewBuses(), voltageLevel1);
+            return Dataframes.createCDataframe(Dataframes.busBreakerViewBuses(), voltageLevel1, false);
         });
     }
 
@@ -595,7 +596,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             VoltageLevel voltageLevel1 = network.getVoltageLevel(CTypeUtil.toString(voltageLevel));
-            return Dataframes.createCDataframe(Dataframes.busBreakerViewElements(), voltageLevel1);
+            return Dataframes.createCDataframe(Dataframes.busBreakerViewElements(), voltageLevel1, false);
         });
     }
 
@@ -823,7 +824,7 @@ public final class NetworkCFunctions {
             if (importer == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer);
+            return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer, false);
         });
     }
 
@@ -836,7 +837,7 @@ public final class NetworkCFunctions {
             if (exporter == null) {
                 throw new PowsyblException("Format '" + format + "' not supported");
             }
-            return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter);
+            return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter, false);
         });
     }
 

@@ -175,7 +175,7 @@ public final class DynamicSimulationCFunctions {
             DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
             String curveName = CTypeUtil.toString(curveNamePtr);
             TimeSeries<DoublePoint, ?> curve = result.getCurve(curveName);
-            return Dataframes.createCDataframe(CurvesSeries.curvesDataFrameMapper(curveName), curve);
+            return Dataframes.createCDataframe(CurvesSeries.curvesDataFrameMapper(curveName), curve, false);
         });
     }
 

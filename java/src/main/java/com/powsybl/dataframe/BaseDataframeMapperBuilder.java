@@ -65,9 +65,13 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return doubles(name, value, updater, true);
     }
 
-    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+    public B doubles(String name, ToDoubleBiFunction<U, Boolean> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
         series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
+    }
+
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+        return doubles(name, (u, pu) -> value.applyAsDouble(u), updater, defaultAttribute);
     }
 
     public B doubles(Map<String, ToDoubleFunction<U>> nameValuesMap) {

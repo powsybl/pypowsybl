@@ -26,7 +26,7 @@ public interface DataframeMapper<T> {
      * Provides dataframe data to the handler, which is responsible to
      * format it as needed.
      */
-    void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter);
+    void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, boolean pu);
 
     List<SeriesMetadata> getSeriesMetadata();
 

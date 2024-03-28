@@ -99,7 +99,7 @@ public final class SecurityAnalysisCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result, false);
         });
     }
 
@@ -107,7 +107,7 @@ public final class SecurityAnalysisCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result, false);
         });
     }
 
@@ -115,7 +115,7 @@ public final class SecurityAnalysisCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result, false);
         });
     }
 
@@ -261,7 +261,7 @@ public final class SecurityAnalysisCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result, false);
         });
     }
 

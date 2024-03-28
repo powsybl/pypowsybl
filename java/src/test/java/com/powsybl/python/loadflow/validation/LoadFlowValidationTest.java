@@ -36,12 +36,12 @@ class LoadFlowValidationTest {
         runner.run(network, new LoadFlowParameters());
         ValidationConfig validationConfig = LoadFlowValidationCFunctions.createValidationConfig();
         InMemoryValidationWriter busWriter = LoadFlowValidationCFunctions.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES, validationConfig);
-        Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData()))
+        Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData(), false))
                 .extracting(Series::getName)
                 .contains("id", "incoming_p");
 
         InMemoryValidationWriter genWriter = LoadFlowValidationCFunctions.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
-        Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), genWriter.getGeneratorData()))
+        Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), genWriter.getGeneratorData(), false))
                 .extracting(Series::getName)
                 .contains("id", "p");
     }

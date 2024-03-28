@@ -180,7 +180,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), false);
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -269,7 +269,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), false);
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -294,7 +294,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")));
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")), false);
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)

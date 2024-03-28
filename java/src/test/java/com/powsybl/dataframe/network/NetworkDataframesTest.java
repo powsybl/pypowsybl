@@ -54,7 +54,7 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter);
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter, false);
         return series;
     }
 
@@ -66,7 +66,7 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter(), false);
         return series;
     }
 

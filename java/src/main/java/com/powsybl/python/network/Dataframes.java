@@ -82,22 +82,22 @@ public final class Dataframes {
     /**
      * Maps an object to a C struct using the provided mapper.
      */
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object) {
-        return createCDataframe(mapper, object, new DataframeFilter());
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, boolean pu) {
+        return createCDataframe(mapper, object, new DataframeFilter(), pu);
     }
 
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeFilter dataframeFilter) {
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeFilter dataframeFilter, boolean pu) {
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(object, handler, dataframeFilter);
+        mapper.createDataframe(object, handler, dataframeFilter, pu);
         return handler.getDataframePtr();
     }
 
     /**
      * Maps an object to java series
      */
-    public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object) {
+    public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object, boolean pu) {
         List<Series> series = new ArrayList<>();
-        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter(), pu);
         return List.copyOf(series);
     }
 

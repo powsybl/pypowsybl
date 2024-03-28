@@ -51,7 +51,7 @@ public class StringSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler) {
+    public void createSeries(List<T> items, DataframeHandler handler, boolean pu) {
         boolean index = getMetadata().isIndex();
         String name = getMetadata().getName();
         DataframeHandler.StringSeriesWriter writer = index ? handler.newStringIndex(name, items.size()) : handler.newStringSeries(name, items.size());

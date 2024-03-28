@@ -199,7 +199,7 @@ public final class LoadFlowCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerName = CTypeUtil.toString(providerNamePtr);
             LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
-            return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider);
+            return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider, false);
         });
     }
 

@@ -21,10 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
@@ -429,7 +426,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getLineStream, getOrThrow(Network::getLine, "Line"))
                 .stringsIndex("id", Line::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
-                .doubles("r", Line::getR, Line::setR)
+                .doubles("r", (line, pu) -> line.getR(), Line::setR, true)
                 .doubles("x", Line::getX, Line::setX)
                 .doubles("g1", Line::getG1, Line::setG1)
                 .doubles("b1", Line::getB1, Line::setB1)

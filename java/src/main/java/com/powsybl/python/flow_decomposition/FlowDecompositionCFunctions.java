@@ -126,7 +126,7 @@ public final class FlowDecompositionCFunctions {
             XnecProvider xnecProvider = flowDecompositionContext.getXnecProvider();
             FlowDecompositionResults flowDecompositionResults = flowDecompositionComputer.run(xnecProvider, network);
 
-            return Dataframes.createCDataframe(Dataframes.flowDecompositionMapper(flowDecompositionResults.getZoneSet()), flowDecompositionResults);
+            return Dataframes.createCDataframe(Dataframes.flowDecompositionMapper(flowDecompositionResults.getZoneSet()), flowDecompositionResults, false);
         });
     }
 
