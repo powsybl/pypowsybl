@@ -40,12 +40,12 @@ class Parameters:  # pylint: disable=too-few-public-methods
             and ``DC_VALUES`` for a DC load flow based starting point.
         transformer_voltage_control_on: Simulate transformer voltage control.
             The initial tap position is used as starting point for the resolution.
-        use_reactive_limits: Use reactive limits.
+        use_reactive_limits: Use reactive limits (named no_generator_reactive_limits with inverted logic before PyPowSyBl 1.3.0).
         phase_shifter_regulation_on: Simulate phase shifters regulation.
         twt_split_shunt_admittance: Split shunt admittance of transformers on both sides.
             Change the modelling of transformer legs. If you want to split the conductance and the susceptance in two,
             one at each side of the serie impedance, use ``True``.
-        shunt_compensator_voltage_control_on: Simulate voltage control of shunt compensators.
+        shunt_compensator_voltage_control_on: Simulate voltage control of shunt compensators (named simul_shunt before PyPowSyBl 1.3.0).
         read_slack_bus: Read slack bus from the network.
             The slack bus needs to be defined through a dedicate extension. Prefer ``False`` if you want to use
             your loadflow provider selection mechanism, typically the most meshed bus.

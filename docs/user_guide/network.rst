@@ -402,12 +402,14 @@ correctly. For more information about single line diagrams, check the :doc:`rela
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_only_bbs_without_extensions.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_only_bbs.svg
+   :class: forced-white-background
 
 As you can see on the diagram of *VL1*, the busbar sections are not positioned in any chosen way. It is possible to add position extensions on these busbar sections to precise relative positions. Use *busbarSectionPosition* extension for that purpose. If you want to put the three busbar sections of *VL1* on the same slice, then they need to have the same *section_index*. As they belong to three distinct busbars, their *busbar_index* are different:
 
@@ -425,6 +427,7 @@ You can draw the single line diagram of *VL1* again to check that the busbar sec
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_parallel_bbs.svg
+   :class: forced-white-background
 
 Now let's connect a load in a close to reality way. The first thing to do is to create switches. To connect a load on *VL1*, you need to add a disconnector
 on each busbar sections of a slice, two open and one closed, and a breaker between the disconnectors and the load.
@@ -472,12 +475,14 @@ Now you can draw the single line diagrams of *VL1* and *VL2* to check that the l
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_before_adding_extensions.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_before_adding_extensions.svg
+   :class: forced-white-background
 
 Here, similarly to busbar sections, the load and the line are randomly localized on the diagram.
 You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be 
@@ -500,12 +505,14 @@ correctly positioned.
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_extensions.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_after_adding_extensions.svg
+   :class: forced-white-background
 
 Done but fastidious! That is why Pypowsybl provides ready-for-use methods to create an equipment and its bay with a single line.
 The switches are created implicitly. The methods take a busbar section on which the disconnector is
@@ -526,6 +533,7 @@ You can check that the load was added correctly by drawing a single line diagram
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_load.svg
+   :class: forced-white-background
 
 Now let's connect a generator on *BBS1* on the left of *load1*, a
 dangling line on the right of *line1* on *BBS3* and a shunt on *BBS4*:
@@ -554,12 +562,14 @@ You can draw the new single line diagrams:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_everything.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_after_adding_everything.svg
+   :class: forced-white-background
 
 These methods exist for every type of injections and also work with bus/breaker voltage levels. Then the injection is simply
 added to the given bus.
@@ -585,12 +595,14 @@ You can draw the single line diagrams of both voltage levels to check that the l
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_with_new_line2.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_with_new_line2.svg
+   :class: forced-white-background
 
 Now let's see how to add a two windings transformer to our network. Both voltage levels VL1 and VL2 have a nominal voltage of 225kV.
 First, you need a new voltage level VL3, let's say of nominal voltage 63kV, to connect to one of the existing voltage level. Both voltage levels connected through a two-windings
@@ -616,6 +628,7 @@ To check that the topology was correctly created, you can draw the single line d
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_only_bbs.svg
+   :class: forced-white-background
 
 Now you can add some coupling devices between each section of the new voltage level. For that, you can use the built-in method and you just
 have to specify the two busbar sections on which the switches should be closed. Open switches will automatically be created on the parallel busbar
@@ -632,6 +645,7 @@ You can create the single line diagram to check that the coupling devices were w
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_coupling_device.svg
+   :class: forced-white-background
 
 Now, you can create a two windings transformer between VL1 and VL3. The features of the transformer must be specified, as well
 as the busbar sections on which it should be connected. You can connect it to BBS1 and to VL3_1_1. The position wanted for the
@@ -650,6 +664,7 @@ Let's draw the single line diagrams of VL1 and of VL3 to check that the two wind
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_with_transformer.svg
+   :class: forced-white-background
 
 
 .. code-block:: python
@@ -657,6 +672,7 @@ Let's draw the single line diagrams of VL1 and of VL3 to check that the two wind
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
+   :class: forced-white-background
 
 To add a HVDC line to the network, you can first add the two converter stations, just like any other injection.
 Let's add one on the busbar section BBS3 of VL1 on the right and one on BBS4 on the right too:
@@ -681,6 +697,7 @@ The single line diagrams of voltage levels VL1 and VL2 are now:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_with_hvdc.svg
+   :class: forced-white-background
 
 
 .. code-block:: python
@@ -688,6 +705,7 @@ The single line diagrams of voltage levels VL1 and VL2 are now:
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_with_hvdc.svg
+   :class: forced-white-background
 
 Now you know how to create a node-breaker voltage level and its topology, injections, lines and two-windings transformer with the built-in methods
 available in pypowsybl. For a reference of the available methods, please refer to: :doc:`documentation </reference/network>`.
@@ -711,6 +729,7 @@ The single line diagram of VL1 is then:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_without_load1.svg
+   :class: forced-white-background
 
 You can see that the load was removed, as well as all the breaker and disconnectors that was connecting it to the busbar section.
 
@@ -729,12 +748,14 @@ You can check on the single line diagram that everything went good:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_without_hvdc.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_without_hvdc.svg
+   :class: forced-white-background
 
 Finally, it is also possible to remove a full voltage level, with all its connectables. The lines and two windings transformers will be removed
 as well as their topology on both sides and the HVDC lines will be removed as well as their converter stations on both sides too.
@@ -752,12 +773,14 @@ The remaining voltage levels VL1 and VL3 are then:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_removing_vl2.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
+   :class: forced-white-background
 
 On the diagrams, you can see that all the lines that were connecting VL1 to VL2 have been removed as well as their switches. On VL3, nothing was done as nothing was connected between VL2 and VL3.
 
