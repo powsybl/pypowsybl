@@ -61,7 +61,7 @@ class ShortCircuitAnalysis:
             - **element_id**: the id of the bus on which the fault will be simulated (bus/view topology).
             - **r**: The fault resistance to ground, in Ohm (optional).
             - **x**: The fault reactance to ground, in Ohm (optional).
-            - **proportional_location**:  (optional, only for branch fault).
+            - **proportional_location**: location of the fault on the branch as a percentage of the length of the branch, side 1 is the reference (optional, only for branch fault).
             - **fault_type**: The fault type either BUS_FAULT or BRANCH_FAULT
 
         Examples:

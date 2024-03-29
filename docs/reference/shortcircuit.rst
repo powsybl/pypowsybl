@@ -42,6 +42,8 @@ You can define faults to be simulated with the following methods:
    :toctree: api/
 
     ShortCircuitAnalysis.set_faults
+    ShortCircuitAnalysis.set_branch_fault
+    ShortCircuitAnalysis.set_bus_fault
 
 
 Results
