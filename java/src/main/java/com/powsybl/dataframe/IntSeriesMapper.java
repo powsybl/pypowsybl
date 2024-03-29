@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.network.DataframeContext;
+
 import java.util.List;
 import java.util.function.ToIntFunction;
 
@@ -51,7 +53,7 @@ public class IntSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler) {
+    public void createSeries(List<T> items, DataframeHandler handler, DataframeContext dataframeContext) {
         boolean index = metadata.isIndex();
         String name = metadata.getName();
         DataframeHandler.IntSeriesWriter writer = index ? handler.newIntIndex(name, items.size()) : handler.newIntSeries(name, items.size());

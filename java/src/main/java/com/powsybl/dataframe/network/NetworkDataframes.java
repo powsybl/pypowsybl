@@ -9,6 +9,7 @@ package com.powsybl.dataframe.network;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DoubleSeriesMapper;
 import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
@@ -21,14 +22,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
-import java.util.function.ToIntFunction;
+import java.util.function.*;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
 import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
+import static com.powsybl.dataframe.network.PerUnitUtil.*;
 
 /**
  * Main user entry point of the package :
@@ -40,8 +39,7 @@ import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
  */
 public final class NetworkDataframes {
 
-    private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers(false, 100);
-    private static final Map<DataframeElementType, NetworkDataframeMapper> PER_UNIT_MAPPERS = createMappers(true, 100);
+    private static final Map<DataframeElementType, NetworkDataframeMapper> MAPPERS = createMappers();
 
     private static final Map<ExtensionDataframeKey, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
 
@@ -52,15 +50,11 @@ public final class NetworkDataframes {
         return MAPPERS.get(type);
     }
 
-    public static NetworkDataframeMapper getPerUnitDataframeMapper(DataframeElementType type) {
-        return PER_UNIT_MAPPERS.get(type);
-    }
-
-    private static Map<DataframeElementType, NetworkDataframeMapper> createMappers(boolean perUnit, double sn) {
+    private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
         mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
         mappers.put(DataframeElementType.BUS, buses());
-        mappers.put(DataframeElementType.LINE, lines(perUnit, sn));
+        mappers.put(DataframeElementType.LINE, lines());
         mappers.put(DataframeElementType.TWO_WINDINGS_TRANSFORMER, twoWindingTransformers());
         mappers.put(DataframeElementType.THREE_WINDINGS_TRANSFORMER, threeWindingTransformers());
         mappers.put(DataframeElementType.GENERATOR, generators());
@@ -105,11 +99,11 @@ public final class NetworkDataframes {
         return inj -> inj.getTerminal().getQ();
     }
 
-    static <U extends Injection<U>> DoubleUpdater<U> setP() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP() {
         return (inj, p) -> inj.getTerminal().setP(p);
     }
 
-    static <U extends Injection<U>> DoubleUpdater<U> setQ() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ() {
         return (inj, q) -> inj.getTerminal().setQ(q);
     }
 
@@ -117,48 +111,64 @@ public final class NetworkDataframes {
         return b -> b.getTerminal1().getP();
     }
 
-    static <U extends Branch<U>> ToDoubleFunction<U> getP1(boolean perUnit, double sn) {
-        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal1().getP(), sn);
+    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP1() {
+        return (b, context) -> perUnitPQ(context, b.getTerminal1().getP());
     }
 
     static <U extends Branch<U>> ToDoubleFunction<U> getQ1() {
         return b -> b.getTerminal1().getQ();
     }
 
-    static <U extends Branch<U>> ToDoubleFunction<U> getQ1(boolean perUnit, double sn) {
-        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal1().getQ(), sn);
+    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ1() {
+        return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleUpdater<U> setP1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP1() {
         return (b, p) -> b.getTerminal1().setP(p);
     }
 
-    static <U extends Branch<U>> DoubleUpdater<U> setQ1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP1() {
+        return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
+    }
+
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ1() {
         return (b, q) -> b.getTerminal1().setQ(q);
+    }
+
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ1() {
+        return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
     }
 
     static <U extends Branch<U>> ToDoubleFunction<U> getP2() {
         return b -> b.getTerminal2().getP();
     }
 
-    static <U extends Branch<U>> ToDoubleFunction<U> getP2(boolean perUnit, double sn) {
-        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal2().getP(), sn);
+    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP2() {
+        return (b, context) -> perUnitPQ(context, b.getTerminal2().getP());
     }
 
     static <U extends Branch<U>> ToDoubleFunction<U> getQ2() {
         return b -> b.getTerminal2().getQ();
     }
 
-    static <U extends Branch<U>> ToDoubleFunction<U> getQ2(boolean perUnit, double sn) {
-        return b -> PerUnitUtil.perUnitPQ(perUnit, b.getTerminal2().getQ(), sn);
+    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ2() {
+        return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleUpdater<U> setP2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP2() {
         return (b, p) -> b.getTerminal2().setP(p);
     }
 
-    static <U extends Branch<U>> DoubleUpdater<U> setQ2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP2() {
+        return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
+    }
+
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ2() {
         return (b, q) -> b.getTerminal2().setQ(q);
+    }
+
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ2() {
+        return (b, q, context) -> b.getTerminal2().setQ(unPerUnitPQ(context, q));
     }
 
     static <U extends Injection<U>> Function<U, String> getVoltageLevelId() {
@@ -184,7 +194,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleUpdater<U> setMinQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleSimpleUpdater<U> setMinQ() {
         return (g, minQ) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -196,7 +206,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleUpdater<U> setMaxQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleSimpleUpdater<U> setMaxQ() {
         return (g, maxQ) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -367,8 +377,8 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getShuntCompensatorStream, getOrThrow(Network::getShuntCompensator, "Shunt compensator"))
                 .stringsIndex("id", ShuntCompensator::getId)
                 .strings("name", sc -> sc.getOptionalName().orElse(""))
-                .doubles("g", ShuntCompensator::getG)
-                .doubles("b", ShuntCompensator::getB)
+                .doubles("g", shunt -> shunt.getG())
+                .doubles("b", shunt -> shunt.getB())
                 .enums("model_type", ShuntCompensatorModelType.class, ShuntCompensator::getModelType)
                 .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
                 .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
@@ -446,36 +456,28 @@ public final class NetworkDataframes {
         return (ShuntCompensatorLinearModel) shuntCompensator.getModel();
     }
 
-    static NetworkDataframeMapper lines(boolean perunit, double sn) {
+    static NetworkDataframeMapper lines() {
         return NetworkDataframeMapperBuilder.ofStream(Network::getLineStream, getOrThrow(Network::getLine, "Line"))
                 .stringsIndex("id", Line::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
-                .doubles("r", line ->
-                    PerUnitUtil.perUnitRXNotSameNominalV(perunit, line.getR(),
-                        sn, line.getTerminal1().getVoltageLevel().getNominalV(),
-                        line.getTerminal2().getVoltageLevel().getNominalV()),
-                    Line::setR)
-                .doubles("x", line ->
-                    PerUnitUtil.perUnitRXNotSameNominalV(perunit, line.getX(),
-                        sn, line.getTerminal1().getVoltageLevel().getNominalV(),
-                        line.getTerminal2().getVoltageLevel().getNominalV()),
-                    Line::setX)
-                .doubles("g1", line -> PerUnitUtil.perUnitGNotSameNominalV(perunit, line.getG1(), line.getR(), line.getX(), sn,
-                    line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV()), Line::setG1)
-                .doubles("b1", line -> PerUnitUtil.perUnitBNotSameNominalV(perunit, line.getB1(), line.getR(), line.getX(), sn,
-                    line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV()), Line::setB1)
-                .doubles("g2", line -> PerUnitUtil.perUnitGNotSameNominalV(perunit, line.getG2(), line.getR(), line.getX(), sn,
-                    line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV()), Line::setG2)
-                .doubles("b2", line -> PerUnitUtil.perUnitBNotSameNominalV(perunit, line.getB2(), line.getR(), line.getX(), sn,
-                    line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV()), Line::setB2)
-                .doubles("p1", getP1(perunit, sn), setP1())
-                .doubles("q1", getQ1(perunit, sn), setQ1())
-                .doubles("i1", l -> PerUnitUtil.perUnitI(perunit, l.getTerminal1().getI(), sn,
-                    l.getTerminal1().getVoltageLevel().getNominalV()))
-                .doubles("p2", getP2(perunit, sn), setP2())
-                .doubles("q2", getQ2(perunit, sn), setQ2())
-                .doubles("i2", l -> PerUnitUtil.perUnitI(perunit, l.getTerminal2().getI(), sn,
-                    l.getTerminal2().getVoltageLevel().getNominalV()))
+                .doubles("r", (line, context) -> perUnitRNotSameNominalV(context, line),
+                    (line, r, context) -> line.setR(unPerUnitRXNotSameNominalV(context, line, r)))
+                .doubles("x", (line, context) -> perUnitXNotSameNominalV(context, line),
+                    (line, x, context) -> line.setX(unPerUnitRXNotSameNominalV(context, line, x)))
+                .doubles("g1", (line, context) -> perUnitGNotSameNominalVSide1(context, line),
+                    (line, g, context) -> line.setG1(unPerUnitGNotSameNominalVSide1(context, line, g)))
+                .doubles("b1", (line, context) -> perUnitBNotSameNominalVSide1(context, line),
+                    (line, b, context) -> line.setB1(unPerUnitBNotSameNominalVSide1(context, line, b)))
+                .doubles("g2", (line, context) -> perUnitGNotSameNominalVSide2(context, line),
+                    (line, g, context) -> line.setG2(unPerUnitGNotSameNominalVSide2(context, line, g)))
+                .doubles("b2", (line, context) -> perUnitBNotSameNominalVSide2(context, line),
+                    (line, b, context) -> line.setB1(unPerUnitBNotSameNominalVSide2(context, line, b)))
+                .doubles("p1", getPerUnitP1(), setPerUnitP1())
+                .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
+                .doubles("i1", (line, context) -> perUnitI1(context, line))
+                .doubles("p2", getPerUnitP2(), setPerUnitP2())
+                .doubles("q2", getPerUnitQ2(), setPerUnitQ2())
+                .doubles("i2", (line, context) -> perUnitI2(context, line))
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))

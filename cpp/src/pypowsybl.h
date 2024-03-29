@@ -448,7 +448,7 @@ matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext,
 
 matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower);
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
@@ -458,7 +458,7 @@ std::vector<std::string> getExtensionsNames();
 
 SeriesArray* getExtensionsInformation();
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 

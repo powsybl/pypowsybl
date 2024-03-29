@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.network.DataframeContext;
+
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -51,7 +53,7 @@ public class StringSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler) {
+    public void createSeries(List<T> items, DataframeHandler handler, DataframeContext dataframeContext) {
         boolean index = getMetadata().isIndex();
         String name = getMetadata().getName();
         DataframeHandler.StringSeriesWriter writer = index ? handler.newStringIndex(name, items.size()) : handler.newStringSeries(name, items.size());

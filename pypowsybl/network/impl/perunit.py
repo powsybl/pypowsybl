@@ -15,7 +15,7 @@ from .network import ElementType, Network
 
 
 def _adapt_to_dataframe(element_type: ElementType, df: pd.DataFrame = None, **kwargs: ArrayLike) -> pd.DataFrame:
-    metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type, False)
+    metadata = _pypowsybl.get_network_elements_dataframe_metadata(element_type)
     return _adapt_df_or_kwargs(metadata, df, **kwargs)
 
 

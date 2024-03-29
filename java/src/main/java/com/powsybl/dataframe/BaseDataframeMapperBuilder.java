@@ -7,6 +7,7 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.ArrayList;
@@ -65,9 +66,31 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return doubles(name, value, updater, true);
     }
 
-    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleSimpleUpdater<U> updater) {
+        return doubles(name, value, updater, true);
+    }
+
+    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
         series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
+    }
+
+    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleSimpleUpdater<U> updater, boolean defaultAttribute) {
+        series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
+        return (B) this;
+    }
+
+    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleUpdater<U> updater) {
+        series.add(new DoubleSeriesMapper<>(name, value, updater, true));
+        return (B) this;
+    }
+
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+        return doubles(name, (u, pu) -> value.applyAsDouble(u), updater, defaultAttribute);
+    }
+
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleSimpleUpdater<U> updater, boolean defaultAttribute) {
+        return doubles(name, (u, pu) -> value.applyAsDouble(u), updater, defaultAttribute);
     }
 
     public B doubles(Map<String, ToDoubleFunction<U>> nameValuesMap) {
@@ -76,11 +99,15 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
     }
 
     public B doubles(String name, ToDoubleFunction<U> value) {
-        return doubles(name, value, null, true);
+        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, true);
+    }
+
+    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value) {
+        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, true);
     }
 
     public B doubles(String name, ToDoubleFunction<U> value, boolean defaultAttribute) {
-        return doubles(name, value, null, defaultAttribute);
+        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, defaultAttribute);
     }
 
     public B ints(String name, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater) {

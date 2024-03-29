@@ -9,6 +9,7 @@ package com.powsybl.dataframe;
 import com.google.common.base.Functions;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
@@ -180,7 +181,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -211,7 +212,7 @@ class DataframeMapperBuilderTest {
                 .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
                 .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
                 .build();
-        mapper.updateSeries(container, createDataframe(2));
+        mapper.updateSeries(container, createDataframe(2), DataframeContext.deactivate());
         assertEquals(1.2, container.elements.get("el1").getDoubleValue());
         assertEquals(2.2, container.elements.get("el2").getDoubleValue());
     }
@@ -243,7 +244,7 @@ class DataframeMapperBuilderTest {
                 .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
                 .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
                 .build();
-        multiIndexMapper.updateSeries(container, createDataframeMultiIndex(2));
+        multiIndexMapper.updateSeries(container, createDataframeMultiIndex(2), DataframeContext.deactivate());
         assertEquals(1.0, container.getElement("el1", 0).getDoubleValue());
         assertEquals(1.2, container.getElement("el1", 1).getDoubleValue());
         assertEquals(2.2, container.getElement("el2", 0).getDoubleValue());
@@ -269,7 +270,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -294,7 +295,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")));
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")), DataframeContext.deactivate());
 
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)

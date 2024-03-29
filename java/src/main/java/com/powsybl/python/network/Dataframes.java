@@ -13,6 +13,7 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
@@ -82,22 +83,26 @@ public final class Dataframes {
     /**
      * Maps an object to a C struct using the provided mapper.
      */
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object) {
-        return createCDataframe(mapper, object, new DataframeFilter());
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeContext dataframeContext) {
+        return createCDataframe(mapper, object, new DataframeFilter(), dataframeContext);
     }
 
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeFilter dataframeFilter) {
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object) {
+        return createCDataframe(mapper, object, new DataframeFilter(), DataframeContext.deactivate());
+    }
+
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeFilter dataframeFilter, DataframeContext dataframeContext) {
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(object, handler, dataframeFilter);
+        mapper.createDataframe(object, handler, dataframeFilter, dataframeContext);
         return handler.getDataframePtr();
     }
 
     /**
      * Maps an object to java series
      */
-    public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object) {
+    public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object, DataframeContext dataframeContext) {
         List<Series> series = new ArrayList<>();
-        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter());
+        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter(), dataframeContext);
         return List.copyOf(series);
     }
 
