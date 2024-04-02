@@ -13,7 +13,8 @@ import pypowsybl as pp
 def test_per_unit_line():
     net = pp.network.create_four_substations_node_breaker_network()
     net.nominal_apparent_power = 100
-    per_unit_lines = net.get_lines(per_unit=True)
+    net.per_unit = True
+    per_unit_lines = net.get_lines()
     line_s2s3 = per_unit_lines.loc['LINE_S2S3']
     assert 6e-6 == pytest.approx(line_s2s3.r, abs=1e-6)
     assert 1.2e-2 == pytest.approx(line_s2s3.x, abs=1e-2)
@@ -23,3 +24,8 @@ def test_per_unit_line():
     assert -1.1 == pytest.approx(line_s2s3.p2, abs=1e-1)
     assert -1.8 == pytest.approx(line_s2s3.q2, abs=1e-1)
     assert 2.1 == pytest.approx(line_s2s3.i2, abs=1e-1)
+    net.update_lines(id='LINE_S2S3', r=9e-6, x=2e-2)
+    per_unit_lines = net.get_lines()
+    line_s2s3 = per_unit_lines.loc['LINE_S2S3']
+    assert 9e-6 == pytest.approx(line_s2s3.r, abs=1e-6)
+    assert 2e-2 == pytest.approx(line_s2s3.x, abs=1e-2)

@@ -10,7 +10,6 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.BooleanSeriesMapper;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DoubleSeriesMapper;
-import com.powsybl.dataframe.DoubleSeriesMapper.DoubleUpdater;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -460,18 +459,18 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getLineStream, getOrThrow(Network::getLine, "Line"))
                 .stringsIndex("id", Line::getId)
                 .strings("name", l -> l.getOptionalName().orElse(""))
-                .doubles("r", (line, context) -> perUnitRNotSameNominalV(context, line),
-                    (line, r, context) -> line.setR(unPerUnitRXNotSameNominalV(context, line, r)))
-                .doubles("x", (line, context) -> perUnitXNotSameNominalV(context, line),
-                    (line, x, context) -> line.setX(unPerUnitRXNotSameNominalV(context, line, x)))
-                .doubles("g1", (line, context) -> perUnitGNotSameNominalVSide1(context, line),
-                    (line, g, context) -> line.setG1(unPerUnitGNotSameNominalVSide1(context, line, g)))
-                .doubles("b1", (line, context) -> perUnitBNotSameNominalVSide1(context, line),
-                    (line, b, context) -> line.setB1(unPerUnitBNotSameNominalVSide1(context, line, b)))
-                .doubles("g2", (line, context) -> perUnitGNotSameNominalVSide2(context, line),
-                    (line, g, context) -> line.setG2(unPerUnitGNotSameNominalVSide2(context, line, g)))
-                .doubles("b2", (line, context) -> perUnitBNotSameNominalVSide2(context, line),
-                    (line, b, context) -> line.setB2(unPerUnitBNotSameNominalVSide2(context, line, b)))
+                .doubles("r", (line, context) -> perUnitR(context, line),
+                    (line, r, context) -> line.setR(unPerUnitRX(context, line, r)))
+                .doubles("x", (line, context) -> PerUnitUtil.perUnitX(context, line),
+                    (line, x, context) -> line.setX(unPerUnitRX(context, line, x)))
+                .doubles("g1", (line, context) -> perUnitGSide1(context, line),
+                    (line, g, context) -> line.setG1(unPerUnitGSide1(context, line, g)))
+                .doubles("b1", (line, context) -> perUnitBSide1(context, line),
+                    (line, b, context) -> line.setB1(unPerUnitBSide1(context, line, b)))
+                .doubles("g2", (line, context) -> perUnitGSide2(context, line),
+                    (line, g, context) -> line.setG2(unPerUnitGSide2(context, line, g)))
+                .doubles("b2", (line, context) -> perUnitBSide2(context, line),
+                    (line, b, context) -> line.setB2(unPerUnitBSide2(context, line, b)))
                 .doubles("p1", getPerUnitP1(), setPerUnitP1())
                 .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
                 .doubles("i1", (line, context) -> perUnitI1(context, line))

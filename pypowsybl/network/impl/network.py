@@ -53,6 +53,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self._handle = handle
         self.__init_from_handle()
         self._nominal_apparent_power = 100.0
+        self._per_unit = False
 
     @property
     def id(self) -> str:
@@ -99,6 +100,17 @@ class Network:  # pylint: disable=too-many-public-methods
     @nominal_apparent_power.setter
     def nominal_apparent_power(self, value: float) -> None:
         self._nominal_apparent_power = value
+
+    @property
+    def per_unit(self) -> bool:
+        """
+        The nominal power to per unit the network (kVA)
+        """
+        return self._per_unit
+
+    @per_unit.setter
+    def per_unit(self, value: bool) -> None:
+        self._per_unit = value
 
     def __str__(self) -> str:
         return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
@@ -397,8 +409,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                             main_connected_component, main_synchronous_component,
                                             not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None,
-                     per_unit: bool = False, **kwargs: ArrayLike) -> DataFrame:
+    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -406,7 +417,6 @@ class Network:  # pylint: disable=too-many-public-methods
             element_type: the element type
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes: attributes to include in the dataframe. The 2 optional parameters are mutually exclusive. If no optional parameter is specified, the dataframe will include the default attributes.
-            per_unit: allow to get per unit values for network elements
             kwargs: the data to be selected, as named arguments.
 
         Keyword Args:
@@ -433,7 +443,7 @@ class Network:  # pylint: disable=too-many-public-methods
         else:
             elements_array = None
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
-                                                                attributes, elements_array, per_unit,
+                                                                attributes, elements_array, self._per_unit,
                                                                 self._nominal_apparent_power)
         result = create_data_frame_from_series_array(series_array)
         if attributes:
@@ -777,8 +787,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, False, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None, per_unit: bool = False,
-                      **kwargs: ArrayLike) -> DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of batteries.
 
@@ -813,10 +822,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed on the battery ID.
         """
-        return self.get_elements(ElementType.BATTERY, all_attributes, attributes, per_unit, **kwargs)
+        return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None, per_unit: bool = False,
-                  **kwargs: ArrayLike) -> DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of lines data.
 
@@ -905,7 +913,7 @@ class Network:  # pylint: disable=too-many-public-methods
             L1-5-1   NaN NaN NaN NaN NaN NaN               VL1               VL5   VL1_0   VL5_0       True       True
             ======== === === === === === === ================= ================= ======= ======= ========== ==========
         """
-        return self.get_elements(ElementType.LINE, all_attributes, attributes, per_unit, **kwargs)
+        return self.get_elements(ElementType.LINE, all_attributes, attributes, **kwargs)
 
     def get_2_windings_transformers(self, all_attributes: bool = False, attributes: List[str] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
@@ -2325,7 +2333,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.TERMINAL, all_attributes, attributes)
 
-    def _update_elements(self, element_type: ElementType, df: DataFrame = None, per_unit: bool = False, **kwargs: ArrayLike) -> None:
+    def _update_elements(self, element_type: ElementType, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
 
@@ -2342,9 +2350,7 @@ class Network:  # pylint: disable=too-many-public-methods
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
-        print(per_unit)
-        print(self._nominal_apparent_power)
-        _pp.update_network_elements_with_series(self._handle, c_df, element_type, per_unit, self._nominal_apparent_power)
+        _pp.update_network_elements_with_series(self._handle, c_df, element_type, self._per_unit, self._nominal_apparent_power)
 
     def update_buses(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
