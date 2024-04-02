@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.network;
 
 import com.powsybl.iidm.network.Line;
+import com.powsybl.iidm.network.Terminal;
 import org.apache.commons.math3.complex.Complex;
 
 import static java.lang.Math.pow;
@@ -30,12 +31,8 @@ public final class PerUnitUtil {
         return dataframeContext.isPerUnit() ? p * dataframeContext.getNominalApparentPower() : p;
     }
 
-    public static double perUnitI1(DataframeContext dataframeContext, Line line) {
-        return perUnitI(dataframeContext, line.getTerminal1().getI(), line.getTerminal1().getVoltageLevel().getNominalV());
-    }
-
-    public static double perUnitI2(DataframeContext dataframeContext, Line line) {
-        return perUnitI(dataframeContext, line.getTerminal2().getI(), line.getTerminal2().getVoltageLevel().getNominalV());
+    public static double perUnitI(DataframeContext dataframeContext, Terminal terminal) {
+        return perUnitI(dataframeContext, terminal.getI(), terminal.getVoltageLevel().getNominalV());
     }
 
     public static double perUnitI(DataframeContext dataframeContext, double i, double nominalV) {
@@ -116,6 +113,22 @@ public final class PerUnitUtil {
 
     public static double perUnitRX(DataframeContext dataframeContext, double rx, double nominalV1, double nominalV2) {
         return dataframeContext.isPerUnit() ? dataframeContext.getNominalApparentPower() / (nominalV1 * nominalV2) * rx : rx;
+    }
+
+    public static double unPerUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
+        return unPerUnitV(dataframeContext, v, terminal.getVoltageLevel().getNominalV());
+    }
+
+    public static double unPerUnitV(DataframeContext dataframeContext, double v, double nominalV) {
+        return dataframeContext.isPerUnit() ? v * nominalV : v;
+    }
+
+    public static double perUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
+        return perUnitV(dataframeContext, v, terminal.getVoltageLevel().getNominalV());
+    }
+
+    public static double perUnitV(DataframeContext dataframeContext, double v, double nominalV) {
+        return dataframeContext.isPerUnit() ? v / nominalV : v;
     }
 
     private static Complex computeY(double r, double x) {

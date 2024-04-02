@@ -24,8 +24,7 @@ import java.util.*;
 import java.util.function.*;
 import java.util.stream.Stream;
 
-import static com.powsybl.dataframe.MappingUtils.ifExistsDouble;
-import static com.powsybl.dataframe.MappingUtils.ifExistsInt;
+import static com.powsybl.dataframe.MappingUtils.*;
 import static com.powsybl.dataframe.network.PerUnitUtil.*;
 
 /**
@@ -90,6 +89,10 @@ public final class NetworkDataframes {
         return inj -> inj.getTerminal().getP();
     }
 
+    static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP() {
+        return (inj, context) -> perUnitPQ(context, inj.getTerminal().getP());
+    }
+
     static <U extends Injection> ToDoubleFunction<U> getOppositeP() {
         return inj -> -inj.getTerminal().getP();
     }
@@ -98,12 +101,24 @@ public final class NetworkDataframes {
         return inj -> inj.getTerminal().getQ();
     }
 
+    static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ() {
+        return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
+    }
+
     static <U extends Injection<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP() {
         return (inj, p) -> inj.getTerminal().setP(p);
     }
 
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP() {
+        return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
+    }
+
     static <U extends Injection<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ() {
         return (inj, q) -> inj.getTerminal().setQ(q);
+    }
+
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ() {
+        return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
     }
 
     static <U extends Branch<U>> ToDoubleFunction<U> getP1() {
@@ -186,10 +201,24 @@ public final class NetworkDataframes {
         };
     }
 
+    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
+        return (g, context) -> {
+            ReactiveLimits reactiveLimits = g.getReactiveLimits();
+            return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMinQ(pGetter.applyAsDouble(g)));
+        };
+    }
+
     static <U extends ReactiveLimitsHolder> ToDoubleFunction<U> getMaxQ(ToDoubleFunction<U> pGetter) {
         return g -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMaxQ(pGetter.applyAsDouble(g));
+        };
+    }
+
+    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
+        return (g, context) -> {
+            ReactiveLimits reactiveLimits = g.getReactiveLimits();
+            return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMaxQ(pGetter.applyAsDouble(g)));
         };
     }
 
@@ -205,6 +234,19 @@ public final class NetworkDataframes {
         };
     }
 
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMinQ() {
+        return (g, minQ, context) -> {
+            MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
+            if (minMaxReactiveLimits != null) {
+                g.newMinMaxReactiveLimits().setMinQ(unPerUnitPQ(context, minQ))
+                    .setMaxQ(minMaxReactiveLimits.getMaxQ()).add();
+            } else {
+                throw new UnsupportedOperationException("Cannot update minQ to " + minQ +
+                    ": Min-Max reactive limits do not exist.");
+            }
+        };
+    }
+
     static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleSimpleUpdater<U> setMaxQ() {
         return (g, maxQ) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
@@ -213,6 +255,19 @@ public final class NetworkDataframes {
             } else {
                 throw new UnsupportedOperationException("Cannot update maxQ to " + maxQ +
                         ": Min-Max reactive limits do not exist.");
+            }
+        };
+    }
+
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMaxQ() {
+        return (g, maxQ, context) -> {
+            MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
+            if (minMaxReactiveLimits != null) {
+                g.newMinMaxReactiveLimits().setMaxQ(unPerUnitPQ(context, maxQ))
+                    .setMinQ(minMaxReactiveLimits.getMinQ()).add();
+            } else {
+                throw new UnsupportedOperationException("Cannot update maxQ to " + maxQ +
+                    ": Min-Max reactive limits do not exist.");
             }
         };
     }
@@ -277,25 +332,28 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Generator::getId)
                 .strings("name", g -> g.getOptionalName().orElse(""))
                 .enums("energy_source", EnergySource.class, Generator::getEnergySource, Generator::setEnergySource)
-                .doubles("target_p", Generator::getTargetP, Generator::setTargetP)
-                .doubles("min_p", Generator::getMinP, Generator::setMinP)
-                .doubles("max_p", Generator::getMaxP, Generator::setMaxP)
-                .doubles("min_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setMinQ())
-                .doubles("max_q", ifExistsDouble(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setMaxQ())
-                .doubles("min_q_at_target_p", getMinQ(Generator::getTargetP), false)
-                .doubles("max_q_at_target_p", getMaxQ(Generator::getTargetP), false)
-                .doubles("min_q_at_p", getMinQ(getOppositeP()), false)
-                .doubles("max_q_at_p", getMaxQ(getOppositeP()), false)
+                .doubles("target_p", (g, context) -> perUnitPQ(context, g.getTargetP()), (g, targetP, context) -> g.setTargetP(unPerUnitPQ(context, targetP)))
+                .doubles("min_p", (g, context) -> perUnitPQ(context, g.getMinP()), (g, minP, context) -> g.setMinP(unPerUnitPQ(context, minP)))
+                .doubles("max_p", (g, context) -> perUnitPQ(context, g.getMaxP()), (g, maxP, context) -> g.setMaxP(unPerUnitPQ(context, maxP)))
+                .doubles("min_q", ifExistsDoublePerUnit(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ, PerUnitUtil::perUnitPQ),
+                    setPerUnitMinQ())
+                .doubles("max_q", ifExistsDoublePerUnit(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ, PerUnitUtil::perUnitPQ),
+                    setPerUnitMaxQ())
+                .doubles("min_q_at_target_p", getPerUnitMinQ(Generator::getTargetP), false)
+                .doubles("max_q_at_target_p", getPerUnitMaxQ(Generator::getTargetP), false)
+                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
+                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", Generator::getRatedS, Generator::setRatedS)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
-                .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
+                .doubles("target_v", (g, context) -> perUnitV(context, g.getTargetV(), g.getRegulatingTerminal()),
+                    (g, v, context) -> g.setTargetV(unPerUnitV(context, v, g.getRegulatingTerminal())))
+                .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetP()), (g, q, context) -> g.setTargetP(unPerUnitPQ(context, q)))
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
                         (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
-                .doubles("p", getP(), setP())
-                .doubles("q", getQ(), setQ())
-                .doubles("i", g -> g.getTerminal().getI())
+                .doubles("p", getPerUnitP(), setPerUnitP())
+                .doubles("q", getPerUnitQ(), setPerUnitQ())
+                .doubles("i", (g, context) -> perUnitI(context, g.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
@@ -473,10 +531,10 @@ public final class NetworkDataframes {
                     (line, b, context) -> line.setB2(unPerUnitBSide2(context, line, b)))
                 .doubles("p1", getPerUnitP1(), setPerUnitP1())
                 .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
-                .doubles("i1", (line, context) -> perUnitI1(context, line))
+                .doubles("i1", (line, context) -> perUnitI(context, line.getTerminal1()))
                 .doubles("p2", getPerUnitP2(), setPerUnitP2())
                 .doubles("q2", getPerUnitQ2(), setPerUnitQ2())
-                .doubles("i2", (line, context) -> perUnitI2(context, line))
+                .doubles("i2", (line, context) -> perUnitI(context, line.getTerminal2()))
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))

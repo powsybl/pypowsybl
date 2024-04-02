@@ -6,7 +6,10 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.network.DataframeContext;
+
 import java.util.function.Function;
+import java.util.function.ToDoubleBiFunction;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 
@@ -38,6 +41,14 @@ public final class MappingUtils {
      */
     public static <T, U> ToDoubleFunction<T> ifExistsDouble(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return ifExistsDouble(objectGetter, valueGetter, Double.NaN);
+    }
+
+    public static <T, U> ToDoubleBiFunction<T, DataframeContext> ifExistsDoublePerUnit(Function<T, U> objectGetter,
+                                                                                       ToDoubleFunction<U> valueGetter, ToDoubleBiFunction<DataframeContext, Double> valueTransformer) {
+        return (item, context) -> {
+            U object = objectGetter.apply(item);
+            return object != null ? valueTransformer.applyAsDouble(context, valueGetter.applyAsDouble(object)) : Double.NaN;
+        };
     }
 
     /**

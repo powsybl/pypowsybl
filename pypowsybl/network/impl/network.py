@@ -463,7 +463,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             A dataframe of sub networks.
         """
-        return self.get_elements(ElementType.SUB_NETWORK, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.SUB_NETWORK, all_attributes, attributes, **kwargs)
 
     def get_sub_network(self, sub_network_id: str) -> Network:
         """
@@ -564,7 +564,7 @@ class Network:  # pylint: disable=too-many-public-methods
             S4VL1_0 400.0000 -1.1259            S4VL1
             ======= ======== ======= ================
         """
-        return self.get_elements(ElementType.BUS, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.BUS, all_attributes, attributes, **kwargs)
 
     def get_generators(self, all_attributes: bool = False, attributes: List[str] = None,
                        **kwargs: ArrayLike) -> DataFrame:
@@ -677,7 +677,7 @@ class Network:  # pylint: disable=too-many-public-methods
             `p` can be lower than `min_p`. Actually, the relation: :math:`\\text{min_p} <= -p <= \\text{max_p}`
             should hold.
         """
-        return self.get_elements(ElementType.GENERATOR, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.GENERATOR, all_attributes, attributes, **kwargs)
 
     def get_loads(self, all_attributes: bool = False, attributes: List[str] = None,
                   **kwargs: ArrayLike) -> DataFrame:
@@ -785,7 +785,7 @@ class Network:  # pylint: disable=too-many-public-methods
             B14-L  UNDEFINED NaN NaN             VL14  VL14_0      True
             ===== ========== === === ================ ======= =========
         """
-        return self.get_elements(ElementType.LOAD, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
     def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
@@ -1009,7 +1009,7 @@ class Network:  # pylint: disable=too-many-public-methods
             T5-6-1 NaN NaN NaN NaN NaN NaN               VL5               VL6   VL5_0   VL6_0       True       True
             ====== === === === === === === ================= ================= ======= ======= ========== ==========
         """
-        return self.get_elements(ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.TWO_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
     def get_3_windings_transformers(self, all_attributes: bool = False, attributes: List[str] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
@@ -1025,7 +1025,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             A dataframe of 3 windings transformers.
         """
-        return self.get_elements(ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
     def get_shunt_compensators(self, all_attributes: bool = False, attributes: List[str] = None,
                                **kwargs: ArrayLike) -> DataFrame:
@@ -1104,7 +1104,7 @@ class Network:  # pylint: disable=too-many-public-methods
             B9-SH     LINEAR NaN NaN NaN              VL9  VL9_0      True
             ===== ========== === === === ================ ====== =========
         """
-        return self.get_elements(ElementType.SHUNT_COMPENSATOR, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.SHUNT_COMPENSATOR, all_attributes, attributes, **kwargs)
 
     def get_non_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: List[str] = None,
                                                   **kwargs: ArrayLike) -> DataFrame:
@@ -1128,7 +1128,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             A dataframe of non linear model shunt compensators sections.
         """
-        return self.get_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
     def get_linear_shunt_compensator_sections(self, all_attributes: bool = False, attributes: List[str] = None,
                                               **kwargs: ArrayLike) -> DataFrame:
@@ -1153,7 +1153,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
            A dataframe of linear models of shunt compensators.
         """
-        return self.get_elements(ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
     def get_dangling_lines(self, all_attributes: bool = False, attributes: List[str] = None,
                            **kwargs: ArrayLike) -> DataFrame:
@@ -1237,7 +1237,7 @@ class Network:  # pylint: disable=too-many-public-methods
             DL NaN NaN NaN               VL   VL_0      True
             == === === === ================ ====== =========
         """
-        return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: List[str] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -1263,7 +1263,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed by the id of the dangling lines
         """
-        return self.get_elements(ElementType.TIE_LINE, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.TIE_LINE, all_attributes, attributes, **kwargs)
 
     def get_lcc_converter_stations(self, all_attributes: bool = False, attributes: List[str] = None,
                                    **kwargs: ArrayLike) -> DataFrame:
@@ -1343,7 +1343,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 LCC2 -79.12 NaN NaN            S3VL1 S3VL1_0      True
             ======== ====== === === ================ ======= =========
         """
-        return self.get_elements(ElementType.LCC_CONVERTER_STATION, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.LCC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
     def get_vsc_converter_stations(self, all_attributes: bool = False, attributes: List[str] = None,
                                    **kwargs: ArrayLike) -> DataFrame:
@@ -1431,7 +1431,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
             ======== ====== ========= ========== ================ ======= =========
         """
-        return self.get_elements(ElementType.VSC_CONVERTER_STATION, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.VSC_CONVERTER_STATION, all_attributes, attributes, **kwargs)
 
     def get_static_var_compensators(self, all_attributes: bool = False, attributes: List[str] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
@@ -1512,7 +1512,7 @@ class Network:  # pylint: disable=too-many-public-methods
                  SVC NaN -12.5415 NaN            S4VL1 S4VL1_0      True
             ======== === ======== === ================ ======= =========
         """
-        return self.get_elements(ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.STATIC_VAR_COMPENSATOR, all_attributes, attributes, **kwargs)
 
     def get_voltage_levels(self, all_attributes: bool = False, attributes: List[str] = None,
                            **kwargs: ArrayLike) -> DataFrame:
@@ -1596,7 +1596,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 S4VL1            S4     400.0
             ========= ============= =========
         """
-        return self.get_elements(ElementType.VOLTAGE_LEVEL, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.VOLTAGE_LEVEL, all_attributes, attributes, **kwargs)
 
     def get_busbar_sections(self, all_attributes: bool = False, attributes: List[str] = None,
                             **kwargs: ArrayLike) -> DataFrame:
@@ -1685,7 +1685,7 @@ class Network:  # pylint: disable=too-many-public-methods
              S4VL1_BBS 400.0000  -1.1259            S4VL1      True
             ========== ======== ======== ================ =========
         """
-        return self.get_elements(ElementType.BUSBAR_SECTION, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.BUSBAR_SECTION, all_attributes, attributes, **kwargs)
 
     def get_substations(self, all_attributes: bool = False, attributes: List[str] = None,
                         **kwargs: ArrayLike) -> DataFrame:
@@ -1712,7 +1712,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed on the substation ID.
         """
-        return self.get_elements(ElementType.SUBSTATION, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.SUBSTATION, all_attributes, attributes, **kwargs)
 
     def get_hvdc_lines(self, all_attributes: bool = False, attributes: List[str] = None,
                        **kwargs: ArrayLike) -> DataFrame:
@@ -1791,7 +1791,7 @@ class Network:  # pylint: disable=too-many-public-methods
             HVDC2 SIDE_1_RECTIFIER_SIDE_2_INVERTER                  80.0     400.0                  LCC1                  LCC2       True       True
             ===== ================================ ===================== ========= ===================== ===================== ========== ==========
         """
-        return self.get_elements(ElementType.HVDC_LINE, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.HVDC_LINE, all_attributes, attributes, **kwargs)
 
     def get_switches(self, all_attributes: bool = False, attributes: List[str] = None,
                      **kwargs: ArrayLike) -> DataFrame:
@@ -1890,7 +1890,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                      ...          ...    ...              ...
             ============================ ============ ====== ================
         """
-        return self.get_elements(ElementType.SWITCH, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.SWITCH, all_attributes, attributes, **kwargs)
 
     def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: List[str] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
@@ -1966,7 +1966,7 @@ class Network:  # pylint: disable=too-many-public-methods
             \                 2 1.150767 0.0 0.0
             ========== ======== ======== === ===
         """
-        return self.get_elements(ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
     def get_phase_tap_changer_steps(self, all_attributes: bool = False, attributes: List[str] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
@@ -2046,7 +2046,7 @@ class Network:  # pylint: disable=too-many-public-methods
             ...      ...  ...       ...       ...
             === ======== ==== ========= =========
         """
-        return self.get_elements(ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
     def get_ratio_tap_changers(self, all_attributes: bool = False, attributes: List[str] = None,
                                **kwargs: ArrayLike) -> DataFrame:
@@ -2122,7 +2122,7 @@ class Network:  # pylint: disable=too-many-public-methods
             NHV2_NLOAD   1       0        2          3    158.0          VLLOAD_0
             ========== === ======= ======== ========== ======== =================
         """
-        return self.get_elements(ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
     def get_phase_tap_changers(self, all_attributes: bool = False, attributes: List[str] = None,
                                **kwargs: ArrayLike) -> DataFrame:
@@ -2198,7 +2198,7 @@ class Network:  # pylint: disable=too-many-public-methods
             TWT  15       0       32         33           S1VL1_0
             === === ======= ======== ========== =================
         """
-        return self.get_elements(ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
     def get_reactive_capability_curve_points(self, all_attributes: bool = False,
                                              attributes: List[str] = None) -> DataFrame:
@@ -2239,7 +2239,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             A dataframe of aliases
         """
-        return self.get_elements(ElementType.ALIAS, all_attributes, attributes, False, **kwargs)
+        return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
     def get_identifiables(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
