@@ -406,7 +406,7 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "addPhaseTapChangerPositionAction")
     public static void addPhaseTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                         CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
-                                                        int tapPosition, PyPowsyblApiHeader.Side side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        int tapPosition, PyPowsyblApiHeader.ThreeSideType side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String actionIdStr = CTypeUtil.toString(actionId);
@@ -419,7 +419,7 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "addRatioTapChangerPositionAction")
     public static void addRatioTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                         CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
-                                                        int tapPosition, PyPowsyblApiHeader.Side side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        int tapPosition, PyPowsyblApiHeader.ThreeSideType side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String actionIdStr = CTypeUtil.toString(actionId);

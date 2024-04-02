@@ -7,7 +7,7 @@
 from typing import List
 from pypowsybl import _pypowsybl as _pp
 from .util import EventType
-from pypowsybl._pypowsybl import BranchSide
+from pypowsybl._pypowsybl import Side
 
 
 class EventMapping:
@@ -18,7 +18,7 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_disconnection(self, static_id: str, event_time: float, disconnect_only: BranchSide) -> None:
+    def add_disconnection(self, static_id: str, event_time: float, disconnect_only: Side) -> None:
         """ Creates a equipment disconnection event
 
         Args:

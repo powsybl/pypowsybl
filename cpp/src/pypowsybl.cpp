@@ -884,12 +884,12 @@ void addSwitchAction(const JavaHandle& analysisContext, const std::string& actio
 }
 
 void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
-                                      bool isRelative, int tapPosition, Side side) {
+                                      bool isRelative, int tapPosition, ThreeSide side) {
     callJava(::addPhaseTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition, side);
 }
 
 void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
-                                      bool isRelative, int tapPosition, Side side) {
+                                      bool isRelative, int tapPosition, ThreeSide side) {
     callJava(::addRatioTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition, side);
 }
 

@@ -32,7 +32,7 @@ def test_add_mapping():
     model_mapping.add_generator_synchronous_four_windings_proportional_regulations(
         id, parameter_id)
     model_mapping.add_current_limit_automaton(
-        id, parameter_id, dyn.BranchSide.TWO)
+        id, parameter_id, dyn.Side.TWO)
 
 
 def test_dataframe_mapping():
@@ -51,9 +51,9 @@ def test_dataframe_mapping():
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_disconnection("test_quadripole_id", 5, pp.dynamic.BranchSide.ONE)
-    events.add_disconnection("test_generator_id", 3.3, pp.dynamic.BranchSide.TWO)
-    events.add_disconnection("test_generator_id", 8.2, pp.dynamic.BranchSide.TWO)
+    events.add_disconnection("test_quadripole_id", 5, pp.dynamic.Side.ONE)
+    events.add_disconnection("test_generator_id", 3.3, pp.dynamic.Side.TWO)
+    events.add_disconnection("test_generator_id", 8.2, pp.dynamic.Side.TWO)
 
 
 def test_add_curve():

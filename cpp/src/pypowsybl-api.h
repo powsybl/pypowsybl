@@ -364,9 +364,11 @@ typedef enum {
 } DynamicMappingType;
 
 typedef enum {
-    ONE = 0,
+    UNDEFINED = -1,
+    ONE,
     TWO,
-} BranchSide;
+    THREE,
+} ThreeSide;
 
 typedef struct shortcircuit_analysis_parameters_struct {
     unsigned char with_voltage_result;
