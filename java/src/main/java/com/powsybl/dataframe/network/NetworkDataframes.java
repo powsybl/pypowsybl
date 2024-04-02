@@ -347,7 +347,7 @@ public final class NetworkDataframes {
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", (g, context) -> perUnitV(context, g.getTargetV(), g.getRegulatingTerminal()),
                     (g, v, context) -> g.setTargetV(unPerUnitV(context, v, g.getRegulatingTerminal())))
-                .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetP()), (g, q, context) -> g.setTargetP(unPerUnitPQ(context, q)))
+                .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
                         (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))

@@ -43,9 +43,9 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 6.07, True, 'GEN', -3.03,
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
                -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
-              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 6.07, True,
+              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
     generators2 = pd.DataFrame(data=[[6.080, 3.02, 1.1, False, False]],
@@ -58,8 +58,8 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 3.02, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
+        data=[['GEN', '', 'OTHER', 6.08, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
                -1.12641, NaN, 'VLGEN', '', False],
-              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 6.07, True,
+              ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_generators(), check_dtype=False, atol=1e-2)
