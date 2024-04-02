@@ -125,12 +125,6 @@ enum LimitType {
     OTHER
 };
 
-enum Side {
-    NONE = -1,
-    ONE,
-    TWO,
-};
-
 enum VoltageInitMode {
     UNIFORM_VALUES = 0,
     PREVIOUS_VALUES,
@@ -433,9 +427,9 @@ void addGeneratorActivePowerAction(const JavaHandle& analysisContext, const std:
 
 void addSwitchAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& switchId, bool open);
 
-void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition);
+void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition, ThreeSide side);
 
-void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition);
+void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition, ThreeSide side);
 
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
 

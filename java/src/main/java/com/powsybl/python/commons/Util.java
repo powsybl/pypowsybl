@@ -12,7 +12,7 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
-import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
@@ -303,13 +303,6 @@ public final class Util {
         };
     }
 
-    public static TwoSides convert(PyPowsyblApiHeader.BranchSide side) {
-        return switch (side) {
-            case ONE -> TwoSides.ONE;
-            case TWO -> TwoSides.TWO;
-        };
-    }
-
     public static DataframeNetworkModificationType convert(PyPowsyblApiHeader.NetworkModificationType networkModificationType) {
         return switch (networkModificationType) {
             case VOLTAGE_LEVEL_TOPOLOGY_CREATION -> DataframeNetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION;
@@ -401,5 +394,14 @@ public final class Util {
             default:
                 throw new PowsyblException("Unknown limit violation type: " + violationType);
         }
+    }
+
+    public static ThreeSides convert(PyPowsyblApiHeader.ThreeSideType side) {
+        return switch (side.getCValue()) {
+            case 0 -> ThreeSides.ONE;
+            case 1 -> ThreeSides.TWO;
+            case 2 -> ThreeSides.THREE;
+            default -> null;
+        };
     }
 }

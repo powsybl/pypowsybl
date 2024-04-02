@@ -128,10 +128,6 @@ py::array seriesAsNumpyArray(const series& series) {
 
 void dynamicSimulationBindings(py::module_& m) {
 
-    py::enum_<BranchSide>(m, "BranchSide")
-        .value("ONE", BranchSide::ONE)
-        .value("TWO", BranchSide::TWO);
-
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
         .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
         .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
@@ -543,10 +539,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
 
     m.def("add_phase_tap_changer_position_action", &pypowsybl::addPhaseTapChangerPositionAction, "Add a phase tap changer position action",
-           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
     m.def("add_ratio_tap_changer_position_action", &pypowsybl::addRatioTapChangerPositionAction, "Add a ratio tap changer position action",
-           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
     m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
               py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
@@ -567,10 +563,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("HIGH_SHORT_CIRCUIT_CURRENT", pypowsybl::LimitType::HIGH_SHORT_CIRCUIT_CURRENT)
             .value("OTHER", pypowsybl::LimitType::OTHER);
 
-    py::enum_<pypowsybl::Side>(m, "Side")
-            .value("NONE", pypowsybl::Side::NONE)
-            .value("ONE", pypowsybl::Side::ONE)
-            .value("TWO", pypowsybl::Side::TWO);
+    py::enum_<ThreeSide>(m, "Side")
+            .value("NONE", ThreeSide::UNDEFINED)
+            .value("ONE", ThreeSide::ONE)
+            .value("TWO", ThreeSide::TWO)
+            .value("THREE", ThreeSide::THREE);
 
     py::enum_<violation_type>(m, "ViolationType")
             .value("ACTIVE_POWER", violation_type::ACTIVE_POWER)
@@ -631,7 +628,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return v.value;
             })
             .def_property_readonly("side", [](const limit_violation& v) {
-                return static_cast<pypowsybl::Side>(v.side);
+                return static_cast<ThreeSide>(v.side);
             });
 
     bindArray<pypowsybl::LimitViolationArray>(m, "LimitViolationArray");

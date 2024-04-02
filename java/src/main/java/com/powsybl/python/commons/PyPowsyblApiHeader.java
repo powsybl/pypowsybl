@@ -1137,16 +1137,18 @@ public final class PyPowsyblApiHeader {
         public static native DynamicMappingType fromCValue(int value);
     }
 
-    @CEnum("BranchSide")
-    public enum BranchSide {
+    @CEnum("ThreeSide")
+    public enum ThreeSideType {
+        UNDEFINED,
         ONE,
-        TWO;
+        TWO,
+        THREE;
 
         @CEnumValue
         public native int getCValue();
 
         @CEnumLookup
-        public static native BranchSide fromCValue(int value);
+        public static native ThreeSideType fromCValue(int value);
     }
 
     @CEnum("condition_type")

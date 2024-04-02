@@ -406,12 +406,12 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "addPhaseTapChangerPositionAction")
     public static void addPhaseTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                         CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
-                                                        int tapPosition, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        int tapPosition, PyPowsyblApiHeader.ThreeSideType side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String actionIdStr = CTypeUtil.toString(actionId);
             String transformerIdStr = CTypeUtil.toString(transformerId);
-            PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition);
+            PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
             analysisContext.addAction(pstAction);
         });
     }
@@ -419,12 +419,12 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "addRatioTapChangerPositionAction")
     public static void addRatioTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                         CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
-                                                        int tapPosition, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        int tapPosition, PyPowsyblApiHeader.ThreeSideType side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String actionIdStr = CTypeUtil.toString(actionId);
             String transformerIdStr = CTypeUtil.toString(transformerId);
-            RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition);
+            RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
             analysisContext.addAction(ratioTapChangerAction);
         });
     }
