@@ -2342,6 +2342,8 @@ class Network:  # pylint: disable=too-many-public-methods
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
+        print(per_unit)
+        print(self._nominal_apparent_power)
         _pp.update_network_elements_with_series(self._handle, c_df, element_type, per_unit, self._nominal_apparent_power)
 
     def update_buses(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:

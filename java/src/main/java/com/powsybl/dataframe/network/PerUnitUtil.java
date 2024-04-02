@@ -35,7 +35,7 @@ public final class PerUnitUtil {
     }
 
     public static double perUnitI2(DataframeContext dataframeContext, Line line) {
-        return perUnitI(dataframeContext, line.getTerminal1().getI(), line.getTerminal2().getVoltageLevel().getNominalV());
+        return perUnitI(dataframeContext, line.getTerminal2().getI(), line.getTerminal2().getVoltageLevel().getNominalV());
     }
 
     public static double perUnitI(DataframeContext dataframeContext, double i, double nominalV) {

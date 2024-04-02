@@ -931,8 +931,6 @@ def test_lines():
                                 ['', 0.01, 13.1, 0, 0, 0, 0, 240.004, 2.1751, 346.43, -240, 2.5415, 346.43, 'S3VL1',
                                  'S4VL1',
                                  'S3VL1_0', 'S4VL1_0', True, True]])
-    lines = n.get_lines()
-    print(lines.loc['LINE_S2S3'])
     pd.testing.assert_frame_equal(expected, n.get_lines(), check_dtype=False)
     lines_update = pd.DataFrame(index=['LINE_S2S3'],
                                 columns=['r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'p2', 'q2'],

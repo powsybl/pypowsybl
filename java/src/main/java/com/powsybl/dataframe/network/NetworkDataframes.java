@@ -471,7 +471,7 @@ public final class NetworkDataframes {
                 .doubles("g2", (line, context) -> perUnitGNotSameNominalVSide2(context, line),
                     (line, g, context) -> line.setG2(unPerUnitGNotSameNominalVSide2(context, line, g)))
                 .doubles("b2", (line, context) -> perUnitBNotSameNominalVSide2(context, line),
-                    (line, b, context) -> line.setB1(unPerUnitBNotSameNominalVSide2(context, line, b)))
+                    (line, b, context) -> line.setB2(unPerUnitBNotSameNominalVSide2(context, line, b)))
                 .doubles("p1", getPerUnitP1(), setPerUnitP1())
                 .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
                 .doubles("i1", (line, context) -> perUnitI1(context, line))
