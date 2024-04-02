@@ -384,11 +384,6 @@ typedef struct shortcircuit_analysis_parameters_struct {
 } shortcircuit_analysis_parameters;
 
 typedef enum {
-    BUS_FAULT = 0,
-    BRANCH_FAULT,
-} ShortCircuitFaultType;
-
-typedef enum {
     OK = 0,
     NOT_OK,
 } VoltageInitializerStatus;

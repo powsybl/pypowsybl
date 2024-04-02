@@ -6,15 +6,15 @@ Please have a look at the examples below.
 
 For detailed documentation of involved classes and methods, please refer to the :mod:`API reference <pypowsybl.shortcircuit>`.
 
-Note that pypowsybl currently does not include a simulator to perform the short-circuit analysis.
+Note that pypowsybl currently does not include a simulator to perform short-circuit analyses.
 
 Short-circuit analysis
 ----------------------
 
-The current APIs allow the simulation of three-phase bus faults, where the fault resistance and reactance, if specified, are connected in series to ground.
+The current APIs allow the simulation of three-phase faults on buses or branches.
 
 To perform a short-circuit analysis, you need a network and at least one fault to simulate on that network. The network should have a transient or
-subtransient reactance at least on one generator. This reactance is stored in the 'generatorShortCircuit' extension.
+subtransient reactance on at least one generator. This reactance is stored in the 'generatorShortCircuit' extension.
 The results of the analysis include the calculated currents and voltages on the network after the fault. Depending on parameters,
 the results will be given as three-phase magnitude or detailed on each phase.
 Optionally, depending on specific parameters of the simulation, the results also include
@@ -59,8 +59,23 @@ The parameters available to run a shortcircuit analysis are:
 |study_type                              | TRANSIENT     |
 +----------------------------------------+---------------+
 
+Faults
+------
+Faults can be defined either on buses or on branches. The fault resistance and reactance, if specified, are connected
+in series to ground. In the case of faults on branches, then the location of the fault should be specified, in percent
+between the two sides of the branch, with the reference to the side 1.
 
+The default values for the fault characteristics are:
 
++------------------------------------------+---------------+
+|*Attribute*                               |*Default value*|
++==========================================+===============+
+|r                                         | 0             |
++------------------------------------------+---------------+
+|x                                         | 0             |
++------------------------------------------+---------------+
+|proportional_location (for branch faults) | 50            |
++------------------------------------------+---------------+
 
 Simple example
 --------------
@@ -78,7 +93,8 @@ Simple example
     >>> sc = pp.shortcircuit.create_analysis()
     >>> # create a bus fault on the first two buses
     >>> buses = n.get_buses()
-    >>> sc.set_faults(id = ['fault_1', 'fault_2'], element_id = [buses.index[0], buses.index[1]], r = [1, 1], x = [2, 2])
+    >>> branches = n.get_branches()
+    >>> sc.set_faults(id = ['fault_1', 'fault_2'], element_id = [buses.index[0], branches.index[0]], r = [1, 1], x = [2, 2], )
     >>> # perform the short-circuit analysis        
     >>> # results = sc.run(n, pars, 'sc_provider_1')
     >>> # returns the analysis results

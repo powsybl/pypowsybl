@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from .impl.parameters import Parameters, ShortCircuitStudyType, ShortCircuitFaultType
+from .impl.parameters import Parameters, ShortCircuitStudyType
 from .impl.short_circuit_analysis import ShortCircuitAnalysis
 from .impl.short_circuit_analysis_result import ShortCircuitAnalysisResult
 from .impl.util import (create_analysis,

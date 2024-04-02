@@ -1229,18 +1229,6 @@ public final class PyPowsyblApiHeader {
         void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
-    @CEnum("ShortCircuitFaultType")
-    public enum ShortCircuitFaultType {
-        BUS_FAULT,
-        BRANCH_FAULT;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native ShortCircuitFaultType fromCValue(int value);
-    }
-
     @CEnum("VoltageInitializerObjective")
     public enum VoltageInitializerObjective {
         MIN_GENERATION,
