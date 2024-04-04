@@ -11,7 +11,7 @@ import pypowsybl as pp
 import pandas as pd
 from numpy import NaN
 
-from tests import util
+import util
 
 
 def test_per_unit_line():

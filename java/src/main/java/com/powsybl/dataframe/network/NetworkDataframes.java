@@ -105,16 +105,16 @@ public final class NetworkDataframes {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP() {
-        return (inj, p) -> inj.getTerminal().setP(p);
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setP() {
+        return (inj, p, context) -> inj.getTerminal().setP(p);
     }
 
     static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ() {
-        return (inj, q) -> inj.getTerminal().setQ(q);
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setQ() {
+        return (inj, q, context) -> inj.getTerminal().setQ(q);
     }
 
     static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ() {
@@ -137,16 +137,16 @@ public final class NetworkDataframes {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP1() {
-        return (b, p) -> b.getTerminal1().setP(p);
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setP1() {
+        return (b, p, context) -> b.getTerminal1().setP(p);
     }
 
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ1() {
-        return (b, q) -> b.getTerminal1().setQ(q);
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setQ1() {
+        return (b, q, context) -> b.getTerminal1().setQ(q);
     }
 
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ1() {
@@ -169,16 +169,16 @@ public final class NetworkDataframes {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setP2() {
-        return (b, p) -> b.getTerminal2().setP(p);
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setP2() {
+        return (b, p, context) -> b.getTerminal2().setP(p);
     }
 
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleSimpleUpdater<U> setQ2() {
-        return (b, q) -> b.getTerminal2().setQ(q);
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setQ2() {
+        return (b, q, context) -> b.getTerminal2().setQ(q);
     }
 
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ2() {
@@ -222,8 +222,8 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleSimpleUpdater<U> setMinQ() {
-        return (g, minQ) -> {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setMinQ() {
+        return (g, minQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
                 g.newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(minMaxReactiveLimits.getMaxQ()).add();
@@ -247,8 +247,8 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleSimpleUpdater<U> setMaxQ() {
-        return (g, maxQ) -> {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setMaxQ() {
+        return (g, maxQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
                 g.newMinMaxReactiveLimits().setMaxQ(maxQ).setMinQ(minMaxReactiveLimits.getMinQ()).add();
@@ -343,7 +343,7 @@ public final class NetworkDataframes {
                 .doubles("max_q_at_target_p", getPerUnitMaxQ(Generator::getTargetP), false)
                 .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
                 .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
-                .doubles("rated_s", Generator::getRatedS, Generator::setRatedS)
+                .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", (g, context) -> perUnitV(context, g.getTargetV(), g.getRegulatingTerminal()),
                     (g, v, context) -> g.setTargetV(unPerUnitV(context, v, g.getRegulatingTerminal())))
@@ -378,7 +378,7 @@ public final class NetworkDataframes {
                 .strings("name", b -> b.getOptionalName().orElse(""))
                 .doubles("v_mag", (b, context) -> perUnitV(context, b.getV(), b),
                     (b, v, context) -> b.setV(unPerUnitV(context, v, b)))
-                .doubles("v_angle", Bus::getAngle, Bus::setAngle)
+                .doubles("v_angle", (b, context) -> b.getAngle(), (b, vAngle, context) -> b.setAngle(vAngle))
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
                 .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
                 .strings("voltage_level_id", b -> b.getVoltageLevel().getId())
@@ -571,7 +571,7 @@ public final class NetworkDataframes {
                     (twt, ratedV1, context) -> twt.setRatedU1(unPerUnitV(context, ratedV1, twt.getTerminal1())))
                 .doubles("rated_u2", (twt, context) -> perUnitV(context, twt.getRatedU2(), twt.getTerminal2()),
                     (twt, ratedV2, context) -> twt.setRatedU2(unPerUnitV(context, ratedV2, twt.getTerminal2())))
-                .doubles("rated_s", TwoWindingsTransformer::getRatedS, TwoWindingsTransformer::setRatedS)
+                .doubles("rated_s", (twt, context) -> twt.getRatedS(), (twt, ratedS, context) -> twt.setRatedS(ratedS))
                 .doubles("p1", getPerUnitP1(), setPerUnitP1())
                 .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
                 .doubles("i1", (twt, context) -> perUnitI(context, twt.getTerminal1()))
@@ -694,8 +694,8 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getLccConverterStationStream, getOrThrow(Network::getLccConverterStation, "LCC converter station"))
                 .stringsIndex("id", LccConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
-                .doubles("power_factor", LccConverterStation::getPowerFactor, (lcc, v) -> lcc.setPowerFactor((float) v))
-                .doubles("loss_factor", LccConverterStation::getLossFactor, (lcc, v) -> lcc.setLossFactor((float) v))
+                .doubles("power_factor", (st, context) -> st.getPowerFactor(), (lcc, v, context) -> lcc.setPowerFactor((float) v))
+                .doubles("loss_factor", (st, context) -> st.getLossFactor(), (lcc, v, context) -> lcc.setLossFactor((float) v))
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
@@ -713,7 +713,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getVscConverterStationStream, getOrThrow(Network::getVscConverterStation, "VSC converter station"))
                 .stringsIndex("id", VscConverterStation::getId)
                 .strings("name", st -> st.getOptionalName().orElse(""))
-                .doubles("loss_factor", VscConverterStation::getLossFactor, (vscConverterStation, lf) -> vscConverterStation.setLossFactor((float) lf))
+                .doubles("loss_factor", (vsc, context) -> vsc.getLossFactor(), (vscConverterStation, lf, context) -> vscConverterStation.setLossFactor((float) lf))
                 .doubles("min_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setPerUnitMaxQ())
                 .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
@@ -989,8 +989,10 @@ public final class NetworkDataframes {
                 .ints("step_count", t -> t.getPhaseTapChanger().getStepCount())
                 .booleans("regulating", t -> t.getPhaseTapChanger().isRegulating(), (t, v) -> t.getPhaseTapChanger().setRegulating(v))
                 .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPhaseTapChanger().getRegulationMode(), (t, v) -> t.getPhaseTapChanger().setRegulationMode(v))
-                .doubles("regulation_value", t -> t.getPhaseTapChanger().getRegulationValue(), (t, v) -> t.getPhaseTapChanger().setRegulationValue(v))
-                .doubles("target_deadband", t -> t.getPhaseTapChanger().getTargetDeadband(), (t, v) -> t.getPhaseTapChanger().setTargetDeadband(v))
+                .doubles("regulation_value", (t, context) -> t.getPhaseTapChanger().getRegulationValue(),
+                    (t, v, context) -> t.getPhaseTapChanger().setRegulationValue(v))
+                .doubles("target_deadband", (t, context) -> t.getPhaseTapChanger().getTargetDeadband(),
+                    (t, v, context) -> t.getPhaseTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
                 .strings("regulated_side", NetworkDataframes::getPhaseTapChangerRegulatedSide, NetworkDataframes::setPhaseTapChangerRegulatedSide, false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)

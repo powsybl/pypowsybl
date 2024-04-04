@@ -18,7 +18,6 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
 
     private final SeriesMetadata metadata;
     private final DoubleUpdater<T> updater;
-    private final DoubleSimpleUpdater<T> simpleUpdater;
     private final ToDoubleBiFunction<T, DataframeContext> value;
 
     @FunctionalInterface
@@ -26,27 +25,13 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
         void update(U object, double value, DataframeContext context);
     }
 
-    @FunctionalInterface
-    public interface DoubleSimpleUpdater<U> {
-        void update(U object, double value);
-    }
-
     public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, DataframeContext> value) {
-        this(name, value, null, null, true);
-    }
-
-    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, DataframeContext> value, DoubleSimpleUpdater<T> simpleUpdater, boolean defaultAttribute) {
-        this(name, value, null, simpleUpdater, defaultAttribute);
+        this(name, value, null, true);
     }
 
     public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, DataframeContext> value, DoubleUpdater<T> updater, boolean defaultAttribute) {
-        this(name, value, updater, null, defaultAttribute);
-    }
-
-    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, DataframeContext> value, DoubleUpdater<T> updater, DoubleSimpleUpdater<T> simpleUpdater, boolean defaultAttribute) {
         this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE, defaultAttribute);
         this.updater = updater;
-        this.simpleUpdater = simpleUpdater;
         this.value = value;
     }
 
@@ -66,14 +51,9 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
 
     @Override
     public void updateDouble(T object, double value, DataframeContext context) {
-        if (updater == null && simpleUpdater == null) {
+        if (updater == null) {
             throw new UnsupportedOperationException("Series '" + getMetadata().getName() + "' is not modifiable.");
         }
-        if (updater == null) {
-            simpleUpdater.update(object, value);
-        }
-        if (simpleUpdater == null) {
-            updater.update(object, value, context);
-        }
+        updater.update(object, value, context);
     }
 }

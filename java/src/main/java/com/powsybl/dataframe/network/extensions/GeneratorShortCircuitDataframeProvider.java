@@ -13,7 +13,6 @@ import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.GeneratorShortCircuit;
 
@@ -59,10 +58,10 @@ public class GeneratorShortCircuitDataframeProvider extends AbstractSingleDatafr
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", ext -> ((Identifiable) ext.getExtendable()).getId())
-                .doubles("direct_sub_trans_x", GeneratorShortCircuit::getDirectSubtransX, GeneratorShortCircuit::setDirectSubtransX)
-                .doubles("direct_trans_x", GeneratorShortCircuit::getDirectTransX, GeneratorShortCircuit::setDirectTransX)
-                .doubles("step_up_transformer_x", GeneratorShortCircuit::getStepUpTransformerX, GeneratorShortCircuit::setStepUpTransformerX)
+                .stringsIndex("id", ext -> (ext.getExtendable()).getId())
+                .doubles("direct_sub_trans_x", (gsc, context) -> gsc.getDirectSubtransX(), (gsc, dsx, context) -> gsc.setDirectSubtransX(dsx))
+                .doubles("direct_trans_x", (gsc, context) -> gsc.getDirectTransX(), (gsc, dtx, context) -> gsc.setDirectTransX(dtx))
+                .doubles("step_up_transformer_x", (gsc, context) -> gsc.getStepUpTransformerX(), (gsc, sut, context) -> gsc.setStepUpTransformerX(sut))
                 .build();
     }
 

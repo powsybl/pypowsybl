@@ -66,16 +66,7 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return doubles(name, value, updater, true);
     }
 
-    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleSimpleUpdater<U> updater) {
-        return doubles(name, value, updater, true);
-    }
-
     public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
-        series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
-        return (B) this;
-    }
-
-    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleSimpleUpdater<U> updater, boolean defaultAttribute) {
         series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
     }
@@ -89,17 +80,13 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return doubles(name, (u, pu) -> value.applyAsDouble(u), updater, defaultAttribute);
     }
 
-    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleSimpleUpdater<U> updater, boolean defaultAttribute) {
-        return doubles(name, (u, pu) -> value.applyAsDouble(u), updater, defaultAttribute);
-    }
-
     public B doubles(Map<String, ToDoubleFunction<U>> nameValuesMap) {
         nameValuesMap.forEach(this::doubles);
         return (B) this;
     }
 
     public B doubles(String name, ToDoubleFunction<U> value) {
-        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, true);
+        return doubles(name, value, null, true);
     }
 
     public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value) {
@@ -111,7 +98,7 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
     }
 
     public B doubles(String name, ToDoubleFunction<U> value, boolean defaultAttribute) {
-        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, defaultAttribute);
+        return doubles(name, value, null, defaultAttribute);
     }
 
     public B ints(String name, ToIntFunction<U> value, IntSeriesMapper.IntUpdater<U> updater) {

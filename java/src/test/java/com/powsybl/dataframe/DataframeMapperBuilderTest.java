@@ -138,13 +138,13 @@ class DataframeMapperBuilderTest {
 
         Element getElement(UpdatingDataframe dataframe, int index) {
             List<Element> result = elements.stream().filter(element -> dataframe.getStringValue("id", index).get().equals(element.getId())
-                    && dataframe.getIntValue("id2", index).getAsInt() == element.getId2()).collect(Collectors.toList());
+                && dataframe.getIntValue("id2", index).getAsInt() == element.getId2()).collect(Collectors.toList());
             return result.get(0);
         }
 
         Element getElement(String id, int id2) {
             List<Element> result = elements.stream().filter(element -> id.equals(element.getId())
-                    && id2 == element.getId2()).collect(Collectors.toList());
+                && id2 == element.getId2()).collect(Collectors.toList());
             return result.get(0);
         }
     }
@@ -154,38 +154,38 @@ class DataframeMapperBuilderTest {
     @BeforeEach
     void setUp() {
         mapper = new DataframeMapperBuilder<Container, Element>()
-                .itemsProvider(Container::getElements)
-                .itemGetter(Container::getElement)
-                .stringsIndex("id", Element::getId)
-                .strings("str", Element::getStrValue, Element::setStrValue)
-                .ints("int", Element::getIntValue, Element::setIntValue)
-                .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
-                .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
-                .build();
+            .itemsProvider(Container::getElements)
+            .itemGetter(Container::getElement)
+            .stringsIndex("id", Element::getId)
+            .strings("str", Element::getStrValue, Element::setStrValue)
+            .ints("int", Element::getIntValue, Element::setIntValue)
+            .doubles("double", (element, context) -> element.getDoubleValue(), (element, dv, context) -> element.setDoubleValue(dv))
+            .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
+            .build();
     }
 
     @Test
     void test() {
         DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
-                .itemsProvider(Container::getElements)
-                .stringsIndex("id", Element::getId)
-                .strings("str", Element::getStrValue)
-                .ints("int", Element::getIntValue)
-                .doubles("double", Element::getDoubleValue)
-                .enums("color", Color.class, Element::getColorValue)
-                .build();
+            .itemsProvider(Container::getElements)
+            .stringsIndex("id", Element::getId)
+            .strings("str", Element::getStrValue)
+            .ints("int", Element::getIntValue)
+            .doubles("double", Element::getDoubleValue)
+            .enums("color", Color.class, Element::getColorValue)
+            .build();
 
         Container container = new Container(
-                new Element("el1", "val1", 1, 10, Color.RED),
-                new Element("el2", "val2", 2, 20, Color.BLUE)
+            new Element("el1", "val1", 1, 10, Color.RED),
+            new Element("el2", "val2", 2, 20, Color.BLUE)
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
         mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
 
         assertThat(series)
-                .extracting(com.powsybl.dataframe.impl.Series::getName)
-                .containsExactly("id", "str", "int", "double", "color");
+            .extracting(com.powsybl.dataframe.impl.Series::getName)
+            .containsExactly("id", "str", "int", "double", "color");
     }
 
     UpdatingDataframe createDataframe(int size) {
@@ -200,18 +200,18 @@ class DataframeMapperBuilderTest {
     void updateMonoIndex() {
 
         Container container = new Container(
-                new Element("el1", "val1", 1.0, 10, Color.RED),
-                new Element("el2", "val2", 2.0, 20, Color.BLUE)
+            new Element("el1", "val1", 1.0, 10, Color.RED),
+            new Element("el2", "val2", 2.0, 20, Color.BLUE)
         );
         mapper = new DataframeMapperBuilder<Container, Element>()
-                .itemsProvider(Container::getElements)
-                .itemGetter(Container::getElement)
-                .stringsIndex("id", Element::getId)
-                .strings("str", Element::getStrValue, Element::setStrValue)
-                .ints("int", Element::getIntValue, Element::setIntValue)
-                .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
-                .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
-                .build();
+            .itemsProvider(Container::getElements)
+            .itemGetter(Container::getElement)
+            .stringsIndex("id", Element::getId)
+            .strings("str", Element::getStrValue, Element::setStrValue)
+            .ints("int", Element::getIntValue, Element::setIntValue)
+            .doubles("double", (element, context) -> element.getDoubleValue(), (element, dv, context) -> element.setDoubleValue(dv))
+            .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
+            .build();
         mapper.updateSeries(container, createDataframe(2), DataframeContext.deactivate());
         assertEquals(1.2, container.elements.get("el1").getDoubleValue());
         assertEquals(2.2, container.elements.get("el2").getDoubleValue());
@@ -230,20 +230,20 @@ class DataframeMapperBuilderTest {
     @Test
     void updateMultiIndex() {
         MultiIndexContainer container = new MultiIndexContainer(
-                new Element("el1", 0, "val1", 1.0, 10, Color.RED),
-                new Element("el1", 1, "val2", 2.0, 20, Color.BLUE),
-                new Element("el2", 0, "val2", 2.0, 20, Color.BLUE)
+            new Element("el1", 0, "val1", 1.0, 10, Color.RED),
+            new Element("el1", 1, "val2", 2.0, 20, Color.BLUE),
+            new Element("el2", 0, "val2", 2.0, 20, Color.BLUE)
         );
         DataframeMapper<MultiIndexContainer> multiIndexMapper = new DataframeMapperBuilder<MultiIndexContainer, Element>()
-                .itemsProvider(MultiIndexContainer::getElements)
-                .itemMultiIndexGetter(MultiIndexContainer::getElement)
-                .stringsIndex("id", Element::getId)
-                .intsIndex("id2", Element::getId2)
-                .strings("str", Element::getStrValue, Element::setStrValue)
-                .ints("int", Element::getIntValue, Element::setIntValue)
-                .doubles("double", Element::getDoubleValue, Element::setDoubleValue)
-                .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
-                .build();
+            .itemsProvider(MultiIndexContainer::getElements)
+            .itemMultiIndexGetter(MultiIndexContainer::getElement)
+            .stringsIndex("id", Element::getId)
+            .intsIndex("id2", Element::getId2)
+            .strings("str", Element::getStrValue, Element::setStrValue)
+            .ints("int", Element::getIntValue, Element::setIntValue)
+            .doubles("double", (element, context) -> element.getDoubleValue(), (element, dv, context) -> element.setDoubleValue(dv))
+            .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
+            .build();
         multiIndexMapper.updateSeries(container, createDataframeMultiIndex(2), DataframeContext.deactivate());
         assertEquals(1.0, container.getElement("el1", 0).getDoubleValue());
         assertEquals(1.2, container.getElement("el1", 1).getDoubleValue());
@@ -256,50 +256,50 @@ class DataframeMapperBuilderTest {
     @Test
     void testDefaults() {
         DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
-                .itemsProvider(Container::getElements)
-                .stringsIndex("id", Element::getId)
-                .strings("str", Element::getStrValue, false)
-                .ints("int", Element::getIntValue)
-                .doubles("double", Element::getDoubleValue, false)
-                .enums("color", Color.class, Element::getColorValue)
-                .build();
+            .itemsProvider(Container::getElements)
+            .stringsIndex("id", Element::getId)
+            .strings("str", Element::getStrValue, false)
+            .ints("int", Element::getIntValue)
+            .doubles("double", Element::getDoubleValue, false)
+            .enums("color", Color.class, Element::getColorValue)
+            .build();
 
         Container container = new Container(
-                new Element("el1", "val1", 1, 10, Color.RED),
-                new Element("el2", "val2", 2, 20, Color.BLUE)
+            new Element("el1", "val1", 1, 10, Color.RED),
+            new Element("el2", "val2", 2, 20, Color.BLUE)
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
         mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
 
         assertThat(series)
-                .extracting(com.powsybl.dataframe.impl.Series::getName)
-                .containsExactly("id", "int", "color");
+            .extracting(com.powsybl.dataframe.impl.Series::getName)
+            .containsExactly("id", "int", "color");
 
     }
 
     @Test
     void testFilterAttributes() {
         DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
-                .itemsProvider(Container::getElements)
-                .stringsIndex("id", Element::getId)
-                .strings("str", Element::getStrValue, false)
-                .ints("int", Element::getIntValue)
-                .doubles("double", Element::getDoubleValue, false)
-                .enums("color", Color.class, Element::getColorValue)
-                .build();
+            .itemsProvider(Container::getElements)
+            .stringsIndex("id", Element::getId)
+            .strings("str", Element::getStrValue, false)
+            .ints("int", Element::getIntValue)
+            .doubles("double", Element::getDoubleValue, false)
+            .enums("color", Color.class, Element::getColorValue)
+            .build();
 
         Container container = new Container(
-                new Element("el1", "val1", 1, 10, Color.RED),
-                new Element("el2", "val2", 2, 20, Color.BLUE)
+            new Element("el1", "val1", 1, 10, Color.RED),
+            new Element("el2", "val2", 2, 20, Color.BLUE)
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
         mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")), DataframeContext.deactivate());
 
         assertThat(series)
-                .extracting(com.powsybl.dataframe.impl.Series::getName)
-                .containsExactly("id", "str", "color");
+            .extracting(com.powsybl.dataframe.impl.Series::getName)
+            .containsExactly("id", "str", "color");
 
     }
 }
