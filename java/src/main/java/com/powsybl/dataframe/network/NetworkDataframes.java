@@ -85,10 +85,6 @@ public final class NetworkDataframes {
         return Collections.unmodifiableMap(mappers);
     }
 
-    static <U extends Injection<U>> ToDoubleFunction<U> getP() {
-        return inj -> inj.getTerminal().getP();
-    }
-
     static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getP());
     }
@@ -97,88 +93,44 @@ public final class NetworkDataframes {
         return inj -> -inj.getTerminal().getP();
     }
 
-    static <U extends Injection<U>> ToDoubleFunction<U> getQ() {
-        return inj -> inj.getTerminal().getQ();
-    }
-
     static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
-    }
-
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setP() {
-        return (inj, p, context) -> inj.getTerminal().setP(p);
     }
 
     static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setQ() {
-        return (inj, q, context) -> inj.getTerminal().setQ(q);
-    }
-
     static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ() {
         return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
-    }
-
-    static <U extends Branch<U>> ToDoubleFunction<U> getP1() {
-        return b -> b.getTerminal1().getP();
     }
 
     static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleFunction<U> getQ1() {
-        return b -> b.getTerminal1().getQ();
-    }
-
     static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
-    }
-
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setP1() {
-        return (b, p, context) -> b.getTerminal1().setP(p);
     }
 
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setQ1() {
-        return (b, q, context) -> b.getTerminal1().setQ(q);
-    }
-
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ1() {
         return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
-    }
-
-    static <U extends Branch<U>> ToDoubleFunction<U> getP2() {
-        return b -> b.getTerminal2().getP();
     }
 
     static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleFunction<U> getQ2() {
-        return b -> b.getTerminal2().getQ();
-    }
-
     static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setP2() {
-        return (b, p, context) -> b.getTerminal2().setP(p);
-    }
-
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
-    }
-
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setQ2() {
-        return (b, q, context) -> b.getTerminal2().setQ(q);
     }
 
     static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ2() {
@@ -194,13 +146,6 @@ public final class NetworkDataframes {
         return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
     }
 
-    static <U extends ReactiveLimitsHolder> ToDoubleFunction<U> getMinQ(ToDoubleFunction<U> pGetter) {
-        return g -> {
-            ReactiveLimits reactiveLimits = g.getReactiveLimits();
-            return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMinQ(pGetter.applyAsDouble(g));
-        };
-    }
-
     static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
@@ -208,29 +153,10 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> ToDoubleFunction<U> getMaxQ(ToDoubleFunction<U> pGetter) {
-        return g -> {
-            ReactiveLimits reactiveLimits = g.getReactiveLimits();
-            return (reactiveLimits == null) ? Double.NaN : reactiveLimits.getMaxQ(pGetter.applyAsDouble(g));
-        };
-    }
-
     static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMaxQ(pGetter.applyAsDouble(g)));
-        };
-    }
-
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setMinQ() {
-        return (g, minQ, context) -> {
-            MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
-            if (minMaxReactiveLimits != null) {
-                g.newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(minMaxReactiveLimits.getMaxQ()).add();
-            } else {
-                throw new UnsupportedOperationException("Cannot update minQ to " + minQ +
-                        ": Min-Max reactive limits do not exist.");
-            }
         };
     }
 
@@ -243,18 +169,6 @@ public final class NetworkDataframes {
             } else {
                 throw new UnsupportedOperationException("Cannot update minQ to " + minQ +
                     ": Min-Max reactive limits do not exist.");
-            }
-        };
-    }
-
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setMaxQ() {
-        return (g, maxQ, context) -> {
-            MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
-            if (minMaxReactiveLimits != null) {
-                g.newMinMaxReactiveLimits().setMaxQ(maxQ).setMinQ(minMaxReactiveLimits.getMinQ()).add();
-            } else {
-                throw new UnsupportedOperationException("Cannot update maxQ to " + maxQ +
-                        ": Min-Max reactive limits do not exist.");
             }
         };
     }
