@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -74,12 +74,12 @@ public class LccStationDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, ReportNode reportNode) {
         LccStationSeries series = new LccStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             Optional<LccConverterStationAdder> adder = series.createAdder(network, row, throwException);
             if (adder.isPresent()) {
-                additionStrategy.add(network, dataframe, adder.get(), row, throwException, reporter);
+                additionStrategy.add(network, dataframe, adder.get(), row, throwException, reportNode);
             }
         }
     }

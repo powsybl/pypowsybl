@@ -8,7 +8,7 @@
 package com.powsybl.dataframe.network.modifications;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 
@@ -42,12 +42,12 @@ public final class NetworkModifications {
         return MODIFICATION.get(type);
     }
 
-    public static void applyModification(DataframeNetworkModificationType type, Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter) {
+    public static void applyModification(DataframeNetworkModificationType type, Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReportNode reportNode) {
         NetworkModification modification = MODIFICATION.get(type);
         if (modification == null) {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
-        modification.applyModification(network, dataframe, throwException, reporter);
+        modification.applyModification(network, dataframe, throwException, reportNode);
     }
 
 }

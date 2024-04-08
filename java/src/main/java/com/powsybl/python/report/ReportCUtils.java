@@ -6,7 +6,7 @@
  */
 package com.powsybl.python.report;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 
@@ -18,8 +18,8 @@ public final class ReportCUtils {
     private ReportCUtils() {
     }
 
-    public static Reporter getReporter(ObjectHandle reporterHandle) {
-        Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
-        return reporter != null ? reporter : Reporter.NO_OP;
+    public static ReportNode getReportNode(ObjectHandle reportNodeHandle) {
+        ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+        return reportNode != null ? reportNode : ReportNode.NO_OP;
     }
 }

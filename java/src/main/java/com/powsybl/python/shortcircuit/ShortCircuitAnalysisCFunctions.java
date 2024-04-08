@@ -8,7 +8,7 @@
 package com.powsybl.python.shortcircuit;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.shortcircuit.adders.FaultDataframeAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -17,7 +17,9 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ShortCircuitAnalysisParametersPointer;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.network.NetworkCFunctions;
-import com.powsybl.shortcircuit.*;
+import com.powsybl.shortcircuit.ShortCircuitAnalysisProvider;
+import com.powsybl.shortcircuit.ShortCircuitAnalysisResult;
+import com.powsybl.shortcircuit.ShortCircuitParameters;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -86,7 +88,7 @@ public final class ShortCircuitAnalysisCFunctions {
     @CEntryPoint(name = "runShortCircuitAnalysis")
     public static ObjectHandle runShortCircuitAnalysis(IsolateThread thread, ObjectHandle shortCircuitAnalysisContextHandle,
                                                        ObjectHandle networkHandle, ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer,
-                                                       CCharPointer providerName, ObjectHandle reporterHandle,
+                                                       CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisContext analysisContext = ObjectHandles.getGlobal().get(shortCircuitAnalysisContextHandle);
@@ -97,8 +99,8 @@ public final class ShortCircuitAnalysisCFunctions {
             logger().info("Short-circuit analysis provider used for short-circuit analysis is : {}", provider.getName());
             ShortCircuitParameters shortCircuitAnalysisParameters = ShortCircuitAnalysisCUtils.createShortCircuitAnalysisParameters(shortCircuitAnalysisParametersPointer, provider);
 
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            ShortCircuitAnalysisResult results = analysisContext.run(network, shortCircuitAnalysisParameters, provider.getName(), reporter);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+            ShortCircuitAnalysisResult results = analysisContext.run(network, shortCircuitAnalysisParameters, provider.getName(), reportNode);
             return ObjectHandles.getGlobal().create(results);
         });
     }

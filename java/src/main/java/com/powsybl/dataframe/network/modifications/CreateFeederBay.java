@@ -7,7 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
@@ -46,9 +46,9 @@ public class CreateFeederBay implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         PyPowsyblApiHeader.ElementType elementType = PyPowsyblApiHeader.ElementType.valueOf(dataframes.get(0).getStrings("feeder_type").get(0));
         DataframeElementType type = convert(elementType);
-        NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reporter);
+        NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reportNode);
     }
 }

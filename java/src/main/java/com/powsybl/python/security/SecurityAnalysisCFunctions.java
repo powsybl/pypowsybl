@@ -7,7 +7,7 @@
 package com.powsybl.python.security;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
@@ -219,7 +219,7 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
-                                                   CCharPointer providerName, boolean dc, ObjectHandle reporterHandle,
+                                                   CCharPointer providerName, boolean dc, ObjectHandle reportNodeHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
@@ -227,8 +227,8 @@ public final class SecurityAnalysisCFunctions {
             SecurityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
             logger().info("Security analysis provider used for security analysis is : {}", provider.getName());
             SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(dc, securityAnalysisParametersPointer, provider);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reporter);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+            SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
             return ObjectHandles.getGlobal().create(result);
         });
     }

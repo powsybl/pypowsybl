@@ -7,7 +7,7 @@
 package com.powsybl.python.loadflow;
 
 import com.powsybl.commons.parameters.Parameter;
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
@@ -88,7 +88,7 @@ public final class LoadFlowCFunctions {
     @CEntryPoint(name = "runLoadFlow")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
                                                                                                                  LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                                                                 CCharPointer provider, ObjectHandle reporterHandle,
+                                                                                                                 CCharPointer provider, ObjectHandle reportNodeHandle,
                                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return Util.doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -98,9 +98,9 @@ public final class LoadFlowCFunctions {
 
             LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
             LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
-                        CommonObjects.getComputationManager(), parameters, reporter);
+                        CommonObjects.getComputationManager(), parameters, reportNode);
             return createLoadFlowComponentResultArrayPointer(result);
         });
     }

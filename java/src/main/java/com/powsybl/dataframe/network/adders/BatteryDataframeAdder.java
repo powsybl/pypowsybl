@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -84,12 +84,12 @@ public class BatteryDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, ReportNode reportNode) {
         BatterySeries series = new BatterySeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             Optional<BatteryAdder> adder = series.createAdder(network, row, throwException);
             if (adder.isPresent()) {
-                addition.add(network, dataframe, adder.get(), row, throwException, reporter);
+                addition.add(network, dataframe, adder.get(), row, throwException, reportNode);
             }
         }
     }

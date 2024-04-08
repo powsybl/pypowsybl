@@ -33,6 +33,7 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -115,7 +116,7 @@ public final class Util {
 
     public interface PointerProvider<T extends WordBase> {
 
-        T get();
+        T get() throws IOException;
     }
 
     public static <T extends WordBase> T doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, PointerProvider<T> supplier) {

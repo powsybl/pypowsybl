@@ -7,7 +7,7 @@
  */
 package com.powsybl.python.dynamic;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
 import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -46,12 +45,12 @@ public class EventSupplier implements EventModelsSupplier {
     }
 
     @Override
-    public List<EventModel> get(Network network, Reporter reporter) {
+    public List<EventModel> get(Network network, ReportNode reportNode) {
         return get(network);
     }
 
     @Override
     public List<EventModel> get(Network network) {
-        return eventSupplierList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).collect(Collectors.toList());
+        return eventSupplierList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).toList();
     }
 }

@@ -9,8 +9,7 @@ package com.powsybl.python.network;
 import com.google.common.collect.Iterables;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.*;
-import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
@@ -136,16 +135,16 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                           CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
+                                           CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reportNodeHandle,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            if (reporter == null) {
-                reporter = ReporterModel.NO_OP;
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+            if (reportNode == null) {
+                reportNode = ReportNode.NO_OP;
             }
-            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reporter);
+            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -154,17 +153,17 @@ public final class NetworkCFunctions {
     public static ObjectHandle loadNetworkFromString(IsolateThread thread, CCharPointer fileName, CCharPointer fileContent,
                                                      CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                      CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                                     ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                     ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileNameStr = CTypeUtil.toString(fileName);
             String fileContentStr = CTypeUtil.toString(fileContent);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                if (reporter == null) {
-                    reporter = ReporterModel.NO_OP;
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
                 }
-                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reporter);
+                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -174,11 +173,11 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
     public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
-                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reporterHandle,
+                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reportNodeHandle,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
             List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
             for (int i = 0; i < bufferCount; ++i) {
@@ -203,11 +202,11 @@ public final class NetworkCFunctions {
                     throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
                 }
             }
-            if (reporter == null) {
-                reporter = Reporter.NO_OP;
+            if (reportNode == null) {
+                reportNode = ReportNode.NO_OP;
             }
             MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
-            Network network = Network.read(dataSource, parameters, reporter);
+            Network network = Network.read(dataSource, parameters, reportNode);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -216,17 +215,17 @@ public final class NetworkCFunctions {
     public static void saveNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, CCharPointer format,
                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                   ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                   ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String fileStr = CTypeUtil.toString(file);
             String formatStr = CTypeUtil.toString(format);
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            Reporter reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            if (reporter == null) {
-                reporter = ReporterModel.NO_OP;
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+            if (reportNode == null) {
+                reportNode = ReportNode.NO_OP;
             }
-            network.write(EXPORTERS_LOADER_SUPPLIER, formatStr, parameters, Paths.get(fileStr), reporter);
+            network.write(EXPORTERS_LOADER_SUPPLIER, formatStr, parameters, Paths.get(fileStr), reportNode);
         });
     }
 
@@ -234,7 +233,7 @@ public final class NetworkCFunctions {
     public static CCharPointer saveNetworkToString(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
                                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                                   ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                   ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String formatStr = CTypeUtil.toString(format);
@@ -244,8 +243,8 @@ public final class NetworkCFunctions {
             if (exporter == null) {
                 throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
             }
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            exporter.export(network, parameters, dataSource, reporter);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+            exporter.export(network, parameters, dataSource, reportNode);
             try {
                 var names = dataSource.listNames(".*?");
                 if (names.size() != 1) {
@@ -266,7 +265,7 @@ public final class NetworkCFunctions {
     public static ArrayPointer<CCharPointer> saveNetworkToBinaryBuffer(IsolateThread thread, ObjectHandle networkHandle, CCharPointer format,
                                                                        CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                                        CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                                                       ObjectHandle reporterHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                       ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String formatStr = CTypeUtil.toString(format);
@@ -275,13 +274,13 @@ public final class NetworkCFunctions {
             if (exporter == null) {
                 throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
             }
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             // to support all kind of export: simple file or multiple to an archive,
             // best is to write to a zip file
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             try (ZipOutputStream zos = new ZipOutputStream(bos)) {
                 DataSource dataSource = new ZipMemDataSource("file", zos);
-                exporter.export(network, parameters, dataSource, reporter);
+                exporter.export(network, parameters, dataSource, reportNode);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
