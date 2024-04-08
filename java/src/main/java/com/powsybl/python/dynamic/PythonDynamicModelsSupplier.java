@@ -10,7 +10,7 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynawaltz.models.automatons.currentlimits.CurrentLimitAutomatonBuilder;
+import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
 import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
 import com.powsybl.dynawaltz.models.loads.BaseLoadBuilder;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformerBuilder;
@@ -97,7 +97,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
-        dynamicModelList.add(network -> CurrentLimitAutomatonBuilder.of(network, "CurrentLimitAutomaton")
+        dynamicModelList.add(network -> DynamicOverloadManagementSystemBuilder.of(network, "CurrentLimitAutomaton")
                 .parameterSetId(parameterSetId)
                 .iMeasurement(staticId)
                 .iMeasurementSide(side)
