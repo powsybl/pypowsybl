@@ -510,7 +510,7 @@ public final class PyPowsyblApiHeader {
         float getLimitReduction();
 
         @CField("limit_reduction")
-        void setLimitReduction(float limitReduction);
+        void setLimitReduction(double limitReduction);
 
         @CField("value")
         double getValue();

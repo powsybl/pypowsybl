@@ -6,6 +6,7 @@
  */
 package com.powsybl.python.security;
 
+import com.powsybl.action.*;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
@@ -17,7 +18,6 @@ import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
-import com.powsybl.security.action.*;
 import com.powsybl.security.condition.*;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.OperatorStrategyResult;
