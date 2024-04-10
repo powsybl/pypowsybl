@@ -110,7 +110,7 @@ typedef struct limit_violation_struct {
     double limit;
     char* limit_name;
     int acceptable_duration;
-    float limit_reduction;
+    double limit_reduction;
     double value;
     int side;
 } limit_violation;
