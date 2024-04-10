@@ -250,6 +250,7 @@ def test_get_provider_parameters_names():
                                    'reportedFeatures',
                                    'slackBusCountryFilter',
                                    'actionableSwitchesIds',
+                                   'actionableTransformersIds',
                                    'asymmetrical',
                                    'minNominalVoltageTargetVoltageCheck',
                                    'reactivePowerDispatchMode',
@@ -268,8 +269,8 @@ def test_get_provider_parameters_names():
                                    'maxNewtonKrylovIterations',
                                    'newtonKrylovLineSearch',
                                    'referenceBusSelectionMode',
-                                   'writeReferenceTerminals']
-
+                                   'writeReferenceTerminals',
+                                   'voltageTargetPriorities']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
