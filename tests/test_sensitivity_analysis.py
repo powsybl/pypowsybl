@@ -265,7 +265,18 @@ def test_voltage_sensitivities_with_report():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.sensitivity.create_ac_analysis()
     sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
-    r = sa.run(n, report_node=report_node)
+    sa.run(n, report_node=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+
+def test_voltage_sensitivities_with_deprecated_report():
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.sensitivity.create_ac_analysis()
+    sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+    sa.run(n, reporter=report_node)
     report2 = str(report_node)
     assert len(report2) > len(report1)
 
