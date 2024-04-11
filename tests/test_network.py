@@ -1791,7 +1791,7 @@ def test_load_network_with_report():
     reporter = rp.ReportNode()
     report1 = str(reporter)
     assert len(report1) > 0
-    n = pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter=reporter)
+    pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter=reporter)
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 
@@ -1806,7 +1806,7 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     reporter = rp.ReportNode()
     report1 = str(reporter)
     assert len(report1) > 0
-    n = pp.network.load_from_string('simple-eu.uct', file_content, reporter=reporter)
+    pp.network.load_from_string('simple-eu.uct', file_content, reporter=reporter)
     report2 = str(reporter)
     assert len(report2) > len(report1)
 
@@ -1816,8 +1816,8 @@ def test_save_to_string_with_report():
     reporter = rp.ReportNode()
     report1 = str(reporter)
     assert len(report1) > 0
-    xml = bat_path.read_text()
-    n = pp.network.load(str(bat_path), reporter=reporter)
+    bat_path.read_text()
+    pp.network.load(str(bat_path), reporter=reporter)
     report2 = str(reporter)
     assert len(report2) >= len(report1)
 

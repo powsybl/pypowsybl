@@ -1228,7 +1228,7 @@ def test_create_line_on_line_deprecated_arguments():
     assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
 
 
-def test_revert_create_line_on_line():
+def test_revert_create_line_on_line_deprecated_report():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
     n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
@@ -1265,7 +1265,7 @@ def test_revert_create_line_on_line():
     assert retrieved_line["connected2"]
 
 
-def test_revert_create_line_on_line_deprecated_report():
+def test_revert_create_line_on_line():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
     n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
