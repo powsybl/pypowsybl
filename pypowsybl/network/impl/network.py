@@ -37,7 +37,7 @@ from pypowsybl.utils import (
     _get_c_dataframes,
     path_to_str, PathOrStr
 )
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
@@ -123,7 +123,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return _pp.update_connectable_status(self._handle, id, False)
 
     def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
-             reporter: Reporter = None) -> None:
+             reporter: ReportNode = None) -> None:
         """
         .. deprecated:: 1.1.0
           Use :meth:`save` instead.
@@ -132,7 +132,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self.save(file, format, parameters, reporter)
 
     def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
-             reporter: Reporter = None) -> None:
+             reporter: ReportNode = None, report_node: ReportNode = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -143,7 +143,8 @@ class Network:  # pylint: disable=too-many-public-methods
             file:       path to the exported file
             format:     format to save the network, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter:   the reporter to be used to create an execution report, default is None (no report)
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Examples:
             Various usage examples:
@@ -154,13 +155,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('network.xiidm.gz')  # produces a gzipped file
                 network.save('/path/to/network.uct', format='UCTE')
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         file = path_to_str(file)
         if parameters is None:
             parameters = {}
         _pp.save_network(self._handle, file, format, parameters,
-                         None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                         None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
+    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: ReportNode = None) -> str:
         """
         .. deprecated:: 1.1.0
           Use :meth:`save_to_string` instead.
@@ -168,25 +172,30 @@ class Network:  # pylint: disable=too-many-public-methods
         warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
         return self.save_to_string(format, parameters, reporter)
 
-    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
+    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: ReportNode = None,
+                       report_node: ReportNode = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter:   the reporter to be used to create an execution report, default is None (no report)
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A string representing this network
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         if parameters is None:
             parameters = {}
         return _pp.save_network_to_string(self._handle, format, parameters,
-                                          None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                          None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
     def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None,
-                              reporter: Reporter = None) -> io.BytesIO:
+                              reporter: ReportNode = None, report_node: ReportNode = None) -> io.BytesIO:
         """
         Save a network to a binary buffer using a specified format.
         In the current implementation, whatever the specified format is (so a format creating a single file or a format
@@ -195,15 +204,19 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter:   the reporter to be used to create an execution report, default is None (no report)
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A BytesIO data buffer representing this network
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         if parameters is None:
             parameters = {}
         return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
-                                                            None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                                            None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:

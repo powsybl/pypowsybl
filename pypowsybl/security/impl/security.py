@@ -4,13 +4,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import Union, List
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from .parameters import Parameters
 from .security_analysis_result import SecurityAnalysisResult
 from .contingency_container import ContingencyContainer
@@ -28,7 +29,7 @@ class SecurityAnalysis(ContingencyContainer):
         ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: Network, parameters: Union[Parameters, pypowsybl.loadflow.Parameters] = None,
-               provider: str = '', reporter: Reporter = None) -> SecurityAnalysisResult:
+               provider: str = '', reporter: ReportNode = None, report_node: ReportNode = None) -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -36,19 +37,24 @@ class SecurityAnalysis(ContingencyContainer):
             parameters: Security analysis parameters
             provider:   Name of the security analysis implementation provider to be used,
                         will use default provider if empty.
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False,
-                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def run_dc(self, network: Network, parameters: Union[Parameters, pypowsybl.loadflow.Parameters] = None,
-               provider: str = '', reporter: Reporter = None) -> SecurityAnalysisResult:
+               provider: str = '', reporter: ReportNode = None, report_node: ReportNode = None) -> SecurityAnalysisResult:
         """ Runs a DC security analysis.
 
         Args:
@@ -56,17 +62,22 @@ class SecurityAnalysis(ContingencyContainer):
             parameters: Security analysis parameters
             provider:   Name of the security analysis implementation provider to be used,
                         will use default provider if empty.
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
                                              # pylint: disable=protected-access
-                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: Union[List[str], str] = None,

@@ -259,14 +259,14 @@ def test_provider_parameters():
 
 
 def test_voltage_sensitivities_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.sensitivity.create_ac_analysis()
     sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
-    r = sa.run(n, reporter=reporter)
-    report2 = str(reporter)
+    r = sa.run(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) > len(report1)
 
 

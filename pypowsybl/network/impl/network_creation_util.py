@@ -5,10 +5,11 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import io
+import warnings
 from os import PathLike
 from typing import Union, Dict, List
 import pypowsybl._pypowsybl as _pp
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
 
@@ -163,7 +164,8 @@ def create_metrix_tutorial_six_buses_network() -> Network:
     return _create_network('metrix_tutorial_six_buses')
 
 
-def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter: Reporter = None) -> Network:
+def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter: ReportNode = None,
+         report_node: ReportNode = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -172,7 +174,8 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
     Args:
        file:       path to the network file
        parameters: a dictionary of import parameters
-       reporter:   the reporter to be used to create an execution report, default is None (no report)
+       reporter: deprecated, use report_node instead
+       report_node: the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         The loaded network
@@ -189,53 +192,64 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
             network = pp.network.load('network.uct')
             ...
     """
+    if reporter is not None:
+        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        report_node = reporter
     file = path_to_str(file)
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network(file, parameters,
-                                    None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
 
 def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = None,
-                            reporter: Reporter = None) -> Network:
+                            reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a binary buffer.
 
     Args:
        buffer:    The BytesIO data buffer
        parameters:  A dictionary of import parameters
-       reporter: The reporter
+       reporter: deprecated, use report_node instead
+       report_node: the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         The loaded network
     """
-    return load_from_binary_buffers([buffer], parameters, reporter)
+    if reporter is not None:
+        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        report_node = reporter
+    return load_from_binary_buffers([buffer], parameters, report_node)
 
 
 def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, str] = None,
-                             reporter: Reporter = None) -> Network:
+                             reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
 
     Args:
        buffers:  The list of BytesIO data buffer
        parameters:  A dictionary of import parameters
-       reporter: The reporter
+       reporter: deprecated, use report_node instead
+       report_node: the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         The loaded network
     """
+    if reporter is not None:
+        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        report_node = reporter
     if parameters is None:
         parameters = {}
     buffer_list = []
     for b in buffers:
         buffer_list.append(b.getbuffer())
     return Network(_pp.load_network_from_binary_buffers(buffer_list, parameters,
-                                                        None if reporter is None else reporter._reporter_model))
+                                                        None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
 
 def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None,
-                     reporter: Reporter = None) -> Network:
+                     reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -243,11 +257,16 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
        file_name:    file name
        file_content: file content
        parameters:   a dictionary of import parameters
+       reporter: deprecated, use report_node instead
+       report_node: the reporter to be used to create an execution report, default is None (no report)
 
     Returns:
         The loaded network
     """
+    if reporter is not None:
+        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        report_node = reporter
     if parameters is None:
         parameters = {}
     return Network(_pp.load_network_from_string(file_name, file_content, parameters,
-                                                None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                                None if report_node is None else report_node._report_node))  # pylint: disable=protected-access

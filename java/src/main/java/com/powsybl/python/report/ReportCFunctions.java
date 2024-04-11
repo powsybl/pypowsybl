@@ -34,7 +34,7 @@ public final class ReportCFunctions {
     private ReportCFunctions() {
     }
 
-    @CEntryPoint(name = "createReporterModel")
+    @CEntryPoint(name = "createReportNode")
     public static ObjectHandle createReportNode(IsolateThread thread, CCharPointer taskKeyPtr, CCharPointer defaultNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String taskKey = CTypeUtil.toString(taskKeyPtr);

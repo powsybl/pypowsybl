@@ -4,11 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import List, Optional
 
 from numpy.typing import ArrayLike
 from pandas import DataFrame
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from pypowsybl.network import Network
 from pypowsybl.utils import _get_c_dataframes
 from pypowsybl import _pypowsybl
@@ -85,21 +86,26 @@ class ShortCircuitAnalysis:
         self._set_faults([df], **kwargs)
 
     def run(self, network: Network, parameters: Parameters = None,
-            provider: str = '', reporter: Reporter = None) -> ShortCircuitAnalysisResult:
+            provider: str = '', reporter: ReportNode = None, report_node: ReportNode = None) -> ShortCircuitAnalysisResult:
         """ Runs a short-circuit analysis.
 
         Args:
             network:    Network on which the short-circuit analysis will be computed
             parameters: short-circuit analysis parameters
             provider:   Name of the short-circuit analysis implementation provider to be used.
-            reporter:   Reporter for logs
+            reporter: deprecated, use report_node instead
+            report_node: the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A short-circuit analysis result.
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
+
         p = parameters._to_c_parameters() if parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
 
         return ShortCircuitAnalysisResult(
             _pypowsybl.run_shortcircuit_analysis(self._handle, network._handle, p, provider,
-                                                 None if reporter is None else reporter._reporter_model), # pylint: disable=protected-access
+                                                 None if report_node is None else report_node._report_node), # pylint: disable=protected-access
             p.with_fortescue_result)
