@@ -433,10 +433,7 @@ def create_load_bay(network: Network, df: DataFrame = None, raise_exception: boo
         - **direction**: optionally, in node/breaker, the direction of the load, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, report_node, **kwargs)
 
 
 def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
@@ -472,10 +469,7 @@ def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: 
         - **direction**: optionally, in node/breaker, the direction of the battery, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, report_node, **kwargs)
 
 
 def create_generator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
@@ -515,10 +509,7 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
         - **direction**: optionally, in node/breaker, the direction of the generator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, report_node, **kwargs)
 
 
 def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
@@ -557,10 +548,7 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node, **kwargs)
 
 
 def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
@@ -616,16 +604,12 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
         - **b**: the susceptance, in Ohm, for this section
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-
     if linear_model_df is None:
         linear_model_df = pd.DataFrame()
     if non_linear_model_df is None:
         non_linear_model_df = pd.DataFrame()
     dfs: List[Optional[DataFrame]] = [shunt_df, linear_model_df, non_linear_model_df]
-    return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, report_node)
+    return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter, report_node)
 
 
 def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
@@ -663,10 +647,7 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
         - **direction**: optionally, in node/breaker, the direction of the static var compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, report_node, **kwargs)
 
 
 def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
@@ -701,10 +682,7 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
         - **direction**: optionally, in node/breaker, the direction of the lcc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, report_node, **kwargs)
 
 
 def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
@@ -741,10 +719,7 @@ def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, rai
         - **direction**: optionally, in node/breaker, the direction of the vsc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
-        report_node = reporter
-    return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, report_node, **kwargs)
 
 
 def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element_type: _pp.ElementType,
