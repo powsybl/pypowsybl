@@ -22,6 +22,7 @@ from pypowsybl.utils import (
 )
 from .network import Network
 
+deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
 
 def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,
                         deprecated_new_line_r: float = None, deprecated_new_line_x: float = None,
@@ -183,7 +184,7 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
         kwargs['fictitious_substation_name'] = deprecated_fictitious_substation_name
 
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_LINE_ON_LINE)
@@ -251,7 +252,7 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
         kwargs['merged_line_name'] = deprecated_merged_line_name
 
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CREATE_LINE_ON_LINE)
@@ -332,7 +333,7 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
         kwargs['line2_name'] = deprecated_line2_name
 
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE)
@@ -389,7 +390,7 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
         kwargs['line_name'] = deprecated_line_name
 
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
@@ -746,7 +747,7 @@ def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element
 
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY,
@@ -836,7 +837,7 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
         kwargs['new_line2_name'] = deprecated_new_line2_name
 
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE)
@@ -889,7 +890,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
                                                 aligned_buses_or_busbar_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
@@ -948,7 +949,7 @@ def create_coupling_device(network: Network, df: DataFrame = None, raise_excepti
 
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)
@@ -1020,8 +1021,9 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
         report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
+
     if isinstance(voltage_level_ids, str):
         voltage_level_ids = [voltage_level_ids]
     _pp.remove_elements_modification(network._handle, voltage_level_ids, None,
@@ -1046,7 +1048,7 @@ def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
         report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     c_df = None
@@ -1160,7 +1162,7 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
         :meth:`Network.create_lines`
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_LINE_FEEDER,
@@ -1221,7 +1223,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
         :meth:`Network.create_2_windings_transformers`
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata_with_element_type(
@@ -1254,7 +1256,7 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
         pp.network.remove_feeder_bays(network, connectable_ids=['load1', 'line3'])
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
 
     if isinstance(connectable_ids, str):

@@ -11,25 +11,22 @@ import pypowsybl._pypowsybl as _pp  # pylint: disable=protected-access
 
 from pypowsybl.report import ReportNode
 
+deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
 
 class Reporter(ReportNode):  # pylint: disable=too-few-public-methods
     def __init__(self, task_key: str = '', default_name: str = ''):
-        warnings.warn("Use of deprecated class Reporter. Use ReportNode instead.",
-                      DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         ReportNode.__init__(self, task_key, default_name)
 
     def __repr__(self) -> str:
-        warnings.warn("Use of deprecated class Reporter. Use ReportNode instead.",
-                      DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         return ReportNode.__repr__(self)
 
     @property
     def _reporter_model(self) -> _pp.JavaHandle:
-        warnings.warn("Use of deprecated class Reporter. Use ReportNode instead.",
-                      DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         return self._report_node_handle
 
     def to_json(self) -> str:
-        warnings.warn("Use of deprecated class Reporter. Use ReportNode instead.",
-                      DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         return ReportNode.to_json(self)

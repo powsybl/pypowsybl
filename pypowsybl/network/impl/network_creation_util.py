@@ -13,6 +13,7 @@ from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
 
+deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
 
 def _create_network(name: str, network_id: str = '') -> Network:
     return Network(_pp.create_network(name, network_id))
@@ -193,7 +194,7 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
             ...
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
     file = path_to_str(file)
     if parameters is None:
@@ -217,7 +218,7 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
         The loaded network
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
     return load_from_binary_buffers([buffer], parameters, report_node)
 
@@ -237,7 +238,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
         The loaded network
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
     if parameters is None:
         parameters = {}
@@ -264,7 +265,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
         The loaded network
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
         report_node = reporter
     if parameters is None:
         parameters = {}

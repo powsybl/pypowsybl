@@ -45,6 +45,7 @@ from .nad_parameters import NadParameters
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
+deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
 
 class Network:  # pylint: disable=too-many-public-methods
 
@@ -156,7 +157,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('/path/to/network.uct', format='UCTE')
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
             report_node = reporter
         file = path_to_str(file)
         if parameters is None:
@@ -187,8 +188,9 @@ class Network:  # pylint: disable=too-many-public-methods
             A string representing this network
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
             report_node = reporter
+
         if parameters is None:
             parameters = {}
         return _pp.save_network_to_string(self._handle, format, parameters,
@@ -211,8 +213,9 @@ class Network:  # pylint: disable=too-many-public-methods
             A BytesIO data buffer representing this network
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
             report_node = reporter
+
         if parameters is None:
             parameters = {}
         return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
