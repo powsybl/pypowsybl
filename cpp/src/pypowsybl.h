@@ -361,13 +361,13 @@ SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 LoadFlowParameters* createLoadFlowParameters();
 
@@ -385,13 +385,13 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
 
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 
-std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter);
+py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reporter);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
@@ -415,7 +415,7 @@ JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reporter);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -442,7 +442,7 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
                      const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType,
                      sensitivity_function_type sensitivityFunctionType, sensitivity_variable_type sensitivityVariableType);
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
@@ -534,11 +534,11 @@ std::vector<std::vector<SeriesMetadata>> getNetworkExtensionsCreationDataframesM
 
 void createExtensions(pypowsybl::JavaHandle network, dataframe_array* dataframes, std::string& name);
 
-JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName);
+JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName);
 
-std::string printReport(const JavaHandle& reporterModel);
+std::string printReport(const JavaHandle& reportNode);
 
-std::string jsonReport(const JavaHandle& reporterModel);
+std::string jsonReport(const JavaHandle& reportNode);
 
 JavaHandle createGLSKdocument(std::string& filename);
 
@@ -574,7 +574,7 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
 void closePypowsybl();
 
-void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter);
+void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reportNode);
 
 SldParameters* createSldParameters();
 
@@ -628,7 +628,7 @@ std::vector<SeriesMetadata> getModificationMetadata(network_modification_type ne
 
 std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
 
-void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reporter);
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
 //=======short-circuit analysis==========
 enum ShortCircuitStudyType {
@@ -659,7 +659,7 @@ std::vector<std::string> getShortCircuitAnalysisProviderNames();
 ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters();
 std::vector<std::string> getShortCircuitAnalysisProviderParametersNames(const std::string& shortCircuitAnalysisProvider);
 JavaHandle createShortCircuitAnalysis();
-JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter);
+JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 std::vector<SeriesMetadata> getFaultsMetaData();
 void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe);
 SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);

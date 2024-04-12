@@ -507,10 +507,10 @@ public final class PyPowsyblApiHeader {
         void setAcceptableDuration(int acceptableDuration);
 
         @CField("limit_reduction")
-        float getLimitReduction();
+        double getLimitReduction();
 
         @CField("limit_reduction")
-        void setLimitReduction(float limitReduction);
+        void setLimitReduction(double limitReduction);
 
         @CField("value")
         double getValue();

@@ -7,10 +7,10 @@
  */
 package com.powsybl.python.dynamic;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynawaltz.models.automatons.currentlimits.CurrentLimitAutomatonBuilder;
+import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
 import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
 import com.powsybl.dynawaltz.models.loads.BaseLoadBuilder;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformerBuilder;
@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -37,13 +36,13 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
     }
 
     @Override
-    public List<DynamicModel> get(Network network, Reporter reporter) {
+    public List<DynamicModel> get(Network network, ReportNode reportNode) {
         return get(network);
     }
 
     @Override
     public List<DynamicModel> get(Network network) {
-        return dynamicModelList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).collect(Collectors.toList());
+        return dynamicModelList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).toList();
     }
 
     /**
@@ -98,7 +97,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
-        dynamicModelList.add(network -> CurrentLimitAutomatonBuilder.of(network, "CurrentLimitAutomaton")
+        dynamicModelList.add(network -> DynamicOverloadManagementSystemBuilder.of(network, "CurrentLimitAutomaton")
                 .parameterSetId(parameterSetId)
                 .iMeasurement(staticId)
                 .iMeasurementSide(side)

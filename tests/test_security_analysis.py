@@ -151,28 +151,38 @@ def test_provider_parameters():
 
 
 def test_ac_security_analysis_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    sa_result = sa.run_ac(n, reporter=reporter)
-    report2 = str(reporter)
+    sa.run_ac(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
+def test_ac_security_analysis_with_deprecated_report():
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    sa.run_ac(n, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) >= len(report1)
 
 def test_dc_analysis_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     n.update_loads(id='LOAD', p0=900)
     n.update_generators(id='GEN', target_p=900)
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
-    sa_result = sa.run_dc(n, reporter=reporter)
-    report2 = str(reporter)
+    sa_result = sa.run_dc(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 

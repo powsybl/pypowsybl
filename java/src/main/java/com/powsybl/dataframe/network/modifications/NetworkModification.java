@@ -7,7 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -29,6 +29,6 @@ public interface NetworkModification {
         return Collections.emptyList();
     }
 
-    void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReporterModel reporter);
+    void applyModification(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReportNode reportNode);
 
 }

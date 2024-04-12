@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.extensions;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
@@ -60,7 +60,7 @@ public interface NetworkExtensionDataframeProvider {
             }
 
             @Override
-            public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, Reporter reporter) {
+            public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReportNode reportNode) {
                 throw new UnsupportedOperationException("addElementsWithBay method not implemented");
             }
         };

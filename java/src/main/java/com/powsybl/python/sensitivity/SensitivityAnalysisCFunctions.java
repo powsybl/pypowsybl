@@ -7,7 +7,7 @@
 package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
@@ -123,7 +123,7 @@ public final class SensitivityAnalysisCFunctions {
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                                       ObjectHandle networkHandle, boolean dc, SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPtr,
-                                                      CCharPointer providerName, ObjectHandle reporterHandle,
+                                                      CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
@@ -131,8 +131,8 @@ public final class SensitivityAnalysisCFunctions {
             SensitivityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
             logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
             SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(dc, sensitivityAnalysisParametersPtr, provider);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
-            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, sensitivityAnalysisParameters, provider.getName(), reporter);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, sensitivityAnalysisParameters, provider.getName(), reportNode);
             return ObjectHandles.getGlobal().create(resultContext);
         });
     }

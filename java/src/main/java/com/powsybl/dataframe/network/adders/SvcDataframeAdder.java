@@ -6,12 +6,15 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.StaticVarCompensator;
+import com.powsybl.iidm.network.StaticVarCompensatorAdder;
+import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
@@ -90,12 +93,12 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, ReportNode reportNode) {
         StaticVarCompensatorSeries series = new StaticVarCompensatorSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             Optional<StaticVarCompensatorAdder> adder = series.createAdder(network, row, throwException);
             if (adder.isPresent()) {
-                addition.add(network, dataframe, adder.get(), row, throwException, reporter);
+                addition.add(network, dataframe, adder.get(), row, throwException, reportNode);
             }
         }
     }

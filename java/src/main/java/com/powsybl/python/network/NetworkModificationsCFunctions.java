@@ -6,8 +6,7 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
@@ -91,17 +90,17 @@ public final class NetworkModificationsCFunctions {
     public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
                                                  PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
                                                  PyPowsyblApiHeader.NetworkModificationType networkModificationType,
-                                                 boolean throwException, ObjectHandle reporterHandle,
+                                                 boolean throwException, ObjectHandle reportNodeHandle,
                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             List<UpdatingDataframe> dfs = new ArrayList<>();
             for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
                 dfs.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             DataframeNetworkModificationType type = convert(networkModificationType);
-            NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
+            NetworkModifications.applyModification(type, network, dfs, throwException, reportNode);
         });
     }
 
@@ -121,16 +120,16 @@ public final class NetworkModificationsCFunctions {
                                                   CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount,
                                                   PyPowsyblApiHeader.DataframePointer extraDataDfPtr,
                                                   PyPowsyblApiHeader.RemoveModificationType removeModificationType,
-                                                  boolean throwException, ObjectHandle reporterHandle,
+                                                  boolean throwException, ObjectHandle reportNodeHandle,
                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_FEEDER) {
-                ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter));
+                ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
             } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_VOLTAGE_LEVEL) {
-                ids.forEach(id -> new RemoveVoltageLevelBuilder().withVoltageLevelId(id).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter));
+                ids.forEach(id -> new RemoveVoltageLevelBuilder().withVoltageLevelId(id).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
             } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_HVDC_LINE) {
                 UpdatingDataframe extraDataDf = createDataframe(extraDataDfPtr);
                 ids.forEach(hvdcId -> {
@@ -141,7 +140,7 @@ public final class NetworkModificationsCFunctions {
                                 shuntCompensatorOptional.get();
                         shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).toList();
                     }
-                    new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+                    new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
 
                 });
             }

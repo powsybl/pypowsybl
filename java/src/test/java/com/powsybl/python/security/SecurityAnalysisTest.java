@@ -6,7 +6,7 @@
  */
 package com.powsybl.python.security;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.impl.Series;
@@ -41,7 +41,7 @@ class SecurityAnalysisTest {
         analysisContext.addMonitor(new StateMonitor(new ContingencyContext(null, ContingencyContextType.NONE),
             Collections.singleton("NHV1_NHV2_2"), Collections.emptySet(), Collections.emptySet()));
         Network network = Networks.createEurostagTutorialExample1();
-        SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", Reporter.NO_OP);
+        SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", ReportNode.NO_OP);
         assertThat(result.getPreContingencyResult().getNetworkResult().getBranchResults()).hasSize(1);
         BranchResult branchResult = result.getPreContingencyResult().getNetworkResult().getBranchResults().get(0);
         var eps = Offset.offset(1e-12);
@@ -67,7 +67,7 @@ class SecurityAnalysisTest {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
         analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
-        SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", Reporter.NO_OP);
+        SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", ReportNode.NO_OP);
 
         List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result);
         Assertions.assertThat(series)
