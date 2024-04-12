@@ -25,6 +25,11 @@ jobs:
             abi: cp39,
             version: '3.9',
           }
+          - {
+            name: cp12,
+            abi: cp12,
+            version: '3.12',
+          }
 
     steps:
       - name: Install Linux packages
@@ -133,6 +138,10 @@ jobs:
           - {
             name: cp39,
             version: '3.9',
+          }
+          - {
+            name: cp312,
+            version: '3.12',
           }
 
     steps:
