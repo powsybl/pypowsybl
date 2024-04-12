@@ -26,8 +26,8 @@ jobs:
             version: '3.9',
           }
           - {
-            name: cp12,
-            abi: cp12,
+            name: cp312,
+            abi: cp312,
             version: '3.12',
           }
 
