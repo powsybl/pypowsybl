@@ -30,6 +30,11 @@ def test_parameters():
     params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
     params.set_objective_distance(1.3)
 
+    params.set_default_variable_scaling_factor(1.1)
+    params.set_default_constraint_scaling_factor(0.8)
+    params.set_reactive_slack_variable_scaling_factor(0.2)
+    params.set_twt_ratio_variable_scaling_factor(0.002)
+
 
 @pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")
 def test_runner():
