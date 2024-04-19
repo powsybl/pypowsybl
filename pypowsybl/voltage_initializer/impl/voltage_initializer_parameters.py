@@ -14,10 +14,10 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_add_specific_high_voltage_limits,
     VoltageInitializerObjective,
     voltage_initializer_set_objective,
-    voltage_initializer_set_objective_distance
-    voltage_initializer_set_default_variable_scaling_factor
-    voltage_initializer_set_default_constraint_scaling_factor
-    voltage_initializer_set_reactive_slack_variable_scaling_factor
+    voltage_initializer_set_objective_distance,
+    voltage_initializer_set_default_variable_scaling_factor,
+    voltage_initializer_set_default_constraint_scaling_factor,
+    voltage_initializer_set_reactive_slack_variable_scaling_factor,
     voltage_initializer_set_twt_ratio_variable_scaling_factor)
 
 
