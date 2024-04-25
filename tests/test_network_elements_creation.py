@@ -992,3 +992,16 @@ def test_3_windings_transformers_creation():
     assert transformer.bus3_id == 'VLGEN_0'
     assert transformer.connected3 == True
 
+    rtc_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        data=[('TWT_TEST', 2, 200, False, 0, 1, 'ONE')])
+    steps_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+        data=[('TWT_TEST', 2, 2, 1, 1, 0.5),
+              ('TWT_TEST', 2, 2, 1, 1, 0.5),
+              ('TWT_TEST', 2, 2, 1, 1, 0.8)])
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+    assert transformer.ratio_tap_position1 == 1
+
