@@ -3893,6 +3893,82 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.TWO_WINDINGS_TRANSFORMER, [df], **kwargs)
 
+    def create_3_windings_transformers(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates three-winding transformers.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new transformer
+            - **rated_u0**: the rated voltage at the star bus
+            - **voltage_level1_id**: the voltage level where the new transformer will be connected on side 1.
+              The voltage level must already exist.
+            - **bus1_id**: the bus where the new transformer will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus1_id**: the bus where the new transformer will be connectable on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **node1**: the node where the new transformer will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
+              The voltage level must already exist.
+            - **bus2_id**: the bus where the new transformer will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus2_id**: the bus where the new transformer will be connectable on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **node2**: the node where the new transformer will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - **voltage_level3_id**: the voltage level where the new transformer will be connected on side 3.
+              The voltage level must already exist.
+            - **bus3_id**: the bus where the new transformer will be connected on side 3,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus3_id**: the bus where the new transformer will be connectable on side 3,
+              if the voltage level has a bus-breaker topology kind.
+            - **node3**: the node where the new transformer will be connected on side 3,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **rated_u1**: nominal voltage of the side 1 of the transformer
+            - **rated_u2**: nominal voltage of the side 2 of the transformer
+            - **rated_u3**: nominal voltage of the side 3 of the transformer
+            - **rated_s1**: nominal power of the side 1 of the transformer
+            - **rated_s2**: nominal power of the side 2 of the transformer
+            - **rated_s3**: nominal power of the side 3 of the transformer
+            - **r1**: the resistance of the side 1, in Ohm
+            - **r2**: the resistance of the side 2, in Ohm
+            - **r3**: the resistance of the side 3, in Ohm
+            - **x1**: the reactance of the side 1, in Ohm
+            - **x2**: the reactance of the side 2, in Ohm
+            - **x3**: the reactance of the side 3, in Ohm
+            - **b1**: the shunt susceptance of the side 1, in S
+            - **b2**: the shunt susceptance of the side 2, in S
+            - **b3**: the shunt susceptance of the side 3, in S
+            - **g1**: the shunt conductance of the side 1, in S
+            - **g2**: the shunt conductance of the side 2, in S
+            - **g3**: the shunt conductance of the side 3, in S
+
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_3_windings_transformers(id='T-1', rated_u0 = , voltage_level1_id='VL1', bus1_id='B1',
+                                                       voltage_level2_id='VL2', bus2_id='B2',
+                                                       voltage_level3_id='VL3', bus3_id='B3',
+                                                       b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=400, rated_s1,
+                                                       b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225, rated_s2,
+                                                       b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=90, rated_s3)
+        """
+        return self._create_elements(ElementType.THREE_WINDINGS_TRANSFORMER, [df], **kwargs)
+
     def create_shunt_compensators(self, shunt_df: DataFrame,
                                   linear_model_df: Optional[DataFrame] = None,
                                   non_linear_model_df: Optional[DataFrame] = None) -> None:

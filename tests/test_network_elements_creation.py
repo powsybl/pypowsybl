@@ -939,3 +939,27 @@ def test_deprecated_ucte_xnode_code_dataframe():
     assert 'DL_TEST' in network.get_dangling_lines().index
     assert 'DL_TEST2' in network.get_dangling_lines().index
     assert 'ucte_xnode_code' in network.get_dangling_lines().columns
+
+
+def test_3_windings_transformers_creation():
+    n = pn.create_eurostag_tutorial_example1_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'VLTEST',
+        'substation_id': 'P1',
+        'high_voltage_limit': 250,
+        'low_voltage_limit': 200,
+        'nominal_v': 225,
+        'topology_kind': 'BUS_BREAKER'
+    }])
+    n.create_voltage_levels(df)
+    n.create_buses(pd.DataFrame(index=['BUS_TEST'],
+                                columns=['voltage_level_id'],
+                                data=[['VLTEST']]))
+    n.create_3_windings_transformers(id='TWT_TEST', rated_u0=225, voltage_level1_id='VLHV1', bus1_id='NHV1',
+                                     voltage_level2_id='VLTEST', bus2_id='BUS_TEST',
+                                     voltage_level3_id='VLGEN', bus3_id='NGEN',
+                                     b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=380, rated_s1=100,
+                                     b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225, rated_s2=100,
+                                     b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=24, rated_s3=100)
+
+    twt = n.get_3_windings_transformers().loc['TWT_TEST']
