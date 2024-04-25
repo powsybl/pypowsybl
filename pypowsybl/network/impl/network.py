@@ -28,7 +28,7 @@ from pandas import DataFrame
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
-from pypowsybl._pypowsybl import ElementType, ValidationLevel
+from pypowsybl._pypowsybl import ElementType, ValidationLevel, Side
 from pypowsybl.utils import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
@@ -4175,7 +4175,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_v**: the target voltage, in kV
             - **target_deadband**: the target voltage regulation deadband, in kV
             - **regulating**: true if the tap changer should regulate voltage
-            - **regulated_side**: the side where voltage is regulated (ONE or TWO)
+            - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
+            or THREE if three-winding transformer)
+            - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
 
@@ -4203,6 +4205,7 @@ class Network:  # pylint: disable=too-many-public-methods
                           ('NGEN_NHV1', 2, 2, 1, 1, 0.8)])
                 network.create_ratio_tap_changers(rtc_df, steps_df)
         """
+
         return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df])
 
     def create_phase_tap_changers(self, ptc_df: DataFrame, steps_df: DataFrame) -> None:
@@ -4229,7 +4232,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **regulation_mode**: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
             - **target_deadband**: the regulation deadband
             - **regulating**: true if the tap changer should regulate
-            - **regulated_side**: the side where the current or active power is regulated (ONE or TWO)
+            - **regulated_side**: the side where the current or active power is regulated (ONE or TWO if two-winding
+            transformer, ONE, TWO or THREE if three-winding transformer)
+            - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
 
