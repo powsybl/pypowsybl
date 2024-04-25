@@ -11,4 +11,7 @@
     <logger name="org.nocrala.tools.texttablefmt" level="ERROR" additivity="false">
         <appender-ref ref="custom" />
     </logger>
+    <logger name="com.powsybl.triplestore" level="INFO" additivity="false">
+        <appender-ref ref="custom" />
+    </logger>
 </configuration>

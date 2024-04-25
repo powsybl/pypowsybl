@@ -6,15 +6,21 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.layout.LayoutParameters$CssLocation",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true
-  },
-  {
     "name":"com.powsybl.sld.layout.LayoutParameters$Padding",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.SvgParameters",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.sld.svg.SvgParameters$CssLocation",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true
   },
   {
     "name":"com.powsybl.sld.library.AnchorOrientation",

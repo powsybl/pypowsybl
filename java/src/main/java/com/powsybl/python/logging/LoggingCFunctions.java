@@ -32,7 +32,7 @@ public final class LoggingCFunctions {
     private LoggingCFunctions() {
     }
 
-    interface LoggerCallback extends CFunctionPointer {
+    public interface LoggerCallback extends CFunctionPointer {
         @InvokeCFunctionPointer
         void invoke(int level, long timestamp, CCharPointer loggerName, CCharPointer message);
     }
@@ -47,8 +47,8 @@ public final class LoggingCFunctions {
     @CEntryPoint(name = "setLogLevel")
     public static void setLogLevel(IsolateThread thread, int logLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            Logger rootLogger = (Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
-            rootLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+            Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
+            powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
         });
     }
 }

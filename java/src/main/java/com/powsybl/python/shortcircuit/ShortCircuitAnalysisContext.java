@@ -7,7 +7,7 @@
  */
 package com.powsybl.python.shortcircuit;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.shortcircuit.*;
@@ -30,17 +30,16 @@ public class ShortCircuitAnalysisContext {
 
     List<Fault> faults = Collections.emptyList();
 
-    ShortCircuitAnalysisResult run(Network network, ShortCircuitParameters shortCircuitAnalysisParameters, String provider, Reporter reporter) {
+    ShortCircuitAnalysisResult run(Network network, ShortCircuitParameters shortCircuitAnalysisParameters, String provider, ReportNode reportNode) {
         List <FaultParameters> faultsParameters = Collections.emptyList();
-        ShortCircuitAnalysisResult results = ShortCircuitAnalysis.find(provider)
+        return ShortCircuitAnalysis.find(provider)
                 .run(
                         network,
                         faults,
                         shortCircuitAnalysisParameters,
                         CommonObjects.getComputationManager(),
                         faultsParameters,
-                        (reporter == null) ? Reporter.NO_OP : reporter
+                        (reportNode == null) ? ReportNode.NO_OP : reportNode
                 );
-        return results;
     }
 }

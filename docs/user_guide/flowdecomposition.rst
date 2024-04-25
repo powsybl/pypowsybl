@@ -77,13 +77,13 @@ This example will highlight loop flows from the peripheral areas.
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
                                    branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  x_node_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_es  loop_flow_from_fr
-    xnec_id                                                                                                                                                                                                                        
+    xnec_id
     BLOAD 11 FLOAD 11 1  BLOAD 11 FLOAD 11 1                      BE       FR                NaN              200.0     0.000000e+00          0.0       0.0            0.0       0.000000e+00              100.0       1.000000e+02
-    EGEN  11 FGEN  11 1  EGEN  11 FGEN  11 1                      ES       FR                NaN              100.0    -8.526513e-14          0.0       0.0            0.0       4.973799e-14              100.0      -1.421085e-14
-    FGEN  11 BGEN  11 1  FGEN  11 BGEN  11 1                      FR       BE                NaN              200.0    -1.421085e-13          0.0       0.0            0.0       9.947598e-14              100.0       1.000000e+02
+    EGEN  11 FGEN  11 1  EGEN  11 FGEN  11 1                      ES       FR                NaN              100.0    -8.526513e-14          0.0       0.0            0.0       3.552714e-14              100.0      -3.552714e-14
+    FGEN  11 BGEN  11 1  FGEN  11 BGEN  11 1                      FR       BE                NaN              200.0    -1.421085e-13          0.0       0.0            0.0       8.526513e-14              100.0       1.000000e+02
     FLOAD 11 ELOAD 11 1  FLOAD 11 ELOAD 11 1                      FR       ES                NaN              100.0     0.000000e+00          0.0       0.0            0.0       0.000000e+00              100.0       0.000000e+00
 
-On this example, the AC load flow does not converge, the fallback to DC load flow is activated by default.  
+On this example, the AC load flow does not converge, the fallback to DC load flow is activated by default.
 This means that the AC reference values are NaNs.  
 For each line where the AC reference is not a number, the rescaling is disabled to prevent NaN propagation.  
 
@@ -108,8 +108,8 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
     >>> network.get_generators()
                        name energy_source  target_p   min_p   max_p   min_q   max_q  rated_s reactive_limits_kind  target_v  target_q  voltage_regulator_on regulated_element_id   p   q   i voltage_level_id     bus_id  connected
     id
-    FGEN  11_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True                      NaN NaN NaN          FGEN  1  FGEN  1_0       True
-    BLOAD 12_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True                      NaN NaN NaN          BLOAD 1  BLOAD 1_1       True
+    FGEN  11_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True   FGEN  11_generator NaN NaN NaN          FGEN  1  FGEN  1_0       True
+    BLOAD 12_generator              OTHER     100.0 -1000.0  1000.0 -1000.0  1000.0      NaN              MIN_MAX     400.0       0.0                  True   BLOAD 12_generator NaN NaN NaN          BLOAD 1  BLOAD 1_1       True
     >>> network.get_loads()
                       name       type     p0   q0   p   q   i voltage_level_id     bus_id  connected
     id                                                                                          
@@ -203,13 +203,13 @@ Merged X nodes will not be considered here.
     >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_interconnections_as_monitored_elements()
     >>> flow_decomposition.run(network)
                                                                                branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  x_node_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_de  loop_flow_from_fr
-    xnec_id                                                                                                                                                                                                                                                                    
-    XBD00011 BD000011 1 + XBD00011 DB000011 1  XBD00011 BD000011 1 + XBD00011 DB000011 1                      BE       DE         121.821917         124.685261       159.585145   -33.155274  2.951653            0.0          30.556687      -8.995130e-09         -35.252949
-    XBD00012 BD000011 1 + XBD00012 DB000011 1  XBD00012 BD000011 1 + XBD00012 DB000011 1                      BE       DE         121.821917         124.685261       159.585145   -33.155274  2.951653            0.0          30.556687      -8.995130e-09         -35.252949
-    XBF00011 BF000011 1 + XBF00011 FB000011 1  XBF00011 BF000011 1 + XBF00011 FB000011 1                      BE       FR        -775.578124        -764.445217       883.442837   170.472453  7.112098            0.0        -198.693573      -6.713719e-09         -97.888598
-    XBF00021 BF000021 1 + XBF00021 FB000021 1  XBF00021 BF000021 1 + XBF00021 FB000021 1                      BE       FR        -234.032855        -242.462652       217.863726    44.108499 -0.604396            0.0          45.528473      -1.954547e-09         -64.433650
-    XBF00022 BF000021 1 + XBF00022 FB000022 1  XBF00022 BF000021 1 + XBF00022 FB000022 1                      BE       FR        -234.032855        -242.462652       217.863726    44.108499 -0.604396            0.0          45.528473      -1.954547e-09         -64.433650
-    XDF00011 DF000011 1 + XDF00011 FD000011 1  XDF00011 DF000011 1 + XDF00011 FD000011 1                      DE       FR       -1156.356167       -1150.629478      1080.829711   216.310548 -5.903306            0.0         -23.613373      -2.032039e-08        -116.994101
+    xnec_id
+    XBD00011 BD000011 1 + XBD00011 DB000011 1  XBD00011 BD000011 1 + XBD00011 DB000011 1                      BE       DE         121.821917         124.685261       171.516849   -33.155274  2.951653            0.0           0.226369      -8.994903e-09         -16.854336
+    XBD00012 BD000011 1 + XBD00012 DB000011 1  XBD00012 BD000011 1 + XBD00012 DB000011 1                      BE       DE         121.821917         124.685261       171.516849   -33.155274  2.951653            0.0           0.226369      -8.994903e-09         -16.854336
+    XBF00011 BF000011 1 + XBF00011 FB000011 1  XBF00011 BF000011 1 + XBF00011 FB000011 1                      BE       FR        -775.578124        -764.445217       679.262024   170.472453  7.112098            0.0        -124.052946      -6.713719e-09          31.651588
+    XBF00021 BF000021 1 + XBF00021 FB000021 1  XBF00021 BF000021 1 + XBF00021 FB000021 1                      BE       FR        -234.032855        -242.462652       169.385837    44.108499 -0.604396            0.0          62.252842      -1.954504e-09         -32.680130
+    XBF00022 BF000021 1 + XBF00022 FB000022 1  XBF00022 BF000021 1 + XBF00022 FB000022 1                      BE       FR        -234.032855        -242.462652       169.385837    44.108499 -0.604396            0.0          62.252842      -1.954504e-09         -32.680130
+    XDF00011 DF000011 1 + XDF00011 FD000011 1  XDF00011 DF000011 1 + XDF00011 FD000011 1                      DE       FR       -1156.356167       -1150.629478       906.966302   216.310548 -5.903306            0.0          -0.452738      -2.032061e-08          33.708672
 
 
 Adder functions

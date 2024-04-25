@@ -7,12 +7,14 @@
  */
 package com.powsybl.dataframe.shortcircuit.adders;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.shortcircuit.ShortCircuitAnalysisContext;
+import com.powsybl.shortcircuit.BranchFault;
 import com.powsybl.shortcircuit.BusFault;
 import com.powsybl.shortcircuit.Fault;
 
@@ -22,13 +24,15 @@ import java.util.List;
 /**
  * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
  */
-public class BusFaultDataframeAdder implements ShortCircuitContextFaultAdder {
+public class FaultDataframeAdder implements ShortCircuitContextFaultAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.strings("element_id"),
-            SeriesMetadata.doubles("r"),
-            SeriesMetadata.doubles("x")
+        SeriesMetadata.stringIndex("id"),
+        SeriesMetadata.strings("element_id"),
+        SeriesMetadata.doubles("r"),
+        SeriesMetadata.doubles("x"),
+        SeriesMetadata.doubles("proportional_location"),
+        SeriesMetadata.strings("fault_type")
     );
 
     @Override
@@ -36,17 +40,21 @@ public class BusFaultDataframeAdder implements ShortCircuitContextFaultAdder {
         return METADATA;
     }
 
-    private static final class BusFaultSeries {
+    private static final class FaultSeries {
         private final StringSeries faultId;
         private final StringSeries elementId;
         private final DoubleSeries r;
         private final DoubleSeries x;
+        private final DoubleSeries proportionalLocation;
+        private final StringSeries faultType;
 
-        BusFaultSeries(UpdatingDataframe dataframe) {
+        FaultSeries(UpdatingDataframe dataframe) {
             this.faultId = SeriesUtils.getRequiredStrings(dataframe, "id");
             this.elementId = SeriesUtils.getRequiredStrings(dataframe, "element_id");
             this.r = dataframe.getDoubles("r");
             this.x = dataframe.getDoubles("x");
+            this.proportionalLocation = dataframe.getDoubles("proportionalLocation");
+            this.faultType = SeriesUtils.getRequiredStrings(dataframe, "fault_type");
         }
 
         public StringSeries getFaultId() {
@@ -64,21 +72,35 @@ public class BusFaultDataframeAdder implements ShortCircuitContextFaultAdder {
         public DoubleSeries getX() {
             return x;
         }
+
+        public DoubleSeries getProportionalLocation() {
+            return proportionalLocation;
+        }
+
+        public StringSeries getFaultType() {
+            return faultType;
+        }
     }
 
     @Override
     public void addElements(ShortCircuitAnalysisContext context, UpdatingDataframe dataframe) {
         List<Fault> faults = new ArrayList<>();
         if (dataframe.getRowCount() > 0) {
-            BusFaultSeries series = new BusFaultSeries(dataframe);
+            FaultSeries series = new FaultSeries(dataframe);
             for (int row = 0; row < dataframe.getRowCount(); row++) {
                 String faultId = series.getFaultId().get(row);
                 String elementId = series.getElementId().get(row);
-                double r = series.getR() != null ? series.getR().get(row) : Double.NaN;
-                double x = series.getX() != null ? series.getX().get(row) : Double.NaN;
-                faults.add(r == Double.NaN || x == Double.NaN ?
-                        new BusFault(faultId, elementId) :
-                        new BusFault(faultId, elementId, r, x));
+                double r = series.getR() != null ? series.getR().get(row) : 0;
+                double x = series.getX() != null ? series.getX().get(row) : 0;
+                double proportionalLocation = series.getProportionalLocation() != null ? series.getProportionalLocation().get(row) : 0;
+                String faultType = series.getFaultType().get(row);
+                if (faultType.equals("BUS_FAULT")) {
+                    faults.add(new BusFault(faultId, elementId, r, x));
+                } else if (faultType.equals("BRANCH_FAULT")) {
+                    faults.add(new BranchFault(faultId, elementId, r, x, proportionalLocation));
+                } else {
+                    throw new PowsyblException("Fault type must be precised");
+                }
             }
         }
         context.setFaults(faults);

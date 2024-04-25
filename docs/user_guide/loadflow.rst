@@ -39,7 +39,7 @@ OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 You may also use DynaFlow, provided by the `Dynawo <https://dynawo.github.io>`_ project.
 DynaFlow is a new steady-state simulation tool that aims at calculating the steady-state point by using
 a simplified time-domain simulation.
-Please see configuration instructions on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/dynaflow.html>`_.
+Please see configuration instructions on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/dynaflow.html>`__.
 
 
 Parameters
@@ -51,11 +51,11 @@ Let's have a look at the default ones:
 .. doctest::
 
     >>> lf.Parameters()
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, provider_parameters={})
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
-All parameters are also fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+All parameters are also fully described in `Powsybl load flow parameters documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
 
 Parameters specific to a provider
 ---------------------------------
@@ -73,7 +73,7 @@ We can list supported parameters specific to default provider using:
     >>> lf.get_provider_parameters_names()
     ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', ...]
 
-And get more detailed informations about theses parameters using:
+And get more detailed information about theses parameters using:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -107,15 +107,15 @@ included in the computation:
 .. doctest::
 
     >>> results
-    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763, distributed_active_power=0.0)]
+    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=CONVERGED, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_results=[SlackBusResult(id='VLHV1_0', active_power_mismatch=-606.5596837558763)], distributed_active_power=0.0)]
 
-Component results provides general information about the loadflow: was it successful ? how many iterations did
-it need ? what's the remaining active power imbalance ? For example, let's have a look at the imbalance
+Component results provides general information about the loadflow execution: was it successful? How many iterations did
+it need? What is the remaining active power imbalance? For example, let's have a look at the imbalance
 on the main component of the network:
 
 .. doctest::
 
-    >>> results[0].slack_bus_active_power_mismatch
+    >>> results[0].slack_bus_results[0].active_power_mismatch
     -606.5596837558763
 
 Then, the main output of the loadflow is actually the updated data in the network itself:
@@ -136,7 +136,7 @@ the voltage magnitudes (rounded to 2 digits here):
 DC Load Flow
 ------------
 
-In order to run an AC loadflow, simply use the :func:`run_dc` method.
+In order to run a DC loadflow, simply use the :func:`run_dc` method.
 
 For that example, we will use a distributed slack, with imbalance distributed on generators,
 proportional to their maximum power. We also choose to ignore transformer ratios in the DC equations:

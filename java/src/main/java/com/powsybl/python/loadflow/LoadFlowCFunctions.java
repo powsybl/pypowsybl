@@ -7,7 +7,7 @@
 package com.powsybl.python.loadflow;
 
 import com.powsybl.commons.parameters.Parameter;
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
@@ -67,7 +67,13 @@ public final class LoadFlowCFunctions {
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
-                UnmanagedMemory.free(componentResultArrayPtr.getPtr().addressOf(i).getSlackBusId());
+                PyPowsyblApiHeader.LoadFlowComponentResultPointer loadFlowComponentResultPointer = componentResultArrayPtr.getPtr().addressOf(i);
+                UnmanagedMemory.free(loadFlowComponentResultPointer.getStatusText());
+                UnmanagedMemory.free(loadFlowComponentResultPointer.getReferenceBusId());
+                for (int j = 0; j < loadFlowComponentResultPointer.slackBusResults().getLength(); j++) {
+                    PyPowsyblApiHeader.SlackBusResultPointer slackBusResultPointer = loadFlowComponentResultPointer.slackBusResults().getPtr().addressOf(j);
+                    UnmanagedMemory.free(slackBusResultPointer.getId());
+                }
             }
             freeArrayPointer(componentResultArrayPtr);
         });
@@ -82,7 +88,7 @@ public final class LoadFlowCFunctions {
     @CEntryPoint(name = "runLoadFlow")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
                                                                                                                  LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                                                                 CCharPointer provider, ObjectHandle reporterHandle,
+                                                                                                                 CCharPointer provider, ObjectHandle reportNodeHandle,
                                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return Util.doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -92,9 +98,9 @@ public final class LoadFlowCFunctions {
 
             LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
             LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
-            Reporter reporter = ReportCUtils.getReporter(reporterHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
-                        CommonObjects.getComputationManager(), parameters, reporter);
+                        CommonObjects.getComputationManager(), parameters, reportNode);
             return createLoadFlowComponentResultArrayPointer(result);
         });
     }
@@ -126,21 +132,34 @@ public final class LoadFlowCFunctions {
             ptr.setConnectedComponentNum(componentResult.getConnectedComponentNum());
             ptr.setSynchronousComponentNum(componentResult.getSynchronousComponentNum());
             ptr.setStatus(componentResult.getStatus().ordinal());
+            ptr.setStatusText(CTypeUtil.toCharPtr(componentResult.getStatusText()));
             ptr.setIterationCount(componentResult.getIterationCount());
-            ptr.setSlackBusId(CTypeUtil.toCharPtr(componentResult.getSlackBusId()));
-            ptr.setSlackBusActivePowerMismatch(componentResult.getSlackBusActivePowerMismatch());
+            ptr.setReferenceBusId(CTypeUtil.toCharPtr(componentResult.getReferenceBusId()));
+            createSlackBusResultPtr(ptr, componentResult.getSlackBusResults());
             ptr.setDistributedActivePower(componentResult.getDistributedActivePower());
         }
         return allocArrayPointer(componentResultPtr, componentResults.size());
     }
 
+    private static void createSlackBusResultPtr(PyPowsyblApiHeader.LoadFlowComponentResultPointer ptr, List<LoadFlowResult.SlackBusResult> slackBusResults) {
+        PyPowsyblApiHeader.SlackBusResultPointer slackBusResultPointer = UnmanagedMemory.calloc(slackBusResults.size() * SizeOf.get(PyPowsyblApiHeader.SlackBusResultPointer.class));
+        for (int i = 0; i < slackBusResults.size(); i++) {
+            LoadFlowResult.SlackBusResult slackBusResult = slackBusResults.get(i);
+            PyPowsyblApiHeader.SlackBusResultPointer slackBusResultPtrPlus = slackBusResultPointer.addressOf(i);
+            slackBusResultPtrPlus.setId(CTypeUtil.toCharPtr(slackBusResult.getId()));
+            slackBusResultPtrPlus.setActivePowerMismatch(slackBusResult.getActivePowerMismatch());
+        }
+        ptr.slackBusResults().setLength(slackBusResults.size());
+        ptr.slackBusResults().setPtr(slackBusResultPointer);
+    }
+
     public static void copyToCLoadFlowParameters(LoadFlowParameters parameters, LoadFlowParametersPointer cParameters) {
         cParameters.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
         cParameters.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
-        cParameters.setNoGeneratorReactiveLimits(parameters.isNoGeneratorReactiveLimits());
+        cParameters.setUseReactiveLimits(parameters.isUseReactiveLimits());
         cParameters.setPhaseShifterRegulationOn(parameters.isPhaseShifterRegulationOn());
         cParameters.setTwtSplitShuntAdmittance(parameters.isTwtSplitShuntAdmittance());
-        cParameters.setSimulShunt(parameters.isSimulShunt());
+        cParameters.setShuntCompensatorVoltageControlOn(parameters.isShuntCompensatorVoltageControlOn());
         cParameters.setReadSlackBus(parameters.isReadSlackBus());
         cParameters.setWriteSlackBus(parameters.isWriteSlackBus());
         cParameters.setDistributedSlack(parameters.isDistributedSlack());

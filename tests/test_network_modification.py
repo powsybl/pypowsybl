@@ -3,6 +3,8 @@ import pytest
 import pypowsybl as pp
 import pandas as pd
 import pathlib
+from pypowsybl import PyPowsyblError
+import pypowsybl.report as rp
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -19,6 +21,20 @@ def test_voltage_level_topology_creation():
     switches = network.get_node_breaker_topology('VL1').switches
     assert switches[switches['kind'] == 'DISCONNECTOR'].shape[0] == 9
     assert switches[switches['kind'] == 'BREAKER'].shape[0] == 3
+
+def test_voltage_level_topology_creation_deprecated_report():
+    network = pp.network.create_four_substations_node_breaker_network()
+    network.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
+    df = pd.DataFrame.from_records(index="id", data=[
+        {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
+    ])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_voltage_level_topology(network, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
 
 
 def test_voltage_level_topology_creation_with_no_switch_kind():
@@ -167,6 +183,26 @@ def test_add_load_bay_node_breaker():
     assert position.direction == 'BOTTOM'
 
 
+def test_add_load_bay_node_breaker_deprecated_reporter():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "bus_or_busbar_section_id", "position_order"],
+                      data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_load_bay(network=n, df=df, raise_exception=True, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    load = n.get_loads().loc["new_load"]
+    assert load.p0 == 10.0
+    assert load.q0 == 3.0
+    position = n.get_extensions('position').loc["new_load"]
+    assert position.order == 0
+    assert position.feeder_name == 'new_load'
+    assert position.direction == 'BOTTOM'
+
+
 def test_add_load_bay_from_kwargs_node_breaker():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     pp.network.create_load_bay(network=n, id="new_load", p0=10.0, q0=3.0, bus_or_busbar_section_id="S1VL1_BBS",
@@ -197,6 +233,29 @@ def test_add_generator_bay():
         columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v',
                  'bus_or_busbar_section_id', 'position_order', 'direction'],
         index='id'))
+    generator = n.get_generators().loc['new_gen']
+    assert generator.target_p == 100.0
+    assert generator.target_q == 150.0
+    assert generator.voltage_level_id == 'S1VL1'
+    position = n.get_extensions('position').loc["new_gen"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_gen'
+    assert position.direction == 'TOP'
+
+
+def test_add_generator_bay_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_generator_bay(n, pd.DataFrame.from_records(
+            data=[('new_gen', 4999, -9999.99, True, 100, 150, 300, 'S1VL1_BBS', 15, 'TOP')],
+            columns=['id', 'max_p', 'min_p', 'voltage_regulator_on', 'target_p', 'target_q', 'target_v',
+                     'bus_or_busbar_section_id', 'position_order', 'direction'],
+            index='id'), reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
     generator = n.get_generators().loc['new_gen']
     assert generator.target_p == 100.0
     assert generator.target_q == 150.0
@@ -241,6 +300,31 @@ def test_add_battery_bay():
     assert position.direction == 'BOTTOM'
 
 
+def test_add_battery_bay_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(
+        columns=['id', 'bus_or_busbar_section_id', 'max_p', 'min_p', 'target_p', 'target_q', 'position_order'],
+        data=[('new_battery', 'S1VL1_BBS', 100, 10, 90, 20, 15)],
+        index='id')
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_battery_bay(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    battery = n.get_batteries().loc['new_battery']
+    assert battery.voltage_level_id == 'S1VL1'
+    assert battery.max_p == 100
+    assert battery.min_p == 10
+    assert battery.target_p == 90
+    assert battery.target_q == 20
+    position = n.get_extensions('position').loc["new_battery"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_battery'
+    assert position.direction == 'BOTTOM'
+
+
 def test_add_battery_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(
@@ -273,6 +357,41 @@ def test_add_dangling_line_bay():
         'bus_or_busbar_section_id': 'S1VL1_BBS'
     }])
     pp.network.create_dangling_line_bay(n, df)
+    dangling_line = n.get_dangling_lines().loc['new_dangling_line']
+    assert dangling_line.voltage_level_id == 'S1VL1'
+    assert dangling_line.r == 2
+    assert dangling_line.x == 2
+    assert dangling_line.g == 1
+    assert dangling_line.b == 1
+    assert dangling_line.p0 == 100
+    assert dangling_line.q0 == 101
+    position = n.get_extensions('position').loc["new_dangling_line"]
+    assert position.order == 15
+    assert position.feeder_name == 'new_dangling_line'
+    assert position.direction == 'BOTTOM'
+
+
+def test_add_dangling_line_bay_deprecated_reporter():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'new_dangling_line',
+        'name': 'dangling_line',
+        'p0': 100,
+        'q0': 101,
+        'r': 2,
+        'x': 2,
+        'g': 1,
+        'b': 1,
+        'position_order': 15,
+        'bus_or_busbar_section_id': 'S1VL1_BBS'
+    }])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_dangling_line_bay(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
     dangling_line = n.get_dangling_lines().loc['new_dangling_line']
     assert dangling_line.voltage_level_id == 'S1VL1'
     assert dangling_line.r == 2
@@ -507,6 +626,39 @@ def test_add_svc_bay():
     assert position.direction == 'BOTTOM'
 
 
+def test_add_svc_bay_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'svc_test',
+               'name': '',
+               'bus_or_busbar_section_id': 'S1VL1_BBS',
+               'position_order': 15,
+               'target_q': 200,
+               'regulation_mode': 'REACTIVE_POWER',
+               'target_v': 400,
+               'b_min': 0,
+               'b_max': 2}])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_static_var_compensator_bay(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    svc = n.get_static_var_compensators().loc['svc_test']
+    assert svc.voltage_level_id == 'S1VL1'
+    assert svc.target_q == 200
+    assert svc.regulation_mode == 'REACTIVE_POWER'
+    assert svc.target_v == 400
+    assert svc.b_min == 0
+    assert svc.b_max == 2
+    position = n.get_extensions('position').loc['svc_test']
+    assert position.order == 15
+    assert position.feeder_name == 'svc_test'
+    assert position.direction == 'BOTTOM'
+
+
 def test_add_svc_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(
@@ -542,6 +694,33 @@ def test_add_lcc_bay():
                'loss_factor': 0.1,
                'power_factor': 0.2}])
     pp.network.create_lcc_converter_station_bay(n, df)
+    lcc = n.get_lcc_converter_stations().loc['lcc_test']
+    assert lcc.voltage_level_id == 'S1VL1'
+    assert lcc.loss_factor == pytest.approx(0.1, abs=1e-6)
+    assert lcc.power_factor == pytest.approx(0.2, abs=1e-6)
+    position = n.get_extensions('position').loc['lcc_test']
+    assert position.order == 15
+    assert position.feeder_name == 'lcc_test'
+    assert position.direction == 'BOTTOM'
+
+
+def test_add_lcc_bay_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'lcc_test',
+               'name': '',
+               'bus_or_busbar_section_id': 'S1VL1_BBS',
+               'position_order': 15,
+               'loss_factor': 0.1,
+               'power_factor': 0.2}])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_lcc_converter_station_bay(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
     lcc = n.get_lcc_converter_stations().loc['lcc_test']
     assert lcc.voltage_level_id == 'S1VL1'
     assert lcc.loss_factor == pytest.approx(0.1, abs=1e-6)
@@ -596,6 +775,37 @@ def test_add_vsc_bay():
     assert position.direction == 'BOTTOM'
 
 
+def test_add_vsc_bay_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
+    df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': 'vsc_test',
+               'name': '',
+               'bus_or_busbar_section_id': 'S1VL1_BBS',
+               'position_order': 15,
+               'target_q': 200,
+               'voltage_regulator_on': True,
+               'loss_factor': 1.0,
+               'target_v': 400}])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_vsc_converter_station_bay(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    vsc = n.get_vsc_converter_stations().loc['vsc_test']
+    assert vsc.voltage_level_id == 'S1VL1'
+    assert vsc.target_q == 200
+    assert vsc.voltage_regulator_on == True
+    assert vsc.loss_factor == 1
+    assert vsc.target_v == 400
+    position = n.get_extensions('position').loc['vsc_test']
+    assert position.order == 15
+    assert position.feeder_name == 'vsc_test'
+    assert position.direction == 'BOTTOM'
+
+
 def test_add_vsc_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(
@@ -636,12 +846,60 @@ def test_create_branch_feeder_bays_twt_bus_breaker():
     assert n.get_extensions('position').size == 0
 
 
+def test_create_branch_feeder_bays_twt_bus_breaker_deprecated_reporter():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    df = pd.DataFrame(index=['new_twt'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g', 'b',
+                               'rated_u1', 'rated_u2', 'rated_s'],
+                      data=[['new_twt', 'NGEN', 'NHV1', 5.0, 50.0, 2.0, 4.0, 225.0, 400.0, 1.0]])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_2_windings_transformer_bays(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    retrieved_new_twt = n.get_2_windings_transformers().loc['new_twt']
+    assert retrieved_new_twt["r"] == 5.0
+    assert retrieved_new_twt["x"] == 50.0
+    assert retrieved_new_twt["g"] == 2.0
+    assert retrieved_new_twt["b"] == 4.0
+    assert retrieved_new_twt["rated_u1"] == 225.0
+    assert retrieved_new_twt["rated_u2"] == 400.0
+    assert retrieved_new_twt["rated_s"] == 1.0
+    assert n.get_extensions('position').size == 0
+
+
 def test_create_branch_feeder_bays_line_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame(index=['new_line'],
                       columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
                       data=[['new_line', 'NHV1', 'NHV2', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
     pp.network.create_line_bays(n, df)
+    retrieved_newline = n.get_lines().loc['new_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["g1"] == 20.0
+    assert retrieved_newline["g2"] == 30.0
+    assert retrieved_newline["b1"] == 40.0
+    assert retrieved_newline["b2"] == 50.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
+    assert n.get_extensions('position').size == 0
+
+
+def test_create_branch_feeder_bays_line_bus_breaker_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'NHV1', 'NHV2', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_line_bays(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
     retrieved_newline = n.get_lines().loc['new_line']
     assert retrieved_newline["r"] == 5.0
     assert retrieved_newline["x"] == 50.0
@@ -673,10 +931,42 @@ def test_create_coupling_device():
     ])
     pp.network.create_coupling_device(n, coupling_device)
     switches = n.get_switches()
-    assert len(switches.index) == 7
-    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches.index) == 5
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 4
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
-    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == True].index) == 2
+    assert len(switches[switches["open"] == False].index) == 3
+
+
+def test_create_coupling_device_deprecated_report():
+    n = pp.network.create_empty()
+    n.create_substations(id='S1')
+    n.create_voltage_levels(id='VL1', substation_id='S1', topology_kind='NODE_BREAKER',
+                            nominal_v=225, low_voltage_limit=380, high_voltage_limit=420)
+    busbars = pd.DataFrame.from_records(index='id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'BBS2', 'node': 1},
+        {'voltage_level_id': 'VL1', 'id': 'BBS3', 'node': 2},
+    ])
+    n.create_busbar_sections(busbars)
+    n.create_extensions('busbarSectionPosition', id=['BBS1', 'BBS2', 'BBS3'], busbar_index=[1, 2, 3],
+                        section_index=[1, 1, 1])
+    assert len(n.get_switches().index) == 0
+    coupling_device = pd.DataFrame.from_records(index='bus_or_busbar_section_id_1', data=[
+        {'bus_or_busbar_section_id_1': 'BBS1', 'bus_or_busbar_section_id_2': 'BBS2'},
+    ])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_coupling_device(n, coupling_device, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    switches = n.get_switches()
+    assert len(switches.index) == 5
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 4
+    assert len(switches[switches["kind"] == "BREAKER"].index) == 1
+    assert len(switches[switches["open"] == True].index) == 2
     assert len(switches[switches["open"] == False].index) == 3
 
 
@@ -696,10 +986,10 @@ def test_create_coupling_device_kwargs():
     assert len(n.get_switches().index) == 0
     pp.network.create_coupling_device(n, bus_or_busbar_section_id_1='BBS1', bus_or_busbar_section_id_2='BBS2', switch_prefix_id='sw')
     switches = n.get_switches()
-    assert len(switches.index) == 7
-    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 6
+    assert len(switches.index) == 5
+    assert len(switches[switches["kind"] == "DISCONNECTOR"].index) == 4
     assert len(switches[switches["kind"] == "BREAKER"].index) == 1
-    assert len(switches[switches["open"] == True].index) == 4
+    assert len(switches[switches["open"] == True].index) == 2
     assert len(switches[switches["open"] == False].index) == 3
 
 
@@ -720,6 +1010,32 @@ def test_create_coupling_device_bus_breaker():
     assert len(switches[switches["open"] == False].index) == 1
 
 
+def test_remove_feeder_bay_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network()
+    df = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_line_bays(n, df, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    assert 'new_line' in n.get_lines().index
+    assert 'new_line1_BREAKER' in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR_25_0' in n.get_switches().index
+    assert 'new_line2_BREAKER' in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR_8_0' in n.get_switches().index
+    pp.network.remove_feeder_bays(n, 'new_line')
+    assert 'new_line1_BREAKER' not in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR' not in n.get_switches().index
+    assert 'new_line2_BREAKER' not in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR' not in n.get_switches().index
+
+
 def test_remove_feeder_bay():
     n = pp.network.create_four_substations_node_breaker_network()
     df = pd.DataFrame(index=['new_line'],
@@ -730,9 +1046,9 @@ def test_remove_feeder_bay():
     pp.network.create_line_bays(n, df)
     assert 'new_line' in n.get_lines().index
     assert 'new_line1_BREAKER' in n.get_switches().index
-    assert 'new_line1_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line1_DISCONNECTOR_25_0' in n.get_switches().index
     assert 'new_line2_BREAKER' in n.get_switches().index
-    assert 'new_line2_DISCONNECTOR' in n.get_switches().index
+    assert 'new_line2_DISCONNECTOR_8_0' in n.get_switches().index
     pp.network.remove_feeder_bays(n, 'new_line')
     assert 'new_line1_BREAKER' not in n.get_switches().index
     assert 'new_line1_DISCONNECTOR' not in n.get_switches().index
@@ -834,6 +1150,50 @@ def test_create_line_on_line():
     assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
 
 
+def test_create_line_on_line_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    assert 'VLTEST' in n.get_voltage_levels().index
+    assert n.get_voltage_levels().loc['VLTEST']['substation_id'] == 'P3'
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    assert 'VLTEST_0' in n.get_bus_breaker_topology('VLTEST').buses.index
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    generators = n.get_generators(all_attributes=True)
+    assert 'GEN3' in generators.index
+    gen3 = generators.loc['GEN3']
+    assert gen3['voltage_level_id'] == 'VLTEST'
+    assert gen3['bus_breaker_bus_id'] == 'VLTEST_0'
+    assert gen3['target_p'] == 100
+    assert gen3['bus_id'] == 'VLTEST_0#0'
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_line_on_line(n, bbs_or_bus_id='VLTEST_0', new_line_id='test_line', new_line_r=5.0,
+                                       new_line_x=50.0,
+                                       new_line_b1=2.0, new_line_b2=3.0, new_line_g1=4.0, new_line_g2=5.0,
+                                       line_id='NHV1_NHV2_1', position_percent=75.0, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+
+    retrieved_newline = n.get_lines().loc['test_line']
+    assert retrieved_newline["r"] == 5.0
+    assert retrieved_newline["x"] == 50.0
+    assert retrieved_newline["b1"] == 2.0
+    assert retrieved_newline["b2"] == 3.0
+    assert retrieved_newline["g1"] == 4.0
+    assert retrieved_newline["g2"] == 5.0
+    assert retrieved_newline["connected1"]
+    assert retrieved_newline["connected2"]
+
+
 def test_create_line_on_line_deprecated_arguments():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_substations(id='P3', country='BE')
@@ -866,6 +1226,43 @@ def test_create_line_on_line_deprecated_arguments():
     generators = n.get_generators(all_attributes=True)
     assert 'GEN3' in generators.index
     assert generators.loc['GEN3']['bus_id'] == 'VLTEST_0#0'
+
+
+def test_revert_create_line_on_line_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+    assert len(n.get_lines()) == 2
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+
+    pp.network.create_line_on_line(n, bbs_or_bus_id='VLTEST_0', new_line_id='test_line', new_line_r=5.0, new_line_x=50.0,
+                                   new_line_b1=2.0, new_line_b2=3.0, new_line_g1=4.0, new_line_g2=5.0,
+                                   line_id='NHV1_NHV2_1', position_percent=75.0, reporter=report_node)
+    assert len(n.get_lines()) == 4
+
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    with pytest.deprecated_call():
+        pp.network.revert_create_line_on_line(network=n, line_to_be_merged1_id='NHV1_NHV2_1_1',
+                                              line_to_be_merged2_id='NHV1_NHV2_1_2', line_to_be_deleted='test_line',
+                                              merged_line_id='NHV1_NHV2_1', reporter=report_node)
+    report3 = str(report_node)
+    assert len(report3) > len(report2)
+
+    assert len(n.get_lines()) == 2
+
+    retrieved_line = n.get_lines().loc['NHV1_NHV2_1']
+    assert retrieved_line["connected1"]
+    assert retrieved_line["connected2"]
 
 
 def test_revert_create_line_on_line():
@@ -993,6 +1390,30 @@ def test_connect_voltage_level_on_line():
     assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
 
 
+def test_connect_voltage_level_on_line_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
+    n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.connect_voltage_level_on_line(n, bbs_or_bus_id="BBS", line_id="NHV1_NHV2_1", position_percent=75.0, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+
+    retrieved_splittedline1 = n.get_lines(id=['NHV1_NHV2_1_1'])
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "voltage_level2_id"] == "N_VL"
+    assert retrieved_splittedline1.loc['NHV1_NHV2_1_1', "r"] == 2.25
+
+    retrieved_splittedline2 = n.get_lines(id=['NHV1_NHV2_1_2'])
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level1_id"] == "N_VL"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_splittedline2.loc['NHV1_NHV2_1_2', "r"] == 0.75
+
+
 def test_connect_voltage_level_on_line_deprecated_args():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
@@ -1036,6 +1457,38 @@ def test_revert_connect_voltage_level_on_line():
     assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
     assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
 
+
+def test_revert_connect_voltage_level_on_line_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='N_VL', topology_kind='NODE_BREAKER', nominal_v=400)
+    n.create_busbar_sections(id='BBS', voltage_level_id='N_VL', node=0)
+
+    assert len(n.get_lines()) == 2
+    retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.connect_voltage_level_on_line(n, bbs_or_bus_id="BBS", line_id="NHV1_NHV2_1", position_percent=75.0, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    assert len(n.get_lines()) == 3
+
+    with pytest.deprecated_call():
+        pp.network.revert_connect_voltage_level_on_line(network=n, line1_id='NHV1_NHV2_1_1', line2_id='NHV1_NHV2_1_2',
+                                                        line_id='NHV1_NHV2_1', reporter=report_node)
+    report3 = str(report_node)
+    assert len(report3) > len(report2)
+
+    assert len(n.get_lines()) == 2
+    retrieved_line = n.get_lines(id=['NHV1_NHV2_1'])
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level1_id"] == "VLHV1"
+    assert retrieved_line.loc['NHV1_NHV2_1', "voltage_level2_id"] == "VLHV2"
+    assert retrieved_line.loc['NHV1_NHV2_1', "r"] == 3.0
 
 def test_revert_connect_voltage_level_on_line_deprecated_args():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -1085,6 +1538,41 @@ def test_replace_tee_point_by_voltage_level_on_line():
     assert retrieved_newline2["connected2"]
 
     assert 'test_line' not in n.get_lines().index
+
+
+def test_replace_tee_point_by_voltage_level_on_line_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_substations(id='P3', country='BE')
+    n.create_voltage_levels(id='VLTEST', substation_id='P3', nominal_v=380, topology_kind='BUS_BREAKER',
+                            high_voltage_limit=400, low_voltage_limit=370)
+    n.create_buses(id='VLTEST_0', voltage_level_id='VLTEST')
+
+    n.create_generators(id='GEN3', max_p=4999, min_p=-9999.99, voltage_level_id='VLTEST',
+                        voltage_regulator_on=True, target_p=100, target_q=150,
+                        target_v=300, bus_id='VLTEST_0')
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.create_line_on_line(n, bbs_or_bus_id='VLTEST_0', new_line_id='test_line', new_line_r=5.0,
+                                       new_line_x=50.0,
+                                       new_line_b1=2.0, new_line_b2=3.0, new_line_g1=4.0, new_line_g2=5.0,
+                                       line_id='NHV1_NHV2_1', position_percent=75.0, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+    assert len(n.get_lines()) == 4
+
+    with pytest.deprecated_call():
+        pp.network.replace_tee_point_by_voltage_level_on_line(n, tee_point_line1='NHV1_NHV2_1_1',
+                                                              tee_point_line2='NHV1_NHV2_1_2',
+                                                              tee_point_line_to_remove='test_line',
+                                                              bbs_or_bus_id='VLTEST_0', new_line1_id='NewLine1',
+                                                              new_line2_id='NewLine2', reporter=report_node)
+    report3 = str(report_node)
+    assert len(report3) > len(report2)
+
+
 
 
 def test_replace_tee_point_by_voltage_level_on_line_deprecated_args():
@@ -1145,6 +1633,27 @@ def test_remove_voltage_level():
     assert 'LINETEST' not in n.get_lines().index
 
 
+def test_remove_voltage_level_deprecated_report():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_voltage_levels(id='VLTEST', substation_id='P1', topology_kind='BUS_BREAKER', nominal_v=400, low_voltage_limit=380, high_voltage_limit=420)
+    n.create_buses(id='B1', voltage_level_id='VLTEST')
+    n.create_loads(id='LOADTEST', voltage_level_id='VLTEST', bus_id='B1', p0=100, q0=10)
+    n.create_lines(id='LINETEST', voltage_level1_id='VLTEST', bus1_id='B1', voltage_level2_id='VLGEN', bus2_id='NGEN',
+                   b1=0, b2=0, g1=0, g2=0, r=0.5, x=10)
+
+    assert 'VLTEST' in n.get_voltage_levels().index
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.remove_voltage_levels(n, 'VLTEST', reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+
+    assert 'VLTEST' not in n.get_voltage_levels().index
+
+
 def test_remove_hvdc():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.network.remove_hvdc_lines(n, 'HVDC2', {'HVDC2': 'SHUNT'})
@@ -1157,3 +1666,111 @@ def test_remove_hvdc():
 
     assert 'HVDC1' not in n.get_hvdc_lines().index
     assert n.get_vsc_converter_stations().empty
+
+
+def test_remove_hvdc_deprecated_report():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.network.remove_hvdc_lines(n, 'HVDC2', {'HVDC2': 'SHUNT'})
+
+    assert 'HVDC2' not in n.get_hvdc_lines().index
+    assert 'SHUNT' not in n.get_shunt_compensators().index
+    assert n.get_lcc_converter_stations().empty
+
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    with pytest.deprecated_call():
+        pp.network.remove_hvdc_lines(n, 'HVDC1', reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) > len(report1)
+
+
+def test_exception_create_element_with_bay():
+    #load (works the same for every injection)
+    n = pp.network.create_four_substations_node_breaker_network()
+    df_load_wrong_bbs = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "bus_or_busbar_section_id", "position_order"],
+                                     data=[["new_load", 10.0, 3.0, "S1VL1_BB", 0]])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_load_bay(network=n, df=df_load_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL1_BB not found.')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_load_bay(network=n, df=df_load_wrong_bbs)
+    assert exc.match('Bus or busbar section S1VL1_BB not found.')
+
+
+    pp.network.create_load_bay(network=n, df=df_load_wrong_bbs, raise_exception=False)
+    assert 'new_load' not in n.get_loads().index
+
+    #line
+    df_line_wrong_bbs = pd.DataFrame(index=['new_line'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
+                      data=[['new_line', 'S1VL2_BBS', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
+                             50.0]])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_line_bays(n, df_line_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_line_bays(n, df_line_wrong_bbs)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+    pp.network.create_line_bays(network=n, df=df_line_wrong_bbs, raise_exception=False)
+    assert 'new_line' not in n.get_loads().index
+
+    #two winding transformer
+    df_twt_wrong_bbs = pd.DataFrame(index=['new_twt'],
+                      columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'position_order_1',
+                               'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g', 'b', 'rated_u1',
+                               'rated_u2', 'rated_s'],
+                      data=[['new_twt', 'S1VL1_BBS', 'S1VL2_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 2.0, 4.0, 225.0,
+                             400.0, 1.0]])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found.')
+
+    pp.network.create_2_windings_transformer_bays(n, df_twt_wrong_bbs, raise_exception=False)
+    assert 'new_twt' not in n.get_2_windings_transformers().index
+
+    # voltage level topology
+    n.create_voltage_levels(id='VL_TEST', substation_id='S1', topology_kind='NODE_BREAKER', nominal_v=225)
+    df = pd.DataFrame.from_records(index="id", data=[
+        {'id': 'VL_TES', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
+    ])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_voltage_level_topology(n, df, raise_exception=True)
+    assert exc.match('Voltage level VL_TES is not found')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_voltage_level_topology(n, df)
+    assert exc.match('Voltage level VL_TES is not found')
+
+    pp.network.create_voltage_level_topology(n, df, raise_exception=False)
+    assert not 'VL_TEST' in n.get_busbar_sections()['voltage_level_id'].values
+
+    # coupling device
+    coupling_device = pd.DataFrame.from_records(index='bus_or_busbar_section_id_1', data=[
+        {'bus_or_busbar_section_id_1': 'S1VL2_BBS', 'bus_or_busbar_section_id_2': 'S1VL2_BBS2'},
+    ])
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_coupling_device(n, coupling_device, raise_exception=True)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+    # Check that it also raises an exception if boolean is missing
+    with pytest.raises(PyPowsyblError) as exc:
+        pp.network.create_coupling_device(n, coupling_device)
+    assert exc.match('Bus or busbar section S1VL2_BBS not found')
+
+
+
+
+

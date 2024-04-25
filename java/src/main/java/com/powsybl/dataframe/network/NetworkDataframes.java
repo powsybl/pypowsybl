@@ -53,6 +53,7 @@ public final class NetworkDataframes {
 
     private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
+        mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
         mappers.put(DataframeElementType.BUS, buses());
         mappers.put(DataframeElementType.LINE, lines());
         mappers.put(DataframeElementType.TWO_WINDINGS_TRANSFORMER, twoWindingTransformers());
@@ -245,7 +246,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
                 .stringsIndex("id", Generator::getId)
                 .strings("name", g -> g.getOptionalName().orElse(""))
-                .enums("energy_source", EnergySource.class, Generator::getEnergySource)
+                .enums("energy_source", EnergySource.class, Generator::getEnergySource, Generator::setEnergySource)
                 .doubles("target_p", Generator::getTargetP, Generator::setTargetP)
                 .doubles("min_p", Generator::getMinP, Generator::setMinP)
                 .doubles("max_p", Generator::getMaxP, Generator::setMaxP)
@@ -260,7 +261,8 @@ public final class NetworkDataframes {
                 .doubles("target_v", Generator::getTargetV, Generator::setTargetV)
                 .doubles("target_q", Generator::getTargetQ, Generator::setTargetQ)
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
-                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
+                .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
+                        (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", g -> g.getTerminal().getI())
@@ -274,46 +276,11 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static String getRegulatedElementId(Injection injection) {
-        Terminal terminal;
-        if (injection instanceof Generator) {
-            terminal = ((Generator) injection).getRegulatingTerminal();
-        } else if (injection instanceof VscConverterStation) {
-            terminal = ((VscConverterStation) injection).getRegulatingTerminal();
-        } else if (injection instanceof StaticVarCompensator) {
-            terminal = ((StaticVarCompensator) injection).getRegulatingTerminal();
-        } else {
-            throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
-        }
-        if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-            //Not supported for the moment
-            return null;
-        }
-        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
-    }
-
-    private static void setRegulatedElement(Injection injection, String elementId) {
-        Network network = injection.getNetwork();
-        Identifiable<?> identifiable = network.getIdentifiable(elementId);
-        if (identifiable instanceof Injection) {
-            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
-            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER) {
-                throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
-                        ": not currently supported for bus breaker topologies.");
-            }
-            if (injection instanceof Generator) {
-                ((Generator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
-            } else if (injection instanceof VscConverterStation) {
-                ((VscConverterStation) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
-            } else if (injection instanceof StaticVarCompensator) {
-                ((StaticVarCompensator) injection).setRegulatingTerminal(((Injection<?>) identifiable).getTerminal());
-            } else {
-                throw new UnsupportedOperationException(String.format("%s is neither a generator, a vsc station or a var static compensator", injection.getId()));
-            }
-        } else {
-            throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
-                    ": the regulated element may only be a busbar section or an injection.");
-        }
+    private static NetworkDataframeMapper subNetworks() {
+        return NetworkDataframeMapperBuilder.ofStream(n -> n.getSubnetworks().stream(),
+                        getOrThrow(Network::getSubnetwork, "SubNetwork"))
+                .stringsIndex("id", Identifiable::getId)
+                .build();
     }
 
     static NetworkDataframeMapper buses() {
@@ -420,10 +387,9 @@ public final class NetworkDataframes {
     static Triple<String, ShuntCompensatorNonLinearModel.Section, Integer> getShuntSectionNonlinear(Network network, UpdatingDataframe dataframe, int index) {
         ShuntCompensator shuntCompensator = network.getShuntCompensator(dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new PowsyblException("id is missing")));
-        if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel)) {
+        if (!(shuntCompensator.getModel() instanceof ShuntCompensatorNonLinearModel shuntNonLinear)) {
             throw new PowsyblException("shunt with id " + shuntCompensator.getId() + "has not a non linear model");
         } else {
-            ShuntCompensatorNonLinearModel shuntNonLinear = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
             int section = dataframe.getIntValue("section", index)
                     .orElseThrow(() -> new PowsyblException("section is missing"));
             return Triple.of(shuntCompensator.getId(), shuntNonLinear.getAllSections().get(section), section);
@@ -598,7 +564,8 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("ucte-x-node-code", dl -> Objects.toString(dl.getUcteXnodeCode(), ""))
+                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .strings("ucte_xnode_code", dl -> Objects.toString(dl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .addProperties()
@@ -611,7 +578,8 @@ public final class NetworkDataframes {
                 .strings("name", tl -> tl.getOptionalName().orElse(""))
                 .strings("dangling_line1_id", tl -> tl.getDanglingLine1().getId())
                 .strings("dangling_line2_id", tl -> tl.getDanglingLine2().getId())
-                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getUcteXnodeCode(), ""))
+                .strings("pairing_key", tl -> Objects.toString(tl.getPairingKey(), ""))
+                .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -649,7 +617,8 @@ public final class NetworkDataframes {
                 .doubles("target_v", VscConverterStation::getVoltageSetpoint, VscConverterStation::setVoltageSetpoint)
                 .doubles("target_q", VscConverterStation::getReactivePowerSetpoint, VscConverterStation::setReactivePowerSetpoint)
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
-                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
+                .strings("regulated_element_id", vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
+                        (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(vsc::setRegulatingTerminal, vsc.getNetwork(), elementId))
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", st -> st.getTerminal().getI())
@@ -673,7 +642,8 @@ public final class NetworkDataframes {
                 .doubles("target_q", StaticVarCompensator::getReactivePowerSetpoint, StaticVarCompensator::setReactivePowerSetpoint)
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
-                .strings("regulated_element_id", NetworkDataframes::getRegulatedElementId, NetworkDataframes::setRegulatedElement)
+                .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
+                        (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
                 .doubles("p", getP(), setP())
                 .doubles("q", getQ(), setQ())
                 .doubles("i", st -> st.getTerminal().getI())
@@ -970,30 +940,32 @@ public final class NetworkDataframes {
         }
         SideEnum side = SideEnum.valueOf(sideStr);
         switch (side) {
-            case ONE:
+            case ONE -> {
                 if (connectable instanceof Branch) {
-                    return ((Branch<?>) connectable).getTerminal(Branch.Side.ONE);
-                } else if (connectable instanceof ThreeWindingsTransformer) {
-                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.ONE);
+                    return ((Branch<?>) connectable).getTerminal(TwoSides.ONE);
+                } else if (connectable instanceof ThreeWindingsTransformer twt) {
+                    return twt.getTerminal(ThreeSides.ONE);
                 } else {
                     throw new PowsyblException("no side ONE for this element");
                 }
-            case TWO:
+            }
+            case TWO -> {
                 if (connectable instanceof Branch) {
-                    return ((Branch<?>) connectable).getTerminal(Branch.Side.TWO);
-                } else if (connectable instanceof ThreeWindingsTransformer) {
-                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.TWO);
+                    return ((Branch<?>) connectable).getTerminal(TwoSides.TWO);
+                } else if (connectable instanceof ThreeWindingsTransformer twt) {
+                    return twt.getTerminal(ThreeSides.TWO);
                 } else {
                     throw new PowsyblException("no side TWO for this element");
                 }
-            case THREE:
-                if (connectable instanceof ThreeWindingsTransformer) {
-                    return ((ThreeWindingsTransformer) connectable).getTerminal(ThreeWindingsTransformer.Side.THREE);
+            }
+            case THREE -> {
+                if (connectable instanceof ThreeWindingsTransformer twt) {
+                    return twt.getTerminal(ThreeSides.THREE);
                 } else {
                     throw new PowsyblException("no side THREE for this element");
                 }
-            default:
-                throw new PowsyblException("side must be ONE, TWO or THREE");
+            }
+            default -> throw new PowsyblException("side must be ONE, TWO or THREE");
         }
     }
 
@@ -1008,9 +980,9 @@ public final class NetworkDataframes {
     private static Terminal getBranchTerminal(Branch<?> branch, String side) {
         if (side.isEmpty()) {
             return null;
-        } else if (side.equals(Branch.Side.ONE.name())) {
+        } else if (side.equals(TwoSides.ONE.name())) {
             return branch.getTerminal1();
-        } else if (side.equals(Branch.Side.TWO.name())) {
+        } else if (side.equals(TwoSides.TWO.name())) {
             return branch.getTerminal2();
         } else {
             throw new PowsyblException("Transformer side must be ONE or TWO");
@@ -1019,9 +991,9 @@ public final class NetworkDataframes {
 
     private static String getTerminalSideStr(Branch<?> branch, Terminal terminal) {
         if (terminal == branch.getTerminal1()) {
-            return Branch.Side.ONE.name();
+            return TwoSides.ONE.name();
         } else if (terminal == branch.getTerminal2()) {
-            return Branch.Side.TWO.name();
+            return TwoSides.TWO.name();
         }
         return "";
     }
@@ -1084,7 +1056,7 @@ public final class NetworkDataframes {
         return ifExistsInt(t -> getter.apply(t).getPhaseTapChanger(), PhaseTapChanger::getTapPosition);
     }
 
-    private static void setTapPosition(TapChanger<?, ?> tapChanger, int position) {
+    private static void setTapPosition(TapChanger<?, ?, ?, ?> tapChanger, int position) {
         if (tapChanger != null) {
             tapChanger.setTapPosition(position);
         }
@@ -1149,11 +1121,11 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getAliasesData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
                 .strings("alias", Pair::getRight)
-                .strings("alias_type", pair -> ((Optional<String>) pair.getLeft().getAliasType(pair.getRight())).orElse(""))
+                .strings("alias_type", pair -> pair.getLeft().getAliasType(pair.getRight()).orElse(""))
                 .build();
     }
 
-    private static Stream<Pair<Identifiable, String>> getAliasesData(Network network) {
+    private static Stream<Pair<Identifiable<?>, String>> getAliasesData(Network network) {
         return network.getIdentifiables().stream()
                 .flatMap(identifiable -> identifiable.getAliases().stream()
                         .map(alias -> Pair.of(identifiable, alias)));

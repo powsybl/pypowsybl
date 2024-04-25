@@ -115,20 +115,12 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
             }
             String seriesName = column.getName();
             SeriesMapper<U> mapper = seriesMappers.get(seriesName);
-            ColumnUpdater<U> updater;
-            switch (column.getType()) {
-                case STRING:
-                    updater = new StringColumnUpdater<>(updatingDataframe.getStrings(seriesName), mapper);
-                    break;
-                case DOUBLE:
-                    updater = new DoubleColumnUpdater<>(updatingDataframe.getDoubles(seriesName), mapper);
-                    break;
-                case INT:
-                    updater = new IntColumnUpdater<>(updatingDataframe.getInts(seriesName), mapper);
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected series type for update: " + column.getType());
-            }
+            ColumnUpdater<U> updater = switch (column.getType()) {
+                case STRING -> new StringColumnUpdater<>(updatingDataframe.getStrings(seriesName), mapper);
+                case DOUBLE -> new DoubleColumnUpdater<>(updatingDataframe.getDoubles(seriesName), mapper);
+                case INT -> new IntColumnUpdater<>(updatingDataframe.getInts(seriesName), mapper);
+                default -> throw new IllegalStateException("Unexpected series type for update: " + column.getType());
+            };
             updaters.add(updater);
         }
 
@@ -152,16 +144,12 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     }
 
     protected boolean filterMapper(SeriesMapper<U> mapper, DataframeFilter dataframeFilter) {
-        switch (dataframeFilter.getAttributeFilterType()) {
-            case DEFAULT_ATTRIBUTES:
-                return mapper.getMetadata().isDefaultAttribute() || mapper.getMetadata().isIndex();
-            case INPUT_ATTRIBUTES:
-                return dataframeFilter.getInputAttributes().contains(mapper.getMetadata().getName()) || mapper.getMetadata().isIndex();
-            case ALL_ATTRIBUTES:
-                return true;
-            default:
-                throw new IllegalStateException("Unexpected attribute filter type: " + dataframeFilter.getAttributeFilterType());
-        }
+        return switch (dataframeFilter.getAttributeFilterType()) {
+            case DEFAULT_ATTRIBUTES -> mapper.getMetadata().isDefaultAttribute() || mapper.getMetadata().isIndex();
+            case INPUT_ATTRIBUTES ->
+                    dataframeFilter.getInputAttributes().contains(mapper.getMetadata().getName()) || mapper.getMetadata().isIndex();
+            case ALL_ATTRIBUTES -> true;
+        };
     }
 
     protected abstract List<U> getItems(T object);

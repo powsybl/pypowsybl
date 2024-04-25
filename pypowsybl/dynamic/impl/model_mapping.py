@@ -7,7 +7,7 @@
 from typing import Union
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl._pypowsybl import DynamicMappingType, BranchSide # pylint: disable=protected-access
+from pypowsybl._pypowsybl import DynamicMappingType, Side # pylint: disable=protected-access
 from pypowsybl.utils import \
     _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe # pylint: disable=protected-access
 
@@ -88,7 +88,7 @@ class ModelMapping:
                                       parameter_set_id=parameter_set_id,
                                       mapping_type=DynamicMappingType.GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
 
-    def add_current_limit_automaton(self, static_id: str, parameter_set_id: str, branch_side: BranchSide) -> None:
+    def add_current_limit_automaton(self, static_id: str, parameter_set_id: str, branch_side: Side) -> None:
         """
         Add a current limit automaton mapping
 
@@ -102,11 +102,11 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.CURRENT_LIMIT_AUTOMATON)
 
     def add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_df: pd.DataFrame = None,
-                                 **kwargs: Union[str, BranchSide, DynamicMappingType]) -> None:
+                                 **kwargs: Union[str, Side, DynamicMappingType]) -> None:
         """
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 
-        | The dataframe must contains these three columns :
+        | The dataframe must contains these three columns:
         |     - static_id: id of the network element to map
         |     - parameter_set_id: set id in the parameter file
         |     - mapping_type: value of enum DynamicMappingType

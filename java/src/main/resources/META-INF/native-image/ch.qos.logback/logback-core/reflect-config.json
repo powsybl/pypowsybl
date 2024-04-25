@@ -1,7 +1,10 @@
 [
-{
-  "name":"ch.qos.logback.core.ConsoleAppender",
-  "allPublicMethods":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-}
+  {
+    "name":"ch.qos.logback.core.encoder.LayoutWrappingEncoder",
+    "methods":[{"name":"setParent","parameterTypes":["ch.qos.logback.core.spi.ContextAware"] }]
+  },
+  {
+    "name":"ch.qos.logback.core.pattern.PatternLayoutEncoderBase",
+    "methods":[{"name":"setPattern","parameterTypes":["java.lang.String"] }]
+  }
 ]

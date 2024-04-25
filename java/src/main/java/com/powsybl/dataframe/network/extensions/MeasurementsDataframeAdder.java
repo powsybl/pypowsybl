@@ -17,6 +17,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Connectable;
 import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.extensions.*;
 
 import java.util.*;
@@ -64,7 +65,7 @@ public class MeasurementsDataframeAdder extends AbstractSimpleAdder {
             MeasurementAdder adder = measurements.newMeasurement();
             SeriesUtils.applyIfPresent(id, row, adder::setId);
             SeriesUtils.applyIfPresent(type, row, type -> adder.setType(Measurement.Type.valueOf(type)));
-            SeriesUtils.applyIfPresent(side, row, side -> adder.setSide(Measurement.Side.valueOf(side)));
+            SeriesUtils.applyIfPresent(side, row, side -> adder.setSide(ThreeSides.valueOf(side)));
             SeriesUtils.applyIfPresent(value, row, adder::setValue);
             SeriesUtils.applyIfPresent(standardDeviation, row, adder::setStandardDeviation);
             SeriesUtils.applyBooleanIfPresent(valid, row, adder::setValid);

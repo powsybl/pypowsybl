@@ -8,17 +8,18 @@
 package com.powsybl.python.shortcircuit;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.ReporterModel;
-import com.powsybl.dataframe.shortcircuit.adders.ShortCircuitFaultAdderFactory;
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dataframe.shortcircuit.adders.FaultDataframeAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ShortCircuitAnalysisParametersPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.ShortCircuitFaultType;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.network.NetworkCFunctions;
-import com.powsybl.shortcircuit.*;
+import com.powsybl.shortcircuit.ShortCircuitAnalysisProvider;
+import com.powsybl.shortcircuit.ShortCircuitAnalysisResult;
+import com.powsybl.shortcircuit.ShortCircuitParameters;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -86,9 +87,9 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "runShortCircuitAnalysis")
     public static ObjectHandle runShortCircuitAnalysis(IsolateThread thread, ObjectHandle shortCircuitAnalysisContextHandle,
-                                                   ObjectHandle networkHandle, ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer,
-                                                   CCharPointer providerName, ObjectHandle reporterHandle,
-                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                       ObjectHandle networkHandle, ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer,
+                                                       CCharPointer providerName, ObjectHandle reportNodeHandle,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisContext analysisContext = ObjectHandles.getGlobal().get(shortCircuitAnalysisContextHandle);
 
@@ -98,15 +99,15 @@ public final class ShortCircuitAnalysisCFunctions {
             logger().info("Short-circuit analysis provider used for short-circuit analysis is : {}", provider.getName());
             ShortCircuitParameters shortCircuitAnalysisParameters = ShortCircuitAnalysisCUtils.createShortCircuitAnalysisParameters(shortCircuitAnalysisParametersPointer, provider);
 
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
-            ShortCircuitAnalysisResult results = analysisContext.run(network, shortCircuitAnalysisParameters, provider.getName(), reporter);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+            ShortCircuitAnalysisResult results = analysisContext.run(network, shortCircuitAnalysisParameters, provider.getName(), reportNode);
             return ObjectHandles.getGlobal().create(results);
         });
     }
 
     @CEntryPoint(name = "freeShortCircuitAnalysisParameters")
     public static void freeShortCircuitAnalysisParameters(IsolateThread thread, ShortCircuitAnalysisParametersPointer parameters,
-                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             UnmanagedMemory.free(parameters);
         });
@@ -146,54 +147,59 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "getFaultsDataframeMetaData")
     public static DataframeMetadataPointer getFaultsDataframeMetaData(IsolateThread thread,
-                                                                      ShortCircuitFaultType mappingType,
-                                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            return CTypeUtil.createSeriesMetadata(ShortCircuitFaultAdderFactory.getAdder(mappingType).getMetadata());
-        });
+                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(new FaultDataframeAdder().getMetadata()));
     }
 
     @CEntryPoint(name = "setFaults")
     public static void setFaults(IsolateThread thread, ObjectHandle contextHandle,
-                                 ShortCircuitFaultType faultType,
                                  PyPowsyblApiHeader.DataframePointer cDataframe,
                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisContext context = ObjectHandles.getGlobal().get(contextHandle);
             UpdatingDataframe faultDataframe = NetworkCFunctions.createDataframe(cDataframe);
-            ShortCircuitFaultAdderFactory.getAdder(faultType).addElements(context, faultDataframe);
+            new FaultDataframeAdder().addElements(context, faultDataframe);
         });
     }
 
-    @CEntryPoint(name = "getFaultResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getFaultResults(IsolateThread thread, ObjectHandle shortCircuitAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getShortCircuitAnalysisFaultResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getShortCircuitAnalysisFaultResults(IsolateThread thread,
+                                                                                                    ObjectHandle shortCircuitAnalysisResult,
+                                                                                                    boolean withFortescueResult,
+                                                                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisFaultResultsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisFaultResultsMapper(withFortescueResult), result);
         });
     }
 
-    @CEntryPoint(name = "getMagnitudeFeederResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getMagnitudeFeederResults(IsolateThread thread, ObjectHandle shortCircuitAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getShortCircuitAnalysisFeederResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getShortCircuitAnalysisFeederResults(IsolateThread thread,
+                                                                                                              ObjectHandle shortCircuitAnalysisResult,
+                                                                                                              boolean withFortescueResult,
+                                                                                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisMagnitudeFeederResultsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisMagnitudeFeederResultsMapper(withFortescueResult), result);
         });
     }
 
-    @CEntryPoint(name = "getLimitViolationsResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getLimitViolationsResults(IsolateThread thread, ObjectHandle shortCircuitAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getShortCircuitAnalysisLimitViolationsResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getShortCircuitAnalysisLimitViolationsResults(IsolateThread thread, ObjectHandle shortCircuitAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
             return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisLimitViolationsResultsMapper(), result);
         });
     }
 
-    @CEntryPoint(name = "getMagnitudeBusResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getMagnitudeBusResults(IsolateThread thread, ObjectHandle shortCircuitAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getShortCircuitAnalysisBusResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getShortCircuitAnalysisBusResults(IsolateThread thread,
+                                                                                                  ObjectHandle shortCircuitAnalysisResult,
+                                                                                                  boolean withFortescueResult,
+                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisMagnitudeBusResultsMapper(), result);
+            return Dataframes.createCDataframe(Dataframes.shortCircuitAnalysisMagnitudeBusResultsMapper(withFortescueResult), result);
         });
     }
 }

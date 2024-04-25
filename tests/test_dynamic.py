@@ -16,8 +16,7 @@ def set_up():
 
 
 def test_get_possible_events():
-    assert set(dyn.EventMapping.get_possible_events()) == {dyn.EventType.BRANCH_DISCONNECTION,
-                                                           dyn.EventType.SET_POINT_BOOLEAN}
+    assert set(dyn.EventMapping.get_possible_events()) == {dyn.EventType.DISCONNECTION}
 
 
 def test_add_mapping():
@@ -33,7 +32,7 @@ def test_add_mapping():
     model_mapping.add_generator_synchronous_four_windings_proportional_regulations(
         id, parameter_id)
     model_mapping.add_current_limit_automaton(
-        id, parameter_id, dyn.BranchSide.TWO)
+        id, parameter_id, dyn.Side.TWO)
 
 
 def test_dataframe_mapping():
@@ -52,12 +51,12 @@ def test_dataframe_mapping():
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_branch_disconnection("test_quadripole_id", 5, True, False)
-    events.add_injection_disconnection("test_generator_id", 3.3, True)
-    events.add_injection_disconnection("test_generator_id", 8.2, False)
+    events.add_disconnection("test_quadripole_id", 5, pp.dynamic.Side.ONE)
+    events.add_disconnection("test_generator_id", 3.3, pp.dynamic.Side.TWO)
+    events.add_disconnection("test_generator_id", 8.2, pp.dynamic.Side.TWO)
 
 
 def test_add_curve():
     timeseries = dyn.CurveMapping()
     timeseries.add_curves("test_load_id_1", ["load_PPu", "load_QPu"])
-    timeseries.add_curves("test_load_id_2", "load_PPu")
+    timeseries.add_curve("test_load_id_2", "load_PPu")

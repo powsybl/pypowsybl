@@ -9,6 +9,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.FourSubstationsNodeBreakerWithExtensionsFactory;
 import com.powsybl.iidm.network.impl.NetworkFactoryImpl;
 import com.powsybl.iidm.network.test.*;
+import com.powsybl.iidm.serde.test.MetrixTutorialSixBusesFactory;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -39,6 +40,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("eurostag_tutorial_example1_with_power_limits", Networks::createEurostagTutorialExample1WithFixedPowerLimits),
             factory("eurostag_tutorial_example1_with_apc_extension", Networks::createEurostagTutorialExample1WithApcExtension),
             factory("eurostag_tutorial_example1_with_entsoe_category", Networks::eurostagWithEntsoeCategory),
+            factory("eurostag_tutorial_example1_with_tie_line", Networks::eurostagWithTieLine),
             factory("batteries", (Supplier<Network>) BatteryNetworkFactory::create),
             factory("dangling_lines", (Supplier<Network>) DanglingLineNetworkFactory::create),
             factory("three_windings_transformer", (Supplier<Network>) ThreeWindingsTransformerNetworkFactory::create),
@@ -47,7 +49,8 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("non_linear_shunt", (Supplier<Network>) ShuntTestCaseFactory::createNonLinear),
             factory("security_analysis_test", () -> SecurityAnalysisTestNetworkFactory.create()),
             factory("security_analysis_test_with_power_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedPowerLimits()),
-            factory("security_analysis_test_with_current_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedCurrentLimits())
+            factory("security_analysis_test_with_current_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedCurrentLimits()),
+            factory("metrix_tutorial_six_buses", () -> MetrixTutorialSixBusesFactory.create())
     );
 
     @Override

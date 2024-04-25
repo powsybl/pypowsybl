@@ -18,8 +18,14 @@ def test_parameters():
     params.add_constant_q_generators(["gen1", "gen2"])
     params.add_variable_two_windings_transformers(["twt1", "twt2"])
 
-    params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.add_specific_voltage_limits({"vl_id": (0.5, 1.2)})
+
+    params.add_specific_low_voltage_limits([("vl_id", True, 0.5)])
+    params.add_specific_high_voltage_limits([("vl_id", True, 1.2)])
+    params.add_specific_low_voltage_limits([("vl_id_2", False, 380)])
+    params.add_specific_high_voltage_limits([("vl_id_3", False, 420)])
+    params.add_specific_low_voltage_limits([("vl_id_4", False, 380)])
+    params.add_specific_high_voltage_limits([("vl_id_4", True, 2.3)])
 
     params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
     params.set_objective_distance(1.3)

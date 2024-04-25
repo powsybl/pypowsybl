@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
@@ -15,9 +15,12 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.EnergySource;
 import com.powsybl.iidm.network.GeneratorAdder;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
@@ -43,7 +46,8 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("rated_s"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.booleans("voltage_regulator_on")
+            SeriesMetadata.booleans("voltage_regulator_on"),
+            SeriesMetadata.strings("regulating_element_id")
     );
 
     @Override
@@ -63,6 +67,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final IntSeries voltageRegulatorOn;
         private final StringSeries energySource;
         private final StringSeries busOrBusbarSections;
+        private final StringSeries regulatingElements;
 
         GeneratorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -76,30 +81,38 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.energySource = dataframe.getStrings("energy_source");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
+            this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
-        GeneratorAdder createAdder(Network network, int row) {
-            GeneratorAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
-                    .newGenerator();
-            setInjectionAttributes(adder, row);
-            applyIfPresent(maxP, row, adder::setMaxP);
-            applyIfPresent(minP, row, adder::setMinP);
-            applyIfPresent(targetP, row, adder::setTargetP);
-            applyIfPresent(targetQ, row, adder::setTargetQ);
-            applyIfPresent(targetV, row, adder::setTargetV);
-            applyIfPresent(ratedS, row, adder::setRatedS);
-            applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
-            applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
-            return adder;
+        Optional<GeneratorAdder> createAdder(Network network, int row, boolean throwException) {
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl.isPresent()) {
+                GeneratorAdder adder = vl.get().newGenerator();
+                setInjectionAttributes(adder, row);
+                applyIfPresent(maxP, row, adder::setMaxP);
+                applyIfPresent(minP, row, adder::setMinP);
+                applyIfPresent(targetP, row, adder::setTargetP);
+                applyIfPresent(targetQ, row, adder::setTargetQ);
+                applyIfPresent(targetV, row, adder::setTargetV);
+                applyIfPresent(ratedS, row, adder::setRatedS);
+                applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
+                applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
+                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                return Optional.of(adder);
+            }
+            return Optional.empty();
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, ReportNode reportNode) {
         GeneratorSeries series = new GeneratorSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            GeneratorAdder adder = series.createAdder(network, row);
-            addition.add(network, dataframe, adder, row, throwException, reporter);
+            Optional<GeneratorAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                addition.add(network, dataframe, adder.get(), row, throwException, reportNode);
+            }
         }
     }
 

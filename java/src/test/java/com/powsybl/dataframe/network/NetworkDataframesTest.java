@@ -22,7 +22,6 @@ import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
 import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -188,11 +187,19 @@ class NetworkDataframesTest {
     @Test
     void secondaryVoltageControlExtension() {
         Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
-        SecondaryVoltageControl control = network.newExtension(SecondaryVoltageControlAdder.class)
-                .addControlZone(new SecondaryVoltageControl.ControlZone("z1",
-                        new SecondaryVoltageControl.PilotPoint(List.of("NLOAD"), 15d),
-                        List.of(new SecondaryVoltageControl.ControlUnit("GEN", false))))
-                .add();
+        network.newExtension(SecondaryVoltageControlAdder.class)
+                .newControlZone()
+                    .withName("z1")
+                    .newControlUnit()
+                        .withId("GEN")
+                        .withParticipate(false)
+                        .add()
+                    .newPilotPoint()
+                        .withBusbarSectionsOrBusesIds(List.of("NLOAD"))
+                        .withTargetV(15d)
+                        .add()
+                .add()
+            .add();
 
         List<Series> zoneSeries = createExtensionDataFrame("secondaryVoltageControl", "zones", network);
         assertThat(zoneSeries)
@@ -252,12 +259,12 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id",
-                        "connected", "ucte-x-node-code", "tie_line_id");
+                        "connected", "pairing_key", "ucte_xnode_code", "tie_line_id");
         List<Series> allAttributeSeries = createDataFrame(DANGLING_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
-                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "ucte-x-node-code", "fictitious", "tie_line_id");
+                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "pairing_key", "ucte_xnode_code", "fictitious", "tie_line_id");
     }
 
     @Test
@@ -267,11 +274,11 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "ucte_xnode_code");
+                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "pairing_key", "ucte_xnode_code");
         List<Series> allAttributeSeries = createDataFrame(TIE_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "ucte_xnode_code", "fictitious");
+                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "pairing_key", "ucte_xnode_code", "fictitious");
     }
 
     @Test
@@ -617,5 +624,15 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("element_id", "voltage_level_id", "bus_id", "element_side", "connected");
+    }
+
+    @Test
+    void testSubNetworks() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(SUB_NETWORK, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id");
     }
 }

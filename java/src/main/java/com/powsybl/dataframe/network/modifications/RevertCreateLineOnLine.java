@@ -7,8 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
-import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.RevertCreateLineOnLineBuilder;
@@ -24,11 +23,13 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  */
 public class RevertCreateLineOnLine implements NetworkModification {
 
+    private static final String MERGED_LINE_ID = "merged_line_id";
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("line_to_be_merged1_id"),
             SeriesMetadata.strings("line_to_be_merged2_id"),
             SeriesMetadata.strings("line_to_be_deleted"),
-            SeriesMetadata.strings("merged_line_id"),
+            SeriesMetadata.strings(MERGED_LINE_ID),
             SeriesMetadata.strings("merged_line_name")
     );
 
@@ -42,10 +43,10 @@ public class RevertCreateLineOnLine implements NetworkModification {
         applyIfPresent(dataframe.getStrings("line_to_be_merged1_id"), row, builder::withLineToBeMerged1Id);
         applyIfPresent(dataframe.getStrings("line_to_be_merged2_id"), row, builder::withLineToBeMerged2Id);
         applyIfPresent(dataframe.getStrings("line_to_be_deleted"), row, builder::withLineToBeDeletedId);
-        applyIfPresent(dataframe.getStrings("merged_line_id"), row, builder::withMergedLineId);
+        applyIfPresent(dataframe.getStrings(MERGED_LINE_ID), row, builder::withMergedLineId);
         Optional<String> mergedLineName = dataframe.getStringValue("merged_line_name", row);
         if (mergedLineName.isEmpty()) {
-            applyIfPresent(dataframe.getStrings("merged_line_id"), row, builder::withMergedLineName);
+            applyIfPresent(dataframe.getStrings(MERGED_LINE_ID), row, builder::withMergedLineName);
         } else {
             builder.withMergedLineName(mergedLineName.get());
         }
@@ -53,13 +54,13 @@ public class RevertCreateLineOnLine implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
         for (int row = 0; row < dataframes.get(0).getRowCount(); row++) {
             RevertCreateLineOnLineBuilder builder = createBuilder(dataframes.get(0), row);
-            builder.build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+            builder.build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
         }
     }
 }

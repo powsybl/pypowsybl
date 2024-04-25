@@ -7,7 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
@@ -17,6 +17,7 @@ import com.powsybl.iidm.network.Network;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Coline Piloquet <coline.piloquet at rte-france.com>
@@ -29,15 +30,17 @@ public class CreateLineFeeder implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
         for (int i = 0; i < dataframes.get(0).getRowCount(); i++) {
             FeederBaysLineSeries fbLineSeries = new FeederBaysLineSeries();
-            CreateBranchFeederBaysBuilder builder = fbLineSeries.createBuilder(network, dataframes.get(0), i);
-            com.powsybl.iidm.modification.NetworkModification modification = builder.build();
-            modification.apply(network);
+            Optional<CreateBranchFeederBaysBuilder> builder = fbLineSeries.createBuilder(network, dataframes.get(0), i, throwException);
+            if (builder.isPresent()) {
+                com.powsybl.iidm.modification.NetworkModification modification = builder.get().build();
+                modification.apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
+            }
         }
     }
 }

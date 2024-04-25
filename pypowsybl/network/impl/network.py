@@ -7,6 +7,7 @@
 #
 from __future__ import annotations  # Necessary for type alias like _DataFrame to work with sphinx
 
+import io
 import sys
 
 import datetime
@@ -36,13 +37,15 @@ from pypowsybl.utils import (
     _get_c_dataframes,
     path_to_str, PathOrStr
 )
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
-from .layout_parameters import LayoutParameters
+from .sld_parameters import SldParameters
+from .nad_parameters import NadParameters
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
+deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
 
 class Network:  # pylint: disable=too-many-public-methods
 
@@ -93,7 +96,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return str(self)
 
     def __getstate__(self) -> Dict[str, str]:
-        return {'xml': self.dump_to_string()}
+        return {'xml': self.save_to_string()}
 
     def __setstate__(self, state: Dict[str, str]) -> None:
         xml = state['xml']
@@ -121,7 +124,16 @@ class Network:  # pylint: disable=too-many-public-methods
         return _pp.update_connectable_status(self._handle, id, False)
 
     def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
-             reporter: Reporter = None) -> None:
+             reporter: ReportNode = None) -> None:
+        """
+        .. deprecated:: 1.1.0
+          Use :meth:`save` instead.
+        """
+        warnings.warn("dump is deprecated, use save instead", DeprecationWarning)
+        self.save(file, format, parameters, reporter)
+
+    def save(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
+             reporter: ReportNode = None, report_node: ReportNode = None) -> None:
         """
         Save a network to a file using the specified format.
 
@@ -132,39 +144,82 @@ class Network:  # pylint: disable=too-many-public-methods
             file:       path to the exported file
             format:     format to save the network, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter:   the reporter to be used to create an execution report, default is None (no report)
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Examples:
             Various usage examples:
 
             .. code-block:: python
 
-                network.dump('network.xiidm')
-                network.dump('network.xiidm.gz')  # produces a gzipped file
-                network.dump('/path/to/network.uct', format='UCTE')
+                network.save('network.xiidm')
+                network.save('network.xiidm.gz')  # produces a gzipped file
+                network.save('/path/to/network.uct', format='UCTE')
         """
+        if reporter is not None:
+            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+            report_node = reporter
         file = path_to_str(file)
         if parameters is None:
             parameters = {}
-        _pp.dump_network(self._handle, file, format, parameters,
-                         None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+        _pp.save_network(self._handle, file, format, parameters,
+                         None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: Reporter = None) -> str:
+    def dump_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: ReportNode = None) -> str:
+        """
+        .. deprecated:: 1.1.0
+          Use :meth:`save_to_string` instead.
+        """
+        warnings.warn("dump_to_string is deprecated, use save_to_string instead", DeprecationWarning)
+        return self.save_to_string(format, parameters, reporter)
+
+    def save_to_string(self, format: str = 'XIIDM', parameters: ParamsDict = None, reporter: ReportNode = None,
+                       report_node: ReportNode = None) -> str:
         """
         Save a network to a string using a specified format.
 
         Args:
             format:     format to export, only support mono file type, defaults to 'XIIDM'
             parameters: a dictionary of export parameters
-            reporter:   the reporter to be used to create an execution report, default is None (no report)
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A string representing this network
         """
+        if reporter is not None:
+            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+            report_node = reporter
+
         if parameters is None:
             parameters = {}
-        return _pp.dump_network_to_string(self._handle, format, parameters,
-                                          None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+        return _pp.save_network_to_string(self._handle, format, parameters,
+                                          None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
+
+    def save_to_binary_buffer(self, format: str = 'XIIDM', parameters: ParamsDict = None,
+                              reporter: ReportNode = None, report_node: ReportNode = None) -> io.BytesIO:
+        """
+        Save a network to a binary buffer using a specified format.
+        In the current implementation, whatever the specified format is (so a format creating a single file or a format
+        creating multiple files), the created binary buffer is a zip file.
+
+        Args:
+            format:     format to export, only support mono file type, defaults to 'XIIDM'
+            parameters: a dictionary of export parameters
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
+
+        Returns:
+            A BytesIO data buffer representing this network
+        """
+        if reporter is not None:
+            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+            report_node = reporter
+
+        if parameters is None:
+            parameters = {}
+        return io.BytesIO(_pp.save_network_to_binary_buffer(self._handle, format, parameters,
+                                                            None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
@@ -178,7 +233,7 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: PathOrStr = None,
-                                      parameters: LayoutParameters = None) -> None:
+                                      parameters: SldParameters = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -186,25 +241,50 @@ class Network:  # pylint: disable=too-many-public-methods
             container_id: a voltage level id or a substation id
             svg_file: a svg file path
             metadata_file: a json metadata file path
-            parameters: layout parameters to adjust the rendering of the diagram
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
         """
+
         svg_file = path_to_str(svg_file)
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
                                           '' if metadata_file is None else path_to_str(metadata_file), p)
 
-    def get_single_line_diagram(self, container_id: str, parameters: LayoutParameters = None) -> Svg:
+    def write_matrix_multi_substation_single_line_diagram_svg(self, matrix_ids: List[List[str]], svg_file: PathOrStr,
+                                                              metadata_file: PathOrStr = None,
+                                                              parameters: SldParameters = None) -> None:
+        """
+        Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
+
+        Args:
+            matrix_ids: a two-dimensional list of substation id
+            svg_file: a svg file path
+            metadata_file: a json metadata file path
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
+        """
+
+        svg_file = path_to_str(svg_file)
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+        _pp.write_matrix_multi_substation_single_line_diagram_svg(self._handle, matrix_ids, svg_file,
+                                                                  '' if metadata_file is None else path_to_str(
+                                                                      metadata_file),
+                                                                  p)
+
+    def get_single_line_diagram(self, container_id: str, parameters: SldParameters = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
-            parameters: layout parameters to adjust the rendering of the diagram
+            parameters: single-line diagram parameters to adjust the rendering of the diagram
 
         Returns:
             the single line diagram
         """
-        p = parameters._to_c_parameters() if parameters is not None else _pp.LayoutParameters()  # pylint: disable=protected-access
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
@@ -213,30 +293,58 @@ class Network:  # pylint: disable=too-many-public-methods
                                        low_nominal_voltage_bound: float = -1,
                                        edge_name_displayed: bool = False) -> None:
         """
+        .. deprecated:: 1.1.0
+          Use :class:`write_network_area_diagram_svg` with  `NadParameters` instead.
+
+        Create a network area diagram in SVG format and write it to a file.
+        Args:
+            svg_file: a svg file path
+            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            depth: the diagram depth around the voltage level
+            high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
+            low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
+            edge_name_displayed: if true displays the edge's names
+        """
+        nad_p = NadParameters(edge_name_displayed=edge_name_displayed)
+        self.write_network_area_diagram(svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
+                                        low_nominal_voltage_bound, nad_p)
+
+    def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
+                                   depth: int = 0, high_nominal_voltage_bound: float = -1,
+                                   low_nominal_voltage_bound: float = -1,
+                                   nad_parameters: NadParameters = None) -> None:
+        """
         Create a network area diagram in SVG format and write it to a file.
 
         Args:
             svg_file: a svg file path
             voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
+            high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
+            low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
+            nad_parameters: parameters for network area diagram
         """
         svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
+        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
-                                           low_nominal_voltage_bound, edge_name_displayed)
+                                           low_nominal_voltage_bound, nad_p)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
-                                 edge_name_displayed: bool = False) -> Svg:
+                                 nad_parameters: NadParameters = None) -> Svg:
         """
         Create a network area diagram.
 
         Args:
-            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            voltage_level_ids: the voltage level IDs, centers of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
+            high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
+            low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
+            nad_parameters: parameters for network area diagram
 
         Returns:
             the network area diagram
@@ -245,9 +353,27 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
+        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    edge_name_displayed))
+                                                    nad_p))
+
+    def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: Union[str, List[str]],
+                                                          depth: int = 0) -> List[str]:
+        """
+        Gathers the name of the displayed voltage levels of a network-area diagram in a list, according to
+        the input voltage level(s) and the depth of the diagram.
+
+        Args:
+            voltage_level_ids: the voltage level ID(s), center(s) of the diagram
+            depth: the diagram depth around the voltage level
+
+        Returns:
+            a list of the displayed voltage levels
+        """
+        if isinstance(voltage_level_ids, str):
+            voltage_level_ids = [voltage_level_ids]
+        return _pp.get_network_area_diagram_displayed_voltage_levels(self._handle, voltage_level_ids, depth)
 
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,
@@ -300,6 +426,39 @@ class Network:  # pylint: disable=too-many-public-methods
         if attributes:
             result = result[attributes]
         return result
+
+    def get_sub_networks(self, all_attributes: bool = False, attributes: List[str] = None,
+                         **kwargs: ArrayLike) -> DataFrame:
+        """
+        Get a dataframe of sub networks
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of sub networks.
+        """
+        return self.get_elements(ElementType.SUB_NETWORK, all_attributes, attributes, **kwargs)
+
+    def get_sub_network(self, sub_network_id: str) -> Network:
+        """
+        Get a sub network from its parent network.
+
+        Args:
+            sub_network_id: the id of the sub network
+
+        Returns:
+            The sub network.
+        """
+        return Network(_pp.get_sub_network(self._handle, sub_network_id))
+
+    def detach(self) -> None:
+        """
+        Detach a sub network from its parent network.
+        """
+        self._handle = _pp.detach_sub_network(self._handle)
 
     def get_buses(self, all_attributes: bool = False, attributes: List[str] = None,
                   **kwargs: ArrayLike) -> DataFrame:
@@ -411,7 +570,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_q_at_target_p** (optional): the minimum reactive value for the generator for the target p specified (MVar)
               - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
               - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
-              - **rated_s** : The rated nominal power (MVA)
+              - **rated_s**: The rated nominal power (MVA)
               - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
               - **target_q**: the target reactive value for the generator (in MVAr)
@@ -1007,7 +1166,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
-              - **ucte-xnode-code**: the UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+              - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
+              - **ucte-xnode-code**: deprecated for pairing key.
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
@@ -1356,6 +1516,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **low_voltage_limit**: the low voltage limit
               - **fictitious** (optional): ``True`` if the voltage level is part of the model and not of the actual network
               - **topology_kind** (optional): the voltage level topology kind (NODE_BREAKER or BUS_BREAKER)
+
             This dataframe is indexed by the id of the voltage levels
 
         Examples:
@@ -2249,7 +2410,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `target_v`
             - `target_q`
             - `voltage_regulator_on`
-            - `regulated_element_id` : you may define any injection or busbar section as the regulated location.
+            - `regulated_element_id`: you may define any injection or busbar section as the regulated location.
                Only supported in node breaker voltage levels.
             - `p`
             - `q`
@@ -2959,7 +3120,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are :
 
-            - `connected` : element_side must be provided if it is a sided network element
+            - `connected`: element_side must be provided if it is a sided network element
 
         See Also:
             :meth:`get_terminals`
@@ -3120,8 +3281,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_current_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
+        .. deprecated::
+          Use :meth:`get_operational_limits` instead.
+
         Get the list of all current limits on the network paired with their branch id.
-        get_current_limits is deprecated, use get_operational_limits instead
 
         Args:
             all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
@@ -3211,7 +3374,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if isinstance(networks, Network):
             networks = [networks]
-        return _pp.merge(self._handle, [n._handle for n in networks])
+        self._handle = _pp.merge([self._handle] + [n._handle for n in networks])
 
     def _create_elements(self, element_type: ElementType, dfs: List[Optional[DataFrame]],
                          **kwargs: ArrayLike) -> None:
@@ -3483,7 +3646,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
-            - **ucte-xnode-code**: the optional UCTE Xnode code associated to the dangling line, to be used for creating tie lines.
+            - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
+            - **ucte-x-node-code**: deprecated, use pairing-key instead.
 
         Examples:
             Using keyword arguments:
@@ -3493,6 +3657,16 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
                                               p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
+        ucte_xnode_code_str = 'ucte_xnode_code'
+        if df is not None:
+            if ucte_xnode_code_str in df.columns:
+                warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+                df = df.rename(columns={ucte_xnode_code_str: 'pairing_key'})
+        ucte_x_node_code = kwargs.get(ucte_xnode_code_str)
+        if ucte_x_node_code is not None:
+            warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
+            kwargs['pairing_key'] = ucte_x_node_code
+            kwargs.pop(ucte_xnode_code_str)
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
@@ -4065,7 +4239,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
             - **value**: the value of the limit in A, MVA or MW
             - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
-            - **is_fictitious** : fictitious limit ?
+            - **is_fictitious**: fictitious limit ?
 
             For each location of the network defined by a couple (element_id, side):
 
@@ -4336,6 +4510,10 @@ class Network:  # pylint: disable=too-many-public-methods
             _pp.create_network_elements_extension_series_array(self._handle, extension_name, table_name))
 
     def get_extension(self, extension_name: str) -> DataFrame:
+        """
+        .. deprecated::
+          Use :meth:`get_extensions` instead.
+        """
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
         return self.get_extensions(extension_name)
 

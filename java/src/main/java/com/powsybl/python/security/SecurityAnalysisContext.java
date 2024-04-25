@@ -6,7 +6,8 @@
  */
 package com.powsybl.python.security;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.action.Action;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
@@ -14,6 +15,7 @@ import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
 import com.powsybl.security.monitor.StateMonitor;
+import com.powsybl.security.strategy.OperatorStrategy;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,9 +26,13 @@ import java.util.List;
  */
 class SecurityAnalysisContext extends ContingencyContainerImpl {
 
+    private final List<Action> actions = new ArrayList<>();
+
+    private final List<OperatorStrategy> operatorStrategies = new ArrayList<>();
+
     private final List<StateMonitor> monitors = new ArrayList<>();
 
-    SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, Reporter reporter) {
+    SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, ReportNode reportNode) {
         ContingenciesProvider contingencies = this::createContingencies;
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(
@@ -38,12 +44,20 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                         new LimitViolationFilter(),
                         new DefaultLimitViolationDetector(),
                         Collections.emptyList(),
-                        Collections.emptyList(),
-                        Collections.emptyList(),
+                        operatorStrategies,
+                        actions,
                         monitors,
-                        (reporter == null) ? Reporter.NO_OP : reporter
+                        (reportNode == null) ? ReportNode.NO_OP : reportNode
                 );
         return report.getResult();
+    }
+
+    void addAction(Action action) {
+        actions.add(action);
+    }
+
+    void addOperatorStrategy(OperatorStrategy strategy) {
+        operatorStrategies.add(strategy);
     }
 
     void addMonitor(StateMonitor monitor) {

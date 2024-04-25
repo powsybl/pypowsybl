@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -30,7 +30,7 @@ public interface NetworkElementAdder {
      */
     void addElements(Network network, List<UpdatingDataframe> dataframes);
 
-    default void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, Reporter reporter) {
+    default void addElementsWithBay(Network network, List<UpdatingDataframe> dataframe, boolean throwException, ReportNode reportNode) {
         throw new UnsupportedOperationException();
     }
 }

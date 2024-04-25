@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.CreateFeederBay;
 import com.powsybl.iidm.modification.topology.CreateFeederBayBuilder;
@@ -30,44 +30,44 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
 
     @FunctionalInterface
     public interface AdditionStrategy {
-        void add(Network network, UpdatingDataframe df, InjectionAdder<?, ?> adder, int row, boolean throwException, Reporter reporter);
+        void add(Network network, UpdatingDataframe df, InjectionAdder<?, ?> adder, int row, boolean throwException, ReportNode reportNode);
     }
 
-    public void addElementsWithBay(Network network, UpdatingDataframe dataframe, boolean throwException, Reporter reporter) {
-        addElements(network, dataframe, this::addWithBay, throwException, reporter);
+    public void addElementsWithBay(Network network, UpdatingDataframe dataframe, boolean throwException, ReportNode reportNode) {
+        addElements(network, dataframe, this::addWithBay, throwException, reportNode);
     }
 
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        addElements(network, dataframe, (n, df, adder, row, throwException, reporter) -> add(adder), false, Reporter.NO_OP);
+        addElements(network, dataframe, (n, df, adder, row, throwException, reportNode) -> add(adder), true, ReportNode.NO_OP);
     }
 
-    void addElements(Network network, UpdatingDataframe dataframe, AbstractSimpleAdder.AdditionStrategy addition, boolean throwException, Reporter reporter) {
+    void addElements(Network network, UpdatingDataframe dataframe, AbstractSimpleAdder.AdditionStrategy addition, boolean throwException, ReportNode reportNode) {
         //do nothing
     }
 
     private void add(InjectionAdder<?, ?> injectionAdder) {
-        if (injectionAdder instanceof LoadAdder) {
-            ((LoadAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof BatteryAdder) {
-            ((BatteryAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof DanglingLineAdder) {
-            ((DanglingLineAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof GeneratorAdder) {
-            ((GeneratorAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof ShuntCompensatorAdder) {
-            ((ShuntCompensatorAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof StaticVarCompensatorAdder) {
-            ((StaticVarCompensatorAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof LccConverterStationAdder) {
-            ((LccConverterStationAdder) injectionAdder).add();
-        } else if (injectionAdder instanceof VscConverterStationAdder) {
-            ((VscConverterStationAdder) injectionAdder).add();
+        if (injectionAdder instanceof LoadAdder loadAdder) {
+            loadAdder.add();
+        } else if (injectionAdder instanceof BatteryAdder batteryAdder) {
+            batteryAdder.add();
+        } else if (injectionAdder instanceof DanglingLineAdder danglingLineAdder) {
+            danglingLineAdder.add();
+        } else if (injectionAdder instanceof GeneratorAdder generatorAdder) {
+            generatorAdder.add();
+        } else if (injectionAdder instanceof ShuntCompensatorAdder shuntCompensatorAdder) {
+            shuntCompensatorAdder.add();
+        } else if (injectionAdder instanceof StaticVarCompensatorAdder staticVarCompensatorAdder) {
+            staticVarCompensatorAdder.add();
+        } else if (injectionAdder instanceof LccConverterStationAdder lccConverterStationAdder) {
+            lccConverterStationAdder.add();
+        } else if (injectionAdder instanceof VscConverterStationAdder vscConverterStationAdder) {
+            vscConverterStationAdder.add();
         } else {
             throw new AssertionError("Given InjectionAdder not supported: " + injectionAdder.getClass().getName());
         }
     }
 
-    private void addWithBay(Network network, UpdatingDataframe dataframe, InjectionAdder<?, ?> injectionAdder, int row, boolean throwException, Reporter reporter) {
+    private void addWithBay(Network network, UpdatingDataframe dataframe, InjectionAdder<?, ?> injectionAdder, int row, boolean throwException, ReportNode reportNode) {
         String busOrBusbarSectionId = dataframe.getStrings("bus_or_busbar_section_id").get(row);
         OptionalInt injectionPositionOrder = dataframe.getIntValue("position_order", row);
         ConnectablePosition.Direction direction = ConnectablePosition.Direction.valueOf(dataframe.getStringValue("direction", row).orElse("BOTTOM"));
@@ -79,7 +79,7 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
             builder.withInjectionPositionOrder(injectionPositionOrder.getAsInt());
         }
         CreateFeederBay modification = builder.build();
-        modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+        modification.apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
     }
 
     @Override
@@ -89,9 +89,9 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
     }
 
     @Override
-    public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframes, boolean throwException, Reporter reporter) {
+    public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         UpdatingDataframe primaryDf = getPrimaryDataframe(dataframes);
-        addElementsWithBay(network, primaryDf, throwException, reporter);
+        addElementsWithBay(network, primaryDf, throwException, reportNode);
     }
 
 }

@@ -7,7 +7,6 @@
  */
 package com.powsybl.python.flow_decomposition;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.flow_decomposition.XnecProvider;
 import com.powsybl.flow_decomposition.xnec_provider.XnecProvider5percPtdf;
 import com.powsybl.flow_decomposition.xnec_provider.XnecProviderAllBranches;
@@ -34,16 +33,11 @@ final class FlowDecompositionContext {
     }
 
     private static XnecProvider getXnecProvider(DefaultXnecProvider defaultXnecProvider) {
-        switch (defaultXnecProvider) {
-            case GT_5_PERC_ZONE_TO_ZONE_PTDF:
-                return new XnecProvider5percPtdf();
-            case ALL_BRANCHES:
-                return new XnecProviderAllBranches();
-            case INTERCONNECTIONS:
-                return new XnecProviderInterconnection();
-            default:
-                throw new PowsyblException(String.format("Xnec Provider '%s' not implemented", defaultXnecProvider));
-        }
+        return switch (defaultXnecProvider) {
+            case GT_5_PERC_ZONE_TO_ZONE_PTDF -> new XnecProvider5percPtdf();
+            case ALL_BRANCHES -> new XnecProviderAllBranches();
+            case INTERCONNECTIONS -> new XnecProviderInterconnection();
+        };
     }
 
     XnecProvider getXnecProvider() {

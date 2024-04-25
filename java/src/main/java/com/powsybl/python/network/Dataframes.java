@@ -24,9 +24,7 @@ import com.powsybl.python.security.BranchResultContext;
 import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
 import com.powsybl.python.security.ThreeWindingsTransformerResultContext;
-import com.powsybl.python.shortcircuit.LimitViolationFaultContext;
-import com.powsybl.python.shortcircuit.MagnitudeBusResultsContext;
-import com.powsybl.python.shortcircuit.MagnitudeFeederResultContext;
+import com.powsybl.python.shortcircuit.*;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.SecurityAnalysisResult;
@@ -161,11 +159,17 @@ public final class Dataframes {
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
         List<BranchResultContext> branchResults = result.getPreContingencyResult().getNetworkResult()
                 .getBranchResults().stream()
-                .map(branchResult -> new BranchResultContext(branchResult, null))
+                .map(branchResult -> new BranchResultContext(branchResult, null, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
             postContingencyResult.getNetworkResult().getBranchResults()
-                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId())));
+                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult, postContingencyResult.getContingency().getId(), null)));
+        });
+        result.getOperatorStrategyResults().forEach(operatorStrategyResult -> {
+            operatorStrategyResult.getNetworkResult().getBranchResults()
+                    .forEach(branchResult -> branchResults.add(new BranchResultContext(branchResult,
+                            operatorStrategyResult.getOperatorStrategy().getContingencyContext().getContingencyId(),
+                            operatorStrategyResult.getOperatorStrategy().getId())));
         });
         return branchResults;
     }
@@ -174,6 +178,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<SecurityAnalysisResult, BranchResultContext>()
                 .itemsProvider(Dataframes::getBranchResults)
                 .stringsIndex("contingency_id", BranchResultContext::getContingencyId)
+                .stringsIndex("operator_strategy_id", BranchResultContext::getOperatorStrategyId)
                 .stringsIndex("branch_id", BranchResultContext::getBranchId)
                 .doubles("p1", BranchResultContext::getP1)
                 .doubles("q1", BranchResultContext::getQ1)
@@ -189,11 +194,17 @@ public final class Dataframes {
         List<BusResultContext> busResults = result.getPreContingencyResult()
                 .getNetworkResult()
                 .getBusResults().stream()
-                .map(busResult -> new BusResultContext(busResult, null))
+                .map(busResult -> new BusResultContext(busResult, null, null))
                 .collect(Collectors.toList());
         result.getPostContingencyResults().forEach(postContingencyResult -> {
             postContingencyResult.getNetworkResult().getBusResults()
-                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId())));
+                    .forEach(busResult -> busResults.add(new BusResultContext(busResult, postContingencyResult.getContingency().getId(), null)));
+        });
+        result.getOperatorStrategyResults().forEach(operatorStrategyResult -> {
+            operatorStrategyResult.getNetworkResult().getBusResults()
+                    .forEach(busResult -> busResults.add(new BusResultContext(busResult,
+                            operatorStrategyResult.getOperatorStrategy().getContingencyContext().getContingencyId(),
+                            operatorStrategyResult.getOperatorStrategy().getId())));
         });
         return busResults;
     }
@@ -202,6 +213,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<SecurityAnalysisResult, BusResultContext>()
                 .itemsProvider(Dataframes::getBusResults)
                 .stringsIndex("contingency_id", BusResultContext::getContingencyId)
+                .stringsIndex("operator_strategy_id", BusResultContext::getOperatorStrategyId)
                 .stringsIndex("voltage_level_id", BusResultContext::getVoltageLevelId)
                 .stringsIndex("bus_id", BusResultContext::getBusId)
                 .doubles("v_mag", BusResultContext::getV)
@@ -247,7 +259,7 @@ public final class Dataframes {
                 .forEach(postContingencyResult -> limitViolations.addAll(postContingencyResult.getLimitViolationsResult()
                         .getLimitViolations().stream()
                         .map(limitViolation -> new LimitViolationContext(postContingencyResult.getContingency().getId(), limitViolation))
-                        .collect(Collectors.toList())));
+                        .toList()));
         return limitViolations;
     }
 
@@ -269,9 +281,9 @@ public final class Dataframes {
 
     private static List<NodeBreakerViewSwitchContext> getNodeBreakerViewSwitches(VoltageLevel.NodeBreakerView nodeBreakerView) {
         return IteratorUtils.toList(nodeBreakerView.getSwitches().iterator()).stream().map(switchContext ->
-                new NodeBreakerViewSwitchContext(switchContext,
-                        nodeBreakerView.getNode1(switchContext.getId()),
-                        nodeBreakerView.getNode2(switchContext.getId())))
+                        new NodeBreakerViewSwitchContext(switchContext,
+                                nodeBreakerView.getNode1(switchContext.getId()),
+                                nodeBreakerView.getNode2(switchContext.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -289,7 +301,7 @@ public final class Dataframes {
     }
 
     private static List<NodeContext> getNodeBreakerViewNodes(VoltageLevel.NodeBreakerView nodeBreakerView) {
-        List<Integer> nodes = Arrays.stream(nodeBreakerView.getNodes()).boxed().collect(Collectors.toList());
+        List<Integer> nodes = Arrays.stream(nodeBreakerView.getNodes()).boxed().toList();
         return nodes.stream().map(node -> {
             Terminal terminal = nodeBreakerView.getTerminal(node);
             if (terminal == null) {
@@ -388,12 +400,10 @@ public final class Dataframes {
     }
 
     private static void addConnectableData(VoltageLevel voltageLevel, Connectable<?> connectable, Consumer<BusBreakerViewElementData> consumer) {
-        if (connectable instanceof Injection) {
-            Injection<?> inj = (Injection<?>) connectable;
+        if (connectable instanceof Injection<?> inj) {
             String busId = getBusBreakerBusId(inj.getTerminal());
             consumer.accept(new BusBreakerViewElementData(connectable.getType(), busId, connectable.getId()));
-        } else if (connectable instanceof Branch) {
-            Branch<?> branch = (Branch<?>) connectable;
+        } else if (connectable instanceof Branch<?> branch) {
             if (branch.getTerminal1().getVoltageLevel() == voltageLevel) {
                 String busId = getBusBreakerBusId(branch.getTerminal1());
                 consumer.accept(new BusBreakerViewElementData(connectable.getType(), busId, connectable.getId(), SideEnum.ONE));
@@ -402,8 +412,7 @@ public final class Dataframes {
                 String busId = getBusBreakerBusId(branch.getTerminal2());
                 consumer.accept(new BusBreakerViewElementData(connectable.getType(), busId, connectable.getId(), SideEnum.TWO));
             }
-        } else if (connectable instanceof ThreeWindingsTransformer) {
-            ThreeWindingsTransformer transfo = (ThreeWindingsTransformer) connectable;
+        } else if (connectable instanceof ThreeWindingsTransformer transfo) {
             if (transfo.getLeg1().getTerminal().getVoltageLevel() == voltageLevel) {
                 String busId = getBusBreakerBusId(transfo.getLeg1().getTerminal());
                 consumer.accept(new BusBreakerViewElementData(connectable.getType(), busId, transfo.getId(), SideEnum.ONE));
@@ -438,39 +447,46 @@ public final class Dataframes {
 
     public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
         return new DataframeMapperBuilder<FlowDecompositionResults, XnecWithDecompositionContext>()
-            .itemsProvider(Dataframes::getXnecWithDecompositions)
-            .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
-            .strings("branch_id", XnecWithDecompositionContext::getBranchId)
-            .strings("contingency_id", XnecWithDecompositionContext::getContingencyId)
-            .strings("country1", XnecWithDecompositionContext::getCountry1String)
-            .strings("country2", XnecWithDecompositionContext::getCountry2String)
-            .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)
-            .doubles("dc_reference_flow", XnecWithDecompositionContext::getDcReferenceFlow)
-            .doubles("commercial_flow", XnecWithDecompositionContext::getAllocatedFlow)
-            .doubles("x_node_flow", XnecWithDecompositionContext::getXNodeFlow)
-            .doubles("pst_flow", XnecWithDecompositionContext::getPstFlow)
-            .doubles("internal_flow", XnecWithDecompositionContext::getInternalFlow)
-            .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))
-            .build();
+                .itemsProvider(Dataframes::getXnecWithDecompositions)
+                .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
+                .strings("branch_id", XnecWithDecompositionContext::getBranchId)
+                .strings("contingency_id", XnecWithDecompositionContext::getContingencyId)
+                .strings("country1", XnecWithDecompositionContext::getCountry1String)
+                .strings("country2", XnecWithDecompositionContext::getCountry2String)
+                .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)
+                .doubles("dc_reference_flow", XnecWithDecompositionContext::getDcReferenceFlow)
+                .doubles("commercial_flow", XnecWithDecompositionContext::getAllocatedFlow)
+                .doubles("x_node_flow", XnecWithDecompositionContext::getXNodeFlow)
+                .doubles("pst_flow", XnecWithDecompositionContext::getPstFlow)
+                .doubles("internal_flow", XnecWithDecompositionContext::getInternalFlow)
+                .doubles(XnecWithDecompositionContext.getLoopFlowsFunctionMap(zoneSet))
+                .build();
     }
 
     private static List<XnecWithDecompositionContext> getXnecWithDecompositions(FlowDecompositionResults flowDecompositionResults) {
         return flowDecompositionResults.getDecomposedFlowMap().values().stream()
-            .map(XnecWithDecompositionContext::new)
-            .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
-            .collect(Collectors.toList());
+                .map(XnecWithDecompositionContext::new)
+                .sorted(Comparator.comparing(XnecWithDecompositionContext::getId))
+                .collect(Collectors.toList());
     }
 
     // shortcircuit
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisFaultResultsMapper() {
-        return SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER;
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisFaultResultsMapper(boolean withFortescueResult) {
+        return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER;
     }
 
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER = createMagnitudeFaultResultsMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER = createFortescueFaultResultsMapper();
 
     private static List<MagnitudeFaultResult> getMagnitudeFaultResults(ShortCircuitAnalysisResult result) {
         return result.getFaultResults().stream().filter(f -> f instanceof MagnitudeFaultResult)
                 .map(f -> (MagnitudeFaultResult) f)
+                .collect(Collectors.toList());
+    }
+
+    private static List<FortescueFaultResult> getFortescueFaultResults(ShortCircuitAnalysisResult result) {
+        return result.getFaultResults().stream().filter(f -> f instanceof FortescueFaultResult)
+                .map(f -> (FortescueFaultResult) f)
                 .collect(Collectors.toList());
     }
 
@@ -486,6 +502,28 @@ public final class Dataframes {
                 .build();
     }
 
+    private static DataframeMapper<ShortCircuitAnalysisResult> createFortescueFaultResultsMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueFaultResult>()
+                .itemsProvider(Dataframes::getFortescueFaultResults)
+                .stringsIndex("id", f -> f.getFault().getId())
+                .enums("status", FaultResult.Status.class, f -> f.getStatus())
+                .doubles("short_circuit_power", FortescueFaultResult::getShortCircuitPower)
+                .strings("time_constant", f -> f.getTimeConstant() != null ? f.getTimeConstant().toString() : null)
+                .doubles("current_negative_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getNegativeAngle(), false)
+                .doubles("current_positive_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getPositiveAngle())
+                .doubles("current_negative_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getNegativeMagnitude(), false)
+                .doubles("current_positive_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getPositiveMagnitude())
+                .doubles("current_zero_magnitude", fortescueFaultResult -> fortescueFaultResult.getCurrent().getZeroMagnitude(), false)
+                .doubles("current_zero_angle", fortescueFaultResult -> fortescueFaultResult.getCurrent().getZeroAngle(), false)
+                .doubles("voltage_negative_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getNegativeAngle(), false)
+                .doubles("voltage_positive_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getPositiveAngle())
+                .doubles("voltage_negative_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getNegativeMagnitude(), false)
+                .doubles("voltage_positive_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getPositiveMagnitude())
+                .doubles("voltage_zero_magnitude", fortescueFaultResult -> fortescueFaultResult.getVoltage().getZeroMagnitude(), false)
+                .doubles("voltage_zero_angle", fortescueFaultResult -> fortescueFaultResult.getVoltage().getZeroAngle(), false)
+                .build();
+    }
+
     public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisLimitViolationsResultsMapper() {
         return SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER;
     }
@@ -493,12 +531,11 @@ public final class Dataframes {
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER = createLimitViolationsFaultMapper();
 
     public static List<LimitViolationFaultContext> getFaultLimitViolations(ShortCircuitAnalysisResult result) {
-        List<LimitViolationFaultContext> limitViolations = result.getFaultResults().stream()
+        return result.getFaultResults().stream()
                 .flatMap(a -> a.getLimitViolations()
                         .stream()
                         .map(ss -> new LimitViolationFaultContext(a.getFault().getId(), ss)))
                 .collect(Collectors.toList());
-        return limitViolations;
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createLimitViolationsFaultMapper() {
@@ -517,19 +554,27 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeFeederResultsMapper() {
-        return SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER;
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeFeederResultsMapper(boolean withFortescueResult) {
+        return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER;
     }
 
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER = createMagnitudeFeederMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER = createFortescueFeederMapper();
 
     public static List<MagnitudeFeederResultContext> getMagnitudeFeederResultContexts(ShortCircuitAnalysisResult result) {
-        List<MagnitudeFeederResultContext> feederResults = result.getFaultResults().stream()
+        return result.getFaultResults().stream()
                 .flatMap(a -> a.getFeederResults()
                         .stream()
                         .map(ss -> new MagnitudeFeederResultContext(a.getFault().getId(), (MagnitudeFeederResult) ss)))
                 .collect(Collectors.toList());
-        return feederResults;
+    }
+
+    public static List<FortescueFeederResultContext> getFortescueFeederResultContexts(ShortCircuitAnalysisResult result) {
+        return result.getFaultResults().stream()
+                .flatMap(a -> a.getFeederResults()
+                        .stream()
+                        .map(ss -> new FortescueFeederResultContext(a.getFault().getId(), (FortescueFeederResult) ss)))
+                .collect(Collectors.toList());
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFeederMapper() {
@@ -541,19 +586,47 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper() {
-        return SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
+    private static DataframeMapper<ShortCircuitAnalysisResult> createFortescueFeederMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueFeederResultContext>()
+                .itemsProvider(Dataframes::getFortescueFeederResultContexts)
+                .stringsIndex("id", FortescueFeederResultContext::getFaultId)
+                .stringsIndex("connectable_id", FortescueFeederResultContext::getConnectableId)
+                .doubles("current_negative_angle", fortescueFeederResultContext ->
+                        fortescueFeederResultContext.getCurrent().getNegativeAngle(), false)
+                .doubles("current_positive_angle", fortescueFeederResultContext ->
+                        fortescueFeederResultContext.getCurrent().getPositiveAngle())
+                .doubles("current_negative_magnitude", fortescueFeederResultContext ->
+                        fortescueFeederResultContext.getCurrent().getNegativeMagnitude(), false)
+                .doubles("current_positive_magnitude", fortescueFeederResultContext ->
+                        fortescueFeederResultContext.getCurrent().getPositiveMagnitude())
+                .doubles("current_zero_magnitude", fortescueFeederResultContext ->
+                        fortescueFeederResultContext.getCurrent().getZeroMagnitude(), false)
+                .doubles("current_zero_angle", fortescueFeederResultContext ->
+                        fortescueFeederResultContext.getCurrent().getZeroAngle(), false)
+                .build();
+    }
+
+    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper(boolean withFortescueResult) {
+        return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
     }
 
     private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER = createMagnitudeBusResultsFaultMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER = createFortescueBusResultsFaultMapper();
 
     public static List<MagnitudeBusResultsContext> getMagnitudeBusResultsContexts(ShortCircuitAnalysisResult result) {
-        List<MagnitudeBusResultsContext> busResults = result.getFaultResults().stream()
+        return result.getFaultResults().stream()
                 .flatMap(a -> a.getShortCircuitBusResults()
                         .stream()
                         .map(ss -> new MagnitudeBusResultsContext(a.getFault().getId(), (MagnitudeShortCircuitBusResults) ss)))
                 .collect(Collectors.toList());
-        return busResults;
+    }
+
+    public static List<FortescueBusResultsContext> getFortescueBusResultsContexts(ShortCircuitAnalysisResult result) {
+        return result.getFaultResults().stream()
+                .flatMap(a -> a.getShortCircuitBusResults()
+                        .stream()
+                        .map(ss -> new FortescueBusResultsContext(a.getFault().getId(), (FortescueShortCircuitBusResults) ss)))
+                .collect(Collectors.toList());
     }
 
     private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeBusResultsFaultMapper() {
@@ -565,6 +638,29 @@ public final class Dataframes {
                 .doubles("initial_voltage_magnitude", MagnitudeBusResultsContext::getInitialVoltageMagnitude)
                 .doubles("voltage_drop_proportional", MagnitudeBusResultsContext::getVoltageDropProportional)
                 .doubles("voltage", MagnitudeBusResultsContext::getVoltage)
+                .build();
+    }
+
+    private static DataframeMapper<ShortCircuitAnalysisResult> createFortescueBusResultsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueBusResultsContext>()
+                .itemsProvider(Dataframes::getFortescueBusResultsContexts)
+                .stringsIndex("id", FortescueBusResultsContext::getFaultId)
+                .stringsIndex("voltage_level_id", FortescueBusResultsContext::getVoltageLevelId)
+                .stringsIndex("bus_id", FortescueBusResultsContext::getBusId)
+                .doubles("initial_voltage_magnitude", FortescueBusResultsContext::getInitialVoltageMagnitude)
+                .doubles("voltage_drop_proportional", FortescueBusResultsContext::getVoltageDropProportional)
+                .doubles("voltage_negative_angle", fortescueBusResultsContext
+                        -> fortescueBusResultsContext.getVoltage().getNegativeAngle(), false)
+                .doubles("voltage_positive_angle", fortescueBusResultsContext
+                        -> fortescueBusResultsContext.getVoltage().getPositiveAngle())
+                .doubles("voltage_negative_magnitude", fortescueBusResultsContext
+                        -> fortescueBusResultsContext.getVoltage().getNegativeMagnitude(), false)
+                .doubles("voltage_positive_magnitude", fortescueBusResultsContext
+                        -> fortescueBusResultsContext.getVoltage().getPositiveMagnitude())
+                .doubles("voltage_zero_magnitude", fortescueBusResultsContext
+                        -> fortescueBusResultsContext.getVoltage().getZeroMagnitude(), false)
+                .doubles("voltage_zero_angle", fortescueBusResultsContext
+                        -> fortescueBusResultsContext.getVoltage().getZeroAngle(), false)
                 .build();
     }
 }

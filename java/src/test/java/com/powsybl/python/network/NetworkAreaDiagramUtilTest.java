@@ -10,13 +10,15 @@ import com.google.common.io.ByteStreams;
 import com.powsybl.commons.test.TestUtil;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.test.*;
+import com.powsybl.nad.*;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Objects;
+import java.util.*;
 
+import static com.powsybl.python.network.NetworkAreaDiagramUtil.createNadParameters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -27,8 +29,18 @@ class NetworkAreaDiagramUtilTest {
     @Test
     void test() throws IOException {
         Network network = IeeeCdfNetworkFactory.create14();
-        String svg = NetworkAreaDiagramUtil.getSvg(network, Collections.emptyList(), 0, false);
+        String svg = NetworkAreaDiagramUtil.getSvg(network, Collections.emptyList(), createNadParameters());
         assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.svg"))), StandardCharsets.UTF_8)),
                      TestUtil.normalizeLineSeparator(svg));
+    }
+
+    @Test
+    void testGetVisibleVoltageLevels() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLine();
+        List<String> ids = NetworkAreaDiagram.getDisplayedVoltageLevels(network, List.of("VLHV1"), 1);
+        assertEquals("VLGEN, VLHV1, VLHV2", String.join(", ", ids));
+
+        ids = NetworkAreaDiagram.getDisplayedVoltageLevels(network, List.of("VLHV1"), 2);
+        assertEquals("VLGEN, VLHV1, VLHV2, VLLOAD", String.join(", ", ids));
     }
 }

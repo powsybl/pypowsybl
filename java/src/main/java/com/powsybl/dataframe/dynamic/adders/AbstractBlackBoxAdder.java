@@ -13,7 +13,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.python.dynamic.DynamicModelMapper;
+import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -50,13 +50,13 @@ public abstract class AbstractBlackBoxAdder implements DynamicMappingAdder {
 
     @FunctionalInterface
     protected interface AddBlackBoxToModelMapping {
-        void addToModel(DynamicModelMapper modelMapping, String staticId, String parameterSetId);
+        void addToModel(PythonDynamicModelsSupplier modelMapping, String staticId, String parameterSetId);
     }
 
     protected abstract AddBlackBoxToModelMapping getAddBlackBoxToModelMapping();
 
     @Override
-    public void addElements(DynamicModelMapper modelMapping, UpdatingDataframe dataframe) {
+    public void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe) {
         BlackBoxSeries series = new BlackBoxSeries(dataframe);
         AddBlackBoxToModelMapping adder = getAddBlackBoxToModelMapping();
         for (int row = 0; row < dataframe.getRowCount(); row++) {

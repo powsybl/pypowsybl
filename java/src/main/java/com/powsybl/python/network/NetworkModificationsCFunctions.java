@@ -6,8 +6,7 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
@@ -33,7 +32,6 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -92,17 +90,17 @@ public final class NetworkModificationsCFunctions {
     public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
                                                  PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
                                                  PyPowsyblApiHeader.NetworkModificationType networkModificationType,
-                                                 boolean throwException, ObjectHandle reporterHandle,
+                                                 boolean throwException, ObjectHandle reportNodeHandle,
                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             List<UpdatingDataframe> dfs = new ArrayList<>();
             for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
                 dfs.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
             }
             DataframeNetworkModificationType type = convert(networkModificationType);
-            NetworkModifications.applyModification(type, network, dfs, throwException, reporter);
+            NetworkModifications.applyModification(type, network, dfs, throwException, reportNode);
         });
     }
 
@@ -122,27 +120,27 @@ public final class NetworkModificationsCFunctions {
                                                   CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount,
                                                   PyPowsyblApiHeader.DataframePointer extraDataDfPtr,
                                                   PyPowsyblApiHeader.RemoveModificationType removeModificationType,
-                                                  boolean throwException, ObjectHandle reporterHandle,
+                                                  boolean throwException, ObjectHandle reportNodeHandle,
                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReporterModel reporter = ObjectHandles.getGlobal().get(reporterHandle);
+            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_FEEDER) {
-                ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter));
+                ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
             } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_VOLTAGE_LEVEL) {
-                ids.forEach(id -> new RemoveVoltageLevelBuilder().withVoltageLevelId(id).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter));
+                ids.forEach(id -> new RemoveVoltageLevelBuilder().withVoltageLevelId(id).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
             } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_HVDC_LINE) {
                 UpdatingDataframe extraDataDf = createDataframe(extraDataDfPtr);
                 ids.forEach(hvdcId -> {
-                    List<String> shuntCompensatorList = Collections.EMPTY_LIST;
+                    List<String> shuntCompensatorList = Collections.emptyList();
                     if (extraDataDf != null) {
                         Optional<String> shuntCompensatorOptional = extraDataDf.getStringValue(hvdcId, 0);
                         String shuntCompensator = shuntCompensatorOptional.isEmpty() || shuntCompensatorOptional.get().isEmpty() ? "," :
                                 shuntCompensatorOptional.get();
-                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).collect(Collectors.toList());
+                        shuntCompensatorList = Arrays.stream(shuntCompensator.split(",")).toList();
                     }
-                    new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+                    new RemoveHvdcLineBuilder().withHvdcLineId(hvdcId).withShuntCompensatorIds(shuntCompensatorList).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
 
                 });
             }

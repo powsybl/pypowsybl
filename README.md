@@ -21,7 +21,7 @@ Notebooks demonstrating PyPowSyBl features can be found in this [repository](htt
 
 ## Installation
 
-PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.7 to 3.11, on Linux, Windows and MacOS.
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.8 to 3.12, on Linux, Windows and MacOS.
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
@@ -48,7 +48,7 @@ print(results)
 ```
 
 ```bash
-[LoadFlowComponentResult(component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VL4_0', slack_bus_active_power_mismatch=-0.006081)]
+[ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=CONVERGED, iteration_count=3, reference_bus_id='VL1_0', slack_bus_results=[SlackBusResult(id='VL1_0', active_power_mismatch=-0.006730108618313579)], distributed_active_power=0.0)]
 ```
 
 We can now get buses data (like any other network elements) as a [Pandas](https://pandas.pydata.org/) dataframe:
@@ -89,8 +89,7 @@ Requirements:
 - Maven >= 3.1
 - Cmake >= 3.14
 - C++11 compiler
-- Python >= 3.7 for Linux, Windows and MacOS amd64
-- Python >= 3.8 for MacOS arm64
+- Python >= 3.8 for Linux, Windows and MacOS (amd64 and arm64)
 - [Oracle GraalVM Java 17](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
@@ -145,7 +144,7 @@ And then, to build the documentation:
 make html
 ```
 
-Web pages are generated in repository _build/html/ for preview before openning a pull request.
+Web pages are generated in repository _build/html/ for preview before opening a pull request.
 You can for example open it with firefox browser:
 
 ```bash

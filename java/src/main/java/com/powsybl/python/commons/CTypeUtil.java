@@ -15,12 +15,11 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
-import org.graalvm.word.WordFactory;
+import org.graalvm.word.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -46,6 +45,17 @@ public final class CTypeUtil {
         return charPtr;
     }
 
+    public static CCharPointer toBytePtr(byte[] bytes) {
+        if (bytes == null) {
+            return WordFactory.nullPointer();
+        }
+        CCharPointer charPtr = UnmanagedMemory.calloc(bytes.length * SizeOf.get(CCharPointer.class));
+        for (int i = 0; i < bytes.length; ++i) {
+            charPtr.write(i, bytes[i]);
+        }
+        return charPtr;
+    }
+
     /**
      * Creates a string from a UTF-8 encoded char*
      */
@@ -60,6 +70,20 @@ public final class CTypeUtil {
     public static String toStringOrNull(CCharPointer charPtr) {
         String str = toString(charPtr);
         return str.isEmpty() ? null : str;
+    }
+
+    public static String[][] toString2DArray(CCharPointerPointer charPtrPtr, int length, int rows) {
+        int cols = length / rows;
+        String[][] string2DArray = new String[rows][length / cols];
+        int index = 0;
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                CCharPointer charPtr = charPtrPtr.read(index++);
+                String str = toString(charPtr);
+                string2DArray[i][j] = str;
+            }
+        }
+        return string2DArray;
     }
 
     public static List<String> toStringList(CCharPointerPointer charPtrPtr, int length) {
@@ -88,6 +112,18 @@ public final class CTypeUtil {
             ints.add(j);
         }
         return ints;
+    }
+
+    /**
+     * Convert an int list to a set of enum using the specified converter
+     */
+    public static <T> Set<T> toEnumSet(CIntPointer intPointer, int length, IntFunction<T> converter) {
+        Set<T> enumSet = new HashSet<>();
+        for (int i = 0; i < length; i++) {
+            T value = converter.apply(intPointer.read(i));
+            enumSet.add(value);
+        }
+        return enumSet;
     }
 
     public static Map<String, String> toStringMap(CCharPointerPointer keysPointer, int keysCount,

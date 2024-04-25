@@ -149,7 +149,6 @@ Network elements can be created or removed using the following methods:
 
    Network.create_2_windings_transformers
    Network.create_batteries
-   Network.create_aliases
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits
@@ -215,8 +214,10 @@ Miscellaneous network functions
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
+   Network.write_matrix_multi_substation_single_line_diagram_svg
    Network.get_network_area_diagram
    Network.write_network_area_diagram_svg
+   Network.get_network_area_diagram_displayed_voltage_levels
    Network.disconnect
    Network.connect
    Network.open_switch
@@ -235,12 +236,17 @@ I/O
 
    load
    load_from_string
+   load_from_binary_buffer
+   load_from_binary_buffers
    Network.dump
    Network.dump_to_string
    get_import_formats
    get_import_parameters
    get_export_formats
    get_export_parameters
+   save
+   save_to_string
+   save_to_binary_buffer
 
 
 Advanced network modifications

@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -14,9 +14,12 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.StaticVarCompensator;
 import com.powsybl.iidm.network.StaticVarCompensatorAdder;
+import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.python.network.NetworkUtil;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -39,7 +42,8 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("b_min"),
             SeriesMetadata.strings("regulation_mode"),
             SeriesMetadata.doubles("target_v"),
-            SeriesMetadata.doubles("target_q")
+            SeriesMetadata.doubles("target_q"),
+            SeriesMetadata.strings("regulating_element_id")
     );
 
     @Override
@@ -56,6 +60,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries targetV;
         private final DoubleSeries targetQ;
         private final StringSeries busOrBusbarSections;
+        private final StringSeries regulatingElements;
 
         StaticVarCompensatorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -66,27 +71,35 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             this.targetV = dataframe.getDoubles("target_v");
             this.regulationModes = dataframe.getStrings("regulation_mode");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
+            this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
 
-        StaticVarCompensatorAdder createAdder(Network network, int row) {
-            StaticVarCompensatorAdder adder = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections)
-                    .newStaticVarCompensator();
-            setInjectionAttributes(adder, row);
-            applyIfPresent(bMin, row, adder::setBmin);
-            applyIfPresent(bMax, row, adder::setBmax);
-            applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
-            applyIfPresent(targetV, row, adder::setVoltageSetpoint);
-            applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
-            return adder;
+        Optional<StaticVarCompensatorAdder> createAdder(Network network, int row, boolean throwException) {
+            Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels, busOrBusbarSections, throwException);
+            if (vl.isPresent()) {
+                StaticVarCompensatorAdder adder = vl.get().newStaticVarCompensator();
+                setInjectionAttributes(adder, row);
+                applyIfPresent(bMin, row, adder::setBmin);
+                applyIfPresent(bMax, row, adder::setBmax);
+                applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
+                applyIfPresent(targetV, row, adder::setVoltageSetpoint);
+                applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+                applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+                        .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                return Optional.of(adder);
+            }
+            return Optional.empty();
         }
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy addition, boolean throwException, ReportNode reportNode) {
         StaticVarCompensatorSeries series = new StaticVarCompensatorSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
-            StaticVarCompensatorAdder adder = series.createAdder(network, row);
-            addition.add(network, dataframe, adder, row, throwException, reporter);
+            Optional<StaticVarCompensatorAdder> adder = series.createAdder(network, row, throwException);
+            if (adder.isPresent()) {
+                addition.add(network, dataframe, adder.get(), row, throwException, reportNode);
+            }
         }
     }
 }

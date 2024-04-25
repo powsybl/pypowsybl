@@ -21,9 +21,7 @@ import java.util.function.Supplier;
  */
 public class SensitivityAnalysisResultContext {
 
-    private final Map<String, SensitivityAnalysisContext.MatrixInfo> branchFlowFactorsMatrix;
-
-    private final SensitivityAnalysisContext.MatrixInfo busVoltageFactorsMatrix;
+    private final Map<String, SensitivityAnalysisContext.MatrixInfo> factorsMatrix;
 
     private final double[] baseCaseValues;
 
@@ -33,12 +31,10 @@ public class SensitivityAnalysisResultContext {
 
     private final Map<String, double[]> referencesByContingencyId;
 
-    public SensitivityAnalysisResultContext(Map<String, SensitivityAnalysisContext.MatrixInfo> branchFlowFactorsMatrix,
-                                            SensitivityAnalysisContext.MatrixInfo busVoltageFactorsMatrix,
+    public SensitivityAnalysisResultContext(Map<String, SensitivityAnalysisContext.MatrixInfo> factorsMatrix,
                                             double[] baseCaseValues, Map<String, double[]> valuesByContingencyId,
                                             double[] baseCaseReferences, Map<String, double[]> referencesByContingencyId) {
-        this.branchFlowFactorsMatrix = branchFlowFactorsMatrix;
-        this.busVoltageFactorsMatrix = busVoltageFactorsMatrix;
+        this.factorsMatrix = factorsMatrix;
         this.baseCaseValues = baseCaseValues;
         this.valuesByContingencyId = valuesByContingencyId;
         this.baseCaseReferences = baseCaseReferences;
@@ -53,40 +49,22 @@ public class SensitivityAnalysisResultContext {
         return contingencyId.isEmpty() ? baseCaseReferences : referencesByContingencyId.get(contingencyId);
     }
 
-    private SensitivityAnalysisContext.MatrixInfo getBranchFlowFactorsMatrix(String matrixId) {
-        SensitivityAnalysisContext.MatrixInfo m = branchFlowFactorsMatrix.get(matrixId);
+    private SensitivityAnalysisContext.MatrixInfo getFactorsMatrix(String matrixId) {
+        SensitivityAnalysisContext.MatrixInfo m = factorsMatrix.get(matrixId);
         if (m == null) {
             throw new PowsyblException("Matrix '" + matrixId + "' not found");
         }
         return m;
     }
 
-    private SensitivityAnalysisContext.MatrixInfo getBusVoltageFactoryMatrix() {
-        SensitivityAnalysisContext.MatrixInfo m = busVoltageFactorsMatrix;
-        if (m == null) {
-            throw new PowsyblException("bus voltage sensitivity matrix does not exist");
-        }
-        return m;
-    }
-
-    public PyPowsyblApiHeader.MatrixPointer createBranchFlowsSensitivityMatrix(String matrixId, String contingencyId) {
-        SensitivityAnalysisContext.MatrixInfo m = getBranchFlowFactorsMatrix(matrixId);
+    public PyPowsyblApiHeader.MatrixPointer createSensitivityMatrix(String matrixId, String contingencyId) {
+        SensitivityAnalysisContext.MatrixInfo m = getFactorsMatrix(matrixId);
         return createDoubleMatrix(() -> getValues(contingencyId), m.getOffsetData(), m.getRowCount(), m.getColumnCount());
     }
 
-    public PyPowsyblApiHeader.MatrixPointer createBusVoltagesSensitivityMatrix(String contingencyId) {
-        SensitivityAnalysisContext.MatrixInfo m = getBusVoltageFactoryMatrix();
-        return createDoubleMatrix(() -> getValues(contingencyId), m.getOffsetData(), m.getRowCount(), m.getColumnCount());
-    }
-
-    public PyPowsyblApiHeader.MatrixPointer createReferenceFlowsActivePower(String matrixId, String contingencyId) {
-        SensitivityAnalysisContext.MatrixInfo m = getBranchFlowFactorsMatrix(matrixId);
+    public PyPowsyblApiHeader.MatrixPointer createReferenceMatrix(String matrixId, String contingencyId) {
+        SensitivityAnalysisContext.MatrixInfo m = getFactorsMatrix(matrixId);
         return createDoubleMatrix(() -> getReferences(contingencyId), m.getOffsetColumn(), 1, m.getColumnCount());
-    }
-
-    public PyPowsyblApiHeader.MatrixPointer createReferenceVoltages(String contingencyId) {
-        return createDoubleMatrix(() -> getReferences(contingencyId), busVoltageFactorsMatrix.getOffsetData(),
-                busVoltageFactorsMatrix.getRowCount(), busVoltageFactorsMatrix.getColumnCount());
     }
 
     private static PyPowsyblApiHeader.MatrixPointer createDoubleMatrix(Supplier<double[]> srcSupplier, int srcPos, int matRow, int matCol) {

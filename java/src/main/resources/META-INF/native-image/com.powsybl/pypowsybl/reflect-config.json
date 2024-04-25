@@ -1,7 +1,7 @@
 [
   {
     "name":"com.powsybl.python.logging.CustomAppender",
-    "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setEncoder","parameterTypes":["ch.qos.logback.core.encoder.Encoder"] }]
   }
 ]

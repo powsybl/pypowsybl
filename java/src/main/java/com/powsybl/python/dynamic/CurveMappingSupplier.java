@@ -7,16 +7,17 @@
  */
 package com.powsybl.python.dynamic;
 
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dynamicsimulation.Curve;
+import com.powsybl.dynamicsimulation.CurvesSupplier;
+import com.powsybl.dynawaltz.DynaWaltzCurve;
+import com.powsybl.iidm.network.Network;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import com.powsybl.dynamicsimulation.Curve;
-import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynawaltz.DynaWaltzCurve;
-import com.powsybl.iidm.network.Network;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -40,8 +41,13 @@ public class CurveMappingSupplier implements CurvesSupplier {
     }
 
     @Override
+    public List<Curve> get(Network network, ReportNode reportNode) {
+        return get(network);
+    }
+
+    @Override
     public List<Curve> get(Network network) {
-        return curvesSupplierList.stream().map(supplier -> supplier.get()).collect(Collectors.toList());
+        return curvesSupplierList.stream().map(Supplier::get).collect(Collectors.toList());
     }
 
 }

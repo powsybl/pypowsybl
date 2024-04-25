@@ -138,4 +138,9 @@ public final class Networks {
         return network;
     }
 
+    public static Network eurostagWithTieLine() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLine();
+        return fix(network);
+
+    }
 }
