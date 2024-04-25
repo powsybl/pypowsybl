@@ -65,7 +65,7 @@ void logFromJava(int level, long timestamp, char* loggerName, char* message) {
 void setLogger(py::object& logger) {
     CppToPythonLogger::get()->setLogger(logger);
     auto fptr = &::logFromJava;
-    pypowsybl::setupLoggerCallback(reinterpret_cast<void *&>(fptr));
+    pypowsybl::PowsyblInterface<MyPypowsyblJavaCaller>::setupLoggerCallback(reinterpret_cast<void *&>(fptr));
 }
 
 py::object getLogger() {

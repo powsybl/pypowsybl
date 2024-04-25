@@ -6,6 +6,49 @@
  */
 #include <pybind11/pybind11.h>
 #include <mutex>
+#include "pypowsybl.h"
+
+class MyPypowsyblJavaCaller {
+public:
+  template<typename F, typename... ARGS>
+  static void callJava(F f, ARGS... args) {
+      pypowsybl::GraalVmGuard guard;
+      exception_handler exc;
+
+      pypowsybl::setLogLevelFromPythonLogger(guard.thread(), &exc);
+
+      f(guard.thread(), args..., &exc);
+      if (exc.message) {
+          throw pypowsybl::PyPowsyblError(pypowsybl::toString(exc.message));
+      }
+      {
+          py::gil_scoped_acquire acquire;
+          if (PyErr_Occurred() != nullptr) {
+              throw py::error_already_set();
+          }
+      }
+  }
+
+  template<typename T, typename F, typename... ARGS>
+  static T callJava(F f, ARGS... args) {
+      pypowsybl::GraalVmGuard guard;
+      exception_handler exc;
+
+      pypowsybl::setLogLevelFromPythonLogger(guard.thread(), &exc);
+
+      auto r = f(guard.thread(), args..., &exc);
+      if (exc.message) {
+          throw pypowsybl::PyPowsyblError(pypowsybl::toString(exc.message));
+      }
+      {
+          py::gil_scoped_acquire acquire;
+          if (PyErr_Occurred() != nullptr) {
+              throw py::error_already_set();
+          }
+      }
+      return r;
+  }
+};
 
 namespace py = pybind11;
 

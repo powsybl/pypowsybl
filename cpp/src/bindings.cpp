@@ -12,6 +12,8 @@
 
 namespace py = pybind11;
 
+using PyPowsyblInterface = pypowsybl::PowsyblInterface<MyPypowsyblJavaCaller>;
+
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
     py::class_<T>(m, className.c_str())
@@ -91,35 +93,6 @@ std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::ve
     return dataframe;
 }
 
-std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<dataframe*>& dataframes) {
-    std::shared_ptr<dataframe_array> dataframeArray(new dataframe_array(), [](dataframe_array* dataframeToDestroy){
-        delete[] dataframeToDestroy->dataframes;
-        delete dataframeToDestroy;
-    });
-    dataframe* dataframesFinal = new dataframe[dataframes.size()];
-    for (int indice = 0 ; indice < dataframes.size() ; indice ++) {
-        dataframesFinal[indice] = *dataframes[indice];
-    }
-    dataframeArray->dataframes = dataframesFinal;
-    dataframeArray->dataframes_count = dataframes.size();
-    return dataframeArray;
-}
-
-void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
-    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
-    pypowsybl::createElement(network, dataframeArray.get(), elementType);
-}
-
-void createNetworkModification(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, network_modification_type networkModificationType, bool throwException, pypowsybl::JavaHandle* reportNode) {
-    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
-    pypowsybl::createNetworkModification(network, dataframeArray.get(), networkModificationType, throwException, reportNode);
-}
-
-void createExtensions(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, std::string& name) {
-    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
-    pypowsybl::createExtensions(network, dataframeArray.get(), name);
-}
-
 template<typename T>
 py::array seriesAsNumpyArray(const series& series) {
 	//Last argument is to bind lifetime of series to the returned array
@@ -139,29 +112,29 @@ void dynamicSimulationBindings(py::module_& m) {
         .value("CURRENT_LIMIT_AUTOMATON", DynamicMappingType::CURRENT_LIMIT_AUTOMATON);
 
     //entrypoints for constructors
-    m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
-    m.def("create_dynamic_model_mapping", &pypowsybl::createDynamicModelMapping);
-    m.def("create_timeseries_mapping", &pypowsybl::createTimeseriesMapping);
-    m.def("create_event_mapping", &pypowsybl::createEventMapping);
+    m.def("create_dynamic_simulation_context", &PyPowsyblInterface::createDynamicSimulationContext);
+    m.def("create_dynamic_model_mapping", &PyPowsyblInterface::createDynamicModelMapping);
+    m.def("create_timeseries_mapping", &PyPowsyblInterface::createTimeseriesMapping);
+    m.def("create_event_mapping", &PyPowsyblInterface::createEventMapping);
 
     //running simulations
-    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
+    m.def("run_dynamic_model", &PyPowsyblInterface::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
         py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
 
     //model mapping
-    m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
-    m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
+    m.def("add_all_dynamic_mappings", &PyPowsyblInterface::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("get_dynamic_mappings_meta_data", &PyPowsyblInterface::getDynamicMappingsMetaData, py::arg("mapping_type"));
 
     // timeseries/curves mapping
-    m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
+    m.def("add_curve", &PyPowsyblInterface::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
 
     // events mapping
-    m.def("add_event_disconnection", &pypowsybl::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
+    m.def("add_event_disconnection", &PyPowsyblInterface::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
 
     // Simulation results
-    m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
-    m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
-    m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
+    m.def("get_dynamic_simulation_results_status", &PyPowsyblInterface::getDynamicSimulationResultsStatus, py::arg("result_handle"));
+    m.def("get_dynamic_curve", &PyPowsyblInterface::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
+    m.def("get_all_dynamic_curves_ids", &PyPowsyblInterface::getAllDynamicCurvesIds, py::arg("report_handle"));
 }
 
 void voltageInitializerBinding(py::module_& m) {
@@ -174,21 +147,21 @@ void voltageInitializerBinding(py::module_& m) {
         .value("BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT", VoltageInitializerObjective::BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT)
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
-    m.def("create_voltage_initializer_params", &pypowsybl::createVoltageInitializerParams);
+    m.def("create_voltage_initializer_params", &PyPowsyblInterface::createVoltageInitializerParams);
 
-    m.def("voltage_initializer_add_variable_shunt_compensators", &pypowsybl::voltageInitializerAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("voltage_initializer_add_constant_q_generators", &pypowsybl::voltageInitializerAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("voltage_initializer_add_variable_two_windings_transformers", &pypowsybl::voltageInitializerAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
-    m.def("voltage_initializer_add_specific_low_voltage_limits", &pypowsybl::voltageInitializerAddSpecificLowVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
-    m.def("voltage_initializer_add_specific_high_voltage_limits", &pypowsybl::voltageInitializerAddSpecificHighVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
+    m.def("voltage_initializer_add_variable_shunt_compensators", &PyPowsyblInterface::voltageInitializerAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("voltage_initializer_add_constant_q_generators", &PyPowsyblInterface::voltageInitializerAddConstantQGenerators, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("voltage_initializer_add_variable_two_windings_transformers", &PyPowsyblInterface::voltageInitializerAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
+    m.def("voltage_initializer_add_specific_low_voltage_limits", &PyPowsyblInterface::voltageInitializerAddSpecificLowVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
+    m.def("voltage_initializer_add_specific_high_voltage_limits", &PyPowsyblInterface::voltageInitializerAddSpecificHighVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
 
-    m.def("voltage_initializer_set_objective", &pypowsybl::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
-    m.def("voltage_initializer_set_objective_distance", &pypowsybl::voltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
-    m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
+    m.def("voltage_initializer_set_objective", &PyPowsyblInterface::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
+    m.def("voltage_initializer_set_objective_distance", &PyPowsyblInterface::voltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
+    m.def("run_voltage_initializer", &PyPowsyblInterface::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
-    m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
-    m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));
-    m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
+    m.def("voltage_initializer_apply_all_modifications", &PyPowsyblInterface::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
+    m.def("voltage_initializer_get_status", &PyPowsyblInterface::voltageInitializerGetStatus, py::arg("result_handle"));
+    m.def("voltage_initializer_get_indicators", &PyPowsyblInterface::voltageInitializerGetIndicators, py::arg("result_handle"));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
@@ -198,39 +171,39 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
 
-    py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
+    py::class_<pypowsybl::JavaHandle<MyPypowsyblJavaCaller>>(m, "JavaHandle");
 
-    m.def("set_java_library_path", &pypowsybl::setJavaLibraryPath, "Set java.library.path JVM property");
+    m.def("set_java_library_path", &PyPowsyblInterface::setJavaLibraryPath, "Set java.library.path JVM property");
 
-    m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
+    m.def("set_config_read", &PyPowsyblInterface::setConfigRead, "Set config read mode");
 
-    m.def("set_default_loadflow_provider", &pypowsybl::setDefaultLoadFlowProvider, "Set default loadflow provider", py::arg("provider"));
+    m.def("set_default_loadflow_provider", &PyPowsyblInterface::setDefaultLoadFlowProvider, "Set default loadflow provider", py::arg("provider"));
 
-    m.def("set_default_security_analysis_provider", &pypowsybl::setDefaultSecurityAnalysisProvider, "Set default security analysis provider", py::arg("provider"));
+    m.def("set_default_security_analysis_provider", &PyPowsyblInterface::setDefaultSecurityAnalysisProvider, "Set default security analysis provider", py::arg("provider"));
 
-    m.def("set_default_sensitivity_analysis_provider", &pypowsybl::setDefaultSensitivityAnalysisProvider, "Set default sensitivity analysis provider", py::arg("provider"));
+    m.def("set_default_sensitivity_analysis_provider", &PyPowsyblInterface::setDefaultSensitivityAnalysisProvider, "Set default sensitivity analysis provider", py::arg("provider"));
 
-    m.def("is_config_read", &pypowsybl::isConfigRead, "Get config read mode");
+    m.def("is_config_read", &PyPowsyblInterface::isConfigRead, "Get config read mode");
 
-    m.def("get_default_loadflow_provider", &pypowsybl::getDefaultLoadFlowProvider, "Get default loadflow provider");
+    m.def("get_default_loadflow_provider", &PyPowsyblInterface::getDefaultLoadFlowProvider, "Get default loadflow provider");
 
-    m.def("get_default_security_analysis_provider", &pypowsybl::getDefaultSecurityAnalysisProvider, "Get default security analysis provider");
+    m.def("get_default_security_analysis_provider", &PyPowsyblInterface::getDefaultSecurityAnalysisProvider, "Get default security analysis provider");
 
-    m.def("get_default_sensitivity_analysis_provider", &pypowsybl::getDefaultSensitivityAnalysisProvider, "Get default sensitivity analysis provider");
+    m.def("get_default_sensitivity_analysis_provider", &PyPowsyblInterface::getDefaultSensitivityAnalysisProvider, "Get default sensitivity analysis provider");
 
-    m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
+    m.def("get_version_table", &PyPowsyblInterface::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
+    m.def("create_network", &PyPowsyblInterface::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
 
-    m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
+    m.def("update_switch_position", &PyPowsyblInterface::updateSwitchPosition, "Update a switch position");
 
-    m.def("merge", &pypowsybl::merge, "Merge several networks");
+    m.def("merge", &PyPowsyblInterface::merge, "Merge several networks");
 
-    m.def("get_sub_network", &pypowsybl::getSubNetwork, "Get a sub network from its ID", py::arg("network"), py::arg("sub_network_id"));
+    m.def("get_sub_network", &PyPowsyblInterface::getSubNetwork, "Get a sub network from its ID", py::arg("network"), py::arg("sub_network_id"));
 
-    m.def("detach_sub_network", &pypowsybl::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
+    m.def("detach_sub_network", &PyPowsyblInterface::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
 
-    m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
+    m.def("update_connectable_status", &PyPowsyblInterface::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")
             .value("BUS", element_type::BUS)
@@ -298,44 +271,44 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .value("REMOVE_VOLTAGE_LEVEL", remove_modification_type::REMOVE_VOLTAGE_LEVEL)
         .value("REMOVE_HVDC_LINE", remove_modification_type::REMOVE_HVDC_LINE);
 
-    m.def("get_network_elements_ids", &pypowsybl::getNetworkElementsIds, "Get network elements ids for a given element type",
+    m.def("get_network_elements_ids", &PyPowsyblInterface::getNetworkElementsIds, "Get network elements ids for a given element type",
           py::arg("network"), py::arg("element_type"), py::arg("nominal_voltages"),
           py::arg("countries"), py::arg("main_connected_component"), py::arg("main_synchronous_component"),
           py::arg("not_connected_to_same_bus_at_both_sides"));
 
-    m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
-    m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
+    m.def("get_network_import_formats", &PyPowsyblInterface::getNetworkImportFormats, "Get supported import formats");
+    m.def("get_network_export_formats", &PyPowsyblInterface::getNetworkExportFormats, "Get supported export formats");
 
 
-    m.def("get_loadflow_provider_names", &pypowsybl::getLoadFlowProviderNames, "Get supported loadflow providers");
-    m.def("get_security_analysis_provider_names", &pypowsybl::getSecurityAnalysisProviderNames, "Get supported security analysis providers");
-    m.def("get_sensitivity_analysis_provider_names", &pypowsybl::getSensitivityAnalysisProviderNames, "Get supported sensitivity analysis providers");
+    m.def("get_loadflow_provider_names", &PyPowsyblInterface::getLoadFlowProviderNames, "Get supported loadflow providers");
+    m.def("get_security_analysis_provider_names", &PyPowsyblInterface::getSecurityAnalysisProviderNames, "Get supported security analysis providers");
+    m.def("get_sensitivity_analysis_provider_names", &PyPowsyblInterface::getSensitivityAnalysisProviderNames, "Get supported sensitivity analysis providers");
 
-    m.def("create_importer_parameters_series_array", &pypowsybl::createImporterParametersSeriesArray, "Create a parameters series array for a given import format",
+    m.def("create_importer_parameters_series_array", &PyPowsyblInterface::createImporterParametersSeriesArray, "Create a parameters series array for a given import format",
           py::arg("format"));
 
-    m.def("create_exporter_parameters_series_array", &pypowsybl::createExporterParametersSeriesArray, "Create a parameters series array for a given export format",
+    m.def("create_exporter_parameters_series_array", &PyPowsyblInterface::createExporterParametersSeriesArray, "Create a parameters series array for a given export format",
           py::arg("format"));
 
-    m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network", &PyPowsyblInterface::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
           py::arg("file"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network_from_string", &PyPowsyblInterface::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
               py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("report_node"));
 
-    m.def("load_network_from_binary_buffers", &pypowsybl::loadNetworkFromBinaryBuffers, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network_from_binary_buffers", &PyPowsyblInterface::loadNetworkFromBinaryBuffers, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network", &PyPowsyblInterface::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network_to_string", &pypowsybl::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network_to_string", &PyPowsyblInterface::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network_to_binary_buffer", &pypowsybl::saveNetworkToBinaryBuffer, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network_to_binary_buffer", &PyPowsyblInterface::saveNetworkToBinaryBuffer, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
+    m.def("reduce_network", &PyPowsyblInterface::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("v_min"), py::arg("v_max"),
           py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
 
@@ -363,7 +336,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return v.active_power_mismatch;
             });
 
-    bindArray<pypowsybl::SlackBusResultArray>(m, "SlackBusResultArray");
+    bindArray<pypowsybl::SlackBusResultArray<MyPypowsyblJavaCaller>>(m, "SlackBusResultArray");
 
     py::class_<loadflow_component_result>(m, "LoadFlowComponentResult", "Loadflow result for one connected component of the network.")
             .def_property_readonly("connected_component_num", [](const loadflow_component_result& r) {
@@ -382,7 +355,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return r.iteration_count;
             })
             .def_property_readonly("slack_bus_results", [](const loadflow_component_result& r) {
-                return pypowsybl::SlackBusResultArray((array *) & r.slack_bus_results);
+                return pypowsybl::SlackBusResultArray<MyPypowsyblJavaCaller>((array *) & r.slack_bus_results);
             })
             .def_property_readonly("reference_bus_id", [](const loadflow_component_result& r) {
                 return r.reference_bus_id;
@@ -391,7 +364,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return r.distributed_active_power;
             });
 
-    bindArray<pypowsybl::LoadFlowComponentResultArray>(m, "LoadFlowComponentResultArray");
+    bindArray<pypowsybl::LoadFlowComponentResultArray<MyPypowsyblJavaCaller>>(m, "LoadFlowComponentResultArray");
 
     py::enum_<pypowsybl::VoltageInitMode>(m, "VoltageInitMode", "Define the computation starting point.")
             .value("UNIFORM_VALUES", pypowsybl::VoltageInitMode::UNIFORM_VALUES, "Initialize voltages to uniform values based on nominale voltage.")
@@ -422,7 +395,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<dataframe, std::shared_ptr<dataframe>>(m, "Dataframe");
 
     py::class_<pypowsybl::LoadFlowParameters>(m, "LoadFlowParameters")
-            .def(py::init(&pypowsybl::createLoadFlowParameters))
+            .def(py::init(&PyPowsyblInterface::createLoadFlowParameters))
             .def_readwrite("voltage_init_mode", &pypowsybl::LoadFlowParameters::voltage_init_mode)
             .def_readwrite("transformer_voltage_control_on", &pypowsybl::LoadFlowParameters::transformer_voltage_control_on)
             .def_readwrite("use_reactive_limits", &pypowsybl::LoadFlowParameters::use_reactive_limits)
@@ -440,7 +413,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
     py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
-            .def(py::init(&pypowsybl::createValidationConfig))
+            .def(py::init(&PyPowsyblInterface::createValidationConfig))
             .def_readwrite("threshold", &pypowsybl::LoadFlowValidationParameters::threshold)
             .def_readwrite("verbose", &pypowsybl::LoadFlowValidationParameters::verbose)
             .def_readwrite("loadflow_name", &pypowsybl::LoadFlowValidationParameters::loadflow_name)
@@ -454,7 +427,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("no_requirement_if_setpoint_outside_power_bounds", &pypowsybl::LoadFlowValidationParameters::no_requirement_if_setpoint_outside_power_bounds);
 
     py::class_<pypowsybl::SecurityAnalysisParameters>(m, "SecurityAnalysisParameters")
-            .def(py::init(&pypowsybl::createSecurityAnalysisParameters))
+            .def(py::init(&PyPowsyblInterface::createSecurityAnalysisParameters))
             .def_readwrite("loadflow_parameters", &pypowsybl::SecurityAnalysisParameters::loadflow_parameters)
             .def_readwrite("flow_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::flow_proportional_threshold)
             .def_readwrite("low_voltage_proportional_threshold", &pypowsybl::SecurityAnalysisParameters::low_voltage_proportional_threshold)
@@ -465,19 +438,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_values", &pypowsybl::SecurityAnalysisParameters::provider_parameters_values);
 
     py::class_<pypowsybl::SensitivityAnalysisParameters>(m, "SensitivityAnalysisParameters")
-            .def(py::init(&pypowsybl::createSensitivityAnalysisParameters))
+            .def(py::init(&PyPowsyblInterface::createSensitivityAnalysisParameters))
             .def_readwrite("loadflow_parameters", &pypowsybl::SensitivityAnalysisParameters::loadflow_parameters)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
 
-    m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
+    m.def("run_loadflow", &PyPowsyblInterface::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
-    m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
+    m.def("run_loadflow_validation", &PyPowsyblInterface::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
           py::arg("validation_type"), py::arg("validation_parameters"));
 
     py::class_<pypowsybl::SldParameters>(m, "SldParameters")
-        .def(py::init(&pypowsybl::createSldParameters))
+        .def(py::init(&PyPowsyblInterface::createSldParameters))
         .def_readwrite("use_name", &pypowsybl::SldParameters::use_name)
         .def_readwrite("center_name", &pypowsybl::SldParameters::center_name)
         .def_readwrite("diagonal_label", &pypowsybl::SldParameters::diagonal_label)
@@ -487,7 +460,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
-        .def(py::init(&pypowsybl::createNadParameters))
+        .def(py::init(&PyPowsyblInterface::createNadParameters))
         .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
         .def_readwrite("edge_info_along_edge", &pypowsybl::NadParameters::edge_info_along_edge)
         .def_readwrite("power_value_precision", &pypowsybl::NadParameters::power_value_precision)
@@ -498,56 +471,56 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("bus_legend", &pypowsybl::NadParameters::bus_legend)
         .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed);
 
-    m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
+    m.def("write_single_line_diagram_svg", &PyPowsyblInterface::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
-    m.def("write_matrix_multi_substation_single_line_diagram_svg", &pypowsybl::writeMatrixMultiSubstationSingleLineDiagramSvg, "Write matrix multi-substation single line diagram SVG",
+    m.def("write_matrix_multi_substation_single_line_diagram_svg", &PyPowsyblInterface::writeMatrixMultiSubstationSingleLineDiagramSvg, "Write matrix multi-substation single line diagram SVG",
           py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
 
-    m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
+    m.def("get_single_line_diagram_svg", &PyPowsyblInterface::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 
-    m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
+    m.def("get_single_line_diagram_svg_and_metadata", &PyPowsyblInterface::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
 
-    m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
+    m.def("get_single_line_diagram_component_library_names", &PyPowsyblInterface::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
-    m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
+    m.def("write_network_area_diagram_svg", &PyPowsyblInterface::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
           py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
-    m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
+    m.def("get_network_area_diagram_svg", &PyPowsyblInterface::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
-    m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
+    m.def("get_network_area_diagram_displayed_voltage_levels", &PyPowsyblInterface::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
 
-    m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
+    m.def("create_security_analysis", &PyPowsyblInterface::createSecurityAnalysis, "Create a security analysis");
 
-    m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
+    m.def("add_contingency", &PyPowsyblInterface::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
           py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
-    m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
+    m.def("add_load_active_power_action", &PyPowsyblInterface::addLoadActivePowerAction, "Add a load active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
 
-    m.def("add_load_reactive_power_action", &pypowsybl::addLoadReactivePowerAction, "Add a load reactive power remedial action",
+    m.def("add_load_reactive_power_action", &PyPowsyblInterface::addLoadReactivePowerAction, "Add a load reactive power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("reactive_power"));
 
-    m.def("add_generator_active_power_action", &pypowsybl::addGeneratorActivePowerAction, "Add a generator active power remedial action",
+    m.def("add_generator_active_power_action", &PyPowsyblInterface::addGeneratorActivePowerAction, "Add a generator active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("generator_id"), py::arg("is_relative"), py::arg("active_power"));
 
-    m.def("add_switch_action", &pypowsybl::addSwitchAction, "Add a switch action",
+    m.def("add_switch_action", &PyPowsyblInterface::addSwitchAction, "Add a switch action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
 
-    m.def("add_phase_tap_changer_position_action", &pypowsybl::addPhaseTapChangerPositionAction, "Add a phase tap changer position action",
+    m.def("add_phase_tap_changer_position_action", &PyPowsyblInterface::addPhaseTapChangerPositionAction, "Add a phase tap changer position action",
            py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
-    m.def("add_ratio_tap_changer_position_action", &pypowsybl::addRatioTapChangerPositionAction, "Add a ratio tap changer position action",
+    m.def("add_ratio_tap_changer_position_action", &PyPowsyblInterface::addRatioTapChangerPositionAction, "Add a ratio tap changer position action",
            py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
-    m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
+    m.def("add_shunt_compensator_position_action", &PyPowsyblInterface::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
               py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
 
-    m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
+    m.def("add_operator_strategy", &PyPowsyblInterface::addOperatorStrategy, "Add an operator strategy",
           py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
           py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
 
@@ -631,7 +604,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return static_cast<ThreeSide>(v.side);
             });
 
-    bindArray<pypowsybl::LimitViolationArray>(m, "LimitViolationArray");
+    bindArray<pypowsybl::LimitViolationArray<MyPypowsyblJavaCaller>>(m, "LimitViolationArray");
 
     py::class_<post_contingency_result>(m, "PostContingencyResult")
             .def_property_readonly("contingency_id", [](const post_contingency_result& r) {
@@ -641,9 +614,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return static_cast<pypowsybl::PostContingencyComputationStatus>(r.status);
             })
             .def_property_readonly("limit_violations", [](const post_contingency_result& r) {
-                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
+                return pypowsybl::LimitViolationArray<MyPypowsyblJavaCaller>((array *) & r.limit_violations);
             });
-    bindArray<pypowsybl::PostContingencyResultArray>(m, "PostContingencyResultArray");
+    bindArray<pypowsybl::PostContingencyResultArray<MyPypowsyblJavaCaller>>(m, "PostContingencyResultArray");
 
     py::class_<operator_strategy_result>(m, "OperatorStrategyResult")
             .def_property_readonly("operator_strategy_id", [](const operator_strategy_result& r) {
@@ -653,38 +626,38 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return static_cast<pypowsybl::PostContingencyComputationStatus>(r.status);
             })
             .def_property_readonly("limit_violations", [](const operator_strategy_result& r) {
-                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
+                return pypowsybl::LimitViolationArray<MyPypowsyblJavaCaller>((array *) & r.limit_violations);
             });
-    bindArray<pypowsybl::OperatorStrategyResultArray>(m, "OperatorStrategyResultArray");
+    bindArray<pypowsybl::OperatorStrategyResultArray<MyPypowsyblJavaCaller>>(m, "OperatorStrategyResultArray");
 
     py::class_<pre_contingency_result>(m, "PreContingencyResult")
             .def_property_readonly("status", [](const pre_contingency_result& r) {
                 return static_cast<pypowsybl::LoadFlowComponentStatus>(r.status);
             })
             .def_property_readonly("limit_violations", [](const pre_contingency_result& r) {
-                return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
+                return pypowsybl::LimitViolationArray<MyPypowsyblJavaCaller>((array *) & r.limit_violations);
             });
 
-    m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
+    m.def("run_security_analysis", &PyPowsyblInterface::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
           py::arg("provider"), py::arg("dc"), py::arg("report_node"));
 
-    m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
+    m.def("create_sensitivity_analysis", &PyPowsyblInterface::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
     py::class_<::zone>(m, "Zone")
             .def(py::init([](const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
                 return pypowsybl::createZone(id, injectionsIds, injectionsShiftKeys);
             }), py::arg("id"), py::arg("injections_ids"), py::arg("injections_shift_keys"));
 
-    m.def("set_zones", &pypowsybl::setZones, "Add zones to sensitivity analysis",
+    m.def("set_zones", &PyPowsyblInterface::setZones, "Add zones to sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("zones"));
 
-    m.def("add_factor_matrix", &pypowsybl::addFactorMatrix, "Add a factor matrix to a sensitivity analysis",
+    m.def("add_factor_matrix", &PyPowsyblInterface::addFactorMatrix, "Add a factor matrix to a sensitivity analysis",
           py::arg("sensitivity_analysis_context"), py::arg("matrix_id"), py::arg("branches_ids"), py::arg("variables_ids"),
           py::arg("contingencies_ids"), py::arg("contingency_context_type"), py::arg("sensitivity_function_type"),
           py::arg("sensitivity_variable_type"));
 
-    m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
+    m.def("run_sensitivity_analysis", &PyPowsyblInterface::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
@@ -697,10 +670,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
                                        { sizeof(double) * m.column_count, sizeof(double) });
             });
 
-    m.def("get_sensitivity_matrix", &pypowsybl::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
+    m.def("get_sensitivity_matrix", &PyPowsyblInterface::getSensitivityMatrix, "Get sensitivity analysis result matrix for a given contingency",
               py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
-    m.def("get_reference_matrix", &pypowsybl::getReferenceMatrix, "Get sensitivity analysis result reference matrix for a given contingency",
+    m.def("get_reference_matrix", &PyPowsyblInterface::getReferenceMatrix, "Get sensitivity analysis result reference matrix for a given contingency",
           py::arg("sensitivity_analysis_result_context"), py::arg("matrix_id"), py::arg("contingency_id"));
 
     py::class_<series>(m, "Series")
@@ -724,7 +697,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                         throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
             });
-    bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
+    bindArray<pypowsybl::SeriesArray<MyPypowsyblJavaCaller>>(m, "SeriesArray");
 
     py::class_<pypowsybl::SeriesMetadata>(m, "SeriesMetadata", "Metadata about one series")
             .def(py::init<const std::string&, int, bool, bool, bool>())
@@ -734,35 +707,35 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_property_readonly("is_modifiable", &pypowsybl::SeriesMetadata::isModifiable)
             .def_property_readonly("is_default", &pypowsybl::SeriesMetadata::isDefault);
 
-    m.def("get_network_elements_dataframe_metadata", &pypowsybl::getNetworkDataframeMetadata, "Get dataframe metadata for a given network element type",
+    m.def("get_network_elements_dataframe_metadata", &PyPowsyblInterface::getNetworkDataframeMetadata, "Get dataframe metadata for a given network element type",
           py::arg("element_type"));
 
-    m.def("get_network_elements_creation_dataframes_metadata", &pypowsybl::getNetworkElementCreationDataframesMetadata, "Get network elements creation tables metadata",
+    m.def("get_network_elements_creation_dataframes_metadata", &PyPowsyblInterface::getNetworkElementCreationDataframesMetadata, "Get network elements creation tables metadata",
         py::arg("element_type"));
 
-    m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
+    m.def("create_network_elements_series_array", &PyPowsyblInterface::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
 
-    m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
+    m.def("create_network_elements_extension_series_array", &PyPowsyblInterface::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));
 
-    m.def("get_extensions_names", &pypowsybl::getExtensionsNames, "get all the extensions names available");
+    m.def("get_extensions_names", &PyPowsyblInterface::getExtensionsNames, "get all the extensions names available");
 
-    m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
+    m.def("get_extensions_information", &PyPowsyblInterface::getExtensionsInformation, "get more information about all extensions");
 
-    m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
+    m.def("update_network_elements_with_series", &PyPowsyblInterface::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
 
     m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"),
           py::arg("is_index"));
 
-    m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
-    m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
-    m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
-    m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
-    m.def("clone_variant", &pypowsybl::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
-    m.def("get_variant_ids", &pypowsybl::getVariantsIds, "get all variant ids from a network", py::arg("network"));
-    m.def("add_monitored_elements", &pypowsybl::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
+    m.def("get_network_metadata", &PyPowsyblInterface::getNetworkMetadata, "get attributes", py::arg("network"));
+    m.def("get_working_variant_id", &PyPowsyblInterface::getWorkingVariantId, "get the current working variant id", py::arg("network"));
+    m.def("set_working_variant", &PyPowsyblInterface::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
+    m.def("remove_variant", &PyPowsyblInterface::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));
+    m.def("clone_variant", &PyPowsyblInterface::cloneVariant, "clone a variant", py::arg("network"), py::arg("src"), py::arg("variant"), py::arg("may_overwrite"));
+    m.def("get_variant_ids", &PyPowsyblInterface::getVariantsIds, "get all variant ids from a network", py::arg("network"));
+    m.def("add_monitored_elements", &PyPowsyblInterface::addMonitoredElements, "Add monitors to get specific results on network after security analysis process", py::arg("security_analysis_context"),
           py::arg("contingency_context_type"), py::arg("branch_ids"), py::arg("voltage_level_ids"), py::arg("three_windings_transformer_ids"),
           py::arg("contingency_ids"));
 
@@ -795,92 +768,92 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("TRANSFORMER_PHASE_2", sensitivity_variable_type::TRANSFORMER_PHASE_2)
             .value("TRANSFORMER_PHASE_3", sensitivity_variable_type::TRANSFORMER_PHASE_3);
 
-    m.def("get_post_contingency_results", &pypowsybl::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
-    m.def("get_pre_contingency_result", &pypowsybl::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));
-    m.def("get_operator_strategy_results", &pypowsybl::getOperatorStrategyResults, "get operator strategy results of a security analysis", py::arg("result"));
-    m.def("get_node_breaker_view_nodes", &pypowsybl::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_node_breaker_view_internal_connections", &pypowsybl::getNodeBreakerViewInternalConnections,
+    m.def("get_post_contingency_results", &PyPowsyblInterface::getPostContingencyResults, "get post contingency results of a security analysis", py::arg("result"));
+    m.def("get_pre_contingency_result", &PyPowsyblInterface::getPreContingencyResult, "get pre contingency result of a security analysis", py::arg("result"));
+    m.def("get_operator_strategy_results", &PyPowsyblInterface::getOperatorStrategyResults, "get operator strategy results of a security analysis", py::arg("result"));
+    m.def("get_node_breaker_view_nodes", &PyPowsyblInterface::getNodeBreakerViewNodes, "get all nodes for a voltage level", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_node_breaker_view_internal_connections", &PyPowsyblInterface::getNodeBreakerViewInternalConnections,
     "get all internal connections for a voltage level", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_node_breaker_view_switches", &pypowsybl::getNodeBreakerViewSwitches, "get all switches for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_bus_breaker_view_elements", &pypowsybl::getBusBreakerViewElements, "get all elements for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_bus_breaker_view_buses", &pypowsybl::getBusBreakerViewBuses,
+    m.def("get_node_breaker_view_switches", &PyPowsyblInterface::getNodeBreakerViewSwitches, "get all switches for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_bus_breaker_view_elements", &PyPowsyblInterface::getBusBreakerViewElements, "get all elements for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_bus_breaker_view_buses", &PyPowsyblInterface::getBusBreakerViewBuses,
     "get all buses for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_bus_breaker_view_switches", &pypowsybl::getBusBreakerViewSwitches, "get all switches for a voltage level", py::arg("network"), py::arg("voltage_level"));
-    m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
+    m.def("get_bus_breaker_view_switches", &PyPowsyblInterface::getBusBreakerViewSwitches, "get all switches for a voltage level", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_limit_violations", &PyPowsyblInterface::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
 
-    m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",
+    m.def("get_branch_results", &PyPowsyblInterface::getBranchResults, "create a table with all branch results computed after security analysis",
           py::arg("result"));
-    m.def("get_bus_results", &pypowsybl::getBusResults, "create a table with all bus results computed after security analysis",
+    m.def("get_bus_results", &PyPowsyblInterface::getBusResults, "create a table with all bus results computed after security analysis",
           py::arg("result"));
-    m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
+    m.def("get_three_windings_transformer_results", &PyPowsyblInterface::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
-    m.def("create_element", ::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
+    m.def("create_element", &PyPowsyblInterface::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
 
     py::enum_<validation_level_type>(m, "ValidationLevel")
         .value("EQUIPMENT", validation_level_type::EQUIPMENT)
         .value("STEADY_STATE_HYPOTHESIS", validation_level_type::STEADY_STATE_HYPOTHESIS)
         .export_values();
 
-    m.def("get_validation_level", &pypowsybl::getValidationLevel, "get the validation level", py::arg("network"));
+    m.def("get_validation_level", &PyPowsyblInterface::getValidationLevel, "get the validation level", py::arg("network"));
 
-    m.def("validate", &pypowsybl::validate, "validate", py::arg("network"));
+    m.def("validate", &PyPowsyblInterface::validate, "validate", py::arg("network"));
 
-    m.def("set_min_validation_level", pypowsybl::setMinValidationLevel, "set minimum validation level",
+    m.def("set_min_validation_level", &PyPowsyblInterface::setMinValidationLevel, "set minimum validation level",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("validation_level"));
     m.def("set_logger", &setLogger, "Setup the logger", py::arg("logger"));
     m.def("get_logger", &getLogger, "Retrieve the logger");
-    m.def("remove_elements", &pypowsybl::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
-    m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
-    m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
-    m.def("get_loadflow_provider_parameters_names", &pypowsybl::getLoadFlowProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
-    m.def("create_loadflow_provider_parameters_series_array", &pypowsybl::createLoadFlowProviderParametersSeriesArray, "Create a parameters series array for a given loadflow provider",
+    m.def("remove_elements", &PyPowsyblInterface::removeNetworkElements, "delete elements on the network", py::arg("network"),  py::arg("elementIds"));
+    m.def("add_network_element_properties", &PyPowsyblInterface::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
+    m.def("remove_network_element_properties", &PyPowsyblInterface::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
+    m.def("get_loadflow_provider_parameters_names", &PyPowsyblInterface::getLoadFlowProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
+    m.def("create_loadflow_provider_parameters_series_array", &PyPowsyblInterface::createLoadFlowProviderParametersSeriesArray, "Create a parameters series array for a given loadflow provider",
           py::arg("provider"));
-    m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
-    m.def("get_sensitivity_analysis_provider_parameters_names", &pypowsybl::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
-    m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
+    m.def("get_security_analysis_provider_parameters_names", &PyPowsyblInterface::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
+    m.def("get_sensitivity_analysis_provider_parameters_names", &PyPowsyblInterface::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
+    m.def("update_extensions", &PyPowsyblInterface::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("table_name"), py::arg("dataframe"));
-    m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements",
+    m.def("remove_extensions", &PyPowsyblInterface::removeExtensions, "Remove extensions from network elements",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("ids"));
-    m.def("get_network_extensions_dataframe_metadata", &pypowsybl::getNetworkExtensionsDataframeMetadata, "Get dataframe metadata for a given network element extension",
+    m.def("get_network_extensions_dataframe_metadata", &PyPowsyblInterface::getNetworkExtensionsDataframeMetadata, "Get dataframe metadata for a given network element extension",
           py::arg("name"), py::arg("table_name"));
-    m.def("get_network_extensions_creation_dataframes_metadata", &pypowsybl::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
+    m.def("get_network_extensions_creation_dataframes_metadata", &PyPowsyblInterface::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
           py::arg("name"));
-    m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name",
+    m.def("create_extensions", &PyPowsyblInterface::createExtensions, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
-    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
-    m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("report_node"));
-	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("report_node"));
-    m.def("create_glsk_document", &pypowsybl::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));
+    m.def("create_report_node", &PyPowsyblInterface::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
+    m.def("print_report", &PyPowsyblInterface::printReport, "Print a report", py::arg("report_node"));
+	m.def("json_report", &PyPowsyblInterface::jsonReport, "Print a report in json format", py::arg("report_node"));
+    m.def("create_glsk_document", &PyPowsyblInterface::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));
 
-    m.def("get_glsk_injection_keys", &pypowsybl::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
+    m.def("get_glsk_injection_keys", &PyPowsyblInterface::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
 
-    m.def("get_glsk_countries", &pypowsybl::getGLSKcountries, "Get glsk countries", py::arg("importer"));
+    m.def("get_glsk_countries", &PyPowsyblInterface::getGLSKcountries, "Get glsk countries", py::arg("importer"));
 
-    m.def("get_glsk_factors", &pypowsybl::getGLSKInjectionFactors, "Get glsk factors", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
+    m.def("get_glsk_factors", &PyPowsyblInterface::getGLSKInjectionFactors, "Get glsk factors", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
 
-    m.def("get_glsk_factors_start_timestamp", &pypowsybl::getInjectionFactorStartTimestamp, "Get glsk start timestamp", py::arg("importer"));
+    m.def("get_glsk_factors_start_timestamp", &PyPowsyblInterface::getInjectionFactorStartTimestamp, "Get glsk start timestamp", py::arg("importer"));
 
-    m.def("get_glsk_factors_end_timestamp", &pypowsybl::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
+    m.def("get_glsk_factors_end_timestamp", &PyPowsyblInterface::getInjectionFactorEndTimestamp, "Get glsk end timestamp", py::arg("importer"));
 
-    m.def("create_flow_decomposition", &pypowsybl::createFlowDecomposition, "Create a security analysis");
+    m.def("create_flow_decomposition", &PyPowsyblInterface::createFlowDecomposition, "Create a security analysis");
 
-    m.def("add_contingency_for_flow_decomposition", &pypowsybl::addContingencyForFlowDecomposition, "Add a contingency for flow decomposition",
+    m.def("add_contingency_for_flow_decomposition", &PyPowsyblInterface::addContingencyForFlowDecomposition, "Add a contingency for flow decomposition",
           py::arg("flow_decomposition_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
-    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements before contingency to be monitored for a flow decomposition",
+    m.def("add_precontingency_monitored_elements_for_flow_decomposition", &PyPowsyblInterface::addPrecontingencyMonitoredElementsForFlowDecomposition, "Add elements before contingency to be monitored for a flow decomposition",
           py::arg("flow_decomposition_context"), py::arg("branch_ids"));
 
-    m.def("add_postcontingency_monitored_elements_for_flow_decomposition", &pypowsybl::addPostcontingencyMonitoredElementsForFlowDecomposition, "Add elements after contingency to be monitored for a flow decomposition",
+    m.def("add_postcontingency_monitored_elements_for_flow_decomposition", &PyPowsyblInterface::addPostcontingencyMonitoredElementsForFlowDecomposition, "Add elements after contingency to be monitored for a flow decomposition",
           py::arg("flow_decomposition_context"), py::arg("branch_ids"), py::arg("contingency_ids"));
 
-    m.def("add_additional_xnec_provider_for_flow_decomposition", &pypowsybl::addAdditionalXnecProviderForFlowDecomposition, "Add an additional default xnec provider for a flow decomposition",
+    m.def("add_additional_xnec_provider_for_flow_decomposition", &PyPowsyblInterface::addAdditionalXnecProviderForFlowDecomposition, "Add an additional default xnec provider for a flow decomposition",
           py::arg("flow_decomposition_context"), py::arg("default_xnec_provider"));
 
-    m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
+    m.def("run_flow_decomposition", &PyPowsyblInterface::runFlowDecomposition, "Run flow decomposition on a network",
           py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("loadflow_parameters"));
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
-                .def(py::init(&pypowsybl::createFlowDecompositionParameters))
+                .def(py::init(&PyPowsyblInterface::createFlowDecompositionParameters))
                 .def_readwrite("enable_losses_compensation", &pypowsybl::FlowDecompositionParameters::enable_losses_compensation)
                 .def_readwrite("losses_compensation_epsilon", &pypowsybl::FlowDecompositionParameters::losses_compensation_epsilon)
                 .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
@@ -893,24 +866,24 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL_BRANCHES", pypowsybl::DefaultXnecProvider::ALL_BRANCHES, "Select all branches in a network.")
             .value("INTERCONNECTIONS", pypowsybl::DefaultXnecProvider::INTERCONNECTIONS, "Select all the interconnections in a network.");
 
-    m.def("get_connectables_order_positions", &pypowsybl::getConnectablesOrderPositions, "Get connectables order positions", py::arg("network"), py::arg("voltage_level_id"));
+    m.def("get_connectables_order_positions", &PyPowsyblInterface::getConnectablesOrderPositions, "Get connectables order positions", py::arg("network"), py::arg("voltage_level_id"));
 
-    m.def("get_unused_order_positions", &pypowsybl::getUnusedConnectableOrderPositions, "Get unused order positions before or after", py::arg("network"), py::arg("busbar_section_id"), py::arg("before_or_after"));
+    m.def("get_unused_order_positions", &PyPowsyblInterface::getUnusedConnectableOrderPositions, "Get unused order positions before or after", py::arg("network"), py::arg("busbar_section_id"), py::arg("before_or_after"));
 
-    m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
+    m.def("remove_aliases", &PyPowsyblInterface::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
 
-    m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
+    m.def("close", &PyPowsyblInterface::closePypowsybl, "Closes pypowsybl module.");
 
-    m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
+    m.def("remove_elements_modification", &PyPowsyblInterface::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     dynamicSimulationBindings(m);
     voltageInitializerBinding(m);
 
-    m.def("get_network_modification_metadata", &pypowsybl::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
+    m.def("get_network_modification_metadata", &PyPowsyblInterface::getModificationMetadata, "Get network modification metadata", py::arg("network_modification_type"));
 
-    m.def("get_network_modification_metadata_with_element_type", &pypowsybl::getModificationMetadataWithElementType, "Get network modification metadata with element type", py::arg("network_modification_type"), py::arg("element_type"));
+    m.def("get_network_modification_metadata_with_element_type", &PyPowsyblInterface::getModificationMetadataWithElementType, "Get network modification metadata with element type", py::arg("network_modification_type"), py::arg("element_type"));
 
-    m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
+    m.def("create_network_modification", &PyPowsyblInterface::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
             .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
@@ -921,7 +894,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                    "The last stage of the short circuit, once all transient effects are gone.");
 
     py::class_<pypowsybl::ShortCircuitAnalysisParameters>(m, "ShortCircuitAnalysisParameters")
-        .def(py::init(&pypowsybl::createShortCircuitAnalysisParameters))
+        .def(py::init(&PyPowsyblInterface::createShortCircuitAnalysisParameters))
         .def_readwrite("with_voltage_result", &pypowsybl::ShortCircuitAnalysisParameters::with_voltage_result)
         .def_readwrite("with_feeder_result", &pypowsybl::ShortCircuitAnalysisParameters::with_feeder_result)
         .def_readwrite("with_limit_violations", &pypowsybl::ShortCircuitAnalysisParameters::with_limit_violations)
@@ -931,22 +904,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("provider_parameters_keys", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_keys)
         .def_readwrite("provider_parameters_values", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_values);
 
-    m.def("set_default_shortcircuit_analysis_provider", &pypowsybl::setDefaultShortCircuitAnalysisProvider, "Set default short-circuit analysis provider", py::arg("provider"));
-    m.def("get_default_shortcircuit_analysis_provider", &pypowsybl::getDefaultShortCircuitAnalysisProvider, "Get default short-circuit analysis provider");
-    m.def("get_shortcircuit_provider_names", &pypowsybl::getShortCircuitAnalysisProviderNames, "Get supported short-circuit analysis providers");
-    m.def("get_shortcircuit_provider_parameters_names", &pypowsybl::getShortCircuitAnalysisProviderParametersNames, "get provider parameters for a short-circuit analysis provider", py::arg("provider"));
-    m.def("create_shortcircuit_analysis", &pypowsybl::createShortCircuitAnalysis, "Create a short-circuit analysis");
-    m.def("run_shortcircuit_analysis", &pypowsybl::runShortCircuitAnalysis, "Run a short-circuit analysis", py::call_guard<py::gil_scoped_release>(),
+    m.def("set_default_shortcircuit_analysis_provider", &PyPowsyblInterface::setDefaultShortCircuitAnalysisProvider, "Set default short-circuit analysis provider", py::arg("provider"));
+    m.def("get_default_shortcircuit_analysis_provider", &PyPowsyblInterface::getDefaultShortCircuitAnalysisProvider, "Get default short-circuit analysis provider");
+    m.def("get_shortcircuit_provider_names", &PyPowsyblInterface::getShortCircuitAnalysisProviderNames, "Get supported short-circuit analysis providers");
+    m.def("get_shortcircuit_provider_parameters_names", &PyPowsyblInterface::getShortCircuitAnalysisProviderParametersNames, "get provider parameters for a short-circuit analysis provider", py::arg("provider"));
+    m.def("create_shortcircuit_analysis", &PyPowsyblInterface::createShortCircuitAnalysis, "Create a short-circuit analysis");
+    m.def("run_shortcircuit_analysis", &PyPowsyblInterface::runShortCircuitAnalysis, "Run a short-circuit analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("shortcircuit_analysis_context"), py::arg("network"), py::arg("parameters"),
           py::arg("provider"), py::arg("report_node"));
 
-    m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata");
-    m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"));
-    m.def("get_fault_results", &pypowsybl::getFaultResults, "gets the fault results computed after short-circuit analysis",
+    m.def("get_faults_dataframes_metadata", &PyPowsyblInterface::getFaultsMetaData, "Get faults metadata");
+    m.def("set_faults", &PyPowsyblInterface::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"));
+    m.def("get_fault_results", &PyPowsyblInterface::getFaultResults, "gets the fault results computed after short-circuit analysis",
           py::arg("result"), py::arg("with_fortescue_result"));
-    m.def("get_feeder_results", &pypowsybl::getFeederResults, "gets the feeder results computed after short-circuit analysis",
+    m.def("get_feeder_results", &PyPowsyblInterface::getFeederResults, "gets the feeder results computed after short-circuit analysis",
           py::arg("result"), py::arg("with_fortescue_result"));
-    m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
-    m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
+    m.def("get_short_circuit_limit_violations", &PyPowsyblInterface::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
+    m.def("get_short_circuit_bus_results", &PyPowsyblInterface::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
 }
