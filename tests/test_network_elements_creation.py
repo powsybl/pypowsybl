@@ -971,24 +971,24 @@ def test_3_windings_transformers_creation():
     assert transformer.rated_u1 == 380.0
     assert transformer.rated_s1 == 100
     assert transformer.voltage_level1_id == 'VLHV1'
-    assert transformer.bus1_id == 'NHV1'
+    assert transformer.bus1_id == 'VLHV1_0'
     assert transformer.connected1 == True
     assert transformer.r2 == 0.5
     assert transformer.x2 == 10
     assert transformer.g2 == 1e-6
     assert transformer.b2 == 1e-6
-    assert transformer.rated_u2 == 380.0
+    assert transformer.rated_u2 == 225.0
     assert transformer.rated_s2 == 100
     assert transformer.voltage_level2_id == 'VLTEST'
-    assert transformer.bus2_id == 'BUSTEST'
+    assert transformer.bus2_id == 'VLTEST_0'
     assert transformer.connected2 == True
     assert transformer.r3 == 0.5
     assert transformer.x3 == 10
     assert transformer.g3 == 1e-6
     assert transformer.b3 == 1e-6
-    assert transformer.rated_u3 == 380.0
+    assert transformer.rated_u3 == 24.0
     assert transformer.rated_s3 == 100
     assert transformer.voltage_level3_id == 'VLGEN'
-    assert transformer.bus3_id == 'NGEN'
+    assert transformer.bus3_id == 'VLGEN_0'
     assert transformer.connected3 == True
 
