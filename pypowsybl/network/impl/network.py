@@ -3960,12 +3960,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                network.create_3_windings_transformers(id='T-1', rated_u0 = , voltage_level1_id='VL1', bus1_id='B1',
+                network.create_3_windings_transformers(id='T-1', rated_u0 = 225, voltage_level1_id='VL1', bus1_id='B1',
                                                        voltage_level2_id='VL2', bus2_id='B2',
                                                        voltage_level3_id='VL3', bus3_id='B3',
-                                                       b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=400, rated_s1,
-                                                       b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225, rated_s2,
-                                                       b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=90, rated_s3)
+                                                       b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=400, rated_s1=100,
+                                                       b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225, rated_s2=100,
+                                                       b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=90, rated_s3=100)
         """
         return self._create_elements(ElementType.THREE_WINDINGS_TRANSFORMER, [df], **kwargs)
 
