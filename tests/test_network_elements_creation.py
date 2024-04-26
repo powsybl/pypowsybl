@@ -1003,5 +1003,6 @@ def test_3_windings_transformers_creation():
               ('TWT_TEST', 2, 2, 1, 1, 0.5),
               ('TWT_TEST', 2, 2, 1, 1, 0.8)])
     n.create_ratio_tap_changers(rtc_df, steps_df)
+    transformer = n.get_3_windings_transformers().loc['TWT_TEST']
     assert transformer.ratio_tap_position1 == 1
 
