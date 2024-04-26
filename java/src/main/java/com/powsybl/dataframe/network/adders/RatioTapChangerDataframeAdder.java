@@ -134,19 +134,17 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
         }
 
         private static void setRegulatedSide(TwoWindingsTransformer transformer, RatioTapChangerAdder adder, String regulatedSideStr) {
-            if (regulatedSideStr.isEmpty()) {
-                return;
+            if (!regulatedSideStr.isEmpty()) {
+                TwoSides regulatedSide = TwoSides.valueOf(regulatedSideStr);
+                adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
             }
-            TwoSides regulatedSide = TwoSides.valueOf(regulatedSideStr);
-            adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
         }
 
         private static void setRegulatedSide(ThreeWindingsTransformer transformer, RatioTapChangerAdder adder, String regulatedSideStr) {
-            if (regulatedSideStr.isEmpty()) {
-                return;
+            if (!regulatedSideStr.isEmpty()) {
+                ThreeSides regulatedSide = ThreeSides.valueOf(regulatedSideStr);
+                adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
             }
-            ThreeSides regulatedSide = ThreeSides.valueOf(regulatedSideStr);
-            adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
         }
     }
 
