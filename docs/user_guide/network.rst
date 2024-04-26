@@ -383,7 +383,7 @@ You can add a ratio tap changer on the leg 1 of the three-winding transformer wi
         data=[('T1', 2, 2, 1, 1, 0.5),
               ('T1', 2, 2, 1, 1, 0.5),
               ('T1', 2, 2, 1, 1, 0.8)])
-    n.create_ratio_tap_changers(rtc_df, steps_df)
+    network.create_ratio_tap_changers(rtc_df, steps_df)
 
 For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.
