@@ -3906,6 +3906,10 @@ class Network:  # pylint: disable=too-many-public-methods
             Data may be provided as a dataframe or as keyword arguments.
             In the latter case, all arguments must have the same length.
 
+            For each side of the transformer, either a node ID (voltage level in node-breaker topology), bus ID (
+             voltage level in bus-breaker topology) or connectable bus ID (voltage level in bus-breaker topology,
+             the transformer is created associated but disconnected from this bus) should be specified.
+
             Valid attributes are:
 
             - **id**: the identifier of the new transformer
@@ -3914,33 +3918,33 @@ class Network:  # pylint: disable=too-many-public-methods
               The voltage level must already exist.
             - **bus1_id**: the bus where the new transformer will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
-            - **connectable_bus1_id**: the bus where the new transformer will be connectable on side 1,
-              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus1_id**: the bus to which the transformer can be connected on side 1, if the voltage level
+             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node1**: the node where the new transformer will be connected on side 1,
               if the voltage level has a node-breaker topology kind.
             - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
               The voltage level must already exist.
             - **bus2_id**: the bus where the new transformer will be connected on side 2,
               if the voltage level has a bus-breaker topology kind.
-            - **connectable_bus2_id**: the bus where the new transformer will be connectable on side 2,
-              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus2_id**: the bus to which the transformer can be connected on side 2, if the voltage level
+             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node2**: the node where the new transformer will be connected on side 2,
               if the voltage level has a node-breaker topology kind.
             - **voltage_level3_id**: the voltage level where the new transformer will be connected on side 3.
               The voltage level must already exist.
             - **bus3_id**: the bus where the new transformer will be connected on side 3,
               if the voltage level has a bus-breaker topology kind.
-            - **connectable_bus3_id**: the bus where the new transformer will be connectable on side 3,
-              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus3_id**: the bus to which the transformer can be connected on side 3, if the voltage level
+             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node3**: the node where the new transformer will be connected on side 3,
               if the voltage level has a node-breaker topology kind.
             - **name**: an optional human-readable name
             - **rated_u1**: nominal voltage of the side 1 of the transformer
             - **rated_u2**: nominal voltage of the side 2 of the transformer
             - **rated_u3**: nominal voltage of the side 3 of the transformer
-            - **rated_s1**: nominal power of the side 1 of the transformer
-            - **rated_s2**: nominal power of the side 2 of the transformer
-            - **rated_s3**: nominal power of the side 3 of the transformer
+            - **rated_s1**: optionally, nominal power of the side 1 of the transformer
+            - **rated_s2**: optionally, nominal power of the side 2 of the transformer
+            - **rated_s3**: optionally, nominal power of the side 3 of the transformer
             - **r1**: the resistance of the side 1, in Ohm
             - **r2**: the resistance of the side 2, in Ohm
             - **r3**: the resistance of the side 3, in Ohm

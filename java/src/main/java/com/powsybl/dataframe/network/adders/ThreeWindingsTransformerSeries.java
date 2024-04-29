@@ -105,7 +105,7 @@ public class ThreeWindingsTransformerSeries extends IdentifiableSeries {
         Substation s2 = vl2.getSubstation().orElseThrow(() -> new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + NO_SUBSTATION));
         Substation s3 = vl3.getSubstation().orElseThrow(() -> new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + NO_SUBSTATION));
         if (!(s1 == s2 && s1 == s3)) {
-            throw new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": both voltage ids must be on the same substation");
+            throw new PowsyblException(COULD_NOT_CREATE_TRANSFORMER + id + ": all voltage levels must be on the same substation");
         }
         var adder = s1.newThreeWindingsTransformer();
         setIdentifiableAttributes(adder, row);
