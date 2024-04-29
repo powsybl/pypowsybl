@@ -13,7 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <functional>
-#include "pypowsybl-api.h"
+#include "powsybl-api.h"
 #include "pypowsybl-java.h"
 
 namespace pypowsybl {

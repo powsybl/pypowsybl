@@ -7,7 +7,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-#include "pypowsybl.h"
+#include "powsybl-cpp.h"
 #include "pylogging.h"
 
 namespace py = pybind11;

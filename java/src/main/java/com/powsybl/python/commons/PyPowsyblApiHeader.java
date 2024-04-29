@@ -18,7 +18,7 @@ import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.PointerBase;
 
 /**
- * Defines java mapping with C structs defined in pypowsybl-api.h header.
+ * Defines java mapping with C structs defined in powsybl-api.h header.
  *
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
