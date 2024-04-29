@@ -1017,7 +1017,8 @@ def test_3_windings_transformers_creation():
               ('TWT_TEST', 2, 2, 1, 1, 0.4, 0.2),
               ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
     n.create_phase_tap_changers(ptc_df, steps_df)
-    assert transformer.phase_tap_changer_powsition2 == 1
+    transformer = n.get_3_windings_transformers().loc['TWT_TEST']
+    assert transformer.phase_tap_position2 == 1
 
     #Add some limits
     n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
