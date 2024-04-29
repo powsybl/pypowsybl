@@ -992,6 +992,7 @@ def test_3_windings_transformers_creation():
     assert transformer.bus3_id == 'VLGEN_0'
     assert transformer.connected3 == True
 
+    #Add ratio tap changer
     rtc_df = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
@@ -1005,4 +1006,36 @@ def test_3_windings_transformers_creation():
     n.create_ratio_tap_changers(rtc_df, steps_df)
     transformer = n.get_3_windings_transformers().loc['TWT_TEST']
     assert transformer.ratio_tap_position1 == 1
+
+    #Add phase tap changer
+    ptc_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap', 'side'],
+        data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1, 'TWO')])
+    steps_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
+        data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+              ('TWT_TEST', 2, 2, 1, 1, 0.4, 0.2),
+              ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+    n.create_phase_tap_changers(ptc_df, steps_df)
+    assert transformer.phase_tap_changer_powsition_2 == 1
+
+    #Add some limits
+    n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 600,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 1000,
+         'acceptable_duration': 60, 'is_fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 400,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 700,
+         'acceptable_duration': 60, 'is_fictitious': False}
+    ]))
+    operational_limits = n.get_operational_limits().loc['TWT_TEST']
+    assert operational_limits.shape[0] == 4
 
