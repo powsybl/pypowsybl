@@ -35,6 +35,17 @@ private:
     graal_isolatethread_t* thread_ = nullptr;
 };
 
+class PyPowsyblError : public std::runtime_error {
+public:
+    PyPowsyblError(const char* msg)
+        : runtime_error(msg) {
+    }
+
+    PyPowsyblError(const std::string&  msg)
+        : runtime_error(msg) {
+    }
+};
+
 class JavaCaller {
 public:
   template<typename F, typename... ARGS>
@@ -117,17 +128,6 @@ public:
         for (int i = 0; i < doubles.size(); i++) {
             ptr_[i] = doubles[i];
         }
-    }
-};
-
-class PyPowsyblError : public std::runtime_error {
-public:
-    PyPowsyblError(const char* msg)
-        : runtime_error(msg) {
-    }
-
-    PyPowsyblError(const std::string&  msg)
-        : runtime_error(msg) {
     }
 };
 
