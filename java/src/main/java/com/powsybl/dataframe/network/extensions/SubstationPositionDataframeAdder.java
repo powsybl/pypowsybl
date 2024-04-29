@@ -27,8 +27,8 @@ public class SubstationPositionDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.doubles("droop"),
-            SeriesMetadata.booleans("participate")
+            SeriesMetadata.doubles("latitude"),
+            SeriesMetadata.doubles("longitude")
     );
 
     @Override
