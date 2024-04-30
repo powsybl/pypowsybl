@@ -1939,5 +1939,13 @@ def test_terminals():
     assert "No enum constant" in str(e)
 
 
+def test_geo_data():
+    n = pp.network.load(str(DATA_DIR.joinpath('MicroGridTestConfiguration_T4_BE_BB_Complete_v2.zip')), {'iidm.import.cgmes.post-processors': 'cgmesGLImport'})
+    expected = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': '87f7002b-056f-4a6a-a872-1744eea757e3', 'latitude': 51.3251, 'longitude': 4.25926},
+                                               {'id': '37e14a0f-5e34-4647-a062-8bfd9305fa9d', 'latitude': 50.8038, 'longitude': 4.30089}])
+    pd.testing.assert_frame_equal(n.get_extensions('substationPosition'), expected)
+
+
 if __name__ == '__main__':
     unittest.main()

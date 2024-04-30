@@ -14,7 +14,6 @@ import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.Substation;
-import com.powsybl.iidm.network.extensions.ActivePowerControl;
 import com.powsybl.iidm.network.extensions.SubstationPosition;
 
 import java.util.List;
@@ -34,7 +33,7 @@ public class SubstationPositionDataframeProvider extends AbstractSingleDataframe
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation(ActivePowerControl.NAME,
+        return new ExtensionInformation(SubstationPosition.NAME,
                 "Provides information about the susbtation geographical coordinate",
                 "index : id (str), latitude (float), longitude (float)");
     }
