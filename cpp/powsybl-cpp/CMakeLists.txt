@@ -93,5 +93,7 @@ link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
 
 set(POWSYBL_CPP_SOURCES "powsybl-cpp.cpp")
 
+add_dependencies(powsybl-cpp native-image)
+
 add_library(powsybl-cpp SHARED ${POWSYBL_CPP_SOURCES})
 target_link_libraries(powsybl-cpp PUBLIC ${PYPOWSYBL_JAVA_LIB})
