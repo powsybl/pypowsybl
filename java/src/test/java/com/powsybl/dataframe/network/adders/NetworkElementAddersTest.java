@@ -441,4 +441,43 @@ class NetworkElementAddersTest {
         extension = network.getExtension(SecondaryVoltageControl.class);
         assertNotNull(extension);
     }
+
+    @Test
+    void threeWindingTransformer() {
+        var network = EurostagTutorialExample1Factory.create();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "test");
+        addStringColumn(dataframe, "substation_id", "P1");
+        addStringColumn(dataframe, "name", "l3");
+        addStringColumn(dataframe, "bus1_id", "NGEN");
+        addStringColumn(dataframe, "bus2_id", "NHV1");
+        addStringColumn(dataframe, "bus3_id", "NHV1");
+        addStringColumn(dataframe, "voltage_level1_id", "VLGEN");
+        addStringColumn(dataframe, "voltage_level2_id", "VLHV1");
+        addStringColumn(dataframe, "voltage_level3_id", "VLHV1");
+        addStringColumn(dataframe, "connectable_bus1_id", "NGEN");
+        addStringColumn(dataframe, "connectable_bus2_id", "NHV1");
+        addStringColumn(dataframe, "connectable_bus3_id", "NHV1");
+        addDoubleColumn(dataframe, "rated_u1", 4.0);
+        addDoubleColumn(dataframe, "rated_u2", 4.0);
+        addDoubleColumn(dataframe, "rated_u3", 4.0);
+        addDoubleColumn(dataframe, "rated_s1", 4.0);
+        addDoubleColumn(dataframe, "rated_s2", 4.0);
+        addDoubleColumn(dataframe, "rated_s3", 4.0);
+        addDoubleColumn(dataframe, "r1", 4.0);
+        addDoubleColumn(dataframe, "r2", 4.0);
+        addDoubleColumn(dataframe, "r3", 4.0);
+        addDoubleColumn(dataframe, "x1", 4.0);
+        addDoubleColumn(dataframe, "x2", 4.0);
+        addDoubleColumn(dataframe, "x3", 4.0);
+        addDoubleColumn(dataframe, "g1", 4.0);
+        addDoubleColumn(dataframe, "g2", 4.0);
+        addDoubleColumn(dataframe, "g3", 4.0);
+        addDoubleColumn(dataframe, "b1", 4.0);
+        addDoubleColumn(dataframe, "b2", 4.0);
+        addDoubleColumn(dataframe, "b3", 4.0);
+        addDoubleColumn(dataframe, "rated_u0", 4.0);
+        NetworkElementAdders.addElements(DataframeElementType.THREE_WINDINGS_TRANSFORMER, network, singletonList(dataframe));
+        assertEquals(1, network.getThreeWindingsTransformerCount());
+    }
 }
