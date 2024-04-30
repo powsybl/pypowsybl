@@ -198,17 +198,22 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
 }
 
+std::function < void(pypowsybl::GraalVmGuard* guard, exception_handler* exc) >
+pypowsybl::JavaCaller::beginCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
+  setLogLevelFromPythonLogger(guard, exc);
+};
+
+std::function < void() >
+pypowsybl::JavaCaller::endCall = [](){
+  py::gil_scoped_acquire acquire;
+  if (PyErr_Occurred() != nullptr) {
+    throw py::error_already_set();
+  }
+};
+
+
 PYBIND11_MODULE(_pypowsybl, m) {
     pypowsybl::init();
-    pypowsybl::JavaCaller::beginCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
-        setLogLevelFromPythonLogger(guard, exc);
-    };
-    pypowsybl::JavaCaller::endCall = [](){
-        py::gil_scoped_acquire acquire;
-        if (PyErr_Occurred() != nullptr) {
-          throw py::error_already_set();
-        }
-    };
     m.doc() = "PowSyBl Python API";
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
