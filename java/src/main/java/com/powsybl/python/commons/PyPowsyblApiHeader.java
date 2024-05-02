@@ -1117,6 +1117,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("substation_description_displayed")
         boolean isSubstationDescriptionDisplayed();
+
+        @CField("layout_type")
+        void setLayoutType(int layoutType);
+
+        @CField("layout_type")
+        int getLayoutType();
     }
 
     @CEnum("DynamicMappingType")

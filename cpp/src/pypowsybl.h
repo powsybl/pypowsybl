@@ -281,6 +281,11 @@ public:
     std::string component_library;
 };
 
+enum class NadLayoutType {
+    FORCE_LAYOUT = 0,
+    GEOGRAPHICAL
+};
+
 class NadParameters {
 public:
     NadParameters(nad_parameters* src);
@@ -296,6 +301,7 @@ public:
     int voltage_value_precision;
     bool bus_legend;
     bool substation_description_displayed;
+    NadLayoutType layout_type;
 };
 
 char* copyStringToCharPtr(const std::string& str);

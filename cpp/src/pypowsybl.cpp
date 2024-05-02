@@ -1333,6 +1333,12 @@ NadParameters::NadParameters(nad_parameters* src) {
     voltage_value_precision = src->voltage_value_precision;
     substation_description_displayed = src->substation_description_displayed;
     bus_legend = src->bus_legend;
+    switch (src->layout_type) {
+        case 0:
+            layout_type = NadLayoutType::FORCE_LAYOUT;
+        case 1:
+            layout_type = NadLayoutType::GEOGRAPHICAL;
+    }
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1355,6 +1361,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.voltage_value_precision = voltage_value_precision;
     res.substation_description_displayed = substation_description_displayed;
     res.bus_legend = bus_legend;
+    res.layout_type = (int) layout_type;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
