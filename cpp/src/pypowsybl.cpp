@@ -1333,12 +1333,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     voltage_value_precision = src->voltage_value_precision;
     substation_description_displayed = src->substation_description_displayed;
     bus_legend = src->bus_legend;
-    switch (src->layout_type) {
-        case 0:
-            layout_type = NadLayoutType::FORCE_LAYOUT;
-        case 1:
-            layout_type = NadLayoutType::GEOGRAPHICAL;
-    }
+    layout_type = static_cast<NadLayoutType>(src->layout_type);
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
