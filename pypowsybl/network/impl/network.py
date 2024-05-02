@@ -52,6 +52,8 @@ class Network:  # pylint: disable=too-many-public-methods
     def __init__(self, handle: _pp.JavaHandle):
         self._handle = handle
         self.__init_from_handle()
+        self._nominal_apparent_power = 100.0
+        self._per_unit = False
 
     @property
     def id(self) -> str:
@@ -87,6 +89,28 @@ class Network:  # pylint: disable=too-many-public-methods
         The forecast distance: 0 for a snapshot.
         """
         return self._forecast_distance
+
+    @property
+    def nominal_apparent_power(self) -> float:
+        """
+        The nominal power to per unit the network (kVA)
+        """
+        return self._nominal_apparent_power
+
+    @nominal_apparent_power.setter
+    def nominal_apparent_power(self, value: float) -> None:
+        self._nominal_apparent_power = value
+
+    @property
+    def per_unit(self) -> bool:
+        """
+        The nominal power to per unit the network (kVA)
+        """
+        return self._per_unit
+
+    @per_unit.setter
+    def per_unit(self, value: bool) -> None:
+        self._per_unit = value
 
     def __str__(self) -> str:
         return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
@@ -385,8 +409,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                             main_connected_component, main_synchronous_component,
                                             not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None,
-                     **kwargs: ArrayLike) -> DataFrame:
+    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -419,9 +442,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
         else:
             elements_array = None
-
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
-                                                                attributes, elements_array)
+                                                                attributes, elements_array, self._per_unit,
+                                                                self._nominal_apparent_power)
         result = create_data_frame_from_series_array(series_array)
         if attributes:
             result = result[attributes]
@@ -764,8 +787,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None,
-                      **kwargs: ArrayLike) -> DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of batteries.
 
@@ -802,8 +824,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None,
-                  **kwargs: ArrayLike) -> DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of lines data.
 
@@ -2329,7 +2350,7 @@ class Network:  # pylint: disable=too-many-public-methods
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
-        _pp.update_network_elements_with_series(self._handle, c_df, element_type)
+        _pp.update_network_elements_with_series(self._handle, c_df, element_type, self._per_unit, self._nominal_apparent_power)
 
     def update_buses(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

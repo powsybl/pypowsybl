@@ -34,14 +34,14 @@ public class HvdcAngleDroopActivePowerControlDataframeProvider extends AbstractS
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(HvdcAngleDroopActivePowerControl.NAME,
-                "Active power control mode based on an offset in MW and a droop in MW/degree",
-                "index : id (str), droop (float), p0 (float), enabled (bool)");
+            "Active power control mode based on an offset in MW and a droop in MW/degree",
+            "index : id (str), droop (float), p0 (float), enabled (bool)");
     }
 
     private Stream<HvdcAngleDroopActivePowerControl> itemsStream(Network network) {
         return network.getHvdcLineStream()
-                .map(g -> (HvdcAngleDroopActivePowerControl) g.getExtension(HvdcAngleDroopActivePowerControl.class))
-                .filter(Objects::nonNull);
+            .map(g -> (HvdcAngleDroopActivePowerControl) g.getExtension(HvdcAngleDroopActivePowerControl.class))
+            .filter(Objects::nonNull);
     }
 
     private HvdcAngleDroopActivePowerControl getOrThrow(Network network, String id) {
@@ -59,19 +59,19 @@ public class HvdcAngleDroopActivePowerControlDataframeProvider extends AbstractS
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", ext -> ext.getExtendable().getId())
-                .doubles("droop", HvdcAngleDroopActivePowerControl::getDroop, (c, d) -> c.setDroop((float) d))
-                .doubles("p0", HvdcAngleDroopActivePowerControl::getP0, (c, d) -> c.setP0((float) d))
-                .booleans("enabled", HvdcAngleDroopActivePowerControl::isEnabled, HvdcAngleDroopActivePowerControl::setEnabled)
-                .build();
+            .stringsIndex("id", ext -> ext.getExtendable().getId())
+            .doubles("droop", (hvdcadapc, context) -> hvdcadapc.getDroop(), (c, d, context) -> c.setDroop((float) d))
+            .doubles("p0", (hvdcadapc, context) -> hvdcadapc.getP0(), (c, d, context) -> c.setP0((float) d))
+            .booleans("enabled", HvdcAngleDroopActivePowerControl::isEnabled, HvdcAngleDroopActivePowerControl::setEnabled)
+            .build();
     }
 
     @Override
     public void removeExtensions(Network network, List<String> ids) {
         ids.stream().filter(Objects::nonNull)
-                .map(id -> network.getHvdcLine(id))
-                .filter(Objects::nonNull)
-                .forEach(g -> g.removeExtension(HvdcAngleDroopActivePowerControl.class));
+            .map(network::getHvdcLine)
+            .filter(Objects::nonNull)
+            .forEach(g -> g.removeExtension(HvdcAngleDroopActivePowerControl.class));
     }
 
     @Override

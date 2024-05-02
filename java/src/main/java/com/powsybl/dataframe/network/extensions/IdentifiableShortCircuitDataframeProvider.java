@@ -60,8 +60,8 @@ public class IdentifiableShortCircuitDataframeProvider extends AbstractSingleDat
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ((Identifiable) ext.getExtendable()).getId())
                 .strings("equipment_type", ext -> ((Identifiable) ext.getExtendable()).getType().toString())
-                .doubles("ip_min", IdentifiableShortCircuit::getIpMin, IdentifiableShortCircuit::setIpMin)
-                .doubles("ip_max", IdentifiableShortCircuit::getIpMax, IdentifiableShortCircuit::setIpMax)
+                .doubles("ip_min", (ist, context) -> ist.getIpMin(), (ist, ipMin, context) -> ist.setIpMin(ipMin))
+                .doubles("ip_max", (ist, context) -> ist.getIpMax(), (ist, ipMax, context) -> ist.setIpMax(ipMax))
                 .build();
     }
 

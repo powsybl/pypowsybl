@@ -63,9 +63,9 @@ public class InjectionObservabilityDataframeProvider extends AbstractSingleDataf
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", injectionObservability -> ((Injection) injectionObservability.getExtendable()).getId())
                 .booleans("observable", InjectionObservability::isObservable)
-                .doubles("p_standard_deviation", injectionObservability -> injectionObservability.getQualityP() != null ?
+                .doubles("p_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityP() != null ?
                                 injectionObservability.getQualityP().getStandardDeviation() : Double.NaN,
-                    (injectionObservability, standardDeviation) -> {
+                    (injectionObservability, standardDeviation, context) -> {
                         if (injectionObservability.getQualityP() != null) {
                             injectionObservability.getQualityP().setStandardDeviation(standardDeviation);
                         } else {
@@ -77,9 +77,9 @@ public class InjectionObservabilityDataframeProvider extends AbstractSingleDataf
                     (injectionObservability, redundant) -> injectionObservability.getQualityP().setRedundant(redundant))
                 .booleans("p_redundant_null", injectionObservability -> injectionObservability.getQualityP() == null ||
                         injectionObservability.getQualityP().isRedundant().isEmpty())
-                .doubles("q_standard_deviation", injectionObservability -> injectionObservability.getQualityQ() != null ?
+                .doubles("q_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityQ() != null ?
                                 injectionObservability.getQualityQ().getStandardDeviation() : Double.NaN,
-                    (injectionObservability, standardDeviation) -> {
+                    (injectionObservability, standardDeviation, context) -> {
                         if (injectionObservability.getQualityQ() != null) {
                             injectionObservability.getQualityQ().setStandardDeviation(standardDeviation);
                         } else {
@@ -91,9 +91,9 @@ public class InjectionObservabilityDataframeProvider extends AbstractSingleDataf
                     (injectionObservability, redundant) -> injectionObservability.getQualityQ().setRedundant(redundant))
                 .booleans("q_redundant_null", injectionObservability -> injectionObservability.getQualityQ() == null ||
                         injectionObservability.getQualityQ().isRedundant().isEmpty())
-                .doubles("v_standard_deviation", injectionObservability -> injectionObservability.getQualityV() != null ?
+                .doubles("v_standard_deviation", (injectionObservability, context) -> injectionObservability.getQualityV() != null ?
                                 injectionObservability.getQualityV().getStandardDeviation() : Double.NaN,
-                    (injectionObservability, standardDeviation) -> {
+                    (injectionObservability, standardDeviation, context) -> {
                         if (injectionObservability.getQualityV() != null) {
                             injectionObservability.getQualityV().setStandardDeviation(standardDeviation);
                         } else {

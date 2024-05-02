@@ -6,6 +6,8 @@
  */
 package com.powsybl.dataframe;
 
+import com.powsybl.dataframe.network.DataframeContext;
+
 import java.util.List;
 
 /**
@@ -19,13 +21,13 @@ public interface SeriesMapper<T> {
 
     SeriesMetadata getMetadata();
 
-    void createSeries(List<T> items, DataframeHandler factory);
+    void createSeries(List<T> items, DataframeHandler factory, DataframeContext dataframeContext);
 
     default void updateInt(T object, int value) {
         throw new UnsupportedOperationException("Cannot update series with int: " + getMetadata().getName());
     }
 
-    default void updateDouble(T object, double value) {
+    default void updateDouble(T object, double value, DataframeContext context) {
         throw new UnsupportedOperationException("Cannot update series with double: " + getMetadata().getName());
     }
 
