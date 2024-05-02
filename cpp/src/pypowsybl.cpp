@@ -1334,6 +1334,8 @@ NadParameters::NadParameters(nad_parameters* src) {
     substation_description_displayed = src->substation_description_displayed;
     bus_legend = src->bus_legend;
     layout_type = static_cast<NadLayoutType>(src->layout_type);
+    scaling_factor = src->scaling_factor;
+    radius_factor = src->radius_factor;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1357,6 +1359,8 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.substation_description_displayed = substation_description_displayed;
     res.bus_legend = bus_legend;
     res.layout_type = (int) layout_type;
+    res.scaling_factor = scaling_factor;
+    res.radius_factor = radius_factor;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

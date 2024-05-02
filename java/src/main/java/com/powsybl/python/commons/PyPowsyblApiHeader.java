@@ -1123,6 +1123,18 @@ public final class PyPowsyblApiHeader {
 
         @CField("layout_type")
         int getLayoutType();
+
+        @CField("scaling_factor")
+        int getScalingFactor();
+
+        @CField("scaling_factor")
+        void setScalingFactor(int scalingFactor);
+
+        @CField("radius_factor")
+        double getRadiusFactor();
+
+        @CField("radius_factor")
+        void setRadiusFactor(double radiusFactor);
     }
 
     @CEnum("DynamicMappingType")

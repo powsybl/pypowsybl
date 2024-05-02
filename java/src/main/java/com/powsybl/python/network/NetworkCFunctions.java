@@ -944,7 +944,7 @@ public final class NetworkCFunctions {
     public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer, Network network) {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
         LayoutFactory layoutFactory = switch (nadParametersPointer.getLayoutType()) {
-            case 1: yield new GeographicalLayoutFactory(network);
+            case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
         };
         nadParameters.setLayoutFactory(layoutFactory);

@@ -351,6 +351,8 @@ typedef struct nad_parameters_struct {
     unsigned char substation_description_displayed;
     unsigned char bus_legend;
     int layout_type;
+    int scaling_factor;
+    double radius_factor;
 } nad_parameters;
 
 typedef enum {

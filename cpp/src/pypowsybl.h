@@ -302,6 +302,8 @@ public:
     bool bus_legend;
     bool substation_description_displayed;
     NadLayoutType layout_type;
+    int scaling_factor;
+    double radius_factor;
 };
 
 char* copyStringToCharPtr(const std::string& str);

@@ -15,7 +15,8 @@ class NadParameters:
     def __init__(self, edge_name_displayed: bool = False, id_displayed: bool = False,
                  edge_info_along_edge: bool = True, power_value_precision: int = 0, angle_value_precision: int = 1,
                  current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
-                 substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT):
+                 substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
+                 scaling_factor: int = 150000, radius_factor: float = 150.0):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -26,6 +27,8 @@ class NadParameters:
         self._bus_legend = bus_legend
         self._substation_description_displayed = substation_description_displayed
         self._layout_type = layout_type
+        self._scaling_factor = scaling_factor
+        self._radius_factor = radius_factor
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -77,6 +80,16 @@ class NadParameters:
         """layout_type"""
         return self._layout_type
 
+    @property
+    def scaling_factor(self) -> int:
+        """scaling_factor"""
+        return self._scaling_factor
+
+    @property
+    def radius_factor(self) -> float:
+        """radius_factor"""
+        return self._radius_factor
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_name_displayed = self._edge_name_displayed
@@ -103,4 +116,6 @@ class NadParameters:
                f", bus_legend={self._bus_legend}" \
                f", substation_description_displayed={self._substation_description_displayed}" \
                f", layout_type={self._layout_type}" \
+               f", scaling_factor={self._scaling_factor}" \
+               f", radius_factor={self._radius_factor}" \
                f")"

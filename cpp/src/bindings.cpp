@@ -501,7 +501,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("id_displayed", &pypowsybl::NadParameters::id_displayed)
         .def_readwrite("bus_legend", &pypowsybl::NadParameters::bus_legend)
         .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed)
-        .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type);
+        .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
+        .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
+        .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
