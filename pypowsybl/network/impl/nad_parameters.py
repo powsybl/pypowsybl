@@ -102,6 +102,8 @@ class NadParameters:
         c_parameters.bus_legend = self._bus_legend
         c_parameters.substation_description_displayed = self._substation_description_displayed
         c_parameters.layout_type = self._layout_type
+        c_parameters.scaling_factor = self._scaling_factor
+        c_parameters.radius_factor = self._radius_factor
         return c_parameters
 
     def __repr__(self) -> str:
