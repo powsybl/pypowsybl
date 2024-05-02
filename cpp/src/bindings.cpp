@@ -748,7 +748,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"), py::arg("per_unit"), py::arg("nominal_apparent_power"));
 
     m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));
@@ -758,7 +758,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
 
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"), py::arg("per_unit"), py::arg("nominal_apparent_power"));
 
     m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"),
           py::arg("is_index"));

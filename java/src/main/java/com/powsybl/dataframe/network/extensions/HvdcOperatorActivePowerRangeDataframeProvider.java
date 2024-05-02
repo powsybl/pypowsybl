@@ -59,8 +59,8 @@ public class HvdcOperatorActivePowerRangeDataframeProvider extends AbstractSingl
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ext.getExtendable().getId())
-                .doubles("opr_from_cs1_to_cs2", HvdcOperatorActivePowerRange::getOprFromCS1toCS2, (r, d) -> r.setOprFromCS1toCS2((float) d))
-                .doubles("opr_from_cs2_to_cs1", HvdcOperatorActivePowerRange::getOprFromCS2toCS1, (r, d) -> r.setOprFromCS2toCS1((float) d))
+                .doubles("opr_from_cs1_to_cs2", (hvdcOAPR, context) -> hvdcOAPR.getOprFromCS1toCS2(), (r, d, context) -> r.setOprFromCS1toCS2((float) d))
+                .doubles("opr_from_cs2_to_cs1", (hvdcOAPR, context) -> hvdcOAPR.getOprFromCS2toCS1(), (r, d, context) -> r.setOprFromCS2toCS1((float) d))
                 .build();
     }
 

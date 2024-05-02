@@ -10,6 +10,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.python.network.Dataframes;
@@ -69,7 +70,7 @@ class SecurityAnalysisTest {
         analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
         SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", ReportNode.NO_OP);
 
-        List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result);
+        List<Series> series = Dataframes.createSeries(Dataframes.limitViolationsMapper(), result, DataframeContext.deactivate());
         Assertions.assertThat(series)
             .extracting(Series::getName)
             .containsExactly("contingency_id", "subject_id", "subject_name", "limit_type", "limit_name", "limit",

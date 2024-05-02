@@ -986,9 +986,9 @@ matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, c
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
 	ToCharPtrPtr attributesPtr(attributes);
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe, perUnit, nominalApparentPower));
 }
 
 SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName, const std::string& tableName) {
@@ -1091,8 +1091,8 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType) {
-    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower) {
+    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe, perUnit, nominalApparentPower);
 }
 
 std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* dataframeMetadata) {
