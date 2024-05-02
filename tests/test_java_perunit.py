@@ -170,8 +170,8 @@ def test_lcc_converter_stations_per_unit():
                                   ['LCC2', 0.6, 1.1, -0.78, 1.04, 1.30, 'S3VL1', 'S3VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
     n.update_lcc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
-                                                columns=['p', 'q'],
-                                                index=['LCC1', 'LCC2']))
+                                                 columns=['p', 'q'],
+                                                 index=['LCC1', 'LCC2']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                      'connected'],
@@ -374,3 +374,120 @@ def test_lines_not_same_nominal_voltage_per_unit():
     assert lines.loc['L7-8-1']['g2'] == pytest.approx(0, rel=1e-16)
     assert lines.loc['L7-8-1']['b1'] == pytest.approx(0, rel=1e-16)
     assert lines.loc['L7-8-1']['b2'] == pytest.approx(0, rel=1e-16)
+
+
+def test_bus_per_unit():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    n.per_unit = True
+    buses = n.get_buses()
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+                            columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                     'voltage_level_id'],
+                            data=[['', 1.02, 0.04059612739187691, 0, 0, 'VLGEN'],
+                                  ['', 1.06, 0.0, 0, 0, 'VLHV1'],
+                                  ['', 1.03, -0.06119749366730875, 0, 0, 'VLHV2'],
+                                  ['', 0.98, -0.16780443393265765, 0, 0, 'VLLOAD']])
+    pd.testing.assert_frame_equal(expected, buses, check_dtype=False, atol=1e-2)
+    n.update_buses(id='VLGEN_0', v_mag=1, v_angle=0.1)
+    buses = n.get_buses()
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
+                            columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                                     'voltage_level_id'],
+                            data=[['', 1, 0.1, 0, 0, 'VLGEN'],
+                                  ['', 1.06, 0, 0, 0, 'VLHV1'],
+                                  ['', 1.03, -0.06119749366730875, 0, 0, 'VLHV2'],
+                                  ['', 0.98, -0.16780443393265765, 0, 0, 'VLLOAD']])
+    pd.testing.assert_frame_equal(expected, buses, check_dtype=False, atol=1e-2)
+
+
+def test_loads_per_unit():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    n.per_unit = True
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['LOAD']),
+                            columns=['name', 'type', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                     'connected'],
+                            data=[['', 'UNDEFINED', 6, 2, 6, 2, 6.43, 'VLLOAD', 'VLLOAD_0', True]])
+    pd.testing.assert_frame_equal(expected, n.get_loads(), check_dtype=False, atol=1e-2)
+    n.update_loads(pd.DataFrame(data=[[5, 3, False]], columns=['p0', 'q0', 'connected'], index=['LOAD']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['LOAD']),
+                            columns=['name', 'type', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
+                                     'connected'],
+                            data=[['', 'UNDEFINED', 5, 3, 6, 2, NaN, 'VLLOAD', '', False]])
+    pd.testing.assert_frame_equal(expected, n.get_loads(), check_dtype=False, atol=1e-2)
+
+
+def test_busbar_per_unit():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(n)
+    n.per_unit = True
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
+                                                  'S4VL1_BBS']),
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['S1VL1_BBS', 1.00, 0.04193194938608592, 'S1VL1', 'S1VL1_0', True],
+                                  ['S1VL2_BBS1', 1, 0, 'S1VL2', 'S1VL2_0', True],
+                                  ['S1VL2_BBS2', 1, 0, 'S1VL2', 'S1VL2_0', True],
+                                  ['S2VL1_BBS', 1.02, 0.01282301263193765, 'S2VL1', 'S2VL1_0', True],
+                                  ['S3VL1_BBS', 1, 0, 'S3VL1', 'S3VL1_0', True],
+                                  ['S4VL1_BBS', 1, -0.019651423679619508, 'S4VL1', 'S4VL1_0', True]])
+    pd.testing.assert_frame_equal(expected, n.get_busbar_sections(), check_dtype=False, atol=1e-2)
+
+
+def test_hvdc_per_unit():
+    n = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(n)
+    n.per_unit = True
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'converters_mode', 'target_p', 'max_p', 'nominal_v', 'r',
+                 'converter_station1_id', 'converter_station2_id', 'connected1', 'connected2'],
+        data=[('HVDC1', 'HVDC1', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.1, 3, 400, 0, 'VSC1', 'VSC2', True, True),
+              ('HVDC2', 'HVDC2', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.8, 3, 400, 0, 'LCC1', 'LCC2', True, True)])
+
+    pd.testing.assert_frame_equal(expected, n.get_hvdc_lines(), check_dtype=False, atol=1e-2)
+    n.update_hvdc_lines(id='HVDC1', target_p=[0.11])
+    expected = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'name', 'converters_mode', 'target_p', 'max_p', 'nominal_v', 'r',
+                 'converter_station1_id', 'converter_station2_id', 'connected1', 'connected2'],
+        data=[('HVDC1', 'HVDC1', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.11, 3, 400, 0, 'VSC1', 'VSC2', True, True),
+              ('HVDC2', 'HVDC2', 'SIDE_1_RECTIFIER_SIDE_2_INVERTER', 0.8, 3, 400, 0, 'LCC1', 'LCC2', True, True)])
+    pd.testing.assert_frame_equal(expected, n.get_hvdc_lines(), check_dtype=False, atol=1e-2)
+
+
+def test_ratio_tap_changer_steps_per_unit():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.per_unit = True
+    steps = n.get_ratio_tap_changer_steps()
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 1]['rho'] == pytest.approx(2.54, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 2]['rho'] == pytest.approx(2.92, rel=1e-1)
+    n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, r=1, x=3, g=4, b=2)
+    steps = n.get_ratio_tap_changer_steps()
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['r'] == pytest.approx(1, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['x'] == pytest.approx(3, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['g'] == pytest.approx(4, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['b'] == pytest.approx(2, rel=1e-1)
+
+
+def test_phase_tap_changer_steps_per_unit():
+    n = pp.network.create_ieee300()
+    n.per_unit = True
+    steps = n.get_phase_tap_changer_steps()
+    assert steps.loc['T196-2040-1', 0]['rho'] == 1.0
+    assert steps.loc['T196-2040-1', 0]['alpha'] == pytest.approx(0.2, rel=1e-1)
+    assert steps.loc['T196-2040-1', 0]['r'] == 0.0
+    assert steps.loc['T196-2040-1', 0]['x'] == 0.0
+    assert steps.loc['T196-2040-1', 0]['g'] == 0.0
+    assert steps.loc['T196-2040-1', 0]['b'] == 0.0
+    n.update_phase_tap_changer_steps(id='T196-2040-1', position=0, r=1, x=3, g=4, b=2)
+    steps = n.get_phase_tap_changer_steps()
+    assert steps.loc['T196-2040-1', 0]['rho'] == 1.0
+    assert steps.loc['T196-2040-1', 0]['alpha'] == pytest.approx(0.2, rel=1e-1)
+    assert steps.loc['T196-2040-1', 0]['r'] == 1
+    assert steps.loc['T196-2040-1', 0]['x'] == 3
+    assert steps.loc['T196-2040-1', 0]['g'] == 4
+    assert steps.loc['T196-2040-1', 0]['b'] == 2
