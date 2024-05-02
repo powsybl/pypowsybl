@@ -171,6 +171,8 @@ The diagram looks like this:
 Now that we have geographical positions in our data model, we can change the layout to render the diagram with
 the geographical layout:
 
+.. code-block:: python
+
     >>> parameter = pp.network.NadParameters(layout_type=pp.network.NadLayoutType.GEOGRAPHICAL)
     >>> n.write_network_area_diagram('be.svg', nad_parameters=parameter)
 
