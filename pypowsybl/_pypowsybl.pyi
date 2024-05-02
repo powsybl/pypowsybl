@@ -275,6 +275,9 @@ class NadParameters:
     voltage_value_precision: int
     substation_description_displayed: bool
     bus_legend: bool
+    layout_type: NadLayoutType
+    scaling_factor: int
+    radius_factor: float
     def __init__(self) -> None: ...
 
 class LimitType:
