@@ -30,6 +30,9 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.nad.NadParameters;
+import com.powsybl.nad.layout.BasicForceLayoutFactory;
+import com.powsybl.nad.layout.GeographicalLayoutFactory;
+import com.powsybl.nad.layout.LayoutFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -943,8 +946,13 @@ public final class NetworkCFunctions {
         return sldParameters;
     }
 
-    public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer) {
+    public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer, Network network) {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
+        LayoutFactory layoutFactory = switch (nadParametersPointer.getLayoutType()) {
+            case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
+            default: yield new BasicForceLayoutFactory();
+        };
+        nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
                 .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
@@ -1025,7 +1033,7 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NadParameters nadParameters = convertNadParameters(nadParametersPointer);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
@@ -1037,7 +1045,7 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NadParameters nadParameters = convertNadParameters(nadParametersPointer);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return CTypeUtil.toCharPtr(svg);
         });

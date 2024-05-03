@@ -26,7 +26,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadParameters, LayoutParameters
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -1937,6 +1937,36 @@ def test_terminals():
     with pytest.raises(PyPowsyblError) as e:
         n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='side')
     assert "No enum constant" in str(e)
+
+
+def test_nad_parameters():
+    nad_parameters = NadParameters()
+    assert not nad_parameters.edge_name_displayed
+    assert nad_parameters.edge_info_along_edge
+    assert not nad_parameters.id_displayed
+    assert nad_parameters.power_value_precision == 0
+    assert nad_parameters.angle_value_precision == 1
+    assert nad_parameters.current_value_precision == 0
+    assert nad_parameters.voltage_value_precision == 1
+    assert nad_parameters.bus_legend
+    assert not nad_parameters.substation_description_displayed
+    assert nad_parameters.layout_type == NadLayoutType.FORCE_LAYOUT
+    assert nad_parameters.scaling_factor == 150000
+    assert nad_parameters.radius_factor == 150.0
+
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0)
+    assert nad_parameters.edge_name_displayed
+    assert not nad_parameters.edge_info_along_edge
+    assert nad_parameters.id_displayed
+    assert nad_parameters.power_value_precision == 1
+    assert nad_parameters.angle_value_precision == 2
+    assert nad_parameters.current_value_precision == 1
+    assert nad_parameters.voltage_value_precision == 2
+    assert not nad_parameters.bus_legend
+    assert nad_parameters.substation_description_displayed
+    assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
+    assert nad_parameters.scaling_factor == 100000
+    assert nad_parameters.radius_factor == 120.0
 
 
 if __name__ == '__main__':
