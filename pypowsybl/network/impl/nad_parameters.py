@@ -38,7 +38,7 @@ class NadParameters:
     @property
     def edge_info_along_edge(self) -> bool:
         """edge_info_along_edge"""
-        return self.edge_info_along_edge
+        return self._edge_info_along_edge
 
     @property
     def id_displayed(self) -> bool:
