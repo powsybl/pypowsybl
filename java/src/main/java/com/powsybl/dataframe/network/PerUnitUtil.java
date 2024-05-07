@@ -214,7 +214,11 @@ public final class PerUnitUtil {
 
     public static double unPerUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
         if (terminal == null) {
-            throw new PowsyblException("terminal not found for un per unit V");
+            if (dataframeContext.isPerUnit()) {
+                throw new PowsyblException("terminal not found for un per unit V");
+            } else {
+                return v;
+            }
         }
         return unPerUnitV(dataframeContext, v, terminal.getVoltageLevel().getNominalV());
     }
@@ -233,7 +237,11 @@ public final class PerUnitUtil {
 
     public static double perUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
         if (terminal == null) {
-            throw new PowsyblException("terminal not found for per unit V");
+            if (dataframeContext.isPerUnit()) {
+                throw new PowsyblException("terminal not found for per unit V");
+            } else {
+                return v;
+            }
         }
         return perUnitV(dataframeContext, v, terminal.getVoltageLevel().getNominalV());
     }
