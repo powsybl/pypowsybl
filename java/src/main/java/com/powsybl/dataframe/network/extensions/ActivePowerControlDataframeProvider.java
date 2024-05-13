@@ -61,7 +61,7 @@ public class ActivePowerControlDataframeProvider extends AbstractSingleDataframe
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ((Identifiable<?>) ext.getExtendable()).getId())
-                .doubles("droop", ActivePowerControl::getDroop, (c, d) -> c.setDroop((float) d))
+                .doubles("droop", (apc, context) -> apc.getDroop(), (apc, droop, context) -> apc.setDroop((float) droop))
                 .booleans("participate", ActivePowerControl::isParticipate, ActivePowerControl::setParticipate)
                 .build();
     }

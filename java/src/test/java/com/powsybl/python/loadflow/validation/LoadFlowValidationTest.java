@@ -9,6 +9,7 @@ package com.powsybl.python.loadflow.validation;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.loadflow.validation.InMemoryValidationWriter;
 import com.powsybl.dataframe.loadflow.validation.Validations;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlow;
@@ -36,12 +37,12 @@ class LoadFlowValidationTest {
         runner.run(network, new LoadFlowParameters());
         ValidationConfig validationConfig = LoadFlowValidationCFunctions.createValidationConfig();
         InMemoryValidationWriter busWriter = LoadFlowValidationCFunctions.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.BUSES, validationConfig);
-        Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData()))
+        Assertions.assertThat(Dataframes.createSeries(Validations.busValidationsMapper(), busWriter.getBusData(), DataframeContext.deactivate()))
                 .extracting(Series::getName)
                 .contains("id", "incoming_p");
 
         InMemoryValidationWriter genWriter = LoadFlowValidationCFunctions.createLoadFlowValidationWriter(network, PyPowsyblApiHeader.ValidationType.GENERATORS);
-        Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), genWriter.getGeneratorData()))
+        Assertions.assertThat(Dataframes.createSeries(Validations.generatorValidationsMapper(), genWriter.getGeneratorData(), DataframeContext.deactivate()))
                 .extracting(Series::getName)
                 .contains("id", "p");
     }

@@ -35,38 +35,38 @@ public class StandByAutomatonDataframeProvider extends AbstractSingleDataframeNe
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation("standbyAutomaton", "allow to manage standby mode for static var compensator",
-                "index : id (str), standby (boolean), b0 (double), low_voltage_threshold (double), low_voltage_setpoint (double)," +
-                        " high_voltage_threshold (double), high_voltage_setpoint (double)");
+            "index : id (str), standby (boolean), b0 (double), low_voltage_threshold (double), low_voltage_setpoint (double)," +
+                " high_voltage_threshold (double), high_voltage_setpoint (double)");
     }
 
     private Stream<StandbyAutomaton> itemsStream(Network network) {
         return network.getStaticVarCompensatorStream()
-                .map(svc -> (StandbyAutomaton) svc.getExtension(StandbyAutomaton.class))
-                .filter(Objects::nonNull);
+            .map(svc -> (StandbyAutomaton) svc.getExtension(StandbyAutomaton.class))
+            .filter(Objects::nonNull);
     }
 
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", ext -> ext.getExtendable().getId())
-                .booleans("standby", StandbyAutomaton::isStandby, StandbyAutomaton::setStandby)
-                .doubles("b0", StandbyAutomaton::getB0, StandbyAutomaton::setB0)
-                .doubles("low_voltage_threshold", StandbyAutomaton::getLowVoltageThreshold,
-                        StandbyAutomaton::setLowVoltageThreshold)
-                .doubles("low_voltage_setpoint", StandbyAutomaton::getLowVoltageSetpoint,
-                        StandbyAutomaton::setLowVoltageSetpoint)
-                .doubles("high_voltage_threshold", StandbyAutomaton::getHighVoltageThreshold,
-                        StandbyAutomaton::setHighVoltageThreshold)
-                .doubles("high_voltage_setpoint", StandbyAutomaton::getHighVoltageSetpoint,
-                        StandbyAutomaton::setHighVoltageSetpoint)
-                .build();
+            .stringsIndex("id", ext -> ext.getExtendable().getId())
+            .booleans("standby", StandbyAutomaton::isStandby, StandbyAutomaton::setStandby)
+            .doubles("b0", (sa, context) -> sa.getB0(), (sa, b0, context) -> sa.setB0(b0))
+            .doubles("low_voltage_threshold", (sa, context) -> sa.getLowVoltageThreshold(),
+                (sa, lvt, context) -> sa.setLowVoltageThreshold(lvt))
+            .doubles("low_voltage_setpoint", (sa, context) -> sa.getLowVoltageSetpoint(),
+                (sa, lvs, context) -> sa.setLowVoltageSetpoint(lvs))
+            .doubles("high_voltage_threshold", (sa, context) -> sa.getHighVoltageThreshold(),
+                (sa, hvt, context) -> sa.setHighVoltageThreshold(hvt))
+            .doubles("high_voltage_setpoint", (sa, context) -> sa.getHighVoltageSetpoint(),
+                (sa, hvs, context) -> sa.setHighVoltageSetpoint(hvs))
+            .build();
     }
 
     @Override
     public void removeExtensions(Network network, List<String> ids) {
         ids.stream().map(network::getStaticVarCompensator)
-                .filter(Objects::nonNull)
-                .forEach(staticVarCompensator -> staticVarCompensator.removeExtension(StandbyAutomaton.class));
+            .filter(Objects::nonNull)
+            .forEach(staticVarCompensator -> staticVarCompensator.removeExtension(StandbyAutomaton.class));
     }
 
     @Override

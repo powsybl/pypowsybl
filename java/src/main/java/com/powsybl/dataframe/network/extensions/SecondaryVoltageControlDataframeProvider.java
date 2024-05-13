@@ -126,7 +126,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         mappers.put("zones",
                 NetworkDataframeMapperBuilder.ofStream(this::zonesStream, new ControlZoneGetter())
                         .stringsIndex("name", ControlZone::getName)
-                        .doubles("target_v", zone -> zone.getPilotPoint().getTargetV(), (zone, v) -> zone.getPilotPoint().setTargetV(v))
+                        .doubles("target_v", (zone, context) -> zone.getPilotPoint().getTargetV(), (zone, v, context) -> zone.getPilotPoint().setTargetV(v))
                         .strings("bus_ids", zone -> String.join(",", zone.getPilotPoint().getBusbarSectionsOrBusesIds()))
                         .build()
         );

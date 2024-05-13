@@ -486,6 +486,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 
+    py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
+            .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
+            .value("GEOGRAPHICAL", pypowsybl::NadLayoutType::GEOGRAPHICAL);
+
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
         .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
@@ -496,7 +500,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("voltage_value_precision", &pypowsybl::NadParameters::voltage_value_precision)
         .def_readwrite("id_displayed", &pypowsybl::NadParameters::id_displayed)
         .def_readwrite("bus_legend", &pypowsybl::NadParameters::bus_legend)
-        .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed);
+        .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed)
+        .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
+        .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
+        .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
@@ -741,7 +748,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"), py::arg("per_unit"), py::arg("nominal_apparent_power"));
 
     m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));
@@ -751,7 +758,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
 
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"), py::arg("per_unit"), py::arg("nominal_apparent_power"));
 
     m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"),
           py::arg("is_index"));

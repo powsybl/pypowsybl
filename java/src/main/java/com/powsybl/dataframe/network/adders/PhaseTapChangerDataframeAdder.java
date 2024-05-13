@@ -32,7 +32,8 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.booleans("regulating"),
             SeriesMetadata.strings("regulated_side"),
             SeriesMetadata.ints("low_tap"),
-            SeriesMetadata.ints("tap")
+            SeriesMetadata.ints("tap"),
+            SeriesMetadata.strings("side")
     );
 
     private static final List<SeriesMetadata> STEPS_METADATA = List.of(
@@ -71,6 +72,7 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries targetValues;
         private final IntSeries regulating;
         private final StringSeries regulatedSide;
+        private final StringSeries sides;
 
         private final Map<String, TIntArrayList> stepsIndexes;
         private final DoubleSeries g;
@@ -89,6 +91,7 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             this.targetValues = tapChangersDf.getDoubles("target_value");
             this.regulating = tapChangersDf.getInts("regulating");
             this.regulatedSide = tapChangersDf.getStrings("regulated_side");
+            this.sides = tapChangersDf.getStrings("side");
 
             this.stepsIndexes = getStepsIndexes(stepsDf);
             this.g = stepsDf.getDoubles("g");
@@ -101,20 +104,33 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
 
         void create(Network network, int row) {
             String transformerId = ids.get(row);
-            TwoWindingsTransformer transformer = network.getTwoWindingsTransformer(transformerId);
-            if (transformer == null) {
-                throw new PowsyblException("Transformer " + transformerId + " does not exist.");
+            TwoWindingsTransformer twoWindingsTransformer = network.getTwoWindingsTransformer(transformerId);
+            PhaseTapChangerAdder adder;
+            if (twoWindingsTransformer == null) {
+                ThreeWindingsTransformer threeWindingsTransformer = network.getThreeWindingsTransformer(transformerId);
+                if (threeWindingsTransformer == null) {
+                    throw new PowsyblException("Transformer " + transformerId + " does not exist.");
+                }
+                if (sides == null) {
+                    throw new PowsyblException("Side is missing: cannot add a ratio tap changer on a three-winding transformer.");
+                }
+                ThreeSides side = ThreeSides.valueOf(sides.get(row));
+                adder = threeWindingsTransformer.getLeg(side).newPhaseTapChanger();
+                if (regulatedSide != null) {
+                    setRegulatedSide(threeWindingsTransformer, adder, regulatedSide.get(row));
+                }
+            } else {
+                adder = twoWindingsTransformer.newPhaseTapChanger();
+                if (regulatedSide != null) {
+                    setRegulatedSide(twoWindingsTransformer, adder, regulatedSide.get(row));
+                }
             }
-            PhaseTapChangerAdder adder = transformer.newPhaseTapChanger();
             applyIfPresent(regulationModes, row, PhaseTapChanger.RegulationMode.class, adder::setRegulationMode);
             applyIfPresent(targetDeadband, row, adder::setTargetDeadband);
             applyIfPresent(targetValues, row, adder::setRegulationValue);
             applyIfPresent(lowTaps, row, adder::setLowTapPosition);
             applyIfPresent(taps, row, adder::setTapPosition);
             applyBooleanIfPresent(regulating, row, adder::setRegulating);
-            if (regulatedSide != null) {
-                setRegulatedSide(transformer, adder, regulatedSide.get(row));
-            }
 
             TIntArrayList steps = stepsIndexes.get(transformerId);
             if (steps != null) {
@@ -132,14 +148,20 @@ public class PhaseTapChangerDataframeAdder implements NetworkElementAdder {
             }
             adder.add();
         }
-    }
 
-    private static void setRegulatedSide(TwoWindingsTransformer transformer, PhaseTapChangerAdder adder, String regulatedSideStr) {
-        if (regulatedSideStr.isEmpty()) {
-            return;
+        private static void setRegulatedSide(ThreeWindingsTransformer transformer, PhaseTapChangerAdder adder, String regulatedSideStr) {
+            if (!regulatedSideStr.isEmpty()) {
+                ThreeSides regulatedSide = ThreeSides.valueOf(regulatedSideStr);
+                adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
+            }
         }
-        TwoSides regulatedSide = TwoSides.valueOf(regulatedSideStr);
-        adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
+
+        private static void setRegulatedSide(TwoWindingsTransformer transformer, PhaseTapChangerAdder adder, String regulatedSideStr) {
+            if (!regulatedSideStr.isEmpty()) {
+                TwoSides regulatedSide = TwoSides.valueOf(regulatedSideStr);
+                adder.setRegulationTerminal(transformer.getTerminal(regulatedSide));
+            }
+        }
     }
 
     /**
