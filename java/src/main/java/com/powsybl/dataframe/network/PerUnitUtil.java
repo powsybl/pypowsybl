@@ -212,6 +212,14 @@ public final class PerUnitUtil {
         return unPerUnitV(dataframeContext, v, bus.getVoltageLevel().getNominalV());
     }
 
+    public static double unPerUnitTargetV(DataframeContext dataframeContext, double v, Terminal distantTerminal, Terminal localTerminal) {
+        if (distantTerminal != null) {
+            return unPerUnitV(dataframeContext, v, distantTerminal);
+        } else {
+            return unPerUnitV(dataframeContext, v, localTerminal);
+        }
+    }
+
     public static double unPerUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
         if (terminal == null) {
             if (dataframeContext.isPerUnit()) {
@@ -233,6 +241,14 @@ public final class PerUnitUtil {
 
     public static double perUnitV(DataframeContext dataframeContext, ThreeWindingsTransformer.Leg leg) {
         return perUnitV(dataframeContext, leg.getRatedU(), leg.getTerminal());
+    }
+
+    public static double perUnitTargetV(DataframeContext dataframeContext, double v, Terminal distantTerminal, Terminal localTerminal) {
+        if (distantTerminal != null) {
+            return perUnitV(dataframeContext, v, distantTerminal);
+        } else {
+            return perUnitV(dataframeContext, v, localTerminal);
+        }
     }
 
     public static double perUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
