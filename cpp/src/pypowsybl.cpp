@@ -986,9 +986,9 @@ matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, c
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
 	ToCharPtrPtr attributesPtr(attributes);
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe, perUnit, nominalApparentPower));
 }
 
 SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName, const std::string& tableName) {
@@ -1091,8 +1091,8 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType) {
-    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower) {
+    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe, perUnit, nominalApparentPower);
 }
 
 std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* dataframeMetadata) {
@@ -1333,6 +1333,9 @@ NadParameters::NadParameters(nad_parameters* src) {
     voltage_value_precision = src->voltage_value_precision;
     substation_description_displayed = src->substation_description_displayed;
     bus_legend = src->bus_legend;
+    layout_type = static_cast<NadLayoutType>(src->layout_type);
+    scaling_factor = src->scaling_factor;
+    radius_factor = src->radius_factor;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1355,6 +1358,9 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.voltage_value_precision = voltage_value_precision;
     res.substation_description_displayed = substation_description_displayed;
     res.bus_legend = bus_legend;
+    res.layout_type = (int) layout_type;
+    res.scaling_factor = scaling_factor;
+    res.radius_factor = radius_factor;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

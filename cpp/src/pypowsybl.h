@@ -281,6 +281,11 @@ public:
     std::string component_library;
 };
 
+enum class NadLayoutType {
+    FORCE_LAYOUT = 0,
+    GEOGRAPHICAL
+};
+
 class NadParameters {
 public:
     NadParameters(nad_parameters* src);
@@ -296,6 +301,9 @@ public:
     int voltage_value_precision;
     bool bus_legend;
     bool substation_description_displayed;
+    NadLayoutType layout_type;
+    int scaling_factor;
+    double radius_factor;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -448,7 +456,7 @@ matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext,
 
 matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId);
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe);
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower);
 
 void removeNetworkElements(const JavaHandle& network, const std::vector<std::string>& elementIds);
 
@@ -458,7 +466,7 @@ std::vector<std::string> getExtensionsNames();
 
 SeriesArray* getExtensionsInformation();
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower);
 
 std::string getWorkingVariantId(const JavaHandle& network);
 

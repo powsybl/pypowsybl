@@ -320,7 +320,7 @@ Let's now create some buses inside those voltage levels:
    network.create_buses(id=['B1', 'B2'], voltage_level_id=['VL1', 'VL2'])
 
 
-Let's connect thoses buses with a line:
+Let's connect these buses with a line:
 
 .. testcode::
 
@@ -346,6 +346,44 @@ You can now run a loadflow to check our network actually works !
     >>> res = lf.run_ac(network)
     >>> str(res[0].status)
     'ComponentStatus.CONVERGED'
+
+Now let's see how to add a three-winding transformer to the network. First, let's add two voltage levels and their associated buses to the substation `S1`.
+
+.. testcode::
+
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL3', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 225},
+        {'substation_id': 'S1', 'id': 'VL4', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 90},
+    ])
+    network.create_voltage_levels(voltage_levels)
+    network.create_buses(id=['B3', 'B4'], voltage_level_id=['VL3', 'VL4'])
+
+Now let's add a three-winding transformer between VL1, VL2 and VL3:
+
+.. testcode::
+
+    network.create_3_windings_transformers(id='T1', rated_u0 = 225, voltage_level1_id='VL1', bus1_id='B1',
+                                           voltage_level2_id='VL3', bus2_id='B3',
+                                           voltage_level3_id='VL4', bus3_id='B4',
+                                           b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=400,
+                                           b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225,
+                                           b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=90)
+
+You can add a ratio tap changer on the leg 1 of the three-winding transformer with:
+
+.. testcode::
+
+    rtc_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        data=[('T1', 2, 200, False, 0, 1, 'ONE')])
+    steps_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+        data=[('T1', 2, 2, 1, 1, 0.5),
+              ('T1', 2, 2, 1, 1, 0.5),
+              ('T1', 2, 2, 1, 1, 0.8)])
+    network.create_ratio_tap_changers(rtc_df, steps_df)
 
 For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.

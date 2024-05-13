@@ -28,7 +28,7 @@ from pandas import DataFrame
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
-from pypowsybl._pypowsybl import ElementType, ValidationLevel
+from pypowsybl._pypowsybl import ElementType, ValidationLevel, Side
 from pypowsybl.utils import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
@@ -52,6 +52,8 @@ class Network:  # pylint: disable=too-many-public-methods
     def __init__(self, handle: _pp.JavaHandle):
         self._handle = handle
         self.__init_from_handle()
+        self._nominal_apparent_power = 100.0
+        self._per_unit = False
 
     @property
     def id(self) -> str:
@@ -87,6 +89,28 @@ class Network:  # pylint: disable=too-many-public-methods
         The forecast distance: 0 for a snapshot.
         """
         return self._forecast_distance
+
+    @property
+    def nominal_apparent_power(self) -> float:
+        """
+        The nominal power to per unit the network (kVA)
+        """
+        return self._nominal_apparent_power
+
+    @nominal_apparent_power.setter
+    def nominal_apparent_power(self, value: float) -> None:
+        self._nominal_apparent_power = value
+
+    @property
+    def per_unit(self) -> bool:
+        """
+        The nominal power to per unit the network (kVA)
+        """
+        return self._per_unit
+
+    @per_unit.setter
+    def per_unit(self, value: bool) -> None:
+        self._per_unit = value
 
     def __str__(self) -> str:
         return f'Network(id={self.id}, name={self.name}, case_date={self.case_date}, ' \
@@ -385,8 +409,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                             main_connected_component, main_synchronous_component,
                                             not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None,
-                     **kwargs: ArrayLike) -> DataFrame:
+    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -419,9 +442,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
         else:
             elements_array = None
-
         series_array = _pp.create_network_elements_series_array(self._handle, element_type, filter_attributes,
-                                                                attributes, elements_array)
+                                                                attributes, elements_array, self._per_unit,
+                                                                self._nominal_apparent_power)
         result = create_data_frame_from_series_array(series_array)
         if attributes:
             result = result[attributes]
@@ -764,8 +787,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None,
-                      **kwargs: ArrayLike) -> DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of batteries.
 
@@ -802,8 +824,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.BATTERY, all_attributes, attributes, **kwargs)
 
-    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None,
-                  **kwargs: ArrayLike) -> DataFrame:
+    def get_lines(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of lines data.
 
@@ -2329,7 +2350,7 @@ class Network:  # pylint: disable=too-many-public-methods
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
-        _pp.update_network_elements_with_series(self._handle, c_df, element_type)
+        _pp.update_network_elements_with_series(self._handle, c_df, element_type, self._per_unit, self._nominal_apparent_power)
 
     def update_buses(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
@@ -3893,6 +3914,86 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.TWO_WINDINGS_TRANSFORMER, [df], **kwargs)
 
+    def create_3_windings_transformers(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates three-winding transformers.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            For each side of the transformer, either a node ID (voltage level in node-breaker topology), bus ID (
+             voltage level in bus-breaker topology) or connectable bus ID (voltage level in bus-breaker topology,
+             the transformer is created associated but disconnected from this bus) should be specified.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new transformer
+            - **rated_u0**: the rated voltage at the star bus
+            - **voltage_level1_id**: the voltage level where the new transformer will be connected on side 1.
+              The voltage level must already exist.
+            - **bus1_id**: the bus where the new transformer will be connected on side 1,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus1_id**: the bus to which the transformer can be connected on side 1, if the voltage level
+             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+            - **node1**: the node where the new transformer will be connected on side 1,
+              if the voltage level has a node-breaker topology kind.
+            - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
+              The voltage level must already exist.
+            - **bus2_id**: the bus where the new transformer will be connected on side 2,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus2_id**: the bus to which the transformer can be connected on side 2, if the voltage level
+             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+            - **node2**: the node where the new transformer will be connected on side 2,
+              if the voltage level has a node-breaker topology kind.
+            - **voltage_level3_id**: the voltage level where the new transformer will be connected on side 3.
+              The voltage level must already exist.
+            - **bus3_id**: the bus where the new transformer will be connected on side 3,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus3_id**: the bus to which the transformer can be connected on side 3, if the voltage level
+             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+            - **node3**: the node where the new transformer will be connected on side 3,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+            - **rated_u1**: nominal voltage of the side 1 of the transformer
+            - **rated_u2**: nominal voltage of the side 2 of the transformer
+            - **rated_u3**: nominal voltage of the side 3 of the transformer
+            - **rated_s1**: optionally, nominal power of the side 1 of the transformer
+            - **rated_s2**: optionally, nominal power of the side 2 of the transformer
+            - **rated_s3**: optionally, nominal power of the side 3 of the transformer
+            - **r1**: the resistance of the side 1, in Ohm
+            - **r2**: the resistance of the side 2, in Ohm
+            - **r3**: the resistance of the side 3, in Ohm
+            - **x1**: the reactance of the side 1, in Ohm
+            - **x2**: the reactance of the side 2, in Ohm
+            - **x3**: the reactance of the side 3, in Ohm
+            - **b1**: the shunt susceptance of the side 1, in S
+            - **b2**: the shunt susceptance of the side 2, in S
+            - **b3**: the shunt susceptance of the side 3, in S
+            - **g1**: the shunt conductance of the side 1, in S
+            - **g2**: the shunt conductance of the side 2, in S
+            - **g3**: the shunt conductance of the side 3, in S
+
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_3_windings_transformers(id='T-1', rated_u0 = 225, voltage_level1_id='VL1', bus1_id='B1',
+                                                       voltage_level2_id='VL2', bus2_id='B2',
+                                                       voltage_level3_id='VL3', bus3_id='B3',
+                                                       b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=400, rated_s1=100,
+                                                       b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225, rated_s2=100,
+                                                       b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=90, rated_s3=100)
+        """
+        return self._create_elements(ElementType.THREE_WINDINGS_TRANSFORMER, [df], **kwargs)
+
     def create_shunt_compensators(self, shunt_df: DataFrame,
                                   linear_model_df: Optional[DataFrame] = None,
                                   non_linear_model_df: Optional[DataFrame] = None) -> None:
@@ -4099,7 +4200,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_v**: the target voltage, in kV
             - **target_deadband**: the target voltage regulation deadband, in kV
             - **regulating**: true if the tap changer should regulate voltage
-            - **regulated_side**: the side where voltage is regulated (ONE or TWO)
+            - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
+            or THREE if three-winding transformer)
+            - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
 
@@ -4127,6 +4230,7 @@ class Network:  # pylint: disable=too-many-public-methods
                           ('NGEN_NHV1', 2, 2, 1, 1, 0.8)])
                 network.create_ratio_tap_changers(rtc_df, steps_df)
         """
+
         return self._create_elements(ElementType.RATIO_TAP_CHANGER, [rtc_df, steps_df])
 
     def create_phase_tap_changers(self, ptc_df: DataFrame, steps_df: DataFrame) -> None:
@@ -4153,7 +4257,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **regulation_mode**: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
             - **target_deadband**: the regulation deadband
             - **regulating**: true if the tap changer should regulate
-            - **regulated_side**: the side where the current or active power is regulated (ONE or TWO)
+            - **regulated_side**: the side where the current or active power is regulated (ONE or TWO if two-winding
+            transformer, ONE, TWO or THREE if three-winding transformer)
+            - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
 

@@ -939,3 +939,104 @@ def test_deprecated_ucte_xnode_code_dataframe():
     assert 'DL_TEST' in network.get_dangling_lines().index
     assert 'DL_TEST2' in network.get_dangling_lines().index
     assert 'ucte_xnode_code' in network.get_dangling_lines().columns
+
+
+def test_3_windings_transformers_creation():
+    n = pn.create_eurostag_tutorial_example1_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'VLTEST',
+        'substation_id': 'P1',
+        'high_voltage_limit': 250,
+        'low_voltage_limit': 200,
+        'nominal_v': 225,
+        'topology_kind': 'BUS_BREAKER'
+    }])
+    n.create_voltage_levels(df)
+    n.create_buses(pd.DataFrame(index=['BUS_TEST'],
+                                columns=['voltage_level_id'],
+                                data=[['VLTEST']]))
+    n.create_3_windings_transformers(id='TWT_TEST', rated_u0=225, voltage_level1_id='VLHV1', bus1_id='NHV1',
+                                     voltage_level2_id='VLTEST', bus2_id='BUS_TEST',
+                                     voltage_level3_id='VLGEN', bus3_id='NGEN',
+                                     b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=380, rated_s1=100,
+                                     b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225, rated_s2=100,
+                                     b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=24, rated_s3=100)
+
+    transformer = n.get_3_windings_transformers().loc['TWT_TEST']
+    assert transformer.rated_u0 == 225
+    assert transformer.r1 == 0.5
+    assert transformer.x1 == 10
+    assert transformer.g1 == 1e-6
+    assert transformer.b1 == 1e-6
+    assert transformer.rated_u1 == 380.0
+    assert transformer.rated_s1 == 100
+    assert transformer.voltage_level1_id == 'VLHV1'
+    assert transformer.bus1_id == 'VLHV1_0'
+    assert transformer.connected1 == True
+    assert transformer.r2 == 0.5
+    assert transformer.x2 == 10
+    assert transformer.g2 == 1e-6
+    assert transformer.b2 == 1e-6
+    assert transformer.rated_u2 == 225.0
+    assert transformer.rated_s2 == 100
+    assert transformer.voltage_level2_id == 'VLTEST'
+    assert transformer.bus2_id == 'VLTEST_0'
+    assert transformer.connected2 == True
+    assert transformer.r3 == 0.5
+    assert transformer.x3 == 10
+    assert transformer.g3 == 1e-6
+    assert transformer.b3 == 1e-6
+    assert transformer.rated_u3 == 24.0
+    assert transformer.rated_s3 == 100
+    assert transformer.voltage_level3_id == 'VLGEN'
+    assert transformer.bus3_id == 'VLGEN_0'
+    assert transformer.connected3 == True
+
+    #Add ratio tap changer
+    rtc_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        data=[('TWT_TEST', 2, 200, False, 0, 1, 'ONE')])
+    steps_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+        data=[('TWT_TEST', 2, 2, 1, 1, 0.5),
+              ('TWT_TEST', 2, 2, 1, 1, 0.5),
+              ('TWT_TEST', 2, 2, 1, 1, 0.8)])
+    n.create_ratio_tap_changers(rtc_df, steps_df)
+    transformer = n.get_3_windings_transformers().loc['TWT_TEST']
+    assert transformer.ratio_tap_position1 == 1
+
+    #Add phase tap changer
+    ptc_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'target_deadband', 'regulation_mode', 'low_tap', 'tap', 'side'],
+        data=[('TWT_TEST', 2, 'CURRENT_LIMITER', 0, 1, 'TWO')])
+    steps_df = pd.DataFrame.from_records(
+        index='id', columns=['id', 'b', 'g', 'r', 'x', 'rho', 'alpha'],
+        data=[('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1),
+              ('TWT_TEST', 2, 2, 1, 1, 0.4, 0.2),
+              ('TWT_TEST', 2, 2, 1, 1, 0.5, 0.1)])
+    n.create_phase_tap_changers(ptc_df, steps_df)
+    transformer = n.get_3_windings_transformers().loc['TWT_TEST']
+    assert transformer.phase_tap_position2 == 1
+
+    #Add some limits
+    n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 600,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 1000,
+         'acceptable_duration': 60, 'is_fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 400,
+         'acceptable_duration': np.Inf, 'is_fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 700,
+         'acceptable_duration': 60, 'is_fictitious': False}
+    ]))
+    operational_limits = n.get_operational_limits().loc['TWT_TEST']
+    assert operational_limits.shape[0] == 4
+

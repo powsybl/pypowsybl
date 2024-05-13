@@ -56,7 +56,7 @@ public class CoordinatedReactiveControlDataframeProvider extends AbstractSingleD
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("generator_id", coordinatedReactiveControl -> coordinatedReactiveControl.getExtendable().getId())
-                .doubles("q_percent", CoordinatedReactiveControl::getQPercent, CoordinatedReactiveControl::setQPercent)
+                .doubles("q_percent", (crc, context) -> crc.getQPercent(), (crc, qPercent, context) -> crc.setQPercent(qPercent))
                 .build();
     }
 
