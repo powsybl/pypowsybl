@@ -259,8 +259,8 @@ public final class NetworkDataframes {
                 .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (g, context) -> perUnitV(context, g.getTargetV(), g.getRegulatingTerminal()),
-                    (g, v, context) -> g.setTargetV(unPerUnitV(context, v, g.getRegulatingTerminal())))
+                .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
+                    (g, v, context) -> g.setTargetV(unPerUnitTargetV(context, v, g.getRegulatingTerminal(), g.getTerminal())))
                 .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
@@ -357,8 +357,8 @@ public final class NetworkDataframes {
                 .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
                 .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
                 .booleans("voltage_regulation_on", ShuntCompensator::isVoltageRegulatorOn, ShuntCompensator::setVoltageRegulatorOn)
-                .doubles("target_v", (sc, context) -> perUnitV(context, sc.getTargetV(), sc.getRegulatingTerminal()),
-                    (sc, v, context) -> sc.setTargetV(unPerUnitV(context, v, sc.getRegulatingTerminal())))
+                .doubles("target_v", (sc, context) -> perUnitTargetV(context, sc.getTargetV(), sc.getRegulatingTerminal(), sc.getTerminal()),
+                    (sc, v, context) -> sc.setTargetV(unPerUnitTargetV(context, v, sc.getRegulatingTerminal(), sc.getTerminal())))
                 .doubles("target_deadband", (sc, context) -> perUnitV(context, sc.getTargetDeadband(), sc.getRegulatingTerminal()),
                     (sc, tb, context) -> sc.setTargetDeadband(unPerUnitV(context, tb, sc.getRegulatingTerminal())))
                 .strings("regulating_bus_id", sc -> getBusId(sc.getRegulatingTerminal()))
@@ -633,8 +633,8 @@ public final class NetworkDataframes {
                 .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
                 .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (vsc, context) -> perUnitV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal()),
-                    (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitV(context, targetV, vsc.getRegulatingTerminal())))
+                .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
+                    (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, vsc.getRegulatingTerminal(), vsc.getTerminal())))
                 .doubles("target_q", (vsc, context) -> perUnitPQ(context, vsc.getReactivePowerSetpoint()),
                     (vsc, targetQ, context) -> vsc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
@@ -659,8 +659,8 @@ public final class NetworkDataframes {
                 .strings("name", svc -> svc.getOptionalName().orElse(""))
                 .doubles("b_min", (svc, context) -> svc.getBmin(), (svc, bMin, context) -> svc.setBmin(bMin))
                 .doubles("b_max", (svc, context) -> svc.getBmax(), (svc, bMax, context) -> svc.setBmax(bMax))
-                .doubles("target_v", (svc, context) -> perUnitV(context, svc.getVoltageSetpoint(), svc.getRegulatingTerminal()),
-                    (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitV(context, targetV, svc.getRegulatingTerminal())))
+                .doubles("target_v", (svc, context) -> perUnitTargetV(context, svc.getVoltageSetpoint(), svc.getRegulatingTerminal(), svc.getTerminal()),
+                    (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, svc.getRegulatingTerminal(), svc.getTerminal())))
                 .doubles("target_q", (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
@@ -867,8 +867,8 @@ public final class NetworkDataframes {
                 .ints("step_count", t -> t.getRatioTapChanger().getStepCount())
                 .booleans("on_load", t -> t.getRatioTapChanger().hasLoadTapChangingCapabilities(), (t, v) -> t.getRatioTapChanger().setLoadTapChangingCapabilities(v))
                 .booleans("regulating", t -> t.getRatioTapChanger().isRegulating(), (t, v) -> t.getRatioTapChanger().setRegulating(v))
-                .doubles("target_v", (t, context) -> perUnitV(context, t.getRatioTapChanger().getTargetV(), t.getRatioTapChanger().getRegulationTerminal()),
-                    (t, v, context) -> t.getRatioTapChanger().setTargetV(unPerUnitV(context, v, t.getRatioTapChanger().getRegulationTerminal())))
+                .doubles("target_v", (t, context) -> perUnitTargetV(context, t.getRatioTapChanger().getTargetV(), t.getRatioTapChanger().getRegulationTerminal(), t.getTerminal2()),
+                    (t, v, context) -> t.getRatioTapChanger().setTargetV(unPerUnitTargetV(context, v, t.getRatioTapChanger().getRegulationTerminal(), t.getTerminal2())))
                 .doubles("target_deadband", (t, context) -> t.getRatioTapChanger().getTargetDeadband(),
                     (t, v, context) -> t.getRatioTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
