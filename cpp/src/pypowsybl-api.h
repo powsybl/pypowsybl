@@ -218,6 +218,7 @@ typedef enum {
     BRANCH_ACTIVE_POWER_3,
     BRANCH_CURRENT_3,
     BRANCH_REACTIVE_POWER_3,
+    BUS_REACTIVE_POWER,
     BUS_VOLTAGE,
 } sensitivity_function_type;
 
