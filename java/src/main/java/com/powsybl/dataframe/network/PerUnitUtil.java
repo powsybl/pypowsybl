@@ -212,9 +212,21 @@ public final class PerUnitUtil {
         return unPerUnitV(dataframeContext, v, bus.getVoltageLevel().getNominalV());
     }
 
+    public static double unPerUnitTargetV(DataframeContext dataframeContext, double v, Terminal distantTerminal, Terminal localTerminal) {
+        if (distantTerminal != null) {
+            return unPerUnitV(dataframeContext, v, distantTerminal);
+        } else {
+            return unPerUnitV(dataframeContext, v, localTerminal);
+        }
+    }
+
     public static double unPerUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
         if (terminal == null) {
-            throw new PowsyblException("terminal not found for un per unit V");
+            if (dataframeContext.isPerUnit()) {
+                throw new PowsyblException("terminal not found for un per unit V");
+            } else {
+                return v;
+            }
         }
         return unPerUnitV(dataframeContext, v, terminal.getVoltageLevel().getNominalV());
     }
@@ -231,9 +243,21 @@ public final class PerUnitUtil {
         return perUnitV(dataframeContext, leg.getRatedU(), leg.getTerminal());
     }
 
+    public static double perUnitTargetV(DataframeContext dataframeContext, double v, Terminal distantTerminal, Terminal localTerminal) {
+        if (distantTerminal != null) {
+            return perUnitV(dataframeContext, v, distantTerminal);
+        } else {
+            return perUnitV(dataframeContext, v, localTerminal);
+        }
+    }
+
     public static double perUnitV(DataframeContext dataframeContext, double v, Terminal terminal) {
         if (terminal == null) {
-            throw new PowsyblException("terminal not found for per unit V");
+            if (dataframeContext.isPerUnit()) {
+                throw new PowsyblException("terminal not found for per unit V");
+            } else {
+                return v;
+            }
         }
         return perUnitV(dataframeContext, v, terminal.getVoltageLevel().getNominalV());
     }
