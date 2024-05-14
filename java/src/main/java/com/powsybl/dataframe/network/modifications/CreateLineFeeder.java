@@ -7,8 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
-import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.FeederBaysLineSeries;
@@ -31,7 +30,7 @@ public class CreateLineFeeder implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
@@ -40,7 +39,7 @@ public class CreateLineFeeder implements NetworkModification {
             Optional<CreateBranchFeederBaysBuilder> builder = fbLineSeries.createBuilder(network, dataframes.get(0), i, throwException);
             if (builder.isPresent()) {
                 com.powsybl.iidm.modification.NetworkModification modification = builder.get().build();
-                modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+                modification.apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
             }
         }
     }

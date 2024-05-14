@@ -110,7 +110,7 @@ typedef struct limit_violation_struct {
     double limit;
     char* limit_name;
     int acceptable_duration;
-    float limit_reduction;
+    double limit_reduction;
     double value;
     int side;
 } limit_violation;
@@ -350,6 +350,9 @@ typedef struct nad_parameters_struct {
     int voltage_value_precision;
     unsigned char substation_description_displayed;
     unsigned char bus_legend;
+    int layout_type;
+    int scaling_factor;
+    double radius_factor;
 } nad_parameters;
 
 typedef enum {
@@ -364,9 +367,11 @@ typedef enum {
 } DynamicMappingType;
 
 typedef enum {
-    ONE = 0,
+    UNDEFINED = -1,
+    ONE,
     TWO,
-} BranchSide;
+    THREE,
+} ThreeSide;
 
 typedef struct shortcircuit_analysis_parameters_struct {
     unsigned char with_voltage_result;
@@ -380,11 +385,6 @@ typedef struct shortcircuit_analysis_parameters_struct {
     char** provider_parameters_values;
     int provider_parameters_values_count;
 } shortcircuit_analysis_parameters;
-
-typedef enum {
-    BUS_FAULT = 0,
-    BRANCH_FAULT,
-} ShortCircuitFaultType;
 
 typedef enum {
     OK = 0,

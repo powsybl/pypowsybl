@@ -1,0 +1,6 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\QCGMES-GL.sparql\\E"}
+  ]}
+}

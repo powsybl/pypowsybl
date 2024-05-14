@@ -7,7 +7,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -57,7 +57,7 @@ public class TieLineDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, ReportNode reportNode) {
         TieLineSeries series = new TieLineSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             TieLineAdder adder = series.create(network, row);

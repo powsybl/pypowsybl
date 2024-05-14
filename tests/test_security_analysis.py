@@ -151,28 +151,38 @@ def test_provider_parameters():
 
 
 def test_ac_security_analysis_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    sa_result = sa.run_ac(n, reporter=reporter)
-    report2 = str(reporter)
+    sa.run_ac(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
+def test_ac_security_analysis_with_deprecated_report():
+    report_node = rp.Reporter()
+    report1 = str(report_node)
+    assert len(report1) > 0
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    sa.run_ac(n, reporter=report_node)
+    report2 = str(report_node)
+    assert len(report2) >= len(report1)
 
 def test_dc_analysis_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     n.update_loads(id='LOAD', p0=900)
     n.update_generators(id='GEN', target_p=900)
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
-    sa_result = sa.run_dc(n, reporter=reporter)
-    report2 = str(reporter)
+    sa_result = sa.run_dc(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 
@@ -350,6 +360,46 @@ def test_switch_action():
     assert df.loc['', '', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
     assert df.loc['Breaker contingency', '', 'LINE_S3S4']['p1'] == pytest.approx(0.0, abs=1e-2)
     assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
+
+
+def test_tap_changer_action():
+    n = pp.network.create_micro_grid_be_network()
+
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
+
+    sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
+
+    sa.add_phase_tap_changer_position_action(action_id='PhaseTapChanger_Action', transformer_id='a708c3bc-465d-4fe7-b6ef-6fa6408a62b0', is_relative=True, tap_position=5)
+    sa.add_ratio_tap_changer_position_action(action_id='RatioTapChanger_Action', transformer_id='e482b89a-fa84-4ea9-8e70-a83d44790957', is_relative=True, tap_position=5)
+
+    sa.add_operator_strategy('Strategy_PhaseTapChanger', 'BE-G2_contingency', ['PhaseTapChanger_Action'])
+    sa.add_operator_strategy('Strategy_RatioTapChanger', 'BE-G2_contingency', ['RatioTapChanger_Action'])
+
+    sa_result = sa.run_ac(n)
+    df = sa_result.branch_results
+
+    assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
+    assert df.loc['BE-G2_contingency', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.305, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_PhaseTapChanger', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.312, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_RatioTapChanger', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.306, abs=1e-2)
+
+def test_shunt_action():
+    n = pp.network.create_micro_grid_be_network()
+
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
+    sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
+
+    sa.add_shunt_compensator_position_action(action_id='ShuntCompensator_Action', shunt_id='d771118f-36e9-4115-a128-cc3d9ce3e3da', section=1)
+    sa.add_operator_strategy('Strategy_ShuntCompensator', 'BE-G2_contingency', ['ShuntCompensator_Action'])
+    sa_result = sa.run_ac(n)
+    df = sa_result.branch_results
+
+    assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
+    assert df.loc['BE-G2_contingency', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.305, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_ShuntCompensator', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.312, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_ShuntCompensator', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.306, abs=1e-2)
 
 def test_tie_line_contingency():
     n = pp.network._create_network("eurostag_tutorial_example1_with_tie_line")

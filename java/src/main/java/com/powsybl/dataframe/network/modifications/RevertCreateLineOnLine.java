@@ -7,8 +7,7 @@
  */
 package com.powsybl.dataframe.network.modifications;
 
-import com.powsybl.commons.reporter.Reporter;
-import com.powsybl.commons.reporter.ReporterModel;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.RevertCreateLineOnLineBuilder;
@@ -55,13 +54,13 @@ public class RevertCreateLineOnLine implements NetworkModification {
     }
 
     @Override
-    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReporterModel reporter) {
+    public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         if (dataframes.size() != 1) {
             throw new IllegalArgumentException("Expected only one input dataframe");
         }
         for (int row = 0; row < dataframes.get(0).getRowCount(); row++) {
             RevertCreateLineOnLineBuilder builder = createBuilder(dataframes.get(0), row);
-            builder.build().apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+            builder.build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
         }
     }
 }

@@ -6,18 +6,20 @@
  */
 package com.powsybl.python.security;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.action.Action;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
-import com.powsybl.security.action.*;
 import com.powsybl.security.detectors.DefaultLimitViolationDetector;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.strategy.OperatorStrategy;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -30,7 +32,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     private final List<StateMonitor> monitors = new ArrayList<>();
 
-    SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, Reporter reporter) {
+    SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, ReportNode reportNode) {
         ContingenciesProvider contingencies = this::createContingencies;
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(
@@ -45,7 +47,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                         operatorStrategies,
                         actions,
                         monitors,
-                        (reporter == null) ? Reporter.NO_OP : reporter
+                        (reportNode == null) ? ReportNode.NO_OP : reportNode
                 );
         return report.getResult();
     }

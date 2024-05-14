@@ -7,7 +7,7 @@
 package com.powsybl.python.sensitivity;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.Contingency;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
@@ -163,7 +163,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         }
     }
 
-    SensitivityAnalysisResultContext run(Network network, SensitivityAnalysisParameters sensitivityAnalysisParameters, String provider, Reporter reporter) {
+    SensitivityAnalysisResultContext run(Network network, SensitivityAnalysisParameters sensitivityAnalysisParameters, String provider, ReportNode reportNode) {
         List<Contingency> contingencies = createContingencies(network);
 
         List<MatrixInfo> matrices = prepareMatrices();
@@ -239,15 +239,14 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         SensitivityResultWriter valueWriter = new SensitivityResultWriter() {
             @Override
             public void writeSensitivityValue(int factorContext, int contingencyIndex, double value, double functionReference) {
-                int factorIndex = factorContext;
-                MatrixInfo m = factorIndexMatrixMap.floorEntry(factorIndex).getValue();
+                MatrixInfo m = factorIndexMatrixMap.floorEntry(factorContext).getValue();
 
-                int columnIdx = m.getOffsetColumn() + (factorIndex - m.getOffsetData()) % m.getColumnCount();
+                int columnIdx = m.getOffsetColumn() + (factorContext - m.getOffsetData()) % m.getColumnCount();
                 if (contingencyIndex != -1) {
-                    valuesByContingencyIndex[contingencyIndex][factorIndex] = value;
+                    valuesByContingencyIndex[contingencyIndex][factorContext] = value;
                     referencesByContingencyIndex[contingencyIndex][columnIdx] = functionReference;
                 } else {
-                    baseCaseValues[factorIndex] = value;
+                    baseCaseValues[factorContext] = value;
                     baseCaseReferences[columnIdx] = functionReference;
                 }
             }
@@ -267,7 +266,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                         variableSets,
                         sensitivityAnalysisParameters,
                         CommonObjects.getComputationManager(),
-                        (reporter == null) ? Reporter.NO_OP : reporter);
+                        (reportNode == null) ? ReportNode.NO_OP : reportNode);
 
         Map<String, double[]> valuesByContingencyId = new HashMap<>(contingencies.size());
         Map<String, double[]> referencesByContingencyId = new HashMap<>(contingencies.size());

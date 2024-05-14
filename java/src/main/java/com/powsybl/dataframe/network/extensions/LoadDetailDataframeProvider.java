@@ -64,10 +64,10 @@ public class LoadDetailDataframeProvider extends AbstractSingleDataframeNetworkE
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ext.getExtendable().getId())
-                .doubles(FIXED_P, LoadDetail::getFixedActivePower, LoadDetail::setFixedActivePower)
-                .doubles(VARIABLE_P, LoadDetail::getVariableActivePower, LoadDetail::setVariableActivePower)
-                .doubles(FIXED_Q, LoadDetail::getFixedReactivePower, LoadDetail::setFixedReactivePower)
-                .doubles(VARIABLE_Q, LoadDetail::getVariableReactivePower, LoadDetail::setVariableReactivePower)
+                .doubles(FIXED_P, (ld, context) -> ld.getFixedActivePower(), (ld, fap, context) -> ld.setFixedActivePower(fap))
+                .doubles(VARIABLE_P, (ld, context) -> ld.getVariableActivePower(), (ld, vap, context) -> ld.setVariableActivePower(vap))
+                .doubles(FIXED_Q, (ld, context) -> ld.getFixedReactivePower(), (ld, frp, context) -> ld.setFixedReactivePower(frp))
+                .doubles(VARIABLE_Q, (ld, context) -> ld.getVariableReactivePower(), (ld, vrp, context) -> ld.setVariableReactivePower(vrp))
                 .build();
     }
 

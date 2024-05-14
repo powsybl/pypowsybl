@@ -26,6 +26,7 @@ Note that a loadflow can be run before writing the diagram so that it displays r
     >>> network.write_single_line_diagram_svg('VL4', 'vl4.svg')
 
 .. image:: ../_static/images/ieee14_vl4.svg
+   :class: forced-white-background
 
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
@@ -36,6 +37,7 @@ It is also possible to display a multi-substation single line diagram (currently
     >>> network.write_matrix_multi_substation_single_line_diagram_svg([['S1', 'S2'],['S3','S4']], 's1_s2_s3_s4.svg')
 
 .. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
+   :class: forced-white-background
 
 Network area diagram
 --------------------
@@ -54,6 +56,7 @@ Or in a Jupyter notebook, the SVG can be directly rendered in the notebook:
     >>> network.get_network_area_diagram()
 
 .. image:: ../_static/images/ieee9.svg
+   :class: forced-white-background
 
 To render only a part of the network, we can specify a voltage level ID as the center of the sub network and a depth
 to control the size of the sub network:
@@ -64,6 +67,7 @@ to control the size of the sub network:
     >>> network.write_network_area_diagram_svg('ieee300.svg', 'VL1', 1)
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1.svg
+   :class: forced-white-background
 
 Nominal voltage bounds can be defined to further filter the output network:
 
@@ -73,6 +77,7 @@ Nominal voltage bounds can be defined to further filter the output network:
     >>> network.write_network_area_diagram_svg('ieee300.svg', 'VL1', 1, low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
 
 .. image:: ../_static/images/ieee300_subnetwork_vl1_filtered.svg
+   :class: forced-white-background
 
 If no voltage level ID is given as an input, only nominal voltage bounds are used to filter the network:
 
@@ -82,6 +87,7 @@ If no voltage level ID is given as an input, only nominal voltage bounds are use
     >>> network.write_network_area_diagram_svg('ieee30.svg', low_nominal_voltage_bound=90, high_nominal_voltage_bound=240)
 
 .. image:: ../_static/images/ieee30_subnetwork_filtered_no_vl_id.svg
+   :class: forced-white-background
 
 Note that similarly to single-line diagrams, a loadflow can be run before writing the diagram so that it displays active powers, for instance:
 
@@ -114,3 +120,61 @@ In order to get a list of the displayed voltage levels from an input voltage lev
 
     >>> network = pp.network.create_ieee300()
     >>> list_vl = network.get_network_area_diagram_displayed_voltage_levels('VL1', 1)
+
+Network area diagram using geographical data
+--------------------------------------------
+
+We can load a network with geographical data (in WGS84 coordinates system) for substations and lines (in that case,
+the geographical positions represent the line path). One way to do that is to load a CGMES file containing
+a GL profile (Graphical Layout). By default this profile is not read. To activate GL profile loading and
+creation of substations ans lines geographical positions in the PowSyBl network model we have to pass an
+additional parameter to the load function.
+
+.. code-block:: python
+
+    >>> network = pp.network.load('MicroGridTestConfiguration_T4_BE_BB_Complete_v2.zip', {'iidm.import.cgmes.post-processors': 'cgmesGLImport'})
+
+We can now check loaded position by displaying `SubstationPosition` and `LinePosition` extensions.
+
+.. code-block:: python
+
+    >>> n.get_extension('substationPosition')
+                                      latitude  longitude
+    id
+    87f7002b-056f-4a6a-a872-1744eea757e3   51.3251    4.25926
+    37e14a0f-5e34-4647-a062-8bfd9305fa9d   50.8038    4.30089
+
+.. code-block:: python
+
+    >>> n.get_extension('linePosition')
+                                          latitude  longitude
+    id                                   num
+    b58bf21a-096a-4dae-9a01-3f03b60c24c7 0     50.8035    4.30113
+                                         1     50.9169    4.34509
+                                         2     51.0448    4.29565
+                                         3     51.1570    4.38354
+    ffbabc27-1ccd-4fdc-b037-e341706c8d29 0     50.8035    4.30113
+                                         1     50.9169    4.34509
+                                         2     51.0448    4.29565
+                                         3     51.1570    4.38354
+
+When we generate a network area diagram, an automatic force layout is performed by default.
+The diagram looks like this:
+
+.. code-block:: python
+
+    >>> n.write_network_area_diagram('be.svg')
+
+.. image:: ../_static/images/nad_microgridbe_force_layout.svg
+   :class: forced-white-background
+
+Now that we have geographical positions in our data model, we can change the layout to render the diagram with
+the geographical layout:
+
+.. code-block:: python
+
+    >>> parameter = pp.network.NadParameters(layout_type=pp.network.NadLayoutType.GEOGRAPHICAL)
+    >>> n.write_network_area_diagram('be.svg', nad_parameters=parameter)
+
+.. image:: ../_static/images/nad_microgridbe_geo.svg
+   :class: forced-white-background

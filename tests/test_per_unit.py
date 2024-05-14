@@ -412,6 +412,7 @@ def test_ratio_tap_changers_per_unit():
                             data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 1.00, NaN]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
+
 def test_lines_not_same_nominal_voltage_per_unit():
     n = pp.network.create_ieee14()
     n = per_unit_view(n, 100)
@@ -422,3 +423,39 @@ def test_lines_not_same_nominal_voltage_per_unit():
     assert lines.loc['L7-8-1']['g2'] == pytest.approx(0, rel=1e-16)
     assert lines.loc['L7-8-1']['b1'] == pytest.approx(0, rel=1e-16)
     assert lines.loc['L7-8-1']['b2'] == pytest.approx(0, rel=1e-16)
+
+
+def test_ratio_tap_changer_steps_per_unit():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.per_unit = True
+    steps = n.get_ratio_tap_changer_steps()
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 1]['rho'] == pytest.approx(2.54, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 2]['rho'] == pytest.approx(2.92, rel=1e-1)
+    n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, r=1, x=3, g=4, b=2)
+    steps = n.get_ratio_tap_changer_steps()
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['r'] == pytest.approx(1, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['x'] == pytest.approx(3, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['g'] == pytest.approx(4, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['b'] == pytest.approx(2, rel=1e-1)
+
+
+def test_phase_tap_changer_steps_per_unit():
+    n = pp.network.create_ieee300()
+    n.per_unit = True
+    steps = n.get_phase_tap_changer_steps()
+    assert steps.loc['T196-2040-1', 0]['rho'] == 1.0
+    assert steps.loc['T196-2040-1', 0]['alpha'] == pytest.approx(0.2, rel=1e-1)
+    assert steps.loc['T196-2040-1', 0]['r'] == 0.0
+    assert steps.loc['T196-2040-1', 0]['x'] == 0.0
+    assert steps.loc['T196-2040-1', 0]['g'] == 0.0
+    assert steps.loc['T196-2040-1', 0]['b'] == 0.0
+    n.update_phase_tap_changer_steps(id='T196-2040-1', position=0, r=1, x=3, g=4, b=2)
+    steps = n.get_phase_tap_changer_steps()
+    assert steps.loc['T196-2040-1', 0]['rho'] == 1.0
+    assert steps.loc['T196-2040-1', 0]['alpha'] == pytest.approx(0.2, rel=1e-1)
+    assert steps.loc['T196-2040-1', 0]['r'] == 1
+    assert steps.loc['T196-2040-1', 0]['x'] == 3
+    assert steps.loc['T196-2040-1', 0]['g'] == 4
+    assert steps.loc['T196-2040-1', 0]['b'] == 2

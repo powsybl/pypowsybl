@@ -8,6 +8,7 @@
 package com.powsybl.python.shortcircuit;
 
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.LimitViolation;
 import com.powsybl.security.LimitViolationType;
@@ -71,7 +72,7 @@ class ShortCircuitAnalysisTest {
 
         ShortCircuitAnalysisResult fakeResults = new ShortCircuitAnalysisResult(List.of(fr1, fr2));
 
-        List<Series> faultResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisFaultResultsMapper(false), fakeResults);
+        List<Series> faultResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisFaultResultsMapper(false), fakeResults, DataframeContext.deactivate());
         Assertions.assertThat(faultResultsSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "status", "short_circuit_power", "time_constant", "current", "voltage");
@@ -88,7 +89,7 @@ class ShortCircuitAnalysisTest {
         Assertions.assertThat(faultResultsSeries.get(5).getDoubles())
                 .containsExactly(NaN, NaN);
 
-        List<Series> feederResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeFeederResultsMapper(false), fakeResults);
+        List<Series> feederResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeFeederResultsMapper(false), fakeResults, DataframeContext.deactivate());
         Assertions.assertThat(feederResultsSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "connectable_id", "current");
@@ -99,7 +100,7 @@ class ShortCircuitAnalysisTest {
         Assertions.assertThat(feederResultsSeries.get(2).getDoubles())
                 .containsExactly(1.1, 1.2);
 
-        List<Series> limitViolationsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisLimitViolationsResultsMapper(), fakeResults);
+        List<Series> limitViolationsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisLimitViolationsResultsMapper(), fakeResults, DataframeContext.deactivate());
         Assertions.assertThat(limitViolationsSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "subject_id", "subject_name", "limit_type", "limit_name", "limit",
@@ -109,7 +110,7 @@ class ShortCircuitAnalysisTest {
         Assertions.assertThat(limitViolationsSeries.get(1).getStrings())
                 .containsExactly("subj1", "subj2", "subj3", "subj4", "subj5");
 
-        List<Series> busResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeBusResultsMapper(false), fakeResults);
+        List<Series> busResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeBusResultsMapper(false), fakeResults, DataframeContext.deactivate());
         Assertions.assertThat(busResultsSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "voltage_level_id", "bus_id", "initial_voltage_magnitude", "voltage_drop_proportional", "voltage");

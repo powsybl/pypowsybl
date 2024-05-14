@@ -6,7 +6,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
@@ -90,12 +90,12 @@ public class VscStationDataframeAdder extends AbstractSimpleAdder {
     }
 
     @Override
-    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, Reporter reporter) {
+    public void addElements(Network network, UpdatingDataframe dataframe, AdditionStrategy additionStrategy, boolean throwException, ReportNode reportNode) {
         VscStationSeries series = new VscStationSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             Optional<VscConverterStationAdder> adder = series.createAdder(network, row, throwException);
             if (adder.isPresent()) {
-                additionStrategy.add(network, dataframe, adder.get(), row, throwException, reporter);
+                additionStrategy.add(network, dataframe, adder.get(), row, throwException, reportNode);
             }
         }
     }

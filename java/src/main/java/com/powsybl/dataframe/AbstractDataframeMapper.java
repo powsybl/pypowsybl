@@ -7,6 +7,7 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -30,7 +31,7 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
 
     public AbstractDataframeMapper(List<SeriesMapper<U>> seriesMappers) {
         this.seriesMappers = seriesMappers.stream()
-                .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
+            .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
     }
 
     @Override
@@ -48,15 +49,16 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     }
 
     @Override
-    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter) {
+    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, DataframeContext dataframeContext) {
         Collection<SeriesMapper<U>> mappers = getSeriesMappers(dataframeFilter);
         dataframeHandler.allocate(mappers.size());
         List<U> items = getItems(object);
-        mappers.stream().forEach(mapper -> mapper.createSeries(items, dataframeHandler));
+        mappers.forEach(mapper -> mapper.createSeries(items, dataframeHandler, dataframeContext));
     }
 
     interface ColumnUpdater<U> {
-        void update(int index, U object);
+
+        void update(int index, U object, DataframeContext context);
     }
 
     private static final class IntColumnUpdater<U> implements ColumnUpdater<U> {
@@ -69,7 +71,7 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         }
 
         @Override
-        public void update(int index, U object) {
+        public void update(int index, U object, DataframeContext context) {
             mapper.updateInt(object, values.get(index));
         }
     }
@@ -84,8 +86,8 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         }
 
         @Override
-        public void update(int index, U object) {
-            mapper.updateDouble(object, values.get(index));
+        public void update(int index, U object, DataframeContext context) {
+            mapper.updateDouble(object, values.get(index), context);
         }
     }
 
@@ -99,13 +101,13 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         }
 
         @Override
-        public void update(int index, U object) {
+        public void update(int index, U object, DataframeContext context) {
             mapper.updateString(object, values.get(index));
         }
     }
 
     @Override
-    public void updateSeries(T object, UpdatingDataframe updatingDataframe) {
+    public void updateSeries(T object, UpdatingDataframe updatingDataframe, DataframeContext context) {
 
         //Setup links to minimize searches on column names
         List<ColumnUpdater<U>> updaters = new ArrayList<>();
@@ -127,7 +129,7 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         for (int i = 0; i < updatingDataframe.getRowCount(); i++) {
             U item = getItem(object, updatingDataframe, i);
             int itemIndex = i;
-            updaters.forEach(updater -> updater.update(itemIndex, item));
+            updaters.forEach(updater -> updater.update(itemIndex, item, context));
         }
     }
 
@@ -139,15 +141,15 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     public Collection<SeriesMapper<U>> getSeriesMappers(DataframeFilter dataframeFilter) {
         Collection<SeriesMapper<U>> mappers = seriesMappers.values();
         return mappers.stream()
-                      .filter(mapper -> filterMapper(mapper, dataframeFilter))
-                      .collect(Collectors.toList());
+            .filter(mapper -> filterMapper(mapper, dataframeFilter))
+            .collect(Collectors.toList());
     }
 
     protected boolean filterMapper(SeriesMapper<U> mapper, DataframeFilter dataframeFilter) {
         return switch (dataframeFilter.getAttributeFilterType()) {
             case DEFAULT_ATTRIBUTES -> mapper.getMetadata().isDefaultAttribute() || mapper.getMetadata().isIndex();
             case INPUT_ATTRIBUTES ->
-                    dataframeFilter.getInputAttributes().contains(mapper.getMetadata().getName()) || mapper.getMetadata().isIndex();
+                dataframeFilter.getInputAttributes().contains(mapper.getMetadata().getName()) || mapper.getMetadata().isIndex();
             case ALL_ATTRIBUTES -> true;
         };
     }

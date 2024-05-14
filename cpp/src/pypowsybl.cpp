@@ -615,7 +615,7 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) 
     });
 }
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -627,10 +627,10 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     return callJava<JavaHandle>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
-                              parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
+                              parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -643,10 +643,10 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     return callJava<JavaHandle>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
                            parameterNamesPtr.get(), parameterNames.size(),
-                           parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
+                           parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -668,13 +668,13 @@ JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffers, con
 
     JavaHandle networkHandle = callJava<JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(),
-                           parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
+                           parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
     delete[] dataPtrs;
     delete[] dataSizes;
     return networkHandle;
 }
 
-void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -686,10 +686,10 @@ void saveNetwork(const JavaHandle& network, const std::string& file, const std::
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     callJava(::saveNetwork, network, (char*) file.data(), (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
-                parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter);
+                parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -701,10 +701,10 @@ std::string saveNetworkToString(const JavaHandle& network, const std::string& fo
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     return toString(callJava<char*>(::saveNetworkToString, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
-             parameterValuesPtr.get(), parameterValues.size(), (reporter == nullptr) ? nullptr : *reporter));
+             parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
-py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reporter) {
+py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -716,7 +716,7 @@ py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     array* byteArray = callJava<array*>(::saveNetworkToBinaryBuffer, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
-                     parameterValuesPtr.get(), parameterValues.size(), reporter == nullptr ? nullptr : *reporter);
+                     parameterValuesPtr.get(), parameterValues.size(), reportNode == nullptr ? nullptr : *reportNode);
     py::gil_scoped_acquire acquire;
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
     callJava<>(::freeNetworkBinaryBuffer, byteArray);
@@ -788,10 +788,10 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParameters() {
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
-                                          const std::string& provider, JavaHandle* reporter) {
+                                          const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
     return new LoadFlowComponentResultArray(
-            callJava<array*>(::runLoadFlow, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter));
+            callJava<array*>(::runLoadFlow, network, dc, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& loadflow_validation_parameters) {
@@ -858,9 +858,9 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
-                               const std::string& provider, bool dc, JavaHandle* reporter) {
+                               const std::string& provider, bool dc, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reporter == nullptr) ? nullptr : *reporter);
+    return callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 JavaHandle createSensitivityAnalysis() {
@@ -884,13 +884,13 @@ void addSwitchAction(const JavaHandle& analysisContext, const std::string& actio
 }
 
 void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
-                                      bool isRelative, int tapPosition) {
-    callJava(::addPhaseTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition);
+                                      bool isRelative, int tapPosition, ThreeSide side) {
+    callJava(::addPhaseTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition, side);
 }
 
 void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId,
-                                      bool isRelative, int tapPosition) {
-    callJava(::addRatioTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition);
+                                      bool isRelative, int tapPosition, ThreeSide side) {
+    callJava(::addRatioTapChangerPositionAction, analysisContext, (char*) actionId.data(), (char*) transformerId.data(), isRelative, tapPosition, side);
 }
 
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId,
@@ -971,9 +971,9 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
                   (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reporter) {
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter);
+    return callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
@@ -986,9 +986,9 @@ matrix* getReferenceMatrix(const JavaHandle& sensitivityAnalysisResultContext, c
                                 (char*) matrixId.c_str(), (char*) contingencyId.c_str());
 }
 
-SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe) {
+SeriesArray* createNetworkElementsSeriesArray(const JavaHandle& network, element_type elementType, filter_attributes_type filterAttributesType, const std::vector<std::string>& attributes, dataframe* dataframe, bool perUnit, double nominalApparentPower) {
 	ToCharPtrPtr attributesPtr(attributes);
-    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe));
+    return new SeriesArray(callJava<array*>(::createNetworkElementsSeriesArray, network, elementType, filterAttributesType, attributesPtr.get(), attributes.size(), dataframe, perUnit, nominalApparentPower));
 }
 
 SeriesArray* createNetworkElementsExtensionSeriesArray(const JavaHandle& network, const std::string& extensionName, const std::string& tableName) {
@@ -1091,8 +1091,8 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
-void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType) {
-    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe);
+void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower) {
+    pypowsybl::callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe, perUnit, nominalApparentPower);
 }
 
 std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* dataframeMetadata) {
@@ -1244,16 +1244,16 @@ long getInjectionFactorEndTimestamp(const JavaHandle& importer) {
     return callJava<long>(::getInjectionFactorEndTimestamp, importer);
 }
 
-JavaHandle createReporterModel(const std::string& taskKey, const std::string& defaultName) {
-    return callJava<JavaHandle>(::createReporterModel, (char*) taskKey.data(), (char*) defaultName.data());
+JavaHandle createReportNode(const std::string& taskKey, const std::string& defaultName) {
+    return callJava<JavaHandle>(::createReportNode, (char*) taskKey.data(), (char*) defaultName.data());
 }
 
-std::string printReport(const JavaHandle& reporterModel) {
-    return toString(callJava<char*>(::printReport, reporterModel));
+std::string printReport(const JavaHandle& reportNodeModel) {
+    return toString(callJava<char*>(::printReport, reportNodeModel));
 }
 
-std::string jsonReport(const JavaHandle& reporterModel) {
-    return toString(callJava<char*>(::jsonReport, reporterModel));
+std::string jsonReport(const JavaHandle& reportNodeModel) {
+    return toString(callJava<char*>(::jsonReport, reportNodeModel));
 }
 
 JavaHandle createFlowDecomposition() {
@@ -1333,6 +1333,9 @@ NadParameters::NadParameters(nad_parameters* src) {
     voltage_value_precision = src->voltage_value_precision;
     substation_description_displayed = src->substation_description_displayed;
     bus_legend = src->bus_legend;
+    layout_type = static_cast<NadLayoutType>(src->layout_type);
+    scaling_factor = src->scaling_factor;
+    radius_factor = src->radius_factor;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1355,6 +1358,9 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.voltage_value_precision = voltage_value_precision;
     res.substation_description_displayed = substation_description_displayed;
     res.bus_legend = bus_legend;
+    res.layout_type = (int) layout_type;
+    res.scaling_factor = scaling_factor;
+    res.radius_factor = radius_factor;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1393,9 +1399,9 @@ NadParameters* createNadParameters() {
     return new NadParameters(parameters.get());
 }
 
-void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reporter) {
+void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reportNode) {
     ToCharPtrPtr connectableIdsPtr(connectableIds);
-    pypowsybl::callJava(::removeElementsModification, network, connectableIdsPtr.get(), connectableIds.size(), dataframe, removeModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
+    pypowsybl::callJava(::removeElementsModification, network, connectableIdsPtr.get(), connectableIds.size(), dataframe, removeModificationType, throwException, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 /*---------------------------------DYNAMIC MODELLING WITH DYNAWALTZ---------------------------*/
@@ -1468,8 +1474,8 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
     return res;
 }
 
-void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframes,  network_modification_type networkModificationType, bool throwException, JavaHandle* reporter) {
-    pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reporter == nullptr) ? nullptr : *reporter);
+void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframes,  network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode) {
+    pypowsybl::callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
@@ -1538,9 +1544,9 @@ JavaHandle createShortCircuitAnalysis() {
 }
 
 JavaHandle runShortCircuitAnalysis(const JavaHandle& shortCircuitAnalysisContext, const JavaHandle& network, const ShortCircuitAnalysisParameters& parameters,
-    const std::string& provider, JavaHandle* reporter) {
+    const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return callJava<JavaHandle>(::runShortCircuitAnalysis, shortCircuitAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reporter == nullptr) ? nullptr : *reporter);
+    return callJava<JavaHandle>(::runShortCircuitAnalysis, shortCircuitAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters() {
@@ -1551,15 +1557,15 @@ ShortCircuitAnalysisParameters* createShortCircuitAnalysisParameters() {
     return new ShortCircuitAnalysisParameters(parameters.get());
 }
 
-std::vector<SeriesMetadata> getFaultsMetaData(ShortCircuitFaultType faultType) {
-    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getFaultsDataframeMetaData, faultType);
+std::vector<SeriesMetadata> getFaultsMetaData() {
+    dataframe_metadata* metadata = pypowsybl::callJava<dataframe_metadata*>(::getFaultsDataframeMetaData);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 
-void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe, ShortCircuitFaultType faultType) {
-    pypowsybl::callJava<>(::setFaults, analysisContext, faultType, dataframe);
+void setFaults(pypowsybl::JavaHandle analysisContext, dataframe* dataframe) {
+    pypowsybl::callJava<>(::setFaults, analysisContext, dataframe);
 }
 
 SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult) {

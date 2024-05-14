@@ -7,7 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -29,6 +29,7 @@ public final class NetworkElementAdders {
             Map.entry(LINE, new LineDataframeAdder()),
             Map.entry(STATIC_VAR_COMPENSATOR, new SvcDataframeAdder()),
             Map.entry(TWO_WINDINGS_TRANSFORMER, new TwtDataframeAdder()),
+            Map.entry(THREE_WINDINGS_TRANSFORMER, new ThreeWindingsTransformerDataframeAdder()),
             Map.entry(LOAD, new LoadDataframeAdder()),
             Map.entry(VSC_CONVERTER_STATION, new VscStationDataframeAdder()),
             Map.entry(LCC_CONVERTER_STATION, new LccStationDataframeAdder()),
@@ -70,12 +71,12 @@ public final class NetworkElementAdders {
         adder.addElements(network, dfs);
     }
 
-    public static void addElementsWithBay(DataframeElementType type, Network network, List<UpdatingDataframe> df, boolean throwException, Reporter reporter) {
+    public static void addElementsWithBay(DataframeElementType type, Network network, List<UpdatingDataframe> df, boolean throwException, ReportNode reportNode) {
         NetworkElementAdder adder = ADDERS.get(type);
         if (adder == null) {
             throw new PowsyblException("Creation not implemented for type " + type.name());
         }
-        adder.addElementsWithBay(network, df, throwException, reporter);
+        adder.addElementsWithBay(network, df, throwException, reportNode);
     }
 
     public static NetworkElementAdder getExtensionAdder(String extensionName) {

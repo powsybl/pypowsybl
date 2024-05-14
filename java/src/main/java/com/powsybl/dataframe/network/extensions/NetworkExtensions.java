@@ -14,6 +14,7 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
+import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -88,7 +89,7 @@ public final class NetworkExtensions {
         }
     }
 
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionInformation() {
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionInformation(DataframeContext dataframeContext) {
         DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, ExtensionInformation>()
                 .itemsProvider(Container::getExtensionInformation)
                 .stringsIndex("id", ExtensionInformation::getId)
@@ -102,7 +103,7 @@ public final class NetworkExtensions {
                         .collect(Collectors.toList())
         );
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(container, handler, new DataframeFilter());
+        mapper.createDataframe(container, handler, new DataframeFilter(), dataframeContext);
         return handler.getDataframePtr();
     }
 }

@@ -4,13 +4,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import Union, List
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType
+from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
 from pypowsybl.network import Network
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from .parameters import Parameters
 from .security_analysis_result import SecurityAnalysisResult
 from .contingency_container import ContingencyContainer
@@ -28,7 +29,7 @@ class SecurityAnalysis(ContingencyContainer):
         ContingencyContainer.__init__(self, handle)
 
     def run_ac(self, network: Network, parameters: Union[Parameters, pypowsybl.loadflow.Parameters] = None,
-               provider: str = '', reporter: Reporter = None) -> SecurityAnalysisResult:
+               provider: str = '', reporter: ReportNode = None, report_node: ReportNode = None) -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -36,19 +37,24 @@ class SecurityAnalysis(ContingencyContainer):
             parameters: Security analysis parameters
             provider:   Name of the security analysis implementation provider to be used,
                         will use default provider if empty.
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False,
-                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def run_dc(self, network: Network, parameters: Union[Parameters, pypowsybl.loadflow.Parameters] = None,
-               provider: str = '', reporter: Reporter = None) -> SecurityAnalysisResult:
+               provider: str = '', reporter: ReportNode = None, report_node: ReportNode = None) -> SecurityAnalysisResult:
         """ Runs a DC security analysis.
 
         Args:
@@ -56,17 +62,22 @@ class SecurityAnalysis(ContingencyContainer):
             parameters: Security analysis parameters
             provider:   Name of the security analysis implementation provider to be used,
                         will use default provider if empty.
+            reporter: deprecated, use report_node instead
+            report_node:   the reporter to be used to create an execution report, default is None (no report)
 
         Returns:
             A security analysis result, containing information about violations and monitored elements
         """
+        if reporter is not None:
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            report_node = reporter
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
         return SecurityAnalysisResult(
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
                                              # pylint: disable=protected-access
-                                             None if reporter is None else reporter._reporter_model))  # pylint: disable=protected-access
+                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
                                contingency_ids: Union[List[str], str] = None,
@@ -182,6 +193,40 @@ class SecurityAnalysis(ContingencyContainer):
 
         """
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
+
+    def add_phase_tap_changer_position_action(self, action_id: str, transformer_id: str, is_relative: bool, tap_position: int, side: Side = Side.NONE) -> None:
+        """ Add a phase tap changer tap position action, modifying the tap position of the tap changer
+
+        Args:
+            action_id: unique ID for the action
+            transformer_id: transformer identifier
+            is_relative: True means the provided tap_position will be added to the current tap position, False means the provided tap_position will replace the previous one.
+            tap_position: The tap position (either a delta if is_relative is true, or the final value if is_relative if false)
+            side: Side of the tap changer (for three windings transformers)
+        """
+        _pypowsybl.add_phase_tap_changer_position_action(self._handle, action_id, transformer_id, is_relative, tap_position, side)
+
+    def add_ratio_tap_changer_position_action(self, action_id: str, transformer_id: str, is_relative: bool, tap_position: int, side: Side = Side.NONE) -> None:
+        """ Add a ratio tap changer tap position action, modifying the tap position of the tap changer
+
+        Args:
+            action_id: unique ID for the action
+            transformer_id: transformer identifier
+            is_relative: True means the provided tap_position will be added to the current tap position, False means the provide tap_position will replace the previous one.
+            tap_position: The tap position (either a delta if is_relative is true, or the final value if is_relative if false)
+            side: Side of the tap changer (for three windings transformers)
+        """
+        _pypowsybl.add_ratio_tap_changer_position_action(self._handle, action_id, transformer_id, is_relative, tap_position, side)
+
+    def add_shunt_compensator_position_action(self, action_id: str, shunt_id: str, section: int) -> None:
+        """ Add a shunt compensator section action, modifying the section of the shunt compensator
+
+        Args:
+            action_id: unique ID for the action
+            shunt_id: transformer identifier
+            section: The new section of the shunt compensator
+        """
+        _pypowsybl.add_shunt_compensator_position_action(self._handle, action_id, shunt_id, section)
 
     def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
                               condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] = None,

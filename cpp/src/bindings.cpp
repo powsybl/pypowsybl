@@ -110,9 +110,9 @@ void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>&
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
 }
 
-void createNetworkModification(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, network_modification_type networkModificationType, bool throwException, pypowsybl::JavaHandle* reporter) {
+void createNetworkModification(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, network_modification_type networkModificationType, bool throwException, pypowsybl::JavaHandle* reportNode) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
-    pypowsybl::createNetworkModification(network, dataframeArray.get(), networkModificationType, throwException, reporter);
+    pypowsybl::createNetworkModification(network, dataframeArray.get(), networkModificationType, throwException, reportNode);
 }
 
 void createExtensions(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, std::string& name) {
@@ -127,10 +127,6 @@ py::array seriesAsNumpyArray(const series& series) {
 }
 
 void dynamicSimulationBindings(py::module_& m) {
-
-    py::enum_<BranchSide>(m, "BranchSide")
-        .value("ONE", BranchSide::ONE)
-        .value("TWO", BranchSide::TWO);
 
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
         .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
@@ -322,22 +318,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("format"));
 
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
-          py::arg("file"), py::arg("parameters"), py::arg("reporter"));
+          py::arg("file"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
-              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("reporter"));
+              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("report_node"));
 
     m.def("load_network_from_binary_buffers", &pypowsybl::loadNetworkFromBinaryBuffers, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
-              py::arg("buffers"), py::arg("parameters"), py::arg("reporter"));
+              py::arg("buffers"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("reporter"));
+          py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("save_network_to_string", &pypowsybl::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("reporter"));
+          py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("save_network_to_binary_buffer", &pypowsybl::saveNetworkToBinaryBuffer, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("reporter"));
+          py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("v_min"), py::arg("v_max"),
@@ -475,7 +471,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
+          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
           py::arg("validation_type"), py::arg("validation_parameters"));
@@ -490,6 +486,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
 
+    py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
+            .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
+            .value("GEOGRAPHICAL", pypowsybl::NadLayoutType::GEOGRAPHICAL);
+
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
         .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
@@ -500,7 +500,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("voltage_value_precision", &pypowsybl::NadParameters::voltage_value_precision)
         .def_readwrite("id_displayed", &pypowsybl::NadParameters::id_displayed)
         .def_readwrite("bus_legend", &pypowsybl::NadParameters::bus_legend)
-        .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed);
+        .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed)
+        .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
+        .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
+        .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
@@ -543,10 +546,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("analysis_context"), py::arg("action_id"), py::arg("switch_id"), py::arg("open"));
 
     m.def("add_phase_tap_changer_position_action", &pypowsybl::addPhaseTapChangerPositionAction, "Add a phase tap changer position action",
-           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
     m.def("add_ratio_tap_changer_position_action", &pypowsybl::addRatioTapChangerPositionAction, "Add a ratio tap changer position action",
-           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"));
+           py::arg("analysis_context"), py::arg("action_id"), py::arg("transformer_id"), py::arg("is_relative"), py::arg("tap_position"), py::arg("side"));
 
     m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
               py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
@@ -567,10 +570,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("HIGH_SHORT_CIRCUIT_CURRENT", pypowsybl::LimitType::HIGH_SHORT_CIRCUIT_CURRENT)
             .value("OTHER", pypowsybl::LimitType::OTHER);
 
-    py::enum_<pypowsybl::Side>(m, "Side")
-            .value("NONE", pypowsybl::Side::NONE)
-            .value("ONE", pypowsybl::Side::ONE)
-            .value("TWO", pypowsybl::Side::TWO);
+    py::enum_<ThreeSide>(m, "Side")
+            .value("NONE", ThreeSide::UNDEFINED)
+            .value("ONE", ThreeSide::ONE)
+            .value("TWO", ThreeSide::TWO)
+            .value("THREE", ThreeSide::THREE);
 
     py::enum_<violation_type>(m, "ViolationType")
             .value("ACTIVE_POWER", violation_type::ACTIVE_POWER)
@@ -631,7 +635,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return v.value;
             })
             .def_property_readonly("side", [](const limit_violation& v) {
-                return static_cast<pypowsybl::Side>(v.side);
+                return static_cast<ThreeSide>(v.side);
             });
 
     bindArray<pypowsybl::LimitViolationArray>(m, "LimitViolationArray");
@@ -670,7 +674,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"), py::arg("dc"), py::arg("reporter"));
+          py::arg("provider"), py::arg("dc"), py::arg("report_node"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
@@ -688,7 +692,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("sensitivity_variable_type"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("reporter"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
@@ -744,7 +748,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("element_type"));
 
     m.def("create_network_elements_series_array", &pypowsybl::createNetworkElementsSeriesArray, "Create a network elements series array for a given element type",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("element_type"), py::arg("filter_attributes_type"), py::arg("attributes"), py::arg("array"), py::arg("per_unit"), py::arg("nominal_apparent_power"));
 
     m.def("create_network_elements_extension_series_array", &pypowsybl::createNetworkElementsExtensionSeriesArray, "Create a network elements extensions series array for a given extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("extension_name"), py::arg("table_name"));
@@ -754,7 +758,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_extensions_information", &pypowsybl::getExtensionsInformation, "get more information about all extensions");
 
     m.def("update_network_elements_with_series", pypowsybl::updateNetworkElementsWithSeries, "Update network elements for a given element type with a series",
-          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"));
+          py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("dataframe"), py::arg("element_type"), py::arg("per_unit"), py::arg("nominal_apparent_power"));
 
     m.def("create_dataframe", ::createDataframe, "create dataframe to update or create new elements", py::arg("columns_values"), py::arg("columns_names"), py::arg("columns_types"),
           py::arg("is_index"));
@@ -850,9 +854,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"));
     m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
-    m.def("create_reporter_model", &pypowsybl::createReporterModel, "Create a reporter model", py::arg("task_key"), py::arg("default_name"));
-    m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("reporter_model"));
-	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("reporter_model"));
+    m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
+    m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("report_node"));
+	m.def("json_report", &pypowsybl::jsonReport, "Print a report in json format", py::arg("report_node"));
     m.def("create_glsk_document", &pypowsybl::createGLSKdocument, "Create a glsk importer.", py::arg("filename"));
 
     m.def("get_glsk_injection_keys", &pypowsybl::getGLSKinjectionkeys, "Get glsk injection keys available for a country", py::arg("network"), py::arg("importer"), py::arg("country"), py::arg("instant"));
@@ -904,7 +908,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 
-    m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
+    m.def("remove_elements_modification", &pypowsybl::removeElementsModification, "remove a list of feeder bays", py::arg("network"), py::arg("connectable_ids"), py::arg("extraDataDf"), py::arg("remove_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     dynamicSimulationBindings(m);
     voltageInitializerBinding(m);
@@ -913,7 +917,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_modification_metadata_with_element_type", &pypowsybl::getModificationMetadataWithElementType, "Get network modification metadata with element type", py::arg("network_modification_type"), py::arg("element_type"));
 
-    m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("reporter"));
+    m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
             .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
@@ -941,14 +945,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_shortcircuit_analysis", &pypowsybl::createShortCircuitAnalysis, "Create a short-circuit analysis");
     m.def("run_shortcircuit_analysis", &pypowsybl::runShortCircuitAnalysis, "Run a short-circuit analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("shortcircuit_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"), py::arg("reporter"));
+          py::arg("provider"), py::arg("report_node"));
 
-    py::enum_<ShortCircuitFaultType>(m, "ShortCircuitFaultType")
-            .value("BUS_FAULT", ShortCircuitFaultType::BUS_FAULT)
-            .value("BRANCH_FAULT", ShortCircuitFaultType::BRANCH_FAULT);
-
-    m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata", py::arg("fault_type"));
-    m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"),  py::arg("faultType"));
+    m.def("get_faults_dataframes_metadata", &pypowsybl::getFaultsMetaData, "Get faults metadata");
+    m.def("set_faults", &pypowsybl::setFaults, "define faults for a short-circuit analysis", py::arg("analysisContext"),  py::arg("dataframe"));
     m.def("get_fault_results", &pypowsybl::getFaultResults, "gets the fault results computed after short-circuit analysis",
           py::arg("result"), py::arg("with_fortescue_result"));
     m.def("get_feeder_results", &pypowsybl::getFeederResults, "gets the feeder results computed after short-circuit analysis",

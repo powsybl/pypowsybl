@@ -7,7 +7,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.reporter.Reporter;
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
@@ -76,7 +76,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
     }
 
     @Override
-    public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframes, boolean throwException, Reporter reporter) {
+    public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         UpdatingDataframe shuntsDf = dataframes.get(0);
         UpdatingDataframe linearModelsDf = dataframes.get(1);
         UpdatingDataframe sectionsDf = dataframes.get(2);
@@ -95,7 +95,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
                     builder.withInjectionPositionOrder(injectionPositionOrder.getAsInt());
                 }
                 NetworkModification modification = builder.build();
-                modification.apply(network, throwException, reporter == null ? Reporter.NO_OP : reporter);
+                modification.apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode);
             }
         }
     }

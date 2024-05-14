@@ -507,10 +507,10 @@ public final class PyPowsyblApiHeader {
         void setAcceptableDuration(int acceptableDuration);
 
         @CField("limit_reduction")
-        float getLimitReduction();
+        double getLimitReduction();
 
         @CField("limit_reduction")
-        void setLimitReduction(float limitReduction);
+        void setLimitReduction(double limitReduction);
 
         @CField("value")
         double getValue();
@@ -1117,6 +1117,24 @@ public final class PyPowsyblApiHeader {
 
         @CField("substation_description_displayed")
         boolean isSubstationDescriptionDisplayed();
+
+        @CField("layout_type")
+        void setLayoutType(int layoutType);
+
+        @CField("layout_type")
+        int getLayoutType();
+
+        @CField("scaling_factor")
+        int getScalingFactor();
+
+        @CField("scaling_factor")
+        void setScalingFactor(int scalingFactor);
+
+        @CField("radius_factor")
+        double getRadiusFactor();
+
+        @CField("radius_factor")
+        void setRadiusFactor(double radiusFactor);
     }
 
     @CEnum("DynamicMappingType")
@@ -1137,16 +1155,18 @@ public final class PyPowsyblApiHeader {
         public static native DynamicMappingType fromCValue(int value);
     }
 
-    @CEnum("BranchSide")
-    public enum BranchSide {
+    @CEnum("ThreeSide")
+    public enum ThreeSideType {
+        UNDEFINED,
         ONE,
-        TWO;
+        TWO,
+        THREE;
 
         @CEnumValue
         public native int getCValue();
 
         @CEnumLookup
-        public static native BranchSide fromCValue(int value);
+        public static native ThreeSideType fromCValue(int value);
     }
 
     @CEnum("condition_type")
@@ -1225,18 +1245,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("provider_parameters_values_count")
         void setProviderParametersValuesCount(int providerParametersKeysCount);
-    }
-
-    @CEnum("ShortCircuitFaultType")
-    public enum ShortCircuitFaultType {
-        BUS_FAULT,
-        BRANCH_FAULT;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native ShortCircuitFaultType fromCValue(int value);
     }
 
     @CEnum("VoltageInitializerObjective")

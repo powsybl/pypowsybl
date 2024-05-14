@@ -65,7 +65,7 @@ public class CurrentLimitAutomatonAdder implements DynamicMappingAdder {
             modelMapping.addCurrentLimitAutomaton(
                     series.getStaticId().get(row),
                     series.getParameterSetId().get(row),
-                    Util.convert(PyPowsyblApiHeader.BranchSide.fromCValue(series.getBranchSide().get(row))));
+                    Util.convert(PyPowsyblApiHeader.ThreeSideType.fromCValue(series.getBranchSide().get(row))).toTwoSides());
         }
     }
 
