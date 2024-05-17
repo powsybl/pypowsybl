@@ -49,6 +49,8 @@ Network properties
    Network.source_format
    Network.case_date
    Network.forecast_distance
+   Network.per_unit
+   Network.nominal_apparent_power
 
 
 Network elements access
