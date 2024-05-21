@@ -18,7 +18,7 @@ import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
-import com.powsybl.dataframe.network.DataframeContext;
+import com.powsybl.dataframe.network.NetworkDataframeContext;
 import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
@@ -418,7 +418,7 @@ public final class NetworkCFunctions {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
-            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new DataframeContext(perUnit, nominalApparentPower));
+            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new NetworkDataframeContext(perUnit, nominalApparentPower));
         });
     }
 
@@ -434,7 +434,7 @@ public final class NetworkCFunctions {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
-                return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), DataframeContext.DEFAULT);
+                return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), NetworkDataframeContext.DEFAULT);
             } else {
                 throw new PowsyblException("extension " + name + " not found");
             }
@@ -448,7 +448,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getExtensionsInformation")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> NetworkExtensions.getExtensionInformation(DataframeContext.DEFAULT));
+        return doCatch(exceptionHandlerPtr, () -> NetworkExtensions.getExtensionInformation(NetworkDataframeContext.DEFAULT));
     }
 
     @CEntryPoint(name = "createElement")
@@ -476,7 +476,7 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe updatingDataframe = createDataframe(dataframe);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateSeries(network, updatingDataframe, new DataframeContext(perUnit, nominalApparentPower));
+                .updateSeries(network, updatingDataframe, new NetworkDataframeContext(perUnit, nominalApparentPower));
         });
     }
 
@@ -744,7 +744,7 @@ public final class NetworkCFunctions {
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 UpdatingDataframe updatingDataframe = createDataframe(dataframe);
-                mapper.updateSeries(network, updatingDataframe, DataframeContext.DEFAULT);
+                mapper.updateSeries(network, updatingDataframe, NetworkDataframeContext.DEFAULT);
             } else {
                 if (tableName != null) {
                     throw new PowsyblException("table " + tableName + " of extension " + name + " not found");
