@@ -54,7 +54,7 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter, DataframeContext.deactivate());
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter, DataframeContext.DEFAULT);
         return series;
     }
 
@@ -66,14 +66,14 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.DEFAULT);
         return series;
     }
 
     private static void updateExtension(String name, Network network, UpdatingDataframe updatingDataframe) {
         NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, null);
         assertNotNull(mapper);
-        mapper.updateSeries(network, updatingDataframe, DataframeContext.deactivate());
+        mapper.updateSeries(network, updatingDataframe, DataframeContext.DEFAULT);
     }
 
     private DoubleIndexedSeries createInput(List<String> names, double... values) {

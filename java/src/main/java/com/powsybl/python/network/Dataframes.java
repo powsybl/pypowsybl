@@ -13,7 +13,6 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
@@ -46,7 +45,7 @@ import static java.lang.Integer.MIN_VALUE;
  */
 public final class Dataframes {
 
-    private static final DataframeMapper<Importer> IMPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter>()
+    private static final DataframeMapper<Importer, Void> IMPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Importer, Parameter, Void>()
             .itemsProvider(Importer::getParameters)
             .stringsIndex("name", Parameter::getName)
             .strings("description", Parameter::getDescription)
@@ -55,7 +54,7 @@ public final class Dataframes {
             .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
             .build();
 
-    private static final DataframeMapper<Exporter> EXPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Exporter, Parameter>()
+    private static final DataframeMapper<Exporter, Void> EXPORTER_PARAMETERS_MAPPER = new DataframeMapperBuilder<Exporter, Parameter, Void>()
             .itemsProvider(Exporter::getParameters)
             .stringsIndex("name", Parameter::getName)
             .strings("description", Parameter::getDescription)
@@ -64,18 +63,18 @@ public final class Dataframes {
             .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
             .build();
 
-    private static final DataframeMapper<SecurityAnalysisResult> BRANCH_RESULTS_MAPPER = createBranchResultsMapper();
-    private static final DataframeMapper<SecurityAnalysisResult> T3WT_RESULTS_MAPPER = createThreeWindingsTransformersResults();
-    private static final DataframeMapper<SecurityAnalysisResult> BUS_RESULTS_MAPPER = createBusResultsMapper();
-    private static final DataframeMapper<SecurityAnalysisResult> LIMIT_VIOLATIONS_MAPPER = createLimitViolationsMapper();
-    private static final DataframeMapper<VoltageLevel.NodeBreakerView> NODE_BREAKER_VIEW_SWITCHES_MAPPER = createNodeBreakerViewSwitchesMapper();
-    private static final DataframeMapper<VoltageLevel.NodeBreakerView> NODE_BREAKER_VIEW_NODES_MAPPER = createNodeBreakerViewNodes();
-    private static final DataframeMapper<VoltageLevel.NodeBreakerView> NODE_BREAKER_VIEW_INTERNAL_CONNECTION_MAPPER = createNodeBreakerViewInternalConnections();
-    private static final DataframeMapper<VoltageLevel.BusBreakerView> BUS_BREAKER_VIEW_SWITCHES_MAPPER = createBusBreakerViewSwitchesMapper();
-    private static final DataframeMapper<VoltageLevel> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
-    private static final DataframeMapper<VoltageLevel> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
+    private static final DataframeMapper<SecurityAnalysisResult, Void> BRANCH_RESULTS_MAPPER = createBranchResultsMapper();
+    private static final DataframeMapper<SecurityAnalysisResult, Void> T3WT_RESULTS_MAPPER = createThreeWindingsTransformersResults();
+    private static final DataframeMapper<SecurityAnalysisResult, Void> BUS_RESULTS_MAPPER = createBusResultsMapper();
+    private static final DataframeMapper<SecurityAnalysisResult, Void> LIMIT_VIOLATIONS_MAPPER = createLimitViolationsMapper();
+    private static final DataframeMapper<VoltageLevel.NodeBreakerView, Void> NODE_BREAKER_VIEW_SWITCHES_MAPPER = createNodeBreakerViewSwitchesMapper();
+    private static final DataframeMapper<VoltageLevel.NodeBreakerView, Void> NODE_BREAKER_VIEW_NODES_MAPPER = createNodeBreakerViewNodes();
+    private static final DataframeMapper<VoltageLevel.NodeBreakerView, Void> NODE_BREAKER_VIEW_INTERNAL_CONNECTION_MAPPER = createNodeBreakerViewInternalConnections();
+    private static final DataframeMapper<VoltageLevel.BusBreakerView, Void> BUS_BREAKER_VIEW_SWITCHES_MAPPER = createBusBreakerViewSwitchesMapper();
+    private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
+    private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
 
-    private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>> FEEDER_MAP_MAPPER = createFeederMapDataframe();
+    private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> FEEDER_MAP_MAPPER = createFeederMapDataframe();
 
     private Dataframes() {
     }
@@ -83,15 +82,11 @@ public final class Dataframes {
     /**
      * Maps an object to a C struct using the provided mapper.
      */
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeContext dataframeContext) {
-        return createCDataframe(mapper, object, new DataframeFilter(), dataframeContext);
+    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T, Void> mapper, T object) {
+        return createCDataframe(mapper, object, new DataframeFilter(), null);
     }
 
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object) {
-        return createCDataframe(mapper, object, new DataframeFilter(), DataframeContext.deactivate());
-    }
-
-    public static <T> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T> mapper, T object, DataframeFilter dataframeFilter, DataframeContext dataframeContext) {
+    public static <T, C> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T, C> mapper, T object, DataframeFilter dataframeFilter, C dataframeContext) {
         CDataframeHandler handler = new CDataframeHandler();
         mapper.createDataframe(object, handler, dataframeFilter, dataframeContext);
         return handler.getDataframePtr();
@@ -100,64 +95,68 @@ public final class Dataframes {
     /**
      * Maps an object to java series
      */
-    public static <T> List<Series> createSeries(DataframeMapper<T> mapper, T object, DataframeContext dataframeContext) {
+    public static <T, C> List<Series> createSeries(DataframeMapper<T, C> mapper, T object, C dataframeContext) {
         List<Series> series = new ArrayList<>();
         mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter(), dataframeContext);
         return List.copyOf(series);
     }
 
+    public static <T> List<Series> createSeries(DataframeMapper<T, Void> mapper, T object) {
+        return createSeries(mapper, object, null);
+    }
+
     /**
      * A mapper which maps an importer to a dataframe containing its parameters.
      */
-    static DataframeMapper<com.powsybl.iidm.network.Importer> importerParametersMapper() {
+    static DataframeMapper<Importer, Void> importerParametersMapper() {
         return IMPORTER_PARAMETERS_MAPPER;
     }
 
-    static DataframeMapper<Exporter> exporterParametersMapper() {
+    static DataframeMapper<Exporter, Void> exporterParametersMapper() {
         return EXPORTER_PARAMETERS_MAPPER;
     }
 
-    public static DataframeMapper<SecurityAnalysisResult> branchResultsMapper() {
+    public static DataframeMapper<SecurityAnalysisResult, Void> branchResultsMapper() {
         return BRANCH_RESULTS_MAPPER;
     }
 
-    public static DataframeMapper<SecurityAnalysisResult> busResultsMapper() {
+    public static DataframeMapper<SecurityAnalysisResult, Void> busResultsMapper() {
         return BUS_RESULTS_MAPPER;
     }
 
-    public static DataframeMapper<SecurityAnalysisResult> threeWindingsTransformerResultsMapper() {
+    public static DataframeMapper<SecurityAnalysisResult, Void> threeWindingsTransformerResultsMapper() {
         return T3WT_RESULTS_MAPPER;
     }
 
-    public static DataframeMapper<SecurityAnalysisResult> limitViolationsMapper() {
+    public static DataframeMapper<SecurityAnalysisResult, Void> limitViolationsMapper() {
         return LIMIT_VIOLATIONS_MAPPER;
     }
 
-    public static DataframeMapper<VoltageLevel.NodeBreakerView> nodeBreakerViewSwitches() {
+    public static DataframeMapper<VoltageLevel.NodeBreakerView, Void> nodeBreakerViewSwitches() {
         return NODE_BREAKER_VIEW_SWITCHES_MAPPER;
     }
 
-    public static DataframeMapper<VoltageLevel.NodeBreakerView> nodeBreakerViewNodes() {
+    public static DataframeMapper<VoltageLevel.NodeBreakerView, Void> nodeBreakerViewNodes() {
         return NODE_BREAKER_VIEW_NODES_MAPPER;
     }
 
-    public static DataframeMapper<VoltageLevel.NodeBreakerView> nodeBreakerViewInternalConnection() {
+    public static DataframeMapper<VoltageLevel.NodeBreakerView, Void> nodeBreakerViewInternalConnection() {
         return NODE_BREAKER_VIEW_INTERNAL_CONNECTION_MAPPER;
     }
 
-    public static DataframeMapper<VoltageLevel.BusBreakerView> busBreakerViewSwitches() {
+    public static DataframeMapper<VoltageLevel.BusBreakerView, Void> busBreakerViewSwitches() {
         return BUS_BREAKER_VIEW_SWITCHES_MAPPER;
     }
 
-    public static DataframeMapper<VoltageLevel> busBreakerViewBuses() {
+    public static DataframeMapper<VoltageLevel, Void> busBreakerViewBuses() {
         return BUS_BREAKER_VIEW_BUSES_MAPPER;
     }
 
-    public static DataframeMapper<VoltageLevel> busBreakerViewElements() {
+    public static DataframeMapper<VoltageLevel, Void> busBreakerViewElements() {
         return BUS_BREAKER_VIEW_ELEMENTS_MAPPER;
     }
 
-    public static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>> feederMapMapper() {
+    public static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> feederMapMapper() {
         return FEEDER_MAP_MAPPER;
     }
 
@@ -179,8 +178,8 @@ public final class Dataframes {
         return branchResults;
     }
 
-    private static DataframeMapper<SecurityAnalysisResult> createBranchResultsMapper() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, BranchResultContext>()
+    private static DataframeMapper<SecurityAnalysisResult, Void> createBranchResultsMapper() {
+        return new DataframeMapperBuilder<SecurityAnalysisResult, BranchResultContext, Void>()
                 .itemsProvider(Dataframes::getBranchResults)
                 .stringsIndex("contingency_id", BranchResultContext::getContingencyId)
                 .stringsIndex("operator_strategy_id", BranchResultContext::getOperatorStrategyId)
@@ -214,8 +213,8 @@ public final class Dataframes {
         return busResults;
     }
 
-    private static DataframeMapper<SecurityAnalysisResult> createBusResultsMapper() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, BusResultContext>()
+    private static DataframeMapper<SecurityAnalysisResult, Void> createBusResultsMapper() {
+        return new DataframeMapperBuilder<SecurityAnalysisResult, BusResultContext, Void>()
                 .itemsProvider(Dataframes::getBusResults)
                 .stringsIndex("contingency_id", BusResultContext::getContingencyId)
                 .stringsIndex("operator_strategy_id", BusResultContext::getOperatorStrategyId)
@@ -240,8 +239,8 @@ public final class Dataframes {
         return threeWindingsTransformerResults;
     }
 
-    private static DataframeMapper<SecurityAnalysisResult> createThreeWindingsTransformersResults() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, ThreeWindingsTransformerResultContext>()
+    private static DataframeMapper<SecurityAnalysisResult, Void> createThreeWindingsTransformersResults() {
+        return new DataframeMapperBuilder<SecurityAnalysisResult, ThreeWindingsTransformerResultContext, Void>()
                 .itemsProvider(Dataframes::getThreeWindingsTransformerResults)
                 .stringsIndex("contingency_id", ThreeWindingsTransformerResultContext::getContingencyId)
                 .stringsIndex("transformer_id", ThreeWindingsTransformerResultContext::getThreeWindingsTransformerId)
@@ -268,8 +267,8 @@ public final class Dataframes {
         return limitViolations;
     }
 
-    private static DataframeMapper<SecurityAnalysisResult> createLimitViolationsMapper() {
-        return new DataframeMapperBuilder<SecurityAnalysisResult, LimitViolationContext>()
+    private static DataframeMapper<SecurityAnalysisResult, Void> createLimitViolationsMapper() {
+        return new DataframeMapperBuilder<SecurityAnalysisResult, LimitViolationContext, Void>()
                 .itemsProvider(Dataframes::getLimitViolations)
                 .stringsIndex("contingency_id", LimitViolationContext::getContingencyId)
                 .stringsIndex("subject_id", LimitViolation::getSubjectId)
@@ -292,8 +291,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewSwitchesMapper() {
-        return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, NodeBreakerViewSwitchContext>()
+    private static DataframeMapper<VoltageLevel.NodeBreakerView, Void> createNodeBreakerViewSwitchesMapper() {
+        return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, NodeBreakerViewSwitchContext, Void>()
                 .itemsProvider(Dataframes::getNodeBreakerViewSwitches)
                 .stringsIndex("id", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getId())
                 .strings("name", nodeBreakerViewSwitchContext -> nodeBreakerViewSwitchContext.getSwitchContext().getOptionalName().orElse(""))
@@ -317,8 +316,8 @@ public final class Dataframes {
         }).collect(Collectors.toList());
     }
 
-    private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewNodes() {
-        return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, NodeContext>()
+    private static DataframeMapper<VoltageLevel.NodeBreakerView, Void> createNodeBreakerViewNodes() {
+        return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, NodeContext, Void>()
                 .itemsProvider(Dataframes::getNodeBreakerViewNodes)
                 .intsIndex("node", NodeContext::getNode)
                 .strings("connectable_id", node -> Objects.toString(node.getConnectableId(), ""))
@@ -334,8 +333,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<VoltageLevel.NodeBreakerView> createNodeBreakerViewInternalConnections() {
-        return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, InternalConnectionContext>()
+    private static DataframeMapper<VoltageLevel.NodeBreakerView, Void> createNodeBreakerViewInternalConnections() {
+        return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, InternalConnectionContext, Void>()
                 .itemsProvider(Dataframes::getNodeBreakerViewInternalConnections)
                 .intsIndex("id", InternalConnectionContext::getIndex)
                 .ints("node1", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode1())
@@ -351,8 +350,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<VoltageLevel.BusBreakerView> createBusBreakerViewSwitchesMapper() {
-        return new DataframeMapperBuilder<VoltageLevel.BusBreakerView, BusBreakerViewSwitchContext>()
+    private static DataframeMapper<VoltageLevel.BusBreakerView, Void> createBusBreakerViewSwitchesMapper() {
+        return new DataframeMapperBuilder<VoltageLevel.BusBreakerView, BusBreakerViewSwitchContext, Void>()
                 .itemsProvider(Dataframes::getBusBreakerViewSwitches)
                 .stringsIndex("id", context -> context.getSwitchContext().getId())
                 .enums("kind", SwitchKind.class, context -> context.getSwitchContext().getKind())
@@ -374,8 +373,8 @@ public final class Dataframes {
 
     }
 
-    private static DataframeMapper<VoltageLevel> createBusBreakerViewBuses() {
-        return new DataframeMapperBuilder<VoltageLevel, BusBreakerViewBusData>()
+    private static DataframeMapper<VoltageLevel, Void> createBusBreakerViewBuses() {
+        return new DataframeMapperBuilder<VoltageLevel, BusBreakerViewBusData, Void>()
                 .itemsProvider(Dataframes::getBusBreakerViewBuses)
                 .stringsIndex("id", BusBreakerViewBusData::getId)
                 .strings("name", BusBreakerViewBusData::getName)
@@ -390,8 +389,8 @@ public final class Dataframes {
         return entriesList;
     }
 
-    private static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>> createFeederMapDataframe() {
-        return new DataframeMapperBuilder<Map<String, List<ConnectablePosition.Feeder>>, Pair<String, ConnectablePosition.Feeder>>()
+    private static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> createFeederMapDataframe() {
+        return new DataframeMapperBuilder<Map<String, List<ConnectablePosition.Feeder>>, Pair<String, ConnectablePosition.Feeder>, Void>()
                 .itemsProvider(Dataframes::getPositions)
                 .stringsIndex("connectable_id", Pair::getLeft)
                 .ints("order_position", pair -> pair.getRight().getOrder().orElse(MIN_VALUE))
@@ -440,8 +439,8 @@ public final class Dataframes {
         return result;
     }
 
-    private static DataframeMapper<VoltageLevel> createBusBreakerViewElements() {
-        return new DataframeMapperBuilder<VoltageLevel, BusBreakerViewElementData>()
+    private static DataframeMapper<VoltageLevel, Void> createBusBreakerViewElements() {
+        return new DataframeMapperBuilder<VoltageLevel, BusBreakerViewElementData, Void>()
                 .itemsProvider(Dataframes::getBusBreakerViewElements)
                 .stringsIndex("id", BusBreakerViewElementData::getElementId)
                 .strings("type", elementContext -> elementContext.getType().toString())
@@ -450,8 +449,8 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<FlowDecompositionResults> flowDecompositionMapper(Set<Country> zoneSet) {
-        return new DataframeMapperBuilder<FlowDecompositionResults, XnecWithDecompositionContext>()
+    public static DataframeMapper<FlowDecompositionResults, Void> flowDecompositionMapper(Set<Country> zoneSet) {
+        return new DataframeMapperBuilder<FlowDecompositionResults, XnecWithDecompositionContext, Void>()
                 .itemsProvider(Dataframes::getXnecWithDecompositions)
                 .stringsIndex("xnec_id", XnecWithDecompositionContext::getId)
                 .strings("branch_id", XnecWithDecompositionContext::getBranchId)
@@ -476,12 +475,12 @@ public final class Dataframes {
     }
 
     // shortcircuit
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisFaultResultsMapper(boolean withFortescueResult) {
+    public static DataframeMapper<ShortCircuitAnalysisResult, Void> shortCircuitAnalysisFaultResultsMapper(boolean withFortescueResult) {
         return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER;
     }
 
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER = createMagnitudeFaultResultsMapper();
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER = createFortescueFaultResultsMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_MAGNITUDE_RESULTS_MAPPER = createMagnitudeFaultResultsMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_FORTESCUE_RESULTS_MAPPER = createFortescueFaultResultsMapper();
 
     private static List<MagnitudeFaultResult> getMagnitudeFaultResults(ShortCircuitAnalysisResult result) {
         return result.getFaultResults().stream().filter(f -> f instanceof MagnitudeFaultResult)
@@ -495,8 +494,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFaultResultsMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeFaultResult>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createMagnitudeFaultResultsMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeFaultResult, Void>()
                 .itemsProvider(Dataframes::getMagnitudeFaultResults)
                 .stringsIndex("id", f -> f.getFault().getId())
                 .enums("status", FaultResult.Status.class, f -> f.getStatus())
@@ -507,8 +506,8 @@ public final class Dataframes {
                 .build();
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createFortescueFaultResultsMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueFaultResult>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createFortescueFaultResultsMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueFaultResult, Void>()
                 .itemsProvider(Dataframes::getFortescueFaultResults)
                 .stringsIndex("id", f -> f.getFault().getId())
                 .enums("status", FaultResult.Status.class, f -> f.getStatus())
@@ -529,11 +528,11 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisLimitViolationsResultsMapper() {
+    public static DataframeMapper<ShortCircuitAnalysisResult, Void> shortCircuitAnalysisLimitViolationsResultsMapper() {
         return SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER;
     }
 
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER = createLimitViolationsFaultMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_LIMIT_VIOLATIONS_RESULTS_MAPPER = createLimitViolationsFaultMapper();
 
     public static List<LimitViolationFaultContext> getFaultLimitViolations(ShortCircuitAnalysisResult result) {
         return result.getFaultResults().stream()
@@ -543,8 +542,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createLimitViolationsFaultMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, LimitViolationFaultContext>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createLimitViolationsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, LimitViolationFaultContext, Void>()
                 .itemsProvider(Dataframes::getFaultLimitViolations)
                 .stringsIndex("id", LimitViolationFaultContext::getFaultId)
                 .stringsIndex("subject_id", LimitViolation::getSubjectId)
@@ -559,12 +558,12 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeFeederResultsMapper(boolean withFortescueResult) {
+    public static DataframeMapper<ShortCircuitAnalysisResult, Void> shortCircuitAnalysisMagnitudeFeederResultsMapper(boolean withFortescueResult) {
         return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER;
     }
 
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER = createMagnitudeFeederMapper();
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER = createFortescueFeederMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_MAGNITUDE_FEEDER_RESULTS_MAPPER = createMagnitudeFeederMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_FORTESCUE_FEEDER_RESULTS_MAPPER = createFortescueFeederMapper();
 
     public static List<MagnitudeFeederResultContext> getMagnitudeFeederResultContexts(ShortCircuitAnalysisResult result) {
         return result.getFaultResults().stream()
@@ -582,8 +581,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeFeederMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeFeederResultContext>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createMagnitudeFeederMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeFeederResultContext, Void>()
                 .itemsProvider(Dataframes::getMagnitudeFeederResultContexts)
                 .stringsIndex("id", MagnitudeFeederResultContext::getFaultId)
                 .stringsIndex("connectable_id", MagnitudeFeederResultContext::getConnectableId)
@@ -591,8 +590,8 @@ public final class Dataframes {
                 .build();
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createFortescueFeederMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueFeederResultContext>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createFortescueFeederMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueFeederResultContext, Void>()
                 .itemsProvider(Dataframes::getFortescueFeederResultContexts)
                 .stringsIndex("id", FortescueFeederResultContext::getFaultId)
                 .stringsIndex("connectable_id", FortescueFeederResultContext::getConnectableId)
@@ -611,12 +610,12 @@ public final class Dataframes {
                 .build();
     }
 
-    public static DataframeMapper<ShortCircuitAnalysisResult> shortCircuitAnalysisMagnitudeBusResultsMapper(boolean withFortescueResult) {
+    public static DataframeMapper<ShortCircuitAnalysisResult, Void> shortCircuitAnalysisMagnitudeBusResultsMapper(boolean withFortescueResult) {
         return withFortescueResult ? SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER : SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER;
     }
 
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER = createMagnitudeBusResultsFaultMapper();
-    private static final DataframeMapper<ShortCircuitAnalysisResult> SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER = createFortescueBusResultsFaultMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_MAGNITUDE_BUS_RESULTS_MAPPER = createMagnitudeBusResultsFaultMapper();
+    private static final DataframeMapper<ShortCircuitAnalysisResult, Void> SHORT_CIRCUIT_FORTESCUE_BUS_RESULTS_MAPPER = createFortescueBusResultsFaultMapper();
 
     public static List<MagnitudeBusResultsContext> getMagnitudeBusResultsContexts(ShortCircuitAnalysisResult result) {
         return result.getFaultResults().stream()
@@ -634,8 +633,8 @@ public final class Dataframes {
                 .collect(Collectors.toList());
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createMagnitudeBusResultsFaultMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeBusResultsContext>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createMagnitudeBusResultsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, MagnitudeBusResultsContext, Void>()
                 .itemsProvider(Dataframes::getMagnitudeBusResultsContexts)
                 .stringsIndex("id", MagnitudeBusResultsContext::getFaultId)
                 .stringsIndex("voltage_level_id", MagnitudeBusResultsContext::getVoltageLevelId)
@@ -646,8 +645,8 @@ public final class Dataframes {
                 .build();
     }
 
-    private static DataframeMapper<ShortCircuitAnalysisResult> createFortescueBusResultsFaultMapper() {
-        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueBusResultsContext>()
+    private static DataframeMapper<ShortCircuitAnalysisResult, Void> createFortescueBusResultsFaultMapper() {
+        return new DataframeMapperBuilder<ShortCircuitAnalysisResult, FortescueBusResultsContext, Void>()
                 .itemsProvider(Dataframes::getFortescueBusResultsContexts)
                 .stringsIndex("id", FortescueBusResultsContext::getFaultId)
                 .stringsIndex("voltage_level_id", FortescueBusResultsContext::getVoltageLevelId)

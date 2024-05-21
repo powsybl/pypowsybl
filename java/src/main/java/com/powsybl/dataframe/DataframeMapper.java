@@ -6,7 +6,6 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.List;
@@ -21,13 +20,15 @@ import java.util.List;
  *
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public interface DataframeMapper<T> {
+public interface DataframeMapper<T, C> {
 
     /**
      * Provides dataframe data to the handler, which is responsible to
      * format it as needed.
      */
-    void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, DataframeContext dataframeContext);
+    void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, C dataframeContext);
+
+    void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter);
 
     List<SeriesMetadata> getSeriesMetadata();
 
@@ -36,7 +37,9 @@ public interface DataframeMapper<T> {
     /**
      * Updates object data with the provided series.
      */
-    void updateSeries(T object, UpdatingDataframe updatingDataframe, DataframeContext context);
+    void updateSeries(T object, UpdatingDataframe updatingDataframe, C context);
+
+    void updateSeries(T object, UpdatingDataframe updatingDataframe);
 
     boolean isSeriesMetaDataExists(String seriesName);
 }

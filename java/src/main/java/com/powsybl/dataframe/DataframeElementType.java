@@ -11,6 +11,7 @@ package com.powsybl.dataframe;
  */
 public enum DataframeElementType {
     BUS,
+    BUS_FROM_BUS_BREAKER_VIEW,
     LINE,
     TWO_WINDINGS_TRANSFORMER,
     THREE_WINDINGS_TRANSFORMER,

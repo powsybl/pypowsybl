@@ -97,11 +97,11 @@ public final class NetworkDataframes {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitQ() {
         return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
     }
 
@@ -113,11 +113,11 @@ public final class NetworkDataframes {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitQ1() {
         return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
     }
 
@@ -129,11 +129,11 @@ public final class NetworkDataframes {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitQ2() {
         return (b, q, context) -> b.getTerminal2().setQ(unPerUnitPQ(context, q));
     }
 
@@ -160,7 +160,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMinQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitMinQ() {
         return (g, minQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -173,7 +173,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMaxQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U, DataframeContext> setPerUnitMaxQ() {
         return (g, maxQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -286,7 +286,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper buses() {
-        return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
+        return NetworkDataframeMapperBuilder.ofStream((n, c) -> n.getBusView().getBusStream(),
                         getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""))
@@ -566,7 +566,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper danglingLines() {
-        return NetworkDataframeMapperBuilder.ofStream(Network::getDanglingLineStream, getOrThrow(Network::getDanglingLine, "Dangling line"))
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream(), getOrThrow(Network::getDanglingLine, "Dangling line"))
                 .stringsIndex("id", DanglingLine::getId)
                 .strings("name", dl -> dl.getOptionalName().orElse(""))
                 .doubles("r", (dl, context) -> perUnitRX(context, dl.getR(), dl.getTerminal()), (dl, r, context) -> dl.setR(unPerUnitRX(context, dl.getTerminal(), r)))
@@ -1108,21 +1108,13 @@ public final class NetworkDataframes {
     }
 
     private static String getBusId(Terminal t) {
-        if (t == null) {
-            return "";
-        } else {
-            Bus bus = t.getBusView().getBus();
-            return bus != null ? bus.getId() : "";
-        }
+        Bus bus = t.getBusView().getBus();
+        return bus != null ? bus.getId() : "";
     }
 
     private static String getBusBreakerViewBusId(Terminal t) {
-        if (t == null) {
-            return "";
-        } else {
-            Bus bus = t.isConnected() ? t.getBusBreakerView().getBus() : t.getBusBreakerView().getConnectableBus();
-            return bus != null ? bus.getId() : "";
-        }
+        Bus bus = t.isConnected() ? t.getBusBreakerView().getBus() : t.getBusBreakerView().getConnectableBus();
+        return bus != null ? bus.getId() : "";
     }
 
     private static <T extends Injection<T>> Function<T, String> busBreakerViewBusId() {

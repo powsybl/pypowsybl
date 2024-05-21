@@ -6,8 +6,6 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.dataframe.network.DataframeContext;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -16,7 +14,7 @@ import java.util.function.Function;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class EnumSeriesMapper<T, E extends Enum<E>> implements SeriesMapper<T> {
+public class EnumSeriesMapper<T, C, E extends Enum<E>> implements SeriesMapper<T, C> {
 
     private final SeriesMetadata metadata;
     private final Class<E> enumClass;
@@ -40,7 +38,7 @@ public class EnumSeriesMapper<T, E extends Enum<E>> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler factory, DataframeContext dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler factory, C dataframeContext) {
         DataframeHandler.StringSeriesWriter writer = factory.newStringSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, Objects.toString(value.apply(items.get(i)), ""));

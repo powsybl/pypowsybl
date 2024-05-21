@@ -90,7 +90,7 @@ public final class NetworkExtensions {
     }
 
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionInformation(DataframeContext dataframeContext) {
-        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, ExtensionInformation>()
+        DataframeMapper<Container, DataframeContext> mapper = new DataframeMapperBuilder<Container, ExtensionInformation, DataframeContext>()
                 .itemsProvider(Container::getExtensionInformation)
                 .stringsIndex("id", ExtensionInformation::getId)
                 .strings("detail", ExtensionInformation::getDescription)

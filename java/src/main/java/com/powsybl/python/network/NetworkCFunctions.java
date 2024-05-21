@@ -413,12 +413,13 @@ public final class NetworkCFunctions {
                                                                                DataframePointer selectedElementsDataframe,
                                                                                boolean perUnit,
                                                                                double nominalApparentPower,
+                                                                               boolean busBreakerView,
                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return Util.doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
-            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new DataframeContext(perUnit, nominalApparentPower));
+            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new DataframeContext(perUnit, nominalApparentPower, busBreakerView));
         });
     }
 
@@ -434,7 +435,7 @@ public final class NetworkCFunctions {
             NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
-                return Dataframes.createCDataframe(mapper, network, DataframeContext.deactivate());
+                return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), DataframeContext.DEFAULT);
             } else {
                 throw new PowsyblException("extension " + name + " not found");
             }
@@ -448,7 +449,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getExtensionsInformation")
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> NetworkExtensions.getExtensionInformation(DataframeContext.deactivate()));
+        return doCatch(exceptionHandlerPtr, () -> NetworkExtensions.getExtensionInformation(DataframeContext.DEFAULT));
     }
 
     @CEntryPoint(name = "createElement")
@@ -471,12 +472,13 @@ public final class NetworkCFunctions {
     public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
                                                        DataframePointer dataframe, boolean perUnit,
                                                        double nominalApparentPower,
+                                                       boolean busBreakerView,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe updatingDataframe = createDataframe(dataframe);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateSeries(network, updatingDataframe, new DataframeContext(perUnit, nominalApparentPower));
+                .updateSeries(network, updatingDataframe, new DataframeContext(perUnit, nominalApparentPower, busBreakerView));
         });
     }
 
@@ -744,7 +746,7 @@ public final class NetworkCFunctions {
             if (mapper != null) {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 UpdatingDataframe updatingDataframe = createDataframe(dataframe);
-                mapper.updateSeries(network, updatingDataframe, DataframeContext.deactivate());
+                mapper.updateSeries(network, updatingDataframe, DataframeContext.DEFAULT);
             } else {
                 if (tableName != null) {
                     throw new PowsyblException("table " + tableName + " of extension " + name + " not found");

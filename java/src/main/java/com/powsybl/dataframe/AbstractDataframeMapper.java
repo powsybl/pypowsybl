@@ -7,7 +7,6 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -25,11 +24,11 @@ import static com.google.common.collect.ImmutableMap.toImmutableMap;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T> {
+public abstract class AbstractDataframeMapper<T, U, C> implements DataframeMapper<T, C> {
 
-    protected final Map<String, SeriesMapper<U>> seriesMappers;
+    protected final Map<String, SeriesMapper<U, C>> seriesMappers;
 
-    public AbstractDataframeMapper(List<SeriesMapper<U>> seriesMappers) {
+    public AbstractDataframeMapper(List<SeriesMapper<U, C>> seriesMappers) {
         this.seriesMappers = seriesMappers.stream()
             .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
     }
@@ -41,7 +40,7 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
 
     @Override
     public SeriesMetadata getSeriesMetadata(String seriesName) {
-        SeriesMapper<U> mapper = seriesMappers.get(seriesName);
+        SeriesMapper<U, C> mapper = seriesMappers.get(seriesName);
         if (mapper == null) {
             throw new PowsyblException("No series named " + seriesName);
         }
@@ -49,75 +48,80 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
     }
 
     @Override
-    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, DataframeContext dataframeContext) {
-        Collection<SeriesMapper<U>> mappers = getSeriesMappers(dataframeFilter);
+    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, C dataframeContext) {
+        Collection<SeriesMapper<U, C>> mappers = getSeriesMappers(dataframeFilter);
         dataframeHandler.allocate(mappers.size());
-        List<U> items = getItems(object);
+        List<U> items = getItems(object, dataframeContext);
         mappers.forEach(mapper -> mapper.createSeries(items, dataframeHandler, dataframeContext));
     }
 
-    interface ColumnUpdater<U> {
-
-        void update(int index, U object, DataframeContext context);
+    @Override
+    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter) {
+        createDataframe(object, dataframeHandler, dataframeFilter, null);
     }
 
-    private static final class IntColumnUpdater<U> implements ColumnUpdater<U> {
-        private final IntSeries values;
-        private final SeriesMapper<U> mapper;
+    interface ColumnUpdater<U, C> {
 
-        private IntColumnUpdater(IntSeries values, SeriesMapper<U> mapper) {
+        void update(int index, U object, C context);
+    }
+
+    private static final class IntColumnUpdater<U, C> implements ColumnUpdater<U, C> {
+        private final IntSeries values;
+        private final SeriesMapper<U, C> mapper;
+
+        private IntColumnUpdater(IntSeries values, SeriesMapper<U, C> mapper) {
             this.values = values;
             this.mapper = mapper;
         }
 
         @Override
-        public void update(int index, U object, DataframeContext context) {
+        public void update(int index, U object, C context) {
             mapper.updateInt(object, values.get(index));
         }
     }
 
-    private static final class DoubleColumnUpdater<U> implements ColumnUpdater<U> {
+    private static final class DoubleColumnUpdater<U, C> implements ColumnUpdater<U, C> {
         private final DoubleSeries values;
-        private final SeriesMapper<U> mapper;
+        private final SeriesMapper<U, C> mapper;
 
-        private DoubleColumnUpdater(DoubleSeries values, SeriesMapper<U> mapper) {
+        private DoubleColumnUpdater(DoubleSeries values, SeriesMapper<U, C> mapper) {
             this.values = values;
             this.mapper = mapper;
         }
 
         @Override
-        public void update(int index, U object, DataframeContext context) {
+        public void update(int index, U object, C context) {
             mapper.updateDouble(object, values.get(index), context);
         }
     }
 
-    private static final class StringColumnUpdater<U> implements ColumnUpdater<U> {
+    private static final class StringColumnUpdater<U, C> implements ColumnUpdater<U, C> {
         private final StringSeries values;
-        private final SeriesMapper<U> mapper;
+        private final SeriesMapper<U, C> mapper;
 
-        private StringColumnUpdater(StringSeries values, SeriesMapper<U> mapper) {
+        private StringColumnUpdater(StringSeries values, SeriesMapper<U, C> mapper) {
             this.values = values;
             this.mapper = mapper;
         }
 
         @Override
-        public void update(int index, U object, DataframeContext context) {
+        public void update(int index, U object, C context) {
             mapper.updateString(object, values.get(index));
         }
     }
 
     @Override
-    public void updateSeries(T object, UpdatingDataframe updatingDataframe, DataframeContext context) {
+    public void updateSeries(T object, UpdatingDataframe updatingDataframe, C context) {
 
         //Setup links to minimize searches on column names
-        List<ColumnUpdater<U>> updaters = new ArrayList<>();
+        List<ColumnUpdater<U, C>> updaters = new ArrayList<>();
         for (SeriesMetadata column : updatingDataframe.getSeriesMetadata()) {
             if (column.isIndex()) {
                 continue;
             }
             String seriesName = column.getName();
-            SeriesMapper<U> mapper = seriesMappers.get(seriesName);
-            ColumnUpdater<U> updater = switch (column.getType()) {
+            SeriesMapper<U, C> mapper = seriesMappers.get(seriesName);
+            ColumnUpdater<U, C> updater = switch (column.getType()) {
                 case STRING -> new StringColumnUpdater<>(updatingDataframe.getStrings(seriesName), mapper);
                 case DOUBLE -> new DoubleColumnUpdater<>(updatingDataframe.getDoubles(seriesName), mapper);
                 case INT -> new IntColumnUpdater<>(updatingDataframe.getInts(seriesName), mapper);
@@ -127,10 +131,15 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         }
 
         for (int i = 0; i < updatingDataframe.getRowCount(); i++) {
-            U item = getItem(object, updatingDataframe, i);
+            U item = getItem(object, updatingDataframe, i, context);
             int itemIndex = i;
             updaters.forEach(updater -> updater.update(itemIndex, item, context));
         }
+    }
+
+    @Override
+    public void updateSeries(T object, UpdatingDataframe updatingDataframe) {
+        updateSeries(object, updatingDataframe, null);
     }
 
     @Override
@@ -138,14 +147,14 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         return seriesMappers.containsKey(seriesName);
     }
 
-    public Collection<SeriesMapper<U>> getSeriesMappers(DataframeFilter dataframeFilter) {
-        Collection<SeriesMapper<U>> mappers = seriesMappers.values();
+    public Collection<SeriesMapper<U, C>> getSeriesMappers(DataframeFilter dataframeFilter) {
+        Collection<SeriesMapper<U, C>> mappers = seriesMappers.values();
         return mappers.stream()
             .filter(mapper -> filterMapper(mapper, dataframeFilter))
             .collect(Collectors.toList());
     }
 
-    protected boolean filterMapper(SeriesMapper<U> mapper, DataframeFilter dataframeFilter) {
+    protected boolean filterMapper(SeriesMapper<U, C> mapper, DataframeFilter dataframeFilter) {
         return switch (dataframeFilter.getAttributeFilterType()) {
             case DEFAULT_ATTRIBUTES -> mapper.getMetadata().isDefaultAttribute() || mapper.getMetadata().isIndex();
             case INPUT_ATTRIBUTES ->
@@ -154,7 +163,7 @@ public abstract class AbstractDataframeMapper<T, U> implements DataframeMapper<T
         };
     }
 
-    protected abstract List<U> getItems(T object);
+    protected abstract List<U> getItems(T object, C context);
 
-    protected abstract U getItem(T object, UpdatingDataframe dataframe, int index);
+    protected abstract U getItem(T object, UpdatingDataframe dataframe, int index, C context);
 }

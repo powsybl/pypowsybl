@@ -6,30 +6,28 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.dataframe.network.DataframeContext;
-
 import java.util.List;
 import java.util.function.ToDoubleBiFunction;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
+public class DoubleSeriesMapper<T, C> implements SeriesMapper<T, C> {
 
     private final SeriesMetadata metadata;
-    private final DoubleUpdater<T> updater;
-    private final ToDoubleBiFunction<T, DataframeContext> value;
+    private final DoubleUpdater<T, C> updater;
+    private final ToDoubleBiFunction<T, C> value;
 
     @FunctionalInterface
-    public interface DoubleUpdater<U> {
-        void update(U object, double value, DataframeContext context);
+    public interface DoubleUpdater<U, C> {
+        void update(U object, double value, C context);
     }
 
-    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, DataframeContext> value) {
+    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, C> value) {
         this(name, value, null, true);
     }
 
-    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, DataframeContext> value, DoubleUpdater<T> updater, boolean defaultAttribute) {
+    public DoubleSeriesMapper(String name, ToDoubleBiFunction<T, C> value, DoubleUpdater<T, C> updater, boolean defaultAttribute) {
         this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.DOUBLE, defaultAttribute);
         this.updater = updater;
         this.value = value;
@@ -41,7 +39,7 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler factory, DataframeContext dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler factory, C dataframeContext) {
 
         DataframeHandler.DoubleSeriesWriter writer = factory.newDoubleSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
@@ -50,7 +48,7 @@ public class DoubleSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void updateDouble(T object, double value, DataframeContext context) {
+    public void updateDouble(T object, double value, C context) {
         if (updater == null) {
             throw new UnsupportedOperationException("Series '" + getMetadata().getName() + "' is not modifiable.");
         }
