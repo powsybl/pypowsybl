@@ -11,6 +11,7 @@ package com.powsybl.dataframe.network;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class DataframeContext {
+
     public static final DataframeContext DEFAULT = new DataframeContext(false, 0);
 
     private final boolean perUnit;

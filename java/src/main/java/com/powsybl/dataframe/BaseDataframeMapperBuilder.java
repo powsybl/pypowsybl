@@ -108,11 +108,11 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     }
 
     public B doubles(String name, ToDoubleBiFunction<U, C> value) {
-        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U, C>) null, true);
+        return doubles(name, value, null, true);
     }
 
     public B doubles(String name, ToDoubleBiFunction<U, C> value, boolean defaultAttribute) {
-        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U, C>) null, defaultAttribute);
+        return doubles(name, value, null, defaultAttribute);
     }
 
     public B doubles(String name, ToDoubleFunction<U> value, boolean defaultAttribute) {
