@@ -16,9 +16,9 @@ jobs:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
           }
 
     steps:
@@ -42,6 +42,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Checkout olf sources
+        uses: actions/checkout@v3
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          ref: fix-svc-targetV
+          path: powsybl-open-loadflow
+
+      - name: Build and install olf
+        shell: bash
+        run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
@@ -78,18 +89,16 @@ jobs:
       - name: Linting
         run: pylint pypowsybl
 
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v2.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
+          path: wheelhouse/*.whl
+
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -107,8 +116,8 @@ jobs:
           }
         python:
           - {
-            name: cp38,
-            version: '3.8',
+            name: cp310,
+            version: '3.10',
           }
 
     steps:
@@ -123,6 +132,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           submodules: true
+
+      - name: Checkout olf sources
+        uses: actions/checkout@v3
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          ref: fix-svc-targetV
+          path: powsybl-open-loadflow
+
+      - name: Build and install olf
+        shell: bash
+        run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -153,3 +173,9 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
+          path: dist/*.whl
