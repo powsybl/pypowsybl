@@ -1123,13 +1123,21 @@ public final class NetworkDataframes {
     }
 
     private static String getBusId(Terminal t) {
-        Bus bus = t.getBusView().getBus();
-        return bus != null ? bus.getId() : "";
+        if (t == null) {
+            return "";
+        } else {
+            Bus bus = t.getBusView().getBus();
+            return bus != null ? bus.getId() : "";
+        }
     }
 
     private static String getBusBreakerViewBusId(Terminal t) {
-        Bus bus = t.isConnected() ? t.getBusBreakerView().getBus() : t.getBusBreakerView().getConnectableBus();
-        return bus != null ? bus.getId() : "";
+        if (t == null) {
+            return "";
+        } else {
+            Bus bus = t.isConnected() ? t.getBusBreakerView().getBus() : t.getBusBreakerView().getConnectableBus();
+            return bus != null ? bus.getId() : "";
+        }
     }
 
     private static <T extends Injection<T>> Function<T, String> busBreakerViewBusId() {
