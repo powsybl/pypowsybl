@@ -570,7 +570,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                    **kwargs: ArrayLike) -> DataFrame:
         r"""
               Get a dataframe of buses from the bus/breaker view.
-              See :meth:`get_buses` as attributes are the same.
+              See :meth:`get_buses` for documentation as attributes are the same.
         """
         return self.get_elements(ElementType.BUS_FROM_BUS_BREAKER_VIEW, all_attributes, attributes, **kwargs)
 

@@ -1383,6 +1383,20 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
 
+def test_bus_breaker_view_buses():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_bus_breaker_view_buses()
+    expected_all_attributes = pd.DataFrame(
+        index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
+        columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                 'voltage_level_id'],
+        data=[['', NaN, NaN, 0, 0, 'VLGEN'],
+              ['', 380, NaN, 0, 0, 'VLHV1'],
+              ['', 380, NaN, 0, 0, 'VLHV2'],
+              ['', NaN, NaN, 0, 0, 'VLLOAD']])
+    pd.testing.assert_frame_equal(expected_all_attributes, buses, check_dtype=False)
+
+
 def test_bb_topology_with_no_bus_view_bus_does_not_throw():
     n = pp.network.create_empty()
     n.create_substations(id='S')
