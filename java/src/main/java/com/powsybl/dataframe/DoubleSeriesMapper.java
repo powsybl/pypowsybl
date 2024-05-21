@@ -39,11 +39,11 @@ public class DoubleSeriesMapper<T, C> implements SeriesMapper<T, C> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler factory, C dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler factory, C context) {
 
         DataframeHandler.DoubleSeriesWriter writer = factory.newDoubleSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
-            writer.set(i, value.applyAsDouble(items.get(i), dataframeContext));
+            writer.set(i, value.applyAsDouble(items.get(i), context));
         }
     }
 

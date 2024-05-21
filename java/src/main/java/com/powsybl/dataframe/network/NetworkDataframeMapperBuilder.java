@@ -76,13 +76,13 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
     public NetworkDataframeMapper build() {
         return new AbstractNetworkDataframeMapper<T>(series, addProperties) {
             @Override
-            protected List<T> getItems(Network network, NetworkDataframeContext dataframeContext) {
-                return itemsProvider.apply(network, dataframeContext);
+            protected List<T> getItems(Network network, NetworkDataframeContext context) {
+                return itemsProvider.apply(network, context);
             }
 
             @Override
-            protected T getItem(Network network, UpdatingDataframe updatingDataframe, int index, NetworkDataframeContext dataframeContext) {
-                return itemMultiIndexGetter.getItem(network, updatingDataframe, index, dataframeContext);
+            protected T getItem(Network network, UpdatingDataframe updatingDataframe, int index, NetworkDataframeContext context) {
+                return itemMultiIndexGetter.getItem(network, updatingDataframe, index, context);
             }
         };
     }

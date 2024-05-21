@@ -86,18 +86,18 @@ public final class Dataframes {
         return createCDataframe(mapper, object, new DataframeFilter(), null);
     }
 
-    public static <T, C> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T, C> mapper, T object, DataframeFilter dataframeFilter, C dataframeContext) {
+    public static <T, C> ArrayPointer<SeriesPointer> createCDataframe(DataframeMapper<T, C> mapper, T object, DataframeFilter dataframeFilter, C context) {
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(object, handler, dataframeFilter, dataframeContext);
+        mapper.createDataframe(object, handler, dataframeFilter, context);
         return handler.getDataframePtr();
     }
 
     /**
      * Maps an object to java series
      */
-    public static <T, C> List<Series> createSeries(DataframeMapper<T, C> mapper, T object, C dataframeContext) {
+    public static <T, C> List<Series> createSeries(DataframeMapper<T, C> mapper, T object, C context) {
         List<Series> series = new ArrayList<>();
-        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter(), dataframeContext);
+        mapper.createDataframe(object, new DefaultDataframeHandler(series::add), new DataframeFilter(), context);
         return List.copyOf(series);
     }
 

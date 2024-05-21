@@ -48,11 +48,11 @@ public abstract class AbstractDataframeMapper<T, U, C> implements DataframeMappe
     }
 
     @Override
-    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, C dataframeContext) {
+    public void createDataframe(T object, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, C context) {
         Collection<SeriesMapper<U, C>> mappers = getSeriesMappers(dataframeFilter);
         dataframeHandler.allocate(mappers.size());
-        List<U> items = getItems(object, dataframeContext);
-        mappers.forEach(mapper -> mapper.createSeries(items, dataframeHandler, dataframeContext));
+        List<U> items = getItems(object, context);
+        mappers.forEach(mapper -> mapper.createSeries(items, dataframeHandler, context));
     }
 
     @Override

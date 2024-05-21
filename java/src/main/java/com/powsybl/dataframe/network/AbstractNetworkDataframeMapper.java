@@ -30,22 +30,22 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
     }
 
     @Override
-    public void createDataframe(Network network, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, NetworkDataframeContext dataframeContext) {
-        List<T> items = getFilteredItems(network, dataframeFilter, dataframeContext);
+    public void createDataframe(Network network, DataframeHandler dataframeHandler, DataframeFilter dataframeFilter, NetworkDataframeContext context) {
+        List<T> items = getFilteredItems(network, dataframeFilter, context);
         List<SeriesMapper<T, NetworkDataframeContext>> mappers = new ArrayList<>(getSeriesMappers(dataframeFilter));
         if (addProperties) {
             mappers.addAll(getPropertiesSeries(items, dataframeFilter));
         }
         dataframeHandler.allocate(mappers.size());
-        mappers.forEach(mapper -> mapper.createSeries(items, dataframeHandler, dataframeContext));
+        mappers.forEach(mapper -> mapper.createSeries(items, dataframeHandler, context));
     }
 
-    protected List<T> getFilteredItems(Network network, DataframeFilter dataframeFilter, NetworkDataframeContext dataframeContext) {
+    protected List<T> getFilteredItems(Network network, DataframeFilter dataframeFilter, NetworkDataframeContext context) {
         if (dataframeFilter.getSelectingDataframe().isEmpty()) {
-            return getItems(network, dataframeContext);
+            return getItems(network, context);
         } else {
             UpdatingDataframe selectedDataframe = dataframeFilter.getSelectingDataframe().get();
-            return IntStream.range(0, selectedDataframe.getRowCount()).mapToObj(i -> getItem(network, selectedDataframe, i, dataframeContext)).collect(Collectors.toList());
+            return IntStream.range(0, selectedDataframe.getRowCount()).mapToObj(i -> getItem(network, selectedDataframe, i, context)).collect(Collectors.toList());
         }
     }
 

@@ -39,7 +39,7 @@ public class BooleanSeriesMapper<T, C> implements SeriesMapper<T, C> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler, C dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler handler, C context) {
         DataframeHandler.BooleanSeriesWriter writer = handler.newBooleanSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.test(items.get(i)));

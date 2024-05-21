@@ -32,7 +32,7 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
 
     @FunctionalInterface
     public interface ItemGetterWithContext<T, C, I> {
-        I getItem(T network, UpdatingDataframe updatingDataframe, int lineNumber, C dataframeContext);
+        I getItem(T network, UpdatingDataframe updatingDataframe, int lineNumber, C context);
     }
 
     protected BiFunction<T, C, List<U>> itemsProvider;
@@ -59,14 +59,14 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     }
 
     public B itemGetter(BiFunction<T, String, U> itemGetter) {
-        return this.itemGetter((t, c, s) -> itemGetter.apply(t, s));
+        return this.itemGetter((object, context, id) -> itemGetter.apply(object, id));
     }
 
     public B itemGetter(TriFunction<T, C, String, U> itemGetter) {
-        this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber, dataframeContext) -> {
+        this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber, context) -> {
             String id = updatingDataframe.getStringValue("id", lineNumber)
                     .orElseThrow(() -> new PowsyblException("id is missing"));
-            return itemGetter.apply(network, dataframeContext, id);
+            return itemGetter.apply(network, context, id);
         };
         return (B) this;
     }
@@ -77,7 +77,7 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     }
 
     public B itemMultiIndexGetter(ItemGetter<T, U> itemMultiIndexGetter) {
-        return itemMultiIndexGetter((network, updatingDataframe, lineNumber, dataframeContext) -> itemMultiIndexGetter.getItem(network, updatingDataframe, lineNumber));
+        return itemMultiIndexGetter((network, updatingDataframe, lineNumber, context) -> itemMultiIndexGetter.getItem(network, updatingDataframe, lineNumber));
     }
 
     public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater) {
@@ -200,13 +200,13 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
     public DataframeMapper<T, C> build() {
         return new AbstractDataframeMapper<>(series) {
             @Override
-            protected List<U> getItems(T object, C dataframeContext) {
-                return itemsProvider.apply(object, dataframeContext);
+            protected List<U> getItems(T object, C context) {
+                return itemsProvider.apply(object, context);
             }
 
             @Override
-            protected U getItem(T object, UpdatingDataframe dataframe, int index, C dataframeContext) {
-                return itemMultiIndexGetter.getItem(object, dataframe, index, dataframeContext);
+            protected U getItem(T object, UpdatingDataframe dataframe, int index, C context) {
+                return itemMultiIndexGetter.getItem(object, dataframe, index, context);
             }
         };
     }

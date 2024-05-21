@@ -89,7 +89,7 @@ public final class NetworkExtensions {
         }
     }
 
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionInformation(NetworkDataframeContext dataframeContext) {
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionInformation(NetworkDataframeContext context) {
         DataframeMapper<Container, NetworkDataframeContext> mapper = new DataframeMapperBuilder<Container, ExtensionInformation, NetworkDataframeContext>()
                 .itemsProvider(Container::getExtensionInformation)
                 .stringsIndex("id", ExtensionInformation::getId)
@@ -103,7 +103,7 @@ public final class NetworkExtensions {
                         .collect(Collectors.toList())
         );
         CDataframeHandler handler = new CDataframeHandler();
-        mapper.createDataframe(container, handler, new DataframeFilter(), dataframeContext);
+        mapper.createDataframe(container, handler, new DataframeFilter(), context);
         return handler.getDataframePtr();
     }
 }

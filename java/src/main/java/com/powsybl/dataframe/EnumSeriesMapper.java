@@ -38,7 +38,7 @@ public class EnumSeriesMapper<T, C, E extends Enum<E>> implements SeriesMapper<T
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler factory, C dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler factory, C context) {
         DataframeHandler.StringSeriesWriter writer = factory.newStringSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, Objects.toString(value.apply(items.get(i)), ""));

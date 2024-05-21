@@ -19,7 +19,7 @@ public interface SeriesMapper<T, C> {
 
     SeriesMetadata getMetadata();
 
-    void createSeries(List<T> items, DataframeHandler factory, C dataframeContext);
+    void createSeries(List<T> items, DataframeHandler factory, C context);
 
     default void updateInt(T object, int value) {
         throw new UnsupportedOperationException("Cannot update series with int: " + getMetadata().getName());

@@ -51,7 +51,7 @@ public class IntSeriesMapper<T, C> implements SeriesMapper<T, C> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler, C dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler handler, C context) {
         boolean index = metadata.isIndex();
         String name = metadata.getName();
         DataframeHandler.IntSeriesWriter writer = index ? handler.newIntIndex(name, items.size()) : handler.newIntSeries(name, items.size());
