@@ -85,7 +85,7 @@ public final class NetworkDataframes {
         return Collections.unmodifiableMap(mappers);
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP() {
+    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getP());
     }
 
@@ -93,47 +93,47 @@ public final class NetworkDataframes {
         return inj -> -inj.getTerminal().getP();
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ() {
+    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ() {
         return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP1() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ1() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ1() {
         return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP2() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ2() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ2() {
         return (b, q, context) -> b.getTerminal2().setQ(unPerUnitPQ(context, q));
     }
 
@@ -146,21 +146,21 @@ public final class NetworkDataframes {
         return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
     }
 
-    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
+    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMinQ(pGetter.applyAsDouble(g)));
         };
     }
 
-    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
+    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMaxQ(pGetter.applyAsDouble(g)));
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMinQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitMinQ() {
         return (g, minQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -173,7 +173,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMaxQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitMaxQ() {
         return (g, maxQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -238,6 +238,20 @@ public final class NetworkDataframes {
     private static BooleanSeriesMapper.BooleanUpdater<HvdcLine> connectHvdcStation2() {
         return (g, b) -> {
             Boolean res = b ? g.getConverterStation2().getTerminal().connect() : g.getConverterStation2().getTerminal().disconnect();
+        };
+    }
+
+    public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
+        return (item, context) -> {
+            U object = objectGetter.apply(item);
+            return object != null ? PerUnitUtil.perUnitPQ(context, valueGetter.applyAsDouble(object)) : Double.NaN;
+        };
+    }
+
+    public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitAngle(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
+        return (item, context) -> {
+            U object = objectGetter.apply(item);
+            return object != null ? PerUnitUtil.perUnitAngle(context, valueGetter.applyAsDouble(object)) : Double.NaN;
         };
     }
 
@@ -566,7 +580,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper danglingLines() {
-        return NetworkDataframeMapperBuilder.ofStream(Network::getDanglingLineStream, getOrThrow(Network::getDanglingLine, "Dangling line"))
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream(), getOrThrow(Network::getDanglingLine, "Dangling line"))
                 .stringsIndex("id", DanglingLine::getId)
                 .strings("name", dl -> dl.getOptionalName().orElse(""))
                 .doubles("r", (dl, context) -> perUnitRX(context, dl.getR(), dl.getTerminal()), (dl, r, context) -> dl.setR(unPerUnitRX(context, dl.getTerminal(), r)))

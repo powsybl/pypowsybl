@@ -18,8 +18,8 @@ import java.util.function.Function;
  */
 public final class Validations {
 
-    public static DataframeMapper<List<BranchValidationData>> branchValidationsMapper() {
-        return new DataframeMapperBuilder<List<BranchValidationData>, BranchValidationData>()
+    public static DataframeMapper<List<BranchValidationData>, Void> branchValidationsMapper() {
+        return new DataframeMapperBuilder<List<BranchValidationData>, BranchValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", BranchValidationData::getBranchId)
                 .doubles("p1", BranchValidationData::getP1)
@@ -56,8 +56,8 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<List<BusValidationData>> busValidationsMapper() {
-        return new DataframeMapperBuilder<List<BusValidationData>, BusValidationData>()
+    public static DataframeMapper<List<BusValidationData>, Void> busValidationsMapper() {
+        return new DataframeMapperBuilder<List<BusValidationData>, BusValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", BusValidationData::getId)
                 .doubles("incoming_p", BusValidationData::getIncomingP)
@@ -87,8 +87,8 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<List<GeneratorValidationData>> generatorValidationsMapper() {
-        return new DataframeMapperBuilder<List<GeneratorValidationData>, GeneratorValidationData>()
+    public static DataframeMapper<List<GeneratorValidationData>, Void> generatorValidationsMapper() {
+        return new DataframeMapperBuilder<List<GeneratorValidationData>, GeneratorValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", GeneratorValidationData::getId)
                 .doubles("p", GeneratorValidationData::getP)
@@ -109,8 +109,8 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<List<SvcValidationData>> svcsValidationMapper() {
-        return new DataframeMapperBuilder<List<SvcValidationData>, SvcValidationData>()
+    public static DataframeMapper<List<SvcValidationData>, Void> svcsValidationMapper() {
+        return new DataframeMapperBuilder<List<SvcValidationData>, SvcValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", SvcValidationData::getSvcId)
                 .doubles("p", SvcValidationData::getP)
@@ -129,8 +129,8 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<List<ShuntValidationData>> shuntsValidationMapper() {
-        return new DataframeMapperBuilder<List<ShuntValidationData>, ShuntValidationData>()
+    public static DataframeMapper<List<ShuntValidationData>, Void> shuntsValidationMapper() {
+        return new DataframeMapperBuilder<List<ShuntValidationData>, ShuntValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", ShuntValidationData::getShuntId)
                 .doubles("q", ShuntValidationData::getQ)
@@ -148,8 +148,8 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<List<TwtValidationData>> twtsValidationMapper() {
-        return new DataframeMapperBuilder<List<TwtValidationData>, TwtValidationData>()
+    public static DataframeMapper<List<TwtValidationData>, Void> twtsValidationMapper() {
+        return new DataframeMapperBuilder<List<TwtValidationData>, TwtValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", TwtValidationData::getId)
                 .doubles("error", TwtValidationData::getError)
@@ -170,8 +170,8 @@ public final class Validations {
                 .build();
     }
 
-    public static DataframeMapper<List<T3wtValidationData>> twt3wsValidationMapper() {
-        return new DataframeMapperBuilder<List<T3wtValidationData>, T3wtValidationData>()
+    public static DataframeMapper<List<T3wtValidationData>, Void> twt3wsValidationMapper() {
+        return new DataframeMapperBuilder<List<T3wtValidationData>, T3wtValidationData, Void>()
                 .itemsProvider(Function.identity())
                 .stringsIndex("id", T3wtValidationData::getId)
                 .doubles("p1", d -> d.getTwtData().getP(ThreeSides.ONE))

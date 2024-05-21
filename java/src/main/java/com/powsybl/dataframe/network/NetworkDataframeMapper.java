@@ -18,6 +18,6 @@ import com.powsybl.iidm.network.Network;
  *
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public interface NetworkDataframeMapper extends DataframeMapper<Network> {
+public interface NetworkDataframeMapper extends DataframeMapper<Network, NetworkDataframeContext> {
 
 }
