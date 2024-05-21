@@ -486,7 +486,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_buses(self, all_attributes: bool = False, attributes: List[str] = None,
                   **kwargs: ArrayLike) -> DataFrame:
         r"""
-        Get a dataframe of buses.
+        Get a dataframe of buses from the bus view.
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
@@ -495,7 +495,7 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Returns:
-            A dataframe of buses.
+            A dataframe of buses from the bus view
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
@@ -565,6 +565,14 @@ class Network:  # pylint: disable=too-many-public-methods
             ======= ======== ======= ================
         """
         return self.get_elements(ElementType.BUS, all_attributes, attributes, **kwargs)
+
+    def get_bus_breaker_view_buses(self, all_attributes: bool = False, attributes: List[str] = None,
+                                   **kwargs: ArrayLike) -> DataFrame:
+        r"""
+              Get a dataframe of buses from the bus/breaker view.
+              See :meth:`get_buses` as attributes are the same.
+        """
+        return self.get_elements(ElementType.BUS_FROM_BUS_BREAKER_VIEW, all_attributes, attributes, **kwargs)
 
     def get_generators(self, all_attributes: bool = False, attributes: List[str] = None,
                        **kwargs: ArrayLike) -> DataFrame:

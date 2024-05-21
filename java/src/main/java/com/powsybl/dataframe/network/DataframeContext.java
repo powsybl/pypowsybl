@@ -11,16 +11,14 @@ package com.powsybl.dataframe.network;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class DataframeContext {
-    public static final DataframeContext DEFAULT = new DataframeContext(false, 0, false);
+    public static final DataframeContext DEFAULT = new DataframeContext(false, 0);
 
     private final boolean perUnit;
     private final double nominalApparentPower;
-    private final boolean busBreakerView;
 
-    public DataframeContext(boolean perUnit, double nominalApparentPower, boolean busBreakerView) {
+    public DataframeContext(boolean perUnit, double nominalApparentPower) {
         this.perUnit = perUnit;
         this.nominalApparentPower = nominalApparentPower;
-        this.busBreakerView = busBreakerView;
     }
 
     public boolean isPerUnit() {
@@ -29,9 +27,5 @@ public class DataframeContext {
 
     public double getNominalApparentPower() {
         return nominalApparentPower;
-    }
-
-    public boolean isBusBreakerView() {
-        return busBreakerView;
     }
 }

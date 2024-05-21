@@ -413,13 +413,12 @@ public final class NetworkCFunctions {
                                                                                DataframePointer selectedElementsDataframe,
                                                                                boolean perUnit,
                                                                                double nominalApparentPower,
-                                                                               boolean busBreakerView,
                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         return Util.doCatch(exceptionHandlerPtr, () -> {
             NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
-            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new DataframeContext(perUnit, nominalApparentPower, busBreakerView));
+            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new DataframeContext(perUnit, nominalApparentPower));
         });
     }
 
@@ -472,13 +471,12 @@ public final class NetworkCFunctions {
     public static void updateNetworkElementsWithSeries(IsolateThread thread, ObjectHandle networkHandle, ElementType elementType,
                                                        DataframePointer dataframe, boolean perUnit,
                                                        double nominalApparentPower,
-                                                       boolean busBreakerView,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe updatingDataframe = createDataframe(dataframe);
             NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateSeries(network, updatingDataframe, new DataframeContext(perUnit, nominalApparentPower, busBreakerView));
+                .updateSeries(network, updatingDataframe, new DataframeContext(perUnit, nominalApparentPower));
         });
     }
 

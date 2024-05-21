@@ -51,7 +51,8 @@ public final class NetworkDataframes {
     private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
         mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
-        mappers.put(DataframeElementType.BUS, buses());
+        mappers.put(DataframeElementType.BUS, buses(false));
+        mappers.put(DataframeElementType.BUS_FROM_BUS_BREAKER_VIEW, buses(true));
         mappers.put(DataframeElementType.LINE, lines());
         mappers.put(DataframeElementType.TWO_WINDINGS_TRANSFORMER, twoWindingTransformers());
         mappers.put(DataframeElementType.THREE_WINDINGS_TRANSFORMER, threeWindingTransformers());
@@ -285,8 +286,8 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    static NetworkDataframeMapper buses() {
-        return NetworkDataframeMapperBuilder.ofStream((n, c) -> n.getBusView().getBusStream(),
+    static NetworkDataframeMapper buses(boolean busBreakerView) {
+        return NetworkDataframeMapperBuilder.ofStream(n -> busBreakerView ? n.getBusBreakerView().getBusStream() : n.getBusView().getBusStream(),
                         getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""))

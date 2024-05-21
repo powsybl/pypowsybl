@@ -134,6 +134,7 @@ typedef struct operator_strategy_result_struct {
 
 typedef enum {
     BUS = 0,
+    BUS_FROM_BUS_BREAKER_VIEW,
     LINE,
     TWO_WINDINGS_TRANSFORMER,
     THREE_WINDINGS_TRANSFORMER,
