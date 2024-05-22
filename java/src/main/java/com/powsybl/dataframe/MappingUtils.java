@@ -6,11 +6,7 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.dataframe.network.DataframeContext;
-import com.powsybl.dataframe.network.PerUnitUtil;
-
 import java.util.function.Function;
-import java.util.function.ToDoubleBiFunction;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 
@@ -42,20 +38,6 @@ public final class MappingUtils {
      */
     public static <T, U> ToDoubleFunction<T> ifExistsDouble(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return ifExistsDouble(objectGetter, valueGetter, Double.NaN);
-    }
-
-    public static <T, U> ToDoubleBiFunction<T, DataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
-        return (item, context) -> {
-            U object = objectGetter.apply(item);
-            return object != null ? PerUnitUtil.perUnitPQ(context, valueGetter.applyAsDouble(object)) : Double.NaN;
-        };
-    }
-
-    public static <T, U> ToDoubleBiFunction<T, DataframeContext> ifExistsDoublePerUnitAngle(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
-        return (item, context) -> {
-            U object = objectGetter.apply(item);
-            return object != null ? PerUnitUtil.perUnitAngle(context, valueGetter.applyAsDouble(object)) : Double.NaN;
-        };
     }
 
     /**

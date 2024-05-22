@@ -9,6 +9,6 @@ package com.powsybl.dataframe;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class DataframeMapperBuilder<T, U> extends BaseDataframeMapperBuilder<T, U, DataframeMapperBuilder<T, U>> {
+public class DataframeMapperBuilder<T, U, C> extends BaseDataframeMapperBuilder<T, U, C, DataframeMapperBuilder<T, U, C>> {
 
 }

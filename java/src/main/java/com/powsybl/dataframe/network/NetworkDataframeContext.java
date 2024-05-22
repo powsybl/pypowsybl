@@ -10,11 +10,14 @@ package com.powsybl.dataframe.network;
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
-public class DataframeContext {
+public class NetworkDataframeContext {
+
+    public static final NetworkDataframeContext DEFAULT = new NetworkDataframeContext(false, 0);
+
     private final boolean perUnit;
     private final double nominalApparentPower;
 
-    public DataframeContext(boolean perUnit, double nominalApparentPower) {
+    public NetworkDataframeContext(boolean perUnit, double nominalApparentPower) {
         this.perUnit = perUnit;
         this.nominalApparentPower = nominalApparentPower;
     }
@@ -25,9 +28,5 @@ public class DataframeContext {
 
     public double getNominalApparentPower() {
         return nominalApparentPower;
-    }
-
-    public static DataframeContext deactivate() {
-        return new DataframeContext(false, 0);
     }
 }

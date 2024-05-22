@@ -6,15 +6,13 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.dataframe.network.DataframeContext;
-
 import java.util.List;
 import java.util.function.ToIntFunction;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class IntSeriesMapper<T> implements SeriesMapper<T> {
+public class IntSeriesMapper<T, C> implements SeriesMapper<T, C> {
 
     private final SeriesMetadata metadata;
     private final IntUpdater<T> updater;
@@ -53,7 +51,7 @@ public class IntSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler, DataframeContext dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler handler, C context) {
         boolean index = metadata.isIndex();
         String name = metadata.getName();
         DataframeHandler.IntSeriesWriter writer = index ? handler.newIntIndex(name, items.size()) : handler.newIntSeries(name, items.size());
