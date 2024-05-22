@@ -19,7 +19,8 @@ from typing import (
     Set,
     Dict,
     Optional,
-    Union
+    Union,
+    Any
 )
 
 from numpy import Inf
@@ -46,6 +47,7 @@ from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
 deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
+
 
 class Network:  # pylint: disable=too-many-public-methods
 
@@ -119,12 +121,15 @@ class Network:  # pylint: disable=too-many-public-methods
     def __repr__(self) -> str:
         return str(self)
 
-    def __getstate__(self) -> Dict[str, str]:
-        return {'xml': self.save_to_string()}
+    def __getstate__(self) -> Dict[str, Any]:
+        return {'biidm': self.save_to_binary_buffer('BIIDM', {}),
+                'per_unit': self._per_unit,
+                'nominal_apparent_power': self._nominal_apparent_power}
 
-    def __setstate__(self, state: Dict[str, str]) -> None:
-        xml = state['xml']
-        self._handle = _pp.load_network_from_string('tmp.xiidm', xml, {}, None)
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, None)
+        self._per_unit = state['per_unit']
+        self._nominal_apparent_power = state['nominal_apparent_power']
         self.__init_from_handle()
 
     def __init_from_handle(self) -> None:
