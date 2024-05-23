@@ -264,6 +264,7 @@ public final class Util {
             case BRANCH_CURRENT_3 -> SensitivityFunctionType.BRANCH_CURRENT_3;
             case BRANCH_REACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_3;
             case BUS_VOLTAGE -> SensitivityFunctionType.BUS_VOLTAGE;
+            case BUS_REACTIVE_POWER -> SensitivityFunctionType.BUS_REACTIVE_POWER;
         };
     }
 

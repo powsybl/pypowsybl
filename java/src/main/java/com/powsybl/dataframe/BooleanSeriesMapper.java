@@ -6,15 +6,13 @@
  */
 package com.powsybl.dataframe;
 
-import com.powsybl.dataframe.network.DataframeContext;
-
 import java.util.List;
 import java.util.function.Predicate;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class BooleanSeriesMapper<T> implements SeriesMapper<T> {
+public class BooleanSeriesMapper<T, C> implements SeriesMapper<T, C> {
 
     private final SeriesMetadata metadata;
     private final BooleanUpdater<T> updater;
@@ -41,7 +39,7 @@ public class BooleanSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler, DataframeContext dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler handler, C context) {
         DataframeHandler.BooleanSeriesWriter writer = handler.newBooleanSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.test(items.get(i)));

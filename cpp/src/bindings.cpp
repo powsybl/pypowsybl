@@ -795,6 +795,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("BRANCH_ACTIVE_POWER_3",sensitivity_function_type::BRANCH_ACTIVE_POWER_3)
             .value("BRANCH_CURRENT_3",sensitivity_function_type::BRANCH_CURRENT_3)
             .value("BRANCH_REACTIVE_POWER_3",sensitivity_function_type::BRANCH_REACTIVE_POWER_3)
+            .value("BUS_REACTIVE_POWER",sensitivity_function_type::BUS_REACTIVE_POWER)
             .value("BUS_VOLTAGE",sensitivity_function_type::BUS_VOLTAGE);
 
     py::enum_<sensitivity_variable_type>(m, "SensitivityVariableType")

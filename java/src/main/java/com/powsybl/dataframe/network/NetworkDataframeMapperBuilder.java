@@ -21,7 +21,7 @@ import java.util.stream.Stream;
  *
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder<Network, T, NetworkDataframeMapperBuilder<T>> {
+public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder<Network, T, NetworkDataframeContext, NetworkDataframeMapperBuilder<T>> {
 
     private boolean addProperties;
 
@@ -41,7 +41,26 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
                 .itemGetter(itemGetter);
     }
 
+    public static <U> NetworkDataframeMapperBuilder<U> ofStream(BiFunction<Network, NetworkDataframeContext, Stream<U>> itemProvider, ItemGetterWithContext<Network, NetworkDataframeContext, U> itemGetter) {
+        return new NetworkDataframeMapperBuilder<U>()
+                .itemsStreamProvider(itemProvider)
+                .itemMultiIndexGetter(itemGetter);
+    }
+
+    public static <U> NetworkDataframeMapperBuilder<U> ofStream(BiFunction<Network, NetworkDataframeContext, Stream<U>> itemProvider, BiFunction<Network, String, U> itemGetter) {
+        return new NetworkDataframeMapperBuilder<U>()
+                .itemsStreamProvider(itemProvider)
+                .itemGetter(itemGetter);
+    }
+
     public static <U> NetworkDataframeMapperBuilder<U> ofStream(Function<Network, Stream<U>> streamProvider) {
+        BiFunction<Network, String, U> noUpdate = (n, s) -> {
+            throw new UnsupportedOperationException("Update is not supported");
+        };
+        return NetworkDataframeMapperBuilder.ofStream(streamProvider, noUpdate);
+    }
+
+    public static <U> NetworkDataframeMapperBuilder<U> ofStream(BiFunction<Network, NetworkDataframeContext, Stream<U>> streamProvider) {
         BiFunction<Network, String, U> noUpdate = (n, s) -> {
             throw new UnsupportedOperationException("Update is not supported");
         };
@@ -57,13 +76,13 @@ public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder
     public NetworkDataframeMapper build() {
         return new AbstractNetworkDataframeMapper<T>(series, addProperties) {
             @Override
-            protected List<T> getItems(Network network) {
-                return itemsProvider.apply(network);
+            protected List<T> getItems(Network network, NetworkDataframeContext context) {
+                return itemsProvider.apply(network, context);
             }
 
             @Override
-            protected T getItem(Network network, UpdatingDataframe dataframe, int index) {
-                return itemMultiIndexGetter.getItem(network, dataframe, index);
+            protected T getItem(Network network, UpdatingDataframe updatingDataframe, int index, NetworkDataframeContext context) {
+                return itemMultiIndexGetter.getItem(network, updatingDataframe, index, context);
             }
         };
     }

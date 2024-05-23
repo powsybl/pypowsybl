@@ -437,6 +437,15 @@ Here is a table summarizing the possible functions and variables and if it is su
      - N/A
      - N/A
      - N/A
+   * - BUS_REACTIVE_POWER
+     - N/A
+     - AC
+     - N/A
+     - AC
+     - N/A
+     - N/A
+     - N/A
+     - N/A
 
 A special value of `SensitivityVariableType` `AUTO_DETECT` allows to auto detect each of the variable type using its ID.
 It is important to notice that in this case, not all type of sensitivity variable are usable. For instance when an
