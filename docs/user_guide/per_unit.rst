@@ -5,6 +5,7 @@ PyPowSyBl provides methods to per unit the scientific data. They are part of the
 To per-unit the data, the attribute per_unit of the network has to be set.
 
 .. doctest::
+    :options: +NORMALIZE_WHITESPACE
 
     >>> net = pp.network.create_four_substations_node_breaker_network()
     >>> net.per_unit=True
@@ -18,6 +19,7 @@ For example for lines r, x, g1, b1, g2, b2, p1, q1, i1, p2, q2, i2 are per unite
 The nominal apparent power is by default 100 MVA. It can be set like this :
 
 .. doctest::
+    :options: +NORMALIZE_WHITESPACE
 
     >>> net.nominal_apparent_power=250
     >>> net.get_lines() # doctest: +NORMALIZE_WHITESPACE
