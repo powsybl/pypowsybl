@@ -7,8 +7,8 @@
 package com.powsybl.dataframe;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import org.apache.commons.lang3.function.TriFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,60 +23,78 @@ import java.util.stream.Stream;
  *
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuilder<T, U, B>> {
+public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBuilder<T, U, C, B>> {
 
     @FunctionalInterface
     public interface ItemGetter<T, I> {
         I getItem(T network, UpdatingDataframe updatingDataframe, int lineNumber);
     }
 
-    protected Function<T, List<U>> itemsProvider;
-    protected ItemGetter<T, U> itemMultiIndexGetter;
-
-    protected final List<SeriesMapper<U>> series;
-
-    public BaseDataframeMapperBuilder() {
-        this.series = new ArrayList<>();
+    @FunctionalInterface
+    public interface ItemGetterWithContext<T, C, I> {
+        I getItem(T network, UpdatingDataframe updatingDataframe, int lineNumber, C context);
     }
 
+    protected BiFunction<T, C, List<U>> itemsProvider;
+    protected ItemGetterWithContext<T, C, U> itemMultiIndexGetter;
+
+    protected final List<SeriesMapper<U, C>> series = new ArrayList<>();
+
     public B itemsProvider(Function<T, List<U>> itemsProvider) {
+        this.itemsProvider = (t, c) -> itemsProvider.apply(t);
+        return (B) this;
+    }
+
+    public B itemsProvider(BiFunction<T, C, List<U>> itemsProvider) {
         this.itemsProvider = itemsProvider;
         return (B) this;
     }
 
     public B itemsStreamProvider(Function<T, Stream<U>> itemsProvider) {
-        return this.itemsProvider(object -> itemsProvider.apply(object).collect(Collectors.toList()));
+        return this.itemsProvider((object, context) -> itemsProvider.apply(object).collect(Collectors.toList()));
+    }
+
+    public B itemsStreamProvider(BiFunction<T, C, Stream<U>> itemsProvider) {
+        return this.itemsProvider((object, context) -> itemsProvider.apply(object, context).collect(Collectors.toList()));
     }
 
     public B itemGetter(BiFunction<T, String, U> itemGetter) {
-        this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber) -> {
+        return this.itemGetter((object, context, id) -> itemGetter.apply(object, id));
+    }
+
+    public B itemGetter(TriFunction<T, C, String, U> itemGetter) {
+        this.itemMultiIndexGetter = (network, updatingDataframe, lineNumber, context) -> {
             String id = updatingDataframe.getStringValue("id", lineNumber)
                     .orElseThrow(() -> new PowsyblException("id is missing"));
-            return itemGetter.apply(network, id);
+            return itemGetter.apply(network, context, id);
         };
         return (B) this;
     }
 
-    public B itemMultiIndexGetter(ItemGetter<T, U> itemMultiIndexGetter) {
+    public B itemMultiIndexGetter(ItemGetterWithContext<T, C, U> itemMultiIndexGetter) {
         this.itemMultiIndexGetter = itemMultiIndexGetter;
         return (B) this;
     }
 
-    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater) {
+    public B itemMultiIndexGetter(ItemGetter<T, U> itemMultiIndexGetter) {
+        return itemMultiIndexGetter((network, updatingDataframe, lineNumber, context) -> itemMultiIndexGetter.getItem(network, updatingDataframe, lineNumber));
+    }
+
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater) {
         return doubles(name, value, updater, true);
     }
 
-    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+    public B doubles(String name, ToDoubleBiFunction<U, C> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater, boolean defaultAttribute) {
         series.add(new DoubleSeriesMapper<>(name, value, updater, defaultAttribute));
         return (B) this;
     }
 
-    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, DoubleSeriesMapper.DoubleUpdater<U> updater) {
+    public B doubles(String name, ToDoubleBiFunction<U, C> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater) {
         series.add(new DoubleSeriesMapper<>(name, value, updater, true));
         return (B) this;
     }
 
-    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U> updater, boolean defaultAttribute) {
+    public B doubles(String name, ToDoubleFunction<U> value, DoubleSeriesMapper.DoubleUpdater<U, C> updater, boolean defaultAttribute) {
         return doubles(name, (u, pu) -> value.applyAsDouble(u), updater, defaultAttribute);
     }
 
@@ -89,12 +107,12 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return doubles(name, value, null, true);
     }
 
-    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value) {
-        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, true);
+    public B doubles(String name, ToDoubleBiFunction<U, C> value) {
+        return doubles(name, value, null, true);
     }
 
-    public B doubles(String name, ToDoubleBiFunction<U, DataframeContext> value, boolean defaultAttribute) {
-        return doubles(name, value, (DoubleSeriesMapper.DoubleUpdater<U>) null, defaultAttribute);
+    public B doubles(String name, ToDoubleBiFunction<U, C> value, boolean defaultAttribute) {
+        return doubles(name, value, null, defaultAttribute);
     }
 
     public B doubles(String name, ToDoubleFunction<U> value, boolean defaultAttribute) {
@@ -179,16 +197,16 @@ public class BaseDataframeMapperBuilder<T, U, B extends BaseDataframeMapperBuild
         return enums(name, enumClass, value, null, defaultAttribute);
     }
 
-    public DataframeMapper<T> build() {
+    public DataframeMapper<T, C> build() {
         return new AbstractDataframeMapper<>(series) {
             @Override
-            protected List<U> getItems(T object) {
-                return itemsProvider.apply(object);
+            protected List<U> getItems(T object, C context) {
+                return itemsProvider.apply(object, context);
             }
 
             @Override
-            protected U getItem(T object, UpdatingDataframe dataframe, int index) {
-                return itemMultiIndexGetter.getItem(object, dataframe, index);
+            protected U getItem(T object, UpdatingDataframe dataframe, int index, C context) {
+                return itemMultiIndexGetter.getItem(object, dataframe, index, context);
             }
         };
     }

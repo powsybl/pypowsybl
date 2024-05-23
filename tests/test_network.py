@@ -1828,7 +1828,7 @@ def test_ratio_tap_changer_regulated_side():
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == ''
 
-    with pytest.raises(pp.PyPowsyblError, match='terminal not found for un per unit V'):
+    with pytest.raises(pp.PyPowsyblError, match='a regulation terminal has to be set'):
         n.update_ratio_tap_changers(id='T4-1-0', target_v=100, regulating=True)
 
     with pytest.raises(pp.PyPowsyblError, match='must be ONE or TWO'):
