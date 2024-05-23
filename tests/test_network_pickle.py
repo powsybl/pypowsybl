@@ -10,7 +10,6 @@ import tempfile
 
 import pandas as pd
 import pytest
-from numpy import NaN
 
 import pypowsybl as pp
 
@@ -22,6 +21,7 @@ def setUp():
 
 def test_pickle():
     n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_buses(all_attributes=True)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         data_file = tmp_dir_path.joinpath('data.pkl')
@@ -29,12 +29,5 @@ def test_pickle():
             pickle.dump(n, f)
         with open(data_file, 'rb') as f:
             n2 = pickle.load(f)
-            buses = n2.get_buses()
-            expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
-                                    columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
-                                             'voltage_level_id'],
-                                    data=[['', NaN, NaN, 0, 0, 'VLGEN'],
-                                          ['', 380, NaN, 0, 0, 'VLHV1'],
-                                          ['', 380, NaN, 0, 0, 'VLHV2'],
-                                          ['', NaN, NaN, 0, 0, 'VLLOAD']])
-            pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
+            buses2 = n2.get_buses(all_attributes=True)
+            pd.testing.assert_frame_equal(buses, buses2, check_dtype=False)
