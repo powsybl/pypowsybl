@@ -23,8 +23,6 @@ The nominal apparent power is by default 100 MVA. It can be set like this :
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> net = pp.network.create_four_substations_node_breaker_network()
-    >>> net.per_unit=True
     >>> net.nominal_apparent_power=250
     >>> net.get_lines() # doctest: +NORMALIZE_WHITESPACE
               name         r         x   g1   b1   g2   b2        p1        q1        i1        p2        q2        i2 voltage_level1_id voltage_level2_id  bus1_id  bus2_id  connected1  connected2
