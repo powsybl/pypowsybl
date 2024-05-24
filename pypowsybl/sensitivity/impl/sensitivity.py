@@ -11,8 +11,8 @@ from typing import List, Dict
 
 from pypowsybl import _pypowsybl
 from pypowsybl.security import ContingencyContainer
-from .sensitivity_analysis_result import DEFAULT_MATRIX_ID, TO_REMOVE
 from pypowsybl._pypowsybl import PyPowsyblError, ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
+from .sensitivity_analysis_result import DEFAULT_MATRIX_ID, TO_REMOVE
 from .zone import Zone
 
 
