@@ -178,6 +178,7 @@ public final class Util {
     public static PyPowsyblApiHeader.ElementType convert(DataframeElementType type) {
         return switch (type) {
             case BUS -> PyPowsyblApiHeader.ElementType.BUS;
+            case BUS_FROM_BUS_BREAKER_VIEW -> PyPowsyblApiHeader.ElementType.BUS_FROM_BUS_BREAKER_VIEW;
             case LINE -> PyPowsyblApiHeader.ElementType.LINE;
             case TWO_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER;
             case THREE_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER;
@@ -217,6 +218,7 @@ public final class Util {
     public static DataframeElementType convert(PyPowsyblApiHeader.ElementType type) {
         return switch (type) {
             case BUS -> DataframeElementType.BUS;
+            case BUS_FROM_BUS_BREAKER_VIEW -> DataframeElementType.BUS_FROM_BUS_BREAKER_VIEW;
             case LINE -> DataframeElementType.LINE;
             case TWO_WINDINGS_TRANSFORMER -> DataframeElementType.TWO_WINDINGS_TRANSFORMER;
             case THREE_WINDINGS_TRANSFORMER -> DataframeElementType.THREE_WINDINGS_TRANSFORMER;
