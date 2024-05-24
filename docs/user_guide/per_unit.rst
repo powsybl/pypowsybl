@@ -1,6 +1,8 @@
 Per Unit data
 ---------------
 
+.. testsetup:: *
+
 PyPowSyBl provides methods to per unit the scientific data. They are part of the network api.
 To per-unit the data, the attribute per_unit of the network has to be set.
 
