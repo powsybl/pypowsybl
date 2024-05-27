@@ -20,16 +20,6 @@ jobs:
             abi: cp38,
             version: '3.8',
           }
-          - {
-            name: cp310,
-            abi: cp310,
-            version: '3.10',
-          }
-          - {
-            name: cp312,
-            abi: cp312,
-            version: '3.12',
-          }
 
     steps:
       - name: Install Linux packages
@@ -119,14 +109,6 @@ jobs:
           - {
             name: cp38,
             version: '3.8',
-          }
-          - {
-            name: cp310,
-            version: '3.10',
-          }
-          - {
-            name: cp312,
-            version: '3.12',
           }
 
     steps:
