@@ -6,8 +6,8 @@
 #
 from typing import List
 from pypowsybl import _pypowsybl as _pp
-from .util import EventType
 from pypowsybl._pypowsybl import Side
+from .util import EventType
 
 
 class EventMapping:
