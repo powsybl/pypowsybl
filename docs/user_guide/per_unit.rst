@@ -3,14 +3,20 @@ Per Unit data
 
 .. testsetup:: *
 
+    import pypowsybl as pp
+    import pandas as pd
+    pd.options.display.max_columns = None
+    pd.options.display.expand_frame_repr = False
+
 PyPowSyBl provides methods to per unit the scientific data. They are part of the network api.
 To per-unit the data, the attribute per_unit of the network has to be set.
 
 .. doctest::
+    :options: +NORMALIZE_WHITESPACE
 
     >>> net = pp.network.create_four_substations_node_breaker_network()
     >>> net.per_unit=True
-    >>> net.get_lines() # doctest: +NORMALIZE_WHITESPACE
+    >>> net.get_lines()
               name         r         x   g1   b1   g2   b2        p1        q1        i1        p2        q2        i2 voltage_level1_id voltage_level2_id  bus1_id  bus2_id  connected1  connected2
     id
     LINE_S2S3       0.000006  0.011938  0.0  0.0  0.0  0.0  1.098893  1.900229  2.147594 -1.098864 -1.845171  2.147594             S2VL1             S3VL1  S2VL1_0  S3VL1_0        True        True
@@ -20,9 +26,10 @@ For example for lines r, x, g1, b1, g2, b2, p1, q1, i1, p2, q2, i2 are per unite
 The nominal apparent power is by default 100 MVA. It can be set like this :
 
 .. doctest::
+    :options: +NORMALIZE_WHITESPACE
 
     >>> net.nominal_apparent_power=250
-    >>> net.get_lines() # doctest: +NORMALIZE_WHITESPACE
+    >>> net.get_lines()
               name         r         x   g1   b1   g2   b2        p1        q1        i1        p2        q2        i2 voltage_level1_id voltage_level2_id  bus1_id  bus2_id  connected1  connected2
     id
     LINE_S2S3       0.000016  0.029844  0.0  0.0  0.0  0.0  0.439557  0.760092  0.859038 -0.439546 -0.738068  0.859037             S2VL1             S3VL1  S2VL1_0  S3VL1_0        True        True
