@@ -49,7 +49,6 @@ from .util import create_data_frame_from_series_array, ParamsDict
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
 
-
 class Network:  # pylint: disable=too-many-public-methods
 
     def __init__(self, handle: _pp.JavaHandle):
