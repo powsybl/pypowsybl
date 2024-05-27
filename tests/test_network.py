@@ -1397,6 +1397,39 @@ def test_bus_breaker_view_buses():
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
 
 
+def test_bus_breaker_view_buses():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_bus_breaker_view_buses()
+    expected_buses = pd.DataFrame(
+        index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
+        columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                 'voltage_level_id'],
+        data=[['', NaN, NaN, 0, 0, 'VLGEN'],
+              ['', 380, NaN, 0, 0, 'VLHV1'],
+              ['', 380, NaN, 0, 0, 'VLHV2'],
+              ['', NaN, NaN, 0, 0, 'VLLOAD']])
+    pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
+
+
+def test_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLLOAD')
+    n.create_switches(id='S1', voltage_level_id='VLLOAD', bus1_id='NLOAD', bus2_id='B1')
+    n.update_loads(id='LOAD', bus_breaker_bus_id='B1')
+    loads = n.get_loads(attributes=['bus_breaker_bus_id'])
+    expected_loads = pd.DataFrame(
+        index=pd.Series(name='id', data=['LOAD']),
+        columns=['bus_breaker_bus_id'],
+        data=[['B1']])
+    pd.testing.assert_frame_equal(expected_loads, loads, check_dtype=False)
+
+    # try on a node/breaker one
+    n = pp.network.create_four_substations_node_breaker_network()
+    with pytest.raises(pp.PyPowsyblError) as e:
+        n.update_loads(id='LD1', bus_breaker_bus_id='S1VL1_0')
+    assert "Not supported in a node/breaker topology" in str(e) # this is expected
+
+
 def test_bb_topology_with_no_bus_view_bus_does_not_throw():
     n = pp.network.create_empty()
     n.create_substations(id='S')

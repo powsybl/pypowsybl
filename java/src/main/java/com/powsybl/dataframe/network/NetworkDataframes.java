@@ -285,7 +285,7 @@ public final class NetworkDataframes {
                 .doubles("i", (g, context) -> perUnitI(context, g.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", g -> getNode(g.getTerminal()), false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -328,7 +328,7 @@ public final class NetworkDataframes {
                 .doubles("i", (l, context) -> perUnitI(context, l.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", l -> getBusId(l.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", l -> getNode(l.getTerminal()), false)
                 .booleans("connected", l -> l.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -354,7 +354,7 @@ public final class NetworkDataframes {
                 .doubles("i", (b, context) -> perUnitI(context, b.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", b -> getBusId(b.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", b -> getNode(b.getTerminal()), false)
                 .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -382,7 +382,7 @@ public final class NetworkDataframes {
                 .doubles("i", (sc, context) -> perUnitI(context, sc.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", sc -> getBusId(sc.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", sc -> getNode(sc.getTerminal()), false)
                 .booleans("connected", sc -> sc.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -476,10 +476,10 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))
-                .strings("bus_breaker_bus1_id", l -> getBusBreakerViewBusId(l.getTerminal1()), false)
+                .strings("bus_breaker_bus1_id", l -> getBusBreakerViewBusId(l.getTerminal1()), (l, id) -> setBusBreakerViewBusId(l.getTerminal1(), id), false)
                 .ints("node1", l -> getNode(l.getTerminal1()), false)
                 .strings("bus2_id", l -> getBusId(l.getTerminal2()))
-                .strings("bus_breaker_bus2_id", l -> getBusBreakerViewBusId(l.getTerminal2()), false)
+                .strings("bus_breaker_bus2_id", l -> getBusBreakerViewBusId(l.getTerminal2()), (l, id) -> setBusBreakerViewBusId(l.getTerminal2(), id), false)
                 .ints("node2", l -> getNode(l.getTerminal2()), false)
                 .booleans("connected1", l -> l.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", l -> l.getTerminal2().isConnected(), connectBranchSide2())
@@ -510,10 +510,10 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", twt -> twt.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getTerminal1()))
-                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getTerminal1()), false)
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getTerminal1()), (twt, id) -> setBusBreakerViewBusId(twt.getTerminal1(), id), false)
                 .ints("node1", twt -> getNode(twt.getTerminal1()), false)
                 .strings("bus2_id", twt -> getBusId(twt.getTerminal2()))
-                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getTerminal2()), false)
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getTerminal2()), (twt, id) -> setBusBreakerViewBusId(twt.getTerminal2(), id), false)
                 .ints("node2", twt -> getNode(twt.getTerminal2()), false)
                 .booleans("connected1", twt -> twt.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", twt -> twt.getTerminal2().isConnected(), connectBranchSide2())
@@ -540,7 +540,7 @@ public final class NetworkDataframes {
                 .doubles("i1", (twt, context) -> perUnitI(context, twt.getLeg1().getTerminal()))
                 .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
-                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), false)
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg1().getTerminal(), id), false)
                 .ints("node1", twt -> getNode(twt.getLeg1().getTerminal()), false)
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected(), connectLeg1())
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
@@ -556,7 +556,7 @@ public final class NetworkDataframes {
                 .doubles("i2", (twt, context) -> perUnitI(context, twt.getLeg2().getTerminal()))
                 .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
                 .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
-                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), false)
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg2().getTerminal(), id), false)
                 .ints("node2", twt -> getNode(twt.getLeg2().getTerminal()), false)
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected(), connectLeg2())
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
@@ -572,7 +572,7 @@ public final class NetworkDataframes {
                 .doubles("i3", (twt, context) -> perUnitI(context, twt.getLeg3().getTerminal()))
                 .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
                 .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
-                .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), false)
+                .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg3().getTerminal(), id), false)
                 .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected(), connectLeg3())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -595,7 +595,7 @@ public final class NetworkDataframes {
                 .doubles("i", (dl, context) -> perUnitI(context, dl.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", dl -> getBusId(dl.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
@@ -630,7 +630,7 @@ public final class NetworkDataframes {
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -660,7 +660,7 @@ public final class NetworkDataframes {
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -687,7 +687,7 @@ public final class NetworkDataframes {
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", svc -> getBusId(svc.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", svc -> getNode(svc.getTerminal()), false)
                 .booleans("connected", svc -> svc.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -1140,8 +1140,16 @@ public final class NetworkDataframes {
         }
     }
 
-    private static <T extends Injection<T>> Function<T, String> busBreakerViewBusId() {
+    private static <T extends Injection<T>> Function<T, String> getBusBreakerViewBusId() {
         return i -> getBusBreakerViewBusId(i.getTerminal());
+    }
+
+    private static void setBusBreakerViewBusId(Terminal t, String busId) {
+        Objects.requireNonNull(t).getBusBreakerView().setConnectableBus(busId);
+    }
+
+    private static <T extends Injection<T>> void setBusBreakerViewBusId(T i, String busId) {
+        setBusBreakerViewBusId(i.getTerminal(), busId);
     }
 
     private static int getNode(Terminal t) {
