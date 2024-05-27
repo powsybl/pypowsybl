@@ -240,6 +240,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<element_type>(m, "ElementType")
             .value("BUS", element_type::BUS)
+            .value("BUS_FROM_BUS_BREAKER_VIEW", element_type::BUS_FROM_BUS_BREAKER_VIEW)
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)
