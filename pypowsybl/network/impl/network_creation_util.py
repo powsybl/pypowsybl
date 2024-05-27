@@ -13,7 +13,8 @@ from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
 
-deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
+DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
+
 
 
 def _create_network(name: str, network_id: str = '') -> Network:
@@ -195,7 +196,7 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
             ...
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
     file = path_to_str(file)
     if parameters is None:
@@ -219,7 +220,7 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
         The loaded network
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
     return load_from_binary_buffers([buffer], parameters, report_node)
 
@@ -239,13 +240,13 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
         The loaded network
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
     if parameters is None:
         parameters = {}
     buffer_list = []
-    for b in buffers:
-        buffer_list.append(b.getbuffer())
+    for buff in buffers:
+        buffer_list.append(buff.getbuffer())
     return Network(_pp.load_network_from_binary_buffers(buffer_list, parameters,
                                                         None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
@@ -266,7 +267,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
         The loaded network
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
     if parameters is None:
         parameters = {}
