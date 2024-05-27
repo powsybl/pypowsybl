@@ -22,7 +22,8 @@ from pypowsybl.utils import (
 )
 from .network import Network
 
-deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
+DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
+
 
 def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,
                         deprecated_new_line_r: float = None, deprecated_new_line_x: float = None,
@@ -184,7 +185,7 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
         kwargs['fictitious_substation_name'] = deprecated_fictitious_substation_name
 
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_LINE_ON_LINE)
@@ -252,7 +253,7 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
         kwargs['merged_line_name'] = deprecated_merged_line_name
 
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CREATE_LINE_ON_LINE)
@@ -269,7 +270,8 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
                                   deprecated_line1_name: str = None, deprecated_line2_id: str = None,
                                   deprecated_line2_name: str = None, df: DataFrame = None,
                                   raise_exception: bool = True,
-                                  reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                  reporter: ReportNode = None, report_node: ReportNode = None,
+                                  **kwargs: ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
@@ -333,7 +335,7 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
         kwargs['line2_name'] = deprecated_line2_name
 
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE)
@@ -348,7 +350,8 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
                                          deprecated_line2_id: str = None,
                                          deprecated_line_id: str = None, deprecated_line_name: str = None,
                                          df: DataFrame = None, raise_exception: bool = True,
-                                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                         reporter: ReportNode = None, report_node: ReportNode = None,
+                                         **kwargs: ArrayLike) -> None:
     """
     This method reverses the action done in the connect_voltage_level_on_line method.
     It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
@@ -390,7 +393,7 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
         kwargs['line_name'] = deprecated_line_name
 
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
@@ -549,7 +552,8 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
 def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
@@ -614,7 +618,8 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
 
 
 def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                      reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                      reporter: ReportNode = None, report_node: ReportNode = None,
+                                      **kwargs: ArrayLike) -> None:
     """
     Creates a static var compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -648,11 +653,13 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
         - **direction**: optionally, in node/breaker, the direction of the static var compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
 def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                     reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                     reporter: ReportNode = None, report_node: ReportNode = None,
+                                     **kwargs: ArrayLike) -> None:
     """
     Creates a lcc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -683,11 +690,13 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
         - **direction**: optionally, in node/breaker, the direction of the lcc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
 def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                     reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                     reporter: ReportNode = None, report_node: ReportNode = None,
+                                     **kwargs: ArrayLike) -> None:
     """
     Creates a vsc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -720,11 +729,13 @@ def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, rai
         - **direction**: optionally, in node/breaker, the direction of the vsc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, report_node, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
 def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element_type: _pp.ElementType,
-                       raise_exception: bool, reporter: Optional[ReportNode], report_node: Optional[ReportNode], **kwargs: ArrayLike) -> None:
+                       raise_exception: bool, reporter: Optional[ReportNode], report_node: Optional[ReportNode],
+                       **kwargs: ArrayLike) -> None:
     """
     Creates an injection, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -747,7 +758,7 @@ def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element
 
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY,
@@ -837,7 +848,7 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
         kwargs['new_line2_name'] = deprecated_new_line2_name
 
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE)
@@ -850,7 +861,8 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
 
 
 def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                  reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                  reporter: ReportNode = None, report_node: ReportNode = None,
+                                  **kwargs: ArrayLike) -> None:
     """
     Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number
     of sections.
@@ -890,7 +902,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
                                                 aligned_buses_or_busbar_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
@@ -949,7 +961,7 @@ def create_coupling_device(network: Network, df: DataFrame = None, raise_excepti
 
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)
@@ -1021,7 +1033,7 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
         report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     if isinstance(voltage_level_ids, str):
@@ -1033,7 +1045,8 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
 
 def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
                       shunt_compensator_ids: Dict[str, Union[str, List[str]]] = None,
-                      raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None) -> None:
+                      raise_exception: bool = True, reporter: ReportNode = None,
+                      report_node: ReportNode = None) -> None:
     """
     Removes hvdc lines and their LCC or SVC converter stations. In the case of a LCC converter station, a list of shunt
     compensators can be specified to be deleted as well.
@@ -1048,7 +1061,7 @@ def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
         report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     c_df = None
@@ -1162,7 +1175,7 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
         :meth:`Network.create_lines`
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_LINE_FEEDER,
@@ -1175,7 +1188,8 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
 
 
 def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                       reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                                       reporter: ReportNode = None, report_node: ReportNode = None,
+                                       **kwargs: ArrayLike) -> None:
     """
     Creates a transformer and connects it to buses or busbar sections through standard feeder bays.
 
@@ -1223,7 +1237,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
         :meth:`Network.create_2_windings_transformers`
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     metadata = _pp.get_network_modification_metadata_with_element_type(
@@ -1256,7 +1270,7 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
         pp.network.remove_feeder_bays(network, connectable_ids=['load1', 'line3'])
     """
     if reporter is not None:
-        warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
 
     if isinstance(connectable_ids, str):

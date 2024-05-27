@@ -28,7 +28,7 @@ from pandas import DataFrame
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
-from pypowsybl._pypowsybl import ElementType, ValidationLevel, Side
+from pypowsybl._pypowsybl import ElementType, ValidationLevel
 from pypowsybl.utils import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
@@ -45,7 +45,8 @@ from .nad_parameters import NadParameters
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
-deprecated_reporter_warning = "Use of deprecated attribute reporter. Use report_node instead."
+DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
+
 
 class Network:  # pylint: disable=too-many-public-methods
 
@@ -181,7 +182,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.save('/path/to/network.uct', format='UCTE')
         """
         if reporter is not None:
-            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
             report_node = reporter
         file = path_to_str(file)
         if parameters is None:
@@ -212,7 +213,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A string representing this network
         """
         if reporter is not None:
-            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
             report_node = reporter
 
         if parameters is None:
@@ -237,7 +238,7 @@ class Network:  # pylint: disable=too-many-public-methods
             A BytesIO data buffer representing this network
         """
         if reporter is not None:
-            warnings.warn(deprecated_reporter_warning, DeprecationWarning)
+            warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
             report_node = reporter
 
         if parameters is None:
@@ -323,7 +324,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Create a network area diagram in SVG format and write it to a file.
         Args:
             svg_file: a svg file path
-            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            voltage_level_ids: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
@@ -342,7 +343,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             svg_file: a svg file path
-            voltage_level_id: the voltage level ID, center of the diagram (None for the full diagram)
+            voltage_level_ids: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
@@ -353,7 +354,7 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
-        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()
+        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
         _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
                                            low_nominal_voltage_bound, nad_p)
 
@@ -377,7 +378,7 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = []
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
-        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()
+        nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
         return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
                                                     nad_p))
@@ -409,7 +410,8 @@ class Network:  # pylint: disable=too-many-public-methods
                                             main_connected_component, main_synchronous_component,
                                             not_connected_to_same_bus_at_both_sides)
 
-    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
+    def get_elements(self, element_type: ElementType, all_attributes: bool = False, attributes: List[str] = None,
+                     **kwargs: ArrayLike) -> DataFrame:
         """
         Get network elements as a :class:`~pandas.DataFrame` for a specified element type.
 
@@ -795,7 +797,8 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
-    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
+    def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None,
+                      **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of batteries.
 
@@ -2358,7 +2361,8 @@ class Network:  # pylint: disable=too-many-public-methods
         metadata = _pp.get_network_elements_dataframe_metadata(element_type)
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
-        _pp.update_network_elements_with_series(self._handle, c_df, element_type, self._per_unit, self._nominal_apparent_power)
+        _pp.update_network_elements_with_series(self._handle, c_df, element_type, self._per_unit,
+                                                self._nominal_apparent_power)
 
     def update_buses(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
