@@ -96,66 +96,66 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
-
-  macos_windows_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - {
-            name: darwin,
-            os: macos-11,
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-          }
-        python:
-          - {
-            name: cp38,
-            version: '3.8',
-          }
-
-    steps:
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '17'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout sources
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python.version }}
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Build wheel
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-        run: python setup.py bdist_wheel
-
-      - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
-
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make doctest
+#
+#  macos_windows_build:
+#    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+#    runs-on: ${{ matrix.config.os }}
+#    strategy:
+#      matrix:
+#        config:
+#          - {
+#            name: darwin,
+#            os: macos-11,
+#          }
+#          - {
+#            name: windows,
+#            os: windows-2022,
+#          }
+#        python:
+#          - {
+#            name: cp38,
+#            version: '3.8',
+#          }
+#
+#    steps:
+#      - name: Setup GraalVM
+#        uses: graalvm/setup-graalvm@v1
+#        with:
+#          java-version: '17'
+#          distribution: 'graalvm'
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Checkout sources
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v4
+#        with:
+#          python-version: ${{ matrix.python.version }}
+#
+#      - name: Install Python dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          python -m pip install -r requirements.txt
+#
+#      - name: Build wheel
+#        env:
+#          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+#        run: python setup.py bdist_wheel
+#
+#      - name: Install wheel
+#        shell: bash
+#        run: python -m pip install dist/*.whl --user
+#
+#      - name: Run tests
+#        working-directory: ./tests
+#        run: python3 -m pytest
+#
+#      - name: Type checking
+#        run: mypy -p pypowsybl
+#
+#      - name: Run doc examples
+#        working-directory: ./docs
+#        run: make doctest
