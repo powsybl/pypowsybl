@@ -112,7 +112,6 @@ std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<datafram
     return dataframeArray;
 }
 
-// FIXME To wrap into pypowsybl namespace
 void createElementBind(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
