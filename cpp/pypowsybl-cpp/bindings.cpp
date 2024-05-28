@@ -112,6 +112,7 @@ std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<datafram
     return dataframeArray;
 }
 
+// FIXME To wrap into pypowsybl namespace
 void createElementBind(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
@@ -200,20 +201,23 @@ void voltageInitializerBinding(py::module_& m) {
 
 std::function < void(pypowsybl::GraalVmGuard* guard, exception_handler* exc) >
 pypowsybl::JavaCaller::beginCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
-  setLogLevelFromPythonLogger(guard, exc);
 };
 
 std::function < void() >
 pypowsybl::JavaCaller::endCall = [](){
-  py::gil_scoped_acquire acquire;
-  if (PyErr_Occurred() != nullptr) {
-    throw py::error_already_set();
-  }
 };
 
-
 PYBIND11_MODULE(_pypowsybl, m) {
-    pypowsybl::init();
+    auto preJavaCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
+      setLogLevelFromPythonLogger(guard, exc);
+    };
+    auto postJavaCall = [](){
+      py::gil_scoped_acquire acquire;
+      if (PyErr_Occurred() != nullptr) {
+        throw py::error_already_set();
+      }
+    };
+    pypowsybl::init(preJavaCall, postJavaCall);
     m.doc() = "PowSyBl Python API";
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");

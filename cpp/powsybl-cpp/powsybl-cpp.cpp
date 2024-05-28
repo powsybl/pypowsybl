@@ -45,8 +45,12 @@ GraalVmGuard::~GraalVmGuard() noexcept(false) {
     }
 }
 
-void init() {
+void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
+          std::function <void()> postJavaCall) {
     graal_isolatethread_t* thread = nullptr;
+
+    JavaCaller::beginCall = preJavaCall;
+    JavaCaller::endCall = postJavaCall;
 
     int c = graal_create_isolate(nullptr, &isolate, &thread);
     if (c != 0) {
