@@ -200,20 +200,23 @@ void voltageInitializerBinding(py::module_& m) {
 
 std::function < void(pypowsybl::GraalVmGuard* guard, exception_handler* exc) >
 pypowsybl::JavaCaller::beginCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
-  setLogLevelFromPythonLogger(guard, exc);
 };
 
 std::function < void() >
 pypowsybl::JavaCaller::endCall = [](){
-  py::gil_scoped_acquire acquire;
-  if (PyErr_Occurred() != nullptr) {
-    throw py::error_already_set();
-  }
 };
 
-
 PYBIND11_MODULE(_pypowsybl, m) {
-    pypowsybl::init();
+    auto preJavaCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
+      setLogLevelFromPythonLogger(guard, exc);
+    };
+    auto postJavaCall = [](){
+      py::gil_scoped_acquire acquire;
+      if (PyErr_Occurred() != nullptr) {
+        throw py::error_already_set();
+      }
+    };
+    pypowsybl::init(preJavaCall, postJavaCall);
     m.doc() = "PowSyBl Python API";
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
@@ -254,6 +257,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<element_type>(m, "ElementType")
             .value("BUS", element_type::BUS)
+            .value("BUS_FROM_BUS_BREAKER_VIEW", element_type::BUS_FROM_BUS_BREAKER_VIEW)
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)

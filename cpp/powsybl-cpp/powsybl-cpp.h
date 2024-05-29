@@ -415,7 +415,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
-void init();
+void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
+          std::function <void()> postJavaCallls);
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 

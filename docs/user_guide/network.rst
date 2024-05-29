@@ -100,7 +100,8 @@ Reading network elements data
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
 
- - buses
+ - buses (from bus view)
+ - buses from bus/breaker view
  - lines
  - 2 windings transformers
  - 3 windings transformers

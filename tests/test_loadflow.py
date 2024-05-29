@@ -40,7 +40,7 @@ def test_run_lf_ac():
     results = lf.run_ac(n)
     assert 1 == len(results)
     assert lf.ComponentStatus.CONVERGED == results[0].status
-    assert 'CONVERGED' == results[0].status_text
+    assert 'Converged' == results[0].status_text
     assert 0 == results[0].connected_component_num
     assert 0 == results[0].synchronous_component_num
     assert 'VL1_0' == results[0].reference_bus_id
