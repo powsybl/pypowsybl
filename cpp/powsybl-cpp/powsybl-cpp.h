@@ -46,38 +46,35 @@ public:
     }
 };
 
-class JavaCaller {
-public:
-  template<typename F, typename... ARGS>
-  static void callJava(F f, ARGS... args) {
-      GraalVmGuard guard;
-      exception_handler exc;
+extern std::function <void(GraalVmGuard* guard, exception_handler* exc)> beginCall;
+extern std::function <void()> endCall;
 
-      beginCall(&guard, &exc);
-      f(guard.thread(), args..., &exc);
-      if (exc.message) {
-          throw PyPowsyblError(toString(exc.message));
-      }
-      endCall();
-  }
+template<typename F, typename... ARGS>
+void callJava(F f, ARGS... args) {
+    GraalVmGuard guard;
+    exception_handler exc;
 
-  template<typename T, typename F, typename... ARGS>
-  static T callJava(F f, ARGS... args) {
-      GraalVmGuard guard;
-      exception_handler exc;
+    beginCall(&guard, &exc);
+    f(guard.thread(), args..., &exc);
+    if (exc.message) {
+        throw PyPowsyblError(toString(exc.message));
+    }
+    endCall();
+}
 
-      beginCall(&guard, &exc);
-      auto r = f(guard.thread(), args..., &exc);
-      if (exc.message) {
-          throw PyPowsyblError(toString(exc.message));
-      }
-      endCall();
-      return r;
-  }
-  static std::function <void(GraalVmGuard* guard, exception_handler* exc)> beginCall;
-  static std::function <void()> endCall;
+template<typename T, typename F, typename... ARGS>
+T callJava(F f, ARGS... args) {
+    GraalVmGuard guard;
+    exception_handler exc;
 
-};
+    beginCall(&guard, &exc);
+    auto r = f(guard.thread(), args..., &exc);
+    if (exc.message) {
+        throw PyPowsyblError(toString(exc.message));
+    }
+    endCall();
+    return r;
+}
 
 template<typename T>
 class ToPtr {
