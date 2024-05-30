@@ -324,7 +324,7 @@ public:
 
 class LoadFlowValidationParameters {
 public:
-    LoadFlowValidationParameters(loadflow_validation_parameters* src, std::string loadflow_name);
+    LoadFlowValidationParameters(loadflow_validation_parameters* src);
     std::shared_ptr<loadflow_validation_parameters> to_c_struct() const;
     void load_to_c_struct(loadflow_validation_parameters& params) const;
 
@@ -381,7 +381,7 @@ public:
 
 class SldParameters {
 public:
-    SldParameters(sld_parameters* src, std::string component_library);
+    SldParameters(sld_parameters* src);
     std::shared_ptr<sld_parameters> to_c_struct() const;
     void sld_to_c_struct(sld_parameters& params) const;
 

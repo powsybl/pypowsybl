@@ -280,12 +280,12 @@ void deleteLoadFlowValidationParameters(loadflow_validation_parameters* ptr) {
     deleteLoadFlowParameters(&ptr->loadflow_parameters);
 }
 
-LoadFlowValidationParameters::LoadFlowValidationParameters(loadflow_validation_parameters* src, std::string loadflow_name):
+LoadFlowValidationParameters::LoadFlowValidationParameters(loadflow_validation_parameters* src):
     loadflow_parameters(&src->loadflow_parameters)
 {
     threshold = (double) src->threshold;
     verbose = (bool) src->verbose;
-    loadflow_name = loadflow_name;
+    loadflow_name = toString(src->loadflow_name);
     epsilon_x = (double) src->epsilon_x;
     apply_reactance_correction = (bool) src->apply_reactance_correction;
     ok_missing_values = (bool) src->ok_missing_values;
@@ -626,7 +626,7 @@ LoadFlowValidationParameters* createValidationConfig() {
        //Memory has been allocated on java side, we need to clean it up on java side
        PowsyblCaller::get()->callJava(::freeValidationConfig, ptr);
     });
-    return new LoadFlowValidationParameters(parameters.get(), toString(parameters.get()->loadflow_name));
+    return new LoadFlowValidationParameters(parameters.get());
 }
 
 
@@ -1172,14 +1172,14 @@ void closePypowsybl() {
     pypowsybl::PowsyblCaller::get()->callJava(::closePypowsybl);
 }
 
-SldParameters::SldParameters(sld_parameters* src, std::string component_library) {
+SldParameters::SldParameters(sld_parameters* src) {
     use_name = (bool) src->use_name;
     center_name = (bool) src->center_name;
     diagonal_label = (bool) src->diagonal_label;
     nodes_infos = (bool) src->nodes_infos;
     tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
-    component_library = component_library;
+    component_library = toString(src->component_library);
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1246,7 +1246,7 @@ SldParameters* createSldParameters() {
        //Memory has been allocated on java side, we need to clean it up on java side
        PowsyblCaller::get()->callJava(::freeSldParameters, ptr);
     });
-    return new SldParameters(parameters.get(), toString(parameters.get()->component_library));
+    return new SldParameters(parameters.get());
 }
 
 NadParameters* createNadParameters() {
