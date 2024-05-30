@@ -48,30 +48,30 @@ BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0
     assert 1 == len(n.get_substations())
 
 
-# def test_load_cgmes_zipped():
-#     with open(DATA_DIR.joinpath('CGMES_Full.zip'), "rb") as fh:
-#         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
-#         assert 3 == len(n.get_substations())
-#
-#
-# def test_load_cgmes_two_zip():
-#     with open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb") as cgmesPartial:
-#         with open(DATA_DIR.joinpath('Boundary.zip'), "rb") as boundary:
-#             n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
-#     assert 3 == len(n.get_substations())
-#
-#
-# def test_save_cgmes_zip():
-#     n = pp.network.create_eurostag_tutorial_example1_network()
-#     buffer = n.save_to_binary_buffer(format='CGMES')
-#     with zipfile.ZipFile(buffer, 'r') as zip_file:
-#         assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
-#
-#
-# def test_load_zipped_xiidm():
-#     with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
-#         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
-#        assert 2 == len(n.get_substations())
+def test_load_cgmes_zipped():
+    with open(DATA_DIR.joinpath('CGMES_Full.zip'), "rb") as fh:
+        n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
+        assert 3 == len(n.get_substations())
+
+
+def test_load_cgmes_two_zip():
+    with open(DATA_DIR.joinpath('CGMES_Partial.zip'), "rb") as cgmesPartial:
+        with open(DATA_DIR.joinpath('Boundary.zip'), "rb") as boundary:
+            n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
+    assert 3 == len(n.get_substations())
+
+
+def test_save_cgmes_zip():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buffer = n.save_to_binary_buffer(format='CGMES')
+    with zipfile.ZipFile(buffer, 'r') as zip_file:
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
+
+
+def test_load_zipped_xiidm():
+    with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
+        n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
+       assert 2 == len(n.get_substations())
 
 
 def test_save_to_string():
