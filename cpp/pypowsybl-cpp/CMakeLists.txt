@@ -11,10 +11,8 @@ set(POWSYBL_CPP_SOURCE_DIR "../powsybl-cpp")
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
 include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
 
-set(SOURCES ${POWSYBL_CPP_SOURCES} pylogging.cpp)
-
 link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
-pybind11_add_module(_pypowsybl ${SOURCES} bindings.cpp)
+pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
 add_dependencies(_pypowsybl native-image math-native)
 add_dependencies(math-native native-image) # because mvn command also copy math native jar
