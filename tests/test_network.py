@@ -71,7 +71,7 @@ def test_save_cgmes_zip():
 def test_load_zipped_xiidm():
     with open(DATA_DIR.joinpath('battery_xiidm.zip'), "rb") as fh:
         n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
-       assert 2 == len(n.get_substations())
+        assert 2 == len(n.get_substations())
 
 
 def test_save_to_string():
