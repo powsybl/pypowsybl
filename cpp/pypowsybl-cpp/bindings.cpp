@@ -7,6 +7,9 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+namespace pypowsybl {
+class PYBIND11_EXPORT PyPowsyblError;
+}
 #include "powsybl-cpp.h"
 #include "pylogging.h"
 
