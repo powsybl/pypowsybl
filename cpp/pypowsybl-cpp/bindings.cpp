@@ -198,14 +198,6 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
 }
 
-std::function < void(pypowsybl::GraalVmGuard* guard, exception_handler* exc) >
-pypowsybl::beginCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
-};
-
-std::function < void() >
-pypowsybl::endCall = [](){
-};
-
 PYBIND11_MODULE(_pypowsybl, m) {
     auto preJavaCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
       setLogLevelFromPythonLogger(guard, exc);
@@ -1012,7 +1004,7 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
         dataSizes[i] = info.size;
     }
 
-    pypowsybl::JavaHandle networkHandle = pypowsybl::callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
+    pypowsybl::JavaHandle networkHandle = pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(),
                            parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
     delete[] dataPtrs;
@@ -1031,10 +1023,10 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
     }
     pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
     pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
-    array* byteArray = pypowsybl::callJava<array*>(::saveNetworkToBinaryBuffer, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::saveNetworkToBinaryBuffer, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
                      parameterValuesPtr.get(), parameterValues.size(), reportNode == nullptr ? nullptr : *reportNode);
     py::gil_scoped_acquire acquire;
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
-    pypowsybl::callJava<>(::freeNetworkBinaryBuffer, byteArray);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeNetworkBinaryBuffer, byteArray);
     return bytes;
 }

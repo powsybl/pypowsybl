@@ -13,6 +13,7 @@
 #include <memory>
 #include <stdexcept>
 #include <functional>
+#include <mutex>
 #include "powsybl-api.h"
 #include "pypowsybl-java.h"
 
@@ -46,20 +47,23 @@ public:
     }
 };
 
-extern std::function <void(GraalVmGuard* guard, exception_handler* exc)> beginCall;
-extern std::function <void()> endCall;
+class PowsyblCaller {
+
+public:
+
+static PowsyblCaller* get();
 
 template<typename F, typename... ARGS>
 void callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
 
-    beginCall(&guard, &exc);
+    beginCall_(&guard, &exc);
     f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
     }
-    endCall();
+    endCall_();
 }
 
 template<typename T, typename F, typename... ARGS>
@@ -67,14 +71,26 @@ T callJava(F f, ARGS... args) {
     GraalVmGuard guard;
     exception_handler exc;
 
-    beginCall(&guard, &exc);
+    beginCall_(&guard, &exc);
     auto r = f(guard.thread(), args..., &exc);
     if (exc.message) {
         throw PyPowsyblError(toString(exc.message));
     }
-    endCall();
+    endCall_();
     return r;
 }
+
+void setPreprocessingJavaCall(std::function <void(GraalVmGuard* guard, exception_handler* exc)> func);
+void setPostProcessingJavaCall(std::function<void()> func);
+
+private:
+
+static PowsyblCaller* singleton_;
+static std::mutex initMutex_;
+std::function <void(GraalVmGuard* guard, exception_handler* exc)> beginCall_;
+std::function <void()> endCall_;
+
+};
 
 template<typename T>
 class ToPtr {
@@ -308,7 +324,7 @@ public:
 
 class LoadFlowValidationParameters {
 public:
-    LoadFlowValidationParameters(loadflow_validation_parameters* src);
+    LoadFlowValidationParameters(loadflow_validation_parameters* src, std::string loadflow_name);
     std::shared_ptr<loadflow_validation_parameters> to_c_struct() const;
     void load_to_c_struct(loadflow_validation_parameters& params) const;
 
@@ -365,7 +381,7 @@ public:
 
 class SldParameters {
 public:
-    SldParameters(sld_parameters* src);
+    SldParameters(sld_parameters* src, std::string component_library);
     std::shared_ptr<sld_parameters> to_c_struct() const;
     void sld_to_c_struct(sld_parameters& params) const;
 
@@ -401,6 +417,29 @@ public:
     NadLayoutType layout_type;
     int scaling_factor;
     double radius_factor;
+};
+
+//=======short-circuit analysis==========
+enum ShortCircuitStudyType {
+    SUB_TRANSIENT = 0,
+    TRANSIENT,
+    STEADY_STATE
+};
+
+class ShortCircuitAnalysisParameters {
+public:
+    ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
+    std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
+
+    bool with_voltage_result;
+    bool with_feeder_result;
+    bool with_limit_violations;
+    ShortCircuitStudyType study_type;
+    bool with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
+
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
 };
 
 char* copyStringToCharPtr(const std::string& str);
@@ -731,29 +770,6 @@ std::vector<SeriesMetadata> getModificationMetadata(network_modification_type ne
 std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
-
-//=======short-circuit analysis==========
-enum ShortCircuitStudyType {
-    SUB_TRANSIENT = 0,
-    TRANSIENT,
-    STEADY_STATE
-};
-
-class ShortCircuitAnalysisParameters {
-public:
-    ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
-    std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
-
-    bool with_voltage_result;
-    bool with_feeder_result;
-    bool with_limit_violations;
-    ShortCircuitStudyType study_type;
-    bool with_fortescue_result;
-    double min_voltage_drop_proportional_threshold;
-
-    std::vector<std::string> provider_parameters_keys;
-    std::vector<std::string> provider_parameters_values;
-};
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
