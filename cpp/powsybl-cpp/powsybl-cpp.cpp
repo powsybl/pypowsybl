@@ -60,7 +60,6 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
           std::function <void()> postJavaCall) {
     graal_isolatethread_t* thread = nullptr;
 
-    std::cout<<"Setting up pre en post process functions"<<std::endl;
     PowsyblCaller::get()->setPreprocessingJavaCall(preJavaCall);
     PowsyblCaller::get()->setPostProcessingJavaCall(postJavaCall);
 

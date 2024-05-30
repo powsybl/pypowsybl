@@ -7,6 +7,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+
+//Necessary for PyPowsyblError, declared in a seperated shared library, to be correctly registered in pybind11
+//Otherwise PyPowsyblError are not catched properly on python side
+//see https://github.com/pybind/pybind11/issues/1272
 namespace pypowsybl {
 class PYBIND11_EXPORT PyPowsyblError;
 }
