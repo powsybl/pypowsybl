@@ -12,13 +12,29 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
-#include "pypowsybl-api.h"
-
-#include <pybind11/pybind11.h>
-#include <pybind11/buffer_info.h>
-namespace py = pybind11;
+#include <functional>
+#include <mutex>
+#include "powsybl-api.h"
+#include "pypowsybl-java.h"
 
 namespace pypowsybl {
+
+std::string toString(char* cstring);
+
+class GraalVmGuard {
+public:
+    GraalVmGuard();
+
+    ~GraalVmGuard() noexcept(false);
+
+    graal_isolatethread_t * thread() const {
+        return thread_;
+    }
+
+private:
+    bool shouldDetach = false;
+    graal_isolatethread_t* thread_ = nullptr;
+};
 
 class PyPowsyblError : public std::runtime_error {
 public:
@@ -28,6 +44,103 @@ public:
 
     PyPowsyblError(const std::string&  msg)
         : runtime_error(msg) {
+    }
+};
+
+class PowsyblCaller {
+
+public:
+
+static PowsyblCaller* get();
+
+template<typename F, typename... ARGS>
+void callJava(F f, ARGS... args) {
+    GraalVmGuard guard;
+    exception_handler exc;
+
+    beginCall_(&guard, &exc);
+    f(guard.thread(), args..., &exc);
+    if (exc.message) {
+        throw PyPowsyblError(toString(exc.message));
+    }
+    endCall_();
+}
+
+template<typename T, typename F, typename... ARGS>
+T callJava(F f, ARGS... args) {
+    GraalVmGuard guard;
+    exception_handler exc;
+
+    beginCall_(&guard, &exc);
+    auto r = f(guard.thread(), args..., &exc);
+    if (exc.message) {
+        throw PyPowsyblError(toString(exc.message));
+    }
+    endCall_();
+    return r;
+}
+
+void setPreprocessingJavaCall(std::function <void(GraalVmGuard* guard, exception_handler* exc)> func);
+void setPostProcessingJavaCall(std::function<void()> func);
+
+private:
+
+static PowsyblCaller* singleton_;
+static std::mutex initMutex_;
+std::function <void(GraalVmGuard* guard, exception_handler* exc)> beginCall_;
+std::function <void()> endCall_;
+
+};
+
+template<typename T>
+class ToPtr {
+public:
+    ~ToPtr() {
+        delete[] ptr_;
+    }
+
+    T* get() const {
+        return ptr_;
+    }
+
+protected:
+    explicit ToPtr(size_t size)
+            : ptr_(new T[size])
+    {}
+
+    T* ptr_;
+};
+
+class ToCharPtrPtr : public ToPtr<char*> {
+public:
+    explicit ToCharPtrPtr(const std::vector<std::string>& strings)
+            : ToPtr<char*>(strings.size())
+    {
+        for (int i = 0; i < strings.size(); i++) {
+            ptr_[i] = (char*) strings[i].data();
+        }
+    }
+};
+
+class ToIntPtr : public ToPtr<int> {
+public:
+    explicit ToIntPtr(const std::vector<int>& ints)
+            : ToPtr<int>(ints.size())
+    {
+        for (int i = 0; i < ints.size(); i++) {
+            ptr_[i] = ints[i];
+        }
+    }
+};
+
+class ToDoublePtr : public ToPtr<double> {
+public:
+    explicit ToDoublePtr(const std::vector<double>& doubles)
+            : ToPtr<double>(doubles.size())
+    {
+        for (int i = 0; i < doubles.size(); i++) {
+            ptr_[i] = doubles[i];
+        }
     }
 };
 
@@ -306,6 +419,29 @@ public:
     double radius_factor;
 };
 
+//=======short-circuit analysis==========
+enum ShortCircuitStudyType {
+    SUB_TRANSIENT = 0,
+    TRANSIENT,
+    STEADY_STATE
+};
+
+class ShortCircuitAnalysisParameters {
+public:
+    ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
+    std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
+
+    bool with_voltage_result;
+    bool with_feeder_result;
+    bool with_limit_violations;
+    ShortCircuitStudyType study_type;
+    bool with_fortescue_result;
+    double min_voltage_drop_proportional_threshold;
+
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -315,7 +451,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys);
 
-void init();
+void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
+          std::function <void()> postJavaCallls);
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
@@ -373,8 +510,6 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-JavaHandle loadNetworkFromBinaryBuffers(std::vector<py::buffer> byteBuffer, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
-
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 LoadFlowParameters* createLoadFlowParameters();
@@ -394,8 +529,6 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
-
-py::bytes saveNetworkToBinaryBuffer(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
 
@@ -637,29 +770,6 @@ std::vector<SeriesMetadata> getModificationMetadata(network_modification_type ne
 std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(network_modification_type networkModificationType, element_type elementType);
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
-
-//=======short-circuit analysis==========
-enum ShortCircuitStudyType {
-    SUB_TRANSIENT = 0,
-    TRANSIENT,
-    STEADY_STATE
-};
-
-class ShortCircuitAnalysisParameters {
-public:
-    ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
-    std::shared_ptr<shortcircuit_analysis_parameters> to_c_struct() const;
-
-    bool with_voltage_result;
-    bool with_feeder_result;
-    bool with_limit_violations;
-    ShortCircuitStudyType study_type;
-    bool with_fortescue_result;
-    double min_voltage_drop_proportional_threshold;
-
-    std::vector<std::string> provider_parameters_keys;
-    std::vector<std::string> provider_parameters_values;
-};
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
