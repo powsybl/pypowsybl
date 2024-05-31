@@ -9,14 +9,6 @@ project(powsybl-cpp)
 
 include(ExternalProject)
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-# change shared library rpath to resolve java library in same directory
-# only works on linux
-set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_INSTALL_RPATH "$ORIGIN")
-
 set(POWSYBL_CPP_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}powsybl-cpp${CMAKE_SHARED_LIBRARY_SUFFIX})
 
 if(NOT DEFINED PYPOWSYBL_JAVA_SRC_DIR)
