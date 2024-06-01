@@ -77,7 +77,8 @@ public final class LoadFlowCUtils {
                 .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
                 .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
                         .stream().map(Country::valueOf).collect(Collectors.toSet()))
-                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()]);
+                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()])
+                .setDcPowerFactor(loadFlowParametersPtr.getDcPowerFactor());
     }
 
     /**

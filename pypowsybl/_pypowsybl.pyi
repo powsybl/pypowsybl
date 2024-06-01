@@ -413,6 +413,7 @@ class LoadFlowParameters:
     twt_split_shunt_admittance: bool
     voltage_init_mode: VoltageInitMode
     write_slack_bus: bool
+    dc_power_factor: float
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
     def __init__(self) -> None: ...

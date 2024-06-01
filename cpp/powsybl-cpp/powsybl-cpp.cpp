@@ -240,6 +240,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
     connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
+    dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
@@ -260,6 +261,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.connected_component_mode = connected_component_mode;
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
+    res.dc_power_factor = dc_power_factor;
     res.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res.provider_parameters_keys_count = provider_parameters_keys.size();
     res.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);

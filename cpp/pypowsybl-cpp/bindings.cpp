@@ -459,6 +459,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
             .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
             .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 

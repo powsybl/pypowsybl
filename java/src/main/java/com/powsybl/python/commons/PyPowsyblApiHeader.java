@@ -283,6 +283,12 @@ public final class PyPowsyblApiHeader {
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
 
+        @CField("dc_power_factor")
+        double getDcPowerFactor();
+
+        @CField("dc_power_factor")
+        void setDcPowerFactor(double dcPowerFactor);
+
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
 
