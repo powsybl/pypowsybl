@@ -151,10 +151,10 @@ class VoltageInitializerParameters:
         """
         TODO
         """
-        voltage_initializer_set_min_plausible_low_voltage_limit(self, min_plausible_low_voltage_level)
+        voltage_initializer_set_min_plausible_low_voltage_limit(self._handle, min_plausible_low_voltage_level)
 
     def set_max_plausible_high_voltage_limit(self, max_plausible_high_voltage_limit: float) -> None:
         """
         TODO
         """
-        voltage_initializer_set_max_plausible_high_voltage_limit(self, max_plausible_high_voltage_limit)
+        voltage_initializer_set_max_plausible_high_voltage_limit(self._handle, max_plausible_high_voltage_limit)
