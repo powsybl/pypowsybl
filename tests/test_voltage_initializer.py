@@ -29,6 +29,9 @@ def test_parameters():
 
     params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
     params.set_objective_distance(1.3)
+    params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
+    params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
+    params.set_reactive_slack_buses_mode(va.VoltageInitializerReactiveSlackBusesMode.NO_GENERATION)
 
 
 @pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")

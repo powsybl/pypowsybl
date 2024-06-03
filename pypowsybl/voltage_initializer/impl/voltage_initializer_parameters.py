@@ -13,8 +13,14 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_add_specific_low_voltage_limits,
     voltage_initializer_add_specific_high_voltage_limits,
     VoltageInitializerObjective,
+    VoltageInitializerLogLevelAmpl,
+    VoltageInitializerLogLevelSolver,
+    VoltageInitializerReactiveSlackBusesMode,
     voltage_initializer_set_objective,
-    voltage_initializer_set_objective_distance)
+    voltage_initializer_set_objective_distance,
+    voltage_initializer_set_log_level_ampl,
+    voltage_initializer_set_log_level_solver,
+    voltage_initializer_set_reactive_slack_buses_mode)
 
 
 class VoltageInitializerParameters:
@@ -120,3 +126,21 @@ class VoltageInitializerParameters:
                         A 100% objective means the model will target upper voltage limit.
         """
         voltage_initializer_set_objective_distance(self._handle, distance)
+
+    def set_log_level_ampl(self, log_level_ampl: VoltageInitializerLogLevelAmpl) -> None:
+        """
+        TODO
+        """
+        voltage_initializer_set_log_level_ampl(self._handle, log_level_ampl)
+
+    def set_log_level_solver(self, log_level_solver: VoltageInitializerLogLevelSolver) -> None:
+        """
+        TODO
+        """
+        voltage_initializer_set_log_level_solver(self._handle, log_level_solver)
+
+    def set_reactive_slack_buses_mode(self, reactive_slack_buses_mode: VoltageInitializerReactiveSlackBusesMode) -> None:
+        """
+        TODO
+        """
+        voltage_initializer_set_reactive_slack_buses_mode(self._handle, reactive_slack_buses_mode)

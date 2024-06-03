@@ -32,6 +32,9 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelSolver;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerReactiveSlackBusesMode;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.commons.Util;
 
@@ -107,6 +110,14 @@ public final class VoltageInitializerCFunctions {
         doCatch(exceptionHandlerPtr, () -> params.addVariableTwoWindingsTransformers(List.of(id)));
     }
 
+    @CEntryPoint(name = "voltageInitializerAddConfiguredReactiveSlackBuses")
+    public static void addConfiguredReactiveSlackBuses(IsolateThread thread, ObjectHandle paramsHandle,
+            CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        String id = CTypeUtil.toString(idPtr);
+        doCatch(exceptionHandlerPtr, () -> params.addConfiguredReactiveSlackBuses(List.of(id)));
+    }
+
     @CEntryPoint(name = "voltageInitializerSetObjective")
     public static void setObjective(IsolateThread thread, ObjectHandle paramsHandle,
             VoltageInitializerObjective cObjective, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -119,6 +130,27 @@ public final class VoltageInitializerCFunctions {
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr, () -> params.setObjectiveDistance(dist));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetLogLevelAmpl")
+    public static void setLogLevelAmpl(IsolateThread thread, ObjectHandle paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setLogLevelAmpl(Util.convert(logLevelAmpl)));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetLogLevelSolver")
+    public static void setLogLevelSolver(IsolateThread thread, ObjectHandle paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setLogLevelSolver(Util.convert(logLevelSolver)));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetReactiveSlackBusesMode")
+    public static void setReactiveSlackBusesMode(IsolateThread thread, ObjectHandle paramsHandle, VoltageInitializerReactiveSlackBusesMode reactiveSlackBusesMode,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setReactiveSlackBusesMode(Util.convert(reactiveSlackBusesMode)));
     }
 
     @CEntryPoint(name = "voltageInitializerApplyAllModifications")

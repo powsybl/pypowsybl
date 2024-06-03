@@ -46,3 +46,22 @@ Here is a simple starting example:
     print(results.status())
     print(results.indicators())
 
+
+- Specify which buses will have reactive slacks attached in the ACOPF solving
+
+.. code-block:: python
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_reactive_slack_buses_mode(va.VoltageInitializerReactiveSlackBusesMode.NO_GENERATION)
+
+- Specify what is the log level of the AMPL solving
+
+.. code-block:: python
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
+    params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
+
+

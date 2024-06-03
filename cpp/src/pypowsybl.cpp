@@ -1608,12 +1608,28 @@ void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& para
     pypowsybl::callJava(::voltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
 }
 
+void voltageInitializerAddConfiguredReactiveSlackBuses(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::callJava(::voltageInitializerAddConfiguredReactiveSlackBuses, paramsHandle, (char*) idPtr.c_str());
+}
+
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
     pypowsybl::callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
 }
 
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist) {
     pypowsybl::callJava(::voltageInitializerSetObjectiveDistance, paramsHandle, dist);
+}
+
+void voltageInitializerSetLogLevelAmpl(const JavaHandle& paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl) {
+    pypowsybl::callJava(::voltageInitializerSetLogLevelAmpl, paramsHandle, logLevelAmpl);
+}
+
+void voltageInitializerSetLogLevelSolver(const JavaHandle& paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver) {
+    pypowsybl::callJava(::voltageInitializerSetLogLevelSolver, paramsHandle, logLevelSolver);
+}
+
+void voltageInitializerSetReactiveSlackBusesMode(const JavaHandle& paramsHandle, VoltageInitializerReactiveSlackBusesMode reactiveSlackBusesMode) {
+    pypowsybl::callJava(::voltageInitializerSetReactiveSlackBusesMode, paramsHandle, reactiveSlackBusesMode);
 }
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
