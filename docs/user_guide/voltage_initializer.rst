@@ -64,4 +64,15 @@ Here is a simple starting example:
     params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
     params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
 
+- Tune plausible voltage level limits in ACOPF solving
+
+.. code-block:: python
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
+    params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
+
+    
+
 

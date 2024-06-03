@@ -629,6 +629,8 @@ void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, doub
 void voltageInitializerSetLogLevelAmpl(const JavaHandle& paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl);
 void voltageInitializerSetLogLevelSolver(const JavaHandle& paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver);
 void voltageInitializerSetReactiveSlackBusesMode(const JavaHandle& paramsHandle, VoltageInitializerReactiveSlackBusesMode reactiveSlackBusesMode);
+void voltageInitializerSetMinPlausibleLowVoltageLimit(const JavaHandle& paramsHandle, double min_plausible_low_voltage_limit);
+void voltageInitializerSetMaxPlausibleHighVoltageLimit(const JavaHandle& paramsHandle, double max_plausible_high_voltage_limit);
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
 VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle);
 std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHandle& resultHandle);

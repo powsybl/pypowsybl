@@ -207,6 +207,9 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_log_level_solver", &pypowsybl::voltageInitializerSetLogLevelSolver, py::arg("params_handle"), py::arg("log_level_solver"));
     m.def("voltage_initializer_set_reactive_slack_buses_mode", &pypowsybl::voltageInitializerSetReactiveSlackBusesMode, py::arg("params_handle"), py::arg("reactive_slack_buses_mode"));
 
+    m.def("voltage_initializer_set_min_plausible_low_voltage_limit", &pypowsybl::voltageInitializerSetMinPlausibleLowVoltageLimit, py::arg("params_handle"), py::arg("min_plausible_low_voltage_limit"));
+    m.def("voltage_initializer_set_max_plausible_high_voltage_limit", &pypowsybl::voltageInitializerSetMaxPlausibleHighVoltageLimit, py::arg("params_handle"), py::arg("max_plausible_high_voltage_limit"));
+    
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
     m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));

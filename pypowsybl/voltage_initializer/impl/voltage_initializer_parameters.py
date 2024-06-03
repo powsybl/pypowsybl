@@ -20,7 +20,9 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_set_objective_distance,
     voltage_initializer_set_log_level_ampl,
     voltage_initializer_set_log_level_solver,
-    voltage_initializer_set_reactive_slack_buses_mode)
+    voltage_initializer_set_reactive_slack_buses_mode,
+    voltage_initializer_set_min_plausible_low_voltage_limit,
+    voltage_initializer_set_max_plausible_high_voltage_limit)
 
 
 class VoltageInitializerParameters:
@@ -144,3 +146,15 @@ class VoltageInitializerParameters:
         TODO
         """
         voltage_initializer_set_reactive_slack_buses_mode(self._handle, reactive_slack_buses_mode)
+        
+    def set_min_plausible_low_voltage_limit(self, min_plausible_low_voltage_level: float) -> None:
+        """
+        TODO
+        """
+        voltage_initializer_set_min_plausible_low_voltage_limit(self, min_plausible_low_voltage_level)
+
+    def set_max_plausible_high_voltage_limit(self, max_plausible_high_voltage_limit: float) -> None:
+        """
+        TODO
+        """
+        voltage_initializer_set_max_plausible_high_voltage_limit(self, max_plausible_high_voltage_limit)

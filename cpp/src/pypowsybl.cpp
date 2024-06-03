@@ -1632,6 +1632,14 @@ void voltageInitializerSetReactiveSlackBusesMode(const JavaHandle& paramsHandle,
     pypowsybl::callJava(::voltageInitializerSetReactiveSlackBusesMode, paramsHandle, reactiveSlackBusesMode);
 }
 
+void voltageInitializerSetMinPlausibleLowVoltageLimit(const JavaHandle& paramsHandle, double min_plausible_low_voltage_limit) {
+    pypowsybl::callJava(::voltageInitializerSetMinPlausibleLowVoltageLimit, paramsHandle, min_plausible_low_voltage_limit);
+}
+
+void voltageInitializerSetMaxPlausibleHighVoltageLimit(const JavaHandle& paramsHandle, double max_plausible_high_voltage_limit) {
+    pypowsybl::callJava(::voltageInitializerSetMaxPlausibleHighVoltageLimit, paramsHandle, max_plausible_high_voltage_limit);
+}
+
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
     pypowsybl::callJava(::voltageInitializerApplyAllModifications, resultHandle, networkHandle);
 }

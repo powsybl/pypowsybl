@@ -32,6 +32,8 @@ def test_parameters():
     params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
     params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
     params.set_reactive_slack_buses_mode(va.VoltageInitializerReactiveSlackBusesMode.NO_GENERATION)
+    params.set_min_plausible_low_voltage_limit(0.45)
+    params.set_max_plausible_high_voltage_limit(1.2)
 
 
 @pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")

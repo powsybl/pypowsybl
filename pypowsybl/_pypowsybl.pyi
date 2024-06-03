@@ -885,6 +885,13 @@ def voltage_initializer_set_log_level_solver(
 def voltage_initializer_set_reactive_slack_buses_mode(
     params_handle: JavaHandle, reactive_slack_buses_mode: VoltageInitializerReactiveSlackBusesMode) -> None: ...
 
+def voltage_initializer_set_min_plausible_low_voltage_limit(
+    params_handle: JavaHandle, min_plausible_low_voltage_limit: float) -> None: ...
+
+def voltage_initializer_set_max_plausible_high_voltage_limit(
+    params_handle: JavaHandle, max_plausible_high_voltage_limit: float) -> None: ...
+
+
 def run_voltage_initializer(
     debug: bool, network_handle: JavaHandle, params_handle: JavaHandle) -> JavaHandle: ...
 

@@ -153,6 +153,20 @@ public final class VoltageInitializerCFunctions {
         doCatch(exceptionHandlerPtr, () -> params.setReactiveSlackBusesMode(Util.convert(reactiveSlackBusesMode)));
     }
 
+    @CEntryPoint(name = "voltageInitializerSetMinPlausibleLowVoltageLimit")
+    public static void voltageInitializerSetMinPlausibleLowVoltageLimit(IsolateThread thread, ObjectHandle paramsHandle, double minPlausibleLowVoltageLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMinPlausibleLowVoltageLimit(minPlausibleLowVoltageLimit));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMaxPlausibleHighVoltageLimit")
+    public static void voltageInitializerSetMaxPlausibleHighVoltageLimit(IsolateThread thread, ObjectHandle paramsHandle, double maxPlausibleHighVoltageLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMaxPlausibleHighVoltageLimit(maxPlausibleHighVoltageLimit));
+    }
+
     @CEntryPoint(name = "voltageInitializerApplyAllModifications")
     public static void applyAllModifications(IsolateThread thread, ObjectHandle resultHandle,
             ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
