@@ -11,7 +11,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-01-08-eb135ed
+    container: quay.io/pypa/manylinux2014_x86_64:2024-05-27-2f0b25d
     strategy:
       matrix:
         python:
@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Install Linux packages
-        run: dnf install -y wget
+        run: yum install -y wget
 
       - name: Install Maven
         run: |
@@ -32,7 +32,7 @@ jobs:
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
+        uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
         with:
           java-version: '17'
           distribution: 'graalvm'

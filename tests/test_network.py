@@ -164,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 19 == len(parameters)
+    assert 20 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -580,7 +580,7 @@ def test_regulated_terminal_node_breaker():
     updated_gens = n.get_generators()
     assert 'S1VL1_BBS' == updated_gens['regulated_element_id']['GH1']
 
-    with pytest.raises(pp.PyPowsyblError):
+    with pytest.raises(PyPowsyblError):
         n.update_generators(id='GH1', regulated_element_id='LINE_S2S3')
 
 
@@ -588,7 +588,7 @@ def test_regulated_terminal_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()
     assert 'GEN' == generators['regulated_element_id']['GEN']
-    with pytest.raises(pp.PyPowsyblError):
+    with pytest.raises(PyPowsyblError):
         n.update_generators(id='GEN', regulated_element_id='NHV1')
     n.update_generators(id='GEN', regulated_element_id='LOAD')
     generators = n.get_generators()
@@ -606,7 +606,7 @@ def test_update_unknown_data():
 def test_update_non_modifiable_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['voltage_level_id'], index=['GEN'])
-    with pytest.raises(pp.PyPowsyblError) as context:
+    with pytest.raises(PyPowsyblError) as context:
         n.update_generators(update)
     assert 'Series \'voltage_level_id\' is not modifiable.' == str(context.value)
 
@@ -701,7 +701,7 @@ def test_reactive_capability_curve_points_data_frame():
 
 def test_exception():
     n = pp.network.create_ieee14()
-    with pytest.raises(pp.PyPowsyblError) as e:
+    with pytest.raises(PyPowsyblError) as e:
         n.open_switch("aa")
     assert "Switch 'aa' not found" == str(e.value)
 
@@ -1214,7 +1214,7 @@ def test_update_generators_minax_reactive_limits():
     assert -205.0 == generators['min_q'][gen_with_min_max_reactive_limits]
     assert 205.0 == generators['max_q'][gen_with_min_max_reactive_limits]
     gen_with_curve_reactive_limits = '3a3b27be-b18b-4385-b557-6735d733baf0'
-    with pytest.raises(pp.PyPowsyblError):
+    with pytest.raises(PyPowsyblError):
         n.update_generators(id=[gen_with_curve_reactive_limits], min_q=[-200])
 
 
@@ -1381,6 +1381,39 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_switches, switches, check_dtype=False)
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
+
+
+def test_bus_breaker_view_buses():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_bus_breaker_view_buses()
+    expected_buses = pd.DataFrame(
+        index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
+        columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                 'voltage_level_id'],
+        data=[['', NaN, NaN, 0, 0, 'VLGEN'],
+              ['', 380, NaN, 0, 0, 'VLHV1'],
+              ['', 380, NaN, 0, 0, 'VLHV2'],
+              ['', NaN, NaN, 0, 0, 'VLLOAD']])
+    pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
+
+
+def test_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLLOAD')
+    n.create_switches(id='S1', voltage_level_id='VLLOAD', bus1_id='NLOAD', bus2_id='B1')
+    n.update_loads(id='LOAD', bus_breaker_bus_id='B1')
+    loads = n.get_loads(attributes=['bus_breaker_bus_id'])
+    expected_loads = pd.DataFrame(
+        index=pd.Series(name='id', data=['LOAD']),
+        columns=['bus_breaker_bus_id'],
+        data=[['B1']])
+    pd.testing.assert_frame_equal(expected_loads, loads, check_dtype=False)
+
+    # try on a node/breaker one
+    n = pp.network.create_four_substations_node_breaker_network()
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_loads(id='LD1', bus_breaker_bus_id='S1VL1_0')
+    assert "Not supported in a node/breaker topology" in str(e) # this is expected
 
 
 def test_bb_topology_with_no_bus_view_bus_does_not_throw():
@@ -1636,7 +1669,7 @@ def test_validation_level():
     n = pp.network.create_ieee14()
     vl = n.get_validation_level()
     assert ValidationLevel.STEADY_STATE_HYPOTHESIS == vl
-    with pytest.raises(pp.PyPowsyblError) as exc:
+    with pytest.raises(PyPowsyblError) as exc:
         n.update_generators(id='B1-G', target_p=np.NaN)
     assert "Generator 'B1-G': invalid value (NaN) for active power setpoint" == str(exc.value)
 
@@ -1658,7 +1691,7 @@ def test_validate():
     vl = n.validate()
     assert ValidationLevel.STEADY_STATE_HYPOTHESIS == vl
     n.update_generators(id='B1-G', target_p=np.NaN)
-    with pytest.raises(pp.PyPowsyblError) as exc:
+    with pytest.raises(PyPowsyblError) as exc:
         n.validate()
     assert "Generator 'B1-G': invalid value (NaN) for active power setpoint" == str(exc.value)
 
@@ -1740,7 +1773,7 @@ def test_properties():
         {'id': 'GEN', 'prop1': 'test_prop1', 'prop2': 'test_prop2'},
         {'id': 'NHV1_NHV2_1', 'prop1': 'test_prop1'}
     ])
-    with pytest.raises(pp.PyPowsyblError) as exc:
+    with pytest.raises(PyPowsyblError) as exc:
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
@@ -1828,10 +1861,10 @@ def test_ratio_tap_changer_regulated_side():
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == ''
 
-    with pytest.raises(pp.PyPowsyblError, match='a regulation terminal has to be set'):
+    with pytest.raises(PyPowsyblError, match='a regulation terminal has to be set'):
         n.update_ratio_tap_changers(id='T4-1-0', target_v=100, regulating=True)
 
-    with pytest.raises(pp.PyPowsyblError, match='must be ONE or TWO'):
+    with pytest.raises(PyPowsyblError, match='must be ONE or TWO'):
         n.update_ratio_tap_changers(id='T4-1-0', regulated_side='INVALID', target_v=100, regulating=True)
 
     n.update_ratio_tap_changers(id='T4-1-0', regulated_side='TWO', target_v=100, target_deadband=0, regulating=True)
@@ -1847,7 +1880,7 @@ def test_phase_tap_changer_regulated_side():
     assert tap_changer.regulated_side == 'ONE'
     assert tap_changer.regulation_mode == 'FIXED_TAP'
     n.update_ratio_tap_changers(id='TWT', regulating=False)
-    with pytest.raises(pp.PyPowsyblError, match='regulated terminal is not set'):
+    with pytest.raises(PyPowsyblError, match='regulated terminal is not set'):
         n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300,
                                     regulation_mode='CURRENT_LIMITER',
                                     regulating=True, regulated_side='')
