@@ -105,11 +105,3 @@ Available settings in the VoltageInitializerParameters class
     params = v_init.VoltageInitializerParameters()
     params.set_min_nominal_voltage_ignored_bus(0.5)
     params.set_min_nominal_voltage_ignored_voltage_bounds(1)
-
-
-
-    
-
-    
-
-
