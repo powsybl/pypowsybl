@@ -47,8 +47,11 @@ public class CreateFeederBay implements NetworkModification {
 
     @Override
     public void applyModification(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
-        PyPowsyblApiHeader.ElementType elementType = PyPowsyblApiHeader.ElementType.valueOf(dataframes.get(0).getStrings("feeder_type").get(0));
-        DataframeElementType type = convert(elementType);
-        NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reportNode);
+        UpdatingDataframe firstUpdatingDataframe = dataframes.get(0);
+        if (firstUpdatingDataframe.getRowCount() > 0) {
+            PyPowsyblApiHeader.ElementType elementType = PyPowsyblApiHeader.ElementType.valueOf(firstUpdatingDataframe.getStrings("feeder_type").get(0));
+            DataframeElementType type = convert(elementType);
+            NetworkElementAdders.addElementsWithBay(type, network, dataframes, throwException, reportNode);
+        }
     }
 }

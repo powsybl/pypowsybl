@@ -1771,6 +1771,10 @@ def test_exception_create_element_with_bay():
     assert exc.match('Bus or busbar section S1VL2_BBS not found')
 
 
-
-
-
+def test_empty_load_bay_segv():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert len(n.get_loads()) == 6
+    df = pd.DataFrame(index=[], columns=["id", "p0", "q0", "bus_or_busbar_section_id", "position_order"],
+                      data=[])
+    pp.network.create_load_bay(network=n, df=df, raise_exception=True)
+    assert len(n.get_loads()) == 6 # no crash and no network change
