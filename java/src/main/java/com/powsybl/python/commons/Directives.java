@@ -19,6 +19,6 @@ public class Directives implements CContext.Directives {
 
     @Override
     public List<String> getHeaderFiles() {
-        return Collections.singletonList(ProjectHeaderFile.resolve("com.powsybl.python", "pypowsybl-api.h"));
+        return Collections.singletonList(ProjectHeaderFile.resolve("com.powsybl.python", "powsybl-api.h"));
     }
 }
