@@ -206,9 +206,18 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_log_level_ampl", &pypowsybl::voltageInitializerSetLogLevelAmpl, py::arg("params_handle"), py::arg("log_level_ampl"));
     m.def("voltage_initializer_set_log_level_solver", &pypowsybl::voltageInitializerSetLogLevelSolver, py::arg("params_handle"), py::arg("log_level_solver"));
     m.def("voltage_initializer_set_reactive_slack_buses_mode", &pypowsybl::voltageInitializerSetReactiveSlackBusesMode, py::arg("params_handle"), py::arg("reactive_slack_buses_mode"));
-
     m.def("voltage_initializer_set_min_plausible_low_voltage_limit", &pypowsybl::voltageInitializerSetMinPlausibleLowVoltageLimit, py::arg("params_handle"), py::arg("min_plausible_low_voltage_limit"));
     m.def("voltage_initializer_set_max_plausible_high_voltage_limit", &pypowsybl::voltageInitializerSetMaxPlausibleHighVoltageLimit, py::arg("params_handle"), py::arg("max_plausible_high_voltage_limit"));
+    m.def("voltage_initializer_set_active_power_variation_rate", &pypowsybl::voltageInitializerSetActivePowerVariationRate, py::arg("params_handle"), py::arg("active_power_variation_rate"));
+    m.def("voltage_initializer_set_min_plausible_active_power_threshold", &pypowsybl::voltageInitializerSetMinPlausibleActivePowerThreshold, py::arg("params_handle"), py::arg("min_plausible_active_power_threshold"));
+    m.def("voltage_initializer_set_low_impedance_threshold", &pypowsybl::voltageInitializerSetLowImpedanceThreshold, py::arg("params_handle"), py::arg("low_impedance_threshold"));
+    m.def("voltage_initializer_set_min_nominal_voltage_ignored_bus", &pypowsybl::voltageInitializerSetMinNominalVoltageIgnoredBus, py::arg("params_handle"), py::arg("min_nominal_voltage_ignored_bus"));
+    m.def("voltage_initializer_set_min_nominal_voltage_ignored_voltage_bounds", &pypowsybl::voltageInitializerSetMinNominalVoltageIgnoredVoltageBounds, py::arg("params_handle"), py::arg("min_nominal_voltage_ignored_voltage_bounds"));
+    m.def("voltage_initializer_set_max_plausible_power_limit", &pypowsybl::voltageInitializerSetMaxPlausiblePowerLimit, py::arg("params_handle"), py::arg("max_plausible_power_limit"));
+    m.def("voltage_initializer_set_high_active_power_default_limit", &pypowsybl::voltageInitializerSetHighActivePowerDefaultLimit, py::arg("params_handle"), py::arg("high_active_power_default_limit"));
+    m.def("voltage_initializer_set_low_active_power_default_limit", &pypowsybl::voltageInitializerSetLowActivePowerDefaultLimit, py::arg("params_handle"), py::arg("low_active_power_default_limit"));
+    m.def("voltage_initializer_set_default_minimal_qp_range", &pypowsybl::voltageInitializerSetDefaultMinimalQPRange, py::arg("params_handle"), py::arg("default_minimal_qp_range"));
+    m.def("voltage_initializer_set_default_qmax_pmax_ratio", &pypowsybl::voltageInitializerSetDefaultQmaxPmaxRatio, py::arg("params_handle"), py::arg("default_qmax_pmax_ratio"));
     
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
     m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));

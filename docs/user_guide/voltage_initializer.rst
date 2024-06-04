@@ -47,7 +47,10 @@ Here is a simple starting example:
     print(results.indicators())
 
 
-- Specify which buses will have reactive slacks attached in the ACOPF solving
+Available settings in the VoltageInitializerParameters class
+-------------
+
+- Specify which buses will have reactive slacks attached in the ACOPF solving.
 
 .. code-block:: python
     import pypowsybl as pp
@@ -55,7 +58,7 @@ Here is a simple starting example:
     params = v_init.VoltageInitializerParameters()
     params.set_reactive_slack_buses_mode(va.VoltageInitializerReactiveSlackBusesMode.NO_GENERATION)
 
-- Specify what is the log level of the AMPL solving
+- Specify what is the log level of the AMPL solving.
 
 .. code-block:: python
     import pypowsybl as pp
@@ -64,14 +67,48 @@ Here is a simple starting example:
     params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
     params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
 
-- Tune plausible voltage level limits in ACOPF solving
+- Change plausible voltage level limits in ACOPF solving.
 
 .. code-block:: python
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
-    params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
-    params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
+    params.set_min_plausible_low_voltage_limit(0.45)
+    params.set_max_plausible_high_voltage_limit(1.2)
+
+- Tune the threshold defining null values in AMPL.
+
+.. code-block:: python
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_min_plausible_active_power_threshold(1)
+    params.set_low_impedance_threshold(1e-5)
+
+- Modify the parameters used for the correction of generator limits.
+
+.. code-block:: python
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_max_plausible_power_limit(7800)
+    params.set_high_active_power_default_limit(950)
+    params.set_low_active_power_default_limit(0.5)
+    params.set_default_minimal_qp_range(0.45)
+    params.set_default_qmax_pmax_ratio(0.45)
+
+- Tune the thresholds used to ignore buses or voltage level limits with nominal voltage lower than them.
+
+.. code-block:: python
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_min_nominal_voltage_ignored_bus(0.5)
+    params.set_min_nominal_voltage_ignored_voltage_bounds(1)
+
+
+
+    
 
     
 
