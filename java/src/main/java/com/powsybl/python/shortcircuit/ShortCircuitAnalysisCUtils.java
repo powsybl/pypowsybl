@@ -12,6 +12,7 @@ import com.powsybl.commons.extensions.Extension;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
+import com.powsybl.shortcircuit.InitialVoltageProfileMode;
 import com.powsybl.shortcircuit.ShortCircuitAnalysisProvider;
 import com.powsybl.shortcircuit.ShortCircuitParameters;
 import com.powsybl.shortcircuit.StudyType;
@@ -61,6 +62,7 @@ public final class ShortCircuitAnalysisCUtils {
                 .setWithFortescueResult(shortCircuitAnalysisParametersPointer.isWithFortescueResult())
                 .setWithLimitViolations(shortCircuitAnalysisParametersPointer.isWithLimitViolations())
                 .setMinVoltageDropProportionalThreshold(shortCircuitAnalysisParametersPointer.getMinVoltageDropProportionalThreshold())
+                .setInitialVoltageProfileMode(InitialVoltageProfileMode.values()[shortCircuitAnalysisParametersPointer.getInitialVoltageProfileMode()])
                 .setStudyType(StudyType.values()[shortCircuitAnalysisParametersPointer.getStudyType()]);
     }
 
