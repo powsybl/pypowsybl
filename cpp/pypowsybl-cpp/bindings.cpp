@@ -993,6 +993,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
+    py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the initialization of short circuit study")
+            .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
+                   "")
+            .value("CONFIGURED", pypowsybl::InitialVoltageProfileMode::CONFIGURED,
+                   "Voltage profile given by the user.")
+            .value("PREVIOUS_VALUE", pypowsybl::InitialVoltageProfileMode::PREVIOUS_VALUE,
+                   "Voltage profile from the loadflow.");
+
     py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
             .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
                    "It is the first stage of the short circuit, right when the fault happens. The subtransient reactance of generators will be used.")
@@ -1009,6 +1017,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("study_type", &pypowsybl::ShortCircuitAnalysisParameters::study_type)
         .def_readwrite("with_fortescue_result", &pypowsybl::ShortCircuitAnalysisParameters::with_fortescue_result)
         .def_readwrite("min_voltage_drop_proportional_threshold", &pypowsybl::ShortCircuitAnalysisParameters::min_voltage_drop_proportional_threshold)
+        .def_readwrite("initial_voltage_profile_mode", &pypowsybl::ShortCircuitAnalysisParameters::initial_voltage_profile_mode)
         .def_readwrite("provider_parameters_keys", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_keys)
         .def_readwrite("provider_parameters_values", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_values);
 
