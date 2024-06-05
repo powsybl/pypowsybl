@@ -996,9 +996,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
-    py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
+    py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the initialization of short circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
+            .value("CONFIGURED", pypowsybl::InitialVoltageProfileMode::CONFIGURED,
+                   "Voltage profile given by the user.")
             .value("PREVIOUS_VALUE", pypowsybl::InitialVoltageProfileMode::PREVIOUS_VALUE,
                    "Voltage profile calculated by the load flow is used for the calculation.");
 

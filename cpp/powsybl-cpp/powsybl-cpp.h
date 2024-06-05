@@ -440,6 +440,7 @@ enum ShortCircuitStudyType {
 
 enum InitialVoltageProfileMode {
     NOMINAL = 0,
+    CONFIGURED,
     PREVIOUS_VALUE
 };
 
