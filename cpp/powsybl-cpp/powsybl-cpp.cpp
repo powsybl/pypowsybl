@@ -1476,19 +1476,19 @@ void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, doub
 }
 
 void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsHandle, double defaultVariableScalingFactor) {
-    pypowsybl::callJava(::voltageInitializerSetDefaultVariableScalingFactor, paramsHandle, defaultVariableScalingFactor);
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetDefaultVariableScalingFactor, paramsHandle, defaultVariableScalingFactor);
 }
 
 void voltageInitializerSetDefaultConstraintScalingFactor(const JavaHandle& paramsHandle, double defaultConstraintScalingFactor) {
-    pypowsybl::callJava(::voltageInitializerSetDefaultConstraintScalingFactor, paramsHandle, defaultConstraintScalingFactor);
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetDefaultConstraintScalingFactor, paramsHandle, defaultConstraintScalingFactor);
 }
 
 void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& paramsHandle, double reactiveSlackVariableScalingFactor) {
-    pypowsybl::callJava(::voltageInitializerSetReactiveSlackVariableScalingFactor, paramsHandle, reactiveSlackVariableScalingFactor);
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetReactiveSlackVariableScalingFactor, paramsHandle, reactiveSlackVariableScalingFactor);
 }
 
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor) {
-    pypowsybl::callJava(::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, paramsHandle, twoWindingTransformerRatioVariableScalingFactor);
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, paramsHandle, twoWindingTransformerRatioVariableScalingFactor);
 }
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
