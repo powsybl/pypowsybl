@@ -759,6 +759,10 @@ void voltageInitializerAddConstantQGenerators(const JavaHandle& paramsHandle, co
 void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& paramsHandle, const std::string& idPtr);
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective);
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist);
+void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsHandle, double defaultVariableScalingFactor);
+void voltageInitializerSetDefaultConstraintScalingFactor(const JavaHandle& paramsHandle, double defaultConstraintScalingFactor);
+void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& paramsHandle, double reactiveSlackVariableScalingFactor);
+void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor);
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
 VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle);
 std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHandle& resultHandle);
