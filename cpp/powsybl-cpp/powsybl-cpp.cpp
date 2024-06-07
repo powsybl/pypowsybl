@@ -1537,6 +1537,7 @@ void voltageInitializerSetLowActivePowerDefaultLimit(const JavaHandle& paramsHan
 
 void voltageInitializerSetDefaultQmaxPmaxRatio(const JavaHandle& paramsHandle, double default_qmax_pmax_ratio) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetDefaultQmaxPmaxRatio, paramsHandle, default_qmax_pmax_ratio);
+}
 
 void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsHandle, double defaultVariableScalingFactor) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetDefaultVariableScalingFactor, paramsHandle, defaultVariableScalingFactor);
