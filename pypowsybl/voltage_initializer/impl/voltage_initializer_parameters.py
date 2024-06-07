@@ -32,8 +32,11 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_set_high_active_power_default_limit,
     voltage_initializer_set_low_active_power_default_limit,
     voltage_initializer_set_default_minimal_qp_range,
-    voltage_initializer_set_default_qmax_pmax_ratio)
-
+    voltage_initializer_set_default_qmax_pmax_ratio,
+    voltage_initializer_set_default_variable_scaling_factor,
+    voltage_initializer_set_default_constraint_scaling_factor,
+    voltage_initializer_set_reactive_slack_variable_scaling_factor,
+    voltage_initializer_set_twt_ratio_variable_scaling_factor)
 
 class VoltageInitializerParameters:
     """
@@ -292,3 +295,41 @@ class VoltageInitializerParameters:
             default_qmax_pmax_ratio: is > 0.
         """
         voltage_initializer_set_default_qmax_pmax_ratio(self._handle, default_qmax_pmax_ratio)
+
+    def set_default_variable_scaling_factor(self, default_variable_scaling_factor: float) -> None:
+        """
+        Changes the scaling of all variables (except reactive slacks and transformer ratios) before ACOPF solving
+
+        Args:
+            default_variable_scaling_factor: is > 0.
+                        Default scaling factor
+        """
+        voltage_initializer_set_default_variable_scaling_factor(self._handle, default_variable_scaling_factor)
+
+    def set_default_constraint_scaling_factor(self, default_constraint_scaling_factor: float) -> None:
+        """
+        Changes the scaling factor applied to all the constraints before ACOPF solving
+
+        Args:
+            default_constraint_scaling_factor: is >= 0.
+        """
+        voltage_initializer_set_default_constraint_scaling_factor(self._handle, default_constraint_scaling_factor)
+
+    def set_reactive_slack_variable_scaling_factor(self, reactive_slack_variable_scaling_factor: float) -> None:
+        """
+        Changes the scaling factor applied to all reactive slacks variables before ACOPF solving
+
+        Args:
+            reactive_slack_variable_scaling_factor: is > 0.
+        """
+        voltage_initializer_set_reactive_slack_variable_scaling_factor(self._handle, reactive_slack_variable_scaling_factor)
+
+    def set_twt_ratio_variable_scaling_factor(self, twt_ratio_variable_scaling_factor: float) -> None:
+        """
+        Changes the scaling factor applied to all transformer ratio variables before ACOPF solving
+
+        Args:
+            twt_ratio_variable_scaling_factor: is > 0.
+        """
+        voltage_initializer_set_twt_ratio_variable_scaling_factor(self._handle, twt_ratio_variable_scaling_factor)
+

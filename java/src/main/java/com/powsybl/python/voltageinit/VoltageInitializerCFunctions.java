@@ -235,6 +235,33 @@ public final class VoltageInitializerCFunctions {
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr, () -> params.setDefaultQmaxPmaxRatio(defaultQmaxPmaxRatio));
+
+    @CEntryPoint(name = "voltageInitializerSetDefaultVariableScalingFactor")
+    public static void setDefaultVariableScalingFactor(IsolateThread thread, ObjectHandle paramsHandle, double defaultVariableScalingFactor,
+                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setDefaultVariableScalingFactor(defaultVariableScalingFactor));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetDefaultConstraintScalingFactor")
+    public static void setDefaultConstraintScalingFactor(IsolateThread thread, ObjectHandle paramsHandle, double defaultConstraintScalingFactor,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setDefaultConstraintScalingFactor(defaultConstraintScalingFactor));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetReactiveSlackVariableScalingFactor")
+    public static void setReactiveSlackVariableScalingFactor(IsolateThread thread, ObjectHandle paramsHandle, double reactiveSlackVariableScalingFactor,
+                                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setReactiveSlackVariableScalingFactor(reactiveSlackVariableScalingFactor));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor")
+    public static void setTwoWindingTransformerRatioVariableScalingFactor(IsolateThread thread, ObjectHandle paramsHandle, double twoWindingTransformerRatioVariableScalingFactor,
+                                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setTwoWindingTransformerRatioVariableScalingFactor(twoWindingTransformerRatioVariableScalingFactor));
     }
 
     @CEntryPoint(name = "voltageInitializerApplyAllModifications")

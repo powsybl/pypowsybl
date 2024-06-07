@@ -870,6 +870,7 @@ def voltage_initializer_add_specific_low_voltage_limits(
 def voltage_initializer_add_specific_high_voltage_limits(
         params_handle: JavaHandle, voltage_level_id: str, is_relative: bool, limit: float) -> None: ...
 
+
 def voltage_initializer_set_objective(
     params_handle: JavaHandle, objective: VoltageInitializerObjective) -> None: ...
 
@@ -920,6 +921,19 @@ def voltage_initializer_set_default_minimal_qp_range(
 
 def voltage_initializer_set_default_qmax_pmax_ratio(
     params_handle: JavaHandle, default_qmax_pmax_ratio: float) -> None: ...
+
+
+def voltage_initializer_set_default_variable_scaling_factor(
+    params_handle: JavaHandle, default_variable_scaling_factor: float) -> None: ...
+
+def voltage_initializer_set_default_constraint_scaling_factor(
+    params_handle: JavaHandle, default_constraint_scaling_factor: float) -> None: ...
+
+def voltage_initializer_set_reactive_slack_variable_scaling_factor(
+    params_handle: JavaHandle, reactive_slack_variable_scaling_factor: float) -> None: ...
+
+def voltage_initializer_set_twt_ratio_variable_scaling_factor(
+    params_handle: JavaHandle, twt_ratio_variable_scaling_factor: float) -> None: ...
 
 
 def run_voltage_initializer(
