@@ -235,6 +235,7 @@ public final class VoltageInitializerCFunctions {
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr, () -> params.setDefaultQmaxPmaxRatio(defaultQmaxPmaxRatio));
+    }
 
     @CEntryPoint(name = "voltageInitializerSetDefaultVariableScalingFactor")
     public static void setDefaultVariableScalingFactor(IsolateThread thread, ObjectHandle paramsHandle, double defaultVariableScalingFactor,
