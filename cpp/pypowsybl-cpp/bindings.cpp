@@ -198,6 +198,12 @@ void voltageInitializerBinding(py::module_& m) {
 
     m.def("voltage_initializer_set_objective", &pypowsybl::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
     m.def("voltage_initializer_set_objective_distance", &pypowsybl::voltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
+
+    m.def("voltage_initializer_set_default_variable_scaling_factor", &pypowsybl::voltageInitializerSetDefaultVariableScalingFactor, py::arg("params_handle"), py::arg("default_variable_scaling_factor"));
+    m.def("voltage_initializer_set_default_constraint_scaling_factor", &pypowsybl::voltageInitializerSetDefaultConstraintScalingFactor, py::arg("params_handle"), py::arg("default_constraint_scaling_factor"));
+    m.def("voltage_initializer_set_reactive_slack_variable_scaling_factor", &pypowsybl::voltageInitializerSetReactiveSlackVariableScalingFactor, py::arg("params_handle"), py::arg("reactive_slack_variable_scaling_factor"));
+    m.def("voltage_initializer_set_twt_ratio_variable_scaling_factor", &pypowsybl::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, py::arg("params_handle"), py::arg("twt_ratio_variable_scaling_factor"));
+
     m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
