@@ -12,4 +12,3 @@ def test_star_import():
     assert network is not None
     assert loadflow is not None
     
-
