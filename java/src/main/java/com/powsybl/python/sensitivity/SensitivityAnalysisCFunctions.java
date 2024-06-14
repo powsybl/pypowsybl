@@ -99,6 +99,22 @@ public final class SensitivityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "createZonePointer")
+    public static PyPowsyblApiHeader.ZonePointer createZonePointer(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.<PyPowsyblApiHeader.ZonePointer>calloc(SizeOf.get(PyPowsyblApiHeader.ZonePointer.class)));
+    }
+
+    @CEntryPoint(name = "freeZonePointer")
+    public static void freeZonePointer(IsolateThread thread, PyPowsyblApiHeader.ZonePointer zonePointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i < zonePointer.getInjectionsIdsCount(); i++) {
+                UnmanagedMemory.free(zonePointer.getInjectionsIds().read(i));
+            }
+            UnmanagedMemory.free(zonePointer.getInjectionsIds());
+            UnmanagedMemory.free(zonePointer);
+        });
+    }
+
     @CEntryPoint(name = "addFactorMatrix")
     public static void addFactorMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                        CCharPointerPointer branchIdPtrPtr, int branchIdCount,
