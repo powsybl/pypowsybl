@@ -1467,12 +1467,76 @@ void voltageInitializerAddVariableTwoWindingsTransformers(const JavaHandle& para
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerAddVariableTwoWindingsTransformers, paramsHandle, (char*) idPtr.c_str());
 }
 
+void voltageInitializerAddConfiguredReactiveSlackBuses(const JavaHandle& paramsHandle, const std::string& idPtr) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerAddConfiguredReactiveSlackBuses, paramsHandle, (char*) idPtr.c_str());
+}
+
 void voltageInitializerSetObjective(const JavaHandle& paramsHandle, VoltageInitializerObjective cObjective) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetObjective, paramsHandle, cObjective);
 }
 
 void voltageInitializerSetObjectiveDistance(const JavaHandle& paramsHandle, double dist) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetObjectiveDistance, paramsHandle, dist);
+}
+
+void voltageInitializerSetLogLevelAmpl(const JavaHandle& paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetLogLevelAmpl, paramsHandle, logLevelAmpl);
+}
+
+void voltageInitializerSetLogLevelSolver(const JavaHandle& paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetLogLevelSolver, paramsHandle, logLevelSolver);
+}
+
+void voltageInitializerSetReactiveSlackBusesMode(const JavaHandle& paramsHandle, VoltageInitializerReactiveSlackBusesMode reactiveSlackBusesMode) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetReactiveSlackBusesMode, paramsHandle, reactiveSlackBusesMode);
+}
+
+void voltageInitializerSetMinPlausibleLowVoltageLimit(const JavaHandle& paramsHandle, double min_plausible_low_voltage_limit) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetMinPlausibleLowVoltageLimit, paramsHandle, min_plausible_low_voltage_limit);
+}
+
+void voltageInitializerSetMaxPlausibleHighVoltageLimit(const JavaHandle& paramsHandle, double max_plausible_high_voltage_limit) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetMaxPlausibleHighVoltageLimit, paramsHandle, max_plausible_high_voltage_limit);
+}
+
+void voltageInitializerSetActivePowerVariationRate(const JavaHandle& paramsHandle, double active_power_variation_rate) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetActivePowerVariationRate, paramsHandle, active_power_variation_rate);
+}
+
+void voltageInitializerSetMinPlausibleActivePowerThreshold(const JavaHandle& paramsHandle, double min_plausible_active_power_threshold) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetMinPlausibleActivePowerThreshold, paramsHandle, min_plausible_active_power_threshold);
+}
+
+void voltageInitializerSetLowImpedanceThreshold(const JavaHandle& paramsHandle, double low_impedance_threshold) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetLowImpedanceThreshold, paramsHandle, low_impedance_threshold);
+}
+
+void voltageInitializerSetMinNominalVoltageIgnoredBus(const JavaHandle& paramsHandle, double min_nominal_voltage_ignored_bus) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetMinNominalVoltageIgnoredBus, paramsHandle, min_nominal_voltage_ignored_bus);
+}
+
+void voltageInitializerSetMinNominalVoltageIgnoredVoltageBounds(const JavaHandle& paramsHandle, double min_nominal_voltage_ignored_voltage_bounds) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetMinNominalVoltageIgnoredVoltageBounds, paramsHandle, min_nominal_voltage_ignored_voltage_bounds);
+}
+
+void voltageInitializerSetMaxPlausiblePowerLimit(const JavaHandle& paramsHandle, double max_plausible_power_limit) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetMaxPlausiblePowerLimit, paramsHandle, max_plausible_power_limit);
+}
+
+void voltageInitializerSetDefaultMinimalQPRange(const JavaHandle& paramsHandle, double default_minimal_qp_range) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetDefaultMinimalQPRange, paramsHandle, default_minimal_qp_range);
+}
+
+void voltageInitializerSetHighActivePowerDefaultLimit(const JavaHandle& paramsHandle, double high_active_power_default_limit) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetHighActivePowerDefaultLimit, paramsHandle, high_active_power_default_limit);
+}
+
+void voltageInitializerSetLowActivePowerDefaultLimit(const JavaHandle& paramsHandle, double low_active_power_default_limit) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetLowActivePowerDefaultLimit, paramsHandle, low_active_power_default_limit);
+}
+
+void voltageInitializerSetDefaultQmaxPmaxRatio(const JavaHandle& paramsHandle, double default_qmax_pmax_ratio) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetDefaultQmaxPmaxRatio, paramsHandle, default_qmax_pmax_ratio);
 }
 
 void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsHandle, double defaultVariableScalingFactor) {
@@ -1489,6 +1553,7 @@ void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& p
 
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, paramsHandle, twoWindingTransformerRatioVariableScalingFactor);
+
 }
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {

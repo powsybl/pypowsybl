@@ -77,6 +77,10 @@ jobs:
       - name: Install wheel
         run: pip3 install wheelhouse/*.whl --user
 
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: |
@@ -189,6 +193,10 @@ jobs:
         shell: bash
         run: python -m pip install dist/*.whl --user
 
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+        
       - name: Run tests
         working-directory: ./tests
         run: python3 -m pytest

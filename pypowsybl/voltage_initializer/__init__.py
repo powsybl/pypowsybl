@@ -6,4 +6,4 @@
 
 from .impl.voltage_initializer import run
 from .impl.voltage_initializer_results import VoltageInitializerResults, VoltageInitializerStatus
-from .impl.voltage_initializer_parameters import VoltageInitializerParameters, VoltageInitializerObjective
+from .impl.voltage_initializer_parameters import VoltageInitializerParameters, VoltageInitializerObjective, VoltageInitializerLogLevelAmpl, VoltageInitializerLogLevelSolver, VoltageInitializerReactiveSlackBusesMode
