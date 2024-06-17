@@ -75,7 +75,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             runnable.run();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             setException(exceptionHandlerPtr, t);
         }
     }
@@ -84,7 +84,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsBoolean();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             setException(exceptionHandlerPtr, t);
             return false;
         }
@@ -94,7 +94,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsInt();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             setException(exceptionHandlerPtr, t);
             return -1;
         }
@@ -104,7 +104,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsLong();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             setException(exceptionHandlerPtr, t);
             return 0;
         }
@@ -115,7 +115,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             setException(exceptionHandlerPtr, t);
             return null;
         }
@@ -130,7 +130,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             setException(exceptionHandlerPtr, t);
             return WordFactory.zero();
         }
@@ -410,26 +410,17 @@ public final class Util {
     }
 
     public static LimitViolationType convert(PyPowsyblApiHeader.LimitViolationType violationType) {
-        switch (violationType) {
-            case ACTIVE_POWER:
-                return LimitViolationType.ACTIVE_POWER;
-            case APPARENT_POWER:
-                return LimitViolationType.APPARENT_POWER;
-            case CURRENT:
-                return LimitViolationType.CURRENT;
-            case LOW_VOLTAGE:
-                return LimitViolationType.LOW_VOLTAGE;
-            case HIGH_VOLTAGE:
-                return LimitViolationType.HIGH_VOLTAGE;
-            case LOW_SHORT_CIRCUIT_CURRENT:
-                return LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
-            case HIGH_SHORT_CIRCUIT_CURRENT:
-                return LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
-            case OTHER:
-                return LimitViolationType.OTHER;
-            default:
-                throw new PowsyblException("Unknown limit violation type: " + violationType);
-        }
+        return switch (violationType) {
+            case ACTIVE_POWER -> LimitViolationType.ACTIVE_POWER;
+            case APPARENT_POWER -> LimitViolationType.APPARENT_POWER;
+            case CURRENT -> LimitViolationType.CURRENT;
+            case LOW_VOLTAGE -> LimitViolationType.LOW_VOLTAGE;
+            case HIGH_VOLTAGE -> LimitViolationType.HIGH_VOLTAGE;
+            case LOW_SHORT_CIRCUIT_CURRENT -> LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
+            case HIGH_SHORT_CIRCUIT_CURRENT -> LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
+            case OTHER -> LimitViolationType.OTHER;
+            default -> throw new PowsyblException("Unknown limit violation type: " + violationType);
+        };
     }
 
     public static ThreeSides convert(PyPowsyblApiHeader.ThreeSideType side) {

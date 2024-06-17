@@ -28,7 +28,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 @CContext(Directives.class)
 public final class LoggingCFunctions {
 
-    public static CFunctionPointer loggerCallback;
+    static CFunctionPointer loggerCallback;
 
     private LoggingCFunctions() {
     }
@@ -40,9 +40,7 @@ public final class LoggingCFunctions {
 
     @CEntryPoint(name = "setupLoggerCallback")
     public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            loggerCallback = fpointer;
-        });
+        doCatch(exceptionHandlerPtr, () -> loggerCallback = fpointer);
     }
 
     @CEntryPoint(name = "setLogLevel")

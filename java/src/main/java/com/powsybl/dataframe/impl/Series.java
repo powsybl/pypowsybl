@@ -67,21 +67,25 @@ public class Series {
 
     public double[] getDoubles() {
         return Optional.ofNullable(doubles)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type double"));
+            .orElseThrow(() -> createException(getName(), "double"));
     }
 
     public int[] getInts() {
         return Optional.ofNullable(ints)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type int"));
+            .orElseThrow(() -> createException(getName(), "int"));
     }
 
     public boolean[] getBooleans() {
         return Optional.ofNullable(booleans)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type boolean"));
+            .orElseThrow(() -> createException(getName(), "boolean"));
     }
 
     public String[] getStrings() {
         return Optional.ofNullable(strings)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type string"));
+            .orElseThrow(() -> createException(getName(), "string"));
+    }
+
+    private PowsyblException createException(String name, String type) {
+        return new PowsyblException(String.format("Series %s is not of type %s", name, type));
     }
 }
