@@ -1262,6 +1262,46 @@ public final class PyPowsyblApiHeader {
         public static native VoltageInitializerObjective fromCValue(int value);
     }
 
+    @CEnum("VoltageInitializerLogLevelAmpl")
+    public enum VoltageInitializerLogLevelAmpl {
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerLogLevelAmpl fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerLogLevelSolver")
+    public enum VoltageInitializerLogLevelSolver {
+        NOTHING,
+        ONLY_RESULTS,
+        EVERYTHING;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerLogLevelSolver fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerReactiveSlackBusesMode")
+    public enum VoltageInitializerReactiveSlackBusesMode {
+        CONFIGURED,
+        NO_GENERATION,
+        ALL_BUSES;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerReactiveSlackBusesMode fromCValue(int value);
+    }
+
     @CEnum("VoltageInitializerStatus")
     public enum VoltageInitializerStatus {
         OK,
