@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.adders;
 
@@ -35,6 +36,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
+            SeriesMetadata.strings("name"),
             SeriesMetadata.strings("voltage_level_id"),
             SeriesMetadata.strings("bus_id"),
             SeriesMetadata.strings("connectable_bus_id"),
