@@ -346,10 +346,10 @@ public final class Util {
 
     public static OpenReacAmplLogLevel convert(VoltageInitializerLogLevelAmpl obj) {
         return switch (obj) {
-            case DEBUG -> OpenReacAmplLogLevel.DEBUG;
-            case INFO -> OpenReacAmplLogLevel.INFO;
-            case WARNING -> OpenReacAmplLogLevel.WARNING;
-            case ERROR -> OpenReacAmplLogLevel.ERROR;
+            case LOG_AMPL_DEBUG -> OpenReacAmplLogLevel.DEBUG;
+            case LOG_AMPL_INFO -> OpenReacAmplLogLevel.INFO;
+            case LOG_AMPL_WARNING -> OpenReacAmplLogLevel.WARNING;
+            case LOG_AMPL_ERROR -> OpenReacAmplLogLevel.ERROR;
         };
     }
 
