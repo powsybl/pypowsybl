@@ -7,8 +7,10 @@
 cmake_minimum_required(VERSION 3.14)
 project(pypowsybl)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+option(BUILD_ONLY_POWSYBL_CPP "Build the only powsybl cpp library" OFF)
 
 # change shared library rpath to resolve java library in same directory
 # only works on linux
@@ -17,5 +19,7 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 #native-image math-native and powsybl-cpp targets
 add_subdirectory(powsybl-cpp)
-add_subdirectory(lib/pybind11)
-add_subdirectory(pypowsybl-cpp)
+if (NOT BUILD_ONLY_POWSYBL_CPP)
+  add_subdirectory(lib/pybind11)
+  add_subdirectory(pypowsybl-cpp)
+endif()
