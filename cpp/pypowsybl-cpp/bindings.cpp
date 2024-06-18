@@ -189,10 +189,10 @@ void voltageInitializerBinding(py::module_& m) {
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
     py::enum_<VoltageInitializerLogLevelAmpl>(m, "VoltageInitializerLogLevelAmpl")
-        .value("DEBUG", VoltageInitializerLogLevelAmpl::DEBUG)
-        .value("INFO", VoltageInitializerLogLevelAmpl::INFO)
-        .value("WARNING", VoltageInitializerLogLevelAmpl::WARNING)
-        .value("ERROR", VoltageInitializerLogLevelAmpl::ERROR);
+        .value("DEBUG", VoltageInitializerLogLevelAmpl::LOG_AMPL_DEBUG)
+        .value("INFO", VoltageInitializerLogLevelAmpl::LOG_AMPL_INFO)
+        .value("WARNING", VoltageInitializerLogLevelAmpl::LOG_AMPL_WARNING)
+        .value("ERROR", VoltageInitializerLogLevelAmpl::LOG_AMPL_ERROR);
 
     py::enum_<VoltageInitializerLogLevelSolver>(m, "VoltageInitializerLogLevelSolver")
         .value("NOTHING", VoltageInitializerLogLevelSolver::NOTHING)
