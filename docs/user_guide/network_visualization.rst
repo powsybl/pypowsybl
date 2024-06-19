@@ -101,6 +101,7 @@ Network-area diagrams can be customized through NadParameters:
 
 .. code-block:: python
 
+    >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
     >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True))
 
