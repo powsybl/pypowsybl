@@ -5,6 +5,7 @@ Running a security analysis
 
     import pypowsybl as pp
     import pandas as pd
+    import numpy as np
     pd.options.display.max_columns = None
     pd.options.display.expand_frame_repr = False
     from pypowsybl._pypowsybl import ConditionType
@@ -136,7 +137,7 @@ The following operator strategy define the application of the switch action 'Swi
     >>> sa_result = sa.run_ac(n)
     >>> df = sa_result.branch_results
     >>> #Get the detailed results post operator strategy
-    >>> df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1']
+    >>> float(df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'])
     240.00360040333226
 
 Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.

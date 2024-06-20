@@ -6,6 +6,7 @@ The network model
 .. testsetup:: *
 
     import pandas as pd
+    import numpy as np
     pd.set_option('display.max_columns', None)
     pd.set_option('display.expand_frame_repr', False)
 
@@ -263,7 +264,7 @@ of a generator to 700 MW:
 
    >>> network.set_working_variant('Variant')
    >>> network.update_generators(id='GEN', target_p=700)
-   >>> network.get_generators()['target_p']['GEN']
+   >>> float(network.get_generators()['target_p']['GEN'])
    700.0
 
 If you switch back to the initial variant, you will see that
@@ -272,7 +273,7 @@ its state has not changed, our generator still produces 607 MW:
 .. doctest::
 
    >>> network.set_working_variant('InitialState')
-   >>> network.get_generators()['target_p']['GEN']
+   >>> float(network.get_generators()['target_p']['GEN'])
    607.0
 
 Once you're done working with your variant, you can remove it:
