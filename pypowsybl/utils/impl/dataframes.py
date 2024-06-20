@@ -23,7 +23,7 @@ def _to_array(value: _Any) -> np.ndarray:
     """
     Converts a scalar or array to an array
     """
-    as_array = np.array(value, ndmin=1, copy=False)
+    as_array = np.array(value, ndmin=1)
     if as_array.ndim != 1:
         raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
                          f'as keyword argument, got {as_array.ndim} dimensions')
@@ -153,7 +153,6 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
-
     columns = {}
     expected_size = None
     for key, value in kwargs.items():

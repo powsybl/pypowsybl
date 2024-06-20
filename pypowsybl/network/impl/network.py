@@ -23,7 +23,7 @@ from typing import (
     Any
 )
 
-from numpy import Inf
+from numpy import inf
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 import pandas as pd
@@ -4374,7 +4374,7 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: Attributes as keyword arguments.
         """
         if df is not None:
-            df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
+            df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
