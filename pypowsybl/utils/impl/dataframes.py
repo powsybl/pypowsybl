@@ -16,6 +16,7 @@ from typing import Optional as _Optional, Any as _Any
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
+from packaging import version
 import pypowsybl._pypowsybl as _pp
 
 
@@ -23,7 +24,11 @@ def _to_array(value: _Any) -> np.ndarray:
     """
     Converts a scalar or array to an array
     """
-    as_array = np.array(value, ndmin=1)
+    if version.parse(np.__version__) < version.parse("2.0.0"):
+        copy_var = False
+    else:
+        copy_var = None
+    as_array = np.array(value, ndmin=1, copy=copy_var)
     if as_array.ndim != 1:
         raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
                          f'as keyword argument, got {as_array.ndim} dimensions')
