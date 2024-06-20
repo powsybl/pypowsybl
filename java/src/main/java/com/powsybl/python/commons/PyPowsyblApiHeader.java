@@ -1267,6 +1267,9 @@ public final class PyPowsyblApiHeader {
         @CField("initial_voltage_profile_mode")
         void setInitialVoltageProfileMode(int initialVoltageProfileMode);
 
+        @CFieldAddress("voltage_ranges")
+        ArrayPointer<VoltageRangePointer> voltageRanges();
+
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
 
@@ -1290,6 +1293,37 @@ public final class PyPowsyblApiHeader {
 
         @CField("provider_parameters_values_count")
         void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
+    @CStruct("voltage_range")
+    public interface VoltageRangePointer extends PointerBase {
+        @CField("maximum_nominal_voltage")
+        double getMaximumNominalVoltage();
+
+        @CField("maximum_nominal_voltage")
+        void setMaximumNominalVoltage(double maximumRange);
+
+        @CField("minimum_nominal_voltage")
+        double getMinimumNominalVoltage();
+
+        @CField("minimum_nominal_voltage")
+        void setMinimumNominalVoltage(double minimumRange);
+
+        @CField("range_coefficient")
+        double getRangeCoefficient();
+
+        @CField("range_coefficient")
+        void setRangeCoefficient(double rangeCoefficient);
+
+        @CField("voltage")
+        double getVoltage();
+
+        @CField("voltage")
+        void setVoltage(double voltage);
+
+        VoltageRangePointer addressOf(int index);
+
+        VoltageRangePointer read(int i);
     }
 
     @CEnum("VoltageInitializerObjective")
