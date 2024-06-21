@@ -102,7 +102,7 @@ Network-area diagrams can be customized through NadParameters:
 .. code-block:: python
 
     >>> network = pp.network.create_ieee14()
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True))
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER))
 
     - edge_name_displayed: if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
@@ -113,6 +113,7 @@ Network-area diagrams can be customized through NadParameters:
     - voltage_value_precision: number of digits after the decimal point for voltage values(default value 1)
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
+    - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
 
 In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
 
