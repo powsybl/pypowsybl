@@ -51,7 +51,7 @@ public class LinePositionDataframeProvider extends AbstractSingleDataframeNetwor
         return network.getLineStream()
                 .map(g -> (LinePosition) g.getExtension(LinePosition.class))
                 .filter(Objects::nonNull)
-                .flatMap(lp -> IntStream.range(0, lp.getCoordinates().size() - 1).mapToObj(num -> new LineCoordinate(lp, num)));
+                .flatMap(lp -> IntStream.range(0, lp.getCoordinates().size()).mapToObj(num -> new LineCoordinate(lp, num)));
     }
 
     private static class LineCoordinateGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, LineCoordinate> {
