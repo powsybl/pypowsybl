@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.commons;
 
@@ -15,10 +16,16 @@ import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationT
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
+import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
+import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
+import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelSolver;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerReactiveSlackBusesMode;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.sensitivity.SensitivityFunctionType;
@@ -334,6 +341,31 @@ public final class Util {
             case MIN_GENERATION -> OpenReacOptimisationObjective.MIN_GENERATION;
             case BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT -> OpenReacOptimisationObjective.BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT;
             case SPECIFIC_VOLTAGE_PROFILE -> OpenReacOptimisationObjective.SPECIFIC_VOLTAGE_PROFILE;
+        };
+    }
+
+    public static OpenReacAmplLogLevel convert(VoltageInitializerLogLevelAmpl obj) {
+        return switch (obj) {
+            case DEBUG -> OpenReacAmplLogLevel.DEBUG;
+            case INFO -> OpenReacAmplLogLevel.INFO;
+            case WARNING -> OpenReacAmplLogLevel.WARNING;
+            case ERROR -> OpenReacAmplLogLevel.ERROR;
+        };
+    }
+
+    public static OpenReacSolverLogLevel convert(VoltageInitializerLogLevelSolver obj) {
+        return switch (obj) {
+            case NOTHING -> OpenReacSolverLogLevel.NOTHING;
+            case ONLY_RESULTS -> OpenReacSolverLogLevel.ONLY_RESULTS;
+            case EVERYTHING -> OpenReacSolverLogLevel.EVERYTHING;
+        };
+    }
+
+    public static ReactiveSlackBusesMode convert(VoltageInitializerReactiveSlackBusesMode obj) {
+        return switch (obj) {
+            case CONFIGURED -> ReactiveSlackBusesMode.CONFIGURED;
+            case NO_GENERATION -> ReactiveSlackBusesMode.NO_GENERATION;
+            case ALL_BUSES -> ReactiveSlackBusesMode.ALL;
         };
     }
 

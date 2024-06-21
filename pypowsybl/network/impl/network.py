@@ -3185,8 +3185,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are :
 
-            - `connected_1`
-            - `connected_2`
+            - `connected1`
+            - `connected2`
+            - `bus_breaker_bus1_id2`
+            - `bus_breaker_bus2_id2`
 
         See Also:
             :meth:`get_branches`
@@ -3196,9 +3198,37 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                network.update_branches(element_id='BRANCH_ID', connected_1=False, connected_2=False)
+                network.update_branches(element_id='BRANCH_ID', connected1=False, connected2=False)
         """
         return self._update_elements(ElementType.BRANCH, df, **kwargs)
+
+    def update_injections(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update injections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `connected`
+            - `bus_breaker_bus_id`
+
+        See Also:
+            :meth:`get_injections`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_injections(element_id='INJECTION_ID', connected=True, bus_breaker_bus_id='B2')
+        """
+        return self._update_elements(ElementType.INJECTION, df, **kwargs)
 
     def update_tie_lines(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

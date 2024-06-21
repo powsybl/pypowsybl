@@ -82,11 +82,12 @@ def test_substation_exceptions():
 def test_generators_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(pd.DataFrame.from_records(
-        data=[('GEN3', 4999, -9999.99, 'VLHV1', True, 100, 150, 300, 'NHV1')],
-        columns=['id', 'max_p', 'min_p', 'voltage_level_id',
+        data=[('GEN3', 'GEN THREE', 4999, -9999.99, 'VLHV1', True, 100, 150, 300, 'NHV1')],
+        columns=['id', 'name', 'max_p', 'min_p', 'voltage_level_id',
                  'voltage_regulator_on', 'target_p', 'target_q', 'target_v', 'bus_id'],
         index='id'))
     gen3 = n.get_generators().loc['GEN3']
+    assert gen3['name'] == 'GEN THREE'
     assert gen3.target_p == 100.0
     assert gen3.target_q == 150.0
     assert gen3.voltage_level_id == 'VLHV1'

@@ -32,6 +32,9 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelSolver;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerReactiveSlackBusesMode;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.commons.Util;
 
@@ -107,6 +110,14 @@ public final class VoltageInitializerCFunctions {
         doCatch(exceptionHandlerPtr, () -> params.addVariableTwoWindingsTransformers(List.of(id)));
     }
 
+    @CEntryPoint(name = "voltageInitializerAddConfiguredReactiveSlackBuses")
+    public static void addConfiguredReactiveSlackBuses(IsolateThread thread, ObjectHandle paramsHandle,
+            CCharPointer idPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        String id = CTypeUtil.toString(idPtr);
+        doCatch(exceptionHandlerPtr, () -> params.addConfiguredReactiveSlackBuses(List.of(id)));
+    }
+
     @CEntryPoint(name = "voltageInitializerSetObjective")
     public static void setObjective(IsolateThread thread, ObjectHandle paramsHandle,
             VoltageInitializerObjective cObjective, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -119,6 +130,111 @@ public final class VoltageInitializerCFunctions {
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
         doCatch(exceptionHandlerPtr, () -> params.setObjectiveDistance(dist));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetLogLevelAmpl")
+    public static void setLogLevelAmpl(IsolateThread thread, ObjectHandle paramsHandle, VoltageInitializerLogLevelAmpl logLevelAmpl,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setLogLevelAmpl(Util.convert(logLevelAmpl)));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetLogLevelSolver")
+    public static void setLogLevelSolver(IsolateThread thread, ObjectHandle paramsHandle, VoltageInitializerLogLevelSolver logLevelSolver,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setLogLevelSolver(Util.convert(logLevelSolver)));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetReactiveSlackBusesMode")
+    public static void setReactiveSlackBusesMode(IsolateThread thread, ObjectHandle paramsHandle, VoltageInitializerReactiveSlackBusesMode reactiveSlackBusesMode,
+            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setReactiveSlackBusesMode(Util.convert(reactiveSlackBusesMode)));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMinPlausibleLowVoltageLimit")
+    public static void voltageInitializerSetMinPlausibleLowVoltageLimit(IsolateThread thread, ObjectHandle paramsHandle, double minPlausibleLowVoltageLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMinPlausibleLowVoltageLimit(minPlausibleLowVoltageLimit));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMaxPlausibleHighVoltageLimit")
+    public static void voltageInitializerSetMaxPlausibleHighVoltageLimit(IsolateThread thread, ObjectHandle paramsHandle, double maxPlausibleHighVoltageLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMaxPlausibleHighVoltageLimit(maxPlausibleHighVoltageLimit));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetActivePowerVariationRate")
+    public static void voltageInitializerSetActivePowerVariationRate(IsolateThread thread, ObjectHandle paramsHandle, double activePowerVariationRate,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setActivePowerVariationRate(activePowerVariationRate));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMinPlausibleActivePowerThreshold")
+    public static void voltageInitializerSetMinPlausibleActivePowerThreshold(IsolateThread thread, ObjectHandle paramsHandle, double minPlausibleActivePowerThreshold,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMinPlausibleActivePowerThreshold(minPlausibleActivePowerThreshold));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetLowImpedanceThreshold")
+    public static void voltageInitializerSetLowImpedanceThreshold(IsolateThread thread, ObjectHandle paramsHandle, double lowImpedanceThreshold,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setLowImpedanceThreshold(lowImpedanceThreshold));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMinNominalVoltageIgnoredBus")
+    public static void voltageInitializerSetMinNominalVoltageIgnoredBus(IsolateThread thread, ObjectHandle paramsHandle, double minNominalVoltageIgnoredBus,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMinNominalVoltageIgnoredBus(minNominalVoltageIgnoredBus));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMinNominalVoltageIgnoredVoltageBounds")
+    public static void voltageInitializerSetMinNominalVoltageIgnoredVoltageBounds(IsolateThread thread, ObjectHandle paramsHandle, double minNominalVoltageIgnoredVoltageBounds,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setMinNominalVoltageIgnoredVoltageBounds(minNominalVoltageIgnoredVoltageBounds));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetMaxPlausiblePowerLimit")
+    public static void voltageInitializerSetMaxPlausiblePowerLimit(IsolateThread thread, ObjectHandle paramsHandle, double maxPlausiblePowerLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setPQMax(maxPlausiblePowerLimit));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetDefaultMinimalQPRange")
+    public static void voltageInitializerSetDefaultMinimalQPRange(IsolateThread thread, ObjectHandle paramsHandle, double defaultMinimalQPRange,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setDefaultMinimalQPRange(defaultMinimalQPRange));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetHighActivePowerDefaultLimit")
+    public static void voltageInitializerSetHighActivePowerDefaultLimit(IsolateThread thread, ObjectHandle paramsHandle, double highActivePowerDefaultLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setHighActivePowerDefaultLimit(highActivePowerDefaultLimit));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetLowActivePowerDefaultLimit")
+    public static void voltageInitializerSetLowActivePowerDefaultLimit(IsolateThread thread, ObjectHandle paramsHandle, double lowActivePowerDefaultLimit,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setLowActivePowerDefaultLimit(lowActivePowerDefaultLimit));
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetDefaultQmaxPmaxRatio")
+    public static void voltageInitializerSetDefaultQmaxPmaxRatio(IsolateThread thread, ObjectHandle paramsHandle, double defaultQmaxPmaxRatio,
+                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+        doCatch(exceptionHandlerPtr, () -> params.setDefaultQmaxPmaxRatio(defaultQmaxPmaxRatio));
     }
 
     @CEntryPoint(name = "voltageInitializerSetDefaultVariableScalingFactor")

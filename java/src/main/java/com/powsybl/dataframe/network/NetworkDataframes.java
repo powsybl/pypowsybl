@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network;
 
@@ -193,7 +194,7 @@ public final class NetworkDataframes {
                 : reactiveLimits.getKind().name();
     }
 
-    private static <U extends Injection<U>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
+    private static <U extends Injection<?>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
         return (g, b) -> {
             Boolean res = b ? g.getTerminal().connect() : g.getTerminal().disconnect();
         };
@@ -942,13 +943,16 @@ public final class NetworkDataframes {
 
     static NetworkDataframeMapper injections() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getConnectableStream()
-                                .filter(connectable -> connectable instanceof Injection),
-                        NetworkDataframes::getT2OrThrow)
-                .stringsIndex("id", Connectable::getId)
-                .strings("type", connectable -> connectable.getType().toString())
-                .strings("voltage_level_id", connectable -> ((Injection<?>) connectable).getTerminal().getVoltageLevel().getId())
-                .strings("bus_id", connectable -> ((Injection<?>) connectable).getTerminal().getBusView().getBus() == null ? "" :
-                        ((Injection<?>) connectable).getTerminal().getBusView().getBus().getId())
+                                .filter(Injection.class::isInstance)
+                                .map(connectable -> (Injection<?>) connectable),
+                        NetworkDataframes::getInjectionOrThrow)
+                .stringsIndex("id", Injection::getId)
+                .strings("type", injection -> injection.getType().toString())
+                .strings("voltage_level_id", injection -> injection.getTerminal().getVoltageLevel().getId())
+                .strings("bus_breaker_bus_id", injection -> getBusBreakerViewBusId(injection.getTerminal()), (injection, id) -> setBusBreakerViewBusId(injection.getTerminal(), id), false)
+                .booleans("connected", injection -> injection.getTerminal().isConnected(), connectInjection())
+                .strings("bus_id", injection -> injection.getTerminal().getBusView().getBus() == null ? "" :
+                        injection.getTerminal().getBusView().getBus().getId())
                 .build();
     }
 
@@ -957,11 +961,13 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Branch::getId)
                 .strings("type", branch -> branch.getType().toString())
                 .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
+                .strings("bus_breaker_bus1_id", branch -> getBusBreakerViewBusId(branch.getTerminal1()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal1(), id), false)
                 .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
                         branch.getTerminal1().getBusView().getBus().getId())
                 .booleans("connected1", branch -> branch.getTerminal1().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal1(), connected))
                 .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
+                .strings("bus_breaker_bus2_id", branch -> getBusBreakerViewBusId(branch.getTerminal2()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal2(), id), false)
                 .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
                         branch.getTerminal2().getBusView().getBus().getId())
                 .booleans("connected2", branch -> branch.getTerminal2().isConnected(),
@@ -1179,6 +1185,14 @@ public final class NetworkDataframes {
             throw new PowsyblException("Two windings transformer '" + id + "' not found");
         }
         return twt;
+    }
+
+    private static Injection<?> getInjectionOrThrow(Network network, String id) {
+        Connectable<?> c = network.getConnectable(id);
+        if (!(c instanceof Injection<?>)) {
+            throw new PowsyblException("Injection '" + id + "' not found");
+        }
+        return (Injection<?>) c;
     }
 
     public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName, String tableName) {

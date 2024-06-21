@@ -399,3 +399,22 @@ typedef enum {
     BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
     SPECIFIC_VOLTAGE_PROFILE,
 } VoltageInitializerObjective;
+
+typedef enum {
+    DEBUG = 0,
+    INFO,
+    WARNING,
+    ERROR,
+} VoltageInitializerLogLevelAmpl;
+
+typedef enum {
+    NOTHING = 0,
+    ONLY_RESULTS,
+    EVERYTHING,
+} VoltageInitializerLogLevelSolver;
+
+typedef enum {
+    CONFIGURED = 0,
+    NO_GENERATION,
+    ALL_BUSES,
+} VoltageInitializerReactiveSlackBusesMode;
