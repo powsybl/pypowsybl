@@ -29,7 +29,7 @@ public abstract class AbstractDataframeMapper<T, U, C> implements DataframeMappe
 
     protected final Map<String, SeriesMapper<U, C>> seriesMappers;
 
-    public AbstractDataframeMapper(List<SeriesMapper<U, C>> seriesMappers) {
+    protected AbstractDataframeMapper(List<SeriesMapper<U, C>> seriesMappers) {
         this.seriesMappers = seriesMappers.stream()
             .collect(toImmutableMap(mapper -> mapper.getMetadata().getName(), Function.identity()));
     }

@@ -57,7 +57,7 @@ public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDatafram
             .flatMap(e -> e.getPropertyNames().stream())
             .distinct();
         return propertyNames
-            .map(property -> new StringSeriesMapper<T, NetworkDataframeContext>(property, t -> ((Identifiable) t).getProperty(property), false))
+            .map(property -> new StringSeriesMapper<T, NetworkDataframeContext>(property, t -> ((Identifiable<?>) t).getProperty(property), false))
             .filter(mapper -> filterMapper(mapper, dataframeFilter))
             .collect(Collectors.toList());
     }
