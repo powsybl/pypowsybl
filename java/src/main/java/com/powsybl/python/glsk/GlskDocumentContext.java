@@ -10,6 +10,7 @@ package com.powsybl.python.glsk;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.glsk.ucte.UcteGlskDocument;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.sensitivity.WeightedSensitivityVariable;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class GlskDocumentContext {
 
     public List<Double> getInjectionFactorForCountryTimeinterval(Network n, String country, Instant instant) {
         return document.getZonalGlsks(n, instant).getData(country).getVariablesById()
-                .values().stream().map(e -> e.getWeight()).collect(Collectors.toList());
+                .values().stream().map(WeightedSensitivityVariable::getWeight).collect(Collectors.toList());
     }
 
     public List<String> getCountries() {

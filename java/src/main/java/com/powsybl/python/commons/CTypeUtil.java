@@ -141,9 +141,9 @@ public final class CTypeUtil {
         mapPtr.setLength(stringMap.size());
         List<String> keys = new ArrayList<>(stringMap.size());
         List<String> values = new ArrayList<>(stringMap.size());
-        stringMap.entrySet().forEach(entry -> {
-            keys.add(entry.getKey());
-            values.add(entry.getValue());
+        stringMap.forEach((key, value) -> {
+            keys.add(key);
+            values.add(value);
         });
         mapPtr.setKeys(Util.getStringListAsPtr(keys));
         mapPtr.setValues(Util.getStringListAsPtr(values));

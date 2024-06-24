@@ -14,21 +14,10 @@ import java.util.Objects;
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
-public class InternalConnectionContext {
-
-    private final VoltageLevel.NodeBreakerView.InternalConnection internalConnection;
-    private final int index;
+public record InternalConnectionContext(VoltageLevel.NodeBreakerView.InternalConnection internalConnection, int index) {
 
     public InternalConnectionContext(VoltageLevel.NodeBreakerView.InternalConnection internalConnection, int index) {
         this.index = index;
         this.internalConnection = Objects.requireNonNull(internalConnection);
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public VoltageLevel.NodeBreakerView.InternalConnection getInternalConnection() {
-        return internalConnection;
     }
 }

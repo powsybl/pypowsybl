@@ -26,7 +26,7 @@ import com.powsybl.iidm.network.Network;
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
 public class DynamicSimulationContext {
-    private static Logger log = LoggerFactory.getLogger(DynamicSimulationContext.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamicSimulationContext.class);
 
     public DynamicSimulationResult run(Network network,
             DynamicModelsSupplier dynamicModelsSupplier,
@@ -34,7 +34,7 @@ public class DynamicSimulationContext {
             CurvesSupplier curvesSupplier,
             DynamicSimulationParameters parameters) {
         DynamicSimulationProvider provider = getDynamicProvider("");
-        log.info("Running dynamic simulation with " + provider.getName());
+        LOGGER.info(String.format("Running dynamic simulation with %s", provider.getName()));
         DynamicSimulation.Runner runner = new DynamicSimulation.Runner(provider);
         return runner.run(network,
                 dynamicModelsSupplier,
@@ -48,7 +48,7 @@ public class DynamicSimulationContext {
      * by the class {@link DynamicSimulation}
      *
      * @param name
-     * @return
+     * @return DynamicSimulationProvider
      */
     public static DynamicSimulationProvider getDynamicProvider(String name) {
         String actualName = (name == null || name.isEmpty()) ? "DynaWaltz" : name;

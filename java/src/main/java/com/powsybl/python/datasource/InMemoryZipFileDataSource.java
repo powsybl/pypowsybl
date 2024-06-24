@@ -61,7 +61,7 @@ public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
     }
 
     private static boolean entryExists(byte[] zipFileBytes, String fileName) {
-        try (ZipFile zipFile = new ZipFile(new SeekableInMemoryByteChannel(zipFileBytes))) {
+        try (ZipFile zipFile = ZipFile.builder().setSeekableByteChannel(new SeekableInMemoryByteChannel(zipFileBytes)).get()) {
             return zipFile.getEntry(fileName) != null;
         } catch (IOException e) {
             return false;
@@ -94,7 +94,7 @@ public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
     public InputStream newInputStream(String fileName) throws IOException {
         Objects.requireNonNull(fileName);
         if (entryExists(zipFileBytes, fileName)) {
-            return new ZipEntryInputStream(new ZipFile(new SeekableInMemoryByteChannel(zipFileBytes)), fileName);
+            return new ZipEntryInputStream(ZipFile.builder().setSeekableByteChannel(new SeekableInMemoryByteChannel(zipFileBytes)).get(), fileName);
         }
         return null;
     }
@@ -104,7 +104,7 @@ public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
         // Consider only files in the given folder, do not go into folders
         Pattern p = Pattern.compile(regex);
         Set<String> names = new HashSet<>();
-        try (ZipFile zipFile = new ZipFile(new SeekableInMemoryByteChannel(zipFileBytes))) {
+        try (ZipFile zipFile = ZipFile.builder().setSeekableByteChannel(new SeekableInMemoryByteChannel(zipFileBytes)).get()) {
             Enumeration<ZipArchiveEntry> e = zipFile.getEntries();
             while (e.hasMoreElements()) {
                 ZipArchiveEntry zipEntry = e.nextElement();
