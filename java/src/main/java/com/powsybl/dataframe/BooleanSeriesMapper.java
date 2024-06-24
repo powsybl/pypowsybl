@@ -3,10 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe;
-
-import com.powsybl.dataframe.network.DataframeContext;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -14,7 +13,7 @@ import java.util.function.Predicate;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public class BooleanSeriesMapper<T> implements SeriesMapper<T> {
+public class BooleanSeriesMapper<T, C> implements SeriesMapper<T, C> {
 
     private final SeriesMetadata metadata;
     private final BooleanUpdater<T> updater;
@@ -41,7 +40,7 @@ public class BooleanSeriesMapper<T> implements SeriesMapper<T> {
     }
 
     @Override
-    public void createSeries(List<T> items, DataframeHandler handler, DataframeContext dataframeContext) {
+    public void createSeries(List<T> items, DataframeHandler handler, C context) {
         DataframeHandler.BooleanSeriesWriter writer = handler.newBooleanSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, value.test(items.get(i)));

@@ -49,6 +49,8 @@ Network properties
    Network.source_format
    Network.case_date
    Network.forecast_distance
+   Network.per_unit
+   Network.nominal_apparent_power
 
 
 Network elements access
@@ -245,9 +247,9 @@ I/O
    get_import_parameters
    get_export_formats
    get_export_parameters
-   save
-   save_to_string
-   save_to_binary_buffer
+   Network.save
+   Network.save_to_string
+   Network.save_to_binary_buffer
 
 
 Advanced network modifications

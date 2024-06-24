@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.adders;
 
@@ -62,29 +63,7 @@ public class CurveReactiveLimitsDataframeAdder implements NetworkElementAdder {
         }
     }
 
-    private static final class CurvePoint {
-
-        private final double p;
-        private final double minQ;
-        private final double maxQ;
-
-        CurvePoint(double p, double minQ, double maxQ) {
-            this.p = p;
-            this.minQ = minQ;
-            this.maxQ = maxQ;
-        }
-
-        public double getP() {
-            return p;
-        }
-
-        public double getMinQ() {
-            return minQ;
-        }
-
-        public double getMaxQ() {
-            return maxQ;
-        }
+    private record CurvePoint(double p, double minQ, double maxQ) {
 
     }
 
@@ -110,15 +89,15 @@ public class CurveReactiveLimitsDataframeAdder implements NetworkElementAdder {
     }
 
     private static void createLimits(Network network, String elementId, List<CurvePoint> curvePoints) {
-        Identifiable identifiable = getIdentifiableOrThrow(network, elementId);
-        if (identifiable instanceof ReactiveLimitsHolder) {
-            ReactiveCapabilityCurveAdder curveAdder = ((ReactiveLimitsHolder) identifiable)
+        Identifiable<?> identifiable = getIdentifiableOrThrow(network, elementId);
+        if (identifiable instanceof ReactiveLimitsHolder reactiveLimitsHolder) {
+            ReactiveCapabilityCurveAdder curveAdder = reactiveLimitsHolder
                     .newReactiveCapabilityCurve();
             for (CurvePoint curvePoint : curvePoints) {
                 curveAdder.beginPoint()
-                        .setP(curvePoint.getP())
-                        .setMaxQ(curvePoint.getMaxQ())
-                        .setMinQ(curvePoint.getMinQ())
+                        .setP(curvePoint.p())
+                        .setMaxQ(curvePoint.maxQ())
+                        .setMinQ(curvePoint.minQ())
                         .endPoint();
             }
             curveAdder.add();

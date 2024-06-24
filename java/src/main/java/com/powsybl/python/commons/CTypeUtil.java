@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.commons;
 
@@ -138,9 +139,9 @@ public final class CTypeUtil {
         mapPtr.setLength(stringMap.size());
         List<String> keys = new ArrayList<>(stringMap.size());
         List<String> values = new ArrayList<>(stringMap.size());
-        stringMap.entrySet().forEach(entry -> {
-            keys.add(entry.getKey());
-            values.add(entry.getValue());
+        stringMap.forEach((key, value) -> {
+            keys.add(key);
+            values.add(value);
         });
         mapPtr.setKeys(Util.getStringListAsPtr(keys));
         mapPtr.setValues(Util.getStringListAsPtr(values));

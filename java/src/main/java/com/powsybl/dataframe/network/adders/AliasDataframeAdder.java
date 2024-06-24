@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.adders;
 
@@ -45,7 +46,7 @@ public class AliasDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            Identifiable identifiable = network.getIdentifiable(ids.get(row));
+            Identifiable<?> identifiable = network.getIdentifiable(ids.get(row));
             if (identifiable == null) {
                 throw new PowsyblException("identifiable " + ids.get(row) + " does not exist");
             }
@@ -63,7 +64,7 @@ public class AliasDataframeAdder extends AbstractSimpleAdder {
         }
 
         void delete(Network network, int row) {
-            Identifiable identifiable = network.getIdentifiable(ids.get(row));
+            Identifiable<?> identifiable = network.getIdentifiable(ids.get(row));
             if (identifiable != null) {
                 if (aliases != null) {
                     identifiable.removeAlias(aliases.get(row));

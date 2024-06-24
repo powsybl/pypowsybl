@@ -13,9 +13,30 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_add_specific_low_voltage_limits,
     voltage_initializer_add_specific_high_voltage_limits,
     VoltageInitializerObjective,
+    VoltageInitializerLogLevelAmpl,
+    VoltageInitializerLogLevelSolver,
+    VoltageInitializerReactiveSlackBusesMode,
     voltage_initializer_set_objective,
-    voltage_initializer_set_objective_distance)
-
+    voltage_initializer_set_objective_distance,
+    voltage_initializer_set_log_level_ampl,
+    voltage_initializer_set_log_level_solver,
+    voltage_initializer_set_reactive_slack_buses_mode,
+    voltage_initializer_set_min_plausible_low_voltage_limit,
+    voltage_initializer_set_max_plausible_high_voltage_limit,
+    voltage_initializer_set_active_power_variation_rate,
+    voltage_initializer_set_min_plausible_active_power_threshold,
+    voltage_initializer_set_low_impedance_threshold,
+    voltage_initializer_set_min_nominal_voltage_ignored_bus,
+    voltage_initializer_set_min_nominal_voltage_ignored_voltage_bounds,
+    voltage_initializer_set_max_plausible_power_limit,
+    voltage_initializer_set_high_active_power_default_limit,
+    voltage_initializer_set_low_active_power_default_limit,
+    voltage_initializer_set_default_minimal_qp_range,
+    voltage_initializer_set_default_qmax_pmax_ratio,
+    voltage_initializer_set_default_variable_scaling_factor,
+    voltage_initializer_set_default_constraint_scaling_factor,
+    voltage_initializer_set_reactive_slack_variable_scaling_factor,
+    voltage_initializer_set_twt_ratio_variable_scaling_factor)
 
 class VoltageInitializerParameters:
     """
@@ -120,3 +141,195 @@ class VoltageInitializerParameters:
                         A 100% objective means the model will target upper voltage limit.
         """
         voltage_initializer_set_objective_distance(self._handle, distance)
+
+    def set_log_level_ampl(self, log_level_ampl: VoltageInitializerLogLevelAmpl) -> None:
+        """
+        Changes the log level of AMPL printings.
+
+        log_level_ampl can be:
+         - DEBUG
+         - INFO
+         - WARNING
+         - ERROR
+
+        Args:
+            log_level_ampl: the log level.
+        """
+        voltage_initializer_set_log_level_ampl(self._handle, log_level_ampl)
+
+    def set_log_level_solver(self, log_level_solver: VoltageInitializerLogLevelSolver) -> None:
+        """
+        Changes the log level of non-linear optimization solver printings.
+
+        log_level_solver can be:
+         - NOTHING
+         - ONLY_RESULTS
+         - EVERYTHING
+
+        Args:
+            log_level_solver: the log level.
+        """
+        voltage_initializer_set_log_level_solver(self._handle, log_level_solver)
+
+    def set_reactive_slack_buses_mode(self, reactive_slack_buses_mode: VoltageInitializerReactiveSlackBusesMode) -> None:
+        """
+        Changes the log level of non-linear optimization solver printings.
+
+        log_level_solver can be:
+         - NOTHING
+         - ONLY_RESULTS
+         - EVERYTHING
+
+        Args:
+            log_level_solver: the log level.
+        """
+        voltage_initializer_set_reactive_slack_buses_mode(self._handle, reactive_slack_buses_mode)
+        
+    def set_min_plausible_low_voltage_limit(self, min_plausible_low_voltage_level: float) -> None:
+        """
+        Changes the minimal plausible value for low voltage limits (in p.u.) in ACOPF solving.
+        
+        Args:
+            min_plausible_low_voltage_level: is >= 0.
+        """
+        voltage_initializer_set_min_plausible_low_voltage_limit(self._handle, min_plausible_low_voltage_level)
+
+    def set_max_plausible_high_voltage_limit(self, max_plausible_high_voltage_limit: float) -> None:
+        """
+        Changes the maximal plausible value for high voltage limits (in p.u.) in ACOPF solving.
+        
+        Args:
+            max_plausible_high_voltage_limit: is > 0.
+        """
+        voltage_initializer_set_max_plausible_high_voltage_limit(self._handle, max_plausible_high_voltage_limit)
+
+    def set_active_power_variation_rate(self, active_power_variation_rate: float) -> None:
+        """
+        Changes the weight to favor more/less minimization of active power produced by generators.
+    
+        Args:
+            active_power_variation_rate: is >= 0 and =< 1.
+                        A 0 active_power_variation_rate means the model will minimize the sum of generations.
+                        A 1 active_power_variation_rate means the model will minimize the sum of squared differences between target and value.
+        """
+        voltage_initializer_set_active_power_variation_rate(self._handle, active_power_variation_rate)
+
+    def set_min_plausible_active_power_threshold(self, min_plausible_active_power_threshold: float) -> None:
+        """
+        Changes the threshold of active and reactive power considered as null in the optimization.
+        
+        Args:
+            min_plausible_active_power_threshold: is >= 0.
+        """
+        voltage_initializer_set_min_plausible_active_power_threshold(self._handle, min_plausible_active_power_threshold)
+
+    def set_low_impedance_threshold(self, low_impedance_threshold: float) -> None:
+        """
+        Changes the threshold of impedance considered as null.
+        
+        Args:
+            low_impedance_threshold: is >= 0.
+        """
+        voltage_initializer_set_low_impedance_threshold(self._handle, low_impedance_threshold)
+
+    def set_min_nominal_voltage_ignored_bus(self, min_nominal_voltage_ignored_bus: float) -> None:
+        """
+        Changes the threshold used to ignore voltage levels with nominal voltage lower than it. 
+        
+        Args:
+            min_nominal_voltage_ignored_bus: is >= 0.
+        """
+        voltage_initializer_set_min_nominal_voltage_ignored_bus(self._handle, min_nominal_voltage_ignored_bus)
+
+    def set_min_nominal_voltage_ignored_voltage_bounds(self, min_nominal_voltage_ignored_voltage_bounds: float) -> None:
+        """
+        Changes the threshold used to replace voltage limits of voltage levels with nominal voltage lower than it.
+        
+        Args:
+            min_nominal_voltage_ignored_voltage_bounds: is >= 0.
+        """
+        voltage_initializer_set_min_nominal_voltage_ignored_voltage_bounds(self._handle, min_nominal_voltage_ignored_voltage_bounds)
+
+    def set_max_plausible_power_limit(self, max_plausible_power_limit: float) -> None:
+        """
+        Changes the threshold defining the maximum active and reactive power considered in correction of generator limits.
+        
+        Args:
+            max_plausible_power_limit: is > 0.
+        """
+        voltage_initializer_set_max_plausible_power_limit(self._handle, max_plausible_power_limit)
+
+    def set_high_active_power_default_limit(self, high_active_power_default_limit: float) -> None:
+        """
+        Changes the threshold used for the correction of high active power limit of generators.
+        
+        Args:
+            high_active_power_default_limit: is > 0.
+        """
+        voltage_initializer_set_high_active_power_default_limit(self._handle, high_active_power_default_limit)
+
+    def set_low_active_power_default_limit(self, low_active_power_default_limit: float) -> None:
+        """
+        Changes the threshold used for the correction of low active power limit of generators.
+        
+        Args:
+            low_active_power_default_limit: is > 0.
+        """
+        voltage_initializer_set_low_active_power_default_limit(self._handle, low_active_power_default_limit)
+
+    def set_default_minimal_qp_range(self, default_minimal_qp_range: float) -> None:
+        """
+        Changes the threshold used to fix active (resp. reactive) power of generators with 
+        active (resp. reactive) power limits that are closer than it.
+        
+        Args:
+            default_minimal_qp_range: is >= 0.
+        """
+        voltage_initializer_set_default_minimal_qp_range(self._handle, default_minimal_qp_range)
+
+    def set_default_qmax_pmax_ratio(self, default_qmax_pmax_ratio: float) -> None:
+        """
+        Changes the ratio used to calculate threshold for corrections of high/low reactive power limits.
+        
+        Args:
+            default_qmax_pmax_ratio: is > 0.
+        """
+        voltage_initializer_set_default_qmax_pmax_ratio(self._handle, default_qmax_pmax_ratio)
+
+    def set_default_variable_scaling_factor(self, default_variable_scaling_factor: float) -> None:
+        """
+        Changes the scaling of all variables (except reactive slacks and transformer ratios) before ACOPF solving
+
+        Args:
+            default_variable_scaling_factor: is > 0.
+                        Default scaling factor
+        """
+        voltage_initializer_set_default_variable_scaling_factor(self._handle, default_variable_scaling_factor)
+
+    def set_default_constraint_scaling_factor(self, default_constraint_scaling_factor: float) -> None:
+        """
+        Changes the scaling factor applied to all the constraints before ACOPF solving
+
+        Args:
+            default_constraint_scaling_factor: is >= 0.
+        """
+        voltage_initializer_set_default_constraint_scaling_factor(self._handle, default_constraint_scaling_factor)
+
+    def set_reactive_slack_variable_scaling_factor(self, reactive_slack_variable_scaling_factor: float) -> None:
+        """
+        Changes the scaling factor applied to all reactive slacks variables before ACOPF solving
+
+        Args:
+            reactive_slack_variable_scaling_factor: is > 0.
+        """
+        voltage_initializer_set_reactive_slack_variable_scaling_factor(self._handle, reactive_slack_variable_scaling_factor)
+
+    def set_twt_ratio_variable_scaling_factor(self, twt_ratio_variable_scaling_factor: float) -> None:
+        """
+        Changes the scaling factor applied to all transformer ratio variables before ACOPF solving
+
+        Args:
+            twt_ratio_variable_scaling_factor: is > 0.
+        """
+        voltage_initializer_set_twt_ratio_variable_scaling_factor(self._handle, twt_ratio_variable_scaling_factor)
+

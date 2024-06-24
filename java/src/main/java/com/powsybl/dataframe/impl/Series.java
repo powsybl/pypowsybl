@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.impl;
 
@@ -66,21 +67,25 @@ public class Series {
 
     public double[] getDoubles() {
         return Optional.ofNullable(doubles)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type double"));
+            .orElseThrow(() -> createException(getName(), "double"));
     }
 
     public int[] getInts() {
         return Optional.ofNullable(ints)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type int"));
+            .orElseThrow(() -> createException(getName(), "int"));
     }
 
     public boolean[] getBooleans() {
         return Optional.ofNullable(booleans)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type boolean"));
+            .orElseThrow(() -> createException(getName(), "boolean"));
     }
 
     public String[] getStrings() {
         return Optional.ofNullable(strings)
-            .orElseThrow(() -> new PowsyblException("Series " + getName() + " is not of type string"));
+            .orElseThrow(() -> createException(getName(), "string"));
+    }
+
+    private PowsyblException createException(String name, String type) {
+        return new PowsyblException(String.format("Series %s is not of type %s", name, type));
     }
 }

@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.logging;
 
@@ -27,7 +28,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 @CContext(Directives.class)
 public final class LoggingCFunctions {
 
-    public static CFunctionPointer loggerCallback;
+    static CFunctionPointer loggerCallback;
 
     private LoggingCFunctions() {
     }
@@ -39,9 +40,7 @@ public final class LoggingCFunctions {
 
     @CEntryPoint(name = "setupLoggerCallback")
     public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            loggerCallback = fpointer;
-        });
+        doCatch(exceptionHandlerPtr, () -> loggerCallback = fpointer);
     }
 
     @CEntryPoint(name = "setLogLevel")

@@ -7,6 +7,8 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
+
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
@@ -14,7 +16,7 @@ public class AlphaBetaLoadAdder extends AbstractBlackBoxAdder {
 
     @Override
     protected AddBlackBoxToModelMapping getAddBlackBoxToModelMapping() {
-        return (modelMapping, staticId, parameterSetId) -> modelMapping.addAlphaBetaLoad(staticId, parameterSetId);
+        return PythonDynamicModelsSupplier::addAlphaBetaLoad;
     }
 
 }

@@ -7,10 +7,24 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
-#include "pypowsybl.h"
+
+//Necessary for PyPowsyblError, declared in a seperated shared library, to be correctly registered in pybind11
+//Otherwise PyPowsyblError are not catched properly on python side
+//see https://github.com/pybind/pybind11/issues/1272
+namespace pypowsybl {
+class PYBIND11_EXPORT PyPowsyblError;
+}
+#include "powsybl-cpp.h"
 #include "pylogging.h"
 
 namespace py = pybind11;
+
+//Explicitly update log level on java side
+void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc);
+
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
+
+py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
@@ -105,17 +119,17 @@ std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<datafram
     return dataframeArray;
 }
 
-void createElement(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
+void createElementBind(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
 }
 
-void createNetworkModification(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, network_modification_type networkModificationType, bool throwException, pypowsybl::JavaHandle* reportNode) {
+void createNetworkModificationBind(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, network_modification_type networkModificationType, bool throwException, pypowsybl::JavaHandle* reportNode) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createNetworkModification(network, dataframeArray.get(), networkModificationType, throwException, reportNode);
 }
 
-void createExtensions(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, std::string& name) {
+void createExtensionsBind(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, std::string& name) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createExtensions(network, dataframeArray.get(), name);
 }
@@ -174,6 +188,22 @@ void voltageInitializerBinding(py::module_& m) {
         .value("BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT", VoltageInitializerObjective::BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT)
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
+    py::enum_<VoltageInitializerLogLevelAmpl>(m, "VoltageInitializerLogLevelAmpl")
+        .value("DEBUG", VoltageInitializerLogLevelAmpl::DEBUG)
+        .value("INFO", VoltageInitializerLogLevelAmpl::INFO)
+        .value("WARNING", VoltageInitializerLogLevelAmpl::WARNING)
+        .value("ERROR", VoltageInitializerLogLevelAmpl::ERROR);
+
+    py::enum_<VoltageInitializerLogLevelSolver>(m, "VoltageInitializerLogLevelSolver")
+        .value("NOTHING", VoltageInitializerLogLevelSolver::NOTHING)
+        .value("ONLY_RESULTS", VoltageInitializerLogLevelSolver::ONLY_RESULTS)
+        .value("EVERYTHING", VoltageInitializerLogLevelSolver::EVERYTHING);
+
+    py::enum_<VoltageInitializerReactiveSlackBusesMode>(m, "VoltageInitializerReactiveSlackBusesMode")
+        .value("CONFIGURED", VoltageInitializerReactiveSlackBusesMode::CONFIGURED)
+        .value("NO_GENERATION", VoltageInitializerReactiveSlackBusesMode::NO_GENERATION)
+        .value("ALL_BUSES", VoltageInitializerReactiveSlackBusesMode::ALL_BUSES);
+
     m.def("create_voltage_initializer_params", &pypowsybl::createVoltageInitializerParams);
 
     m.def("voltage_initializer_add_variable_shunt_compensators", &pypowsybl::voltageInitializerAddVariableShuntCompensators, py::arg("params_handle"), py::arg("id_ptr"));
@@ -181,19 +211,50 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_add_variable_two_windings_transformers", &pypowsybl::voltageInitializerAddVariableTwoWindingsTransformers, py::arg("params_handle"), py::arg("id_ptr"));
     m.def("voltage_initializer_add_specific_low_voltage_limits", &pypowsybl::voltageInitializerAddSpecificLowVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
     m.def("voltage_initializer_add_specific_high_voltage_limits", &pypowsybl::voltageInitializerAddSpecificHighVoltageLimits, py::arg("params_handle"), py::arg("voltage_level_id"), py::arg("is_relative"), py::arg("limit"));
+    m.def("voltage_initializer_add_configured_reactive_slack_buses", &pypowsybl::voltageInitializerAddConfiguredReactiveSlackBuses, py::arg("params_handle"), py::arg("id_ptr"));
 
     m.def("voltage_initializer_set_objective", &pypowsybl::voltageInitializerSetObjective, py::arg("params_handle"), py::arg("c_objective"));
     m.def("voltage_initializer_set_objective_distance", &pypowsybl::voltageInitializerSetObjectiveDistance, py::arg("params_handle"), py::arg("dist"));
+
+    m.def("voltage_initializer_set_default_variable_scaling_factor", &pypowsybl::voltageInitializerSetDefaultVariableScalingFactor, py::arg("params_handle"), py::arg("default_variable_scaling_factor"));
+    m.def("voltage_initializer_set_default_constraint_scaling_factor", &pypowsybl::voltageInitializerSetDefaultConstraintScalingFactor, py::arg("params_handle"), py::arg("default_constraint_scaling_factor"));
+    m.def("voltage_initializer_set_reactive_slack_variable_scaling_factor", &pypowsybl::voltageInitializerSetReactiveSlackVariableScalingFactor, py::arg("params_handle"), py::arg("reactive_slack_variable_scaling_factor"));
+    m.def("voltage_initializer_set_twt_ratio_variable_scaling_factor", &pypowsybl::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, py::arg("params_handle"), py::arg("twt_ratio_variable_scaling_factor"));
+
     m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
+    m.def("voltage_initializer_set_log_level_ampl", &pypowsybl::voltageInitializerSetLogLevelAmpl, py::arg("params_handle"), py::arg("log_level_ampl"));
+    m.def("voltage_initializer_set_log_level_solver", &pypowsybl::voltageInitializerSetLogLevelSolver, py::arg("params_handle"), py::arg("log_level_solver"));
+    m.def("voltage_initializer_set_reactive_slack_buses_mode", &pypowsybl::voltageInitializerSetReactiveSlackBusesMode, py::arg("params_handle"), py::arg("reactive_slack_buses_mode"));
+    m.def("voltage_initializer_set_min_plausible_low_voltage_limit", &pypowsybl::voltageInitializerSetMinPlausibleLowVoltageLimit, py::arg("params_handle"), py::arg("min_plausible_low_voltage_limit"));
+    m.def("voltage_initializer_set_max_plausible_high_voltage_limit", &pypowsybl::voltageInitializerSetMaxPlausibleHighVoltageLimit, py::arg("params_handle"), py::arg("max_plausible_high_voltage_limit"));
+    m.def("voltage_initializer_set_active_power_variation_rate", &pypowsybl::voltageInitializerSetActivePowerVariationRate, py::arg("params_handle"), py::arg("active_power_variation_rate"));
+    m.def("voltage_initializer_set_min_plausible_active_power_threshold", &pypowsybl::voltageInitializerSetMinPlausibleActivePowerThreshold, py::arg("params_handle"), py::arg("min_plausible_active_power_threshold"));
+    m.def("voltage_initializer_set_low_impedance_threshold", &pypowsybl::voltageInitializerSetLowImpedanceThreshold, py::arg("params_handle"), py::arg("low_impedance_threshold"));
+    m.def("voltage_initializer_set_min_nominal_voltage_ignored_bus", &pypowsybl::voltageInitializerSetMinNominalVoltageIgnoredBus, py::arg("params_handle"), py::arg("min_nominal_voltage_ignored_bus"));
+    m.def("voltage_initializer_set_min_nominal_voltage_ignored_voltage_bounds", &pypowsybl::voltageInitializerSetMinNominalVoltageIgnoredVoltageBounds, py::arg("params_handle"), py::arg("min_nominal_voltage_ignored_voltage_bounds"));
+    m.def("voltage_initializer_set_max_plausible_power_limit", &pypowsybl::voltageInitializerSetMaxPlausiblePowerLimit, py::arg("params_handle"), py::arg("max_plausible_power_limit"));
+    m.def("voltage_initializer_set_high_active_power_default_limit", &pypowsybl::voltageInitializerSetHighActivePowerDefaultLimit, py::arg("params_handle"), py::arg("high_active_power_default_limit"));
+    m.def("voltage_initializer_set_low_active_power_default_limit", &pypowsybl::voltageInitializerSetLowActivePowerDefaultLimit, py::arg("params_handle"), py::arg("low_active_power_default_limit"));
+    m.def("voltage_initializer_set_default_minimal_qp_range", &pypowsybl::voltageInitializerSetDefaultMinimalQPRange, py::arg("params_handle"), py::arg("default_minimal_qp_range"));
+    m.def("voltage_initializer_set_default_qmax_pmax_ratio", &pypowsybl::voltageInitializerSetDefaultQmaxPmaxRatio, py::arg("params_handle"), py::arg("default_qmax_pmax_ratio"));
+    
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
     m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
-    pypowsybl::init();
-
+    auto preJavaCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
+      setLogLevelFromPythonLogger(guard, exc);
+    };
+    auto postJavaCall = [](){
+      py::gil_scoped_acquire acquire;
+      if (PyErr_Occurred() != nullptr) {
+        throw py::error_already_set();
+      }
+    };
+    pypowsybl::init(preJavaCall, postJavaCall);
     m.doc() = "PowSyBl Python API";
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");
@@ -234,6 +295,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<element_type>(m, "ElementType")
             .value("BUS", element_type::BUS)
+            .value("BUS_FROM_BUS_BREAKER_VIEW", element_type::BUS_FROM_BUS_BREAKER_VIEW)
             .value("LINE", element_type::LINE)
             .value("TWO_WINDINGS_TRANSFORMER", element_type::TWO_WINDINGS_TRANSFORMER)
             .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)
@@ -323,7 +385,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
               py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("report_node"));
 
-    m.def("load_network_from_binary_buffers", &pypowsybl::loadNetworkFromBinaryBuffers, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
@@ -332,7 +394,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("save_network_to_string", &pypowsybl::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network_to_binary_buffer", &pypowsybl::saveNetworkToBinaryBuffer, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network_to_binary_buffer", ::saveNetworkToBinaryBufferPython, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
@@ -789,6 +851,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("BRANCH_ACTIVE_POWER_3",sensitivity_function_type::BRANCH_ACTIVE_POWER_3)
             .value("BRANCH_CURRENT_3",sensitivity_function_type::BRANCH_CURRENT_3)
             .value("BRANCH_REACTIVE_POWER_3",sensitivity_function_type::BRANCH_REACTIVE_POWER_3)
+            .value("BUS_REACTIVE_POWER",sensitivity_function_type::BUS_REACTIVE_POWER)
             .value("BUS_VOLTAGE",sensitivity_function_type::BUS_VOLTAGE);
 
     py::enum_<sensitivity_variable_type>(m, "SensitivityVariableType")
@@ -821,7 +884,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("result"));
     m.def("get_three_windings_transformer_results", &pypowsybl::getThreeWindingsTransformerResults,
           "create a table with all three windings transformer results computed after security analysis", py::arg("result"));
-    m.def("create_element", ::createElement, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
+    m.def("create_element", ::createElementBind, "create a new element on the network", py::arg("network"),  py::arg("dataframes"),  py::arg("elementType"));
 
     py::enum_<validation_level_type>(m, "ValidationLevel")
         .value("EQUIPMENT", validation_level_type::EQUIPMENT)
@@ -852,7 +915,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("name"), py::arg("table_name"));
     m.def("get_network_extensions_creation_dataframes_metadata", &pypowsybl::getNetworkExtensionsCreationDataframesMetadata, "Get network extension creation tables metadata for a given network element extension",
           py::arg("name"));
-    m.def("create_extensions", ::createExtensions, "create extensions of network elements given the extension name",
+    m.def("create_extensions", ::createExtensionsBind, "create extensions of network elements given the extension name",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"),  py::arg("dataframes"),  py::arg("name"));
     m.def("create_report_node", &pypowsybl::createReportNode, "Create a report node", py::arg("task_key"), py::arg("default_name"));
     m.def("print_report", &pypowsybl::printReport, "Print a report", py::arg("report_node"));
@@ -917,7 +980,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_modification_metadata_with_element_type", &pypowsybl::getModificationMetadataWithElementType, "Get network modification metadata with element type", py::arg("network_modification_type"), py::arg("element_type"));
 
-    m.def("create_network_modification", ::createNetworkModification, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
+    m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
             .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
@@ -956,4 +1019,60 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
+}
+
+void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {
+    py::object logger = CppToPythonLogger::get()->getLogger();
+    if (!logger.is_none()) {
+        py::gil_scoped_acquire acquire;
+        py::object level = logger.attr("level");
+        ::setLogLevel(guard->thread(), level.cast<int>(), exc);
+     }
+}
+
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
+    pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
+
+    char** dataPtrs = new char*[byteBuffers.size()];
+    int* dataSizes = new int[byteBuffers.size()];
+    for(int i=0; i < byteBuffers.size(); ++i) {
+        py::buffer_info info = byteBuffers[i].request();
+        dataPtrs[i] = static_cast<char*>(info.ptr);
+        dataSizes[i] = info.size;
+    }
+
+    pypowsybl::JavaHandle networkHandle = pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
+                           parameterNamesPtr.get(), parameterNames.size(),
+                           parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+    delete[] dataPtrs;
+    delete[] dataSizes;
+    return networkHandle;
+}
+
+py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
+    pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
+    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::saveNetworkToBinaryBuffer, network, (char*) format.data(), parameterNamesPtr.get(), parameterNames.size(),
+                     parameterValuesPtr.get(), parameterValues.size(), reportNode == nullptr ? nullptr : *reportNode);
+    py::gil_scoped_acquire acquire;
+    py::bytes bytes((char*) byteArray->ptr, byteArray->length);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeNetworkBinaryBuffer, byteArray);
+    return bytes;
 }

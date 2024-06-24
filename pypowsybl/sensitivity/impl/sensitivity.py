@@ -11,8 +11,8 @@ from typing import List, Dict
 
 from pypowsybl import _pypowsybl
 from pypowsybl.security import ContingencyContainer
-from .sensitivity_analysis_result import DEFAULT_MATRIX_ID, TO_REMOVE
 from pypowsybl._pypowsybl import PyPowsyblError, ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
+from .sensitivity_analysis_result import DEFAULT_MATRIX_ID, TO_REMOVE
 from .zone import Zone
 
 
@@ -156,6 +156,8 @@ class SensitivityAnalysis(ContingencyContainer):
          - BRANCH_ACTIVE_POWER_3
          - BRANCH_CURRENT_3
          - BRANCH_REACTIVE_POWER_3
+         - BUS_REACTIVE_POWER
+         - BUS_VOLTAGE
 
         sensitivity_variable_type can be:
          - INJECTION_ACTIVE_POWER

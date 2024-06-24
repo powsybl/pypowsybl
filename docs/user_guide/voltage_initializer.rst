@@ -1,5 +1,5 @@
 Run the voltage initializer
-===========================================
+===========================
 
 .. currentmodule:: pypowsybl.voltage_initializer
 
@@ -23,7 +23,7 @@ Here is an example of a simple config.yaml file.
         homeDir: PATH_TO_AMPL
 
 Quick start
--------------
+-----------
 
 Here is a simple starting example:
 
@@ -45,4 +45,127 @@ Here is a simple starting example:
 
     print(results.status())
     print(results.indicators())
+
+
+Available settings in the VoltageInitializerParameters class
+------------------------------------------------------------
+
+- Specify which buses will have reactive slacks attached in the ACOPF solving.
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_reactive_slack_buses_mode(va.VoltageInitializerReactiveSlackBusesMode.NO_GENERATION)
+
+- Specify what is the log level of the AMPL solving.
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
+    params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
+
+- Change plausible voltage level limits in ACOPF solving.
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_min_plausible_low_voltage_limit(0.45)
+    params.set_max_plausible_high_voltage_limit(1.2)
+
+- Tune the threshold defining null values in AMPL.
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_min_plausible_active_power_threshold(1)
+    params.set_low_impedance_threshold(1e-5)
+
+- Modify the parameters used for the correction of generator limits.
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_max_plausible_power_limit(7800)
+    params.set_high_active_power_default_limit(950)
+    params.set_low_active_power_default_limit(0.5)
+    params.set_default_minimal_qp_range(0.45)
+    params.set_default_qmax_pmax_ratio(0.45)
+
+- Tune the thresholds used to ignore buses or voltage level limits with nominal voltage lower than them.
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_min_nominal_voltage_ignored_bus(0.5)
+    params.set_min_nominal_voltage_ignored_voltage_bounds(1)
+
+- Specify which parameters will be variable or fixed in the ACOPF solving
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    some_gen_id = n.get_generators().iloc[0].name
+    some_2wt_id = n.get_2_windings_transformers().iloc[0].name
+    some_shunt_id = n.get_shunt_compensators().iloc[0].name
+    params.add_constant_q_generators([some_gen_id])
+    params.add_variable_two_windings_transformers([some_2wt_id])
+    params.add_variable_shunt_compensators([some_shunt_id])
+
+
+- Override the network voltage limits:
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.add_specific_low_voltage_limits([("vl_id_1", False, 380)])
+    params.add_specific_high_voltage_limits([("vl_id_2", False, 420)])
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.add_specificvoltage_limits({"vl_id": (0.5, 1.2)})
+
+
+- Specify the objective function and the objective distance
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
+    params.set_objective_distance(1.3)
+
+
+- Tune scaling factors applied before ACOPF solving:
+
+.. code-block:: python
+
+    import pypowsybl as pp
+    import pypowsybl.voltage_initializer as v_init
+    params = v_init.VoltageInitializerParameters()
+    params.set_default_variable_scaling_factor(1.1)
+    params.set_default_constraint_scaling_factor(0.9)
+    params.set_reactive_slack_variable_scaling_factor(0.15)
+    params.set_twt_ratio_variable_scaling_factor(0.002)
 

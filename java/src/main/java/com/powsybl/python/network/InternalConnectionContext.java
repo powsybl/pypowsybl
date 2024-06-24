@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.network;
 
@@ -13,21 +14,10 @@ import java.util.Objects;
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
  */
-public class InternalConnectionContext {
-
-    private final VoltageLevel.NodeBreakerView.InternalConnection internalConnection;
-    private final int index;
+public record InternalConnectionContext(VoltageLevel.NodeBreakerView.InternalConnection internalConnection, int index) {
 
     public InternalConnectionContext(VoltageLevel.NodeBreakerView.InternalConnection internalConnection, int index) {
         this.index = index;
         this.internalConnection = Objects.requireNonNull(internalConnection);
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public VoltageLevel.NodeBreakerView.InternalConnection getInternalConnection() {
-        return internalConnection;
     }
 }

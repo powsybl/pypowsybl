@@ -18,7 +18,7 @@ import org.graalvm.nativeimage.c.type.*;
 import org.graalvm.word.PointerBase;
 
 /**
- * Defines java mapping with C structs defined in pypowsybl-api.h header.
+ * Defines java mapping with C structs defined in powsybl-api.h header.
  *
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
@@ -585,6 +585,7 @@ public final class PyPowsyblApiHeader {
     @CEnum("element_type")
     public enum ElementType {
         BUS,
+        BUS_FROM_BUS_BREAKER_VIEW,
         LINE,
         TWO_WINDINGS_TRANSFORMER,
         THREE_WINDINGS_TRANSFORMER,
@@ -703,6 +704,7 @@ public final class PyPowsyblApiHeader {
         BRANCH_ACTIVE_POWER_3,
         BRANCH_CURRENT_3,
         BRANCH_REACTIVE_POWER_3,
+        BUS_REACTIVE_POWER,
         BUS_VOLTAGE;
 
         @CEnumValue
@@ -1258,6 +1260,46 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native VoltageInitializerObjective fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerLogLevelAmpl")
+    public enum VoltageInitializerLogLevelAmpl {
+        DEBUG,
+        INFO,
+        WARNING,
+        ERROR;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerLogLevelAmpl fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerLogLevelSolver")
+    public enum VoltageInitializerLogLevelSolver {
+        NOTHING,
+        ONLY_RESULTS,
+        EVERYTHING;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerLogLevelSolver fromCValue(int value);
+    }
+
+    @CEnum("VoltageInitializerReactiveSlackBusesMode")
+    public enum VoltageInitializerReactiveSlackBusesMode {
+        CONFIGURED,
+        NO_GENERATION,
+        ALL_BUSES;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native VoltageInitializerReactiveSlackBusesMode fromCValue(int value);
     }
 
     @CEnum("VoltageInitializerStatus")

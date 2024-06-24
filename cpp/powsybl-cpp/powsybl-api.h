@@ -134,6 +134,7 @@ typedef struct operator_strategy_result_struct {
 
 typedef enum {
     BUS = 0,
+    BUS_FROM_BUS_BREAKER_VIEW,
     LINE,
     TWO_WINDINGS_TRANSFORMER,
     THREE_WINDINGS_TRANSFORMER,
@@ -218,6 +219,7 @@ typedef enum {
     BRANCH_ACTIVE_POWER_3,
     BRANCH_CURRENT_3,
     BRANCH_REACTIVE_POWER_3,
+    BUS_REACTIVE_POWER,
     BUS_VOLTAGE,
 } sensitivity_function_type;
 
@@ -396,3 +398,22 @@ typedef enum {
     BETWEEN_HIGH_AND_LOW_VOLTAGE_LIMIT,
     SPECIFIC_VOLTAGE_PROFILE,
 } VoltageInitializerObjective;
+
+typedef enum {
+    DEBUG = 0,
+    INFO,
+    WARNING,
+    ERROR,
+} VoltageInitializerLogLevelAmpl;
+
+typedef enum {
+    NOTHING = 0,
+    ONLY_RESULTS,
+    EVERYTHING,
+} VoltageInitializerLogLevelSolver;
+
+typedef enum {
+    CONFIGURED = 0,
+    NO_GENERATION,
+    ALL_BUSES,
+} VoltageInitializerReactiveSlackBusesMode;

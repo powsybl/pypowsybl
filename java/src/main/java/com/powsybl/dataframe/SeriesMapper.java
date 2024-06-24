@@ -3,10 +3,9 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe;
-
-import com.powsybl.dataframe.network.DataframeContext;
 
 import java.util.List;
 
@@ -17,17 +16,17 @@ import java.util.List;
  *
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
  */
-public interface SeriesMapper<T> {
+public interface SeriesMapper<T, C> {
 
     SeriesMetadata getMetadata();
 
-    void createSeries(List<T> items, DataframeHandler factory, DataframeContext dataframeContext);
+    void createSeries(List<T> items, DataframeHandler factory, C context);
 
     default void updateInt(T object, int value) {
         throw new UnsupportedOperationException("Cannot update series with int: " + getMetadata().getName());
     }
 
-    default void updateDouble(T object, double value, DataframeContext context) {
+    default void updateDouble(T object, double value, C context) {
         throw new UnsupportedOperationException("Cannot update series with double: " + getMetadata().getName());
     }
 

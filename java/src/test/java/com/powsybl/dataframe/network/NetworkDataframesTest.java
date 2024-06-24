@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network;
 
@@ -19,9 +20,12 @@ import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
+import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.Coordinate;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
+import com.powsybl.iidm.network.extensions.LinePositionAdder;
 import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -54,7 +58,7 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(type);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter, DataframeContext.deactivate());
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), dataframeFilter, NetworkDataframeContext.DEFAULT);
         return series;
     }
 
@@ -66,14 +70,14 @@ class NetworkDataframesTest {
         List<Series> series = new ArrayList<>();
         NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
         assertNotNull(mapper);
-        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
+        mapper.createDataframe(network, new DefaultDataframeHandler(series::add), new DataframeFilter(), NetworkDataframeContext.DEFAULT);
         return series;
     }
 
     private static void updateExtension(String name, Network network, UpdatingDataframe updatingDataframe) {
         NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, null);
         assertNotNull(mapper);
-        mapper.updateSeries(network, updatingDataframe, DataframeContext.deactivate());
+        mapper.updateSeries(network, updatingDataframe, NetworkDataframeContext.DEFAULT);
     }
 
     private DoubleIndexedSeries createInput(List<String> names, double... values) {
@@ -603,7 +607,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level_id", "bus_id");
+                .containsExactly("id", "type", "voltage_level_id", "connected", "bus_id");
     }
 
     @Test
@@ -634,5 +638,26 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id");
+    }
+
+    @Test
+    void linePositionExtensions() {
+        String lineId = "NHV1_NHV2_1";
+        Coordinate coord1 = new Coordinate(1.0, 2.0);
+
+        Network network = EurostagTutorialExample1Factory.create();
+        Line line = network.getLine(lineId);
+
+        line.newExtension(LinePositionAdder.class).withCoordinates(List.of(coord1)).add();
+
+        List<Series> ext1Series = createExtensionDataFrame("linePosition", network);
+
+        assertThat(ext1Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "num", "latitude", "longitude");
+        assertThat(ext1Series.get(0).getStrings()).containsExactly(lineId);
+        assertThat(ext1Series.get(1).getInts()).containsExactly(0);
+        assertThat(ext1Series.get(2).getDoubles()).containsExactly(coord1.getLatitude());
+        assertThat(ext1Series.get(3).getDoubles()).containsExactly(coord1.getLongitude());
     }
 }

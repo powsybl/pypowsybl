@@ -20,7 +20,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 import pytest
-from numpy import NaN
+from numpy import nan
 
 import pypowsybl as pp
 import pypowsybl.report as rp
@@ -164,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 19 == len(parameters)
+    assert 20 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -235,10 +235,10 @@ def test_buses():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                             columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                                      'voltage_level_id'],
-                            data=[['', NaN, NaN, 0, 0, 'VLGEN'],
-                                  ['', 380, NaN, 0, 0, 'VLHV1'],
-                                  ['', 380, NaN, 0, 0, 'VLHV2'],
-                                  ['', NaN, NaN, 0, 0, 'VLLOAD']])
+                            data=[['', nan, nan, 0, 0, 'VLGEN'],
+                                  ['', 380, nan, 0, 0, 'VLHV1'],
+                                  ['', 380, nan, 0, 0, 'VLHV2'],
+                                  ['', nan, nan, 0, 0, 'VLLOAD']])
     pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
     n.update_buses(pd.DataFrame(index=['VLGEN_0'], columns=['v_mag', 'v_angle'], data=[[400, 0]]))
@@ -247,9 +247,9 @@ def test_buses():
                             columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                                      'voltage_level_id'],
                             data=[['', 400, 0, 0, 0, 'VLGEN'],
-                                  ['', 380, NaN, 0, 0, 'VLHV1'],
-                                  ['', 380, NaN, 0, 0, 'VLHV2'],
-                                  ['', NaN, NaN, 0, 0, 'VLLOAD']])
+                                  ['', 380, nan, 0, 0, 'VLHV1'],
+                                  ['', 380, nan, 0, 0, 'VLHV2'],
+                                  ['', nan, nan, 0, 0, 'VLLOAD']])
     pd.testing.assert_frame_equal(expected, buses, check_dtype=False)
 
 
@@ -306,7 +306,7 @@ def test_vsc_data_frame():
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['VSC1', 1.1, NaN, NaN, 'CURVE', 400, 500, True, 'VSC1', 10.11, -512.081, 739.27,
+                            data=[['VSC1', 1.1, nan, nan, 'CURVE', 400, 500, True, 'VSC1', 10.11, -512.081, 739.27,
                                    'S1VL2', 'S1VL2_0',
                                    True],
                                   ['VSC2', 1.1, -400, 500, 'MIN_MAX', 0, 120, False, 'VSC2', -9.89, -120, 170.032,
@@ -327,7 +327,7 @@ def test_vsc_data_frame():
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected'],
-                            data=[['VSC1', 1.1, NaN, NaN, 'CURVE', 300, 400, True, 'VSC2', 10.11, -512.081, 739.27,
+                            data=[['VSC1', 1.1, nan, nan, 'CURVE', 300, 400, True, 'VSC2', 10.11, -512.081, 739.27,
                                    'S1VL2', 'S1VL2_0',
                                    True],
                                   ['VSC2', 1.1, -350, 400, 'MIN_MAX', 1, 2, False, 'VSC1', -9.89, -120, 170.032,
@@ -352,8 +352,8 @@ def test_lcc_data_frame():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id', 'connected'],
-                            data=[['LCC1', 0.6, 1.1, 80.88, NaN, NaN, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, - 79.12, NaN, NaN, 'S3VL1', 'S3VL1_0', True]])
+                            data=[['LCC1', 0.6, 1.1, 80.88, nan, nan, 'S1VL2', 'S1VL2_0', True],
+                                  ['LCC2', 0.6, 1.1, - 79.12, nan, nan, 'S3VL1', 'S3VL1_0', True]])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False)
     n.update_lcc_converter_stations(
         pd.DataFrame(index=['LCC1'],
@@ -364,7 +364,7 @@ def test_lcc_data_frame():
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id', 'connected'],
                             data=[['LCC1', 0.7, 1.2, 82, 69, 154.68, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, - 79.12, NaN, NaN, 'S3VL1', 'S3VL1_0', True]])
+                                  ['LCC2', 0.6, 1.1, - 79.12, nan, nan, 'S3VL1', 'S3VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
@@ -391,7 +391,7 @@ def test_svc_data_frame():
         columns=['name', 'b_min', 'b_max', 'target_v', 'target_q',
                  'regulation_mode', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                  'connected'],
-        data=[['', -0.05, 0.05, 400, NaN, 'VOLTAGE', 'SVC', NaN, -12.54, NaN, 'S4VL1', 'S4VL1_0', True]])
+        data=[['', -0.05, 0.05, 400, nan, 'VOLTAGE', 'SVC', nan, -12.54, nan, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=1e-2)
     n.update_static_var_compensators(pd.DataFrame(
         index=pd.Series(name='id', data=['SVC']),
@@ -580,7 +580,7 @@ def test_regulated_terminal_node_breaker():
     updated_gens = n.get_generators()
     assert 'S1VL1_BBS' == updated_gens['regulated_element_id']['GH1']
 
-    with pytest.raises(pp.PyPowsyblError):
+    with pytest.raises(PyPowsyblError):
         n.update_generators(id='GH1', regulated_element_id='LINE_S2S3')
 
 
@@ -588,7 +588,7 @@ def test_regulated_terminal_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
     generators = n.get_generators()
     assert 'GEN' == generators['regulated_element_id']['GEN']
-    with pytest.raises(pp.PyPowsyblError):
+    with pytest.raises(PyPowsyblError):
         n.update_generators(id='GEN', regulated_element_id='NHV1')
     n.update_generators(id='GEN', regulated_element_id='LOAD')
     generators = n.get_generators()
@@ -606,7 +606,7 @@ def test_update_unknown_data():
 def test_update_non_modifiable_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['voltage_level_id'], index=['GEN'])
-    with pytest.raises(pp.PyPowsyblError) as context:
+    with pytest.raises(PyPowsyblError) as context:
         n.update_generators(update)
     assert 'Series \'voltage_level_id\' is not modifiable.' == str(context.value)
 
@@ -637,9 +637,9 @@ def test_update_2_windings_transformers_data_frame():
                                      'i1', 'p2',
                                      'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                      'connected1', 'connected2'],
-                            data=[['', 0.27, 11.10, 0, 0, 24, 400, NaN, NaN, NaN, NaN, NaN, NaN,
-                                   NaN, 'VLGEN', 'VLHV1', 'VLGEN_0', 'VLHV1_0', True, True],
-                                  ['', 0.05, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                            data=[['', 0.27, 11.10, 0, 0, 24, 400, nan, nan, nan, nan, nan, nan,
+                                   nan, 'VLGEN', 'VLHV1', 'VLGEN_0', 'VLHV1_0', True, True],
+                                  ['', 0.05, 4.05, 0, 0, 400, 158, nan, nan, nan, nan, nan, nan, nan,
                                    'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
     pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=1e-2)
     n.update_2_windings_transformers(
@@ -651,9 +651,9 @@ def test_update_2_windings_transformers_data_frame():
                                      'i1', 'p2',
                                      'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                      'connected1', 'connected2'],
-                            data=[['', 0.3, 11.2, 1, 1, 90, 225, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                            data=[['', 0.3, 11.2, 1, 1, 90, 225, nan, nan, nan, nan, nan, nan, nan,
                                    'VLGEN', 'VLHV1', '', '', False, False],
-                                  ['', 0.047, 4.05, 0, 0, 400, 158, NaN, NaN, NaN, NaN, NaN, NaN, NaN,
+                                  ['', 0.047, 4.05, 0, 0, 400, 158, nan, nan, nan, nan, nan, nan, nan,
                                    'VLHV2', 'VLLOAD', 'VLHV2_0', 'VLLOAD_0', True, True]])
     pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=1e-2)
     n = pp.network.create_four_substations_node_breaker_network()
@@ -701,7 +701,7 @@ def test_reactive_capability_curve_points_data_frame():
 
 def test_exception():
     n = pp.network.create_ieee14()
-    with pytest.raises(pp.PyPowsyblError) as e:
+    with pytest.raises(PyPowsyblError) as e:
         n.open_switch("aa")
     assert "Switch 'aa' not found" == str(e.value)
 
@@ -714,7 +714,7 @@ def test_ratio_tap_changers():
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
-                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4, NaN]])
+                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4, nan]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
@@ -724,7 +724,7 @@ def test_ratio_tap_changers():
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
-                            data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, NaN]])
+                            data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, nan]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
@@ -963,7 +963,7 @@ def test_dangling_lines():
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
-                            data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, NaN, NaN, NaN, 'VL', 'VL_0', True,
+                            data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, nan, nan, nan, 'VL', 'VL_0', True,
                                    '', '', '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
@@ -972,7 +972,7 @@ def test_dangling_lines():
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                     'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
-                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, NaN, NaN, NaN, 'VL', '', False,
+                           data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, nan, nan, nan, 'VL', '', False,
                                   '', '', '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
@@ -993,8 +993,8 @@ def test_batteries():
                                      'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 9999.99, -9999.99, -9999.99, 9999.99, 'MIN_MAX', 9999.99, 9999.99, -605, -225,
-                                   NaN, 'VLBAT', 'VLBAT_0', True],
-                                  ['', 200, -200, NaN, NaN, 'CURVE', 100, 200, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
+                                   nan, 'VLBAT', 'VLBAT_0', True],
+                                  ['', 200, -200, nan, nan, 'CURVE', 100, 200, -605, -225, nan, 'VLBAT', 'VLBAT_0',
                                    True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
     n.update_batteries(pd.DataFrame(index=['BAT2'], columns=['target_p', 'target_q'], data=[[50, 100]]))
@@ -1003,9 +1003,9 @@ def test_batteries():
                             columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p',
                                      'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 9999.99, -9999.99, -500, 500, 'MIN_MAX', 9999.99, 9999.99, -605, -225, NaN,
+                            data=[['', 9999.99, -9999.99, -500, 500, 'MIN_MAX', 9999.99, 9999.99, -605, -225, nan,
                                    'VLBAT', 'VLBAT_0', True],
-                                  ['', 200, -200, NaN, NaN, 'CURVE', 50, 100, -605, -225, NaN, 'VLBAT', 'VLBAT_0',
+                                  ['', 200, -200, nan, nan, 'CURVE', 50, 100, -605, -225, nan, 'VLBAT', 'VLBAT_0',
                                    True]])
     pd.testing.assert_frame_equal(expected, n.get_batteries(), check_dtype=False)
 
@@ -1019,8 +1019,8 @@ def test_shunt():
                                      'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, False, NaN, NaN,
-                                   'S1VL2_0', NaN, 1920, NaN, 'S1VL2', 'S1VL2_0', True]])
+                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, False, nan, nan,
+                                   'S1VL2_0', nan, 1920, nan, 'S1VL2', 'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     n.update_shunt_compensators(
         pd.DataFrame(index=['SHUNT'],
@@ -1037,7 +1037,7 @@ def test_shunt():
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
                             data=[['', 0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
-                                   '', NaN, 1900, NaN, 'S1VL2', '', False]])
+                                   '', nan, 1900, nan, 'S1VL2', '', False]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     shunts = n.get_shunt_compensators(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
@@ -1057,11 +1057,11 @@ def test_3_windings_transformers():
                                      'q2', 'i2', 'voltage_level2_id', 'bus2_id', 'connected2', 'r3', 'x3', 'g3',
                                      'b3', 'rated_u3', 'rated_s3', 'ratio_tap_position3', 'phase_tap_position3',
                                      'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id', 'connected3'],
-                            data=[['', 132, 17.424, 1.7424, 0.00573921, 0.000573921, 132, NaN, -99999, -99999, NaN,
-                                   NaN,
-                                   NaN, 'VL_132', 'VL_132_0', True, 1.089, 0.1089, 0, 0, 33, NaN, 2, -99999, NaN,
-                                   NaN, NaN, 'VL_33', 'VL_33_0', True, 0.121, 0.0121, 0, 0, 11, NaN, 0, -99999, NaN,
-                                   NaN, NaN, 'VL_11', 'VL_11_0', True]])
+                            data=[['', 132, 17.424, 1.7424, 0.00573921, 0.000573921, 132, nan, -99999, -99999, nan,
+                                   nan,
+                                   nan, 'VL_132', 'VL_132_0', True, 1.089, 0.1089, 0, 0, 33, nan, 2, -99999, nan,
+                                   nan, nan, 'VL_33', 'VL_33_0', True, 0.121, 0.0121, 0, 0, 11, nan, 0, -99999, nan,
+                                   nan, nan, 'VL_11', 'VL_11_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False)
     t3wt = n.get_3_windings_transformers(
         attributes=['bus_breaker_bus1_id', 'node1', 'bus_breaker_bus2_id', 'node2', 'bus_breaker_bus3_id', 'node3'])
@@ -1170,10 +1170,10 @@ def test_voltage_levels():
                                             data=['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']),
                             columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit',
                                      'low_voltage_limit'],
-                            data=[['', 'P1', 24, NaN, NaN],
+                            data=[['', 'P1', 24, nan, nan],
                                   ['', 'P1', 380, 500, 400],
                                   ['', 'P2', 380, 500, 300],
-                                  ['', 'P2', 150, NaN, NaN]])
+                                  ['', 'P2', 150, nan, nan]])
     pd.testing.assert_frame_equal(expected, n.get_voltage_levels(), check_dtype=False)
     n.update_voltage_levels(id=['VLGEN', 'VLLOAD'], nominal_v=[25, 151], high_voltage_limit=[50, 175],
                             low_voltage_limit=[20, 125])
@@ -1214,7 +1214,7 @@ def test_update_generators_minax_reactive_limits():
     assert -205.0 == generators['min_q'][gen_with_min_max_reactive_limits]
     assert 205.0 == generators['max_q'][gen_with_min_max_reactive_limits]
     gen_with_curve_reactive_limits = '3a3b27be-b18b-4385-b557-6735d733baf0'
-    with pytest.raises(pp.PyPowsyblError):
+    with pytest.raises(PyPowsyblError):
         n.update_generators(id=[gen_with_curve_reactive_limits], min_q=[-200])
 
 
@@ -1312,7 +1312,7 @@ def test_linear_shunt_compensator_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['SHUNT']),
                             columns=['g_per_section', 'b_per_section', 'max_section_count'],
-                            data=[[NaN, -0.012, 1]])
+                            data=[[nan, -0.012, 1]])
     pd.testing.assert_frame_equal(expected, n.get_linear_shunt_compensator_sections(), check_dtype=False)
     n.update_linear_shunt_compensator_sections(
         pd.DataFrame(index=['SHUNT'],
@@ -1383,6 +1383,65 @@ def test_bus_breaker_view():
     pd.testing.assert_frame_equal(expected_elements, elements, check_dtype=False)
 
 
+def test_bus_breaker_view_buses():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    buses = n.get_bus_breaker_view_buses()
+    expected_buses = pd.DataFrame(
+        index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
+        columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
+                 'voltage_level_id'],
+        data=[['', nan, nan, 0, 0, 'VLGEN'],
+              ['', 380, nan, 0, 0, 'VLHV1'],
+              ['', 380, nan, 0, 0, 'VLHV2'],
+              ['', nan, nan, 0, 0, 'VLLOAD']])
+    pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
+
+
+def test_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLLOAD')
+    n.create_switches(id='S1', voltage_level_id='VLLOAD', bus1_id='NLOAD', bus2_id='B1')
+    n.update_loads(id='LOAD', bus_breaker_bus_id='B1')
+    loads = n.get_loads(attributes=['bus_breaker_bus_id'])
+    expected_loads = pd.DataFrame(
+        index=pd.Series(name='id', data=['LOAD']),
+        columns=['bus_breaker_bus_id'],
+        data=[['B1']])
+    pd.testing.assert_frame_equal(expected_loads, loads, check_dtype=False)
+
+    # try on a node/breaker one
+    n = pp.network.create_four_substations_node_breaker_network()
+    with pytest.raises(PyPowsyblError) as e:
+        n.update_loads(id='LD1', bus_breaker_bus_id='S1VL1_0')
+    assert "Not supported in a node/breaker topology" in str(e) # this is expected
+
+
+def test_injection_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLLOAD')
+    n.create_switches(id='S1', voltage_level_id='VLLOAD', bus1_id='NLOAD', bus2_id='B1')
+    n.update_injections(id='LOAD', bus_breaker_bus_id='B1', connected=True)
+    loads = n.get_loads(attributes=['bus_breaker_bus_id', 'connected'])
+    expected_loads = pd.DataFrame(
+        index=pd.Series(name='id', data=['LOAD']),
+        columns=['bus_breaker_bus_id', 'connected'],
+        data=[['B1', True]])
+    pd.testing.assert_frame_equal(expected_loads, loads, check_dtype=False)
+
+
+def test_branch_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLHV1')
+    n.create_switches(id='S1', voltage_level_id='VLHV1', bus1_id='NHV1', bus2_id='B1')
+    n.update_branches(id='NHV1_NHV2_1', bus_breaker_bus1_id='B1', connected1=False)
+    lines = n.get_lines(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'connected1', 'connected2'])
+    expected_lines = pd.DataFrame(
+        index=pd.Series(name='id', data=['NHV1_NHV2_1', 'NHV1_NHV2_2']),
+        columns=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'connected1', 'connected2'],
+        data=[['B1', 'NHV2', False, True], ['NHV1', 'NHV2', True, True]])
+    pd.testing.assert_frame_equal(expected_lines, lines, check_dtype=False)
+
+
 def test_bb_topology_with_no_bus_view_bus_does_not_throw():
     n = pp.network.create_empty()
     n.create_substations(id='S')
@@ -1434,20 +1493,20 @@ def test_dataframe_attributes_filtering():
     buses_selected_attributes = n.get_buses(attributes=['v_mag', 'voltage_level_id'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                             columns=['v_mag', 'voltage_level_id'],
-                            data=[[NaN, 'VLGEN'],
+                            data=[[nan, 'VLGEN'],
                                   [380, 'VLHV1'],
                                   [380, 'VLHV2'],
-                                  [NaN, 'VLLOAD']])
+                                  [nan, 'VLLOAD']])
     pd.testing.assert_frame_equal(expected, buses_selected_attributes, check_dtype=False)
     buses_default_attributes = n.get_buses(all_attributes=False)
     expected_default_attributes = pd.DataFrame(
         index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                  'voltage_level_id'],
-        data=[['', NaN, NaN, 0, 0, 'VLGEN'],
-              ['', 380, NaN, 0, 0, 'VLHV1'],
-              ['', 380, NaN, 0, 0, 'VLHV2'],
-              ['', NaN, NaN, 0, 0, 'VLLOAD']])
+        data=[['', nan, nan, 0, 0, 'VLGEN'],
+              ['', 380, nan, 0, 0, 'VLHV1'],
+              ['', 380, nan, 0, 0, 'VLHV2'],
+              ['', nan, nan, 0, 0, 'VLLOAD']])
     pd.testing.assert_frame_equal(expected_default_attributes, buses_default_attributes, check_dtype=False)
     buses_empty = n.get_buses(attributes=[])
     expected_empty = expected_default_attributes[[]]
@@ -1459,10 +1518,10 @@ def test_dataframe_attributes_filtering():
         index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                  'voltage_level_id', 'fictitious'],
-        data=[['', NaN, NaN, 0, 0, 'VLGEN', False],
-              ['', 380, NaN, 0, 0, 'VLHV1', False],
-              ['', 380, NaN, 0, 0, 'VLHV2', False],
-              ['', NaN, NaN, 0, 0, 'VLLOAD', False]])
+        data=[['', nan, nan, 0, 0, 'VLGEN', False],
+              ['', 380, nan, 0, 0, 'VLHV1', False],
+              ['', 380, nan, 0, 0, 'VLHV2', False],
+              ['', nan, nan, 0, 0, 'VLLOAD', False]])
     pd.testing.assert_frame_equal(expected_all_attributes, buses_all_attributes, check_dtype=False)
     with pytest.raises(RuntimeError) as e:
         n.get_buses(all_attributes=True, attributes=['v_mag', 'voltage_level_id'])
@@ -1636,12 +1695,12 @@ def test_validation_level():
     n = pp.network.create_ieee14()
     vl = n.get_validation_level()
     assert ValidationLevel.STEADY_STATE_HYPOTHESIS == vl
-    with pytest.raises(pp.PyPowsyblError) as exc:
-        n.update_generators(id='B1-G', target_p=np.NaN)
+    with pytest.raises(PyPowsyblError) as exc:
+        n.update_generators(id='B1-G', target_p=np.nan)
     assert "Generator 'B1-G': invalid value (NaN) for active power setpoint" == str(exc.value)
 
     n.set_min_validation_level(ValidationLevel.EQUIPMENT)
-    n.update_generators(id='B1-G', target_p=np.NaN)
+    n.update_generators(id='B1-G', target_p=np.nan)
     vl = n.get_validation_level()
     assert ValidationLevel.EQUIPMENT == vl
 
@@ -1657,8 +1716,8 @@ def test_validate():
     n.set_min_validation_level(ValidationLevel.EQUIPMENT)
     vl = n.validate()
     assert ValidationLevel.STEADY_STATE_HYPOTHESIS == vl
-    n.update_generators(id='B1-G', target_p=np.NaN)
-    with pytest.raises(pp.PyPowsyblError) as exc:
+    n.update_generators(id='B1-G', target_p=np.nan)
+    with pytest.raises(PyPowsyblError) as exc:
         n.validate()
     assert "Generator 'B1-G': invalid value (NaN) for active power setpoint" == str(exc.value)
 
@@ -1740,7 +1799,7 @@ def test_properties():
         {'id': 'GEN', 'prop1': 'test_prop1', 'prop2': 'test_prop2'},
         {'id': 'NHV1_NHV2_1', 'prop1': 'test_prop1'}
     ])
-    with pytest.raises(pp.PyPowsyblError) as exc:
+    with pytest.raises(PyPowsyblError) as exc:
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
@@ -1828,10 +1887,10 @@ def test_ratio_tap_changer_regulated_side():
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == ''
 
-    with pytest.raises(pp.PyPowsyblError, match='terminal not found for un per unit V'):
+    with pytest.raises(PyPowsyblError, match='a regulation terminal has to be set'):
         n.update_ratio_tap_changers(id='T4-1-0', target_v=100, regulating=True)
 
-    with pytest.raises(pp.PyPowsyblError, match='must be ONE or TWO'):
+    with pytest.raises(PyPowsyblError, match='must be ONE or TWO'):
         n.update_ratio_tap_changers(id='T4-1-0', regulated_side='INVALID', target_v=100, regulating=True)
 
     n.update_ratio_tap_changers(id='T4-1-0', regulated_side='TWO', target_v=100, target_deadband=0, regulating=True)
@@ -1847,7 +1906,7 @@ def test_phase_tap_changer_regulated_side():
     assert tap_changer.regulated_side == 'ONE'
     assert tap_changer.regulation_mode == 'FIXED_TAP'
     n.update_ratio_tap_changers(id='TWT', regulating=False)
-    with pytest.raises(pp.PyPowsyblError, match='regulated terminal is not set'):
+    with pytest.raises(PyPowsyblError, match='regulated terminal is not set'):
         n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300,
                                     regulation_mode='CURRENT_LIMITER',
                                     regulating=True, regulated_side='')

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #include "pylogging.h"
-#include "pypowsybl.h"
+#include "powsybl-cpp.h"
 #include <iostream>
 
 using namespace pybind11::literals;

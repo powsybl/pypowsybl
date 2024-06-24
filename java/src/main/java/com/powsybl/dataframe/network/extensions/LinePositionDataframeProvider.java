@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.extensions;
 
@@ -50,7 +51,7 @@ public class LinePositionDataframeProvider extends AbstractSingleDataframeNetwor
         return network.getLineStream()
                 .map(g -> (LinePosition) g.getExtension(LinePosition.class))
                 .filter(Objects::nonNull)
-                .flatMap(lp -> IntStream.range(0, lp.getCoordinates().size() - 1).mapToObj(num -> new LineCoordinate(lp, num)));
+                .flatMap(lp -> IntStream.range(0, lp.getCoordinates().size()).mapToObj(num -> new LineCoordinate(lp, num)));
     }
 
     private static class LineCoordinateGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, LineCoordinate> {

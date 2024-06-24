@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network;
 
@@ -51,7 +52,8 @@ public final class NetworkDataframes {
     private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
         mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
-        mappers.put(DataframeElementType.BUS, buses());
+        mappers.put(DataframeElementType.BUS, buses(false));
+        mappers.put(DataframeElementType.BUS_FROM_BUS_BREAKER_VIEW, buses(true));
         mappers.put(DataframeElementType.LINE, lines());
         mappers.put(DataframeElementType.TWO_WINDINGS_TRANSFORMER, twoWindingTransformers());
         mappers.put(DataframeElementType.THREE_WINDINGS_TRANSFORMER, threeWindingTransformers());
@@ -85,7 +87,7 @@ public final class NetworkDataframes {
         return Collections.unmodifiableMap(mappers);
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP() {
+    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getP());
     }
 
@@ -93,47 +95,47 @@ public final class NetworkDataframes {
         return inj -> -inj.getTerminal().getP();
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ() {
+    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ() {
+    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ() {
         return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP1() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ1() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ1() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ1() {
         return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitP2() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, DataframeContext> getPerUnitQ2() {
+    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitP2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitQ2() {
+    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ2() {
         return (b, q, context) -> b.getTerminal2().setQ(unPerUnitPQ(context, q));
     }
 
@@ -146,21 +148,21 @@ public final class NetworkDataframes {
         return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
     }
 
-    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
+    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMinQ(pGetter.applyAsDouble(g)));
         };
     }
 
-    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, DataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
+    static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
             return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMaxQ(pGetter.applyAsDouble(g)));
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMinQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitMinQ() {
         return (g, minQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -173,7 +175,7 @@ public final class NetworkDataframes {
         };
     }
 
-    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U> setPerUnitMaxQ() {
+    static <U extends ReactiveLimitsHolder> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitMaxQ() {
         return (g, maxQ, context) -> {
             MinMaxReactiveLimits minMaxReactiveLimits = getMinMaxReactiveLimits(g);
             if (minMaxReactiveLimits != null) {
@@ -192,7 +194,7 @@ public final class NetworkDataframes {
                 : reactiveLimits.getKind().name();
     }
 
-    private static <U extends Injection<U>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
+    private static <U extends Injection<?>> BooleanSeriesMapper.BooleanUpdater<U> connectInjection() {
         return (g, b) -> {
             Boolean res = b ? g.getTerminal().connect() : g.getTerminal().disconnect();
         };
@@ -241,6 +243,20 @@ public final class NetworkDataframes {
         };
     }
 
+    public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
+        return (item, context) -> {
+            U object = objectGetter.apply(item);
+            return object != null ? PerUnitUtil.perUnitPQ(context, valueGetter.applyAsDouble(object)) : Double.NaN;
+        };
+    }
+
+    public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitAngle(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
+        return (item, context) -> {
+            U object = objectGetter.apply(item);
+            return object != null ? PerUnitUtil.perUnitAngle(context, valueGetter.applyAsDouble(object)) : Double.NaN;
+        };
+    }
+
     static NetworkDataframeMapper generators() {
         return NetworkDataframeMapperBuilder.ofStream(Network::getGeneratorStream, getOrThrow(Network::getGenerator, "Generator"))
                 .stringsIndex("id", Generator::getId)
@@ -259,8 +275,8 @@ public final class NetworkDataframes {
                 .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (g, context) -> perUnitV(context, g.getTargetV(), g.getRegulatingTerminal()),
-                    (g, v, context) -> g.setTargetV(unPerUnitV(context, v, g.getRegulatingTerminal())))
+                .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
+                    (g, v, context) -> g.setTargetV(unPerUnitTargetV(context, v, g.getRegulatingTerminal(), g.getTerminal())))
                 .doubles("target_q", (g, context) -> perUnitPQ(context, g.getTargetQ()), (g, q, context) -> g.setTargetQ(unPerUnitPQ(context, q)))
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
@@ -270,7 +286,7 @@ public final class NetworkDataframes {
                 .doubles("i", (g, context) -> perUnitI(context, g.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", g -> getNode(g.getTerminal()), false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -285,8 +301,8 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    static NetworkDataframeMapper buses() {
-        return NetworkDataframeMapperBuilder.ofStream(n -> n.getBusView().getBusStream(),
+    static NetworkDataframeMapper buses(boolean busBreakerView) {
+        return NetworkDataframeMapperBuilder.ofStream(n -> busBreakerView ? n.getBusBreakerView().getBusStream() : n.getBusView().getBusStream(),
                         getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""))
@@ -313,7 +329,7 @@ public final class NetworkDataframes {
                 .doubles("i", (l, context) -> perUnitI(context, l.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", l -> getBusId(l.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", l -> getNode(l.getTerminal()), false)
                 .booleans("connected", l -> l.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -339,7 +355,7 @@ public final class NetworkDataframes {
                 .doubles("i", (b, context) -> perUnitI(context, b.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", b -> getBusId(b.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", b -> getNode(b.getTerminal()), false)
                 .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -357,8 +373,8 @@ public final class NetworkDataframes {
                 .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
                 .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
                 .booleans("voltage_regulation_on", ShuntCompensator::isVoltageRegulatorOn, ShuntCompensator::setVoltageRegulatorOn)
-                .doubles("target_v", (sc, context) -> perUnitV(context, sc.getTargetV(), sc.getRegulatingTerminal()),
-                    (sc, v, context) -> sc.setTargetV(unPerUnitV(context, v, sc.getRegulatingTerminal())))
+                .doubles("target_v", (sc, context) -> perUnitTargetV(context, sc.getTargetV(), sc.getRegulatingTerminal(), sc.getTerminal()),
+                    (sc, v, context) -> sc.setTargetV(unPerUnitTargetV(context, v, sc.getRegulatingTerminal(), sc.getTerminal())))
                 .doubles("target_deadband", (sc, context) -> perUnitV(context, sc.getTargetDeadband(), sc.getRegulatingTerminal()),
                     (sc, tb, context) -> sc.setTargetDeadband(unPerUnitV(context, tb, sc.getRegulatingTerminal())))
                 .strings("regulating_bus_id", sc -> getBusId(sc.getRegulatingTerminal()))
@@ -367,7 +383,7 @@ public final class NetworkDataframes {
                 .doubles("i", (sc, context) -> perUnitI(context, sc.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", sc -> getBusId(sc.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", sc -> getNode(sc.getTerminal()), false)
                 .booleans("connected", sc -> sc.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -461,10 +477,10 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", l -> l.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", l -> l.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", l -> getBusId(l.getTerminal1()))
-                .strings("bus_breaker_bus1_id", l -> getBusBreakerViewBusId(l.getTerminal1()), false)
+                .strings("bus_breaker_bus1_id", l -> getBusBreakerViewBusId(l.getTerminal1()), (l, id) -> setBusBreakerViewBusId(l.getTerminal1(), id), false)
                 .ints("node1", l -> getNode(l.getTerminal1()), false)
                 .strings("bus2_id", l -> getBusId(l.getTerminal2()))
-                .strings("bus_breaker_bus2_id", l -> getBusBreakerViewBusId(l.getTerminal2()), false)
+                .strings("bus_breaker_bus2_id", l -> getBusBreakerViewBusId(l.getTerminal2()), (l, id) -> setBusBreakerViewBusId(l.getTerminal2(), id), false)
                 .ints("node2", l -> getNode(l.getTerminal2()), false)
                 .booleans("connected1", l -> l.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", l -> l.getTerminal2().isConnected(), connectBranchSide2())
@@ -495,10 +511,10 @@ public final class NetworkDataframes {
                 .strings("voltage_level1_id", twt -> twt.getTerminal1().getVoltageLevel().getId())
                 .strings("voltage_level2_id", twt -> twt.getTerminal2().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getTerminal1()))
-                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getTerminal1()), false)
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getTerminal1()), (twt, id) -> setBusBreakerViewBusId(twt.getTerminal1(), id), false)
                 .ints("node1", twt -> getNode(twt.getTerminal1()), false)
                 .strings("bus2_id", twt -> getBusId(twt.getTerminal2()))
-                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getTerminal2()), false)
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getTerminal2()), (twt, id) -> setBusBreakerViewBusId(twt.getTerminal2(), id), false)
                 .ints("node2", twt -> getNode(twt.getTerminal2()), false)
                 .booleans("connected1", twt -> twt.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", twt -> twt.getTerminal2().isConnected(), connectBranchSide2())
@@ -525,7 +541,7 @@ public final class NetworkDataframes {
                 .doubles("i1", (twt, context) -> perUnitI(context, twt.getLeg1().getTerminal()))
                 .strings("voltage_level1_id", twt -> twt.getLeg1().getTerminal().getVoltageLevel().getId())
                 .strings("bus1_id", twt -> getBusId(twt.getLeg1().getTerminal()))
-                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), false)
+                .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg1().getTerminal(), id), false)
                 .ints("node1", twt -> getNode(twt.getLeg1().getTerminal()), false)
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected(), connectLeg1())
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
@@ -541,7 +557,7 @@ public final class NetworkDataframes {
                 .doubles("i2", (twt, context) -> perUnitI(context, twt.getLeg2().getTerminal()))
                 .strings("voltage_level2_id", twt -> twt.getLeg2().getTerminal().getVoltageLevel().getId())
                 .strings("bus2_id", twt -> getBusId(twt.getLeg2().getTerminal()))
-                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), false)
+                .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg2().getTerminal(), id), false)
                 .ints("node2", twt -> getNode(twt.getLeg2().getTerminal()), false)
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected(), connectLeg2())
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
@@ -557,7 +573,7 @@ public final class NetworkDataframes {
                 .doubles("i3", (twt, context) -> perUnitI(context, twt.getLeg3().getTerminal()))
                 .strings("voltage_level3_id", twt -> twt.getLeg3().getTerminal().getVoltageLevel().getId())
                 .strings("bus3_id", twt -> getBusId(twt.getLeg3().getTerminal()))
-                .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), false)
+                .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg3().getTerminal(), id), false)
                 .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected(), connectLeg3())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -566,7 +582,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper danglingLines() {
-        return NetworkDataframeMapperBuilder.ofStream(Network::getDanglingLineStream, getOrThrow(Network::getDanglingLine, "Dangling line"))
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream(), getOrThrow(Network::getDanglingLine, "Dangling line"))
                 .stringsIndex("id", DanglingLine::getId)
                 .strings("name", dl -> dl.getOptionalName().orElse(""))
                 .doubles("r", (dl, context) -> perUnitRX(context, dl.getR(), dl.getTerminal()), (dl, r, context) -> dl.setR(unPerUnitRX(context, dl.getTerminal(), r)))
@@ -580,7 +596,7 @@ public final class NetworkDataframes {
                 .doubles("i", (dl, context) -> perUnitI(context, dl.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", dl -> getBusId(dl.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
                 .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
@@ -615,7 +631,7 @@ public final class NetworkDataframes {
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -633,8 +649,8 @@ public final class NetworkDataframes {
                 .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
                 .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
-                .doubles("target_v", (vsc, context) -> perUnitV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal()),
-                    (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitV(context, targetV, vsc.getRegulatingTerminal())))
+                .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
+                    (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, vsc.getRegulatingTerminal(), vsc.getTerminal())))
                 .doubles("target_q", (vsc, context) -> perUnitPQ(context, vsc.getReactivePowerSetpoint()),
                     (vsc, targetQ, context) -> vsc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
@@ -645,7 +661,7 @@ public final class NetworkDataframes {
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", st -> getBusId(st.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -659,8 +675,8 @@ public final class NetworkDataframes {
                 .strings("name", svc -> svc.getOptionalName().orElse(""))
                 .doubles("b_min", (svc, context) -> svc.getBmin(), (svc, bMin, context) -> svc.setBmin(bMin))
                 .doubles("b_max", (svc, context) -> svc.getBmax(), (svc, bMax, context) -> svc.setBmax(bMax))
-                .doubles("target_v", (svc, context) -> perUnitV(context, svc.getVoltageSetpoint(), svc.getRegulatingTerminal()),
-                    (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitV(context, targetV, svc.getRegulatingTerminal())))
+                .doubles("target_v", (svc, context) -> perUnitTargetV(context, svc.getVoltageSetpoint(), svc.getRegulatingTerminal(), svc.getTerminal()),
+                    (svc, targetV, context) -> svc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, svc.getRegulatingTerminal(), svc.getTerminal())))
                 .doubles("target_q", (svc, context) -> perUnitPQ(context, svc.getReactivePowerSetpoint()),
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
@@ -672,7 +688,7 @@ public final class NetworkDataframes {
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
                 .strings("voltage_level_id", getVoltageLevelId())
                 .strings("bus_id", svc -> getBusId(svc.getTerminal()))
-                .strings("bus_breaker_bus_id", busBreakerViewBusId(), false)
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", svc -> getNode(svc.getTerminal()), false)
                 .booleans("connected", svc -> svc.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -867,8 +883,8 @@ public final class NetworkDataframes {
                 .ints("step_count", t -> t.getRatioTapChanger().getStepCount())
                 .booleans("on_load", t -> t.getRatioTapChanger().hasLoadTapChangingCapabilities(), (t, v) -> t.getRatioTapChanger().setLoadTapChangingCapabilities(v))
                 .booleans("regulating", t -> t.getRatioTapChanger().isRegulating(), (t, v) -> t.getRatioTapChanger().setRegulating(v))
-                .doubles("target_v", (t, context) -> perUnitV(context, t.getRatioTapChanger().getTargetV(), t.getRatioTapChanger().getRegulationTerminal()),
-                    (t, v, context) -> t.getRatioTapChanger().setTargetV(unPerUnitV(context, v, t.getRatioTapChanger().getRegulationTerminal())))
+                .doubles("target_v", (t, context) -> perUnitTargetV(context, t.getRatioTapChanger().getTargetV(), t.getRatioTapChanger().getRegulationTerminal(), t.getTerminal2()),
+                    (t, v, context) -> t.getRatioTapChanger().setTargetV(unPerUnitTargetV(context, v, t.getRatioTapChanger().getRegulationTerminal(), t.getTerminal2())))
                 .doubles("target_deadband", (t, context) -> t.getRatioTapChanger().getTargetDeadband(),
                     (t, v, context) -> t.getRatioTapChanger().setTargetDeadband(v))
                 .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
@@ -927,13 +943,16 @@ public final class NetworkDataframes {
 
     static NetworkDataframeMapper injections() {
         return NetworkDataframeMapperBuilder.ofStream(network -> network.getConnectableStream()
-                                .filter(connectable -> connectable instanceof Injection),
-                        NetworkDataframes::getT2OrThrow)
-                .stringsIndex("id", Connectable::getId)
-                .strings("type", connectable -> connectable.getType().toString())
-                .strings("voltage_level_id", connectable -> ((Injection<?>) connectable).getTerminal().getVoltageLevel().getId())
-                .strings("bus_id", connectable -> ((Injection<?>) connectable).getTerminal().getBusView().getBus() == null ? "" :
-                        ((Injection<?>) connectable).getTerminal().getBusView().getBus().getId())
+                                .filter(Injection.class::isInstance)
+                                .map(connectable -> (Injection<?>) connectable),
+                        NetworkDataframes::getInjectionOrThrow)
+                .stringsIndex("id", Injection::getId)
+                .strings("type", injection -> injection.getType().toString())
+                .strings("voltage_level_id", injection -> injection.getTerminal().getVoltageLevel().getId())
+                .strings("bus_breaker_bus_id", injection -> getBusBreakerViewBusId(injection.getTerminal()), (injection, id) -> setBusBreakerViewBusId(injection.getTerminal(), id), false)
+                .booleans("connected", injection -> injection.getTerminal().isConnected(), connectInjection())
+                .strings("bus_id", injection -> injection.getTerminal().getBusView().getBus() == null ? "" :
+                        injection.getTerminal().getBusView().getBus().getId())
                 .build();
     }
 
@@ -942,11 +961,13 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Branch::getId)
                 .strings("type", branch -> branch.getType().toString())
                 .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
+                .strings("bus_breaker_bus1_id", branch -> getBusBreakerViewBusId(branch.getTerminal1()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal1(), id), false)
                 .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
                         branch.getTerminal1().getBusView().getBus().getId())
                 .booleans("connected1", branch -> branch.getTerminal1().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal1(), connected))
                 .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
+                .strings("bus_breaker_bus2_id", branch -> getBusBreakerViewBusId(branch.getTerminal2()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal2(), id), false)
                 .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
                         branch.getTerminal2().getBusView().getBus().getId())
                 .booleans("connected2", branch -> branch.getTerminal2().isConnected(),
@@ -1125,8 +1146,16 @@ public final class NetworkDataframes {
         }
     }
 
-    private static <T extends Injection<T>> Function<T, String> busBreakerViewBusId() {
+    private static <T extends Injection<T>> Function<T, String> getBusBreakerViewBusId() {
         return i -> getBusBreakerViewBusId(i.getTerminal());
+    }
+
+    private static void setBusBreakerViewBusId(Terminal t, String busId) {
+        Objects.requireNonNull(t).getBusBreakerView().setConnectableBus(busId);
+    }
+
+    private static <T extends Injection<T>> void setBusBreakerViewBusId(T i, String busId) {
+        setBusBreakerViewBusId(i.getTerminal(), busId);
     }
 
     private static int getNode(Terminal t) {
@@ -1156,6 +1185,14 @@ public final class NetworkDataframes {
             throw new PowsyblException("Two windings transformer '" + id + "' not found");
         }
         return twt;
+    }
+
+    private static Injection<?> getInjectionOrThrow(Network network, String id) {
+        Connectable<?> c = network.getConnectable(id);
+        if (!(c instanceof Injection<?>)) {
+            throw new PowsyblException("Injection '" + id + "' not found");
+        }
+        return (Injection<?>) c;
     }
 
     public static NetworkDataframeMapper getExtensionDataframeMapper(String extensionName, String tableName) {

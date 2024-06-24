@@ -20,8 +20,8 @@ public final class CurvesSeries {
     private CurvesSeries() {
     }
 
-    public static DataframeMapper<TimeSeries<DoublePoint, ?>> curvesDataFrameMapper(String colName) {
-        DataframeMapperBuilder<TimeSeries<DoublePoint, ?>, DoublePoint> df = new DataframeMapperBuilder<>();
+    public static DataframeMapper<TimeSeries<DoublePoint, ?>, Void> curvesDataFrameMapper(String colName) {
+        DataframeMapperBuilder<TimeSeries<DoublePoint, ?>, DoublePoint, Void> df = new DataframeMapperBuilder<>();
         df.itemsStreamProvider(TimeSeries::stream)
                 .intsIndex("timestamp", pt -> (int) (pt.getTime() % Integer.MAX_VALUE))
                 .doubles(colName, DoublePoint::getValue);

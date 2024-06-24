@@ -7,10 +7,12 @@ package com.powsybl.python.commons;
  */
 public final class PyPowsyblConfiguration {
 
+    private static final String OPEN_LOAD_FLOW = "OpenLoadFlow";
+
     private static boolean readConfig = true;
-    private static String defaultLoadflowProvider = "OpenLoadFlow";
-    private static String defaultSecurityAnalysisProvider = "OpenLoadFlow";
-    private static String defaultSensitivityAnalysisProvider = "OpenLoadFlow";
+    private static String defaultLoadFlowProvider = OPEN_LOAD_FLOW;
+    private static String defaultSecurityAnalysisProvider = OPEN_LOAD_FLOW;
+    private static String defaultSensitivityAnalysisProvider = OPEN_LOAD_FLOW;
     private static String defaultShortCircuitAnalysisProvider = "";
 
     private PyPowsyblConfiguration() {
@@ -31,11 +33,11 @@ public final class PyPowsyblConfiguration {
     }
 
     public static String getDefaultLoadFlowProvider() {
-        return defaultLoadflowProvider;
+        return defaultLoadFlowProvider;
     }
 
     public static void setDefaultLoadFlowProvider(String loadflowProvider) {
-        defaultLoadflowProvider = loadflowProvider;
+        defaultLoadFlowProvider = loadflowProvider;
     }
 
     public static String getDefaultSecurityAnalysisProvider() {

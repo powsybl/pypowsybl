@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.adders;
 
@@ -62,7 +63,7 @@ public final class SeriesUtils {
     public static StringSeries getRequiredStrings(UpdatingDataframe dataframe, String name) {
         StringSeries series = dataframe.getStrings(name);
         if (series == null) {
-            throw new PowsyblException("Required column " + name + " is missing.");
+            throwRequiredColumnException(name);
         }
         return series;
     }
@@ -70,7 +71,7 @@ public final class SeriesUtils {
     public static IntSeries getRequiredInts(UpdatingDataframe dataframe, String name) {
         IntSeries series = dataframe.getInts(name);
         if (series == null) {
-            throw new PowsyblException("Required column " + name + " is missing.");
+            throwRequiredColumnException(name);
         }
         return series;
     }
@@ -78,8 +79,12 @@ public final class SeriesUtils {
     public static DoubleSeries getRequiredDoubles(UpdatingDataframe dataframe, String name) {
         DoubleSeries series = dataframe.getDoubles(name);
         if (series == null) {
-            throw new PowsyblException("Required column " + name + " is missing.");
+            throwRequiredColumnException(name);
         }
         return series;
+    }
+
+    private static void throwRequiredColumnException(String name) {
+        throw new PowsyblException(String.format("Required column %s is missing.", name));
     }
 }

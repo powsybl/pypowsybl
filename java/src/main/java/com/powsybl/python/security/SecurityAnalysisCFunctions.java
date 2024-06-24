@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.security;
 
@@ -476,17 +477,13 @@ public final class SecurityAnalysisCFunctions {
                 violationTypes, violationTypesCount, PyPowsyblApiHeader.LimitViolationType::fromCValue);
         Set<LimitViolationType> violationTypesFilter = violationTypesC.stream().map(Util::convert).collect(Collectors.toSet());
 
-        switch (conditionType) {
-            case TRUE_CONDITION :
-                return new TrueCondition();
-            case ALL_VIOLATION_CONDITION :
-                return new AllViolationCondition(subjectIdsStrList, violationTypesFilter);
-            case ANY_VIOLATION_CONDITION :
-                return new AnyViolationCondition(violationTypesFilter);
-            case AT_LEAST_ONE_VIOLATION_CONDITION :
-                return new AtLeastOneViolationCondition(subjectIdsStrList, violationTypesFilter);
-            default:
-                throw new PowsyblException("Unsupported condition type " + conditionType);
-        }
+        return switch (conditionType) {
+            case TRUE_CONDITION -> new TrueCondition();
+            case ALL_VIOLATION_CONDITION -> new AllViolationCondition(subjectIdsStrList, violationTypesFilter);
+            case ANY_VIOLATION_CONDITION -> new AnyViolationCondition(violationTypesFilter);
+            case AT_LEAST_ONE_VIOLATION_CONDITION ->
+                new AtLeastOneViolationCondition(subjectIdsStrList, violationTypesFilter);
+            default -> throw new PowsyblException("Unsupported condition type " + conditionType);
+        };
     }
 }

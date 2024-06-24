@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.adders;
 
@@ -77,8 +78,8 @@ public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
 
     private static void createLimits(Network network, String elementId, double minQ, double maxQ) {
         Identifiable<?> identifiable = getIdentifiableOrThrow(network, elementId);
-        if (identifiable instanceof ReactiveLimitsHolder) {
-            ((ReactiveLimitsHolder) identifiable).newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(maxQ).add();
+        if (identifiable instanceof ReactiveLimitsHolder reactiveLimitsHolder) {
+            reactiveLimitsHolder.newMinMaxReactiveLimits().setMinQ(minQ).setMaxQ(maxQ).add();
         } else {
             throw new PowsyblException("Element " + elementId + " does not have reactive limits.");
         }

@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.loadflow;
 
@@ -29,7 +30,7 @@ import java.util.stream.Collectors;
  */
 public final class LoadFlowCUtils {
 
-    static final DataframeMapper<LoadFlowProvider> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<LoadFlowProvider, Parameter>()
+    static final DataframeMapper<LoadFlowProvider, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<LoadFlowProvider, Parameter, Void>()
             .itemsProvider(LoadFlowProvider::getSpecificParameters)
             .stringsIndex("name", Parameter::getName)
             .strings("description", Parameter::getDescription)

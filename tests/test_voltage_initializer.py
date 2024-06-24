@@ -29,6 +29,26 @@ def test_parameters():
 
     params.set_objective(va.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
     params.set_objective_distance(1.3)
+    params.set_log_level_ampl(va.VoltageInitializerLogLevelAmpl.ERROR)
+    params.set_log_level_solver(va.VoltageInitializerLogLevelSolver.EVERYTHING)
+    params.set_reactive_slack_buses_mode(va.VoltageInitializerReactiveSlackBusesMode.NO_GENERATION)
+    params.set_min_plausible_low_voltage_limit(0.45)
+    params.set_max_plausible_high_voltage_limit(1.2)
+    params.set_active_power_variation_rate(0.5)
+    params.set_max_plausible_power_limit(7800)
+    params.set_min_plausible_active_power_threshold(1)
+    params.set_low_impedance_threshold(1e-5)
+    params.set_min_nominal_voltage_ignored_bus(0.5)
+    params.set_min_nominal_voltage_ignored_voltage_bounds(1)
+    params.set_high_active_power_default_limit(950)
+    params.set_low_active_power_default_limit(0.5)
+    params.set_default_minimal_qp_range(0.45)
+    params.set_default_qmax_pmax_ratio(0.45)
+
+    params.set_default_variable_scaling_factor(1.1)
+    params.set_default_constraint_scaling_factor(0.8)
+    params.set_reactive_slack_variable_scaling_factor(0.2)
+    params.set_twt_ratio_variable_scaling_factor(0.002)
 
 
 @pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")

@@ -3,13 +3,13 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe;
 
 import com.google.common.base.Functions;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
-import com.powsybl.dataframe.network.DataframeContext;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
@@ -149,11 +149,11 @@ class DataframeMapperBuilderTest {
         }
     }
 
-    private DataframeMapper<Container> mapper;
+    private DataframeMapper<Container, Void> mapper;
 
     @BeforeEach
     void setUp() {
-        mapper = new DataframeMapperBuilder<Container, Element>()
+        mapper = new DataframeMapperBuilder<Container, Element, Void>()
             .itemsProvider(Container::getElements)
             .itemGetter(Container::getElement)
             .stringsIndex("id", Element::getId)
@@ -166,7 +166,7 @@ class DataframeMapperBuilderTest {
 
     @Test
     void test() {
-        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
+        DataframeMapper<Container, Void> mapper = new DataframeMapperBuilder<Container, Element, Void>()
             .itemsProvider(Container::getElements)
             .stringsIndex("id", Element::getId)
             .strings("str", Element::getStrValue)
@@ -181,7 +181,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
 
         assertThat(series)
             .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -203,7 +203,7 @@ class DataframeMapperBuilderTest {
             new Element("el1", "val1", 1.0, 10, Color.RED),
             new Element("el2", "val2", 2.0, 20, Color.BLUE)
         );
-        mapper = new DataframeMapperBuilder<Container, Element>()
+        mapper = new DataframeMapperBuilder<Container, Element, Void>()
             .itemsProvider(Container::getElements)
             .itemGetter(Container::getElement)
             .stringsIndex("id", Element::getId)
@@ -212,7 +212,7 @@ class DataframeMapperBuilderTest {
             .doubles("double", (element, context) -> element.getDoubleValue(), (element, dv, context) -> element.setDoubleValue(dv))
             .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
             .build();
-        mapper.updateSeries(container, createDataframe(2), DataframeContext.deactivate());
+        mapper.updateSeries(container, createDataframe(2));
         assertEquals(1.2, container.elements.get("el1").getDoubleValue());
         assertEquals(2.2, container.elements.get("el2").getDoubleValue());
     }
@@ -234,7 +234,7 @@ class DataframeMapperBuilderTest {
             new Element("el1", 1, "val2", 2.0, 20, Color.BLUE),
             new Element("el2", 0, "val2", 2.0, 20, Color.BLUE)
         );
-        DataframeMapper<MultiIndexContainer> multiIndexMapper = new DataframeMapperBuilder<MultiIndexContainer, Element>()
+        DataframeMapper<MultiIndexContainer, Void> multiIndexMapper = new DataframeMapperBuilder<MultiIndexContainer, Element, Void>()
             .itemsProvider(MultiIndexContainer::getElements)
             .itemMultiIndexGetter(MultiIndexContainer::getElement)
             .stringsIndex("id", Element::getId)
@@ -244,7 +244,7 @@ class DataframeMapperBuilderTest {
             .doubles("double", (element, context) -> element.getDoubleValue(), (element, dv, context) -> element.setDoubleValue(dv))
             .enums("color", Color.class, Element::getColorValue, Element::setColorValue)
             .build();
-        multiIndexMapper.updateSeries(container, createDataframeMultiIndex(2), DataframeContext.deactivate());
+        multiIndexMapper.updateSeries(container, createDataframeMultiIndex(2));
         assertEquals(1.0, container.getElement("el1", 0).getDoubleValue());
         assertEquals(1.2, container.getElement("el1", 1).getDoubleValue());
         assertEquals(2.2, container.getElement("el2", 0).getDoubleValue());
@@ -255,7 +255,7 @@ class DataframeMapperBuilderTest {
 
     @Test
     void testDefaults() {
-        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
+        DataframeMapper<Container, Void> mapper = new DataframeMapperBuilder<Container, Element, Void>()
             .itemsProvider(Container::getElements)
             .stringsIndex("id", Element::getId)
             .strings("str", Element::getStrValue, false)
@@ -270,7 +270,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(), DataframeContext.deactivate());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter());
 
         assertThat(series)
             .extracting(com.powsybl.dataframe.impl.Series::getName)
@@ -280,7 +280,7 @@ class DataframeMapperBuilderTest {
 
     @Test
     void testFilterAttributes() {
-        DataframeMapper<Container> mapper = new DataframeMapperBuilder<Container, Element>()
+        DataframeMapper<Container, Void> mapper = new DataframeMapperBuilder<Container, Element, Void>()
             .itemsProvider(Container::getElements)
             .stringsIndex("id", Element::getId)
             .strings("str", Element::getStrValue, false)
@@ -295,7 +295,7 @@ class DataframeMapperBuilderTest {
         );
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
-        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")), DataframeContext.deactivate());
+        mapper.createDataframe(container, new DefaultDataframeHandler(series::add), new DataframeFilter(AttributeFilterType.INPUT_ATTRIBUTES, Arrays.asList("str", "color")));
 
         assertThat(series)
             .extracting(com.powsybl.dataframe.impl.Series::getName)

@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.python.commons;
 
@@ -15,10 +16,16 @@ import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationT
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
+import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
+import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
+import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelSolver;
+import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerReactiveSlackBusesMode;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.sensitivity.SensitivityFunctionType;
@@ -178,6 +185,7 @@ public final class Util {
     public static PyPowsyblApiHeader.ElementType convert(DataframeElementType type) {
         return switch (type) {
             case BUS -> PyPowsyblApiHeader.ElementType.BUS;
+            case BUS_FROM_BUS_BREAKER_VIEW -> PyPowsyblApiHeader.ElementType.BUS_FROM_BUS_BREAKER_VIEW;
             case LINE -> PyPowsyblApiHeader.ElementType.LINE;
             case TWO_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.TWO_WINDINGS_TRANSFORMER;
             case THREE_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER;
@@ -217,6 +225,7 @@ public final class Util {
     public static DataframeElementType convert(PyPowsyblApiHeader.ElementType type) {
         return switch (type) {
             case BUS -> DataframeElementType.BUS;
+            case BUS_FROM_BUS_BREAKER_VIEW -> DataframeElementType.BUS_FROM_BUS_BREAKER_VIEW;
             case LINE -> DataframeElementType.LINE;
             case TWO_WINDINGS_TRANSFORMER -> DataframeElementType.TWO_WINDINGS_TRANSFORMER;
             case THREE_WINDINGS_TRANSFORMER -> DataframeElementType.THREE_WINDINGS_TRANSFORMER;
@@ -264,6 +273,7 @@ public final class Util {
             case BRANCH_CURRENT_3 -> SensitivityFunctionType.BRANCH_CURRENT_3;
             case BRANCH_REACTIVE_POWER_3 -> SensitivityFunctionType.BRANCH_REACTIVE_POWER_3;
             case BUS_VOLTAGE -> SensitivityFunctionType.BUS_VOLTAGE;
+            case BUS_REACTIVE_POWER -> SensitivityFunctionType.BUS_REACTIVE_POWER;
         };
     }
 
@@ -334,6 +344,31 @@ public final class Util {
         };
     }
 
+    public static OpenReacAmplLogLevel convert(VoltageInitializerLogLevelAmpl obj) {
+        return switch (obj) {
+            case DEBUG -> OpenReacAmplLogLevel.DEBUG;
+            case INFO -> OpenReacAmplLogLevel.INFO;
+            case WARNING -> OpenReacAmplLogLevel.WARNING;
+            case ERROR -> OpenReacAmplLogLevel.ERROR;
+        };
+    }
+
+    public static OpenReacSolverLogLevel convert(VoltageInitializerLogLevelSolver obj) {
+        return switch (obj) {
+            case NOTHING -> OpenReacSolverLogLevel.NOTHING;
+            case ONLY_RESULTS -> OpenReacSolverLogLevel.ONLY_RESULTS;
+            case EVERYTHING -> OpenReacSolverLogLevel.EVERYTHING;
+        };
+    }
+
+    public static ReactiveSlackBusesMode convert(VoltageInitializerReactiveSlackBusesMode obj) {
+        return switch (obj) {
+            case CONFIGURED -> ReactiveSlackBusesMode.CONFIGURED;
+            case NO_GENERATION -> ReactiveSlackBusesMode.NO_GENERATION;
+            case ALL_BUSES -> ReactiveSlackBusesMode.ALL;
+        };
+    }
+
     public static byte[] binaryBufferToBytes(ByteBuffer buffer) {
         if (buffer.hasArray()) {
             return buffer.array();
@@ -375,26 +410,17 @@ public final class Util {
     }
 
     public static LimitViolationType convert(PyPowsyblApiHeader.LimitViolationType violationType) {
-        switch (violationType) {
-            case ACTIVE_POWER:
-                return LimitViolationType.ACTIVE_POWER;
-            case APPARENT_POWER:
-                return LimitViolationType.APPARENT_POWER;
-            case CURRENT:
-                return LimitViolationType.CURRENT;
-            case LOW_VOLTAGE:
-                return LimitViolationType.LOW_VOLTAGE;
-            case HIGH_VOLTAGE:
-                return LimitViolationType.HIGH_VOLTAGE;
-            case LOW_SHORT_CIRCUIT_CURRENT:
-                return LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
-            case HIGH_SHORT_CIRCUIT_CURRENT:
-                return LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
-            case OTHER:
-                return LimitViolationType.OTHER;
-            default:
-                throw new PowsyblException("Unknown limit violation type: " + violationType);
-        }
+        return switch (violationType) {
+            case ACTIVE_POWER -> LimitViolationType.ACTIVE_POWER;
+            case APPARENT_POWER -> LimitViolationType.APPARENT_POWER;
+            case CURRENT -> LimitViolationType.CURRENT;
+            case LOW_VOLTAGE -> LimitViolationType.LOW_VOLTAGE;
+            case HIGH_VOLTAGE -> LimitViolationType.HIGH_VOLTAGE;
+            case LOW_SHORT_CIRCUIT_CURRENT -> LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
+            case HIGH_SHORT_CIRCUIT_CURRENT -> LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
+            case OTHER -> LimitViolationType.OTHER;
+            default -> throw new PowsyblException("Unknown limit violation type: " + violationType);
+        };
     }
 
     public static ThreeSides convert(PyPowsyblApiHeader.ThreeSideType side) {

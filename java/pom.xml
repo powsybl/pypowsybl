@@ -68,8 +68,9 @@
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2024.1.0</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2024.1.1</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
+        <powsybl-math-native.version>1.3.1</powsybl-math-native.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
 
@@ -163,6 +164,15 @@
                 <version>${powsybl-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <!--
+            FIXME: this is a temporary override of math native provided by powsybl 2024.1.1 which is 1.3.0
+            1.3.1 get back compatibility with Linux CentOS 7
+            -->
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-math-native</artifactId>
+                <version>${powsybl-math-native.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

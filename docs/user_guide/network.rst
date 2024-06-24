@@ -100,7 +100,8 @@ Reading network elements data
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
 
- - buses
+ - buses (from bus view)
+ - buses from bus/breaker view
  - lines
  - 2 windings transformers
  - 3 windings transformers
@@ -262,7 +263,7 @@ of a generator to 700 MW:
 
    >>> network.set_working_variant('Variant')
    >>> network.update_generators(id='GEN', target_p=700)
-   >>> network.get_generators()['target_p']['GEN']
+   >>> network.get_generators()['target_p']['GEN'].item()
    700.0
 
 If you switch back to the initial variant, you will see that
@@ -271,7 +272,7 @@ its state has not changed, our generator still produces 607 MW:
 .. doctest::
 
    >>> network.set_working_variant('InitialState')
-   >>> network.get_generators()['target_p']['GEN']
+   >>> network.get_generators()['target_p']['GEN'].item()
    607.0
 
 Once you're done working with your variant, you can remove it:

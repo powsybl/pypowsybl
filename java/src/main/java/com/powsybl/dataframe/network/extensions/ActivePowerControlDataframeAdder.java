@@ -3,6 +3,7 @@
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
  */
 package com.powsybl.dataframe.network.extensions;
 
@@ -50,10 +51,10 @@ public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            String id = this.id.get(row);
-            Generator g = network.getGenerator(id);
+            String generatorId = this.id.get(row);
+            Generator g = network.getGenerator(generatorId);
             if (g == null) {
-                throw new PowsyblException("Invalid generator id : could not find " + id);
+                throw new PowsyblException("Invalid generator id : could not find " + generatorId);
             }
             var adder = g.newExtension(ActivePowerControlAdder.class);
             SeriesUtils.applyIfPresent(droop, row, x -> adder.withDroop((float) x));
