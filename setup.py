@@ -9,6 +9,8 @@ import re
 import sys
 import platform
 import subprocess
+import zipfile
+import glob
 
 from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
@@ -66,6 +68,17 @@ class PyPowsyblBuild(build_ext):
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
+        binaries = []
+        if platform.system() == "Windows":
+          binaries = glob.glob(extdir + '*.dll') + glob.glob(extdir + '*.lib')
+        elif platform.system() == "Linux":
+          binaries = glob.glob('*.so', root_dir=extdir)
+        elif platform.system() == "Darwin" :
+          binaries = glob.glob('*.dylib', root_dir=extdir)
+        print(binaries)
+        with zipfile.ZipFile(os.path.abspath('dist') + '/binaries_' + platform.system() + '.zip', mode="w") as archive:
+          for binary in binaries:
+            archive.write(binary, arcname=os.path.basename(binary))
 
 setup(
     ext_modules=[PyPowsyblExtension()],

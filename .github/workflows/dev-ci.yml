@@ -158,3 +158,9 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make html doctest SPHINXOPTS="-W"
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: powsybl-cpp-${{ matrix.config.name }}
+          path: dist/*.zip
