@@ -7,10 +7,12 @@
 from typing import Dict
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitStudyType
+from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode
 
 ShortCircuitStudyType.__module__ = __name__
 ShortCircuitStudyType.__name__ = 'ShortCircuitStudyType'
+InitialVoltageProfileMode.__module__ = __name__
+InitialVoltageProfileMode.__name__ = 'InitialVoltageProfileMode'
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -35,6 +37,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         min_voltage_drop_proportional_threshold: specifies a threshold for filtering the voltage results.
             Only nodes where the voltage drop due to the short circuit is greater than this property are retained.
         study_type: specifies the type of short-circuit study. It can be SUB_TRANSIENT, TRANSIENT or STEADY_STATE.
+        initial_voltage_profile_mode: specify how the computation is initialized. It can be NOMINAL, CONFIGURED or PREVIOUS_VALUE
     """
 
     def __init__(self,
@@ -44,7 +47,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  min_voltage_drop_proportional_threshold: float = None,
                  study_type: ShortCircuitStudyType = None,
                  provider_parameters: Dict[str, str] = None,
-                 with_fortescue_result: bool = None):
+                 with_fortescue_result: bool = None,
+                 initial_voltage_profile_mode: InitialVoltageProfileMode = None):
         self._init_with_default_values()
         if with_feeder_result is not None:
             self.with_feeder_result = with_feeder_result
@@ -60,6 +64,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.provider_parameters = provider_parameters
         if with_fortescue_result is not None:
             self.with_fortescue_result = with_fortescue_result
+        if initial_voltage_profile_mode is not None:
+            self.initial_voltage_profile_mode = initial_voltage_profile_mode
 
     def _init_from_c(self, c_parameters: _pypowsybl.ShortCircuitAnalysisParameters) -> None:
         self.with_feeder_result = c_parameters.with_feeder_result
@@ -70,6 +76,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.provider_parameters = dict(
             zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
         self.with_fortescue_result = c_parameters.with_fortescue_result
+        self.initial_voltage_profile_mode = c_parameters.initial_voltage_profile_mode
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(_pypowsybl.ShortCircuitAnalysisParameters())
@@ -79,6 +86,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.min_voltage_drop_proportional_threshold = 0
         self.study_type = ShortCircuitStudyType.TRANSIENT
         self.with_fortescue_result = False
+        self.initial_voltage_profile_mode = InitialVoltageProfileMode.NOMINAL
 
     def _to_c_parameters(self) -> _pypowsybl.ShortCircuitAnalysisParameters:
         c_parameters = _pypowsybl.ShortCircuitAnalysisParameters()
@@ -88,6 +96,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.study_type = self.study_type
         c_parameters.with_fortescue_result = self.with_fortescue_result
         c_parameters.min_voltage_drop_proportional_threshold = self.min_voltage_drop_proportional_threshold
+        c_parameters.initial_voltage_profile_mode = self.initial_voltage_profile_mode
         c_parameters.provider_parameters_keys = []
         c_parameters.provider_parameters_values = []
         return c_parameters
@@ -100,4 +109,5 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", min_voltage_drop_proportional_threshold={self.min_voltage_drop_proportional_threshold!r}" \
                f", study_type={self.study_type!r}" \
                f", with_fortescue_result={self.with_fortescue_result!r}" \
+               f", initial_voltage_profile_mode={self.initial_voltage_profile_mode!r}" \
                f")"

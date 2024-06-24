@@ -124,6 +124,7 @@ public final class ShortCircuitAnalysisCFunctions {
         paramsPtr.setWithFortescueResult(parameters.isWithFortescueResult());
         paramsPtr.setMinVoltageDropProportionalThreshold(parameters.getMinVoltageDropProportionalThreshold());
         paramsPtr.setStudyType(parameters.getStudyType().ordinal());
+        paramsPtr.setInitialVoltageProfileMode(parameters.getInitialVoltageProfileMode().ordinal());
         paramsPtr.setProviderParametersValuesCount(0);
         paramsPtr.setProviderParametersKeysCount(0);
         return paramsPtr;
