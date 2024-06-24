@@ -1416,6 +1416,32 @@ def test_set_bus_breaker_bus_id():
     assert "Not supported in a node/breaker topology" in str(e) # this is expected
 
 
+def test_injection_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLLOAD')
+    n.create_switches(id='S1', voltage_level_id='VLLOAD', bus1_id='NLOAD', bus2_id='B1')
+    n.update_injections(id='LOAD', bus_breaker_bus_id='B1', connected=True)
+    loads = n.get_loads(attributes=['bus_breaker_bus_id', 'connected'])
+    expected_loads = pd.DataFrame(
+        index=pd.Series(name='id', data=['LOAD']),
+        columns=['bus_breaker_bus_id', 'connected'],
+        data=[['B1', True]])
+    pd.testing.assert_frame_equal(expected_loads, loads, check_dtype=False)
+
+
+def test_branch_set_bus_breaker_bus_id():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_buses(id='B1', voltage_level_id='VLHV1')
+    n.create_switches(id='S1', voltage_level_id='VLHV1', bus1_id='NHV1', bus2_id='B1')
+    n.update_branches(id='NHV1_NHV2_1', bus_breaker_bus1_id='B1', connected1=False)
+    lines = n.get_lines(attributes=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'connected1', 'connected2'])
+    expected_lines = pd.DataFrame(
+        index=pd.Series(name='id', data=['NHV1_NHV2_1', 'NHV1_NHV2_2']),
+        columns=['bus_breaker_bus1_id', 'bus_breaker_bus2_id', 'connected1', 'connected2'],
+        data=[['B1', 'NHV2', False, True], ['NHV1', 'NHV2', True, True]])
+    pd.testing.assert_frame_equal(expected_lines, lines, check_dtype=False)
+
+
 def test_bb_topology_with_no_bus_view_bus_does_not_throw():
     n = pp.network.create_empty()
     n.create_substations(id='S')
