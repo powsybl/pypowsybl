@@ -392,6 +392,7 @@ public:
     bool tooltip_enabled;
     bool topological_coloring;
     std::string component_library;
+    bool display_current_feeder_info;
 };
 
 enum class NadLayoutType {

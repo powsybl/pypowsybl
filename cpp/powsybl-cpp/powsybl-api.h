@@ -340,6 +340,7 @@ typedef struct sld_parameters_struct {
     unsigned char tooltip_enabled;
     unsigned char topological_coloring;
     char* component_library;
+    unsigned char display_current_feeder_info;
 } sld_parameters;
 
 typedef struct nad_parameters_struct {

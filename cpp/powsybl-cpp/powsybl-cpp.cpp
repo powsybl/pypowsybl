@@ -1180,6 +1180,7 @@ SldParameters::SldParameters(sld_parameters* src) {
     tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
+    display_current_feeder_info = (bool) src->display_current_feeder_info;
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1205,6 +1206,7 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.tooltip_enabled = (unsigned char) tooltip_enabled;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
+    res.display_current_feeder_info = (unsigned char) display_current_feeder_info;
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {

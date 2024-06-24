@@ -250,6 +250,7 @@ class SldParameters:
     tooltip_enabled: bool
     topological_coloring: bool
     component_library: str
+    display_current_feeder_info: bool
     def __init__(self) -> None: ...
 
 class NadLayoutType:

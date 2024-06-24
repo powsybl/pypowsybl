@@ -1062,6 +1062,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("component_library")
         void setComponentLibrary(CCharPointer componentLibrary);
+
+        @CField("display_current_feeder_info")
+        boolean isDisplayCurrentFeederInfo();
+
+        @CField("display_current_feeder_info")
+        void setDisplayCurrentFeederInfo(boolean displayCurrentInfo);
     }
 
     @CStruct("nad_parameters")
