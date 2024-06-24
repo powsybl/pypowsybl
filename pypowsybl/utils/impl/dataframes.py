@@ -88,9 +88,9 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         if index_name is None:
             index_name = series_metadata[idx].name
         if is_multi_index:
-            columns_values.append(df.index.get_level_values(index_name))
+            columns_values.append(list(df.index.get_level_values(index_name)))
         else:
-            columns_values.append(df.index.values)
+            columns_values.append(list(df.index.values))
         columns_names.append(index_name)
         columns_types.append(metadata_by_name[index_name].type)
         is_index.append(True)
