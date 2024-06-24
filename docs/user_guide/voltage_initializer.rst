@@ -1,5 +1,5 @@
 Run the voltage initializer
-===========================================
+===========================
 
 .. currentmodule:: pypowsybl.voltage_initializer
 
@@ -23,7 +23,7 @@ Here is an example of a simple config.yaml file.
         homeDir: PATH_TO_AMPL
 
 Quick start
--------------
+-----------
 
 Here is a simple starting example:
 
@@ -48,11 +48,12 @@ Here is a simple starting example:
 
 
 Available settings in the VoltageInitializerParameters class
--------------
+------------------------------------------------------------
 
 - Specify which buses will have reactive slacks attached in the ACOPF solving.
 
 .. code-block:: python
+
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
@@ -61,6 +62,7 @@ Available settings in the VoltageInitializerParameters class
 - Specify what is the log level of the AMPL solving.
 
 .. code-block:: python
+
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
@@ -70,6 +72,7 @@ Available settings in the VoltageInitializerParameters class
 - Change plausible voltage level limits in ACOPF solving.
 
 .. code-block:: python
+
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
@@ -79,6 +82,7 @@ Available settings in the VoltageInitializerParameters class
 - Tune the threshold defining null values in AMPL.
 
 .. code-block:: python
+
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
@@ -88,6 +92,7 @@ Available settings in the VoltageInitializerParameters class
 - Modify the parameters used for the correction of generator limits.
 
 .. code-block:: python
+
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
@@ -100,6 +105,7 @@ Available settings in the VoltageInitializerParameters class
 - Tune the thresholds used to ignore buses or voltage level limits with nominal voltage lower than them.
 
 .. code-block:: python
+
     import pypowsybl as pp
     import pypowsybl.voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
