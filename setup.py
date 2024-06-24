@@ -75,9 +75,13 @@ class PyPowsyblBuild(build_ext):
             binaries = glob.glob(extdir + '*.so')
         elif platform.system() == "Darwin" :
             binaries = glob.glob(extdir + '*.dylib')
-        print(binaries)
+
         if not os.path.exists(os.path.abspath('dist')):
             os.makedirs(os.path.abspath('dist'))
+
+        binaries_archive = os.path.join(os.path.abspath('dist'), 'binaries_' + platform.system() + '.zip')
+        if os.path.exists(binaries_archive):
+            os.remove(binaries_archive)
         with zipfile.ZipFile(os.path.abspath('dist') + '/binaries_' + platform.system() + '.zip', mode='x') as archive:
             for binary in binaries:
                 print("Writing " + binary)
