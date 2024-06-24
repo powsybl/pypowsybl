@@ -75,7 +75,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             runnable.run();
-        } catch (Exception t) {
+        } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
         }
     }
@@ -84,7 +84,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsBoolean();
-        } catch (Exception t) {
+        } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return false;
         }
@@ -94,7 +94,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsInt();
-        } catch (Exception t) {
+        } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return -1;
         }
@@ -104,7 +104,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsLong();
-        } catch (Exception t) {
+        } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return 0;
         }
@@ -115,7 +115,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();
-        } catch (Exception t) {
+        } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return null;
         }
@@ -130,7 +130,7 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.get();
-        } catch (Exception t) {
+        } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return WordFactory.zero();
         }
