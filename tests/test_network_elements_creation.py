@@ -16,7 +16,7 @@ import pypowsybl.network as pn
 import util
 from util import dataframe_from_string
 import pathlib
-from numpy import NaN
+from numpy import nan
 from pypowsybl import PyPowsyblError
 
 
@@ -123,11 +123,11 @@ def test_bus_creation():
         index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLHV2_1', 'VLLOAD_0']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
                  'voltage_level_id'],
-        data=[['', NaN, NaN, 0, 0, 'VLGEN'],
-              ['', 380, NaN, 0, 0, 'VLHV1'],
-              ['', 380, NaN, 0, 0, 'VLHV2'],
-              ['', NaN, NaN, 0, 0, 'VLHV2'],
-              ['', NaN, NaN, 0, 0, 'VLLOAD']])
+        data=[['', nan, nan, 0, 0, 'VLGEN'],
+              ['', 380, nan, 0, 0, 'VLHV1'],
+              ['', 380, nan, 0, 0, 'VLHV2'],
+              ['', nan, nan, 0, 0, 'VLHV2'],
+              ['', nan, nan, 0, 0, 'VLLOAD']])
     pd.testing.assert_frame_equal(expected, n.get_buses(), check_dtype=False)
 
 
@@ -477,7 +477,7 @@ def test_busbar_sections():
                                   ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
                                   ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
                                   ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False],
-                                  ['S_TEST', NaN, NaN, 'S1VL1', 'S1VL1_0', True, False]])
+                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
@@ -631,13 +631,13 @@ def test_create_limits():
     net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.Inf, 'is_fictitious': False},
+         'acceptable_duration': np.inf, 'is_fictitious': False},
         {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
          'acceptable_duration': 60, 'is_fictitious': False},
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.Inf, 'is_fictitious': False},
+         'acceptable_duration': np.inf, 'is_fictitious': False},
         {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
          'acceptable_duration': 60, 'is_fictitious': False}
@@ -1026,14 +1026,14 @@ def test_3_windings_transformers_creation():
         {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
          'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.Inf, 'is_fictitious': False},
+         'acceptable_duration': np.inf, 'is_fictitious': False},
         {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
          'acceptable_duration': 60, 'is_fictitious': False},
         {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
          'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.Inf, 'is_fictitious': False},
+         'acceptable_duration': np.inf, 'is_fictitious': False},
         {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
          'acceptable_duration': 60, 'is_fictitious': False}

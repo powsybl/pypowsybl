@@ -23,7 +23,9 @@ def _to_array(value: _Any) -> np.ndarray:
     """
     Converts a scalar or array to an array
     """
-    as_array = np.array(value, ndmin=1, copy=False)
+    as_array = np.asarray(value)
+    if as_array.ndim == 0:
+        as_array = np.expand_dims(as_array, axis=0)
     if as_array.ndim != 1:
         raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
                          f'as keyword argument, got {as_array.ndim} dimensions')
@@ -86,9 +88,9 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         if index_name is None:
             index_name = series_metadata[idx].name
         if is_multi_index:
-            columns_values.append(df.index.get_level_values(index_name))
+            columns_values.append(list(df.index.get_level_values(index_name)))
         else:
-            columns_values.append(df.index.values)
+            columns_values.append(list(df.index.values))
         columns_names.append(index_name)
         columns_types.append(metadata_by_name[index_name].type)
         is_index.append(True)
@@ -153,7 +155,6 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
-
     columns = {}
     expected_size = None
     for key, value in kwargs.items():

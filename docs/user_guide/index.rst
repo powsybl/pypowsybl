@@ -10,6 +10,7 @@ relying as much as possible on practical examples.
 
    network
    network_visualization
+   per_unit
    loadflow
    security
    sensitivity
