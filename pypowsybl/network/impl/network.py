@@ -3986,7 +3986,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus1_id**: the bus where the new transformer will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
             - **connectable_bus1_id**: the bus to which the transformer can be connected on side 1, if the voltage level
-             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+              has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node1**: the node where the new transformer will be connected on side 1,
               if the voltage level has a node-breaker topology kind.
             - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
@@ -3994,7 +3994,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus2_id**: the bus where the new transformer will be connected on side 2,
               if the voltage level has a bus-breaker topology kind.
             - **connectable_bus2_id**: the bus to which the transformer can be connected on side 2, if the voltage level
-             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+              has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node2**: the node where the new transformer will be connected on side 2,
               if the voltage level has a node-breaker topology kind.
             - **voltage_level3_id**: the voltage level where the new transformer will be connected on side 3.
@@ -4002,7 +4002,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus3_id**: the bus where the new transformer will be connected on side 3,
               if the voltage level has a bus-breaker topology kind.
             - **connectable_bus3_id**: the bus to which the transformer can be connected on side 3, if the voltage level
-             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+              has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node3**: the node where the new transformer will be connected on side 3,
               if the voltage level has a node-breaker topology kind.
             - **name**: an optional human-readable name
@@ -4247,7 +4247,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_deadband**: the target voltage regulation deadband, in kV
             - **regulating**: true if the tap changer should regulate voltage
             - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
-            or THREE if three-winding transformer)
+              or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
@@ -4304,7 +4304,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_deadband**: the regulation deadband
             - **regulating**: true if the tap changer should regulate
             - **regulated_side**: the side where the current or active power is regulated (ONE or TWO if two-winding
-            transformer, ONE, TWO or THREE if three-winding transformer)
+              transformer, ONE, TWO or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
