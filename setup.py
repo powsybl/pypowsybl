@@ -70,16 +70,18 @@ class PyPowsyblBuild(build_ext):
 
         binaries = []
         if platform.system() == "Windows":
-          binaries = glob.glob(extdir + '*.dll') + glob.glob(extdir + '*.lib')
+            binaries = glob.glob(extdir + '*.dll') + glob.glob(extdir + '*.lib')
         elif platform.system() == "Linux":
-          binaries = glob.glob(extdir + '*.so')
+            binaries = glob.glob(extdir + '*.so')
         elif platform.system() == "Darwin" :
-          binaries = glob.glob(extdir + '*.dylib')
+            binaries = glob.glob(extdir + '*.dylib')
         print(binaries)
+        if not os.path.exists(os.path.abspath('dist')):
+            os.makedirs(os.path.abspath('dist'))
         with zipfile.ZipFile(os.path.abspath('dist') + '/binaries_' + platform.system() + '.zip', mode='x') as archive:
-          for binary in binaries:
-            print("Writing " + binary)
-            archive.write(binary, arcname=os.path.basename(binary))
+            for binary in binaries:
+                print("Writing " + binary)
+                archive.write(binary, arcname=os.path.basename(binary))
 
 setup(
     ext_modules=[PyPowsyblExtension()],
