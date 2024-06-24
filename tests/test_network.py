@@ -782,17 +782,19 @@ def test_sld_parameters():
     assert not parameters.center_name
     assert not parameters.diagonal_label
     assert not parameters.nodes_infos
+    assert not parameters.display_current_feeder_info
     assert parameters.topological_coloring
     assert parameters.component_library == 'Convergence'
 
     parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
                                nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
-                               component_library='FlatDesign')
+                               component_library='FlatDesign', display_current_feeder_info=True)
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
     assert parameters.nodes_infos
     assert parameters.tool_tip_enabled
+    assert parameters.display_current_feeder_info
     assert not parameters.topological_coloring
     assert parameters.component_library == 'FlatDesign'
 
