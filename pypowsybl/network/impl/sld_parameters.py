@@ -9,7 +9,7 @@ import pypowsybl._pypowsybl as _pp
 
 class SldParameters:
     """
-    This class represents sld parameters for a single line diagram svg generation."""
+    This class represents sld parameters for a single line diagram svg generation test."""
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
                  nodes_infos: bool = False, tooltip_enabled: bool = False, topological_coloring: bool = True,
