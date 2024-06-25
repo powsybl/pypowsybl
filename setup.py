@@ -76,6 +76,9 @@ class PyPowsyblBuild(build_ext):
         elif platform.system() == "Darwin" :
             binaries = glob.glob(extdir + '*.dylib')
 
+        includes = glob.glob(os.path.join(cpp_source_dir, 'powsybl-cpp/') + '*.h')
+        includes = includes + glob.glob(os.path.join(self.build_temp, 'java/') + '*.h')
+
         if not os.path.exists(os.path.abspath('dist')):
             os.makedirs(os.path.abspath('dist'))
 
@@ -84,8 +87,9 @@ class PyPowsyblBuild(build_ext):
             os.remove(binaries_archive)
         with zipfile.ZipFile(binaries_archive, mode='x') as archive:
             for binary in binaries:
-                print("Writing " + binary)
-                archive.write(binary, arcname=os.path.basename(binary))
+                archive.write(binary, arcname=os.path.join('bin', os.path.basename(binary)))
+            for include in includes:
+                archive.write(include, arcname=os.path.join('include', os.path.basename(include)))
 
 setup(
     ext_modules=[PyPowsyblExtension()],
