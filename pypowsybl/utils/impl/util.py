@@ -23,7 +23,6 @@ def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) ->
             index_names.append(series.name)
         else:
             series_dict[series.name] = series.data
-    index = None
     if not index_names:
         raise ValueError('No index in returned dataframe')
     if len(index_names) == 1:

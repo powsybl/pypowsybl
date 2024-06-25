@@ -140,7 +140,7 @@ We can now check loaded position by displaying `SubstationPosition` and `LinePos
 
 .. code-block:: python
 
-    >>> n.get_extension('substationPosition')
+    >>> network.get_extension('substationPosition')
                                       latitude  longitude
     id
     87f7002b-056f-4a6a-a872-1744eea757e3   51.3251    4.25926
@@ -148,24 +148,26 @@ We can now check loaded position by displaying `SubstationPosition` and `LinePos
 
 .. code-block:: python
 
-    >>> n.get_extension('linePosition')
+    >>> network.get_extension('linePosition')
                                           latitude  longitude
     id                                   num
     b58bf21a-096a-4dae-9a01-3f03b60c24c7 0     50.8035    4.30113
                                          1     50.9169    4.34509
                                          2     51.0448    4.29565
                                          3     51.1570    4.38354
+                                         4     51.3251    4.25926
     ffbabc27-1ccd-4fdc-b037-e341706c8d29 0     50.8035    4.30113
                                          1     50.9169    4.34509
                                          2     51.0448    4.29565
                                          3     51.1570    4.38354
+                                         4     51.3251    4.25926
 
 When we generate a network area diagram, an automatic force layout is performed by default.
 The diagram looks like this:
 
 .. code-block:: python
 
-    >>> n.write_network_area_diagram('be.svg')
+    >>> network.write_network_area_diagram('be.svg')
 
 .. image:: ../_static/images/nad_microgridbe_force_layout.svg
    :class: forced-white-background
@@ -176,7 +178,7 @@ the geographical layout:
 .. code-block:: python
 
     >>> parameter = pp.network.NadParameters(layout_type=pp.network.NadLayoutType.GEOGRAPHICAL)
-    >>> n.write_network_area_diagram('be.svg', nad_parameters=parameter)
+    >>> network.write_network_area_diagram('be.svg', nad_parameters=parameter)
 
 .. image:: ../_static/images/nad_microgridbe_geo.svg
    :class: forced-white-background
