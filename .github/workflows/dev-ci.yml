@@ -162,7 +162,7 @@ jobs:
         working-directory: ./docs
         run: make doctest
 
-  build:
+  coverage:
     name: Run SonarCloud analysis for Java code
     runs-on: ubuntu-latest
 
@@ -177,7 +177,7 @@ jobs:
           java-version: '17'
 
       - name: Build with Maven (Ubuntu)
-        run: >
+        run: |
           cd java
           ./mvnw --batch-mode -Pjacoco install
 
