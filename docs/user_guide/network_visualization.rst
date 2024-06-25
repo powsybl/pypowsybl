@@ -41,7 +41,7 @@ Single-line diagrams can be customized through SldParameters:
     - diagonal_label: if true, display labels diagonally (default value false)
     - nodes_infos: if true, display nodes infos (caption on bottom left) (default value false)
     - tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
-    - topological_coloring: if true, set each node with a different colour (default value true)
+    - topological_coloring: if true, set each electrical nodes with a different colour (default value true)
     - component_library: choose component library (default value 'Convergence')
 
 Let's see some examples down below:
@@ -101,27 +101,30 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_tooltipenabledtrue.png
    :class: forced-white-background
 
-- with topological coloring = true (we need to get a whole substation here to see the difference)
+- with topological coloring = true (for nodes breaker)
 .. code-block:: python
 
+    >>> network = pn.create_four_substations_node_breaker_network()
+    >>> network.update_switches(id="S1VL2_COUPLER",open=True)
     >>> param = pn.SldParameters(topological_coloring = True)
-    >>> network.get_single_line_diagram('S4', parameters = param)
+    >>> network.get_single_line_diagram('S1VL2', parameters = param)
 
-.. image:: ../_static/images/ieee14_SldParam_topologicalcoloringtrue.svg
+.. image:: ../_static/images/SldParam_topologicalcoloringtrue.svg
    :class: forced-white-background
 
 - with topological coloring = false
 .. code-block:: python
 
     >>> param = pn.SldParameters(topological_coloring = False)
-    >>> network.get_single_line_diagram('S4', parameters = param)
+    >>> network.get_single_line_diagram('S1VL2', parameters = param)
 
-.. image:: ../_static/images/ieee14_SldParam_topologicalcoloringfalse.svg
+.. image:: ../_static/images/SldParam_topologicalcoloringfalse.svg
    :class: forced-white-background
 
 - with component_library = "FlatDesign"
 .. code-block:: python
 
+    >>> #network = pn.create_ieee14()
     >>> param = pn.SldParameters(component_library = "FlatDesign")
     >>> network.get_single_line_diagram('VL4', parameters = param)
 
