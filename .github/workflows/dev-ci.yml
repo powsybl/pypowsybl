@@ -161,3 +161,31 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make doctest
+
+  build:
+    name: Run SonarCloud analysis for Java code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven (Ubuntu)
+        run: >
+          cd java
+          ./mvnw --batch-mode -Pjacoco install
+
+      - name: Run SonarCloud analysis
+        run: >
+          ./mvnw --batch-mode -DskipTests sonar:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=powsybl-ci-github
+          -Dsonar.projectKey=com.powsybl:pypowsybl-java
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
