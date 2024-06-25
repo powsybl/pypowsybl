@@ -101,7 +101,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_tooltipenabledtrue.png
    :class: forced-white-background
 
-- with topological coloring = true (for nodes breaker)
+- with topological coloring = true
 .. code-block:: python
 
     >>> network = pn.create_four_substations_node_breaker_network()
@@ -124,7 +124,7 @@ Let's see some examples down below:
 - with component_library = "FlatDesign"
 .. code-block:: python
 
-    >>> #network = pn.create_ieee14()
+    >>> network = pn.create_ieee14()
     >>> param = pn.SldParameters(component_library = "FlatDesign")
     >>> network.get_single_line_diagram('VL4', parameters = param)
 
