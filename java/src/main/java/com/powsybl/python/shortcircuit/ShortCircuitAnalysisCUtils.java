@@ -35,7 +35,7 @@ public final class ShortCircuitAnalysisCUtils {
     }
 
     public static ShortCircuitParameters createShortCircuitAnalysisParameters() {
-        return PyPowsyblConfiguration.isReadConfig() ? ShortCircuitParameters.load() : new ShortCircuitParameters();
+        return PyPowsyblConfiguration.isReadConfig() ? ShortCircuitParameters.load() : new ShortCircuitParameters().setVoltageRanges(new ArrayList<>());
     }
 
     public static ShortCircuitParameters createShortCircuitAnalysisParameters(PyPowsyblApiHeader.ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer,
@@ -68,7 +68,7 @@ public final class ShortCircuitAnalysisCUtils {
 
     private static List<VoltageRange> createVoltageRangeList(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.VoltageRangePointer> voltageRangePointerArrayPointer) {
         List<VoltageRange> voltageRanges = new ArrayList<>();
-        for (int i=0; i<= voltageRangePointerArrayPointer.getLength(); i++) {
+        for (int i = 0; i <= voltageRangePointerArrayPointer.getLength(); i++) {
             PyPowsyblApiHeader.VoltageRangePointer voltageRangePointer = voltageRangePointerArrayPointer.getPtr().addressOf(i);
             voltageRanges.add(new VoltageRange(voltageRangePointer.getMinimumNominalVoltage(),
                 voltageRangePointer.getMaximumNominalVoltage(),

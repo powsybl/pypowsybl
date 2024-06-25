@@ -457,6 +457,7 @@ public:
     double min_voltage_drop_proportional_threshold;
     InitialVoltageProfileMode initial_voltage_profile_mode;
 
+    std::vector<voltage_range> voltage_ranges;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -826,6 +827,6 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
-
+::voltage_range* createVoltageRange(const double minimum_nominal_voltage, const double maximum_nominal_voltage, const double voltage, const double range_coefficient);
 }
 #endif //PYPOWSYBL_H

@@ -78,6 +78,16 @@ public final class ShortCircuitAnalysisCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new ShortCircuitAnalysisContext()));
     }
 
+    @CEntryPoint(name = "createVoltageRange")
+    public static PyPowsyblApiHeader.VoltageRangePointer createVoltageRange(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.<PyPowsyblApiHeader.VoltageRangePointer>calloc(SizeOf.get(PyPowsyblApiHeader.VoltageRangePointer.class)));
+    }
+
+    @CEntryPoint(name = "deleteVoltageRange")
+    public static void deleteVoltageRange(IsolateThread thread, PyPowsyblApiHeader.VoltageRangePointer voltageRangePointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(voltageRangePointer));
+    }
+
     private static ShortCircuitAnalysisProvider getProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultShortCircuitAnalysisProvider() : name;
         return ShortCircuitAnalysisProvider.findAll().stream()

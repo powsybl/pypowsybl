@@ -711,6 +711,21 @@ class InitialVoltageProfileMode:
     CONFIGURED: ClassVar[InitialVoltageProfileMode] = ...
     PREVIOUS_VALUE: ClassVar[InitialVoltageProfileMode] = ...
 
+class VoltageRange:
+    def __init__(self,  minimum_nominal_voltage: float, maximum_nominal_voltage: float, voltage: float, range_coefficient: float) -> None: ...
+
+    @property
+    def minimum_nominal_voltage(self) -> float: ...
+
+    @property
+    def maximum_nominal_voltage(self) -> float: ...
+
+    @property
+    def voltage(self) -> float: ...
+
+    @property
+    def range_coefficient(self) -> float: ...
+
 class ShortCircuitAnalysisParameters:
     with_voltage_result: bool
     with_feeder_result: bool
@@ -718,9 +733,10 @@ class ShortCircuitAnalysisParameters:
     study_type: ShortCircuitStudyType
     with_fortescue_result: bool
     min_voltage_drop_proportional_threshold: float
+    initial_voltage_profile_mode: InitialVoltageProfileMode
+    voltage_ranges: List[VoltageRange]
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
-    initial_voltage_profile_mode: InitialVoltageProfileMode
     def __init__(self) -> None: ...
 
 def add_contingency(analysis_context: JavaHandle, contingency_id: str, elements_ids: List[str]) -> None: ...
