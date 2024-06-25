@@ -56,6 +56,12 @@ public final class CommonCFunctions {
         return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(Version.getTableString()));
     }
 
+    @CEntryPoint(name = "freeVoltageRangeArray")
+    public static void freeVoltageRangeArray(IsolateThread thread, ArrayPointer<VoltageRangePointer> arrayPtr,
+                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> freeVoltageRangeArrayContent(arrayPtr));
+    }
+
     @CEntryPoint(name = "freeStringArray")
     public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -94,6 +100,12 @@ public final class CommonCFunctions {
      * @param array
      */
     private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
+        for (int i = 0; i < array.getLength(); i++) {
+            UnmanagedMemory.free(array.getPtr().read(i));
+        }
+    }
+
+    private static void freeVoltageRangeArrayContent(ArrayPointer<VoltageRangePointer> array) {
         for (int i = 0; i < array.getLength(); i++) {
             UnmanagedMemory.free(array.getPtr().read(i));
         }

@@ -12,3 +12,4 @@ from .impl.util import (create_analysis,
                         get_default_provider,
                         get_provider_names,
                         get_provider_parameters_names)
+from .impl.voltage_range import VoltageRange
