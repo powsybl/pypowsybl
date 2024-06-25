@@ -1,17 +1,15 @@
-name: Dev CI
+name: Release
 
 on:
-  push:
-    branches:
-      # on all branches except main where full build will be run
-      - '*'
-      - '!main'
+  release:
+    types:
+      - created
 
 jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    container: quay.io/pypa/manylinux2014_x86_64:2024-05-27-2f0b25d
     strategy:
       matrix:
         python:
@@ -22,9 +20,12 @@ jobs:
           }
 
     steps:
+      - name: Install Linux packages
+        run: yum install -y wget
+
       - name: Install Maven
         run: |
-          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
+          wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
@@ -58,39 +59,15 @@ jobs:
         working-directory: ./tests
         run: python3 basic_import_test.py
 
-      - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v2.0.2
+      - name: Upload binaries
+        uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/binaries.zip
+          asset_name: binaries-${{ github.event.release.tag_name }}-Linux.zip
+          asset_content_type: application/zip
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -148,19 +125,12 @@ jobs:
         working-directory: ./tests
         run: python3 basic_import_test.py
 
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
       - name: Upload binaries
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: powsybl-cpp-${{ matrix.config.name }}
-          path: dist/*.zip
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/binaries.zip
+          asset_name: binaries-${{ github.event.release.tag_name }}-${{ matrix.config.name }}.zip
+          asset_content_type: application/zip
