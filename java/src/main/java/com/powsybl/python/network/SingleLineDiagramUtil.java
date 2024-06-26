@@ -69,6 +69,17 @@ public final class SingleLineDiagramUtil {
         }
     }
 
+    static List<String> getMatrixMultiSubstationSvgAndMetadata(Network network, String[][] matrixIds, SldParameters sldParameters) {
+        try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
+            writeMatrixMultiSubstationSvg(network, matrixIds, writer, writerMeta, sldParameters);
+            writer.flush();
+            writerMeta.flush();
+            return List.of(writer.toString(), writerMeta.toString());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     static SldParameters createSldParameters() {
         SldParameters sldParameters = new SldParameters();
         sldParameters.getSvgParameters().setSvgWidthAndHeightAdded(true);

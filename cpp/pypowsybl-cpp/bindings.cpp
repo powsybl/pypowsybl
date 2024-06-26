@@ -579,6 +579,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
 
+    m.def("get_matrix_multi_substation_single_line_diagram_svg_and_metadata", &pypowsybl::getMatrixMultiSubstationSvgAndMetadata, "Get matrix multi-substation single line diagram SVG and its metadata as a list of strings",
+          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"));
+
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
