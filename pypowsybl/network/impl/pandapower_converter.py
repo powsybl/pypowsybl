@@ -73,11 +73,12 @@ def create_lines(n, n_pdp):
     vl2_id = 'vl_' + n_pdp.line['to_bus'].astype(str)
     bus1_id = 'bus_' + n_pdp.line['from_bus'].astype(str)
     bus2_id = 'bus_' + n_pdp.line['to_bus'].astype(str)
-    r = n_pdp.line['length_km'] * n_pdp.line['r_ohm_per_km']
-    x = n_pdp.line['length_km'] * n_pdp.line['x_ohm_per_km']
-    b = n_pdp.line['length_km'] * n_pdp.line['c_nf_per_km'] * 1e-9 * 2 * math.pi * 50 / 2
+    r = n_pdp.line['length_km'] * n_pdp.line['r_ohm_per_km'] / n_pdp.line['parallel']
+    x = n_pdp.line['length_km'] * n_pdp.line['x_ohm_per_km'] / n_pdp.line['parallel']
+    g = n_pdp.line['length_km'] * n_pdp.line['g_us_per_km'] * 1e-6 * n_pdp.line['parallel'] / 2
+    b = n_pdp.line['length_km'] * n_pdp.line['c_nf_per_km'] * 1e-9 * 2 * math.pi * 50 * n_pdp.line['parallel'] / 2
     n.create_lines(id=id, name=name, voltage_level1_id=vl1_id, bus1_id=bus1_id, voltage_level2_id=vl2_id,
-                   bus2_id=bus2_id, r=r, x=x, b1=b, b2=b)
+                   bus2_id=bus2_id, r=r, x=x, g1=g, g2=g, b1=b, b2=b)
 
 
 def create_shunts(n, n_pdp):
@@ -105,20 +106,25 @@ def create_shunts(n, n_pdp):
     n.create_shunt_compensators(shunt_df=shunt_df, linear_model_df=linear_model_df)
 
 
-def create_generators(n, n_pdp):
-    gen = n_pdp.gen.merge(n_pdp.bus, left_on='bus', right_index=True, how='inner')
-    id = generate_injection_id(gen, 'gen')
-    name = get_name(n_pdp.gen, 'name')
-    vl_id = 'vl_' + gen['bus'].astype(str)
-    bus_id = 'bus_' + gen['bus'].astype(str)
-    target_p = gen['p_mw']
-    voltage_regulator_on = [True] * len(gen)
-    target_v = gen['vm_pu'] * gen['vn_kv']
-    min_p = [0] * len(gen)
-    max_p = [99999] * len(gen)
+def _create_generators(n, gen, bus):
+    gen_and_bus = gen.merge(bus, left_on='bus', right_index=True, how='inner', suffixes=('', '_x'))
+    id = generate_injection_id(gen_and_bus, 'gen')
+    name = get_name(gen_and_bus, 'name')
+    vl_id = 'vl_' + gen_and_bus['bus'].astype(str)
+    bus_id = 'bus_' + gen_and_bus['bus'].astype(str)
+    target_p = gen_and_bus['p_mw'] if 'p_mw' in gen_and_bus.columns else [0.0] * len(gen_and_bus)
+    voltage_regulator_on = [True] * len(gen_and_bus)
+    target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv']
+    min_p = [0] * len(gen_and_bus)
+    max_p = [99999] * len(gen_and_bus)
     n.create_generators(id=id, name=name, voltage_level_id=vl_id, bus_id=bus_id, target_p=target_p,
                         voltage_regulator_on=voltage_regulator_on,
                         target_v=target_v, min_p=min_p, max_p=max_p)
+
+
+def create_generators(n, n_pdp):
+    _create_generators(n, n_pdp.gen, n_pdp.bus)
+    _create_generators(n, n_pdp.ext_grid, n_pdp.bus)
 
 
 def create_loads(n, n_pdp):
