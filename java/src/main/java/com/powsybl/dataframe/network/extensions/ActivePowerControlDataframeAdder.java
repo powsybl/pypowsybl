@@ -51,10 +51,10 @@ public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            String id = this.id.get(row);
-            Generator g = network.getGenerator(id);
+            String generatorId = this.id.get(row);
+            Generator g = network.getGenerator(generatorId);
             if (g == null) {
-                throw new PowsyblException("Invalid generator id : could not find " + id);
+                throw new PowsyblException("Invalid generator id : could not find " + generatorId);
             }
             var adder = g.newExtension(ActivePowerControlAdder.class);
             SeriesUtils.applyIfPresent(droop, row, x -> adder.withDroop((float) x));

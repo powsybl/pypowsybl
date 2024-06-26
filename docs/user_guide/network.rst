@@ -3,13 +3,6 @@ The network model
 
 .. currentmodule:: pypowsybl.network
 
-.. testsetup:: *
-
-    import pandas as pd
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.expand_frame_repr', False)
-
-
 The :class:`Network` object is the main data structure of pypowsybl.
 It contains all the data of a power network: substations, generators, lines,
 transformers, ...
@@ -263,7 +256,7 @@ of a generator to 700 MW:
 
    >>> network.set_working_variant('Variant')
    >>> network.update_generators(id='GEN', target_p=700)
-   >>> network.get_generators()['target_p']['GEN']
+   >>> network.get_generators()['target_p']['GEN'].item()
    700.0
 
 If you switch back to the initial variant, you will see that
@@ -272,7 +265,7 @@ its state has not changed, our generator still produces 607 MW:
 .. doctest::
 
    >>> network.set_working_variant('InitialState')
-   >>> network.get_generators()['target_p']['GEN']
+   >>> network.get_generators()['target_p']['GEN'].item()
    607.0
 
 Once you're done working with your variant, you can remove it:

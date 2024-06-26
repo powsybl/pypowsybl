@@ -337,9 +337,9 @@ public final class Dataframes {
     private static DataframeMapper<VoltageLevel.NodeBreakerView, Void> createNodeBreakerViewInternalConnections() {
         return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, InternalConnectionContext, Void>()
                 .itemsProvider(Dataframes::getNodeBreakerViewInternalConnections)
-                .intsIndex("id", InternalConnectionContext::getIndex)
-                .ints("node1", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode1())
-                .ints("node2", internalConnectionContext -> internalConnectionContext.getInternalConnection().getNode2())
+                .intsIndex("id", InternalConnectionContext::index)
+                .ints("node1", internalConnectionContext -> internalConnectionContext.internalConnection().getNode1())
+                .ints("node2", internalConnectionContext -> internalConnectionContext.internalConnection().getNode2())
                 .build();
     }
 

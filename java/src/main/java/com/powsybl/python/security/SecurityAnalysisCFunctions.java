@@ -477,17 +477,13 @@ public final class SecurityAnalysisCFunctions {
                 violationTypes, violationTypesCount, PyPowsyblApiHeader.LimitViolationType::fromCValue);
         Set<LimitViolationType> violationTypesFilter = violationTypesC.stream().map(Util::convert).collect(Collectors.toSet());
 
-        switch (conditionType) {
-            case TRUE_CONDITION :
-                return new TrueCondition();
-            case ALL_VIOLATION_CONDITION :
-                return new AllViolationCondition(subjectIdsStrList, violationTypesFilter);
-            case ANY_VIOLATION_CONDITION :
-                return new AnyViolationCondition(violationTypesFilter);
-            case AT_LEAST_ONE_VIOLATION_CONDITION :
-                return new AtLeastOneViolationCondition(subjectIdsStrList, violationTypesFilter);
-            default:
-                throw new PowsyblException("Unsupported condition type " + conditionType);
-        }
+        return switch (conditionType) {
+            case TRUE_CONDITION -> new TrueCondition();
+            case ALL_VIOLATION_CONDITION -> new AllViolationCondition(subjectIdsStrList, violationTypesFilter);
+            case ANY_VIOLATION_CONDITION -> new AnyViolationCondition(violationTypesFilter);
+            case AT_LEAST_ONE_VIOLATION_CONDITION ->
+                new AtLeastOneViolationCondition(subjectIdsStrList, violationTypesFilter);
+            default -> throw new PowsyblException("Unsupported condition type " + conditionType);
+        };
     }
 }

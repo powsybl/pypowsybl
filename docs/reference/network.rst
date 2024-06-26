@@ -247,9 +247,9 @@ I/O
    get_import_parameters
    get_export_formats
    get_export_parameters
-   save
-   save_to_string
-   save_to_binary_buffer
+   Network.save
+   Network.save_to_string
+   Network.save_to_binary_buffer
 
 
 Advanced network modifications

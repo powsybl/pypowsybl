@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  */
 public class CurveMappingSupplier implements CurvesSupplier {
 
-    private List<Supplier<DynaWaltzCurve>> curvesSupplierList;
+    private final List<Supplier<DynaWaltzCurve>> curvesSupplierList;
 
     public CurveMappingSupplier() {
         curvesSupplierList = new LinkedList<>();

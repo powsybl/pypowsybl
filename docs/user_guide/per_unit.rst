@@ -1,12 +1,5 @@
 Per Unit data
----------------
-
-.. testsetup:: *
-
-    import pypowsybl as pp
-    import pandas as pd
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
+-------------
 
 PyPowSyBl provides methods to per unit the scientific data. They are part of the network api.
 To per-unit the data, the attribute per_unit of the network has to be set.
@@ -36,7 +29,7 @@ The nominal apparent power is by default 100 MVA. It can be set like this :
     LINE_S3S4       0.000016  0.020469  0.0  0.0  0.0  0.0  0.960014  0.008700  0.960054 -0.960000  0.010166  0.960054             S3VL1             S4VL1  S3VL1_0  S4VL1_0        True        True
 
 Per Unit formula
----------------
+----------------
 
 #. Resistance R
 
