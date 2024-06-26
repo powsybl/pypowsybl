@@ -179,7 +179,7 @@ jobs:
       - name: Build with Maven (Ubuntu)
         run: |
           cd ./java
-          ./mvnw --batch-mode -Pjacoco install
+          mvn --batch-mode -Pjacoco install
 
       - name: Run SonarCloud analysis
         run: >
