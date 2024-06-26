@@ -47,7 +47,7 @@ public final class InternCFunctions {
                                                                                                           int dataframesCount,
                                                                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            PyPowsyblApiHeader.DataframePointer seriesPtr = UnmanagedMemory.calloc(dataframesCount * SizeOf.get(PyPowsyblApiHeader.SeriesPointer.class));
+            PyPowsyblApiHeader.DataframePointer seriesPtr = UnmanagedMemory.calloc(dataframesCount * SizeOf.get(PyPowsyblApiHeader.DataframePointer.class));
             return PyPowsyblApiHeader.allocArrayPointer(seriesPtr, dataframesCount);
         });
     }
