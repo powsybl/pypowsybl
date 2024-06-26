@@ -1020,7 +1020,7 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getMatrixMultiSbustationSvgAndMetadata")
+    @CEntryPoint(name = "getMatrixMultiSubstationSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                                            int substationIdCount, int substationIdRowCount,
                                                                                            SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
