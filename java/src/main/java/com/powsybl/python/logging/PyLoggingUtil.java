@@ -19,7 +19,6 @@ public final class PyLoggingUtil {
 
     public static int logbackLevelToPythonLevel(Level l) {
         return switch (l.toInt()) {
-            case Level.OFF_INT -> 0;
             case Level.ERROR_INT -> 40;
             case Level.WARN_INT -> 30;
             case Level.INFO_INT -> 20;
@@ -31,7 +30,6 @@ public final class PyLoggingUtil {
 
     public static Level pythonLevelToLogbackLevel(int l) {
         return switch (l) {
-            case 0 -> Level.OFF;
             case 40 -> Level.ERROR;
             case 30 -> Level.WARN;
             case 20 -> Level.INFO;

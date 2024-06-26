@@ -7,6 +7,8 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
+
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
@@ -14,8 +16,7 @@ public class GeneratorSynchronousThreeWindingsAdder extends AbstractBlackBoxAdde
 
     @Override
     protected AddBlackBoxToModelMapping getAddBlackBoxToModelMapping() {
-        return (modelMapping, staticId, parameterSetId) -> modelMapping
-                .addGeneratorSynchronousThreeWindings(staticId, parameterSetId);
+        return PythonDynamicModelsSupplier::addGeneratorSynchronousThreeWindings;
     }
 
 }

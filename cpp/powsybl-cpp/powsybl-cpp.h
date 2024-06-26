@@ -400,6 +400,12 @@ enum class NadLayoutType {
     GEOGRAPHICAL
 };
 
+enum class EdgeInfoType {
+    ACTIVE_POWER = 0,
+    REACTIVE_POWER,
+    CURRENT
+};
+
 class NadParameters {
 public:
     NadParameters(nad_parameters* src);
@@ -418,6 +424,7 @@ public:
     NadLayoutType layout_type;
     int scaling_factor;
     double radius_factor;
+    EdgeInfoType edge_info_displayed;
 };
 
 //=======short-circuit analysis==========

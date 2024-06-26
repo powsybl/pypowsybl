@@ -245,7 +245,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         return switch (side) {
             case ONE -> TwoSides.ONE;
             case TWO -> TwoSides.TWO;
-            default -> throw new PowsyblException("Invalid value for branch side: " + side);
+            default -> throw new PowsyblException(String.format("Invalid value for branch side: %s", side));
         };
     }
 
@@ -254,30 +254,30 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             case LINE, TWO_WINDINGS_TRANSFORMER -> {
                 Branch<?> branch = network.getBranch(elementId);
                 if (branch == null) {
-                    throw new PowsyblException("Branch " + elementId + " does not exist.");
+                    throw new PowsyblException(String.format("Branch %s does not exist.", elementId));
                 }
                 return getBranchAsFlowsLimitsHolder(branch, toBranchSide(side));
             }
             case DANGLING_LINE -> {
                 DanglingLine dl = network.getDanglingLine(elementId);
                 if (dl == null) {
-                    throw new PowsyblException("Dangling line " + elementId + " does not exist.");
+                    throw new PowsyblException(String.format("Dangling line %s does not exist.", elementId));
                 }
                 if (side != TemporaryLimitData.Side.NONE) {
-                    throw new PowsyblException("Invalid value for dangling line side: " + side + ", must be NONE");
+                    throw new PowsyblException(String.format("Invalid value for dangling line side: %s, must be NONE", side));
                 }
                 return dl;
             }
             case THREE_WINDINGS_TRANSFORMER -> {
                 ThreeWindingsTransformer transformer = network.getThreeWindingsTransformer(elementId);
                 if (transformer == null) {
-                    throw new PowsyblException("Three windings transformer " + elementId + " does not exist.");
+                    throw new PowsyblException(String.format("Three windings transformer %s does not exist.", elementId));
                 }
                 return switch (side) {
                     case ONE -> transformer.getLeg1();
                     case TWO -> transformer.getLeg2();
                     case THREE -> transformer.getLeg3();
-                    default -> throw new PowsyblException("Invalid value for three windings transformer side: " + side);
+                    default -> throw new PowsyblException(String.format("Invalid value for three windings transformer side: %s", side));
                 };
             }
             default ->

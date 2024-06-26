@@ -198,9 +198,7 @@ public class ShuntDataframeAdder implements NetworkElementAdder {
 
         void create(Network network, int row, boolean throwException) {
             Optional<ShuntCompensatorAdder> adder = createAdder(network, row, throwException);
-            if (adder.isPresent()) {
-                adder.get().add();
-            }
+            adder.ifPresent(ShuntCompensatorAdder::add);
         }
 
         /**

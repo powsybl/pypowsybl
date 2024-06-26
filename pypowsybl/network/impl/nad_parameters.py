@@ -5,7 +5,7 @@
 #
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import (
-    NadLayoutType
+    NadLayoutType, EdgeInfoType
 )
 
 class NadParameters:
@@ -16,7 +16,8 @@ class NadParameters:
                  edge_info_along_edge: bool = True, power_value_precision: int = 0, angle_value_precision: int = 1,
                  current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
                  substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
-                 scaling_factor: int = 150000, radius_factor: float = 150.0):
+                 scaling_factor: int = 150000, radius_factor: float = 150.0,
+                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -29,6 +30,7 @@ class NadParameters:
         self._layout_type = layout_type
         self._scaling_factor = scaling_factor
         self._radius_factor = radius_factor
+        self._edge_info_displayed = edge_info_displayed
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -90,6 +92,11 @@ class NadParameters:
         """radius_factor"""
         return self._radius_factor
 
+    @property
+    def edge_info_displayed(self) -> EdgeInfoType:
+        """edge_info_displayed"""
+        return self._edge_info_displayed
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_name_displayed = self._edge_name_displayed
@@ -104,6 +111,7 @@ class NadParameters:
         c_parameters.layout_type = self._layout_type
         c_parameters.scaling_factor = self._scaling_factor
         c_parameters.radius_factor = self._radius_factor
+        c_parameters.edge_info_displayed = self._edge_info_displayed
         return c_parameters
 
     def __repr__(self) -> str:
@@ -120,4 +128,5 @@ class NadParameters:
                f", layout_type={self._layout_type}" \
                f", scaling_factor={self._scaling_factor}" \
                f", radius_factor={self._radius_factor}" \
+               f", edge_info_displayed={self._edge_info_displayed}" \
                f")"

@@ -9,7 +9,7 @@ package com.powsybl.python.dynamic;
 
 import static com.powsybl.python.commons.Util.doCatch;
 
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -123,9 +123,7 @@ public final class DynamicSimulationCFunctions {
     public static DataframeMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
             DynamicMappingType mappingType,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            return CTypeUtil.createSeriesMetadata(DynamicMappingAdderFactory.getAdder(mappingType).getMetadata());
-        });
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(DynamicMappingAdderFactory.getAdder(mappingType).getMetadata()));
     }
 
     @CEntryPoint(name = "addCurve")
@@ -185,7 +183,7 @@ public final class DynamicSimulationCFunctions {
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-            return Util.createCharPtrArray(result.getCurves().keySet().stream().collect(Collectors.toList()));
+            return Util.createCharPtrArray(new ArrayList<>(result.getCurves().keySet()));
         });
     }
 

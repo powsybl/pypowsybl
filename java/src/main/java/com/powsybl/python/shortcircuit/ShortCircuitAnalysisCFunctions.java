@@ -108,9 +108,7 @@ public final class ShortCircuitAnalysisCFunctions {
     @CEntryPoint(name = "freeShortCircuitAnalysisParameters")
     public static void freeShortCircuitAnalysisParameters(IsolateThread thread, ShortCircuitAnalysisParametersPointer parameters,
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            UnmanagedMemory.free(parameters);
-        });
+        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parameters));
     }
 
     @CEntryPoint(name = "createShortCircuitAnalysisParameters")
