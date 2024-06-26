@@ -25,19 +25,7 @@ from .network import Network
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
 
-def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,
-                        deprecated_new_line_r: float = None, deprecated_new_line_x: float = None,
-                        deprecated_new_line_b1: float = None, deprecated_new_line_b2: float = None,
-                        deprecated_new_line_g1: float = None, deprecated_new_line_g2: float = None,
-                        deprecated_line_id: str = None,
-                        deprecated_line1_id: str = None, deprecated_line1_name: str = None,
-                        deprecated_line2_id: str = None,
-                        deprecated_line2_name: str = None, deprecated_position_percent: float = None,
-                        deprecated_create_fictitious_substation: bool = None,
-                        deprecated_fictitious_voltage_level_id: str = None,
-                        deprecated_fictitious_voltage_level_name: str = None,
-                        deprecated_fictitious_substation_id: str = None,
-                        deprecated_fictitious_substation_name: str = None,
+def create_line_on_line(network: Network,
                         df: DataFrame = None, raise_exception: bool = True,
                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
@@ -80,114 +68,12 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
         reporter: deprecated, use report_node instead
         report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
                   bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
-        deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_r: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_x: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_b1: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_b2: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_g1: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_g2: this argument is deprecated, use the dataframe instead
-        deprecated_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line1_name: this argument is deprecated, use the dataframe instead
-        deprecated_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line2_name: this argument is deprecated, use the dataframe instead
-        deprecated_position_percent: this argument is deprecated, use the dataframe instead
-        deprecated_create_fictitious_substation: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_voltage_level_id: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_voltage_level_name: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_substation_id: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_substation_name: this argument is deprecated, use the dataframe instead
         **kwargs: attributes as keyword arguments
 
     """
-    if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
-    if deprecated_new_line_id is not None:
-        warnings.warn("Use of deprecated argument new_line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_id'] = deprecated_new_line_id
-    if deprecated_new_line_r is not None:
-        warnings.warn("Use of deprecated argument new_line_r. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_r'] = deprecated_new_line_r
-    if deprecated_new_line_x is not None:
-        warnings.warn("Use of deprecated argument new_line_x. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_x'] = deprecated_new_line_x
-    if deprecated_new_line_b1 is not None:
-        warnings.warn("Use of deprecated argument new_line_b1. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_b1'] = deprecated_new_line_b1
-    if deprecated_new_line_b2 is not None:
-        warnings.warn("Use of deprecated argument new_line_b2. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_b2'] = deprecated_new_line_b2
-    if deprecated_new_line_g1 is not None:
-        warnings.warn("Use of deprecated argument new_line_g1. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_g1'] = deprecated_new_line_g1
-    if deprecated_new_line_g2 is not None:
-        warnings.warn("Use of deprecated argument new_line_g2. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_g2'] = deprecated_new_line_g2
-    if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_id'] = deprecated_line_id
-    if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_id'] = deprecated_line1_id
-    if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_id'] = deprecated_line2_id
-    if deprecated_line1_name is not None:
-        warnings.warn("Use of deprecated argument line1_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_name'] = deprecated_line1_name
-    if deprecated_line2_name is not None:
-        warnings.warn("Use of deprecated argument line2_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_name'] = deprecated_line2_name
-    if deprecated_position_percent is not None:
-        warnings.warn("Use of deprecated argument position_percent. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['position_percent'] = deprecated_position_percent
-    if deprecated_create_fictitious_substation is not None:
-        warnings.warn(
-            "Use of deprecated argument create_fictitious_substation. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['create_fictitious_substation'] = deprecated_create_fictitious_substation
-    if deprecated_fictitious_voltage_level_id is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_voltage_level_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_voltage_level_id'] = deprecated_fictitious_voltage_level_id
-    if deprecated_fictitious_voltage_level_name is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_voltage_level_name. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_voltage_level_name'] = deprecated_fictitious_voltage_level_name
-    if deprecated_fictitious_substation_id is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_substation_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_substation_id'] = deprecated_fictitious_substation_id
-    if deprecated_fictitious_substation_name is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_substation_name. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_substation_name'] = deprecated_fictitious_substation_name
-
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_LINE_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
@@ -196,11 +82,7 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_id: str = None,
-                               deprecated_line_to_be_merged2_id: str = None,
-                               deprecated_line_to_be_deleted: str = None, deprecated_merged_line_id: str = None,
-                               deprecated_merged_line_name: str = None, df: DataFrame = None,
-                               raise_exception: bool = True,
+def revert_create_line_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
                                reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: str) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
@@ -220,42 +102,12 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
 
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
                          be logged. Default is True.
-        reporter: deprecated, use report_node instead
-        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
-        deprecated_line_to_be_merged1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_to_be_merged2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_to_be_deleted: this argument is deprecated, use the dataframe instead
-        deprecated_merged_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_merged_line_name: this argument is deprecated, use the dataframe instead
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         **kwargs: attributes as keyword arguments
     """
-    if deprecated_line_to_be_merged1_id is not None:
-        warnings.warn(
-            "Use of deprecated argument line_to_be_merged1_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['line_to_be_merged1_id'] = deprecated_line_to_be_merged1_id
-    if deprecated_line_to_be_merged2_id is not None:
-        warnings.warn(
-            "Use of deprecated argument line_to_be_merged2_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['line_to_be_merged2_id'] = deprecated_line_to_be_merged2_id
-    if deprecated_line_to_be_deleted is not None:
-        warnings.warn("Use of deprecated argument line_to_be_deleted. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_to_be_deleted'] = deprecated_line_to_be_deleted
-    if deprecated_merged_line_id is not None:
-        warnings.warn("Use of deprecated arguments merged_line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['merged_line_id'] = deprecated_merged_line_id
-    if deprecated_merged_line_name is not None:
-        warnings.warn("Use of deprecated arguments merged_line_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['merged_line_name'] = deprecated_merged_line_name
-
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CREATE_LINE_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
@@ -264,14 +116,8 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: str = None,
-                                  deprecated_line_id: str = None,
-                                  deprecated_position_percent: float = None, deprecated_line1_id: str = None,
-                                  deprecated_line1_name: str = None, deprecated_line2_id: str = None,
-                                  deprecated_line2_name: str = None, df: DataFrame = None,
-                                  raise_exception: bool = True,
-                                  reporter: ReportNode = None, report_node: ReportNode = None,
-                                  **kwargs: ArrayLike) -> None:
+def connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                  reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
@@ -294,50 +140,12 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
 
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
                          be logged. Default is True.
-        reporter: deprecated, use report_node instead
-        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
-        deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_position_percent: this argument is deprecated, use the dataframe instead
-        deprecated_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line1_name: this argument is deprecated, use the dataframe instead
-        deprecated_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line2_name: this argument is deprecated, use the dataframe instead
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         **kwargs: attributes as keyword arguments
     """
-    if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
-    if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_id'] = deprecated_line_id
-    if deprecated_position_percent is not None:
-        warnings.warn("Use of deprecated argument position_percent. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['position_percent'] = deprecated_position_percent
-    if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_id'] = deprecated_line1_id
-    if deprecated_line1_name is not None:
-        warnings.warn("Use of deprecated argument line1_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_name'] = deprecated_line1_name
-    if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_id'] = deprecated_line2_id
-    if deprecated_line2_name is not None:
-        warnings.warn("Use of deprecated argument line2_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_name'] = deprecated_line2_name
-
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
@@ -346,12 +154,8 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: str = None,
-                                         deprecated_line2_id: str = None,
-                                         deprecated_line_id: str = None, deprecated_line_name: str = None,
-                                         df: DataFrame = None, raise_exception: bool = True,
-                                         reporter: ReportNode = None, report_node: ReportNode = None,
-                                         **kwargs: ArrayLike) -> None:
+def revert_connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     This method reverses the action done in the connect_voltage_level_on_line method.
     It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
@@ -367,35 +171,12 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
             line_name: The name of the line to be created (default to line_id)
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is True.
-        reporter: deprecated, use report_node instead
-        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
-        deprecated_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_name: this argument is deprecated, use the dataframe instead
+        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
         **kwargs: attributes as keyword arguments
     """
-    if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_id'] = deprecated_line1_id
-    if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_id'] = deprecated_line2_id
-    if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_id'] = deprecated_line_id
-    if deprecated_line_name is not None:
-        warnings.warn("Use of deprecated argument line_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_name'] = deprecated_line_name
-
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
@@ -768,16 +549,8 @@ def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_point_line1: str = None,
-                                               deprecated_tee_point_line2: str = None,
-                                               deprecated_tee_point_line_to_remove: str = None,
-                                               deprecated_bbs_or_bus_id: str = None,
-                                               deprecated_new_line1_id: str = None,
-                                               deprecated_new_line2_id: str = None,
-                                               deprecated_new_line1_name: str = None,
-                                               deprecated_new_line2_name: str = None, df: DataFrame = None,
-                                               raise_exception: bool = True, reporter: ReportNode = None,
-                                               report_node: ReportNode = None,
+def replace_tee_point_by_voltage_level_on_line(network: Network, df: DataFrame = None,
+                                               raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None,
                                                **kwargs: ArrayLike) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
@@ -797,60 +570,16 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
           - new_line2_name: The optional name of the new line connecting the second voltage level to the attached voltage level
 
         raise_exception: whether an exception should be raised if a problem occurs. By default, true.
-        reporter: deprecated, use report_node instead
-        report_node: an optional reporter to get functional logs.
-        deprecated_tee_point_line1: this argument is deprecated, use the dataframe instead
-        deprecated_tee_point_line2: this argument is deprecated, use the dataframe instead
-        deprecated_tee_point_line_to_remove: this argument is deprecated, use the dataframe instead
-        deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line1_name: this argument is deprecated, use the dataframe instead
-        deprecated_new_line2_name: this argument is deprecated, use the dataframe instead
+        reporter: an optional reporter to get functional logs.
         kwargs: attributes as keyword arguments.
 
     Notes:
         It replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
         and removes the tee point.
     """
-    if deprecated_tee_point_line1 is not None:
-        warnings.warn("Use of deprecated argument tee_point_line1. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['tee_point_line1'] = deprecated_tee_point_line1
-    if deprecated_tee_point_line2 is not None:
-        warnings.warn("Use of deprecated argument tee_point_line2. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['tee_point_line2'] = deprecated_tee_point_line2
-    if deprecated_tee_point_line_to_remove is not None:
-        warnings.warn(
-            "Use of deprecated argument tee_point_line_to_remove. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['tee_point_line_to_remove'] = deprecated_tee_point_line_to_remove
-    if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
-    if deprecated_new_line1_id is not None:
-        warnings.warn("Use of deprecated argument new_line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line1_id'] = deprecated_new_line1_id
-    if deprecated_new_line2_id is not None:
-        warnings.warn("Use of deprecated argument new_line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line2_id'] = deprecated_new_line2_id
-    if deprecated_new_line1_name is not None:
-        warnings.warn("Use of deprecated argument new_line1_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line1_name'] = deprecated_new_line1_name
-    if deprecated_new_line2_name is not None:
-        warnings.warn("Use of deprecated argument new_line2_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line2_name'] = deprecated_new_line2_name
-
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
