@@ -34,6 +34,7 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.BasicForceLayoutFactory;
 import com.powsybl.nad.layout.GeographicalLayoutFactory;
 import com.powsybl.nad.layout.LayoutFactory;
+import com.powsybl.nad.svg.SvgParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -67,6 +68,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
+import static com.powsybl.nad.svg.SvgParameters.EdgeInfoEnum.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -896,6 +898,12 @@ public final class NetworkCFunctions {
     }
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
+        int edgeInfo = switch (parameters.getSvgParameters().getEdgeInfoDisplayed()) {
+            case ACTIVE_POWER -> 0;
+            case REACTIVE_POWER -> 1;
+            case CURRENT -> 2;
+            default -> throw new PowsyblException("Type of information not taken into account");
+        };
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
@@ -905,6 +913,7 @@ public final class NetworkCFunctions {
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
         cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
+        cParameters.setEdgeInfoDisplayed(edgeInfo);
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -953,6 +962,12 @@ public final class NetworkCFunctions {
             case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
         };
+        SvgParameters.EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
+            case 0 -> ACTIVE_POWER;
+            case 1 -> REACTIVE_POWER;
+            case 2 -> CURRENT;
+            default -> throw new PowsyblException("Type of information not taken into account");
+        };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
                 .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
@@ -963,7 +978,8 @@ public final class NetworkCFunctions {
                 .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
                 .setIdDisplayed(nadParametersPointer.isIdDisplayed())
                 .setBusLegend(nadParametersPointer.isBusLegend())
-                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed());
+                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
+                .setEdgeInfoDisplayed(edgeInfo);
         return nadParameters;
     }
 
