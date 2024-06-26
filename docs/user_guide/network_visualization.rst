@@ -36,17 +36,18 @@ Single-line diagrams can be customized through SldParameters:
     >>> result = pp.loadflow.run_ac(network)
     >>> network.get_single_line_diagram('VL4',parameters = pp.network.SldParameters(use_name = False, center_name = False, diagonal_label = False, nodes_infos = False, tooltip_enabled = False, topological_coloring = True, component_library = 'Convergence'))
 
-    - use_name: if true, display components names instead of their id (default value false)
-    - center_name: if true, center the names of feeders (default value false)
-    - diagonal_label: if true, display labels diagonally (default value false)
-    - nodes_infos: if true, display nodes infos (caption on bottom left) (default value false)
-    - tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
-    - topological_coloring: if true, set each electrical nodes with a different colour (default value true)
-    - component_library: choose component library (default value 'Convergence')
+- use_name: if true, display components names instead of their id (default value false)
+- center_name: if true, center the names of feeders (default value false)
+- diagonal_label: if true, display labels diagonally (default value false)
+- nodes_infos: if true, display nodes infos (caption on bottom left) (default value false)
+- tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
+- topological_coloring: if true, set each electrical nodes with a different colour (default value true)
+- component_library: choose component library (default value 'Convergence')
 
 Let's see some examples down below:
 
 - with default parameters
+
 .. code-block:: python
 
     >>> import pypowsybl.network as pn
@@ -57,6 +58,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with use_name = true
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(use_name = True)
@@ -66,6 +68,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with center_name = true
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(center_name = True)
@@ -75,6 +78,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with diagonal_label = true
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(diagonal_label = True)
@@ -84,6 +88,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with nodes_infos = true
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(nodes_infos = True)
@@ -93,6 +98,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with tooltip enabled
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(tooltip_enabled = True)
@@ -102,6 +108,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with topological coloring = true
+
 .. code-block:: python
 
     >>> network = pn.create_four_substations_node_breaker_network()
@@ -113,6 +120,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with topological coloring = false
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(topological_coloring = False)
@@ -122,6 +130,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with component_library = "FlatDesign"
+
 .. code-block:: python
 
     >>> network = pn.create_ieee14()
