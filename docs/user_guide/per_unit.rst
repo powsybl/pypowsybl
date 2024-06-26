@@ -1,13 +1,6 @@
 Per Unit data
 -------------
 
-.. testsetup:: *
-
-    import pypowsybl as pp
-    import pandas as pd
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
-
 PyPowSyBl provides methods to per unit the scientific data. They are part of the network api.
 To per-unit the data, the attribute per_unit of the network has to be set.
 

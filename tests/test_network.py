@@ -26,7 +26,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -882,7 +882,8 @@ def test_nad():
                                                                          current_value_precision=1,
                                                                          voltage_value_precision=0,
                                                                          bus_legend=False,
-                                                                         substation_description_displayed=True
+                                                                         substation_description_displayed=True,
+                                                                         edge_info_displayed=EdgeInfoType.CURRENT
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -904,7 +905,9 @@ def test_nad():
                                                                             current_value_precision=1,
                                                                             voltage_value_precision=0,
                                                                             bus_legend=False,
-                                                                            substation_description_displayed=True))
+                                                                            substation_description_displayed=True,
+                                                                            edge_info_displayed=EdgeInfoType.REACTIVE_POWER
+                                                                            ))
 
 
 def test_nad_displayed_voltage_levels():
@@ -2029,8 +2032,9 @@ def test_nad_parameters():
     assert nad_parameters.layout_type == NadLayoutType.FORCE_LAYOUT
     assert nad_parameters.scaling_factor == 150000
     assert nad_parameters.radius_factor == 150.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2043,6 +2047,22 @@ def test_nad_parameters():
     assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
+
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT)
+    assert nad_parameters.edge_name_displayed
+    assert not nad_parameters.edge_info_along_edge
+    assert nad_parameters.id_displayed
+    assert nad_parameters.power_value_precision == 1
+    assert nad_parameters.angle_value_precision == 2
+    assert nad_parameters.current_value_precision == 1
+    assert nad_parameters.voltage_value_precision == 2
+    assert not nad_parameters.bus_legend
+    assert nad_parameters.substation_description_displayed
+    assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
+    assert nad_parameters.scaling_factor == 100000
+    assert nad_parameters.radius_factor == 120.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
 
 
 if __name__ == '__main__':

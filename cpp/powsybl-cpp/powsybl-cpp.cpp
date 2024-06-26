@@ -1211,6 +1211,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     layout_type = static_cast<NadLayoutType>(src->layout_type);
     scaling_factor = src->scaling_factor;
     radius_factor = src->radius_factor;
+    edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1236,6 +1237,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.layout_type = (int) layout_type;
     res.scaling_factor = scaling_factor;
     res.radius_factor = radius_factor;
+    res.edge_info_displayed = (int) edge_info_displayed;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
