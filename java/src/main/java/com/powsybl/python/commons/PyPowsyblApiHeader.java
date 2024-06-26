@@ -1137,6 +1137,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("radius_factor")
         void setRadiusFactor(double radiusFactor);
+
+        @CField("edge_info_displayed")
+        void setEdgeInfoDisplayed(int edgeInfoDisplayed);
+
+        @CField("edge_info_displayed")
+        int getEdgeInfoDisplayed();
     }
 
     @CEnum("DynamicMappingType")

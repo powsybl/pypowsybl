@@ -3,12 +3,6 @@ Run the voltage initializer
 
 .. currentmodule:: pypowsybl.voltage_initializer
 
-.. testsetup:: *
-
-    import pypowsybl as pp
-    import pypowsybl.voltage_initializer as v_init
-
-
 Prerequisites
 -------------
 
