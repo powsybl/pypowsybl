@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
+      - 'release-v**'
+      - 'full-sonar-analysis-**'
     tags:
-      - 'v*.*.*'
-  release:
-    types: [published]
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
 
 jobs:
   manylinux_build:

@@ -1,11 +1,6 @@
 name: Dev CI
 
 on:
-  push:
-    branches:
-      # on all branches except main where full build will be run
-      - '*'
-      - '!main'
   pull_request:
 
 jobs:
