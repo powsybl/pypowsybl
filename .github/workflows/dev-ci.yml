@@ -177,11 +177,12 @@ jobs:
           java-version: '17'
 
       - name: Build with Maven (Ubuntu)
-        run: |
-          cd ./java
+        working-directory: ./java
+        run: >
           mvn --batch-mode -Pjacoco install
 
       - name: Run SonarCloud analysis
+        working-directory: ./java
         run: >
           mvn --batch-mode -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
