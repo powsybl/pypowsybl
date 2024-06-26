@@ -1,14 +1,6 @@
 Running a security analysis
 ===========================
 
-.. testsetup:: *
-
-    import pypowsybl as pp
-    import pandas as pd
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
-    from pypowsybl._pypowsybl import ConditionType
-
 You can use the module :mod:`pypowsybl.security` in order to perform a security analysis on a network.
 Please check out the examples below.
 
@@ -55,7 +47,6 @@ Information can be obtained on buses, branches and three windings transformers.
 
 .. testsetup:: security.monitored_elements
 
-    import pandas as pd
     pd.options.display.float_format = '{:,.2f}'.format
 
 .. doctest:: security.monitored_elements
@@ -131,7 +122,7 @@ The following operator strategy define the application of the switch action 'Swi
     >>> sa = pp.security.create_analysis()
     >>> sa.add_single_element_contingency(element_id='S4VL1_BBS_LD6_DISCONNECTOR', contingency_id='Breaker contingency')
     >>> sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
-    >>> sa.add_operator_strategy(operator_strategy_id='OperatorStrategy1', contingency_id='Breaker contingency', action_ids=['SwitchAction'], condition_type=ConditionType.TRUE_CONDITION)
+    >>> sa.add_operator_strategy(operator_strategy_id='OperatorStrategy1', contingency_id='Breaker contingency', action_ids=['SwitchAction'], condition_type=pp.security.ConditionType.TRUE_CONDITION)
     >>> sa.add_monitored_elements(branch_ids=['LINE_S3S4'])
     >>> sa_result = sa.run_ac(n)
     >>> df = sa_result.branch_results
