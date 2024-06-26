@@ -185,8 +185,9 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Build wheel
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "14.0" # to fix later to 11.0 when math native will have been built with same flag
+# to fix later when math native will have been built with same flag
+#        env:
+#          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: python setup.py bdist_wheel
 
       - name: Install wheel
