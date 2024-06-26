@@ -6,6 +6,7 @@ on:
       # on all branches except main where full build will be run
       - '*'
       - '!main'
+  pull_request:
 
 jobs:
   manylinux_build:
