@@ -89,11 +89,19 @@ html_static_path = ['_static']
 html_css_files = ['styles/styles.css']
 
 doctest_global_setup = '''
-try:
-    import pypowsybl as pp
-    pp.set_config_read(False)
-except ImportError:
-    pp = None
+import pypowsybl as pp
+pp.set_config_read(False)
+
+import pathlib
+
+import pandas as pd    
+pd.options.display.max_columns = None
+pd.options.display.expand_frame_repr = False
+
+import os
+cwd = os.getcwd()
+PROJECT_DIR = pathlib.Path(cwd).parent
+DATA_DIR = PROJECT_DIR.joinpath('data')
 '''
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'

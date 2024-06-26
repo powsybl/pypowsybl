@@ -3,12 +3,6 @@ Running a dynamic simulation with dynawaltz
 
 .. currentmodule:: pypowsybl.dynamic
 
-.. testsetup:: *
-
-    import pypowsybl as pp
-    import pypowsybl.dynamic as dyn
-    import pypowsybl.network as pn
-
 You can use the module :mod:`pypowsybl.dynamic` in order to run time domain simulation on networks.
 
 Start by importing the module:

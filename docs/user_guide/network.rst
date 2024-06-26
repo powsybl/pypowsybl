@@ -3,13 +3,6 @@ The network model
 
 .. currentmodule:: pypowsybl.network
 
-.. testsetup:: *
-
-    import pandas as pd
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.expand_frame_repr', False)
-
-
 The :class:`Network` object is the main data structure of pypowsybl.
 It contains all the data of a power network: substations, generators, lines,
 transformers, ...
