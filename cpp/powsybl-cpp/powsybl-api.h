@@ -355,6 +355,7 @@ typedef struct nad_parameters_struct {
     int layout_type;
     int scaling_factor;
     double radius_factor;
+    int edge_info_displayed;
 } nad_parameters;
 
 typedef enum {
