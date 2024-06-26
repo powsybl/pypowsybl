@@ -183,7 +183,7 @@ jobs:
 
       - name: Run SonarCloud analysis
         run: >
-          ./mvnw --batch-mode -DskipTests sonar:sonar
+          mvn --batch-mode -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=powsybl-ci-github
           -Dsonar.projectKey=com.powsybl:pypowsybl-java
