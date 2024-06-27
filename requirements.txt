@@ -5,6 +5,9 @@ prettytable==2.0.0
 networkx
 matplotlib
 
+# optional dependencies
+pandapower
+
 # documentation dependencies
 sphinx==7.1.2
 furo==2024.1.29
