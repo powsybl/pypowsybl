@@ -117,7 +117,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3
@@ -206,7 +206,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3
