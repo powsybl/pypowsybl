@@ -182,7 +182,11 @@ To illustrate X node flow, we need a network with unmerged x nodes.
 Those x nodes might represent HVDCs, outside countries, etc.
 Merged X nodes will not be considered here.
 
-.. doctest::
+.. testsetup:: flowdecomposition.unmerged
+
+    pd.options.display.float_format = '{:,.3f}'.format
+
+.. doctest:: flowdecomposition.unmerged
     :options: +NORMALIZE_WHITESPACE
 
     >>> network = pp.network.load(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
@@ -190,13 +194,16 @@ Merged X nodes will not be considered here.
     >>> flow_decomposition.run(network)
                                                                                branch_id contingency_id country1 country2  ac_reference_flow  dc_reference_flow  commercial_flow  x_node_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_de  loop_flow_from_fr
     xnec_id
-    XBD00011 BD000011 1 + XBD00011 DB000011 1  XBD00011 BD000011 1 + XBD00011 DB000011 1                      BE       DE         121.821917         124.685261       171.516849   -33.155274  2.951653            0.0           0.226369      -8.994903e-09         -16.854336
-    XBD00012 BD000011 1 + XBD00012 DB000011 1  XBD00012 BD000011 1 + XBD00012 DB000011 1                      BE       DE         121.821917         124.685261       171.516849   -33.155274  2.951653            0.0           0.226369      -8.994903e-09         -16.854336
-    XBF00011 BF000011 1 + XBF00011 FB000011 1  XBF00011 BF000011 1 + XBF00011 FB000011 1                      BE       FR        -775.578124        -764.445217       679.262024   170.472453  7.112098            0.0        -124.052946      -6.713719e-09          31.651588
-    XBF00021 BF000021 1 + XBF00021 FB000021 1  XBF00021 BF000021 1 + XBF00021 FB000021 1                      BE       FR        -234.032855        -242.462652       169.385837    44.108499 -0.604396            0.0          62.252842      -1.954504e-09         -32.680130
-    XBF00022 BF000021 1 + XBF00022 FB000022 1  XBF00022 BF000021 1 + XBF00022 FB000022 1                      BE       FR        -234.032855        -242.462652       169.385837    44.108499 -0.604396            0.0          62.252842      -1.954504e-09         -32.680130
-    XDF00011 DF000011 1 + XDF00011 FD000011 1  XDF00011 DF000011 1 + XDF00011 FD000011 1                      DE       FR       -1156.356167       -1150.629478       906.966302   216.310548 -5.903306            0.0          -0.452738      -2.032061e-08          33.708672
+    XBD00011 BD000011 1 + XBD00011 DB000011 1  XBD00011 BD000011 1 + XBD00011 DB000011 1                      BE       DE            121.822            124.685          171.517      -33.155     2.952          0.000              0.226             -0.000            -16.854
+    XBD00012 BD000011 1 + XBD00012 DB000011 1  XBD00012 BD000011 1 + XBD00012 DB000011 1                      BE       DE            121.822            124.685          171.517      -33.155     2.952          0.000              0.226             -0.000            -16.854
+    XBF00011 BF000011 1 + XBF00011 FB000011 1  XBF00011 BF000011 1 + XBF00011 FB000011 1                      BE       FR           -775.578           -764.445          679.262      170.472     7.112          0.000           -124.053             -0.000             31.652
+    XBF00021 BF000021 1 + XBF00021 FB000021 1  XBF00021 BF000021 1 + XBF00021 FB000021 1                      BE       FR           -234.033           -242.463          169.386       44.108    -0.604          0.000             62.253             -0.000            -32.680
+    XBF00022 BF000021 1 + XBF00022 FB000022 1  XBF00022 BF000021 1 + XBF00022 FB000022 1                      BE       FR           -234.033           -242.463          169.386       44.108    -0.604          0.000             62.253             -0.000            -32.680
+    XDF00011 DF000011 1 + XDF00011 FD000011 1  XDF00011 DF000011 1 + XDF00011 FD000011 1                      DE       FR         -1,156.356         -1,150.629          906.966      216.311    -5.903          0.000             -0.453             -0.000             33.709
 
+.. testcleanup:: flowdecomposition.unmerged
+
+    pd.options.display.float_format = None
 
 Adder functions
 ---------------
