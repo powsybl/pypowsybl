@@ -133,9 +133,12 @@ jobs:
         with:
           python-version: ${{ matrix.python.version }}
 
+      - name: Upgrade Pip
+        run: |
+          python -m pip install --upgrade --user pip
+
       - name: Install Python dependencies
         run: |
-          python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
       - name: Build wheel
