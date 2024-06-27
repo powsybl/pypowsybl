@@ -9,7 +9,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-06-23-095daf5
+    container: quay.io/pypa/manylinux2014_x86_64:2024-05-27-2f0b25d
     strategy:
       matrix:
         python:
