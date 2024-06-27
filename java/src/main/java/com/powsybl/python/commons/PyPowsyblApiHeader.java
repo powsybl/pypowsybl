@@ -1062,6 +1062,24 @@ public final class PyPowsyblApiHeader {
 
         @CField("component_library")
         void setComponentLibrary(CCharPointer componentLibrary);
+
+        @CField("active_power_unit")
+        void setActivePowerUnit(CCharPointer activePowerUnit);
+
+        @CField("active_power_unit")
+        CCharPointer getActivePowerUnit();
+
+        @CField("reactive_power_unit")
+        void setReactivePowerUnit(CCharPointer reactivePowerUnit);
+
+        @CField("reactive_power_unit")
+        CCharPointer getReactivePowerUnit();
+
+        @CField("current_unit")
+        void setCurrentUnit(CCharPointer currentUnit);
+
+        @CField("current_unit")
+        CCharPointer getCurrentUnit();
     }
 
     @CStruct("nad_parameters")

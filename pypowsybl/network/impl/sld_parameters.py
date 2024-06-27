@@ -13,7 +13,8 @@ class SldParameters:
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
                  nodes_infos: bool = False, tooltip_enabled: bool = False, topological_coloring: bool = True,
-                 component_library: str = 'Convergence'):
+                 component_library: str = 'Convergence', active_power_unit: str = "", reactive_power_unit: str = "",
+                 current_unit: str = ""):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label
@@ -21,6 +22,9 @@ class SldParameters:
         self._tooltip_enabled = tooltip_enabled
         self._topological_coloring = topological_coloring
         self._component_library = component_library
+        self._active_power_unit = active_power_unit
+        self._reactive_power_unit = reactive_power_unit
+        self._current_unit = current_unit
 
     @property
     def use_name(self) -> bool:
@@ -57,6 +61,21 @@ class SldParameters:
         """name of the library used for component"""
         return self._component_library
 
+    @property
+    def active_power_unit(self) -> str:
+        """unit of active power"""
+        return self._active_power_unit
+
+    @property
+    def reactive_power_unit(self) -> str:
+        """unit of reactive power"""
+        return self._reactive_power_unit
+
+    @property
+    def current_unit(self) -> str:
+        """unit of current"""
+        return self._current_unit
+
     def _to_c_parameters(self) -> _pp.SldParameters:
         c_parameters = _pp.SldParameters()
         c_parameters.use_name = self._use_name
@@ -66,4 +85,7 @@ class SldParameters:
         c_parameters.nodes_infos = self._nodes_infos
         c_parameters.tooltip_enabled = self._tooltip_enabled
         c_parameters.component_library = self._component_library
+        c_parameters.active_power_unit = self._active_power_unit
+        c_parameters.reactive_power_unit = self._reactive_power_unit
+        c_parameters.current_unit = self._current_unit
         return c_parameters
