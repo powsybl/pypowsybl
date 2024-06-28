@@ -337,9 +337,6 @@ def test_add_branch_factor_matrix():
 def test_busbar_section_sensi():
     network = pp.network.create_four_substations_node_breaker_network()
     analysis = pp.sensitivity.create_ac_analysis()
-    print(network.get_busbar_sections())
-    print(network.get_lines())
-    print(network.get_generators())
     analysis.add_factor_matrix(['LINE_S2S3'], ['S2VL1_BBS'], [], ContingencyContextType.NONE,
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm1')
     result = analysis.run(network)

@@ -32,9 +32,6 @@ def create_country_zone(network: Network, country: str,
                         key_type: ZoneKeyType = ZoneKeyType.GENERATOR_TARGET_P) -> Zone:
     substations = network.get_substations()
     voltage_levels = network.get_voltage_levels()
-    print(key_type.__class__)
-    print(ZoneKeyType.GENERATOR_MAX_P.__class__)
-    print(key_type == ZoneKeyType.GENERATOR_TARGET_P)
     if key_type in (ZoneKeyType.GENERATOR_MAX_P, ZoneKeyType.GENERATOR_TARGET_P):
         # join generators, voltage levels and substations to get generators with countries
         generators = network.get_generators()

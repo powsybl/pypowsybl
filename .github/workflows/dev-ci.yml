@@ -93,7 +93,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -160,4 +160,4 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"

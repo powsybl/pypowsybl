@@ -68,14 +68,6 @@ html_logo = '_static/logos/logo_lfe_powsybl.svg'
 html_favicon = "_static/favicon.ico"
 
 html_theme_options = {
-    "icon_links": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/powsybl/pypowsybl",
-            "icon": "fab fa-github-square",
-        }
-    ],
-    "navbar_start": ["navbar-brand-pypowsybl"],
     # the following 3 lines enable edit button
     "source_repository": "https://github.com/powsybl/pypowsybl/",
     "source_branch": "main",
