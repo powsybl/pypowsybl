@@ -1182,7 +1182,7 @@ SldParameters::SldParameters(sld_parameters* src) {
     component_library = toString(src->component_library);
     active_power_unit =  toString(src->active_power_unit);
     reactive_power_unit =  toString(src->reactive_power_unit);
-    current_unit =  toString(src->active_power_unit);
+    //current_unit =  toString(src->active_power_unit);
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1211,7 +1211,7 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.component_library = copyStringToCharPtr(component_library);
     res.active_power_unit = copyStringToCharPtr(active_power_unit);
     res.reactive_power_unit = copyStringToCharPtr(reactive_power_unit);
-    res.current_unit = copyStringToCharPtr(current_unit);
+    //res.current_unit = copyStringToCharPtr(current_unit);
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {

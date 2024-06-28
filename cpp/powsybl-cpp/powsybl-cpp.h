@@ -394,7 +394,7 @@ public:
     std::string component_library;
     std::string active_power_unit;
     std::string reactive_power_unit;
-    std::string current_unit;
+    //std::string current_unit;
 };
 
 enum class NadLayoutType {

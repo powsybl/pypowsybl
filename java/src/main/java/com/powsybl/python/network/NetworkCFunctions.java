@@ -880,7 +880,7 @@ public final class NetworkCFunctions {
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
         cParameters.setActivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getActivePowerUnit()));
         cParameters.setReactivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getReactivePowerUnit()));
-        cParameters.setCurrentUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getCurrentUnit()));
+        //cParameters.setCurrentUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getCurrentUnit()));
     }
 
     public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
@@ -957,8 +957,8 @@ public final class NetworkCFunctions {
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
                 .setActivePowerUnit(CTypeUtil.toString(sldParametersPtr.getActivePowerUnit()))
-                .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()))
-                .setCurrentUnit(CTypeUtil.toString(sldParametersPtr.getCurrentUnit()));
+                .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()));
+                //.setCurrentUnit(CTypeUtil.toString(sldParametersPtr.getCurrentUnit()));
         return sldParameters;
     }
 

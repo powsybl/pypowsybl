@@ -268,7 +268,7 @@ class SldParameters:
     component_library: str
     active_power_unit: str
     reactive_power_unit: str
-    current_unit: str
+    #current_unit: str
     def __init__(self) -> None: ...
 
 class NadLayoutType:

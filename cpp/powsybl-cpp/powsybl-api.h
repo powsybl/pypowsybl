@@ -342,7 +342,7 @@ typedef struct sld_parameters_struct {
     char* component_library;
     char* active_power_unit;
     char* reactive_power_unit;
-    char* current_unit;
+    //char* current_unit;
 } sld_parameters;
 
 typedef struct nad_parameters_struct {
