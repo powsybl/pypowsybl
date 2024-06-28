@@ -1,20 +1,6 @@
 Running a flow decomposition
 ============================
 
-.. testsetup:: *
-
-    import pathlib
-    import pandas as pd
-
-    import pypowsybl as pp
-    
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
-    import os
-    cwd = os.getcwd()
-    PROJECT_DIR = pathlib.Path(cwd).parent
-    DATA_DIR = PROJECT_DIR.joinpath('data')
-
 You can use the module :mod:`pypowsybl.flowdecomposition` in order to run flow decomposition on networks.
 Please check out the examples below.
 
