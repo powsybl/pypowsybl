@@ -135,10 +135,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: GCC version
-        run: |
-          gcc --version
-
       - name: Build wheel
         env:
           MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
