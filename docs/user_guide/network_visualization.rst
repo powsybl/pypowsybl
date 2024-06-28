@@ -155,7 +155,7 @@ Let's see some examples down below:
 
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
-.. code-block:: python
+.. code-block:: python 
 
     >>> network = pp.network.create_ieee14()
     >>> result = pp.loadflow.run_ac(network)
