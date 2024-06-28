@@ -135,9 +135,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: "GCC version"
-          run: |
-            gcc --version
+      - name: GCC version
+        run: |
+          gcc --version
 
       - name: Build wheel
         env:
