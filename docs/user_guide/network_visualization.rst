@@ -133,7 +133,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/SldParam_topologicalcoloringfalse.svg
    :class: forced-white-background
 
-- with component_library = "FlatDesign" 
+- with component_library = "FlatDesign"
 
 .. code-block:: python
 
