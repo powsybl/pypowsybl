@@ -43,6 +43,10 @@ Single-line diagrams can be customized through SldParameters:
 - tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
 - topological_coloring: if true, set each electrical nodes with a different colour (default value true)
 - component_library: choose component library (default value 'Convergence')
+- active_power_unit: display unit of active power (default value "")
+- reactive_power_unit: display unit of reactive power (default value "")
+- current_unit: display unit of current (default value "")
+
 
 Let's see some examples down below:
 
@@ -140,6 +144,36 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_complib_flatdesign.svg
    :class: forced-white-background
 
+- with active_power_unit = "MW"
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(active_power_unit = "MW")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_activepowerunit.svg
+   :class: forced-white-background
+
+- with reactive_power_unit = "MVAR"
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(reactive_power_unit = "MVAR")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_reactivepowerunit.svg
+   :class: forced-white-background
+
+
+- with current_unit = "A"
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(current_unit = "A")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_currentunit.svg
+   :class: forced-white-background
 
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
