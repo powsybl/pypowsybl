@@ -312,6 +312,7 @@ void LoadFlowValidationParameters::load_to_c_struct(loadflow_validation_paramete
 
 std::shared_ptr<loadflow_validation_parameters> LoadFlowValidationParameters::to_c_struct() const {
     loadflow_validation_parameters* res = new loadflow_validation_parameters();
+    loadflow_parameters.load_to_c_struct(res->loadflow_parameters);
     load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<loadflow_validation_parameters>(res, [](loadflow_validation_parameters* ptr){
