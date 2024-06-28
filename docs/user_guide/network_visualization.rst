@@ -144,6 +144,7 @@ Let's see some examples down below:
    :class: forced-white-background
 
 - with display current feeder info
+
 .. code-block:: python
 
     >>> param = pn.SldParameters(display_current_feeder_info = True)
