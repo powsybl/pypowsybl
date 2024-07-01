@@ -318,6 +318,7 @@ public:
     bool dc_use_transformer_ratio;
     std::vector<std::string> countries_to_balance;
     ConnectedComponentMode connected_component_mode;
+    double dc_power_factor;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
