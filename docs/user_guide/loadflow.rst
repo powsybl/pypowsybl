@@ -47,7 +47,7 @@ Let's have a look at the default ones:
 .. doctest::
 
     >>> lf.Parameters()
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, provider_parameters={})
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, dc_power_factor=1.0, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
