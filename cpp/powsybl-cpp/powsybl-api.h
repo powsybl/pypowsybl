@@ -62,6 +62,7 @@ typedef struct loadflow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    double dc_power_factor;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;
