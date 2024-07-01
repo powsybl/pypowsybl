@@ -923,7 +923,6 @@ For the next example we will keep voltage level S1VL1 with a depth of 1.
     S2VL1                 S2      400.0               440.0              390.0
     S3VL1                 S3      400.0               440.0              390.0
     S4VL1                 S4      400.0               440.0              390.0
-
     >>> net.reduce(vl_depths=[['S1VL1', 1]])
     >>> net.get_voltage_levels()
           name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
@@ -931,4 +930,7 @@ For the next example we will keep voltage level S1VL1 with a depth of 1.
     S1VL1                 S1      225.0               240.0              220.0
     S1VL2                 S1      400.0               440.0              390.0
 
-if we want to keep only the voltage levels with no depth parameter "ids" can be used
+S1VL1 is connected to S1VL2 by the transformer TWT, so it is kept after the network reduction.
+It is the only voltage level connected to S1VL1 by one branch.
+
+the parameter "ids" can be used to specify the exact voltage levels that will be kept
