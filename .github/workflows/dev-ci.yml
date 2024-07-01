@@ -22,12 +22,9 @@ jobs:
           }
 
     steps:
-      - name: Install Linux packages
-        run: yum install -y wget
-
       - name: Install Maven
         run: |
-          wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
