@@ -877,3 +877,58 @@ parent network and become again a standalone network.
     :options: +NORMALIZE_WHITESPACE
 
     >>> nl_sub.detach()
+
+Reducing a network
+------------------
+
+Pypowsybl provides methods to reduce a network to a smaller one. It can be done with different parameters.
+It can be decided according to the voltage with the parameters v_min and v_max. It can also be by indicating the
+Voltage Levels that will be kept and also indicating the depth around these voltage levels.
+
+For this example we will keep only voltage levels with voltage superior or equal to 400 kV
+
+. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_four_substations_node_breaker_network()
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL1                 S1      225.0               240.0              220.0
+    S1VL2                 S1      400.0               440.0              390.0
+    S2VL1                 S2      400.0               440.0              390.0
+    S3VL1                 S3      400.0               440.0              390.0
+    S4VL1                 S4      400.0               440.0              390.0
+
+    >>> net.reduce(v_min=400)
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL2                 S1      400.0               440.0              390.0
+    S2VL1                 S2      400.0               440.0              390.0
+    S3VL1                 S3      400.0               440.0              390.0
+    S4VL1                 S4      400.0               440.0              390.0
+
+For the next example we will keep voltage level S1VL1 with a depth of 1.
+
+. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_four_substations_node_breaker_network()
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL1                 S1      225.0               240.0              220.0
+    S1VL2                 S1      400.0               440.0              390.0
+    S2VL1                 S2      400.0               440.0              390.0
+    S3VL1                 S3      400.0               440.0              390.0
+    S4VL1                 S4      400.0               440.0              390.0
+
+    >>> net.reduce(vl_depths=[['S1VL1', 1]])
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL1                 S1      225.0               240.0              220.0
+    S1VL2                 S1      400.0               440.0              390.0
+
+if we want to keep only the voltage levels with no depth parameter "ids" can be used
