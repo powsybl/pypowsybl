@@ -165,6 +165,13 @@ It is also possible to display a multi-substation single line diagram (currently
 .. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
    :class: forced-white-background
 
+Or in a Jupyter Notebook:
+
+.. code-block:: python
+
+    >>> network.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'],['S3','S4']])
+
+
 Network area diagram
 --------------------
 

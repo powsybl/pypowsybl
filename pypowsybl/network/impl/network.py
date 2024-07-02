@@ -252,6 +252,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network according to the following parameters
+
+        :param v_min: minimum voltage of the voltage levels kept after reducing
+        :param v_max: voltage maximum of the voltage levels kept after reducing
+        :param ids: ids of the voltage levels that will be kept
+        :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
+        :param with_dangling_lines: keeping the dangling lines
+        """
         if ids is None:
             ids = []
         vls = []
@@ -315,6 +324,23 @@ class Network:  # pylint: disable=too-many-public-methods
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
+
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: SldParameters = None) -> Svg:
+        """
+        Create a single line diagram from multiple substations
+
+        Args:
+            matrix_ids: a two-dimensional list of substation id
+            parameters:single-line diagram parameters to adjust the rendering of the diagram
+
+        Returns:
+            the single line diagram
+        """
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+
+        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,

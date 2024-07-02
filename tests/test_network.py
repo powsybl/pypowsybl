@@ -830,6 +830,23 @@ def test_sld_svg():
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
 
+    sld_multi_substation = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']])
+    assert re.search('.*<svg.*', sld_multi_substation.svg)
+    assert len(sld_multi_substation.metadata) > 0
+
+    sld_multi_substation1 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']],
+                                                                              SldParameters(use_name=True, center_name=True,
+                                                                                            diagonal_label=True, topological_coloring=False,
+                                                                                            tooltip_enabled=True))
+    assert re.search('.*<svg.*', sld_multi_substation1.svg)
+    assert len(sld_multi_substation1.metadata) > 0
+
+    sld_multi_substation2 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']],
+                                                                              SldParameters(use_name=True, center_name=True,
+                                                                                            diagonal_label=True, nodes_infos=True, topological_coloring=True,
+                                                                                            tooltip_enabled=True))
+    assert re.search('.*<svg.*', sld_multi_substation2.svg)
+    assert len(sld_multi_substation2.metadata) > 0
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()

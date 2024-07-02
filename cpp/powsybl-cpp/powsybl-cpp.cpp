@@ -691,6 +691,22 @@ std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& ne
     return svgAndMetadata.get();
 }
 
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters){
+    auto c_parameters = parameters.to_c_struct();
+    int nbRows = matrixIds.size();
+    std::vector<std::string> substationIds;
+    for (int row = 0; row < nbRows; ++row) {
+        const std::vector<std::string>& colIds = matrixIds[row];
+        for (int col = 0; col < matrixIds[row].size(); ++col) {
+            substationIds.push_back(colIds[col]);
+        }
+    }
+    ToCharPtrPtr substationIdPtr(substationIds);
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getMatrixMultiSubstationSvgAndMetadata, network, substationIdPtr.get(), substationIds.size(), nbRows, c_parameters.get());
+    ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
+    return svgAndMetadata.get();
+}
+
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
     auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
