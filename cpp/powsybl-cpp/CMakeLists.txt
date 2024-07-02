@@ -91,7 +91,6 @@ endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR} ${POWSYBL_INCLUDE_DIR})
 
-message(<<${POWSYBL_JAVA_LIB_INSTALL_DIR})
 link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
 link_directories(${POWSYBL_JAVA_LIB_INSTALL_DIR})
 
@@ -107,3 +106,4 @@ if (NOT BUILD_ONLY_POWSYBL_CPP)
 endif()
 
 target_link_libraries(powsybl-cpp PUBLIC ${PYPOWSYBL_JAVA_LIB})
+install(TARGETS powsybl-cpp)

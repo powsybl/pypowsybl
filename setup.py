@@ -69,15 +69,18 @@ class PyPowsyblBuild(build_ext):
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
         binaries = dict()
+        binaries['bin'] = []
+        binaries['lib'] = []
         if platform.system() == "Windows":
-            binaries['bin'] = glob.glob(extdir + '*.dll')
-            binaries['lib'] = glob.glob(extdir + '*.lib')
+            binaries['bin'] = [os.path.join(extdir, 'math.dll'),
+                               os.path.join(extdir, 'pypowsybl-java.dll')]
+            binaries['lib'] = [os.path.join(self.build_temp, 'java/pypowsybl-java.lib')]
         elif platform.system() == "Linux":
-            binaries['bin'] = []
-            binaries['lib'] = glob.glob(extdir + '*.so')
+            binaries['lib'] = [os.path.join(extdir, 'libmath.so'),
+                               os.path.join(extdir, 'libpypowsybl-java.so')]
         elif platform.system() == "Darwin" :
-            binaries['bin'] = []
-            binaries['lib'] = glob.glob(extdir + '*.dylib')
+            binaries['lib'] = [os.path.join(extdir, 'libmath.dylib'),
+                               os.path.join(extdir, 'libpypowsybl-java.dylib')]
 
         includes = glob.glob(os.path.join(cpp_source_dir, 'powsybl-cpp/') + '*.h')
         includes = includes + glob.glob(os.path.join(self.build_temp, 'java/') + '*.h')
