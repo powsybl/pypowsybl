@@ -326,6 +326,23 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: SldParameters = None) -> Svg:
+        """
+        Create a single line diagram from multiple substations
+
+        Args:
+            matrix_ids: a two-dimensional list of substation id
+            parameters:single-line diagram parameters to adjust the rendering of the diagram
+
+        Returns:
+            the single line diagram
+        """
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+
+        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
+
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
                                        depth: int = 0, high_nominal_voltage_bound: float = -1,
                                        low_nominal_voltage_bound: float = -1,
