@@ -878,6 +878,7 @@ public final class NetworkCFunctions {
         cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
+        cParameters.setDisplayCurrentFeederInfo(parameters.getSvgParameters().isDisplayCurrentFeederInfo());
     }
 
     public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
@@ -952,7 +953,8 @@ public final class NetworkCFunctions {
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
-                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled());
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
+                .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo());
         return sldParameters;
     }
 
