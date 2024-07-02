@@ -252,6 +252,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network according to the following parameters
+
+        :param v_min: minimum voltage of the voltage levels kept after reducing
+        :param v_max: voltage maximum of the voltage levels kept after reducing
+        :param ids: ids of the voltage levels that will be kept
+        :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
+        :param with_dangling_lines: keeping the dangling lines
+        """
         if ids is None:
             ids = []
         vls = []
