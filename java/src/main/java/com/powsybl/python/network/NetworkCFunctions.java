@@ -1036,6 +1036,19 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getMatrixMultiSubstationSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
+                                                                                           int substationIdCount, int substationIdRowCount,
+                                                                                           SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
+            return createCharPtrArray(svgAndMeta);
+        });
+    }
+
     @CEntryPoint(name = "getSingleLineDiagramComponentLibraryNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSingleLineDiagramComponentLibraryNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SingleLineDiagramUtil.getComponentLibraryNames()));
