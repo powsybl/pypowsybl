@@ -887,7 +887,7 @@ Voltage Levels that will be kept and also indicating the depth around these volt
 
 For this example we will keep only voltage levels with voltage superior or equal to 400 kV
 
-. doctest::
+.. doctest::
     :options: +NORMALIZE_WHITESPACE
 
     >>> net = pp.network.create_four_substations_node_breaker_network()
@@ -911,7 +911,7 @@ For this example we will keep only voltage levels with voltage superior or equal
 
 For the next example we will keep voltage level S1VL1 with a depth of 1.
 
-. doctest::
+.. doctest::
     :options: +NORMALIZE_WHITESPACE
 
     >>> net = pp.network.create_four_substations_node_breaker_network()
