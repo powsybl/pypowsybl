@@ -226,7 +226,7 @@ void copyCharPtrPtrToVector(char** src, int count, std::vector<std::string>& des
     std::copy(src, src + count, std::back_inserter(dest));
 }
 
-void copyVoltageRangePtrPtrToVector(voltage_range** src, int count, std::vector<voltage_range>& dest) {
+void copyVoltageRangePtrPtrToVector(voltage_range** src, int count, std::vector<voltage_range*>& dest) {
     dest.clear();
     std::copy(src, src + count, std::back_inserter(dest));
 }
