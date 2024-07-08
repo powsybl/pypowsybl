@@ -7,8 +7,7 @@
 from typing import Dict, List
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode
-from .voltage_range import VoltageRange
+from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode, VoltageRange
 
 ShortCircuitStudyType.__module__ = __name__
 ShortCircuitStudyType.__name__ = 'ShortCircuitStudyType'
