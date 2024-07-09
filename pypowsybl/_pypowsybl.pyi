@@ -269,7 +269,7 @@ class SldParameters:
     display_current_feeder_info: bool
     active_power_unit: str
     reactive_power_unit: str
-    #current_unit: str
+    current_unit: str
     def __init__(self) -> None: ...
 
 class NadLayoutType:

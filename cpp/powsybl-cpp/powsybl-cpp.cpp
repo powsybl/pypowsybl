@@ -1202,7 +1202,7 @@ SldParameters::SldParameters(sld_parameters* src) {
     display_current_feeder_info = (bool) src->display_current_feeder_info;
     active_power_unit =  toString(src->active_power_unit);
     reactive_power_unit =  toString(src->reactive_power_unit);
-    //current_unit =  toString(src->active_power_unit);
+    current_unit =  toString(src->current_unit);
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1232,7 +1232,7 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.display_current_feeder_info = (unsigned char) display_current_feeder_info;
     res.active_power_unit = copyStringToCharPtr(active_power_unit);
     res.reactive_power_unit = copyStringToCharPtr(reactive_power_unit);
-    //res.current_unit = copyStringToCharPtr(current_unit);
+    res.current_unit = copyStringToCharPtr(current_unit);
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {

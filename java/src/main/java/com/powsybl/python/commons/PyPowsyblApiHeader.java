@@ -1087,11 +1087,11 @@ public final class PyPowsyblApiHeader {
         @CField("reactive_power_unit")
         void setReactivePowerUnit(CCharPointer reactivePowerUnit);
 
-//        @CField("current_unit")
-//        CCharPointer getCurrentUnit();
-//
-//        @CField("current_unit")
-//        void setCurrentUnit(CCharPointer currentUnit);
+        @CField("current_unit")
+        CCharPointer getCurrentUnit();
+
+        @CField("current_unit")
+        void setCurrentUnit(CCharPointer currentUnit);
 
     }
 

@@ -549,10 +549,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
         .def_readwrite("display_current_feeder_info", &pypowsybl::SldParameters::display_current_feeder_info)
-        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
         .def_readwrite("active_power_unit", &pypowsybl::SldParameters::active_power_unit)
-        .def_readwrite("reactive_power_unit", &pypowsybl::SldParameters::reactive_power_unit);
-        //.def_readwrite("current_unit", &pypowsybl::SldParameters::current_unit);
+        .def_readwrite("reactive_power_unit", &pypowsybl::SldParameters::reactive_power_unit)
+        .def_readwrite("current_unit", &pypowsybl::SldParameters::current_unit);
 
     py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
             .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
