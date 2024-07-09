@@ -498,6 +498,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
             .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
             .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
@@ -546,7 +547,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("nodes_infos", &pypowsybl::SldParameters::nodes_infos)
         .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
-        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
+        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
+        .def_readwrite("display_current_feeder_info", &pypowsybl::SldParameters::display_current_feeder_info);
 
     py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
             .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
@@ -584,6 +586,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
+
+    m.def("get_matrix_multi_substation_single_line_diagram_svg_and_metadata", &pypowsybl::getMatrixMultiSubstationSvgAndMetadata, "Get matrix multi-substation single line diagram SVG and its metadata as a list of strings",
+          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"));
 
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 

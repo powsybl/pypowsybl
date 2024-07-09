@@ -34,7 +34,8 @@ Single-line diagrams can be customized through SldParameters:
 
     >>> network = pp.network.create_ieee14()
     >>> result = pp.loadflow.run_ac(network)
-    >>> network.get_single_line_diagram('VL4',parameters = pp.network.SldParameters(use_name = False, center_name = False, diagonal_label = False, nodes_infos = False, tooltip_enabled = False, topological_coloring = True, component_library = 'Convergence'))
+    >>> network.get_single_line_diagram('VL4',parameters = pp.network.SldParameters(use_name = False, center_name = False, diagonal_label = False, nodes_infos = False, tooltip_enabled = False, topological_coloring = True, component_library = 'Convergence', display_current_feeder_info = False))
+
 
 - use_name: if true, display components names instead of their id (default value false)
 - center_name: if true, center the names of feeders (default value false)
@@ -43,6 +44,8 @@ Single-line diagrams can be customized through SldParameters:
 - tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
 - topological_coloring: if true, set each electrical nodes with a different colour (default value true)
 - component_library: choose component library (default value 'Convergence')
+- display_current_feeder_info: if true, display current feeder value (default value False)
+
 
 Let's see some examples down below:
 
@@ -140,6 +143,16 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_complib_flatdesign.svg
    :class: forced-white-background
 
+- with display current feeder info
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(display_current_feeder_info = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_displaycurrentfeederinfo.svg
+   :class: forced-white-background
+
 
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
@@ -151,6 +164,13 @@ It is also possible to display a multi-substation single line diagram (currently
 
 .. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
    :class: forced-white-background
+
+Or in a Jupyter Notebook:
+
+.. code-block:: python
+
+    >>> network.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'],['S3','S4']])
+
 
 Network area diagram
 --------------------
