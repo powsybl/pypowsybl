@@ -787,12 +787,12 @@ def test_sld_parameters():
     assert parameters.component_library == 'Convergence'
     assert parameters.active_power_unit == ""
     assert parameters.reactive_power_unit == ""
-    #assert parameters.current_unit == ""
+    assert parameters.current_unit == ""
 
     parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
                                nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
                                component_library='FlatDesign', display_current_feeder_info=True,
-                               active_power_unit='a', reactive_power_unit='b') #,current_unit = 'c'
+                               active_power_unit='a', reactive_power_unit='b', current_unit='c')
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
@@ -803,7 +803,7 @@ def test_sld_parameters():
     assert parameters.component_library == 'FlatDesign'
     assert parameters.active_power_unit == 'a'
     assert parameters.reactive_power_unit == 'b'
-    #assert parameters.current_unit == 'c'
+    assert parameters.current_unit == 'c'
 
 
 def test_layout_parameters():
