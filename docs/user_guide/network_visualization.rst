@@ -180,7 +180,7 @@ Let's see some examples down below:
 
 .. code-block:: python
 
-    >>> param = pn.SldParameters(current_unit = "A")
+    >>> param = pn.SldParameters(display_current_feeder_info = True, current_unit = "A")
     >>> network.get_single_line_diagram('VL4', parameters = param)
 
 .. image:: ../_static/images/ieee14_SldParam_currentunit.svg
