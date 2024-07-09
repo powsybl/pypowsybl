@@ -957,7 +957,7 @@ public final class NetworkCFunctions {
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
-                .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo());
+                .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
                 .setActivePowerUnit(CTypeUtil.toString(sldParametersPtr.getActivePowerUnit()))
                 .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()));
