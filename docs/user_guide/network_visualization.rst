@@ -46,6 +46,7 @@ Single-line diagrams can be customized through SldParameters:
 - active_power_unit: display unit of active power (default value "")
 - reactive_power_unit: display unit of reactive power (default value "")
 - current_unit: display unit of current (default value "")
+- display_current_feeder_info: if true, display current feeder value (default value False)
 
 
 Let's see some examples down below:
@@ -144,6 +145,16 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_complib_flatdesign.svg
    :class: forced-white-background
 
+- with display current feeder info
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(display_current_feeder_info = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_displaycurrentfeederinfo.svg
+   :class: forced-white-background
+
 - with active_power_unit = "MW"
 
 .. code-block:: python
@@ -185,6 +196,13 @@ It is also possible to display a multi-substation single line diagram (currently
 
 .. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
    :class: forced-white-background
+
+Or in a Jupyter Notebook:
+
+.. code-block:: python
+
+    >>> network.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'],['S3','S4']])
+
 
 Network area diagram
 --------------------

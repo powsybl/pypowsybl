@@ -240,6 +240,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
     connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
+    dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
@@ -260,6 +261,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.connected_component_mode = connected_component_mode;
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
+    res.dc_power_factor = dc_power_factor;
     res.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res.provider_parameters_keys_count = provider_parameters_keys.size();
     res.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
@@ -310,6 +312,7 @@ void LoadFlowValidationParameters::load_to_c_struct(loadflow_validation_paramete
 
 std::shared_ptr<loadflow_validation_parameters> LoadFlowValidationParameters::to_c_struct() const {
     loadflow_validation_parameters* res = new loadflow_validation_parameters();
+    loadflow_parameters.load_to_c_struct(res->loadflow_parameters);
     load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<loadflow_validation_parameters>(res, [](loadflow_validation_parameters* ptr){
@@ -684,6 +687,22 @@ std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string
 std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters) {
     auto c_parameters = parameters.to_c_struct();
     auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get());
+    ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
+    return svgAndMetadata.get();
+}
+
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters){
+    auto c_parameters = parameters.to_c_struct();
+    int nbRows = matrixIds.size();
+    std::vector<std::string> substationIds;
+    for (int row = 0; row < nbRows; ++row) {
+        const std::vector<std::string>& colIds = matrixIds[row];
+        for (int col = 0; col < matrixIds[row].size(); ++col) {
+            substationIds.push_back(colIds[col]);
+        }
+    }
+    ToCharPtrPtr substationIdPtr(substationIds);
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getMatrixMultiSubstationSvgAndMetadata, network, substationIdPtr.get(), substationIds.size(), nbRows, c_parameters.get());
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
@@ -1180,6 +1199,7 @@ SldParameters::SldParameters(sld_parameters* src) {
     tooltip_enabled = (bool) src->tooltip_enabled;
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
+    display_current_feeder_info = (bool) src->display_current_feeder_info;
     active_power_unit =  toString(src->active_power_unit);
     reactive_power_unit =  toString(src->reactive_power_unit);
     //current_unit =  toString(src->active_power_unit);
@@ -1209,6 +1229,7 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.tooltip_enabled = (unsigned char) tooltip_enabled;
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
+    res.display_current_feeder_info = (unsigned char) display_current_feeder_info;
     res.active_power_unit = copyStringToCharPtr(active_power_unit);
     res.reactive_power_unit = copyStringToCharPtr(reactive_power_unit);
     //res.current_unit = copyStringToCharPtr(current_unit);

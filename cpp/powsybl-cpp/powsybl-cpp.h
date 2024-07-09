@@ -318,6 +318,7 @@ public:
     bool dc_use_transformer_ratio;
     std::vector<std::string> countries_to_balance;
     ConnectedComponentMode connected_component_mode;
+    double dc_power_factor;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -392,6 +393,7 @@ public:
     bool tooltip_enabled;
     bool topological_coloring;
     std::string component_library;
+    bool display_current_feeder_info;
     std::string active_power_unit;
     std::string reactive_power_unit;
     //std::string current_unit;
@@ -553,6 +555,8 @@ void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, c
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
 std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters);
+
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters);
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 

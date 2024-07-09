@@ -13,7 +13,8 @@ class SldParameters:
 
     def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
                  nodes_infos: bool = False, tooltip_enabled: bool = False, topological_coloring: bool = True,
-                 component_library: str = 'Convergence', active_power_unit: str = "", reactive_power_unit: str = ""):
+                 component_library: str = 'Convergence', display_current_feeder_info: bool = False,
+                 active_power_unit: str = "", reactive_power_unit: str = ""):
                  #current_unit: str = ""):
         self._use_name = use_name
         self._center_name = center_name
@@ -22,6 +23,7 @@ class SldParameters:
         self._tooltip_enabled = tooltip_enabled
         self._topological_coloring = topological_coloring
         self._component_library = component_library
+        self._display_current_feeder_info = display_current_feeder_info
         self._active_power_unit = active_power_unit
         self._reactive_power_unit = reactive_power_unit
         #self._current_unit = current_unit
@@ -62,6 +64,11 @@ class SldParameters:
         return self._component_library
 
     @property
+    def display_current_feeder_info(self) -> bool:
+        """when True display current feeder info"""
+        return self._display_current_feeder_info
+
+    @property
     def active_power_unit(self) -> str:
         """unit of active power"""
         return self._active_power_unit
@@ -85,6 +92,7 @@ class SldParameters:
         c_parameters.nodes_infos = self._nodes_infos
         c_parameters.tooltip_enabled = self._tooltip_enabled
         c_parameters.component_library = self._component_library
+        c_parameters.display_current_feeder_info = self._display_current_feeder_info
         c_parameters.active_power_unit = self._active_power_unit
         c_parameters.reactive_power_unit = self._reactive_power_unit
         # c_parameters.current_unit = self._current_unit
