@@ -127,6 +127,9 @@ jobs:
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+
     strategy:
       matrix:
         config:
@@ -162,7 +165,7 @@ jobs:
 
     steps:
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1.1.5
+        uses: graalvm/setup-graalvm@v1
         with:
           java-version: '17'
           distribution: 'graalvm'
