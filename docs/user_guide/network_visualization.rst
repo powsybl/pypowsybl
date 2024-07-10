@@ -62,7 +62,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_default.svg
    :class: forced-white-background
 
-- with use_name = true
+- with use_name = True
 
 .. code-block:: python
 
@@ -72,7 +72,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_usename.svg
    :class: forced-white-background
 
-- with center_name = true
+- with center_name = True
 
 .. code-block:: python
 
@@ -82,7 +82,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_centername.svg
    :class: forced-white-background
 
-- with diagonal_label = true
+- with diagonal_label = True
 
 .. code-block:: python
 
@@ -92,7 +92,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_diagonallabel.svg
    :class: forced-white-background
 
-- with nodes_infos = true
+- with nodes_infos = True
 
 .. code-block:: python
 
@@ -102,7 +102,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_nodesinfos.svg
    :class: forced-white-background
 
-- with tooltip enabled
+- with tooltip_enabled = True
 
 .. code-block:: python
 
@@ -112,7 +112,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_tooltipenabledtrue.png
    :class: forced-white-background
 
-- with topological coloring = true
+- with topological_coloring = True
 
 .. code-block:: python
 
@@ -124,7 +124,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/SldParam_topologicalcoloringtrue.svg
    :class: forced-white-background
 
-- with topological coloring = false
+- with topological_coloring = False
 
 .. code-block:: python
 
@@ -145,7 +145,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_complib_flatdesign.svg
    :class: forced-white-background
 
-- with display current feeder info
+- with display_current_feeder_info = True
 
 .. code-block:: python
 
