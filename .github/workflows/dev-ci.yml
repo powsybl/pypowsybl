@@ -108,8 +108,8 @@ jobs:
           }
         python:
           - {
-            name: cp38,
-            version: '3.8',
+            name: cp310,
+            version: '3.10',
           }
 
     steps:
