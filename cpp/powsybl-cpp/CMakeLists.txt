@@ -95,4 +95,9 @@ if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     add_custom_command(TARGET powsybl-cpp POST_BUILD ${POWSYBL_CPP_INSTALL_EXTRA_COMMAND} COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:powsybl-cpp> ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
+# Workaround for fixing the CI builds on Windows
+# See https://github.com/actions/runner-images/issues/10004 for more details.
+target_compile_definitions( powsybl-cpp
+   PRIVATE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
+
 target_link_libraries(powsybl-cpp PUBLIC ${PYPOWSYBL_JAVA_LIB})

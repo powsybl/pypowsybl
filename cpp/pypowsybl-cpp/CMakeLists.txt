@@ -16,4 +16,10 @@ pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
 add_dependencies(_pypowsybl native-image math-native)
 add_dependencies(math-native native-image) # because mvn command also copy math native jar
+
+# Workaround for fixing the CI builds on Windows
+# See https://github.com/actions/runner-images/issues/10004 for more details.
+target_compile_definitions( powsybl-cpp
+   PRIVATE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
+
 target_link_libraries(_pypowsybl PRIVATE powsybl-cpp)
