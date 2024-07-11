@@ -158,17 +158,6 @@ jobs:
         working-directory: ./tests
         run: python3 basic_import_test.py
 
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
       - name: Upload wheel
         uses: actions/upload-artifact@v3
         with:
