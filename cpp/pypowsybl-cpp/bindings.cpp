@@ -7,6 +7,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+#include <iostream>
 
 //Necessary for PyPowsyblError, declared in a seperated shared library, to be correctly registered in pybind11
 //Otherwise PyPowsyblError are not catched properly on python side
@@ -245,16 +246,22 @@ void voltageInitializerBinding(py::module_& m) {
 }
 
 PYBIND11_MODULE(_pypowsybl, m) {
+    std::cout << "Initialize pypowsybl cpp module" <<std::endl;
     auto preJavaCall = [](pypowsybl::GraalVmGuard* guard, exception_handler* exc){
+      std::cout << "preJavaCall custom" <<std::endl;
       setLogLevelFromPythonLogger(guard, exc);
     };
     auto postJavaCall = [](){
+      std::cout << "postJavaCall custom" <<std::endl;
       py::gil_scoped_acquire acquire;
       if (PyErr_Occurred() != nullptr) {
         throw py::error_already_set();
       }
     };
+
+    std::cout << "pypowsybl init" <<std::endl;
     pypowsybl::init(preJavaCall, postJavaCall);
+    std::cout << "pypowsybl init done" <<std::endl;
     m.doc() = "PowSyBl Python API";
 
     py::register_exception<pypowsybl::PyPowsyblError>(m, "PyPowsyblError");

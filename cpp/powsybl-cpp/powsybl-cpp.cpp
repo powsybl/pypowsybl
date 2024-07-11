@@ -58,15 +58,19 @@ void PowsyblCaller::setPostProcessingJavaCall(std::function<void()> func) {
 
 void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
           std::function <void()> postJavaCall) {
+    std::cout << "powsybl cpp init" <<std::endl;
     graal_isolatethread_t* thread = nullptr;
 
+    std::cout << "setup callback" <<std::endl;
     PowsyblCaller::get()->setPreprocessingJavaCall(preJavaCall);
     PowsyblCaller::get()->setPostProcessingJavaCall(postJavaCall);
 
+    std::cout << "create graal thread" <<std::endl;
     int c = graal_create_isolate(nullptr, &isolate, &thread);
     if (c != 0) {
         throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
     }
+    std::cout << "powsybl cpp done" <<std::endl;
 }
 
 //Destruction of java object when the shared_ptr has no more references
