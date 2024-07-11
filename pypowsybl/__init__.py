@@ -9,8 +9,11 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
+print("import1")
 from pypowsybl import _pypowsybl, voltage_initializer
+print("import2")
 from pypowsybl._pypowsybl import PyPowsyblError
+print("import3")
 from pypowsybl import (
     network,
     loadflow,
@@ -20,6 +23,7 @@ from pypowsybl import (
     flowdecomposition,
     shortcircuit
 )
+print("import4")
 from pypowsybl.network import per_unit_view
 
 __version__ = '1.6.0'

@@ -1035,7 +1035,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("result"), py::arg("with_fortescue_result"));
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
-
+    std::cout << "Pypowsybl module initialized" <<std::endl;
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {

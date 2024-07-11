@@ -413,6 +413,7 @@ std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c
 }
 
 void setJavaLibraryPath(const std::string& javaLibraryPath) {
+    std::cout << "javaLibraryPath "<< javaLibraryPath << std::endl;
     PowsyblCaller::get()->callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
 }
 
@@ -1469,7 +1470,9 @@ SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisRes
 }
 
 JavaHandle createVoltageInitializerParams() {
+    std::cout << "createVoltageInitializerParams" << std::endl;
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createVoltageInitializerParams);
+    std::cout << "createVoltageInitializerParams done" << std::endl;
 }
 
 void voltageInitializerAddSpecificLowVoltageLimits(const JavaHandle& paramsHandle, const std::string& voltageLevelId, bool isRelative, double limit) {
