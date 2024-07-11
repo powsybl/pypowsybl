@@ -4,6 +4,7 @@ pandas==2.0.3; python_version <= "3.8"
 prettytable==2.0.0
 networkx
 matplotlib
+fonttools==4.53.0
 certifi==2024.6.2
 
 # documentation dependencies
