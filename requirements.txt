@@ -3,7 +3,9 @@ pandas==2.2.2; python_version >= "3.9"
 pandas==2.0.3; python_version <= "3.8"
 prettytable==2.0.0
 networkx
-matplotlib
+matplotlib==3.9.0
+fonttools==4.53.0
+certifi==2024.6.2
 
 # documentation dependencies
 sphinx==7.1.2
