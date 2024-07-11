@@ -45,7 +45,7 @@ class PyPowsyblBuild(build_ext):
                       '-DPYTHON_EXECUTABLE=' + sys.executable]
 
         cfg = 'Debug' if self.debug else 'Release'
-        build_args = ['--config', cfg]
+        build_args = ['--config', 'Debug']
 
         if platform.system() == "Windows":
             cmake_args += ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY_{}={}'.format(cfg.upper(), extdir)]
