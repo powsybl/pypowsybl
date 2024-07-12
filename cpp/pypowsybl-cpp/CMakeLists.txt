@@ -7,6 +7,9 @@
 cmake_minimum_required(VERSION 3.14)
 project(pypowsybl-cpp)
 
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+
 set(POWSYBL_CPP_SOURCE_DIR "../powsybl-cpp")
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
 include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
