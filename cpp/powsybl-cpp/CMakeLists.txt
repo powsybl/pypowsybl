@@ -7,11 +7,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(powsybl-cpp)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-endif()
-
 include(ExternalProject)
 
 set(POWSYBL_CPP_LIB ${CMAKE_SHARED_LIBRARY_PREFIX}powsybl-cpp${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -102,7 +97,7 @@ endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
 # Workaround for fixing the CI builds on Windows
 # See https://github.com/actions/runner-images/issues/10004 for more details.
-target_compile_definitions( powsybl-cpp
+target_compile_definitions(powsybl-cpp
    PRIVATE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 
 target_link_libraries(powsybl-cpp PUBLIC ${PYPOWSYBL_JAVA_LIB})

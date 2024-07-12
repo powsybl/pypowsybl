@@ -7,11 +7,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(pypowsybl-cpp)
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
-endif()
-
 
 set(POWSYBL_CPP_SOURCE_DIR "../powsybl-cpp")
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
@@ -25,7 +20,7 @@ add_dependencies(math-native native-image) # because mvn command also copy math 
 
 # Workaround for fixing the CI builds on Windows
 # See https://github.com/actions/runner-images/issues/10004 for more details.
-target_compile_definitions( powsybl-cpp
+target_compile_definitions(_pypowsybl
    PRIVATE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 
 target_link_libraries(_pypowsybl PRIVATE powsybl-cpp)
