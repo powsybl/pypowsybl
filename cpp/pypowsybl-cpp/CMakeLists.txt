@@ -7,6 +7,12 @@
 cmake_minimum_required(VERSION 3.14)
 project(pypowsybl-cpp)
 
+# Enable static linkage to prevent any future runtime binary compatibility issue
+if(MSVC)
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
+
 set(POWSYBL_CPP_SOURCE_DIR "../powsybl-cpp")
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
 include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
@@ -16,4 +22,12 @@ pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
 add_dependencies(_pypowsybl native-image math-native)
 add_dependencies(math-native native-image) # because mvn command also copy math native jar
+
+# Fix related to issue describred here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231
+# Should fix incompatibility between MSVC runtime 14.40.XXX and previous version
+if(MSVC)
+   target_compile_definitions(powsybl-cpp
+     PRIVATE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
+endif()
+
 target_link_libraries(_pypowsybl PRIVATE powsybl-cpp)
