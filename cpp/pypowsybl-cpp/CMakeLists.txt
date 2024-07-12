@@ -26,7 +26,7 @@ add_dependencies(math-native native-image) # because mvn command also copy math 
 # Fix related to issue describred here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231
 # Should fix incompatibility between MSVC runtime 14.40.XXX and previous version
 if(MSVC)
-   target_compile_definitions(powsybl-cpp
+   target_compile_definitions(_pypowsybl
      PRIVATE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
 endif()
 
