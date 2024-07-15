@@ -10,7 +10,7 @@ from .voltage_initializer_parameters import VoltageInitializerParameters
 from .voltage_initializer_results import VoltageInitializerResults
 
 
-def run(network: Network, params: VoltageInitializerParameters = VoltageInitializerParameters(), debug: bool = False) \
+def run(network: Network, params: VoltageInitializerParameters, debug: bool = False) \
         -> VoltageInitializerResults:
     """
     Run voltage initializer on the network with the given params.
@@ -20,5 +20,7 @@ def run(network: Network, params: VoltageInitializerParameters = VoltageInitiali
         params: The parameters used to customize the run
         debug: if true, the tmp directory of the voltage initializer run will not be erased.
     """
+    if params is None:
+        params = VoltageInitializerParameters()
     result_handle = run_voltage_initializer(debug, network._handle, params._handle)
     return VoltageInitializerResults(result_handle)
