@@ -1776,8 +1776,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **converters_mode**:
-              - **target_p**: (in MW)
+              - **converters_mode**: the mode of the converter stations can be either SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
+              - **target_p**: target active power (in MW)
               - **max_p**: the maximum of active power that can pass through the hvdc line (in MW)
               - **nominal_v**: nominal voltage (in kV)
               - **r**: the resistance of the hvdc line (in Ohm)
