@@ -75,7 +75,7 @@ public final class CTypeUtil {
 
     public static String[][] toString2DArray(CCharPointerPointer charPtrPtr, int length, int rows) {
         int cols = length / rows;
-        String[][] string2DArray = new String[rows][length / cols];
+        String[][] string2DArray = new String[rows][cols];
         int index = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
