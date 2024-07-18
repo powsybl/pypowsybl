@@ -28,6 +28,132 @@ Note that a loadflow can be run before writing the diagram so that it displays r
 .. image:: ../_static/images/ieee14_vl4.svg
    :class: forced-white-background
 
+Single-line diagrams can be customized through SldParameters:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee14()
+    >>> result = pp.loadflow.run_ac(network)
+    >>> network.get_single_line_diagram('VL4',parameters = pp.network.SldParameters(use_name = False, center_name = False, diagonal_label = False, nodes_infos = False, tooltip_enabled = False, topological_coloring = True, component_library = 'Convergence', display_current_feeder_info = False))
+
+
+- use_name: if true, display components names instead of their id (default value false)
+- center_name: if true, center the names of feeders (default value false)
+- diagonal_label: if true, display labels diagonally (default value false)
+- nodes_infos: if true, display nodes infos (caption on bottom left) (default value false)
+- tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
+- topological_coloring: if true, set each electrical nodes with a different colour (default value true)
+- component_library: choose component library (default value 'Convergence')
+- display_current_feeder_info: if true, display current feeder value (default value False)
+
+
+Let's see some examples down below:
+
+- with default parameters
+
+.. code-block:: python
+
+    >>> import pypowsybl.network as pn
+    >>> param = pn.SldParameters() #default parameters
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_default.svg
+   :class: forced-white-background
+
+- with use_name = true
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(use_name = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_usename.svg
+   :class: forced-white-background
+
+- with center_name = true
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(center_name = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_centername.svg
+   :class: forced-white-background
+
+- with diagonal_label = true
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(diagonal_label = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_diagonallabel.svg
+   :class: forced-white-background
+
+- with nodes_infos = true
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(nodes_infos = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_nodesinfos.svg
+   :class: forced-white-background
+
+- with tooltip enabled
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(tooltip_enabled = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_tooltipenabledtrue.png
+   :class: forced-white-background
+
+- with topological coloring = true
+
+.. code-block:: python
+
+    >>> network = pn.create_four_substations_node_breaker_network()
+    >>> network.update_switches(id="S1VL2_COUPLER",open=True)
+    >>> param = pn.SldParameters(topological_coloring = True)
+    >>> network.get_single_line_diagram('S1VL2', parameters = param)
+
+.. image:: ../_static/images/SldParam_topologicalcoloringtrue.svg
+   :class: forced-white-background
+
+- with topological coloring = false
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(topological_coloring = False)
+    >>> network.get_single_line_diagram('S1VL2', parameters = param)
+
+.. image:: ../_static/images/SldParam_topologicalcoloringfalse.svg
+   :class: forced-white-background
+
+- with component_library = "FlatDesign"
+
+.. code-block:: python
+
+    >>> network = pn.create_ieee14()
+    >>> param = pn.SldParameters(component_library = "FlatDesign")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_complib_flatdesign.svg
+   :class: forced-white-background
+
+- with display current feeder info
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(display_current_feeder_info = True)
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_displaycurrentfeederinfo.svg
+   :class: forced-white-background
+
+
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 
 .. code-block:: python
@@ -38,6 +164,13 @@ It is also possible to display a multi-substation single line diagram (currently
 
 .. image:: ../_static/images/ieee14_s1_s2_s3_s4.svg
    :class: forced-white-background
+
+Or in a Jupyter Notebook:
+
+.. code-block:: python
+
+    >>> network.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'],['S3','S4']])
+
 
 Network area diagram
 --------------------
@@ -103,7 +236,7 @@ Network-area diagrams can be customized through NadParameters:
 
     >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True))
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER))
 
     - edge_name_displayed: if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
@@ -114,6 +247,7 @@ Network-area diagrams can be customized through NadParameters:
     - voltage_value_precision: number of digits after the decimal point for voltage values(default value 1)
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
+    - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
 
 In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
 
@@ -139,7 +273,7 @@ We can now check loaded position by displaying `SubstationPosition` and `LinePos
 
 .. code-block:: python
 
-    >>> n.get_extension('substationPosition')
+    >>> network.get_extension('substationPosition')
                                       latitude  longitude
     id
     87f7002b-056f-4a6a-a872-1744eea757e3   51.3251    4.25926
@@ -147,24 +281,26 @@ We can now check loaded position by displaying `SubstationPosition` and `LinePos
 
 .. code-block:: python
 
-    >>> n.get_extension('linePosition')
+    >>> network.get_extension('linePosition')
                                           latitude  longitude
     id                                   num
     b58bf21a-096a-4dae-9a01-3f03b60c24c7 0     50.8035    4.30113
                                          1     50.9169    4.34509
                                          2     51.0448    4.29565
                                          3     51.1570    4.38354
+                                         4     51.3251    4.25926
     ffbabc27-1ccd-4fdc-b037-e341706c8d29 0     50.8035    4.30113
                                          1     50.9169    4.34509
                                          2     51.0448    4.29565
                                          3     51.1570    4.38354
+                                         4     51.3251    4.25926
 
 When we generate a network area diagram, an automatic force layout is performed by default.
 The diagram looks like this:
 
 .. code-block:: python
 
-    >>> n.write_network_area_diagram('be.svg')
+    >>> network.write_network_area_diagram('be.svg')
 
 .. image:: ../_static/images/nad_microgridbe_force_layout.svg
    :class: forced-white-background
@@ -175,7 +311,7 @@ the geographical layout:
 .. code-block:: python
 
     >>> parameter = pp.network.NadParameters(layout_type=pp.network.NadLayoutType.GEOGRAPHICAL)
-    >>> n.write_network_area_diagram('be.svg', nad_parameters=parameter)
+    >>> network.write_network_area_diagram('be.svg', nad_parameters=parameter)
 
 .. image:: ../_static/images/nad_microgridbe_geo.svg
    :class: forced-white-background

@@ -62,6 +62,7 @@ typedef struct loadflow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    double dc_power_factor;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;
@@ -341,6 +342,7 @@ typedef struct sld_parameters_struct {
     unsigned char tooltip_enabled;
     unsigned char topological_coloring;
     char* component_library;
+    unsigned char display_current_feeder_info;
 } sld_parameters;
 
 typedef struct nad_parameters_struct {
@@ -356,6 +358,7 @@ typedef struct nad_parameters_struct {
     int layout_type;
     int scaling_factor;
     double radius_factor;
+    int edge_info_displayed;
 } nad_parameters;
 
 typedef enum {

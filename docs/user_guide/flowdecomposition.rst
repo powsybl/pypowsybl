@@ -1,20 +1,6 @@
 Running a flow decomposition
 ============================
 
-.. testsetup:: *
-
-    import pathlib
-    import pandas as pd
-
-    import pypowsybl as pp
-    
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
-    import os
-    cwd = os.getcwd()
-    PROJECT_DIR = pathlib.Path(cwd).parent
-    DATA_DIR = PROJECT_DIR.joinpath('data')
-
 You can use the module :mod:`pypowsybl.flowdecomposition` in order to run flow decomposition on networks.
 Please check out the examples below.
 
@@ -132,7 +118,7 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
     >>> network.get_phase_tap_changers()
                              tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
     id                                                                                                                                      
-    BLOAD 11 BLOAD 12 2    0      -16        16          33       False       FIXED_TAP               NaN              NaN  
+    BLOAD 11 BLOAD 12 2    0      -16        16          33       False       FIXED_TAP               NaN              NaN
     
 Neutral tap position
 ^^^^^^^^^^^^^^^^^^^^
@@ -170,7 +156,7 @@ Here are the results with non-neutral tap position.
     >>> network.get_phase_tap_changers()
                              tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
     id                                                                                                                                      
-    BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN                  
+    BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN
     >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe

@@ -23,7 +23,7 @@ from typing import (
     Any
 )
 
-from numpy import Inf
+from numpy import inf
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 import pandas as pd
@@ -252,6 +252,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network according to the following parameters
+
+        :param v_min: minimum voltage of the voltage levels kept after reducing
+        :param v_max: voltage maximum of the voltage levels kept after reducing
+        :param ids: ids of the voltage levels that will be kept
+        :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
+        :param with_dangling_lines: keeping the dangling lines
+        """
         if ids is None:
             ids = []
         vls = []
@@ -315,6 +324,23 @@ class Network:  # pylint: disable=too-many-public-methods
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
+
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: SldParameters = None) -> Svg:
+        """
+        Create a single line diagram from multiple substations
+
+        Args:
+            matrix_ids: a two-dimensional list of substation id
+            parameters:single-line diagram parameters to adjust the rendering of the diagram
+
+        Returns:
+            the single line diagram
+        """
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+
+        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
@@ -1196,6 +1222,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p**: active flow on the dangling line, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
+              - **boundary_p** (optional): active flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_q** (optional): reactive flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_v_mag** (optional): voltage magnitude of the boundary bus, ``NaN`` if no loadflow has been computed (in kV)
+              - **boundary_v_angle** (optional): voltage angle of the boundary bus, ``NaN`` if no loadflow has been computed (in degree)
               - **voltage_level_id**: at which substation the dangling line is connected
               - **bus_id**: bus where this line is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
@@ -1746,8 +1776,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **converters_mode**:
-              - **target_p**: (in MW)
+              - **converters_mode**: the mode of the converter stations. It can be either SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
+              - **target_p**: active power target (in MW)
               - **max_p**: the maximum of active power that can pass through the hvdc line (in MW)
               - **nominal_v**: nominal voltage (in kV)
               - **r**: the resistance of the hvdc line (in Ohm)
@@ -3185,8 +3215,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             Attributes that can be updated are :
 
-            - `connected_1`
-            - `connected_2`
+            - `connected1`
+            - `connected2`
+            - `bus_breaker_bus1_id2`
+            - `bus_breaker_bus2_id2`
 
         See Also:
             :meth:`get_branches`
@@ -3196,9 +3228,37 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                network.update_branches(element_id='BRANCH_ID', connected_1=False, connected_2=False)
+                network.update_branches(element_id='BRANCH_ID', connected1=False, connected2=False)
         """
         return self._update_elements(ElementType.BRANCH, df, **kwargs)
+
+    def update_injections(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update injections with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are :
+
+            - `connected`
+            - `bus_breaker_bus_id`
+
+        See Also:
+            :meth:`get_injections`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_injections(element_id='INJECTION_ID', connected=True, bus_breaker_bus_id='B2')
+        """
+        return self._update_elements(ElementType.INJECTION, df, **kwargs)
 
     def update_tie_lines(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
@@ -3956,7 +4016,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus1_id**: the bus where the new transformer will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
             - **connectable_bus1_id**: the bus to which the transformer can be connected on side 1, if the voltage level
-             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+              has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node1**: the node where the new transformer will be connected on side 1,
               if the voltage level has a node-breaker topology kind.
             - **voltage_level2_id**: the voltage level where the new transformer will be connected on side 2.
@@ -3964,7 +4024,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus2_id**: the bus where the new transformer will be connected on side 2,
               if the voltage level has a bus-breaker topology kind.
             - **connectable_bus2_id**: the bus to which the transformer can be connected on side 2, if the voltage level
-             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+              has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node2**: the node where the new transformer will be connected on side 2,
               if the voltage level has a node-breaker topology kind.
             - **voltage_level3_id**: the voltage level where the new transformer will be connected on side 3.
@@ -3972,7 +4032,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **bus3_id**: the bus where the new transformer will be connected on side 3,
               if the voltage level has a bus-breaker topology kind.
             - **connectable_bus3_id**: the bus to which the transformer can be connected on side 3, if the voltage level
-             has a bus-breaker topology kind. The transformer is created disconnected from this bus.
+              has a bus-breaker topology kind. The transformer is created disconnected from this bus.
             - **node3**: the node where the new transformer will be connected on side 3,
               if the voltage level has a node-breaker topology kind.
             - **name**: an optional human-readable name
@@ -4217,7 +4277,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_deadband**: the target voltage regulation deadband, in kV
             - **regulating**: true if the tap changer should regulate voltage
             - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
-            or THREE if three-winding transformer)
+              or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
@@ -4274,7 +4334,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_deadband**: the regulation deadband
             - **regulating**: true if the tap changer should regulate
             - **regulated_side**: the side where the current or active power is regulated (ONE or TWO if two-winding
-            transformer, ONE, TWO or THREE if three-winding transformer)
+              transformer, ONE, TWO or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
 
             Valid attributes for the steps dataframe are:
@@ -4374,7 +4434,7 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: Attributes as keyword arguments.
         """
         if df is not None:
-            df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == Inf else int(x))
+            df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:

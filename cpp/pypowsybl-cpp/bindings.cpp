@@ -487,6 +487,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
             .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
             .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
@@ -535,11 +536,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("nodes_infos", &pypowsybl::SldParameters::nodes_infos)
         .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
-        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
+        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
+        .def_readwrite("display_current_feeder_info", &pypowsybl::SldParameters::display_current_feeder_info);
 
     py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
             .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
             .value("GEOGRAPHICAL", pypowsybl::NadLayoutType::GEOGRAPHICAL);
+
+    py::enum_<pypowsybl::EdgeInfoType>(m, "EdgeInfoType")
+            .value("ACTIVE_POWER", pypowsybl::EdgeInfoType::ACTIVE_POWER)
+            .value("REACTIVE_POWER", pypowsybl::EdgeInfoType::REACTIVE_POWER)
+            .value("CURRENT", pypowsybl::EdgeInfoType::CURRENT);
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
@@ -554,7 +561,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("substation_description_displayed", &pypowsybl::NadParameters::substation_description_displayed)
         .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
-        .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor);
+        .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
+        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
@@ -567,6 +575,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
+
+    m.def("get_matrix_multi_substation_single_line_diagram_svg_and_metadata", &pypowsybl::getMatrixMultiSubstationSvgAndMetadata, "Get matrix multi-substation single line diagram SVG and its metadata as a list of strings",
+          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"));
 
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 

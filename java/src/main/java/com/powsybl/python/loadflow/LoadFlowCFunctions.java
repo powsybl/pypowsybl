@@ -53,9 +53,7 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "setDefaultLoadFlowProvider")
     public static void setDefaultLoadFlowProvider(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
-        });
+        doCatch(exceptionHandlerPtr, () -> PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider)));
     }
 
     @CEntryPoint(name = "getDefaultLoadFlowProvider")
@@ -176,6 +174,7 @@ public final class LoadFlowCFunctions {
         cParameters.setCountriesToBalance(calloc);
         cParameters.setCountriesToBalanceCount(countries.size());
         cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
+        cParameters.setDcPowerFactor(parameters.getDcPowerFactor());
         cParameters.setProviderParametersValuesCount(0);
         cParameters.setProviderParametersKeysCount(0);
     }

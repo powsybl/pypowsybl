@@ -75,7 +75,7 @@ public final class CTypeUtil {
 
     public static String[][] toString2DArray(CCharPointerPointer charPtrPtr, int length, int rows) {
         int cols = length / rows;
-        String[][] string2DArray = new String[rows][length / cols];
+        String[][] string2DArray = new String[rows][cols];
         int index = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
@@ -141,9 +141,9 @@ public final class CTypeUtil {
         mapPtr.setLength(stringMap.size());
         List<String> keys = new ArrayList<>(stringMap.size());
         List<String> values = new ArrayList<>(stringMap.size());
-        stringMap.entrySet().forEach(entry -> {
-            keys.add(entry.getKey());
-            values.add(entry.getValue());
+        stringMap.forEach((key, value) -> {
+            keys.add(key);
+            values.add(value);
         });
         mapPtr.setKeys(Util.getStringListAsPtr(keys));
         mapPtr.setValues(Util.getStringListAsPtr(values));

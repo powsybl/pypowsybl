@@ -140,9 +140,7 @@ public final class LoadFlowValidationCFunctions {
     @CEntryPoint(name = "freeValidationConfig")
     public static void freeValidationConfig(IsolateThread thread, LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr);
-        });
+        doCatch(exceptionHandlerPtr, () -> freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr));
     }
 
     public static void freeLoadFlowValidationParametersPointer(LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {

@@ -283,6 +283,12 @@ public final class PyPowsyblApiHeader {
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
 
+        @CField("dc_power_factor")
+        double getDcPowerFactor();
+
+        @CField("dc_power_factor")
+        void setDcPowerFactor(double dcPowerFactor);
+
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
 
@@ -1068,6 +1074,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("component_library")
         void setComponentLibrary(CCharPointer componentLibrary);
+
+        @CField("display_current_feeder_info")
+        boolean isDisplayCurrentFeederInfo();
+
+        @CField("display_current_feeder_info")
+        void setDisplayCurrentFeederInfo(boolean displayCurrentInfo);
     }
 
     @CStruct("nad_parameters")
@@ -1143,6 +1155,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("radius_factor")
         void setRadiusFactor(double radiusFactor);
+
+        @CField("edge_info_displayed")
+        void setEdgeInfoDisplayed(int edgeInfoDisplayed);
+
+        @CField("edge_info_displayed")
+        int getEdgeInfoDisplayed();
     }
 
     @CEnum("DynamicMappingType")

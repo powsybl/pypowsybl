@@ -46,7 +46,7 @@ public class AliasDataframeAdder extends AbstractSimpleAdder {
         }
 
         void create(Network network, int row) {
-            Identifiable identifiable = network.getIdentifiable(ids.get(row));
+            Identifiable<?> identifiable = network.getIdentifiable(ids.get(row));
             if (identifiable == null) {
                 throw new PowsyblException("identifiable " + ids.get(row) + " does not exist");
             }
@@ -64,7 +64,7 @@ public class AliasDataframeAdder extends AbstractSimpleAdder {
         }
 
         void delete(Network network, int row) {
-            Identifiable identifiable = network.getIdentifiable(ids.get(row));
+            Identifiable<?> identifiable = network.getIdentifiable(ids.get(row));
             if (identifiable != null) {
                 if (aliases != null) {
                     identifiable.removeAlias(aliases.get(row));

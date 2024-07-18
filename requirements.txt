@@ -1,9 +1,10 @@
 # actual dependencies
-pandas==2.1.1; python_version == "3.12"
-pandas==2.0.3; python_version < "3.12"
+pandas==2.2.2; python_version >= "3.9"
+pandas==2.0.3; python_version <= "3.8"
 prettytable==2.0.0
 networkx
-matplotlib
+matplotlib==3.9.0; python_version >= "3.9"
+matplotlib; python_version <= "3.8"
 
 # documentation dependencies
 sphinx==7.1.2
@@ -14,6 +15,6 @@ wheel==0.38.1
 coverage==7.3.2
 pytest>=6.2.5
 mypy==0.982
-pandas-stubs==1.2.0.47
+pandas-stubs==2.2.2.240603; python_version >= "3.9"
+pandas-stubs==2.0.3.230814; python_version <= "3.8"
 pylint==3.2.0
-numpy==1.26.0; python_version >= "3.9"

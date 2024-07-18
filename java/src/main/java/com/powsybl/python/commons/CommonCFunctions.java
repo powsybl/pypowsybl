@@ -34,16 +34,12 @@ public final class CommonCFunctions {
 
     @CEntryPoint(name = "setJavaLibraryPath")
     public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath));
-        });
+        doCatch(exceptionHandlerPtr, () -> System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath)));
     }
 
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PyPowsyblConfiguration.setReadConfig(read);
-        });
+        doCatch(exceptionHandlerPtr, () -> PyPowsyblConfiguration.setReadConfig(read));
     }
 
     @CEntryPoint(name = "isConfigRead")

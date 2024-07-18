@@ -217,6 +217,7 @@ Miscellaneous network functions
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
+   Network.get_matrix_multi_substation_single_line_diagram
    Network.write_matrix_multi_substation_single_line_diagram_svg
    Network.get_network_area_diagram
    Network.write_network_area_diagram_svg
@@ -247,9 +248,9 @@ I/O
    get_import_parameters
    get_export_formats
    get_export_parameters
-   save
-   save_to_string
-   save_to_binary_buffer
+   Network.save
+   Network.save_to_string
+   Network.save_to_binary_buffer
 
 
 Advanced network modifications

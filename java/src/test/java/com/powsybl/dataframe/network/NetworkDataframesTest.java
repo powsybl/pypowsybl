@@ -20,9 +20,12 @@ import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
+import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.extensions.Coordinate;
 import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
 import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
+import com.powsybl.iidm.network.extensions.LinePositionAdder;
 import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -265,6 +268,7 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
+                        "boundary_p", "boundary_q", "boundary_v_mag", "boundary_v_angle",
                         "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "pairing_key", "ucte_xnode_code", "fictitious", "tie_line_id");
     }
 
@@ -604,7 +608,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level_id", "bus_id");
+                .containsExactly("id", "type", "voltage_level_id", "connected", "bus_id");
     }
 
     @Test
@@ -635,5 +639,26 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id");
+    }
+
+    @Test
+    void linePositionExtensions() {
+        String lineId = "NHV1_NHV2_1";
+        Coordinate coord1 = new Coordinate(1.0, 2.0);
+
+        Network network = EurostagTutorialExample1Factory.create();
+        Line line = network.getLine(lineId);
+
+        line.newExtension(LinePositionAdder.class).withCoordinates(List.of(coord1)).add();
+
+        List<Series> ext1Series = createExtensionDataFrame("linePosition", network);
+
+        assertThat(ext1Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "num", "latitude", "longitude");
+        assertThat(ext1Series.get(0).getStrings()).containsExactly(lineId);
+        assertThat(ext1Series.get(1).getInts()).containsExactly(0);
+        assertThat(ext1Series.get(2).getDoubles()).containsExactly(coord1.getLatitude());
+        assertThat(ext1Series.get(3).getDoubles()).containsExactly(coord1.getLongitude());
     }
 }
