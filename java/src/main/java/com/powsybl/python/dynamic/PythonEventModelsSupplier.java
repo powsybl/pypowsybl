@@ -17,15 +17,15 @@ import com.powsybl.iidm.network.TwoSides;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class EventSupplier implements EventModelsSupplier {
+public class PythonEventModelsSupplier implements EventModelsSupplier {
 
-    private final List<Function<Network, EventModel>> eventSupplierList = new ArrayList<>();
+    private final List<BiFunction<Network, ReportNode, EventModel>> eventSupplierList = new ArrayList<>();
 
     /**
      * According to Dynawaltz staticId must refer to an injection, branch or hvdc line
@@ -33,8 +33,8 @@ public class EventSupplier implements EventModelsSupplier {
      * The event represent the disconnection the given equipment
      */
     public void addEventDisconnection(String staticId, double eventTime, TwoSides disconnectOnly) {
-        eventSupplierList.add(network -> {
-            EventDisconnectionBuilder builder = EventDisconnectionBuilder.of(network)
+        eventSupplierList.add((network, reportNode) -> {
+            EventDisconnectionBuilder builder = EventDisconnectionBuilder.of(network, reportNode)
                     .staticId(staticId)
                     .startTime(eventTime);
             if (disconnectOnly != null) {
@@ -46,11 +46,7 @@ public class EventSupplier implements EventModelsSupplier {
 
     @Override
     public List<EventModel> get(Network network, ReportNode reportNode) {
-        return get(network);
+        return eventSupplierList.stream().map(f -> f.apply(network, reportNode)).filter(Objects::nonNull).toList();
     }
 
-    @Override
-    public List<EventModel> get(Network network) {
-        return eventSupplierList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).toList();
-    }
 }

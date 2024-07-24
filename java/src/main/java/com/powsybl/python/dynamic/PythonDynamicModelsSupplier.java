@@ -11,7 +11,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
-import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
+import com.powsybl.dynawaltz.models.generators.SynchronousGeneratorBuilder;
 import com.powsybl.dynawaltz.models.loads.BaseLoadBuilder;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformerBuilder;
 import com.powsybl.iidm.network.Network;
@@ -73,27 +73,27 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
         dynamicModelList.add(modelFunction);
     }
 
-    public void addGeneratorSynchronous(String staticId, String parameterSetId, String generatorLib) {
-        dynamicModelList.add(network -> SynchronizedGeneratorBuilder.of(network, generatorLib)
+    public void addSynchronousGenerator(String staticId, String parameterSetId, String generatorLib) {
+        dynamicModelList.add(network -> SynchronousGeneratorBuilder.of(network, generatorLib)
                 .staticId(staticId)
                 .parameterSetId(parameterSetId)
                 .build());
     }
 
     public void addGeneratorSynchronousThreeWindings(String staticId, String parameterSetId) {
-        addGeneratorSynchronous(staticId, parameterSetId, "GeneratorSynchronousThreeWindings");
+        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousThreeWindings");
     }
 
     public void addGeneratorSynchronousThreeWindingsProportionalRegulations(String staticId, String parameterSetId) {
-        addGeneratorSynchronous(staticId, parameterSetId, "GeneratorSynchronousThreeWindingsProportionalRegulations");
+        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousThreeWindingsProportionalRegulations");
     }
 
     public void addGeneratorSynchronousFourWindings(String staticId, String parameterSetId) {
-        addGeneratorSynchronous(staticId, parameterSetId, "GeneratorSynchronousFourWindings");
+        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousFourWindings");
     }
 
     public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parameterSetId) {
-        addGeneratorSynchronous(staticId, parameterSetId, "GeneratorSynchronousFourWindingsProportionalRegulations");
+        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousFourWindingsProportionalRegulations");
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
