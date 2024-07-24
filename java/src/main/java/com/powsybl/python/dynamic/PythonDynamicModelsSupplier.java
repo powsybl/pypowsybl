@@ -68,27 +68,12 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
         dynamicModelList.add(modelFunction);
     }
 
+    //TODO remove
     public void addSynchronousGenerator(String staticId, String parameterSetId, String generatorLib) {
         dynamicModelList.add((network, reportNode) -> SynchronousGeneratorBuilder.of(network, generatorLib)
                 .staticId(staticId)
                 .parameterSetId(parameterSetId)
                 .build());
-    }
-
-    public void addGeneratorSynchronousThreeWindings(String staticId, String parameterSetId) {
-        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousThreeWindings");
-    }
-
-    public void addGeneratorSynchronousThreeWindingsProportionalRegulations(String staticId, String parameterSetId) {
-        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousThreeWindingsProportionalRegulations");
-    }
-
-    public void addGeneratorSynchronousFourWindings(String staticId, String parameterSetId) {
-        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousFourWindings");
-    }
-
-    public void addGeneratorSynchronousFourWindingsProportionalRegulations(String staticId, String parameterSetId) {
-        addSynchronousGenerator(staticId, parameterSetId, "GeneratorSynchronousFourWindingsProportionalRegulations");
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
