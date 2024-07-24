@@ -20,7 +20,7 @@ import com.powsybl.iidm.network.TwoSides;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
@@ -28,7 +28,7 @@ import java.util.function.Function;
  */
 public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
 
-    private final List<Function<Network, DynamicModel>> dynamicModelList = new ArrayList<>();
+    private final List<BiFunction<Network, ReportNode, DynamicModel>> dynamicModelList = new ArrayList<>();
 
     @Override
     public String getName() {
@@ -37,12 +37,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
 
     @Override
     public List<DynamicModel> get(Network network, ReportNode reportNode) {
-        return get(network);
-    }
-
-    @Override
-    public List<DynamicModel> get(Network network) {
-        return dynamicModelList.stream().map(f -> f.apply(network)).filter(Objects::nonNull).toList();
+        return dynamicModelList.stream().map(f -> f.apply(network, reportNode)).filter(Objects::nonNull).toList();
     }
 
     /**
@@ -51,7 +46,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
      * @param staticId also determines the dynamic id of the element
      */
     public void addAlphaBetaLoad(String staticId, String parameterSetId) {
-        dynamicModelList.add(network -> BaseLoadBuilder.of(network, "LoadAlphaBeta")
+        dynamicModelList.add((network, reportNode) -> BaseLoadBuilder.of(network, "LoadAlphaBeta")
                 .staticId(staticId)
                 .parameterSetId(parameterSetId)
                 .build());
@@ -63,18 +58,18 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
      * @param staticId also determines the dynamic id of the element
      */
     public void addOneTransformerLoad(String staticId, String parameterSetId) {
-        dynamicModelList.add(network -> LoadOneTransformerBuilder.of(network, "LoadOneTransformer")
+        dynamicModelList.add((network, reportNode) -> LoadOneTransformerBuilder.of(network, "LoadOneTransformer")
                 .staticId(staticId)
                 .parameterSetId(parameterSetId)
                 .build());
     }
 
-    public void addModel(Function<Network, DynamicModel> modelFunction) {
+    public void addModel(BiFunction<Network, ReportNode, DynamicModel> modelFunction) {
         dynamicModelList.add(modelFunction);
     }
 
     public void addSynchronousGenerator(String staticId, String parameterSetId, String generatorLib) {
-        dynamicModelList.add(network -> SynchronousGeneratorBuilder.of(network, generatorLib)
+        dynamicModelList.add((network, reportNode) -> SynchronousGeneratorBuilder.of(network, generatorLib)
                 .staticId(staticId)
                 .parameterSetId(parameterSetId)
                 .build());
@@ -97,7 +92,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
     }
 
     public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
-        dynamicModelList.add(network -> DynamicOverloadManagementSystemBuilder.of(network, "CurrentLimitAutomaton")
+        dynamicModelList.add((network, reportNode) -> DynamicOverloadManagementSystemBuilder.of(network, "CurrentLimitAutomaton")
                 .parameterSetId(parameterSetId)
                 .iMeasurement(staticId)
                 .iMeasurementSide(side)
