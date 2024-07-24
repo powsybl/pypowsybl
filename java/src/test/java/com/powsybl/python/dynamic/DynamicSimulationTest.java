@@ -7,7 +7,6 @@
  */
 package com.powsybl.python.dynamic;
 
-import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdderFactory;
 import com.powsybl.dynamicsimulation.*;
 import com.powsybl.dynawaltz.DynaWaltzCurve;
 import com.powsybl.iidm.network.Network;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.GENERATOR_SYNCHRONOUS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
