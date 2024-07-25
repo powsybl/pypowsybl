@@ -36,6 +36,10 @@ public final class DynamicMappingAdderFactory {
             Map.entry(DynamicMappingType.BASE_BUS, new BaseBusAdder()),
             Map.entry(DynamicMappingType.INFINITE_BUS, new InfiniteBusAdder()),
             // Automation systems
+            Map.entry(DynamicMappingType.PHASE_SHIFTER_I, new PhaseShifterIAdder()),
+            Map.entry(DynamicMappingType.PHASE_SHIFTER_P, new PhaseShifterPAdder()),
+            Map.entry(DynamicMappingType.UNDER_VOLTAGE, new UnderVoltageAutomationSystemAdder()),
+            Map.entry(DynamicMappingType.TAP_CHANGER, new TapChangerAutomationSystemAdder()),
             Map.entry(DynamicMappingType.CURRENT_LIMIT_AUTOMATON, new CurrentLimitAutomatonAdder()));
 
     public static DynamicMappingAdder getAdder(DynamicMappingType type) {

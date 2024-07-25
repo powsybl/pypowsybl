@@ -1204,7 +1204,11 @@ public final class PyPowsyblApiHeader {
         BASE_STATIC_VAR_COMPENSATOR,
         BASE_LINE,
         BASE_BUS,
-        INFINITE_BUS;
+        INFINITE_BUS,
+        UNDER_VOLTAGE,
+        PHASE_SHIFTER_I,
+        PHASE_SHIFTER_P,
+        TAP_CHANGER;
 
         @CEnumValue
         public native int getCValue();

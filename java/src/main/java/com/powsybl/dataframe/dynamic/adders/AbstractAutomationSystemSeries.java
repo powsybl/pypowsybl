@@ -9,25 +9,25 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.builders.EquipmentModelBuilder;
+import com.powsybl.dynawaltz.models.automationsystems.AbstractAutomationSystemModelBuilder;
 
-import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
+import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.DYNAMIC_MODEL_ID;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEquipmentSeries<T extends EquipmentModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
+abstract class AbstractAutomationSystemSeries<T extends AbstractAutomationSystemModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
 
-    protected final StringSeries staticIds;
+    protected final StringSeries dynamicModelIds;
 
-    AbstractEquipmentSeries(UpdatingDataframe dataframe) {
+    AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
         super(dataframe);
-        this.staticIds = dataframe.getStrings(STATIC_ID);
+        this.dynamicModelIds = dataframe.getStrings(DYNAMIC_MODEL_ID);
     }
 
     protected void applyOnBuilder(int row, T builder) {
-        applyIfPresent(staticIds, row, builder::staticId);
+        applyIfPresent(dynamicModelIds, row, builder::dynamicModelId);
         applyIfPresent(parameterSetIds, row, builder::parameterSetId);
     }
 }

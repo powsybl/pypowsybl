@@ -8,9 +8,6 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
-
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -18,7 +15,7 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEquipmentAdder implements DynamicMappingAdder {
+abstract class AbstractEquipmentAdder extends AbstractDynamicModelAdder {
 
     protected static final List<SeriesMetadata> EQUIPMENT_METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
@@ -29,14 +26,4 @@ abstract class AbstractEquipmentAdder implements DynamicMappingAdder {
     public List<SeriesMetadata> getMetadata() {
         return EQUIPMENT_METADATA;
     }
-
-    @Override
-    public void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe) {
-        DynamicModelSeries series = createDynamicModelSeries(dataframe);
-        for (int row = 0; row < dataframe.getRowCount(); row++) {
-            modelMapping.addModel(series.getModelSupplier(row));
-        }
-    }
-
-    abstract protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe);
 }

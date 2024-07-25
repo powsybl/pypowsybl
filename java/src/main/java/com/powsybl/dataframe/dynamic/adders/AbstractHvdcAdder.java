@@ -39,17 +39,17 @@ abstract class AbstractHvdcAdder extends AbstractEquipmentAdder {
 
     protected static abstract class HvdcSeries<T extends AbstractHvdcBuilder<T>> extends AbstractEquipmentSeries<T> {
 
-        private final StringSeries danglingSide;
+        private final StringSeries danglingSides;
 
         HvdcSeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.danglingSide = dataframe.getStrings(DANGLING_SIDE);
+            this.danglingSides = dataframe.getStrings(DANGLING_SIDE);
         }
 
         @Override
         protected void applyOnBuilder(int row, T builder) {
             super.applyOnBuilder(row, builder);
-            applyIfPresent(danglingSide, row, TwoSides.class, builder::dangling);
+            applyIfPresent(danglingSides, row, TwoSides.class, builder::dangling);
         }
     }
 }
