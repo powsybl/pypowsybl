@@ -9,6 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dynawaltz.models.TransformerSide;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -26,12 +27,12 @@ import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.*;
+import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.TRANSFORMER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-//TODO test empty dataframe and wrong lib
 public class DynamicModelsAdderTest {
 
     private DefaultUpdatingDataframe dataframe;
@@ -79,6 +80,52 @@ public class DynamicModelsAdderTest {
                 model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", staticId));
     }
 
+    //TODO mutualize with phase shifter
+    @Test
+    void testTapChangerAdder() {
+        Network network = EurostagTutorialExample1Factory.create();
+        String dynamicModelId = "BBM_tap_changer";
+        String side = String.valueOf(TransformerSide.LOW_VOLTAGE);
+        setupDataFrame(dataframe, dynamicModelId, "TapChangerAutomaton");
+        dataframe.addSeries(STATIC_ID, false, new TestStringSeries("LOAD", "LOAD"));
+        dataframe.addSeries(SIDE, false, new TestStringSeries(side, side));
+        DynamicMappingAdderFactory.getAdder(TAP_CHANGER).addElements(dynamicModelsSupplier, dataframe);
+
+        assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
+                model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
+                        .hasFieldOrPropertyWithValue("lib", "TapChangerAutomaton"),
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId));
+    }
+
+    @Test
+    void testUnderVoltageAdder() {
+        Network network = EurostagTutorialExample1Factory.create();
+        String dynamicModelId = "BBM_under_voltage";
+        setupDataFrame(dataframe, dynamicModelId, "UnderVoltage");
+        dataframe.addSeries(GENERATOR, false, new TestStringSeries("GEN", "GEN"));
+        DynamicMappingAdderFactory.getAdder(UNDER_VOLTAGE).addElements(dynamicModelsSupplier, dataframe);
+
+        assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
+                model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
+                        .hasFieldOrPropertyWithValue("lib", "UnderVoltageAutomaton"),
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId));
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("phaseShifterProvider")
+    void testPhaseShiftersAdder(PyPowsyblApiHeader.DynamicMappingType mappingType, String modelName) {
+        Network network = EurostagTutorialExample1Factory.create();
+        String dynamicModelId = "BBM_phase_shifter";
+        setupDataFrame(dataframe, dynamicModelId, modelName);
+        dataframe.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, new TestStringSeries("NGEN_NHV1", "NGEN_NHV1"));
+        DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicModelsSupplier, dataframe);
+
+        assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
+                model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
+                        .hasFieldOrPropertyWithValue("lib", modelName),
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId));
+    }
+
     @Test
     void testIncompleteDataFrame() {
         Network network = EurostagTutorialExample1Factory.create();
@@ -91,10 +138,28 @@ public class DynamicModelsAdderTest {
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 
+    @Test
+    void testWrongModelName() {
+        Network network = EurostagTutorialExample1Factory.create();
+        DefaultUpdatingDataframe wrongModelNameDF = new DefaultUpdatingDataframe(1);
+        wrongModelNameDF.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"));
+        wrongModelNameDF.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
+        wrongModelNameDF.addSeries(MODEL_NAME, false, new TestStringSeries("wrongModelName"));
+        DynamicMappingAdderFactory.getAdder(BASE_LOAD).addElements(dynamicModelsSupplier, wrongModelNameDF);
+        assertThat(dynamicModelsSupplier.get(network)).isEmpty();
+    }
+
     static Stream<Arguments> hvdcDataProvider() {
         return Stream.of(
                 Arguments.of(HVDC_P, "HvdcPVDangling", true),
                 Arguments.of(HVDC_VSC, "HvdcVSC", false)
+        );
+    }
+
+    static Stream<Arguments> phaseShifterProvider() {
+        return Stream.of(
+                Arguments.of(PHASE_SHIFTER_I, "PhaseShifterI"),
+                Arguments.of(PHASE_SHIFTER_P, "PhaseShifterP")
         );
     }
 
@@ -116,5 +181,11 @@ public class DynamicModelsAdderTest {
                 Arguments.of(BASE_BUS, "Bus", EurostagTutorialExample1Factory.create(), "NHV1"),
                 Arguments.of(INFINITE_BUS, "InfiniteBus", EurostagTutorialExample1Factory.create(), "NHV1")
         );
+    }
+
+    private void setupDataFrame(DefaultUpdatingDataframe dataframe, String dynamicModelId, String modelName) {
+        dataframe.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId));
+        dataframe.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("as_par", "as_par"));
+        dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName, ""));
     }
 }

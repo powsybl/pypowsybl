@@ -12,10 +12,15 @@ package com.powsybl.dataframe.dynamic.adders;
  */
 public class DynamicModelDataframeConstants {
 
+    public static final String DYNAMIC_MODEL_ID = "dynamic_model_id";
     public static final String STATIC_ID = "static_id";
     public static final String PARAMETER_SET_ID = "parameter_set_id";
     public static final String MODEL_NAME = "model_name";
     public static final String DANGLING_SIDE = "dangling_side";
+    public static final String GENERATOR = "generator";
+    public static final String TRANSFORMER = "transformer";
+    public static final String SIDE = "side";
+
 
     private DynamicModelDataframeConstants() {}
 }
