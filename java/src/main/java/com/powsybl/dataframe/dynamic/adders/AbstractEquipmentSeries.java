@@ -41,10 +41,14 @@ abstract class AbstractEquipmentSeries<T extends EquipmentModelBuilder<T>> imple
             if (builder == null) {
                 return null;
             }
-            applyIfPresent(staticIds, row, builder::staticId);
-            applyIfPresent(parameterSetIds, row, builder::parameterSetId);
+            applyOnBuilder(row, builder);
             return builder.build();
         };
+    }
+
+    protected void applyOnBuilder(int row, T builder) {
+        applyIfPresent(staticIds, row, builder::staticId);
+        applyIfPresent(parameterSetIds, row, builder::parameterSetId);
     }
 
     protected T getBuilder(Network network, ReportNode reportNode, int row) {

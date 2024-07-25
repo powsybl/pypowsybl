@@ -18,13 +18,23 @@ public final class DynamicMappingAdderFactory {
 
     private static final Map<DynamicMappingType, DynamicMappingAdder> ADDERS = Map.ofEntries(
             // Equipments
-            Map.entry(DynamicMappingType.ALPHA_BETA_LOAD, new AlphaBetaLoadAdder()),
-            Map.entry(DynamicMappingType.ONE_TRANSFORMER_LOAD, new OneTransformerLoadAdder()),
-            Map.entry(DynamicMappingType.FICTITIOUS_GENERATOR, new FictitiousGeneratorAdder()),
+            Map.entry(DynamicMappingType.BASE_LOAD, new BaseLoadAdder()),
+            Map.entry(DynamicMappingType.LOAD_ONE_TRANSFORMER, new LoadOneTransformerAdder()),
+            Map.entry(DynamicMappingType.LOAD_ONE_TRANSFORMER_TAP_CHANGER, new LoadOneTransformerTapChangerAdder()),
+            Map.entry(DynamicMappingType.LOAD_TWO_TRANSFORMERS, new LoadTwoTransformersAdder()),
+            Map.entry(DynamicMappingType.LOAD_TWO_TRANSFORMERS_TAP_CHANGERS, new LoadTwoTransformersTapChangersAdder()),
+            Map.entry(DynamicMappingType.BASE_GENERATOR, new BaseGeneratorAdder()),
             Map.entry(DynamicMappingType.SYNCHRONIZED_GENERATOR, new SynchronizedGeneratorAdder()),
             Map.entry(DynamicMappingType.SYNCHRONOUS_GENERATOR, new SynchronousGeneratorAdder()),
             Map.entry(DynamicMappingType.WECC, new WeccAdder()),
             Map.entry(DynamicMappingType.GRID_FORMING_CONVERTER, new GridFormingConverterAdder()),
+            Map.entry(DynamicMappingType.HVDC_P, new HvdcPAdder()),
+            Map.entry(DynamicMappingType.HVDC_VSC, new HvdcVscAdder()),
+            Map.entry(DynamicMappingType.TRANSFORMER, new TransformerAdder()),
+            Map.entry(DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR, new StaticVarCompensatorAdder()),
+            Map.entry(DynamicMappingType.BASE_LINE, new LineAdder()),
+            Map.entry(DynamicMappingType.BASE_BUS, new BaseBusAdder()),
+            Map.entry(DynamicMappingType.INFINITE_BUS, new InfiniteBusAdder()),
             // Automation systems
             Map.entry(DynamicMappingType.CURRENT_LIMIT_AUTOMATON, new CurrentLimitAutomatonAdder()));
 

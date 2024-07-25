@@ -20,14 +20,14 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
  */
 abstract class AbstractEquipmentAdder implements DynamicMappingAdder {
 
-    protected static final List<SeriesMetadata> METADATA = List.of(
+    protected static final List<SeriesMetadata> EQUIPMENT_METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
             SeriesMetadata.strings(PARAMETER_SET_ID),
             SeriesMetadata.strings(MODEL_NAME));
 
     @Override
     public List<SeriesMetadata> getMetadata() {
-        return METADATA;
+        return EQUIPMENT_METADATA;
     }
 
     @Override

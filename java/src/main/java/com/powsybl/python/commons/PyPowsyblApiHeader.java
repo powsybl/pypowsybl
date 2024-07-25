@@ -1183,18 +1183,28 @@ public final class PyPowsyblApiHeader {
 
     @CEnum("DynamicMappingType")
     public enum DynamicMappingType {
-        ALPHA_BETA_LOAD,
-        ONE_TRANSFORMER_LOAD,
+        BASE_LOAD,
+        LOAD_ONE_TRANSFORMER,
+        LOAD_ONE_TRANSFORMER_TAP_CHANGER,
+        LOAD_TWO_TRANSFORMERS,
+        LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
         GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
         GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
         GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
         GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
         CURRENT_LIMIT_AUTOMATON,
-        FICTITIOUS_GENERATOR,
+        BASE_GENERATOR,
         SYNCHRONIZED_GENERATOR,
         SYNCHRONOUS_GENERATOR,
         WECC,
-        GRID_FORMING_CONVERTER;
+        GRID_FORMING_CONVERTER,
+        HVDC_P,
+        HVDC_VSC,
+        TRANSFORMER,
+        BASE_STATIC_VAR_COMPENSATOR,
+        BASE_LINE,
+        BASE_BUS,
+        INFINITE_BUS;
 
         @CEnumValue
         public native int getCValue();
@@ -1215,6 +1225,18 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native ThreeSideType fromCValue(int value);
+    }
+
+    @CEnum("TwoSide")
+    public enum TwoSideType {
+        ONE,
+        TWO;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native TwoSideType fromCValue(int value);
     }
 
     @CEnum("condition_type")

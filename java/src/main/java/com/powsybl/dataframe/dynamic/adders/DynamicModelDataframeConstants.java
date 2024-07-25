@@ -15,6 +15,7 @@ public class DynamicModelDataframeConstants {
     public static final String STATIC_ID = "static_id";
     public static final String PARAMETER_SET_ID = "parameter_set_id";
     public static final String MODEL_NAME = "model_name";
+    public static final String DANGLING_SIDE = "dangling_side";
 
     private DynamicModelDataframeConstants() {}
 }

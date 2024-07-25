@@ -14,6 +14,7 @@ import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.iidm.network.ThreeSides;
+import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
@@ -429,7 +430,6 @@ public final class Util {
             case LOW_SHORT_CIRCUIT_CURRENT -> LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
             case HIGH_SHORT_CIRCUIT_CURRENT -> LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
             case OTHER -> LimitViolationType.OTHER;
-            default -> throw new PowsyblException("Unknown limit violation type: " + violationType);
         };
     }
 
@@ -439,6 +439,13 @@ public final class Util {
             case 1 -> ThreeSides.TWO;
             case 2 -> ThreeSides.THREE;
             default -> null;
+        };
+    }
+
+    public static TwoSides convert(PyPowsyblApiHeader.TwoSideType side) {
+        return switch (side) {
+            case ONE -> TwoSides.ONE;
+            case TWO -> TwoSides.TWO;
         };
     }
 }
