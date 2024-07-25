@@ -9,26 +9,26 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.generators.GeneratorFictitiousBuilder;
+import com.powsybl.dynawaltz.models.svarcs.BaseStaticVarCompensatorBuilder;
 import com.powsybl.iidm.network.Network;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class FictitiousGeneratorAdder extends AbstractEquipmentAdder {
+public class StaticVarCompensatorAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<GeneratorFictitiousBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<BaseStaticVarCompensatorBuilder>(dataframe) {
 
             @Override
-            protected GeneratorFictitiousBuilder createBuilder(Network network, ReportNode reportNode) {
-                return GeneratorFictitiousBuilder.of(network, reportNode);
+            protected BaseStaticVarCompensatorBuilder createBuilder(Network network, ReportNode reportNode) {
+                return BaseStaticVarCompensatorBuilder.of(network, reportNode);
             }
 
             @Override
-            protected GeneratorFictitiousBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
-                return GeneratorFictitiousBuilder.of(network, modelName, reportNode);
+            protected BaseStaticVarCompensatorBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
+                return BaseStaticVarCompensatorBuilder.of(network, modelName, reportNode);
             }
         };
     }

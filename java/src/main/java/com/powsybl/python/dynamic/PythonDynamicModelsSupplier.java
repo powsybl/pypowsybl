@@ -12,8 +12,6 @@ import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
 import com.powsybl.dynawaltz.models.generators.SynchronousGeneratorBuilder;
-import com.powsybl.dynawaltz.models.loads.BaseLoadBuilder;
-import com.powsybl.dynawaltz.models.loads.LoadOneTransformerBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
@@ -40,30 +38,6 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
         return dynamicModelList.stream().map(f -> f.apply(network, reportNode)).filter(Objects::nonNull).toList();
     }
 
-    /**
-     * maps static element to a dynamic alpha_beta load
-     *
-     * @param staticId also determines the dynamic id of the element
-     */
-    public void addAlphaBetaLoad(String staticId, String parameterSetId) {
-        dynamicModelList.add((network, reportNode) -> BaseLoadBuilder.of(network, "LoadAlphaBeta")
-                .staticId(staticId)
-                .parameterSetId(parameterSetId)
-                .build());
-    }
-
-    /**
-     * maps static element to a dynamic one transformer
-     *
-     * @param staticId also determines the dynamic id of the element
-     */
-    public void addOneTransformerLoad(String staticId, String parameterSetId) {
-        dynamicModelList.add((network, reportNode) -> LoadOneTransformerBuilder.of(network, "LoadOneTransformer")
-                .staticId(staticId)
-                .parameterSetId(parameterSetId)
-                .build());
-    }
-
     public void addModel(BiFunction<Network, ReportNode, DynamicModel> modelFunction) {
         dynamicModelList.add(modelFunction);
     }
@@ -76,6 +50,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
                 .build());
     }
 
+    //TODO remove
     public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
         dynamicModelList.add((network, reportNode) -> DynamicOverloadManagementSystemBuilder.of(network, "CurrentLimitAutomaton")
                 .parameterSetId(parameterSetId)
