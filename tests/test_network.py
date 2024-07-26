@@ -2092,6 +2092,12 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
 
+def test_update_dangling_line():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
+    network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
+    assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
+
 
 if __name__ == '__main__':
     unittest.main()
