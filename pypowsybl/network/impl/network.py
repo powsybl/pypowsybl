@@ -2584,6 +2584,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `fictitious`
+            - `pairing_key`
 
         See Also:
             :meth:`get_dangling_lines`
