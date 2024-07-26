@@ -920,7 +920,7 @@ def test_deprecated_ucte_xnode_code_kwargs():
                                       ucte_xnode_code=['XNODE1', 'XNODE'])
     assert 'DL_TEST' in network.get_dangling_lines().index
     assert 'DL_TEST2' in network.get_dangling_lines().index
-    assert 'ucte_xnode_code' in network.get_dangling_lines().columns
+    assert 'ucte_xnode_code' in network.get_dangling_lines(all_attributes=True).columns
 
 
 def test_deprecated_ucte_xnode_code_dataframe():
@@ -939,7 +939,7 @@ def test_deprecated_ucte_xnode_code_dataframe():
             index='id'))
     assert 'DL_TEST' in network.get_dangling_lines().index
     assert 'DL_TEST2' in network.get_dangling_lines().index
-    assert 'ucte_xnode_code' in network.get_dangling_lines().columns
+    assert 'ucte_xnode_code' in network.get_dangling_lines(all_attributes=True).columns
 
 
 def test_3_windings_transformers_creation():
