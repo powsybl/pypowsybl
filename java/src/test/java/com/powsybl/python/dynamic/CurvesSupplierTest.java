@@ -10,7 +10,6 @@ package com.powsybl.python.dynamic;
 import com.powsybl.dynamicsimulation.*;
 import com.powsybl.dynawaltz.DynaWaltzCurve;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,22 +21,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-class DynamicSimulationTest {
+class CurvesSupplierTest {
 
     private static Network network;
 
     @BeforeAll
     static void setup() {
-        network = EurostagTutorialExample1Factory.createWithLFResults();
-    }
-
-    @Test
-    void testEventModelsSupplier() {
-        PythonEventModelsSupplier eventModelsSupplier = new PythonEventModelsSupplier();
-        eventModelsSupplier.addEventDisconnection("NHV1_NHV2_1", 2, TwoSides.TWO);
-        assertThat(eventModelsSupplier.get(network)).satisfiesExactly(
-                event1 -> assertThat(event1).hasFieldOrPropertyWithValue("dynamicModelId", "Disconnect_NHV1_NHV2_1")
-                        .hasFieldOrPropertyWithValue("startTime", 2.0));
+        network = EurostagTutorialExample1Factory.create();
     }
 
     @Test
