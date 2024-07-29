@@ -11,14 +11,12 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.DynamicModel;
-import com.powsybl.dynawaltz.builders.EquipmentModelBuilder;
 import com.powsybl.dynawaltz.builders.ModelBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.function.BiFunction;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}

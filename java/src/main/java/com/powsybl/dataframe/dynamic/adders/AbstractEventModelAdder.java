@@ -23,5 +23,5 @@ abstract class AbstractEventModelAdder implements EventMappingAdder {
         }
     }
 
-    abstract protected EventModelSeries createEventModelSeries(UpdatingDataframe dataframe);
+    protected abstract EventModelSeries createEventModelSeries(UpdatingDataframe dataframe);
 }

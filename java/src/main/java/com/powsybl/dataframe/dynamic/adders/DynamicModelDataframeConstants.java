@@ -10,7 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class DynamicModelDataframeConstants {
+public final class DynamicModelDataframeConstants {
 
     public static final String DYNAMIC_MODEL_ID = "dynamic_model_id";
     public static final String STATIC_ID = "static_id";
@@ -36,5 +36,6 @@ public class DynamicModelDataframeConstants {
     public static final String X_PU = "x_pu";
     public static final String R_PU = "r_pu";
 
-    private DynamicModelDataframeConstants() {}
+    private DynamicModelDataframeConstants() {
+    }
 }

@@ -23,5 +23,5 @@ abstract class AbstractDynamicModelAdder implements DynamicMappingAdder {
         }
     }
 
-    abstract protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe);
+    protected abstract DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe);
 }
