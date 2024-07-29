@@ -69,7 +69,6 @@ public class NodeFaultAdder extends AbstractEventModelAdder {
         }
     }
 
-
     @Override
     protected EventModelSeries createEventModelSeries(UpdatingDataframe dataframe) {
         return new NodeFaultSeries(dataframe);

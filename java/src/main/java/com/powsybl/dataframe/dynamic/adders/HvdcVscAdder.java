@@ -19,7 +19,7 @@ public class HvdcVscAdder extends AbstractHvdcAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new HvdcSeries<HvdcVscBuilder>(dataframe) {
+        return new AbstractHvdcSeries<HvdcVscBuilder>(dataframe) {
 
             @Override
             protected HvdcVscBuilder createBuilder(Network network, ReportNode reportNode) {

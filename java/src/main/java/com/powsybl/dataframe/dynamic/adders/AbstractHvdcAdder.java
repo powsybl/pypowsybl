@@ -37,11 +37,11 @@ abstract class AbstractHvdcAdder extends AbstractEquipmentAdder {
         return HVDC_METADATA;
     }
 
-    protected static abstract class HvdcSeries<T extends AbstractHvdcBuilder<T>> extends AbstractEquipmentSeries<T> {
+    protected abstract static class AbstractHvdcSeries<T extends AbstractHvdcBuilder<T>> extends AbstractEquipmentSeries<T> {
 
         private final StringSeries danglingSides;
 
-        HvdcSeries(UpdatingDataframe dataframe) {
+        AbstractHvdcSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.danglingSides = dataframe.getStrings(DANGLING_SIDE);
         }
