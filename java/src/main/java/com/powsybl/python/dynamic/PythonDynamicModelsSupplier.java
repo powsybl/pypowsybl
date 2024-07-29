@@ -10,10 +10,7 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
-import com.powsybl.dynawaltz.models.generators.SynchronousGeneratorBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,22 +37,5 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
 
     public void addModel(BiFunction<Network, ReportNode, DynamicModel> modelFunction) {
         dynamicModelList.add(modelFunction);
-    }
-
-    //TODO remove
-    public void addSynchronousGenerator(String staticId, String parameterSetId, String generatorLib) {
-        dynamicModelList.add((network, reportNode) -> SynchronousGeneratorBuilder.of(network, generatorLib)
-                .staticId(staticId)
-                .parameterSetId(parameterSetId)
-                .build());
-    }
-
-    //TODO remove
-    public void addCurrentLimitAutomaton(String staticId, String parameterSetId, TwoSides side) {
-        dynamicModelList.add((network, reportNode) -> DynamicOverloadManagementSystemBuilder.of(network, "CurrentLimitAutomaton")
-                .parameterSetId(parameterSetId)
-                .iMeasurement(staticId)
-                .iMeasurementSide(side)
-                .build());
     }
 }

@@ -32,14 +32,6 @@ class DynamicSimulationTest {
     }
 
     @Test
-    void testDynamicModelsSupplier() {
-        PythonDynamicModelsSupplier dynamicModelsSupplier = new PythonDynamicModelsSupplier();
-        dynamicModelsSupplier.addSynchronousGenerator("GEN", "syn", "GeneratorSynchronousThreeWindings");
-        assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
-                model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", "GEN"));
-    }
-
-    @Test
     void testEventModelsSupplier() {
         PythonEventModelsSupplier eventModelsSupplier = new PythonEventModelsSupplier();
         eventModelsSupplier.addEventDisconnection("NHV1_NHV2_1", 2, TwoSides.TWO);
