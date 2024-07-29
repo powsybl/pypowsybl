@@ -8,7 +8,7 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dynamicsimulation.DynamicModel;
+import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.iidm.network.Network;
 
 import java.util.function.BiFunction;
@@ -16,7 +16,7 @@ import java.util.function.BiFunction;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public interface DynamicModelSeries {
+public interface EventModelSeries {
 
-    BiFunction<Network, ReportNode, DynamicModel> getModelSupplier(int row);
+    BiFunction<Network, ReportNode, EventModel> getModelSupplier(int row);
 }

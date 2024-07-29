@@ -10,9 +10,7 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.dynawo.models.events.EventDisconnectionBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,33 +18,19 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 /**
- * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
+ * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class PythonEventModelsSupplier implements EventModelsSupplier {
 
     private final List<BiFunction<Network, ReportNode, EventModel>> eventSupplierList = new ArrayList<>();
 
-    /**
-     * According to Dynawo staticId must refer to an injection, branch or hvdc line
-     * <p>
-     * The event represent the disconnection the given equipment
-     */
-    public void addEventDisconnection(String staticId, double eventTime, TwoSides disconnectOnly) {
-        eventSupplierList.add((network, reportNode) -> {
-            EventDisconnectionBuilder builder = EventDisconnectionBuilder.of(network, reportNode)
-                    .staticId(staticId)
-                    .startTime(eventTime);
-            if (disconnectOnly != null) {
-                builder.disconnectOnly(disconnectOnly);
-            }
-            return builder.build();
-        });
-    }
-
     @Override
     public List<EventModel> get(Network network, ReportNode reportNode) {
         return eventSupplierList.stream().map(f -> f.apply(network, reportNode)).filter(Objects::nonNull).toList();
     }
 
+    public void addModel(BiFunction<Network, ReportNode, EventModel> modelFunction) {
+        eventSupplierList.add(modelFunction);
+    }
 }

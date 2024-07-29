@@ -1219,6 +1219,19 @@ public final class PyPowsyblApiHeader {
         public static native DynamicMappingType fromCValue(int value);
     }
 
+    @CEnum("EventMappingType")
+    public enum EventMappingType {
+        DISCONNECT,
+        NODE_FAULT,
+        ACTIVE_POWER_VARIATION;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native EventMappingType fromCValue(int value);
+    }
+
     @CEnum("ThreeSide")
     public enum ThreeSideType {
         UNDEFINED,
