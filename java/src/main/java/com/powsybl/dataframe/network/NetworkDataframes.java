@@ -603,7 +603,7 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""), DanglingLine::setPairingKey)
                 .strings("ucte_xnode_code", dl -> Objects.toString(dl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
