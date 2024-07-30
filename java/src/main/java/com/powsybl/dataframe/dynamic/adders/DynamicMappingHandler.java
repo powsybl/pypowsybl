@@ -7,14 +7,18 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import java.util.List;
 import java.util.Map;
 
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
+import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
-public final class DynamicMappingAdderFactory {
+public final class DynamicMappingHandler {
 
     private static final Map<DynamicMappingType, DynamicMappingAdder> ADDERS = Map.ofEntries(
             // Equipments
@@ -44,10 +48,14 @@ public final class DynamicMappingAdderFactory {
             Map.entry(DynamicMappingType.TAP_CHANGER, new TapChangerAutomationSystemAdder()),
             Map.entry(DynamicMappingType.TAP_CHANGER_BLOCKING, new TapChangerBlockingAutomationSystemAdder()));
 
-    public static DynamicMappingAdder getAdder(DynamicMappingType type) {
-        return ADDERS.get(type);
+    public static void addElements(DynamicMappingType type, PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe) {
+        ADDERS.get(type).addElements(modelMapping, dataframe);
     }
 
-    private DynamicMappingAdderFactory() {
+    public static List<SeriesMetadata> getMetadata(DynamicMappingType type) {
+        return ADDERS.get(type).getMetadata();
+    }
+
+    private DynamicMappingHandler() {
     }
 }

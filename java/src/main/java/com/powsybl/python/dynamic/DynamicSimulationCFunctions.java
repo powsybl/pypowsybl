@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.powsybl.dataframe.dynamic.CurvesSeries;
-import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdderFactory;
+import com.powsybl.dataframe.dynamic.adders.DynamicMappingHandler;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
@@ -115,7 +115,7 @@ public final class DynamicSimulationCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             UpdatingDataframe mappingDataframe = NetworkCFunctions.createDataframe(mappingDataframePtr);
-            DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicMapping, mappingDataframe);
+            DynamicMappingHandler.addElements(mappingType, dynamicMapping, mappingDataframe);
         });
     }
 
@@ -123,7 +123,7 @@ public final class DynamicSimulationCFunctions {
     public static DataframeMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
             DynamicMappingType mappingType,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(DynamicMappingAdderFactory.getAdder(mappingType).getMetadata()));
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(DynamicMappingHandler.getMetadata(mappingType)));
     }
 
     @CEntryPoint(name = "addCurve")
@@ -150,7 +150,9 @@ public final class DynamicSimulationCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             String staticId = CTypeUtil.toString(staticIdPtr);
             PythonEventModelsSupplier pythonEventModelsSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            pythonEventModelsSupplier.addEventDisconnection(staticId, eventTime, Util.convert(PyPowsyblApiHeader.ThreeSideType.fromCValue(disconnectOnly)).toTwoSides());
+            //TODO use dataframe
+            // pythonEventModelsSupplier.addEventDisconnection(staticId, eventTime, Util.convert(PyPowsyblApiHeader.ThreeSideType.fromCValue(disconnectOnly)).toTwoSides());
+            //  EventMappingAdderFactory.getAdder(PyPowsyblApiHeader.EventMappingType.DISCONNECT).addElements(pythonEventModelsSupplier, mappingDataframe);
         });
     }
 
