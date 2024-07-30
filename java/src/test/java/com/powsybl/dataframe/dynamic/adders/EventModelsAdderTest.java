@@ -49,7 +49,7 @@ public class EventModelsAdderTest {
         Network network = EurostagTutorialExample1Factory.create();
         dataframe.addSeries(START_TIME, false, new TestIntSeries(10));
         updateDataframe.accept(dataframe);
-        EventMappingAdderFactory.getAdder(mappingType).addElements(eventModelsSupplier, dataframe);
+        EventMappingHandler.addElements(mappingType, eventModelsSupplier, dataframe);
 
         assertThat(eventModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).isInstanceOf(AbstractEvent.class));

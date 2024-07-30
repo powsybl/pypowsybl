@@ -60,7 +60,7 @@ public class DynamicModelsAdderTest {
         if (dangling) {
             dataframe.addSeries(DANGLING_SIDE, false, new TestStringSeries(String.valueOf(TwoSides.TWO)));
         }
-        DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicModelsSupplier, dataframe);
+        DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, dataframe);
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", staticId)
@@ -74,7 +74,7 @@ public class DynamicModelsAdderTest {
         dataframe.addSeries(STATIC_ID, true, createTwoRowsSeries(staticId));
         dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("eq_par"));
         dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName, ""));
-        DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicModelsSupplier, dataframe);
+        DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, dataframe);
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", staticId)
@@ -89,7 +89,7 @@ public class DynamicModelsAdderTest {
         String dynamicModelId = "BBM_automation_system";
         setupDataFrame(dataframe, dynamicModelId, modelName);
         updateDataframe.accept(dataframe);
-        DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicModelsSupplier, dataframe);
+        DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, dataframe);
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
@@ -102,10 +102,10 @@ public class DynamicModelsAdderTest {
         Network network = EurostagTutorialExample1Factory.create();
         DefaultUpdatingDataframe missingStaticDF = new DefaultUpdatingDataframe(1);
         missingStaticDF.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
-        DynamicMappingAdderFactory.getAdder(BASE_LOAD).addElements(dynamicModelsSupplier, missingStaticDF);
+        DynamicMappingHandler.addElements(BASE_LOAD, dynamicModelsSupplier, missingStaticDF);
         DefaultUpdatingDataframe missingParamDF = new DefaultUpdatingDataframe(1);
         missingParamDF.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"));
-        DynamicMappingAdderFactory.getAdder(BASE_LOAD).addElements(dynamicModelsSupplier, missingParamDF);
+        DynamicMappingHandler.addElements(BASE_LOAD, dynamicModelsSupplier, missingParamDF);
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 
@@ -116,7 +116,7 @@ public class DynamicModelsAdderTest {
         wrongModelNameDF.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"));
         wrongModelNameDF.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
         wrongModelNameDF.addSeries(MODEL_NAME, false, new TestStringSeries("wrongModelName"));
-        DynamicMappingAdderFactory.getAdder(BASE_LOAD).addElements(dynamicModelsSupplier, wrongModelNameDF);
+        DynamicMappingHandler.addElements(BASE_LOAD, dynamicModelsSupplier, wrongModelNameDF);
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 

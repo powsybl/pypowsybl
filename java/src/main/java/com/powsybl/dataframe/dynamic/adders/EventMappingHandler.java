@@ -7,14 +7,18 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.commons.PyPowsyblApiHeader.EventMappingType;
+import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public final class EventMappingAdderFactory {
+public final class EventMappingHandler {
 
     private static final Map<EventMappingType, EventMappingAdder> ADDERS = Map.ofEntries(
             Map.entry(EventMappingType.DISCONNECT, new DisconnectAdder()),
@@ -22,10 +26,14 @@ public final class EventMappingAdderFactory {
             Map.entry(EventMappingType.ACTIVE_POWER_VARIATION, new ActivePowerVariationAdder())
     );
 
-    public static EventMappingAdder getAdder(EventMappingType type) {
-        return ADDERS.get(type);
+    public static void addElements(EventMappingType type, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {
+        ADDERS.get(type).addElements(modelMapping, dataframe);
     }
 
-    private EventMappingAdderFactory() {
+    public static List<SeriesMetadata> getMetadata(EventMappingType type) {
+        return ADDERS.get(type).getMetadata();
+    }
+
+    private EventMappingHandler() {
     }
 }

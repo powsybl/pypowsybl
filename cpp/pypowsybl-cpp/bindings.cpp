@@ -171,6 +171,7 @@ void dynamicSimulationBindings(py::module_& m) {
 
     // events mapping
     m.def("add_event_disconnection", &pypowsybl::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
+   //TODO add event mapping meta data
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
