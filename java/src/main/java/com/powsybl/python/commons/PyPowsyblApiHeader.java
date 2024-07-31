@@ -1242,18 +1242,6 @@ public final class PyPowsyblApiHeader {
         public static native ThreeSideType fromCValue(int value);
     }
 
-    @CEnum("TwoSide")
-    public enum TwoSideType {
-        ONE,
-        TWO;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native TwoSideType fromCValue(int value);
-    }
-
     @CEnum("condition_type")
     public enum ConditionType {
         TRUE_CONDITION,

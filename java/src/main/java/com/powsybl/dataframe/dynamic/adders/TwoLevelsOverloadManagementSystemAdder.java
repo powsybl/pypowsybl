@@ -13,7 +13,8 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicTwoLevelsOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
+import com.powsybl.python.commons.Util;
 
 import java.util.List;
 
@@ -62,9 +63,9 @@ public class TwoLevelsOverloadManagementSystemAdder extends AbstractDynamicModel
             super.applyOnBuilder(row, builder);
             applyIfPresent(controlledBranch, row, builder::controlledBranch);
             applyIfPresent(iMeasurement1, row, builder::iMeasurement1);
-            applyIfPresent(iMeasurement1Side, row, TwoSides.class, builder::iMeasurement1Side);
+            applyIfPresent(iMeasurement1Side, row, ThreeSideType.class, Util::convertToTwoSides, builder::iMeasurement1Side);
             applyIfPresent(iMeasurement2, row, builder::iMeasurement2);
-            applyIfPresent(iMeasurement2Side, row, TwoSides.class, builder::iMeasurement2Side);
+            applyIfPresent(iMeasurement2Side, row, ThreeSideType.class, Util::convertToTwoSides, builder::iMeasurement2Side);
         }
 
         @Override

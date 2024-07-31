@@ -11,7 +11,8 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.hvdc.AbstractHvdcBuilder;
-import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
+import com.powsybl.python.commons.Util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ abstract class AbstractHvdcAdder extends AbstractEquipmentAdder {
         @Override
         protected void applyOnBuilder(int row, T builder) {
             super.applyOnBuilder(row, builder);
-            applyIfPresent(danglingSides, row, TwoSides.class, builder::dangling);
+            applyIfPresent(danglingSides, row, ThreeSideType.class, Util::convertToTwoSides, builder::dangling);
         }
     }
 }
