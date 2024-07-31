@@ -143,14 +143,35 @@ py::array seriesAsNumpyArray(const series& series) {
 void dynamicSimulationBindings(py::module_& m) {
 
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
-        .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
-        .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
-        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
-        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
-        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
-        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
-        .value("GENERATOR_SYNCHRONOUS", DynamicMappingType::GENERATOR_SYNCHRONOUS)
-        .value("CURRENT_LIMIT_AUTOMATON", DynamicMappingType::CURRENT_LIMIT_AUTOMATON);
+        .value("BASE_LOAD", DynamicMappingType::BASE_LOAD)
+        .value("LOAD_ONE_TRANSFORMER", DynamicMappingType::LOAD_ONE_TRANSFORMER)
+        .value("LOAD_ONE_TRANSFORMER_TAP_CHANGER", DynamicMappingType::LOAD_ONE_TRANSFORMER_TAP_CHANGER)
+        .value("LOAD_TWO_TRANSFORMERS", DynamicMappingType::LOAD_TWO_TRANSFORMERS)
+        .value("LOAD_TWO_TRANSFORMERS_TAP_CHANGERS", DynamicMappingType::LOAD_TWO_TRANSFORMERS_TAP_CHANGERS)
+        .value("BASE_GENERATOR", DynamicMappingType::BASE_GENERATOR)
+        .value("SYNCHRONIZED_GENERATOR", DynamicMappingType::SYNCHRONIZED_GENERATOR)
+        .value("SYNCHRONOUS_GENERATOR", DynamicMappingType::SYNCHRONOUS_GENERATOR)
+        .value("WECC", DynamicMappingType::WECC)
+        .value("GRID_FORMING_CONVERTER", DynamicMappingType::GRID_FORMING_CONVERTER)
+        .value("HVDC_P", DynamicMappingType::HVDC_P)
+        .value("HVDC_VSC", DynamicMappingType::HVDC_VSC)
+        .value("BASE_TRANSFORMER", DynamicMappingType::BASE_TRANSFORMER)
+        .value("BASE_STATIC_VAR_COMPENSATOR", DynamicMappingType::BASE_STATIC_VAR_COMPENSATOR)
+        .value("BASE_LINE", DynamicMappingType::BASE_LINE)
+        .value("BASE_BUS", DynamicMappingType::BASE_BUS)
+        .value("INFINITE_BUS", DynamicMappingType::INFINITE_BUS)
+        .value("OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("UNDER_VOLTAGE", DynamicMappingType::UNDER_VOLTAGE)
+        .value("PHASE_SHIFTER_I", DynamicMappingType::PHASE_SHIFTER_I)
+        .value("PHASE_SHIFTER_P", DynamicMappingType::PHASE_SHIFTER_P)
+        .value("TAP_CHANGER", DynamicMappingType::TAP_CHANGER)
+        .value("TAP_CHANGER_BLOCKING", DynamicMappingType::TAP_CHANGER_BLOCKING);
+
+    py::enum_<EventMappingType>(m, "EventMappingType")
+            .value("DISCONNECT", EventMappingType::DISCONNECT)
+            .value("NODE_FAULT", EventMappingType::NODE_FAULT)
+            .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION);
 
     //entrypoints for constructors
     m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
