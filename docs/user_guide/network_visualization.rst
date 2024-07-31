@@ -203,6 +203,7 @@ Or in a Jupyter Notebook:
 
     >>> network.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'],['S3','S4']])
 
+The substation diagrams will be arranged in a grid, based on the content of the matrix parameter. An empty string in the matrix will result in an empty spot in the grid.
 
 Network area diagram
 --------------------
