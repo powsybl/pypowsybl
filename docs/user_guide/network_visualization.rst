@@ -34,8 +34,7 @@ Single-line diagrams can be customized through SldParameters:
 
     >>> network = pp.network.create_ieee14()
     >>> result = pp.loadflow.run_ac(network)
-    >>> network.get_single_line_diagram('VL4',parameters = pp.network.SldParameters(use_name = False, center_name = False, diagonal_label = False, nodes_infos = False, tooltip_enabled = False, topological_coloring = True, component_library = 'Convergence', display_current_feeder_info = False))
-
+    >>> network.get_single_line_diagram('VL4',parameters = pp.network.SldParameters(use_name = False, center_name = False, diagonal_label = False, nodes_infos = False, tooltip_enabled = False, topological_coloring = True, component_library = 'Convergence'))
 
 - use_name: if true, display components names instead of their id (default value false)
 - center_name: if true, center the names of feeders (default value false)
@@ -44,6 +43,9 @@ Single-line diagrams can be customized through SldParameters:
 - tooltip_enabled: if true, display the name of the component pointed by the cursor (default value false)
 - topological_coloring: if true, set each electrical nodes with a different colour (default value true)
 - component_library: choose component library (default value 'Convergence')
+- active_power_unit: display unit of active power (default value "")
+- reactive_power_unit: display unit of reactive power (default value "")
+- current_unit: display unit of current (default value "")
 - display_current_feeder_info: if true, display current feeder value (default value False)
 
 
@@ -60,7 +62,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_default.svg
    :class: forced-white-background
 
-- with use_name = true
+- with use_name = True
 
 .. code-block:: python
 
@@ -70,7 +72,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_usename.svg
    :class: forced-white-background
 
-- with center_name = true
+- with center_name = True
 
 .. code-block:: python
 
@@ -80,7 +82,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_centername.svg
    :class: forced-white-background
 
-- with diagonal_label = true
+- with diagonal_label = True
 
 .. code-block:: python
 
@@ -90,7 +92,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_diagonallabel.svg
    :class: forced-white-background
 
-- with nodes_infos = true
+- with nodes_infos = True
 
 .. code-block:: python
 
@@ -100,7 +102,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_nodesinfos.svg
    :class: forced-white-background
 
-- with tooltip enabled
+- with tooltip_enabled = True
 
 .. code-block:: python
 
@@ -110,7 +112,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_tooltipenabledtrue.png
    :class: forced-white-background
 
-- with topological coloring = true
+- with topological_coloring = True
 
 .. code-block:: python
 
@@ -122,7 +124,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/SldParam_topologicalcoloringtrue.svg
    :class: forced-white-background
 
-- with topological coloring = false
+- with topological_coloring = False
 
 .. code-block:: python
 
@@ -143,7 +145,7 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_complib_flatdesign.svg
    :class: forced-white-background
 
-- with display current feeder info
+- with display_current_feeder_info = True
 
 .. code-block:: python
 
@@ -153,6 +155,36 @@ Let's see some examples down below:
 .. image:: ../_static/images/ieee14_SldParam_displaycurrentfeederinfo.svg
    :class: forced-white-background
 
+- with active_power_unit = "MW"
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(active_power_unit = "MW")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_activepowerunit.svg
+   :class: forced-white-background
+
+- with reactive_power_unit = "MVAR"
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(reactive_power_unit = "MVAR")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_reactivepowerunit.svg
+   :class: forced-white-background
+
+
+- with current_unit = "A"
+
+.. code-block:: python
+
+    >>> param = pn.SldParameters(display_current_feeder_info = True, current_unit = "A")
+    >>> network.get_single_line_diagram('VL4', parameters = param)
+
+.. image:: ../_static/images/ieee14_SldParam_currentunit.svg
+   :class: forced-white-background
 
 It is also possible to display a multi-substation single line diagram (currently a beta feature):
 

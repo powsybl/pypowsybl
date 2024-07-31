@@ -189,10 +189,10 @@ void voltageInitializerBinding(py::module_& m) {
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
     py::enum_<VoltageInitializerLogLevelAmpl>(m, "VoltageInitializerLogLevelAmpl")
-        .value("DEBUG", VoltageInitializerLogLevelAmpl::DEBUG)
-        .value("INFO", VoltageInitializerLogLevelAmpl::INFO)
-        .value("WARNING", VoltageInitializerLogLevelAmpl::WARNING)
-        .value("ERROR", VoltageInitializerLogLevelAmpl::ERROR);
+        .value("DEBUG", VoltageInitializerLogLevelAmpl::LOG_AMPL_DEBUG)
+        .value("INFO", VoltageInitializerLogLevelAmpl::LOG_AMPL_INFO)
+        .value("WARNING", VoltageInitializerLogLevelAmpl::LOG_AMPL_WARNING)
+        .value("ERROR", VoltageInitializerLogLevelAmpl::LOG_AMPL_ERROR);
 
     py::enum_<VoltageInitializerLogLevelSolver>(m, "VoltageInitializerLogLevelSolver")
         .value("NOTHING", VoltageInitializerLogLevelSolver::NOTHING)
@@ -548,7 +548,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
         .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
-        .def_readwrite("display_current_feeder_info", &pypowsybl::SldParameters::display_current_feeder_info);
+        .def_readwrite("display_current_feeder_info", &pypowsybl::SldParameters::display_current_feeder_info)
+        .def_readwrite("active_power_unit", &pypowsybl::SldParameters::active_power_unit)
+        .def_readwrite("reactive_power_unit", &pypowsybl::SldParameters::reactive_power_unit)
+        .def_readwrite("current_unit", &pypowsybl::SldParameters::current_unit);
 
     py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
             .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
