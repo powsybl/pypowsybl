@@ -388,6 +388,7 @@ typedef struct shortcircuit_analysis_parameters_struct {
     int study_type;
     unsigned char with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
+    int initial_voltage_profile_mode;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;
