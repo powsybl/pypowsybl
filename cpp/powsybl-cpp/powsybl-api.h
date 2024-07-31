@@ -342,6 +342,9 @@ typedef struct sld_parameters_struct {
     unsigned char topological_coloring;
     char* component_library;
     unsigned char display_current_feeder_info;
+    char* active_power_unit;
+    char* reactive_power_unit;
+    char* current_unit;
 } sld_parameters;
 
 typedef struct nad_parameters_struct {
