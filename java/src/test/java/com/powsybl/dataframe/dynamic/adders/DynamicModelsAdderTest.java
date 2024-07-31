@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.*;
-import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.TRANSFORMER;
+import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.BASE_TRANSFORMER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -132,7 +132,7 @@ public class DynamicModelsAdderTest {
                 Arguments.of(SYNCHRONOUS_GENERATOR, "GeneratorSynchronousThreeWindings", EurostagTutorialExample1Factory.create(), "GEN"),
                 Arguments.of(WECC, "WT4BWeccCurrentSource", EurostagTutorialExample1Factory.create(), "GEN"),
                 Arguments.of(GRID_FORMING_CONVERTER, "GridFormingConverterMatchingControl", EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(TRANSFORMER, "TransformerFixedRatio", EurostagTutorialExample1Factory.create(), "NGEN_NHV1"),
+                Arguments.of(BASE_TRANSFORMER, "TransformerFixedRatio", EurostagTutorialExample1Factory.create(), "NGEN_NHV1"),
                 Arguments.of(BASE_STATIC_VAR_COMPENSATOR, "StaticVarCompensatorPV", SvcTestCaseFactory.create(), "SVC2"),
                 Arguments.of(BASE_LINE, "Line", EurostagTutorialExample1Factory.create(), "NHV1_NHV2_1"),
                 Arguments.of(BASE_BUS, "Bus", EurostagTutorialExample1Factory.create(), "NHV1"),

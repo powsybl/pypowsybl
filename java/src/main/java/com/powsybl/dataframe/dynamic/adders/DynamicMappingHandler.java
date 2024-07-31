@@ -34,7 +34,7 @@ public final class DynamicMappingHandler {
             Map.entry(DynamicMappingType.GRID_FORMING_CONVERTER, new GridFormingConverterAdder()),
             Map.entry(DynamicMappingType.HVDC_P, new HvdcPAdder()),
             Map.entry(DynamicMappingType.HVDC_VSC, new HvdcVscAdder()),
-            Map.entry(DynamicMappingType.TRANSFORMER, new TransformerAdder()),
+            Map.entry(DynamicMappingType.BASE_TRANSFORMER, new TransformerAdder()),
             Map.entry(DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR, new StaticVarCompensatorAdder()),
             Map.entry(DynamicMappingType.BASE_LINE, new LineAdder()),
             Map.entry(DynamicMappingType.BASE_BUS, new BaseBusAdder()),

@@ -70,7 +70,7 @@ To run a Dynawaltz simulation:
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_alpha_beta_load("LOAD", "LAB") # and so on
+    model_mapping.add_base_load("LOAD", "LAB", "LoadAlphaBeta") # and so on
 
     # events mapping
     events = dyn.EventMapping()
