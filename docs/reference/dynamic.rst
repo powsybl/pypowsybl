@@ -12,7 +12,6 @@ ModelMapping
    :toctree: api/
 
     ModelMapping
-    ModelMapping.add_all_dynamic_mappings
     ModelMapping.add_base_load
     ModelMapping.add_load_one_transformer
     ModelMapping.add_load_one_transformer_tap_changer
@@ -37,6 +36,7 @@ ModelMapping
     ModelMapping.add_phase_shifter_p_automation_system
     ModelMapping.add_tap_changer_automation_system
     ModelMapping.add_tap_changer_blocking_automation_system
+    ModelMapping.add_all_dynamic_mappings
 
 
 EventMapping
@@ -45,8 +45,10 @@ EventMapping
    :toctree: api/
 
     EventMapping
-    EventMapping.get_possible_events
     EventMapping.add_disconnection
+    EventMapping.add_active_power_variation
+    EventMapping.add_node_fault
+    EventMapping.add_all_event_mappings
 
 CurveMapping
 ------------
