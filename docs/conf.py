@@ -70,12 +70,12 @@ html_favicon = "_static/favicon.ico"
 
 html_context = {
     "sidebar_logo_href": "https://powsybl.readthedocs.io/",
-    "github_repository": "https://github.com/powsybl/pypowsybl/"
+    "github_repository": github_repository
 }
 
 html_theme_options = {
     # the following 3 lines enable edit button
-    "source_repository": "https://github.com/powsybl/pypowsybl/",
+    "source_repository": github_repository,
     "source_branch": "main",
     "source_directory": "docs/"
 }
