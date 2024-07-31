@@ -384,7 +384,7 @@ class ModelMapping:
         """
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 
-        | The dataframe must contains these three columns:
+        | If it's an equipment, the dataframe must contain these three columns:
         |     - static_id: id of the network element to map
         |     - parameter_set_id: set id in the parameter file
         |     - mapping_type: value of enum DynamicMappingType
