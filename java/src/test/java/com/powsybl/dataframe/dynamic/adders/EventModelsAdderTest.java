@@ -9,7 +9,6 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
-import com.powsybl.dataframe.update.TestIntSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dynawaltz.models.events.AbstractEvent;
 import com.powsybl.iidm.network.Network;
@@ -47,7 +46,7 @@ public class EventModelsAdderTest {
     @MethodSource("eventProvider")
     void testEventAdders(EventMappingType mappingType, Consumer<DefaultUpdatingDataframe> updateDataframe) {
         Network network = EurostagTutorialExample1Factory.create();
-        dataframe.addSeries(START_TIME, false, new TestIntSeries(10));
+        dataframe.addSeries(START_TIME, false, new TestDoubleSeries(10));
         updateDataframe.accept(dataframe);
         EventMappingHandler.addElements(mappingType, eventModelsSupplier, dataframe);
 

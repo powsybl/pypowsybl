@@ -1339,12 +1339,12 @@ void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mapp
     PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, mappingDf);
 }
 
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
-    PowsyblCaller::get()->callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
+void addEventMappings(JavaHandle dynamicMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
+    PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, mappingType, mappingDf);
 }
 
-void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly) {
-    PowsyblCaller::get()->callJava<>(::addEventDisconnection, eventMappingHandle, (char*) staticId.c_str(), eventTime, disconnectOnly);
+void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
+    PowsyblCaller::get()->callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
@@ -1365,7 +1365,14 @@ std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappin
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
     return res;
-    }
+}
+
+std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType) {
+    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getEventMappingsMetaData, mappingType);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
+    return res;
+}
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
     dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getModificationMetadata, networkModificationType);

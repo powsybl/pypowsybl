@@ -15,10 +15,6 @@ def set_up():
     pp.set_config_read(False)
 
 
-def test_get_possible_events():
-    assert set(dyn.EventMapping.get_possible_events()) == {dyn.EventType.DISCONNECTION}
-
-
 def test_add_mapping():
     id = "test_id"
     parameter_id = "test_parameter"
@@ -45,7 +41,7 @@ def test_add_event():
     events = dyn.EventMapping()
     events.add_disconnection("test_quadripole_id", 5, pp.dynamic.Side.ONE)
     events.add_disconnection("test_generator_id", 3.3, pp.dynamic.Side.TWO)
-    events.add_disconnection("test_generator_id", 8.2, pp.dynamic.Side.TWO)
+    # TODO test remaining adders
 
 
 def test_add_curve():

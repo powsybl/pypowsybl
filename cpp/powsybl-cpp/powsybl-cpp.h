@@ -770,7 +770,8 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
 // events mapping
-void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
+void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
 
 // dynamic model mapping
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);

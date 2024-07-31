@@ -170,8 +170,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
 
     // events mapping
-    m.def("add_event_disconnection", &pypowsybl::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
-   //TODO add event mapping meta data
+    m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("get_event_mappings_meta_data", &pypowsybl::getEventMappingsMetaData, py::arg("mapping_type"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
