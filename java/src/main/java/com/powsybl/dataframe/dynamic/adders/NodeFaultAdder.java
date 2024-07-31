@@ -41,14 +41,14 @@ public class NodeFaultAdder extends AbstractEventModelAdder {
     private static class NodeFaultSeries extends AbstractEventModelSeries<NodeFaultEventBuilder> {
 
         private final StringSeries staticIds;
-        private final IntSeries startTimes;
+        private final DoubleSeries startTimes;
         private final DoubleSeries faultTimes;
         private final DoubleSeries rPu;
         private final DoubleSeries xPu;
 
         NodeFaultSeries(UpdatingDataframe dataframe) {
             this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.startTimes = dataframe.getInts(START_TIME);
+            this.startTimes = dataframe.getDoubles(START_TIME);
             this.faultTimes = dataframe.getDoubles(FAULT_TIME);
             this.rPu = dataframe.getDoubles(R_PU);
             this.xPu = dataframe.getDoubles(X_PU);

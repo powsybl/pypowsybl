@@ -39,12 +39,12 @@ public class ActivePowerVariationAdder extends AbstractEventModelAdder {
     private static class ActivePowerVariationSeries extends AbstractEventModelSeries<EventActivePowerVariationBuilder> {
 
         private final StringSeries staticIds;
-        private final IntSeries startTimes;
+        private final DoubleSeries startTimes;
         private final DoubleSeries deltaPs;
 
         ActivePowerVariationSeries(UpdatingDataframe dataframe) {
             this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.startTimes = dataframe.getInts(START_TIME);
+            this.startTimes = dataframe.getDoubles(START_TIME);
             this.deltaPs = dataframe.getDoubles(DELTA_P);
         }
 

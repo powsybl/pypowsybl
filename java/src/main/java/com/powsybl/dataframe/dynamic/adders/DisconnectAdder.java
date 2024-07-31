@@ -9,7 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.update.IntSeries;
+import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
@@ -39,12 +39,12 @@ public class DisconnectAdder extends AbstractEventModelAdder {
     private static class DisconnectSeries extends AbstractEventModelSeries<EventDisconnectionBuilder> {
 
         private final StringSeries staticIds;
-        private final IntSeries startTimes;
+        private final DoubleSeries startTimes;
         private final StringSeries disconnectOnly;
 
         DisconnectSeries(UpdatingDataframe dataframe) {
             this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.startTimes = dataframe.getInts(START_TIME);
+            this.startTimes = dataframe.getDoubles(START_TIME);
             this.disconnectOnly = dataframe.getStrings(DISCONNECT_ONLY);
         }
 
