@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -96,7 +97,7 @@ public final class SingleLineDiagramUtil {
 
     static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
         sldParameters.setZoneLayoutFactory(new MatrixZoneLayoutFactory(matrixIds));
-        List<String> substationIds = Arrays.stream(matrixIds).flatMap(Arrays::stream).toList();
+        List<String> substationIds = Arrays.stream(matrixIds).flatMap(Arrays::stream).filter(Predicate.not(String::isEmpty)).toList();
         SingleLineDiagram.drawMultiSubstations(network, substationIds, writer, metadataWriter, sldParameters);
     }
 
