@@ -23,16 +23,8 @@ def test_add_mapping():
     id = "test_id"
     parameter_id = "test_parameter"
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_alpha_beta_load(id, parameter_id)
-    model_mapping.add_one_transformer_load(id, parameter_id)
-    model_mapping.add_generator_synchronous_three_windings(id, parameter_id)
-    model_mapping.add_generator_synchronous_three_windings_proportional_regulations(
-        id, parameter_id)
-    model_mapping.add_generator_synchronous_four_windings(id, parameter_id)
-    model_mapping.add_generator_synchronous_four_windings_proportional_regulations(
-        id, parameter_id)
-    model_mapping.add_current_limit_automaton(
-        id, parameter_id, dyn.Side.TWO)
+    model_mapping.add_base_load(id, parameter_id, "LoadPQ")
+    # TODO test remaining adders
 
 
 def test_dataframe_mapping():
