@@ -855,6 +855,14 @@ def test_sld_svg():
     assert re.search('.*<svg.*', sld_multi_substation2.svg)
     assert len(sld_multi_substation2.metadata) > 0
 
+    sld_multi_substation3 = n.get_matrix_multi_substation_single_line_diagram([['S1'],['S2']])
+    assert re.search('.*<svg.*', sld_multi_substation3.svg)
+    assert len(sld_multi_substation3.metadata) > 0   
+    
+    sld_multi_substation4 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2']])
+    assert re.search('.*<svg.*', sld_multi_substation4.svg)
+    assert len(sld_multi_substation4.metadata) > 0    
+
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
     sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
@@ -2090,6 +2098,12 @@ def test_nad_parameters():
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
+
+def test_update_dangling_line():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
+    network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
+    assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
 
 
 if __name__ == '__main__':

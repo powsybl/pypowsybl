@@ -406,10 +406,10 @@ typedef enum {
 } VoltageInitializerObjective;
 
 typedef enum {
-    DEBUG = 0,
-    INFO,
-    WARNING,
-    ERROR,
+    LOG_AMPL_DEBUG = 0,
+    LOG_AMPL_INFO,
+    LOG_AMPL_WARNING,
+    LOG_AMPL_ERROR,
 } VoltageInitializerLogLevelAmpl;
 
 typedef enum {

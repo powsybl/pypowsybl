@@ -1301,10 +1301,10 @@ public final class PyPowsyblApiHeader {
 
     @CEnum("VoltageInitializerLogLevelAmpl")
     public enum VoltageInitializerLogLevelAmpl {
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR;
+        LOG_AMPL_DEBUG,
+        LOG_AMPL_INFO,
+        LOG_AMPL_WARNING,
+        LOG_AMPL_ERROR;
 
         @CEnumValue
         public native int getCValue();
