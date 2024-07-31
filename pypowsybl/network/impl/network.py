@@ -2584,6 +2584,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `fictitious`
+            - `pairing_key`
+            - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
 
         See Also:
             :meth:`get_dangling_lines`
