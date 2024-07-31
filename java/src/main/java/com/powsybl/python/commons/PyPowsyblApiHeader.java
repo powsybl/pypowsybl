@@ -1074,6 +1074,25 @@ public final class PyPowsyblApiHeader {
 
         @CField("display_current_feeder_info")
         void setDisplayCurrentFeederInfo(boolean displayCurrentInfo);
+
+        @CField("active_power_unit")
+        CCharPointer getActivePowerUnit();
+
+        @CField("active_power_unit")
+        void setActivePowerUnit(CCharPointer activePowerUnit);
+
+        @CField("reactive_power_unit")
+        CCharPointer getReactivePowerUnit();
+
+        @CField("reactive_power_unit")
+        void setReactivePowerUnit(CCharPointer reactivePowerUnit);
+
+        @CField("current_unit")
+        CCharPointer getCurrentUnit();
+
+        @CField("current_unit")
+        void setCurrentUnit(CCharPointer currentUnit);
+
     }
 
     @CStruct("nad_parameters")
