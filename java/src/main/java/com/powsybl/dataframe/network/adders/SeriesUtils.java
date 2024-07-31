@@ -15,6 +15,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
+import java.util.function.Function;
 import java.util.function.IntConsumer;
 
 /**
@@ -57,6 +58,16 @@ public final class SeriesUtils {
     public static <E extends Enum<E>> void applyIfPresent(StringSeries series, int index, Class<E> enumClass, Consumer<E> consumer) {
         if (series != null) {
             consumer.accept(Enum.valueOf(enumClass, series.get(index)));
+        }
+    }
+
+    public static <E extends Enum<E>, F extends Enum<F>> void applyIfPresent(StringSeries series, int index, Class<E> pythonEnumClass,
+                                                                             Function<E,F> converter, Consumer<F> consumer) {
+        if (series != null) {
+            F convertedEnum = converter.apply(Enum.valueOf(pythonEnumClass, series.get(index)));
+            if(convertedEnum != null) {
+                consumer.accept(convertedEnum);
+            }
         }
     }
 

@@ -48,23 +48,22 @@ public class DynamicModelsAdderTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("hvdcDataProvider")
-    void testHvdcAdders(PyPowsyblApiHeader.DynamicMappingType mappingType, String modelName, boolean dangling) {
+    void testHvdcAdders(PyPowsyblApiHeader.DynamicMappingType mappingType, String modelName) {
 
         String staticId = "L";
         Network network = HvdcTestNetwork.createVsc();
-        // TODO try 2 rows dataframe
-        dataframe = new DefaultUpdatingDataframe(1);
+        dataframe = new DefaultUpdatingDataframe(2);
         dataframe.addSeries(STATIC_ID, true, createTwoRowsSeries(staticId));
         dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("hvdc_par"));
         dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName, ""));
-        if (dangling) {
-            dataframe.addSeries(DANGLING_SIDE, false, new TestStringSeries(String.valueOf(TwoSides.TWO)));
-        }
+        dataframe.addSeries(DANGLING_SIDE, false, new TestStringSeries(String.valueOf(TwoSides.TWO),
+                String.valueOf(PyPowsyblApiHeader.ThreeSideType.UNDEFINED)));
         DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, dataframe);
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", staticId)
-                        .hasFieldOrPropertyWithValue("lib", modelName));
+                        .hasFieldOrPropertyWithValue("lib", modelName),
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", staticId));
     }
 
     @ParameterizedTest(name = "{0}")
@@ -142,8 +141,8 @@ public class DynamicModelsAdderTest {
 
     static Stream<Arguments> hvdcDataProvider() {
         return Stream.of(
-                Arguments.of(HVDC_P, "HvdcPVDangling", true),
-                Arguments.of(HVDC_VSC, "HvdcVSC", false)
+                Arguments.of(HVDC_P, "HvdcPVDangling"),
+                Arguments.of(HVDC_VSC, "HvdcVSCDanglingP")
         );
     }
 

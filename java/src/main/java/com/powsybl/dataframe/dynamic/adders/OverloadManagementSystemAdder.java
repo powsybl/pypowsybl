@@ -14,6 +14,8 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
+import com.powsybl.python.commons.Util;
 
 import java.util.List;
 
@@ -56,7 +58,7 @@ public class OverloadManagementSystemAdder extends AbstractDynamicModelAdder {
             super.applyOnBuilder(row, builder);
             applyIfPresent(controlledBranch, row, builder::controlledBranch);
             applyIfPresent(iMeasurement, row, builder::iMeasurement);
-            applyIfPresent(iMeasurementSide, row, TwoSides.class, builder::iMeasurementSide);
+            applyIfPresent(iMeasurementSide, row, ThreeSideType.class, Util::convertToTwoSides, builder::iMeasurementSide);
         }
 
         @Override

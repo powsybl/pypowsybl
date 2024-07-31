@@ -14,7 +14,8 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
+import com.powsybl.python.commons.Util;
 
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class DisconnectAdder extends AbstractEventModelAdder {
         protected void applyOnBuilder(int row, EventDisconnectionBuilder builder) {
             applyIfPresent(staticIds, row, builder::staticId);
             applyIfPresent(startTimes, row, builder::startTime);
-            applyIfPresent(disconnectOnly, row, TwoSides.class, builder::disconnectOnly);
+            applyIfPresent(disconnectOnly, row, ThreeSideType.class, Util::convertToTwoSides, builder::disconnectOnly);
         }
 
         @Override

@@ -52,6 +52,7 @@ public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
         protected void applyOnBuilder(int row, TapChangerAutomationSystemBuilder builder) {
             super.applyOnBuilder(row, builder);
             applyIfPresent(staticIds, row, builder::staticId);
+            // TODO handle TransformerSide enum on python side
             applyIfPresent(sides, row, TransformerSide.class, builder::side);
         }
 
