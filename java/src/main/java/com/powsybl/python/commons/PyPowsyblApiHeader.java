@@ -1261,6 +1261,12 @@ public final class PyPowsyblApiHeader {
         @CField("min_voltage_drop_proportional_threshold")
         void setMinVoltageDropProportionalThreshold(double minVoltageDropProportionalThreshold);
 
+        @CField("initial_voltage_profile_mode")
+        int getInitialVoltageProfileMode();
+
+        @CField("initial_voltage_profile_mode")
+        void setInitialVoltageProfileMode(int initialVoltageProfileMode);
+
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
 
