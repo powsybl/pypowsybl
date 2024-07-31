@@ -30,6 +30,7 @@ except ImportError:
 
 project = 'pypowsybl'
 copyright = '2021, RTE (http://www.rte-france.com)'
+github_repository = "https://github.com/powsybl/pypowsybl/"
 
 
 # -- General configuration ---------------------------------------------------
@@ -66,6 +67,11 @@ html_short_title = 'pypowsybl'
 
 html_logo = '_static/logos/logo_lfe_powsybl.svg'
 html_favicon = "_static/favicon.ico"
+
+html_context = {
+    "sidebar_logo_href": "https://powsybl.readthedocs.io/",
+    "github_repository": "https://github.com/powsybl/pypowsybl/"
+}
 
 html_theme_options = {
     # the following 3 lines enable edit button
