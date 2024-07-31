@@ -705,6 +705,11 @@ class ShortCircuitStudyType:
     TRANSIENT: ClassVar[ShortCircuitStudyType] = ...
     STEADY_STATE: ClassVar[ShortCircuitStudyType] = ...
 
+class InitialVoltageProfileMode:
+    __members__: ClassVar[Dict[str, InitialVoltageProfileMode]] = ...  # read-only
+    NOMINAL: ClassVar[InitialVoltageProfileMode] = ...
+    PREVIOUS_VALUE: ClassVar[InitialVoltageProfileMode] = ...
+
 class ShortCircuitAnalysisParameters:
     with_voltage_result: bool
     with_feeder_result: bool
@@ -714,6 +719,7 @@ class ShortCircuitAnalysisParameters:
     min_voltage_drop_proportional_threshold: float
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
+    initial_voltage_profile_mode: InitialVoltageProfileMode
     def __init__(self) -> None: ...
 
 def add_contingency(analysis_context: JavaHandle, contingency_id: str, elements_ids: List[str]) -> None: ...

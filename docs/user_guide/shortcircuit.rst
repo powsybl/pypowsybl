@@ -41,6 +41,9 @@ The parameters available to run a shortcircuit analysis are:
     - min_voltage_drop_proportional_threshold: specifies a threshold for filtering the voltage results.
       Only nodes where the voltage drop due to the short circuit is greater than this property are retained.
     - study_type: specifies the type of short circuit study. It can be SUB_TRANSIENT, TRANSIENT or STEADY_STATE.
+    - initial_voltage_profile_mode: specifies the voltage profile to be used for the calculation. It can be either
+      `NOMINAL`, in which case the nominal voltages are used, or `PREVIOUS_VALUE`, in which case the calculated voltages
+      are used.
 
 
 +----------------------------------------+---------------+
