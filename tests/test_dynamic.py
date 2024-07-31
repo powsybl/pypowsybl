@@ -35,7 +35,7 @@ def test_dataframe_mapping():
     generator_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_generators().loc[l].name for l in network.get_generators().index],
                                                    "parameter_set_id": ["GSTWPR" for l in network.get_generators().index]})
 
-    model_mapping.add_all_dynamic_mappings(dyn.DynamicMappingType.ALPHA_BETA_LOAD,
+    model_mapping.add_all_dynamic_mappings(dyn.DynamicMappingType.BASE_LOAD,
                                            load_mapping_df.set_index("static_id"))
     model_mapping.add_all_dynamic_mappings(
         dyn.DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS, generator_mapping_df.set_index("static_id"))
