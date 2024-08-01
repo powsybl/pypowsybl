@@ -21,6 +21,7 @@ public final class ReportCUtils {
 
     public static ReportNode getReportNode(ObjectHandle reportNodeHandle) {
         ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+
         return reportNode != null ? reportNode : ReportNode.NO_OP;
     }
 }
