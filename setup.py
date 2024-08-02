@@ -100,7 +100,7 @@ class PyPowsyblBuild(build_ext):
             for lib in binaries['lib']:
                 archive.write(lib, arcname=os.path.join('lib', os.path.basename(lib)))
             for include in includes:
-                archive.write(include, arcname=os.path.join('include/powsybl-cpp', os.path.basename(include)))
+                archive.write(include, arcname=os.path.join('include', os.path.basename(include)))
 
 
 setup(
