@@ -13,7 +13,6 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
 import com.powsybl.python.commons.Util;
 
@@ -25,7 +24,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class OverloadManagementSystemAdder extends AbstractDynamicModelAdder {
+public class DynamicOverloadManagementSystemAdder extends AbstractDynamicModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
