@@ -160,3 +160,15 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone build
+        shell: bash
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the  the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake ${{ github.workspace }}/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=./lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=./include
+          cmake --build . --config Release
+          
+          
+          
+          
