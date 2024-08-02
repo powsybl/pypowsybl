@@ -27,8 +27,8 @@ public class ActivePowerVariationAdder extends AbstractEventModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
-            SeriesMetadata.stringIndex(START_TIME),
-            SeriesMetadata.strings(DELTA_P));
+            SeriesMetadata.doubles(START_TIME),
+            SeriesMetadata.doubles(DELTA_P));
 
     @Override
     public List<SeriesMetadata> getMetadata() {

@@ -74,6 +74,7 @@ class EventMapping:
         |     - mapping_type: value of enum EventMappingType
 
         """
+        # TODO index df on static id + event type
         metadata = _pp.get_event_mappings_meta_data(mapping_type)
         if kwargs:
             kwargs = _add_index_to_kwargs(metadata, **kwargs)

@@ -27,10 +27,10 @@ public class NodeFaultAdder extends AbstractEventModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
-            SeriesMetadata.stringIndex(START_TIME),
-            SeriesMetadata.strings(FAULT_TIME),
-            SeriesMetadata.strings(X_PU),
-            SeriesMetadata.strings(R_PU));
+            SeriesMetadata.doubles(START_TIME),
+            SeriesMetadata.doubles(FAULT_TIME),
+            SeriesMetadata.doubles(X_PU),
+            SeriesMetadata.doubles(R_PU));
 
     @Override
     public List<SeriesMetadata> getMetadata() {
