@@ -22,6 +22,7 @@ pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
 if (TARGET native-image)
   add_dependencies(_pypowsybl native-image math-native)
+  add_dependencies(math-native native-image)
 endif()
 
 # Fix related to issue describred here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231
