@@ -20,6 +20,7 @@ def test_add_mapping():
     parameter_id = "test_parameter"
     model_mapping = dyn.ModelMapping()
     model_mapping.add_base_load(id, parameter_id, "LoadPQ")
+    model_mapping.add_synchronous_generator(id, parameter_id, "GeneratorSynchronousThreeWindings")
     # TODO test remaining adders
 
 
@@ -27,21 +28,25 @@ def test_dataframe_mapping():
     network = pp.network.create_ieee9()
     model_mapping = dyn.ModelMapping()
     load_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_loads().loc[l].name for l in network.get_loads().index],
-                                              "parameter_set_id": ["LAB" for l in network.get_loads().index]})
+                                              "parameter_set_id": ["LAB" for l in network.get_loads().index],
+                                              "model_name": "LoadPQ"})
     generator_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_generators().loc[l].name for l in network.get_generators().index],
-                                                   "parameter_set_id": ["GSTWPR" for l in network.get_generators().index]})
+                                                   "parameter_set_id": ["GSTWPR" for l in network.get_generators().index],
+                                                   "model_name": "GeneratorSynchronousThreeWindings"})
 
     model_mapping.add_all_dynamic_mappings(dyn.DynamicMappingType.BASE_LOAD,
                                            load_mapping_df.set_index("static_id"))
     model_mapping.add_all_dynamic_mappings(
-        dyn.DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS, generator_mapping_df.set_index("static_id"))
+        dyn.DynamicMappingType.SYNCHRONOUS_GENERATOR,
+        generator_mapping_df.set_index("static_id"))
 
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_disconnection("test_quadripole_id", 5, pp.dynamic.Side.ONE)
-    events.add_disconnection("test_generator_id", 3.3, pp.dynamic.Side.TWO)
-    # TODO test remaining adders
+    events.add_disconnection("GEN", 5)
+    events.add_disconnection("LINE", 3.3, pp.dynamic.Side.TWO)
+    events.add_active_power_variation("LOAD", 14, 2)
+    events.add_node_fault("BUS", 12, 2, 0.1, 0.2)
 
 
 def test_add_curve():
