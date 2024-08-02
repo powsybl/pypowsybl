@@ -8,15 +8,15 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.TestIntSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dynawaltz.models.AbstractPureDynamicBlackBoxModel;
-import com.powsybl.dynawaltz.models.TransformerSide;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,8 +56,7 @@ public class DynamicModelsAdderTest {
         dataframe.addSeries(STATIC_ID, true, createTwoRowsSeries(staticId));
         dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("hvdc_par"));
         dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName, ""));
-        dataframe.addSeries(DANGLING_SIDE, false, new TestStringSeries(String.valueOf(TwoSides.TWO),
-                String.valueOf(PyPowsyblApiHeader.ThreeSideType.UNDEFINED)));
+        dataframe.addSeries(DANGLING_SIDE, false, new TestIntSeries(ThreeSideType.TWO.getCValue(), ThreeSideType.UNDEFINED.getCValue()));
         DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, dataframe);
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
@@ -151,7 +150,7 @@ public class DynamicModelsAdderTest {
                 Arguments.of(OVERLOAD_MANAGEMENT_SYSTEM, "OverloadManagementSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
-                            String side = String.valueOf(TwoSides.ONE);
+                            int side = ThreeSideType.ONE.getCValue();
                             df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
                             df.addSeries(I_MEASUREMENT, false, createTwoRowsSeries(lineId));
                             df.addSeries(I_MEASUREMENT_SIDE, false, createTwoRowsSeries(side));
@@ -159,8 +158,8 @@ public class DynamicModelsAdderTest {
                 Arguments.of(TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM, "TwoLevelsOverloadManagementSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
-                            String sideOne = String.valueOf(TwoSides.ONE);
-                            String sideTwo = String.valueOf(TwoSides.TWO);
+                            int sideOne = ThreeSideType.ONE.getCValue();
+                            int sideTwo = ThreeSideType.ONE.getCValue();
                             df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
                             df.addSeries(I_MEASUREMENT_1, false, createTwoRowsSeries("NHV1_NHV2_1"));
                             df.addSeries(I_MEASUREMENT_1_SIDE, false, createTwoRowsSeries(sideTwo));
@@ -173,9 +172,10 @@ public class DynamicModelsAdderTest {
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
                 Arguments.of(TAP_CHANGER, "TapChangerAutomaton",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
-                            String side = String.valueOf(TransformerSide.LOW_VOLTAGE);
+                            // TODO use TransformerSide
+                            //String side = String.valueOf(TransformerSide.LOW_VOLTAGE);
                             df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"));
-                            df.addSeries(SIDE, false, createTwoRowsSeries(side));
+                            df.addSeries(SIDE, false, createTwoRowsSeries(ThreeSideType.UNDEFINED.getCValue()));
                         }),
                 Arguments.of(TAP_CHANGER_BLOCKING, "TapChangerBlockingAutomaton",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
@@ -195,5 +195,9 @@ public class DynamicModelsAdderTest {
 
     private static TestStringSeries createTwoRowsSeries(String value) {
         return new TestStringSeries(value, value);
+    }
+
+    private static TestIntSeries createTwoRowsSeries(int value) {
+        return new TestIntSeries(value, value);
     }
 }
