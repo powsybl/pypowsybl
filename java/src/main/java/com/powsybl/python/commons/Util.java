@@ -431,8 +431,8 @@ public final class Util {
         };
     }
 
-    public static TwoSides convertToTwoSides(PyPowsyblApiHeader.ThreeSideType side) {
-        return switch (side) {
+    public static TwoSides convertToTwoSides(int sideCValue) {
+        return switch (PyPowsyblApiHeader.ThreeSideType.fromCValue(sideCValue)) {
             case ONE -> TwoSides.ONE;
             case TWO -> TwoSides.TWO;
             default -> null;
