@@ -40,8 +40,8 @@ public final class DynamicMappingHandler {
             Map.entry(DynamicMappingType.BASE_BUS, new BaseBusAdder()),
             Map.entry(DynamicMappingType.INFINITE_BUS, new InfiniteBusAdder()),
             // Automation systems
-            Map.entry(DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM, new OverloadManagementSystemAdder()),
-            Map.entry(DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM, new TwoLevelsOverloadManagementSystemAdder()),
+            Map.entry(DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM, new DynamicOverloadManagementSystemAdder()),
+            Map.entry(DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM, new DynamicTwoLevelsOverloadManagementSystemAdder()),
             Map.entry(DynamicMappingType.PHASE_SHIFTER_I, new PhaseShifterIAdder()),
             Map.entry(DynamicMappingType.PHASE_SHIFTER_P, new PhaseShifterPAdder()),
             Map.entry(DynamicMappingType.UNDER_VOLTAGE, new UnderVoltageAutomationSystemAdder()),
