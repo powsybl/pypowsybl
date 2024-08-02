@@ -1339,7 +1339,7 @@ void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mapp
     PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, mappingDf);
 }
 
-void addEventMappings(JavaHandle dynamicMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
+void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
     PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, mappingType, mappingDf);
 }
 
