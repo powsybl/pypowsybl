@@ -588,6 +588,7 @@ public final class Dataframes {
                 .stringsIndex("id", MagnitudeFeederResultContext::getFaultId)
                 .stringsIndex("connectable_id", MagnitudeFeederResultContext::getConnectableId)
                 .doubles("current", MagnitudeFeederResultContext::getCurrent)
+                .enums("side", ThreeSides.class, MagnitudeFeederResultContext::getSide)
                 .build();
     }
 
@@ -608,6 +609,7 @@ public final class Dataframes {
                         fortescueFeederResultContext.getCurrent().getZeroMagnitude(), false)
                 .doubles("current_zero_angle", fortescueFeederResultContext ->
                         fortescueFeederResultContext.getCurrent().getZeroAngle(), false)
+                .enums("side", ThreeSides.class, FortescueFeederResultContext::getSide)
                 .build();
     }
 

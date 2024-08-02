@@ -38,9 +38,10 @@ class ShortCircuitAnalysisResult:
     def feeder_results(self) -> pd.DataFrame:
         """
         contains the contributions of each feeder to the short-circuit current, in a dataframe representation. The rows
-        are the ids of contributing connectable ids sorted by faults and the columns is the current, either in
-        three-phase magnitude or detailed with magnitude and angle for each phase. The magnitude of the currents are in
-        A. It should be empty when the parameter with_feeder_result is set to false
+        are the ids of the contributing feeder IDs, sorted by fault and the columns are the current, either in
+        three-phase magnitude or detailed with magnitude and angle for each phase. The current magnitudes are in
+        A. If the feeder is a branch or a three-winding transformer, the side to which the result applies.
+        The dataframe should be empty if the with_feeder_result parameter is set to false.
         """
         return create_data_frame_from_series_array(_pypowsybl.get_feeder_results(self._handle, self._with_fortescue_result))
 

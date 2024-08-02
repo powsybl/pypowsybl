@@ -18,7 +18,7 @@ public class MagnitudeFeederResultContext extends MagnitudeFeederResult {
     private final String faultId;
 
     public MagnitudeFeederResultContext(String faultId, MagnitudeFeederResult result) {
-        super(result.getConnectableId(), result.getCurrent());
+        super(result.getConnectableId(), result.getCurrent(), result.getSide());
         this.faultId = Objects.requireNonNull(faultId);
     }
 

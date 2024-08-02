@@ -19,7 +19,7 @@ public class FortescueFeederResultContext extends FortescueFeederResult {
     private final String faultId;
 
     public FortescueFeederResultContext(String faultId, FortescueFeederResult fortescueFeederResult) {
-        super(fortescueFeederResult.getConnectableId(), fortescueFeederResult.getCurrent());
+        super(fortescueFeederResult.getConnectableId(), fortescueFeederResult.getCurrent(), fortescueFeederResult.getSide());
         this.faultId = Objects.requireNonNull(faultId);
     }
 
