@@ -29,7 +29,7 @@ public class DisconnectAdder extends AbstractEventModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
-            SeriesMetadata.stringIndex(START_TIME),
+            SeriesMetadata.doubles(START_TIME),
             SeriesMetadata.strings(DISCONNECT_ONLY));
 
     @Override
