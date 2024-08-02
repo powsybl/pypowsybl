@@ -61,10 +61,10 @@ public final class SeriesUtils {
         }
     }
 
-    public static <E extends Enum<E>, F extends Enum<F>> void applyIfPresent(StringSeries series, int index, Class<E> pythonEnumClass,
-                                                                             Function<E, F> converter, Consumer<F> consumer) {
+    public static <E extends Enum<E>> void applyIfPresent(IntSeries series, int index, Function<Integer, E> converter,
+                                                          Consumer<E> consumer) {
         if (series != null) {
-            F convertedEnum = converter.apply(Enum.valueOf(pythonEnumClass, series.get(index)));
+            E convertedEnum = converter.apply(series.get(index));
             if (convertedEnum != null) {
                 consumer.accept(convertedEnum);
             }

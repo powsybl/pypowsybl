@@ -9,9 +9,9 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.TransformerSide;
 import com.powsybl.dynawaltz.models.automationsystems.TapChangerAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
@@ -30,7 +30,7 @@ public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
             SeriesMetadata.strings(PARAMETER_SET_ID),
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(STATIC_ID),
-            SeriesMetadata.strings(SIDE));
+            SeriesMetadata.ints(SIDE));
 
     @Override
     public List<SeriesMetadata> getMetadata() {
@@ -40,12 +40,12 @@ public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
     private static class TapChangerSeries extends AbstractAutomationSystemSeries<TapChangerAutomationSystemBuilder> {
 
         private final StringSeries staticIds;
-        private final StringSeries sides;
+        private final IntSeries sides;
 
         TapChangerSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.sides = dataframe.getStrings(SIDE);
+            this.sides = dataframe.getInts(SIDE);
         }
 
         @Override
@@ -53,7 +53,7 @@ public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
             super.applyOnBuilder(row, builder);
             applyIfPresent(staticIds, row, builder::staticId);
             // TODO handle TransformerSide enum on python side
-            applyIfPresent(sides, row, TransformerSide.class, builder::side);
+            //applyIfPresent(sides, row, TransformerSide.class, builder::side);
         }
 
         @Override

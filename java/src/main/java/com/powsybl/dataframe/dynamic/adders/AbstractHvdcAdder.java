@@ -8,10 +8,9 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.update.StringSeries;
+import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.hvdc.AbstractHvdcBuilder;
-import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
 import com.powsybl.python.commons.Util;
 
 import java.util.ArrayList;
@@ -40,17 +39,17 @@ abstract class AbstractHvdcAdder extends AbstractEquipmentAdder {
 
     protected abstract static class AbstractHvdcSeries<T extends AbstractHvdcBuilder<T>> extends AbstractEquipmentSeries<T> {
 
-        private final StringSeries danglingSides;
+        private final IntSeries danglingSides;
 
         AbstractHvdcSeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.danglingSides = dataframe.getStrings(DANGLING_SIDE);
+            this.danglingSides = dataframe.getInts(DANGLING_SIDE);
         }
 
         @Override
         protected void applyOnBuilder(int row, T builder) {
             super.applyOnBuilder(row, builder);
-            applyIfPresent(danglingSides, row, ThreeSideType.class, Util::convertToTwoSides, builder::dangling);
+            applyIfPresent(danglingSides, row, Util::convertToTwoSides, builder::dangling);
         }
     }
 }

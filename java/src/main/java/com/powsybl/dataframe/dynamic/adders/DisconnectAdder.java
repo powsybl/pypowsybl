@@ -10,11 +10,11 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.python.commons.PyPowsyblApiHeader.ThreeSideType;
 import com.powsybl.python.commons.Util;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class DisconnectAdder extends AbstractEventModelAdder {
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
             SeriesMetadata.doubles(START_TIME),
-            SeriesMetadata.strings(DISCONNECT_ONLY));
+            SeriesMetadata.ints(DISCONNECT_ONLY));
 
     @Override
     public List<SeriesMetadata> getMetadata() {
@@ -41,19 +41,19 @@ public class DisconnectAdder extends AbstractEventModelAdder {
 
         private final StringSeries staticIds;
         private final DoubleSeries startTimes;
-        private final StringSeries disconnectOnly;
+        private final IntSeries disconnectOnly;
 
         DisconnectSeries(UpdatingDataframe dataframe) {
             this.staticIds = dataframe.getStrings(STATIC_ID);
             this.startTimes = dataframe.getDoubles(START_TIME);
-            this.disconnectOnly = dataframe.getStrings(DISCONNECT_ONLY);
+            this.disconnectOnly = dataframe.getInts(DISCONNECT_ONLY);
         }
 
         @Override
         protected void applyOnBuilder(int row, EventDisconnectionBuilder builder) {
             applyIfPresent(staticIds, row, builder::staticId);
             applyIfPresent(startTimes, row, builder::startTime);
-            applyIfPresent(disconnectOnly, row, ThreeSideType.class, Util::convertToTwoSides, builder::disconnectOnly);
+            applyIfPresent(disconnectOnly, row, Util::convertToTwoSides, builder::disconnectOnly);
         }
 
         @Override

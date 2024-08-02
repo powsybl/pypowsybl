@@ -249,19 +249,19 @@ class ModelMapping:
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.INFINITE_BUS)
 
-    def add_overload_management_system(self, dynamic_id: str, parameter_set_id: str, controlled_branch: str,
+    def add_overload_management_system(self, dynamic_model_id: str, parameter_set_id: str, controlled_branch: str,
                                        i_measurement: str, i_measurement_side: Side, model_name: str = None) -> None:
         """
         Add a dynamic overload management system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param controlled_branch: id of the branch controlled by the automation system
         :param i_measurement: id of the branch used for the current intensity measurement
         :param i_measurement_side: measured side of the i_measurement branch
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       controlled_branch=controlled_branch,
                                       i_measurement=i_measurement,
@@ -269,14 +269,14 @@ class ModelMapping:
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM)
 
-    def add_two_levels_overload_management_system(self, dynamic_id: str, parameter_set_id: str, controlled_branch: str,
+    def add_two_levels_overload_management_system(self, dynamic_model_id: str, parameter_set_id: str, controlled_branch: str,
                                                   i_measurement_1: str, i_measurement_1_side: Side,
                                                   i_measurement_2: str, i_measurement_2_side: Side,
                                                   model_name: str = None) -> None:
         """
         Add a dynamic two levels overload management system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param controlled_branch: id of the branch controlled by the automation system
         :param i_measurement_1: id of the first branch used for the current intensity measurement
@@ -285,7 +285,7 @@ class ModelMapping:
         :param i_measurement_2_side: measured side of the i_measurement_2 branch
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       controlled_branch=controlled_branch,
                                       i_measurement_1=i_measurement_1,
@@ -295,84 +295,84 @@ class ModelMapping:
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
 
-    def add_under_voltage_automation_system(self, dynamic_id: str, parameter_set_id: str, generator: str,
+    def add_under_voltage_automation_system(self, dynamic_model_id: str, parameter_set_id: str, generator: str,
                                             model_name: str = None) -> None:
         """
         Add a dynamic under voltage automation system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param generator: id of the generator controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       generator=generator,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.UNDER_VOLTAGE)
 
-    def add_phase_shifter_i_automation_system(self, dynamic_id: str, parameter_set_id: str, transformer: str,
+    def add_phase_shifter_i_automation_system(self, dynamic_model_id: str, parameter_set_id: str, transformer: str,
                                               model_name: str = None) -> None:
         """
         Add a dynamic phase shifter I automation system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param transformer: id of the transformer controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       transformer=transformer,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.PHASE_SHIFTER_I)
 
-    def add_phase_shifter_p_automation_system(self, dynamic_id: str, parameter_set_id: str, transformer: str,
+    def add_phase_shifter_p_automation_system(self, dynamic_model_id: str, parameter_set_id: str, transformer: str,
                                               model_name: str = None) -> None:
         """
         Add a dynamic phase shifter P automation system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param transformer: id of the transformer controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       transformer=transformer,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.PHASE_SHIFTER_P)
 
-    def add_tap_changer_automation_system(self, dynamic_id: str, parameter_set_id: str, static_id: str,
+    def add_tap_changer_automation_system(self, dynamic_model_id: str, parameter_set_id: str, static_id: str,
                                           side: Side, model_name: str = None) -> None:
         """
         Add a dynamic tap changer automation system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param static_id: id of the load on which the tap changer is added
         :param side: side of the tap changer
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       static_id=static_id,
                                       side=side,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.TAP_CHANGER)
 
-    def add_tap_changer_blocking_automation_system(self, dynamic_id: str, parameter_set_id: str, transformers: str,
+    def add_tap_changer_blocking_automation_system(self, dynamic_model_id: str, parameter_set_id: str, transformers: str,
                                                    u_measurements: str, model_name: str = None) -> None:
         """
         Add a dynamic tap changer blocking automation system (not link to a network element)
 
-        :param dynamic_id: id of the overload management system
+        :param dynamic_model_id: id of the overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param transformers: ids of the transformers controlled by the automation system
         :param u_measurements: id of the bus or busbar section used for the voltage measurement
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
-        self.add_all_dynamic_mappings(dynamic_id=dynamic_id,
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
                                       parameter_set_id=parameter_set_id,
                                       transformers=transformers,
                                       u_measurements=u_measurements,
