@@ -20,6 +20,7 @@ import com.powsybl.python.network.NetworkCFunctions;
 import com.powsybl.shortcircuit.ShortCircuitAnalysisProvider;
 import com.powsybl.shortcircuit.ShortCircuitAnalysisResult;
 import com.powsybl.shortcircuit.ShortCircuitParameters;
+import com.powsybl.shortcircuit.VoltageRange;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -77,6 +78,16 @@ public final class ShortCircuitAnalysisCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new ShortCircuitAnalysisContext()));
     }
 
+    @CEntryPoint(name = "createVoltageRange")
+    public static PyPowsyblApiHeader.VoltageRangePointer createVoltageRange(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.<PyPowsyblApiHeader.VoltageRangePointer>calloc(SizeOf.get(PyPowsyblApiHeader.VoltageRangePointer.class)));
+    }
+
+    @CEntryPoint(name = "deleteVoltageRange")
+    public static void deleteVoltageRange(IsolateThread thread, PyPowsyblApiHeader.VoltageRangePointer voltageRangePointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(voltageRangePointer));
+    }
+
     private static ShortCircuitAnalysisProvider getProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultShortCircuitAnalysisProvider() : name;
         return ShortCircuitAnalysisProvider.findAll().stream()
@@ -108,7 +119,12 @@ public final class ShortCircuitAnalysisCFunctions {
     @CEntryPoint(name = "freeShortCircuitAnalysisParameters")
     public static void freeShortCircuitAnalysisParameters(IsolateThread thread, ShortCircuitAnalysisParametersPointer parameters,
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parameters));
+        doCatch(exceptionHandlerPtr, () -> {
+            for (int i = 0; i <= parameters.voltageRanges().getLength(); i++) {
+                UnmanagedMemory.free(parameters.voltageRanges().getPtr().read(i));
+            }
+            UnmanagedMemory.free(parameters);
+        });
     }
 
     @CEntryPoint(name = "createShortCircuitAnalysisParameters")
@@ -125,9 +141,23 @@ public final class ShortCircuitAnalysisCFunctions {
         paramsPtr.setMinVoltageDropProportionalThreshold(parameters.getMinVoltageDropProportionalThreshold());
         paramsPtr.setStudyType(parameters.getStudyType().ordinal());
         paramsPtr.setInitialVoltageProfileMode(parameters.getInitialVoltageProfileMode().ordinal());
+        createVoltageRangesPointer(paramsPtr, parameters.getVoltageRanges());
         paramsPtr.setProviderParametersValuesCount(0);
         paramsPtr.setProviderParametersKeysCount(0);
         return paramsPtr;
+    }
+
+    private static void createVoltageRangesPointer(ShortCircuitAnalysisParametersPointer paramsPtr, List<VoltageRange> voltageRanges) {
+        PyPowsyblApiHeader.VoltageRangePointer voltageRangePointer = UnmanagedMemory.calloc(voltageRanges.size() * SizeOf.get(PyPowsyblApiHeader.VoltageRangePointer.class));
+        for (int i = 0; i < voltageRanges.size(); i++) {
+            VoltageRange voltageRange = voltageRanges.get(i);
+            PyPowsyblApiHeader.VoltageRangePointer voltageRangePtrPlus = voltageRangePointer.addressOf(i);
+            voltageRangePtrPlus.setMinimumNominalVoltage(voltageRange.getMinimumNominalVoltage());
+            voltageRangePtrPlus.setMaximumNominalVoltage(voltageRange.getMaximumNominalVoltage());
+            voltageRangePtrPlus.setVoltage(voltageRange.getVoltage());
+            voltageRangePtrPlus.setRangeCoefficient(voltageRange.getRangeCoefficient());
+        }
+        paramsPtr.voltageRanges().setPtr(voltageRangePointer);
     }
 
     static List<String> getSpecificParametersNames(ShortCircuitAnalysisProvider provider) {

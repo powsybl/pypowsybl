@@ -105,6 +105,11 @@ Array<limit_violation>::~Array() {
 }
 
 template<>
+Array<voltage_range>::~Array() {
+    // already freed by short circuit parameters
+}
+
+template<>
 Array<series>::~Array() {
     PowsyblCaller::get()->callJava<>(::freeSeriesArray, delegate_);
 }
@@ -217,6 +222,11 @@ std::string toString(char* cstring) {
 }
 
 void copyCharPtrPtrToVector(char** src, int count, std::vector<std::string>& dest) {
+    dest.clear();
+    std::copy(src, src + count, std::back_inserter(dest));
+}
+
+void copyVoltageRangePtrPtrToVector(voltage_range** src, int count, std::vector<voltage_range*>& dest) {
     dest.clear();
     std::copy(src, src + count, std::back_inserter(dest));
 }
@@ -1373,8 +1383,40 @@ void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr)
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
 }
 
-ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src)
-{
+::voltage_range* createVoltageRange(double minimum_nominal_voltage, double maximum_nominal_voltage, double voltage, double range_coefficient) {
+    auto vr = pypowsybl::PowsyblCaller::get()->callJava<voltage_range*>(::createVoltageRange);
+    vr->minimum_nominal_voltage = minimum_nominal_voltage;
+    vr->maximum_nominal_voltage = maximum_nominal_voltage;
+    vr->voltage = voltage;
+    vr->range_coefficient = range_coefficient;
+    return vr;
+}
+
+void deleteVoltageRange(::voltage_range* vr) {
+    pypowsybl::PowsyblCaller::get()->callJava(::deleteVoltageRange, vr);
+}
+
+class VoltageRangesPtr {
+public:
+    VoltageRangesPtr(const std::vector<voltage_range*>& vector)
+        : vector_(vector) {
+    }
+
+    ~VoltageRangesPtr() {
+        for (auto vr : vector_) {
+            deleteVoltageRange(vr);
+        }
+    }
+
+    ::voltage_range** get() const {
+        return (::voltage_range**) &vector_[0];
+    }
+
+private:
+    const std::vector<::voltage_range*>& vector_;
+};
+
+ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src) {
     with_feeder_result = (bool) src->with_feeder_result;
     with_limit_violations = (bool) src->with_limit_violations;
     study_type = static_cast<ShortCircuitStudyType>(src->study_type);
@@ -1382,7 +1424,7 @@ ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_anal
     with_voltage_result = (bool) src->with_voltage_result;
     min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
     initial_voltage_profile_mode = static_cast<InitialVoltageProfileMode>(src->initial_voltage_profile_mode);
-
+    // smthg to copy voltage range to vector
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
 }
@@ -1396,7 +1438,7 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->with_fortescue_result = (bool) with_fortescue_result;
     res->min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold;
     res->initial_voltage_profile_mode = initial_voltage_profile_mode;
-
+    // smthg to copy voltage range to array
     res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res->provider_parameters_keys_count = provider_parameters_keys.size();
     res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);

@@ -7,6 +7,7 @@
 #
 import pypowsybl as pp
 import pypowsybl.network as pn
+from pypowsybl.shortcircuit import VoltageRange
 import pytest
 import pathlib
 import pandas as pd

@@ -381,6 +381,13 @@ typedef enum {
     THREE,
 } ThreeSide;
 
+typedef struct voltage_range_struct {
+    double minimum_nominal_voltage;
+    double maximum_nominal_voltage;
+    double voltage;
+    double range_coefficient;
+} voltage_range;
+
 typedef struct shortcircuit_analysis_parameters_struct {
     unsigned char with_voltage_result;
     unsigned char with_feeder_result;
@@ -389,6 +396,7 @@ typedef struct shortcircuit_analysis_parameters_struct {
     unsigned char with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
     int initial_voltage_profile_mode;
+    array voltage_ranges;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;

@@ -20,7 +20,7 @@ jobs:
           - {
             name: cp38,
             abi: cp38,
-            version: '3.8',
+            version: '3.10',
           }
 
     steps:

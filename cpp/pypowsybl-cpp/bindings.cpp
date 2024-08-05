@@ -996,9 +996,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
-    py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
+    py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the initialization of short circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
+            .value("CONFIGURED", pypowsybl::InitialVoltageProfileMode::CONFIGURED,
+                   "Voltage profile given by the user.")
             .value("PREVIOUS_VALUE", pypowsybl::InitialVoltageProfileMode::PREVIOUS_VALUE,
                    "Voltage profile calculated by the load flow is used for the calculation.");
 
@@ -1010,6 +1012,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("STEADY_STATE", pypowsybl::ShortCircuitStudyType::STEADY_STATE,
                    "The last stage of the short circuit, once all transient effects are gone.");
 
+    py::class_<::voltage_range>(m, "VoltageRange")
+            .def(py::init([](const double minimum_nominal_voltage, const double maximum_nominal_voltage, const double voltage, const double range_coefficient) {
+                return pypowsybl::createVoltageRange(minimum_nominal_voltage, maximum_nominal_voltage, voltage, range_coefficient);
+            }), py::arg("minimum_nominal_voltage"), py::arg("maximum_nominal_voltage"), py::arg("voltage"), py::arg("range_coefficient"));
+
     py::class_<pypowsybl::ShortCircuitAnalysisParameters>(m, "ShortCircuitAnalysisParameters")
         .def(py::init(&pypowsybl::createShortCircuitAnalysisParameters))
         .def_readwrite("with_voltage_result", &pypowsybl::ShortCircuitAnalysisParameters::with_voltage_result)
@@ -1019,6 +1026,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("with_fortescue_result", &pypowsybl::ShortCircuitAnalysisParameters::with_fortescue_result)
         .def_readwrite("min_voltage_drop_proportional_threshold", &pypowsybl::ShortCircuitAnalysisParameters::min_voltage_drop_proportional_threshold)
         .def_readwrite("initial_voltage_profile_mode", &pypowsybl::ShortCircuitAnalysisParameters::initial_voltage_profile_mode)
+        .def_readwrite("voltage_ranges", &pypowsybl::ShortCircuitAnalysisParameters::voltage_ranges)
         .def_readwrite("provider_parameters_keys", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_keys)
         .def_readwrite("provider_parameters_values", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_values);
 
