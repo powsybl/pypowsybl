@@ -1234,6 +1234,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
               - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
               - **ucte-xnode-code**: deprecated for pairing key.
+              - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
