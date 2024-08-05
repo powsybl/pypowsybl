@@ -86,6 +86,7 @@ class PyPowsyblBuild(build_ext):
                                os.path.join(binary_dir, 'libpypowsybl-java.dylib')]
 
         includes = glob.glob(os.path.join(cpp_source_dir, 'powsybl-cpp/') + '*.h')
+        includes = includes + glob.glob(os.path.join(cpp_source_dir, 'pypowsybl-java/') + '*.h')
         includes = includes + glob.glob(os.path.join(self.build_temp, 'java/') + '*.h')
 
         if not os.path.exists(os.path.abspath('dist')):
