@@ -1,11 +1,9 @@
-name: Dev CI
+name: Release
 
 on:
-  push:
-    branches:
-      # on all branches except main where full build will be run
-      - '*'
-      - '!main'
+  release:
+    types:
+      - created
 
 jobs:
   manylinux_build:
@@ -60,47 +58,15 @@ jobs:
         working-directory: ./tests
         run: python3 basic_import_test.py
 
-      - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v2.0.2
+      - name: Upload binaries
+        uses: actions/upload-release-asset@v1.0.1
         env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Test standalone cpp build
-        shell: bash
-        working-directory: ./dist
-        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-          unzip binaries.zip && mkdir build && cd build
-          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-          cmake --build . --config Release
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/binaries.zip
+          asset_name: binaries-${{ github.event.release.tag_name }}-linux.zip
+          asset_content_type: application/zip
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -158,25 +124,12 @@ jobs:
         working-directory: ./tests
         run: python3 basic_import_test.py
 
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Test standalone cpp build
-        shell: bash
-        working-directory: ./dist
-        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-          unzip binaries.zip && mkdir build && cd build
-          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-          cmake --build . --config Release
-          
-          
-          
-          
+      - name: Upload binaries
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/binaries.zip
+          asset_name: binaries-${{ github.event.release.tag_name }}-${{ matrix.config.name }}.zip
+          asset_content_type: application/zip
