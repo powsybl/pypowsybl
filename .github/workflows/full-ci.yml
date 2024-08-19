@@ -11,7 +11,9 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-05-27-2f0b25d
+    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
       matrix:
         python:
@@ -42,12 +44,9 @@ jobs:
           }
 
     steps:
-      - name: Install Linux packages
-        run: yum install -y wget
-
       - name: Install Maven
         run: |
-          wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
@@ -117,7 +116,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3
@@ -206,7 +205,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3

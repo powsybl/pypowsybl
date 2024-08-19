@@ -21,6 +21,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -69,6 +70,17 @@ public final class SingleLineDiagramUtil {
         }
     }
 
+    static List<String> getMatrixMultiSubstationSvgAndMetadata(Network network, String[][] matrixIds, SldParameters sldParameters) {
+        try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
+            writeMatrixMultiSubstationSvg(network, matrixIds, writer, writerMeta, sldParameters);
+            writer.flush();
+            writerMeta.flush();
+            return List.of(writer.toString(), writerMeta.toString());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
     static SldParameters createSldParameters() {
         SldParameters sldParameters = new SldParameters();
         sldParameters.getSvgParameters().setSvgWidthAndHeightAdded(true);
@@ -85,7 +97,7 @@ public final class SingleLineDiagramUtil {
 
     static void writeMatrixMultiSubstationSvg(Network network, String[][] matrixIds, Writer writer, Writer metadataWriter, SldParameters sldParameters) {
         sldParameters.setZoneLayoutFactory(new MatrixZoneLayoutFactory(matrixIds));
-        List<String> substationIds = Arrays.stream(matrixIds).flatMap(Arrays::stream).toList();
+        List<String> substationIds = Arrays.stream(matrixIds).flatMap(Arrays::stream).filter(Predicate.not(String::isEmpty)).toList();
         SingleLineDiagram.drawMultiSubstations(network, substationIds, writer, metadataWriter, sldParameters);
     }
 

@@ -878,6 +878,10 @@ public final class NetworkCFunctions {
         cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
+        cParameters.setDisplayCurrentFeederInfo(parameters.getSvgParameters().isDisplayCurrentFeederInfo());
+        cParameters.setActivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getActivePowerUnit()));
+        cParameters.setReactivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getReactivePowerUnit()));
+        cParameters.setCurrentUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getCurrentUnit()));
     }
 
     public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
@@ -952,7 +956,12 @@ public final class NetworkCFunctions {
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
-                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled());
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
+                .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo())
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
+                .setActivePowerUnit(CTypeUtil.toString(sldParametersPtr.getActivePowerUnit()))
+                .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()))
+                .setCurrentUnit(CTypeUtil.toString(sldParametersPtr.getCurrentUnit()));
         return sldParameters;
     }
 
@@ -1032,6 +1041,19 @@ public final class NetworkCFunctions {
             String containerIdStr = CTypeUtil.toString(containerId);
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
             List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
+            return createCharPtrArray(svgAndMeta);
+        });
+    }
+
+    @CEntryPoint(name = "getMatrixMultiSubstationSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
+                                                                                           int substationIdCount, int substationIdRowCount,
+                                                                                           SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
             return createCharPtrArray(svgAndMeta);
         });
     }

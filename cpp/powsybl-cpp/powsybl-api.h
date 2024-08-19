@@ -62,6 +62,7 @@ typedef struct loadflow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    double dc_power_factor;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;
@@ -340,6 +341,10 @@ typedef struct sld_parameters_struct {
     unsigned char tooltip_enabled;
     unsigned char topological_coloring;
     char* component_library;
+    unsigned char display_current_feeder_info;
+    char* active_power_unit;
+    char* reactive_power_unit;
+    char* current_unit;
 } sld_parameters;
 
 typedef struct nad_parameters_struct {
@@ -383,6 +388,7 @@ typedef struct shortcircuit_analysis_parameters_struct {
     int study_type;
     unsigned char with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
+    int initial_voltage_profile_mode;
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;
@@ -401,10 +407,10 @@ typedef enum {
 } VoltageInitializerObjective;
 
 typedef enum {
-    DEBUG = 0,
-    INFO,
-    WARNING,
-    ERROR,
+    LOG_AMPL_DEBUG = 0,
+    LOG_AMPL_INFO,
+    LOG_AMPL_WARNING,
+    LOG_AMPL_ERROR,
 } VoltageInitializerLogLevelAmpl;
 
 typedef enum {

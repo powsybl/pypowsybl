@@ -252,6 +252,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: List[str] = None,
                vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network according to the following parameters
+
+        :param v_min: minimum voltage of the voltage levels kept after reducing
+        :param v_max: voltage maximum of the voltage levels kept after reducing
+        :param ids: ids of the voltage levels that will be kept
+        :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
+        :param with_dangling_lines: keeping the dangling lines
+        """
         if ids is None:
             ids = []
         vls = []
@@ -315,6 +324,23 @@ class Network:  # pylint: disable=too-many-public-methods
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
+
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: SldParameters = None) -> Svg:
+        """
+        Create a single line diagram from multiple substations
+
+        Args:
+            matrix_ids: a two-dimensional list of substation id
+            parameters:single-line diagram parameters to adjust the rendering of the diagram
+
+        Returns:
+            the single line diagram
+        """
+
+        p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
+
+        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
@@ -1196,6 +1222,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p**: active flow on the dangling line, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
+              - **boundary_p** (optional): active flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_q** (optional): reactive flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_v_mag** (optional): voltage magnitude of the boundary bus, ``NaN`` if no loadflow has been computed (in kV)
+              - **boundary_v_angle** (optional): voltage angle of the boundary bus, ``NaN`` if no loadflow has been computed (in degree)
               - **voltage_level_id**: at which substation the dangling line is connected
               - **bus_id**: bus where this line is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
@@ -1204,6 +1234,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
               - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
               - **ucte-xnode-code**: deprecated for pairing key.
+              - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
@@ -1746,8 +1777,8 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **converters_mode**:
-              - **target_p**: (in MW)
+              - **converters_mode**: the mode of the converter stations. It can be either SIDE_1_RECTIFIER_SIDE_2_INVERTER or SIDE_1_INVERTER_SIDE_2_RECTIFIER
+              - **target_p**: active power target (in MW)
               - **max_p**: the maximum of active power that can pass through the hvdc line (in MW)
               - **nominal_v**: nominal voltage (in kV)
               - **r**: the resistance of the hvdc line (in Ohm)
@@ -2554,6 +2585,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `fictitious`
+            - `pairing_key`
+            - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
 
         See Also:
             :meth:`get_dangling_lines`

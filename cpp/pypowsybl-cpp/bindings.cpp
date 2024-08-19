@@ -189,10 +189,10 @@ void voltageInitializerBinding(py::module_& m) {
         .value("SPECIFIC_VOLTAGE_PROFILE", VoltageInitializerObjective::SPECIFIC_VOLTAGE_PROFILE);
 
     py::enum_<VoltageInitializerLogLevelAmpl>(m, "VoltageInitializerLogLevelAmpl")
-        .value("DEBUG", VoltageInitializerLogLevelAmpl::DEBUG)
-        .value("INFO", VoltageInitializerLogLevelAmpl::INFO)
-        .value("WARNING", VoltageInitializerLogLevelAmpl::WARNING)
-        .value("ERROR", VoltageInitializerLogLevelAmpl::ERROR);
+        .value("DEBUG", VoltageInitializerLogLevelAmpl::LOG_AMPL_DEBUG)
+        .value("INFO", VoltageInitializerLogLevelAmpl::LOG_AMPL_INFO)
+        .value("WARNING", VoltageInitializerLogLevelAmpl::LOG_AMPL_WARNING)
+        .value("ERROR", VoltageInitializerLogLevelAmpl::LOG_AMPL_ERROR);
 
     py::enum_<VoltageInitializerLogLevelSolver>(m, "VoltageInitializerLogLevelSolver")
         .value("NOTHING", VoltageInitializerLogLevelSolver::NOTHING)
@@ -498,6 +498,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
             .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
             .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
@@ -546,7 +547,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("nodes_infos", &pypowsybl::SldParameters::nodes_infos)
         .def_readwrite("tooltip_enabled", &pypowsybl::SldParameters::tooltip_enabled)
         .def_readwrite("topological_coloring", &pypowsybl::SldParameters::topological_coloring)
-        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library);
+        .def_readwrite("component_library", &pypowsybl::SldParameters::component_library)
+        .def_readwrite("display_current_feeder_info", &pypowsybl::SldParameters::display_current_feeder_info)
+        .def_readwrite("active_power_unit", &pypowsybl::SldParameters::active_power_unit)
+        .def_readwrite("reactive_power_unit", &pypowsybl::SldParameters::reactive_power_unit)
+        .def_readwrite("current_unit", &pypowsybl::SldParameters::current_unit);
 
     py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
             .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
@@ -584,6 +589,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
+
+    m.def("get_matrix_multi_substation_single_line_diagram_svg_and_metadata", &pypowsybl::getMatrixMultiSubstationSvgAndMetadata, "Get matrix multi-substation single line diagram SVG and its metadata as a list of strings",
+          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"));
 
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
@@ -988,6 +996,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
+    py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
+            .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
+                   "Nominal voltages are used for the calculation.")
+            .value("PREVIOUS_VALUE", pypowsybl::InitialVoltageProfileMode::PREVIOUS_VALUE,
+                   "Voltage profile calculated by the load flow is used for the calculation.");
+
     py::enum_<pypowsybl::ShortCircuitStudyType>(m, "ShortCircuitStudyType", "Indicates the type of short circuit study")
             .value("SUB_TRANSIENT", pypowsybl::ShortCircuitStudyType::SUB_TRANSIENT,
                    "It is the first stage of the short circuit, right when the fault happens. The subtransient reactance of generators will be used.")
@@ -1004,6 +1018,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("study_type", &pypowsybl::ShortCircuitAnalysisParameters::study_type)
         .def_readwrite("with_fortescue_result", &pypowsybl::ShortCircuitAnalysisParameters::with_fortescue_result)
         .def_readwrite("min_voltage_drop_proportional_threshold", &pypowsybl::ShortCircuitAnalysisParameters::min_voltage_drop_proportional_threshold)
+        .def_readwrite("initial_voltage_profile_mode", &pypowsybl::ShortCircuitAnalysisParameters::initial_voltage_profile_mode)
         .def_readwrite("provider_parameters_keys", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_keys)
         .def_readwrite("provider_parameters_values", &pypowsybl::ShortCircuitAnalysisParameters::provider_parameters_values);
 
