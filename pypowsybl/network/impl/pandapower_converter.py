@@ -14,8 +14,6 @@ def convert_from_pandapower(n_pdp) -> Network:
     if util.find_spec("pandapower") is None:
         raise _pp.PyPowsyblError("pandapower is not installed")
     else:
-        import pandapower as pdp
-
         n = create_empty(n_pdp.name if n_pdp.name else 'network')
 
         # create one giant substation
