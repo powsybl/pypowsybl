@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 
 import pypowsybl._pypowsybl as _pp
+from pandas import Series
+
 from .network import Network
 from .network_creation_util import create_empty
 
@@ -39,6 +41,8 @@ def build_injection_id(prefix, row, index):
     bus = row['bus']
     return "{}_{}_{}".format(prefix, bus, index) # because it is required by grid2op to build IDs like this is case of missing name
 
+def build_voltage_level_id(bus: Series):
+    return 'sub_' + bus
 
 def generate_injection_id(df: pd.DataFrame, prefix: str) -> pd.Series:
     return df.apply(lambda row: build_injection_id(prefix, row, row.name), axis=1)
@@ -47,8 +51,8 @@ def generate_injection_id(df: pd.DataFrame, prefix: str) -> pd.Series:
 def create_transformers(n, n_pdp):
     id = 'tfo_' + n_pdp.trafo.index.astype(str)
     name = get_name(n_pdp.trafo, 'name')
-    vl1_id = 'vl_' + n_pdp.trafo['lv_bus'].astype(str)
-    vl2_id = 'vl_' + n_pdp.trafo['hv_bus'].astype(str)
+    vl1_id = build_voltage_level_id(n_pdp.trafo['lv_bus'].astype(str))
+    vl2_id = build_voltage_level_id(n_pdp.trafo['hv_bus'].astype(str))
     bus1_id = 'bus_' + n_pdp.trafo['lv_bus'].astype(str)
     bus2_id = 'bus_' + n_pdp.trafo['hv_bus'].astype(str)
     rated_u1 = n_pdp.trafo['vn_lv_kv']
@@ -67,8 +71,8 @@ def create_transformers(n, n_pdp):
 def create_lines(n, n_pdp):
     id = 'line_' + n_pdp.line.index.astype(str)
     name = get_name(n_pdp.line, 'name')
-    vl1_id = 'vl_' + n_pdp.line['from_bus'].astype(str)
-    vl2_id = 'vl_' + n_pdp.line['to_bus'].astype(str)
+    vl1_id = build_voltage_level_id(n_pdp.line['from_bus'].astype(str))
+    vl2_id = build_voltage_level_id(n_pdp.line['to_bus'].astype(str))
     bus1_id = 'bus_' + n_pdp.line['from_bus'].astype(str)
     bus2_id = 'bus_' + n_pdp.line['to_bus'].astype(str)
     r = n_pdp.line['length_km'] * n_pdp.line['r_ohm_per_km'] / n_pdp.line['parallel']
@@ -82,7 +86,7 @@ def create_lines(n, n_pdp):
 def create_shunts(n, n_pdp):
     id = generate_injection_id(n_pdp.shunt, 'shunt')
     name = get_name(n_pdp.shunt, 'name').tolist()
-    vl_id = ('vl_' + n_pdp.shunt['bus'].astype(str)).tolist()
+    vl_id = build_voltage_level_id(n_pdp.shunt['bus'].astype(str)).tolist()
     bus_id = ('bus_' + n_pdp.shunt['bus'].astype(str)).tolist()
     model_type = ['LINEAR'] * len(n_pdp.shunt)
     section_count = n_pdp.shunt['step'].tolist()
@@ -108,7 +112,7 @@ def _create_generators(n, gen, bus):
     gen_and_bus = gen.merge(bus, left_on='bus', right_index=True, how='inner', suffixes=('', '_x'))
     id = generate_injection_id(gen_and_bus, 'gen')
     name = get_name(gen_and_bus, 'name')
-    vl_id = 'vl_' + gen_and_bus['bus'].astype(str)
+    vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
     bus_id = 'bus_' + gen_and_bus['bus'].astype(str)
     target_p = gen_and_bus['p_mw'] if 'p_mw' in gen_and_bus.columns else [0.0] * len(gen_and_bus)
     voltage_regulator_on = [True] * len(gen_and_bus)
@@ -128,7 +132,7 @@ def create_generators(n, n_pdp):
 def create_loads(n, n_pdp):
     id = generate_injection_id(n_pdp.load, 'load')
     name = get_name(n_pdp.load, 'name')
-    vl_id = 'vl_' + n_pdp.load['bus'].astype(str)
+    vl_id = build_voltage_level_id(n_pdp.load['bus'].astype(str))
     bus_id = 'bus_' + n_pdp.load['bus'].astype(str)
     p0 = n_pdp.load['p_mw']
     q0 = n_pdp.load['q_mvar']
@@ -136,11 +140,11 @@ def create_loads(n, n_pdp):
 
 
 def create_buses(n, n_pdp):
-    vl_id = 'vl_' + n_pdp.bus.index.astype(str)
+    vl_id = build_voltage_level_id(n_pdp.bus.index.astype(str))
     topology_kind = ['BUS_BREAKER'] * len(n_pdp.bus)
     nominal_v = n_pdp.bus['vn_kv']
-    low_voltage_limit = n_pdp.bus['min_vm_pu'] * nominal_v
-    high_voltage_limit = n_pdp.bus['max_vm_pu'] * nominal_v
+    low_voltage_limit = n_pdp.bus['min_vm_pu'] * nominal_v if 'min_vm_pu' in n_pdp.bus.columns else None
+    high_voltage_limit = n_pdp.bus['max_vm_pu'] * nominal_v if 'max_vm_pu' in n_pdp.bus.columns else None
     substation_id = ['s'] * len(n_pdp.bus)
     # FIXME topology kind should have a default value
     n.create_voltage_levels(id=vl_id, substation_id=substation_id, topology_kind=topology_kind, nominal_v=nominal_v,
