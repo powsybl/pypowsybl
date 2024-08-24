@@ -35,10 +35,7 @@ import com.powsybl.nad.layout.BasicForceLayoutFactory;
 import com.powsybl.nad.layout.GeographicalLayoutFactory;
 import com.powsybl.nad.layout.LayoutFactory;
 import com.powsybl.nad.svg.SvgParameters;
-import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.*;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
@@ -380,11 +377,10 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "removeVariant")
+    @Catch
     public static void removeVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
-        });
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
     }
 
     @CEntryPoint(name = "getVariantsIds")

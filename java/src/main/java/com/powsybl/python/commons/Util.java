@@ -71,7 +71,12 @@ public final class Util {
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
-    public static void doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
+    @FunctionalInterface
+    public interface ThrowableRunnable {
+        void run() throws Throwable;
+    }
+
+    public static void doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, ThrowableRunnable runnable) {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             runnable.run();
