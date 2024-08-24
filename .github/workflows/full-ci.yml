@@ -53,7 +53,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
         with:
-          java-version: '21'
+          java-version: '22'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -164,7 +164,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '21'
+          java-version: '22'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
