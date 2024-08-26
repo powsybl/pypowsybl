@@ -1,10 +1,10 @@
 
 import math
 from importlib import util
+from typing import Dict
 
 import numpy as np
 import pandas as pd
-
 import pypowsybl._pypowsybl as _pp
 from pandas import Series
 
@@ -22,10 +22,17 @@ def convert_from_pandapower(n_pdp) -> Network:
         n.create_substations(id='s')
         create_buses(n, n_pdp)
         create_loads(n, n_pdp)
-        create_generators(n, n_pdp)
+        slack_weight_by_gen_id = {}
+        create_generators(n, n_pdp, slack_weight_by_gen_id)
         create_shunts(n, n_pdp)
         create_lines(n, n_pdp)
         create_transformers(n, n_pdp)
+
+        # create slack bus extension
+        slack_gen_ids = [key for key, value in slack_weight_by_gen_id.items() if value == 1.0]
+        generators = n.get_generators(attributes=['voltage_level_id'])
+        slack_gen = generators.loc[slack_gen_ids[0]]
+        n.create_extensions(extension_name='slackTerminal', element_id=slack_gen_ids[0], voltage_level_id=slack_gen['voltage_level_id'])
 
         return n
 
@@ -45,13 +52,12 @@ def build_bus_id(bus: Series):
     return 'bus_' + bus
 
 
-def build_injection_id(prefix, row, index):
-    bus = row['bus']
+def build_injection_id(prefix, bus, index):
     return "{}_{}_{}".format(prefix, bus, index) # because it is required by grid2op to build IDs like this is case of missing name
 
 
 def generate_injection_id(df: pd.DataFrame, prefix: str) -> pd.Series:
-    return df.apply(lambda row: build_injection_id(prefix, row, row.name), axis=1)
+    return df.apply(lambda row: build_injection_id(prefix, row['bus'], row.name), axis=1)
 
 
 def build_line_id(row, index):
@@ -106,7 +112,7 @@ def create_lines(n, n_pdp):
         r = n_pdp.line['length_km'] * n_pdp.line['r_ohm_per_km'] / n_pdp.line['parallel']
         x = n_pdp.line['length_km'] * n_pdp.line['x_ohm_per_km'] / n_pdp.line['parallel']
         g = n_pdp.line['length_km'] * n_pdp.line['g_us_per_km'] * 1e-6 * n_pdp.line['parallel'] / 2
-        b = n_pdp.line['length_km'] * n_pdp.line['c_nf_per_km'] * 1e-9 * 2 * math.pi * 50 * n_pdp.line['parallel'] / 2
+        b = n_pdp.line['length_km'] * n_pdp.line['c_nf_per_km'] * 1e-9 * 2 * math.pi * n_pdp.f_hz * n_pdp.line['parallel'] / 2
         n.create_lines(id=id, name=name, voltage_level1_id=vl1_id, bus1_id=bus1_id, voltage_level2_id=vl2_id,
                        bus2_id=bus2_id, r=r, x=x, g1=g, g2=g, b1=b, b2=b)
 
@@ -137,26 +143,29 @@ def create_shunts(n, n_pdp):
         n.create_shunt_compensators(shunt_df=shunt_df, linear_model_df=linear_model_df)
 
 
-def _create_generators(n, gen, bus):
+def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ext_grid: bool):
     if len(gen) > 0:
         gen_and_bus = gen.merge(bus, left_on='bus', right_index=True, how='inner', suffixes=('', '_x'))
         id = generate_injection_id(gen_and_bus, 'gen')
         name = get_name(gen_and_bus, 'name')
         vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
         bus_id = build_bus_id(gen_and_bus['bus'].astype(str))
-        target_p = gen_and_bus['p_mw'] if 'p_mw' in gen_and_bus.columns else [0.0] * len(gen_and_bus)
+        target_p = [0.0001] * len(gen_and_bus) if ext_grid else gen_and_bus['p_mw']
         voltage_regulator_on = [True] * len(gen_and_bus)
         target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv']
-        min_p = [0] * len(gen_and_bus)
-        max_p = [99999] * len(gen_and_bus)
+        min_p = [0.0] * len(gen_and_bus) if ext_grid else gen_and_bus['min_p_mw']
+        max_p = [4999.0] * len(gen_and_bus) if ext_grid else gen_and_bus['max_p_mw']
+        for index, row in gen_and_bus.iterrows():
+            slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = row['slack_weight']
+
         n.create_generators(id=id, name=name, voltage_level_id=vl_id, bus_id=bus_id, target_p=target_p,
                             voltage_regulator_on=voltage_regulator_on,
                             target_v=target_v, min_p=min_p, max_p=max_p)
 
 
-def create_generators(n, n_pdp):
-    _create_generators(n, n_pdp.gen, n_pdp.bus)
-    _create_generators(n, n_pdp.ext_grid, n_pdp.bus)
+def create_generators(n, n_pdp, slack_weight_by_gen_id):
+    _create_generators(n, n_pdp.gen, n_pdp.bus, slack_weight_by_gen_id, False)
+    _create_generators(n, n_pdp.ext_grid, n_pdp.bus, slack_weight_by_gen_id, True)
 
 
 def create_loads(n, n_pdp):
