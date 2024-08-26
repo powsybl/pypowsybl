@@ -12,11 +12,10 @@ import com.powsybl.commons.extensions.Extension;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
-import com.powsybl.shortcircuit.InitialVoltageProfileMode;
-import com.powsybl.shortcircuit.ShortCircuitAnalysisProvider;
-import com.powsybl.shortcircuit.ShortCircuitParameters;
-import com.powsybl.shortcircuit.StudyType;
+import com.powsybl.shortcircuit.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -36,7 +35,7 @@ public final class ShortCircuitAnalysisCUtils {
     }
 
     public static ShortCircuitParameters createShortCircuitAnalysisParameters() {
-        return PyPowsyblConfiguration.isReadConfig() ? ShortCircuitParameters.load() : new ShortCircuitParameters();
+        return PyPowsyblConfiguration.isReadConfig() ? ShortCircuitParameters.load() : new ShortCircuitParameters().setVoltageRanges(new ArrayList<>());
     }
 
     public static ShortCircuitParameters createShortCircuitAnalysisParameters(PyPowsyblApiHeader.ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer,
@@ -63,7 +62,20 @@ public final class ShortCircuitAnalysisCUtils {
                 .setWithLimitViolations(shortCircuitAnalysisParametersPointer.isWithLimitViolations())
                 .setMinVoltageDropProportionalThreshold(shortCircuitAnalysisParametersPointer.getMinVoltageDropProportionalThreshold())
                 .setInitialVoltageProfileMode(InitialVoltageProfileMode.values()[shortCircuitAnalysisParametersPointer.getInitialVoltageProfileMode()])
-                .setStudyType(StudyType.values()[shortCircuitAnalysisParametersPointer.getStudyType()]);
+                .setStudyType(StudyType.values()[shortCircuitAnalysisParametersPointer.getStudyType()])
+                .setVoltageRanges(createVoltageRangeList(shortCircuitAnalysisParametersPointer.voltageRanges()));
+    }
+
+    private static List<VoltageRange> createVoltageRangeList(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.VoltageRangePointer> voltageRangePointerArrayPointer) {
+        List<VoltageRange> voltageRanges = new ArrayList<>();
+        for (int i = 0; i <= voltageRangePointerArrayPointer.getLength(); i++) {
+            PyPowsyblApiHeader.VoltageRangePointer voltageRangePointer = voltageRangePointerArrayPointer.getPtr().addressOf(i);
+            voltageRanges.add(new VoltageRange(voltageRangePointer.getMinimumNominalVoltage(),
+                voltageRangePointer.getMaximumNominalVoltage(),
+                voltageRangePointer.getRangeCoefficient(),
+                voltageRangePointer.getVoltage()));
+        }
+        return voltageRanges;
     }
 
     private static Map<String, String> getSpecificParameters(PyPowsyblApiHeader.ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer) {

@@ -4,10 +4,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict
+from typing import Dict, List
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode
+from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode, VoltageRange
 
 ShortCircuitStudyType.__module__ = __name__
 ShortCircuitStudyType.__name__ = 'ShortCircuitStudyType'
@@ -37,6 +37,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         min_voltage_drop_proportional_threshold: specifies a threshold for filtering the voltage results.
             Only nodes where the voltage drop due to the short circuit is greater than this property are retained.
         study_type: specifies the type of short-circuit study. It can be SUB_TRANSIENT, TRANSIENT or STEADY_STATE.
+        voltage_ranges:
         initial_voltage_profile_mode: specify how the computation is initialized. It can be NOMINAL, CONFIGURED or PREVIOUS_VALUE
     """
 
@@ -48,7 +49,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  study_type: ShortCircuitStudyType = None,
                  provider_parameters: Dict[str, str] = None,
                  with_fortescue_result: bool = None,
-                 initial_voltage_profile_mode: InitialVoltageProfileMode = None):
+                 initial_voltage_profile_mode: InitialVoltageProfileMode = None,
+                 voltage_ranges: List[VoltageRange] = None):
         self._init_with_default_values()
         if with_feeder_result is not None:
             self.with_feeder_result = with_feeder_result
@@ -66,6 +68,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.with_fortescue_result = with_fortescue_result
         if initial_voltage_profile_mode is not None:
             self.initial_voltage_profile_mode = initial_voltage_profile_mode
+        if voltage_ranges is not None:
+            self.voltage_ranges = voltage_ranges
 
     def _init_from_c(self, c_parameters: _pypowsybl.ShortCircuitAnalysisParameters) -> None:
         self.with_feeder_result = c_parameters.with_feeder_result
@@ -77,6 +81,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
             zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
         self.with_fortescue_result = c_parameters.with_fortescue_result
         self.initial_voltage_profile_mode = c_parameters.initial_voltage_profile_mode
+        self.voltage_ranges = [VoltageRange(vr.minimum_nominal_voltage, vr.maximum_nominal_voltage, vr.voltage, vr.range_coefficient) for vr in c_parameters.voltage_ranges]
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(_pypowsybl.ShortCircuitAnalysisParameters())
@@ -87,6 +92,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.study_type = ShortCircuitStudyType.TRANSIENT
         self.with_fortescue_result = False
         self.initial_voltage_profile_mode = InitialVoltageProfileMode.NOMINAL
+        self.voltage_ranges = []
 
     def _to_c_parameters(self) -> _pypowsybl.ShortCircuitAnalysisParameters:
         c_parameters = _pypowsybl.ShortCircuitAnalysisParameters()
@@ -97,6 +103,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.with_fortescue_result = self.with_fortescue_result
         c_parameters.min_voltage_drop_proportional_threshold = self.min_voltage_drop_proportional_threshold
         c_parameters.initial_voltage_profile_mode = self.initial_voltage_profile_mode
+        c_parameters.voltage_ranges = [_pypowsybl.VoltageRange(vr.minimum_nominal_voltage, vr.maximum_nominal_voltage, vr.voltage, vr.range_coefficient) for vr in self.voltage_ranges]
         c_parameters.provider_parameters_keys = []
         c_parameters.provider_parameters_values = []
         return c_parameters
@@ -110,4 +117,5 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", study_type={self.study_type!r}" \
                f", with_fortescue_result={self.with_fortescue_result!r}" \
                f", initial_voltage_profile_mode={self.initial_voltage_profile_mode!r}" \
+               f", voltage_ranges={self.voltage_ranges!r}" \
                f")"
