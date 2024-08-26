@@ -30,6 +30,9 @@ def run_and_compare(pdp_n, expected_bus_count: int):
     pdp_v = list(pdp_n.res_bus['vm_pu'])
     buses = n.get_buses()
     v = list(buses['v_mag'])
+    print()
+    print(pdp_v)
+    print(v)
     assert pdp_v == approx(v, abs=ABS)
 
 
