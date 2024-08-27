@@ -98,7 +98,7 @@ def create_transformers(n, n_pdp):
         xk = np.sqrt(zk ** 2 - rk ** 2)
         ym = trafo_and_bus['i0_percent'] / 100
         gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) * c
-        bm = - np.sign(ym) * np.sqrt(ym ** 2 - gm ** 2)
+        bm = - np.sqrt(ym ** 2 - gm ** 2)
 
         zb_tr = (trafo_and_bus['vn_lv_kv'] ** 2) * c
         r = rk * zb_tr
