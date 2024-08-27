@@ -102,7 +102,13 @@ jobs:
         config:
           - {
             name: darwin,
+            os: macos-12,
+            macox-deployment-target: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+          }
+          - {
+            name: darwin-arm64,
             os: macos-14,
+            macox-deployment-target: "14.0"
           }
           - {
             name: windows,
@@ -139,7 +145,7 @@ jobs:
 
       - name: Build wheel
         env:
-          MACOSX_DEPLOYMENT_TARGET: "14.0" # to fix later with 11.0 when math native will have been built with same flag
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macox-deployment-target }}
         run: python setup.py bdist_wheel
 
       - name: Install wheel
