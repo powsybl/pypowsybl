@@ -17,11 +17,13 @@ jobs:
           - {
             name: darwin-arm64,
             os: macos-14,
+            macos_deployment_target: "11", # first arm64 macos version
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64",
           }
         python:
           - {
-            name: cp12,
-            version: '3.12',
+            name: cp38,
+            version: '3.8',
           }
 
     steps:
@@ -48,7 +50,9 @@ jobs:
           python -m pip install -r requirements.txt
 
       - name: Build wheel
-        run: python setup.py bdist_wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ macos_deployment_target }}
+        run: python setup.py bdist_wheel ${{ bdist_wheel_args }}
 
       - name: Install wheel
         shell: bash
