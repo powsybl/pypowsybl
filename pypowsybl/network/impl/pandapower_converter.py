@@ -109,7 +109,8 @@ def create_transformers(n, n_pdp):
         n.create_2_windings_transformers(id=id, name=name,
                                          voltage_level1_id=vl1_id, bus1_id=bus1_id,
                                          voltage_level2_id=vl2_id, bus2_id=bus2_id,
-                                         rated_u1=rated_u1, rated_u2=rated_u2, r=r, x=x, g=g, b=b)
+                                         rated_u1=rated_u1, rated_u2=rated_u2,
+                                         r=r, x=x, g=g, b=b)
 
 
 def create_lines(n, n_pdp):
