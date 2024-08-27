@@ -51,7 +51,7 @@ jobs:
       - name: Build wheel
         env:
           MACOSX_DEPLOYMENT_TARGET: "11"
-        run: python setup.py bdist_wheel ${{ bdist_wheel_args }}
+        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
 
       - name: Install wheel
         shell: bash
