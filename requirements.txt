@@ -11,6 +11,7 @@ sphinx==7.1.2
 furo==2024.1.29
 
 # CI dependencies
+setuptools==73.0.1
 wheel==0.44.0
 coverage==7.3.2
 pytest>=6.2.5

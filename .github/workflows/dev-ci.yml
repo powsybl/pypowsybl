@@ -7,93 +7,6 @@ on:
       - '*'
       - '!main'
 
-jobs:
-  manylinux_build:
-    name: Build linux ${{ matrix.python.name }} wheel
-    runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-    strategy:
-      matrix:
-        python:
-          - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
-          }
-
-    steps:
-      - name: Install Maven
-        run: |
-          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
-          tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
-
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
-        with:
-          java-version: '17'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout sources
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-
-      - name: Setup path
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: pip3 install -r requirements.txt
-
-      - name: Build wheel
-        run: |
-          python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
-
-      - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
-      - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v2.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
@@ -101,18 +14,9 @@ jobs:
       matrix:
         config:
           - {
-            name: darwin,
-            os: macos-12,
-            macox-deployment-target: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-          }
-          - {
             name: darwin-arm64,
             os: macos-14,
             macox-deployment-target: "14.0"
-          }
-          - {
-            name: windows,
-            os: windows-2022,
           }
         python:
           - {
