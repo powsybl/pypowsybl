@@ -17,8 +17,7 @@ jobs:
           - {
             name: darwin-arm64,
             os: macos-14,
-            macos_deployment_target: "11", # first arm64 macos version
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64",
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
           }
         python:
           - {
@@ -51,7 +50,7 @@ jobs:
 
       - name: Build wheel
         env:
-          MACOSX_DEPLOYMENT_TARGET: ${{ macos_deployment_target }}
+          MACOSX_DEPLOYMENT_TARGET: "11"
         run: python setup.py bdist_wheel ${{ bdist_wheel_args }}
 
       - name: Install wheel
