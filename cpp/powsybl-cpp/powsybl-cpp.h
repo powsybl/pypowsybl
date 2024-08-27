@@ -190,6 +190,7 @@ typedef Array<post_contingency_result> PostContingencyResultArray;
 typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
+typedef Array<dataframe> DataframesArray;
 
 
 template<typename T>
@@ -825,6 +826,19 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
-
+SeriesArray* initializeSeriesArrayObject(int columnsNumber);
+DataframesArray* initializeDataframesArray(int columnsNumber);
+char** initializeCharPointerPointer(int size);
+void freeCharPointerPointer(char** charPointerPointer);
+char* initializeCharPointer(int size);
+void freeCharPointer(char* charPointer);
+int* initializeIntPointer(int size);
+void freeIntPointer(int* intPointer);
+double* initializeDoublePointer(double size);
+void freeDoublePointer(double* doublePointer);
+dataframe* initializeDataframePointer();
+void freeDataframePointer(dataframe* dataframe);
+dataframe_array* initializeDataframeArrayPointer();
+void freeDataframeArrayPointer(dataframe_array* dataframe_array);
 }
 #endif //PYPOWSYBL_H

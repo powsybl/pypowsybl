@@ -918,6 +918,12 @@ public final class PyPowsyblApiHeader {
         @CField("injections_ids")
         void setInjectionsIds(CCharPointerPointer injectionsIds);
 
+        @CField("injections_ids_count")
+        int getInjectionsIdsCount();
+
+        @CField("injections_ids_count")
+        void setInjectionsIdsCount(int count);
+
         @CField("injections_shift_keys")
         CDoublePointer getinjectionsShiftKeys();
 

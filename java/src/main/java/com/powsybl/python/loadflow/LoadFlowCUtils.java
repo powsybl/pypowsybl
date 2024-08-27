@@ -117,5 +117,13 @@ public final class LoadFlowCUtils {
             UnmanagedMemory.free(parameters.getCountriesToBalance().read(i));
         }
         UnmanagedMemory.free(parameters.getCountriesToBalance());
+        for (int i = 0; i < parameters.getProviderParametersValuesCount(); i++) {
+            UnmanagedMemory.free(parameters.getProviderParametersValues().read(i));
+        }
+        UnmanagedMemory.free(parameters.getProviderParametersValues());
+        for (int i = 0; i < parameters.getProviderParametersKeysCount(); i++) {
+            UnmanagedMemory.free(parameters.getProviderParametersKeys().read(i));
+        }
+        UnmanagedMemory.free(parameters.getProviderParametersKeys());
     }
 }

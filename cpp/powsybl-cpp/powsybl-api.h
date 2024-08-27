@@ -314,6 +314,7 @@ typedef struct {
 typedef struct zone_struct {
     char* id;
     char** injections_ids;
+    int injections_ids_count;
     double* injections_shift_keys;
     int length;
 } zone;

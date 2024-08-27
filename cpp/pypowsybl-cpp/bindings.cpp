@@ -44,25 +44,13 @@ void bindArray(py::module_& m, const std::string& className) {
 }
 
 void deleteDataframe(dataframe* df) {
-    for (int indice = 0 ; indice < df->series_count; indice ++) {
-        series* column = df->series + indice;
-        if (column->type == 0) {
-            pypowsybl::deleteCharPtrPtr((char**) column->data.ptr, column->data.length);
-        } else if (column->type == 1) {
-            delete[] (double*) column->data.ptr;
-        } else if (column->type == 2 || column->type == 3) {
-            delete[] (int*) column->data.ptr;
-        }
-        delete[] column->name;
-    }
-    delete[] df->series;
-    delete df;
+    pypowsybl::freeDataframePointer(df);
 }
 
 std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::vector<std::string>& columnsNames, const std::vector<int>& columnsTypes, const std::vector<bool>& isIndex) {
     int columnsNumber = columnsNames.size();
-    std::shared_ptr<dataframe> dataframe(new ::dataframe(), ::deleteDataframe);
-    series* columns = new series[columnsNumber];
+    std::shared_ptr<dataframe> dataframe(pypowsybl::initializeDataframePointer(), ::deleteDataframe);
+    series* columns = pypowsybl::initializeSeriesArrayObject(columnsNumber)->begin();
     for (int indice = 0 ; indice < columnsNumber ; indice ++ ) {
         series* column = columns + indice;
         py::str name = (py::str) columnsNames[indice];
@@ -105,12 +93,13 @@ std::shared_ptr<dataframe> createDataframe(py::list columnsValues, const std::ve
     return dataframe;
 }
 
+void deleteDataframeArrayObject(dataframe_array* df) {
+    pypowsybl::freeDataframeArrayPointer(df);
+}
+
 std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<dataframe*>& dataframes) {
-    std::shared_ptr<dataframe_array> dataframeArray(new dataframe_array(), [](dataframe_array* dataframeToDestroy){
-        delete[] dataframeToDestroy->dataframes;
-        delete dataframeToDestroy;
-    });
-    dataframe* dataframesFinal = new dataframe[dataframes.size()];
+    std::shared_ptr<dataframe_array> dataframeArray(pypowsybl::initializeDataframeArrayPointer(), ::deleteDataframeArrayObject);
+    dataframe* dataframesFinal = pypowsybl::initializeDataframesArray(dataframes.size())->begin();
     for (int indice = 0 ; indice < dataframes.size() ; indice ++) {
         dataframesFinal[indice] = *dataframes[indice];
     }
@@ -1063,8 +1052,8 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
     pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
     pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
 
-    char** dataPtrs = new char*[byteBuffers.size()];
-    int* dataSizes = new int[byteBuffers.size()];
+    char** dataPtrs = pypowsybl::initializeCharPointerPointer(byteBuffers.size());
+    int* dataSizes = pypowsybl::initializeIntPointer(byteBuffers.size());
     for(int i=0; i < byteBuffers.size(); ++i) {
         py::buffer_info info = byteBuffers[i].request();
         dataPtrs[i] = static_cast<char*>(info.ptr);
@@ -1074,8 +1063,8 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
     pypowsybl::JavaHandle networkHandle = pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(),
                            parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
-    delete[] dataPtrs;
-    delete[] dataSizes;
+    pypowsybl::freeCharPointerPointer(dataPtrs);
+    pypowsybl::freeIntPointer(dataSizes);
     return networkHandle;
 }
 
