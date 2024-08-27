@@ -82,23 +82,34 @@ def generate_transformer_id(df: pd.DataFrame, index_offset: int) -> pd.Series:
 
 def create_transformers(n, n_pdp):
     if len(n_pdp.trafo) > 0:
-        id = generate_transformer_id(n_pdp.trafo, len(n_pdp.line))
-        name = get_name(n_pdp.trafo, 'name')
-        vl1_id = build_voltage_level_id(n_pdp.trafo['lv_bus'].astype(str))
-        vl2_id = build_voltage_level_id(n_pdp.trafo['hv_bus'].astype(str))
-        bus1_id = build_bus_id(n_pdp.trafo['lv_bus'].astype(str))
-        bus2_id = build_bus_id(n_pdp.trafo['hv_bus'].astype(str))
-        rated_u1 = n_pdp.trafo['vn_lv_kv']
-        rated_u2 = n_pdp.trafo['vn_hv_kv']
-        r = n_pdp.trafo['vkr_percent'] / 100 * n_pdp.sn_mva / n_pdp.trafo['sn_mva']
-        z = n_pdp.trafo['vk_percent'] / 100 * n_pdp.sn_mva / n_pdp.trafo['sn_mva']
-        x = np.sqrt(z * z - r * r)
-        y = n_pdp.trafo['i0_percent'] / 100
-        g = n_pdp.trafo['pfe_kw'] / (n_pdp.trafo['sn_mva'] * 1000) * n_pdp.sn_mva / n_pdp.trafo['sn_mva']
-        b = np.sqrt(y * y - g * g)
-        n.create_2_windings_transformers(id=id, name=name, voltage_level1_id=vl1_id, bus1_id=bus1_id,
-                                         voltage_level2_id=vl2_id,
-                                         bus2_id=bus2_id, rated_u1=rated_u1, rated_u2=rated_u2, r=r, x=x, g=g, b=b)
+        bus = n_pdp.bus[['vn_kv']]
+        trafo_and_bus = n_pdp.trafo.merge(bus.rename(columns=lambda x: x + '_lv_bus'), left_on='lv_bus', right_index=True, how='inner')
+        id = generate_transformer_id(trafo_and_bus, len(n_pdp.line))
+        name = get_name(trafo_and_bus, 'name')
+        vl1_id = build_voltage_level_id(trafo_and_bus['hv_bus'].astype(str))
+        vl2_id = build_voltage_level_id(trafo_and_bus['lv_bus'].astype(str))
+        bus1_id = build_bus_id(trafo_and_bus['hv_bus'].astype(str))
+        bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
+        rated_u1 = trafo_and_bus['vn_hv_kv']
+        rated_u2 = trafo_and_bus['vn_lv_kv']
+        c = n_pdp.sn_mva / n_pdp.trafo['sn_mva']
+        rk = trafo_and_bus['vkr_percent'] / 100 * c
+        zk = trafo_and_bus['vk_percent'] / 100 * c
+        xk = np.sqrt(zk ** 2 - rk ** 2)
+        ym = trafo_and_bus['i0_percent'] / 100
+        gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) * c
+        bm = - np.sign(ym) * np.sqrt(ym ** 2 - gm ** 2)
+
+        zb_tr = (trafo_and_bus['vn_lv_kv'] ** 2) * c
+        r = rk * zb_tr
+        x = xk * zb_tr
+        g = gm / zb_tr
+        b = bm / zb_tr
+
+        n.create_2_windings_transformers(id=id, name=name,
+                                         voltage_level1_id=vl1_id, bus1_id=bus1_id,
+                                         voltage_level2_id=vl2_id, bus2_id=bus2_id,
+                                         rated_u1=rated_u1, rated_u2=rated_u2, r=r, x=x, g=g, b=b)
 
 
 def create_lines(n, n_pdp):
