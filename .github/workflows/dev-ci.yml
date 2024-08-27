@@ -50,9 +50,9 @@ jobs:
 
       - name: Build wheel
         env:
-          ARCHFLAGS: "-arch x86_64"
+          ARCHFLAGS: "-arch arm64"
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macox-deployment-target }}
-        run: python setup.py bdist_wheel
+        run: python setup.py bdist_wheel --plat-name macosx-11.0-arm64
 
       - name: Install wheel
         shell: bash
