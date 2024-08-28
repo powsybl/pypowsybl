@@ -90,8 +90,10 @@ def create_transformers(n, n_pdp):
         vl2_id = build_voltage_level_id(trafo_and_bus['lv_bus'].astype(str))
         bus1_id = build_bus_id(trafo_and_bus['hv_bus'].astype(str))
         bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
-        rated_u1 = trafo_and_bus['vn_hv_kv']
-        rated_u2 = trafo_and_bus['vn_lv_kv']
+        n_tap = np.where(~np.isnan(trafo_and_bus['tap_pos']) & ~np.isnan(trafo_and_bus['tap_neutral']) & ~np.isnan(trafo_and_bus['tap_step_percent']),
+                         1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0, 1.0)
+        rated_u1 = np.where(trafo_and_bus['tap_side'] == "hv", trafo_and_bus['vn_hv_kv'] * n_tap, trafo_and_bus['vn_hv_kv'])
+        rated_u2 = np.where(trafo_and_bus['tap_side'] == "lv", trafo_and_bus['vn_lv_kv'] * n_tap, trafo_and_bus['vn_lv_kv'])
         c = n_pdp.sn_mva / n_pdp.trafo['sn_mva']
         rk = trafo_and_bus['vkr_percent'] / 100 * c
         zk = trafo_and_bus['vk_percent'] / 100 * c
