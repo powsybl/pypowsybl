@@ -11,6 +11,9 @@ from pandas import Series
 from .network import Network
 from .network_creation_util import create_empty
 
+DEFAULT_MIN_P = -4999.0
+DEFAULT_MAX_P = 4999.0
+
 
 def convert_from_pandapower(n_pdp) -> Network:
     if util.find_spec("pandapower") is None:
@@ -30,9 +33,10 @@ def convert_from_pandapower(n_pdp) -> Network:
 
         # create slack bus extension
         slack_gen_ids = [key for key, value in slack_weight_by_gen_id.items() if value == 1.0]
-        generators = n.get_generators(attributes=['voltage_level_id'])
-        slack_gen = generators.loc[slack_gen_ids[0]]
-        n.create_extensions(extension_name='slackTerminal', element_id=slack_gen_ids[0], voltage_level_id=slack_gen['voltage_level_id'])
+        if len(slack_gen_ids) > 0:
+            generators = n.get_generators(attributes=['voltage_level_id'])
+            slack_gen = generators.loc[slack_gen_ids[0]]
+            n.create_extensions(extension_name='slackTerminal', element_id=slack_gen_ids[0], voltage_level_id=slack_gen['voltage_level_id'])
 
         return n
 
@@ -167,8 +171,8 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ex
         target_p = [0.0001] * len(gen_and_bus) if ext_grid else gen_and_bus['p_mw']
         voltage_regulator_on = [True] * len(gen_and_bus)
         target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv']
-        min_p = [0.0] * len(gen_and_bus) if ext_grid else gen_and_bus['min_p_mw']
-        max_p = [4999.0] * len(gen_and_bus) if ext_grid else gen_and_bus['max_p_mw']
+        min_p = [DEFAULT_MIN_P] * len(gen_and_bus) if ext_grid or 'min_p_mw' not in gen_and_bus.columns else np.nan_to_num(gen_and_bus['min_p_mw'], nan=DEFAULT_MIN_P)
+        max_p = [DEFAULT_MAX_P] * len(gen_and_bus) if ext_grid or 'max_p_mw' not in gen_and_bus.columns else np.nan_to_num(gen_and_bus['max_p_mw'], nan=DEFAULT_MAX_P)
         for index, row in gen_and_bus.iterrows():
             slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = row['slack_weight']
 
