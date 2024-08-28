@@ -97,14 +97,14 @@ def create_transformers(n, n_pdp):
         zk = trafo_and_bus['vk_percent'] / 100 * c
         xk = np.sqrt(zk ** 2 - rk ** 2)
         ym = trafo_and_bus['i0_percent'] / 100
-        gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) * c
+        gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) / c
         bm = - np.sqrt(ym ** 2 - gm ** 2)
 
-        zb_tr = (trafo_and_bus['vn_lv_kv'] ** 2) * c
-        r = rk * zb_tr
-        x = xk * zb_tr
-        g = gm / zb_tr
-        b = bm / zb_tr
+        zb_tr = (trafo_and_bus['vn_kv_lv_bus'] ** 2) / n_pdp.sn_mva
+        r = rk * zb_tr / trafo_and_bus['parallel']
+        x = xk * zb_tr / trafo_and_bus['parallel']
+        g = gm / zb_tr * trafo_and_bus['parallel']
+        b = bm / zb_tr * trafo_and_bus['parallel']
 
         n.create_2_windings_transformers(id=id, name=name,
                                          voltage_level1_id=vl1_id, bus1_id=bus1_id,
@@ -144,8 +144,8 @@ def create_shunts(n, n_pdp):
             'model_type': model_type,
             'section_count': section_count
         }, index=id)
-        g_per_section = (n_pdp.shunt['p_mw'] / n_pdp.shunt['vn_kv'].pow(2)).tolist()
-        b_per_section = (n_pdp.shunt['q_mvar'] / n_pdp.shunt['vn_kv'].pow(2)).tolist()
+        g_per_section = (n_pdp.shunt['p_mw'] / (n_pdp.shunt['vn_kv'] ** 2)).tolist()
+        b_per_section = (n_pdp.shunt['q_mvar'] / (n_pdp.shunt['vn_kv'] ** 2)).tolist()
         max_section_count = n_pdp.shunt['max_step'].tolist()
         linear_model_df = pd.DataFrame(data={
             'g_per_section': g_per_section,

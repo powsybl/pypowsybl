@@ -15,9 +15,8 @@ def setup():
 
 
 def run_and_compare(pdp_n, expected_bus_count: int):
-    pdp.runpp(pdp_n, numba=True, enforce_q_lims=False, distributed_slack=False)
+    pdp.runpp(pdp_n, numba=True, enforce_q_lims=False, distributed_slack=False, trafo_model="pi")
     n = pp.network.convert_from_pandapower(pdp_n)
-    n.per_unit = True
     assert len(n.get_buses()) == expected_bus_count
     param = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.UNIFORM_VALUES,
                                    transformer_voltage_control_on=False,
@@ -27,7 +26,7 @@ def run_and_compare(pdp_n, expected_bus_count: int):
                                    distributed_slack=False)
     results = pp.loadflow.run_ac(n, param)
     assert pp.loadflow.ComponentStatus.CONVERGED == results[0].status
-    pdp_v = list(pdp_n.res_bus['vm_pu'])
+    pdp_v = list(pdp_n.res_bus['vm_pu'] * pdp_n.bus['vn_kv'])
     buses = n.get_buses()
     v = list(buses['v_mag'])
     print()
@@ -59,3 +58,15 @@ def test_pandapower_case30():
 
 def test_pandapower_case_ieee30():
     run_and_compare(pdp.networks.case_ieee30(), 30)
+
+def test_pandapower_case33bw():
+    run_and_compare(pdp.networks.case33bw(), 33)
+
+def test_pandapower_case39():
+    run_and_compare(pdp.networks.case39(), 39)
+
+def test_pandapower_panda_four_load_branch():
+    run_and_compare(pdp.networks.panda_four_load_branch(), 6)
+
+def test_pandapower_four_loads_with_branches_out():
+    run_and_compare(pdp.networks.four_loads_with_branches_out(), 10)
