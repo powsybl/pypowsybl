@@ -109,26 +109,10 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(g, row, adder::setG);
                 applyIfPresent(b, row, adder::setB);
                 applyIfPresent(pairingKey, row, adder::setPairingKey);
-                addGenerationIfPresent(adder, row);
                 return Optional.of(adder);
             } else {
                 return Optional.empty();
             }
-        }
-
-        private void addGenerationIfPresent(DanglingLineAdder adder, int row) {
-            if (minP == null && maxP == null && targetV == null && targetP == null && targetQ == null
-                    && voltageRegulatorOn == null) {
-                return;
-            }
-            DanglingLineAdder.GenerationAdder genAdder = adder.newGeneration();
-            applyIfPresent(minP, row, genAdder::setMinP);
-            applyIfPresent(maxP, row, genAdder::setMaxP);
-            applyIfPresent(targetP, row, genAdder::setTargetP);
-            applyIfPresent(targetQ, row, genAdder::setTargetQ);
-            applyIfPresent(targetV, row, genAdder::setTargetV);
-            applyBooleanIfPresent(voltageRegulatorOn, row, genAdder::setVoltageRegulationOn);
-            genAdder.add();
         }
     }
 

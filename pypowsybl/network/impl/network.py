@@ -1236,12 +1236,6 @@ class Network:  # pylint: disable=too-many-public-methods
               - **ucte-xnode-code**: deprecated for pairing key.
               - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
-              - **min_p** (optional): Minimum active power output of the dangling line's generation part
-              - **max_p** (optional): Maximum active power output of the dangling line's generation part
-              - **target_p** (optional): Active power target of the generation part
-              - **target_q** (optional): Reactive power target of the generation part
-              - **target_v** (optional): Voltage target of the generation part
-              - **voltage_regulator_on** (optional): ``True`` if the generation part regulates voltage
 
             This dataframe is indexed by the id of the dangling lines
 
@@ -1290,6 +1284,35 @@ class Network:  # pylint: disable=too-many-public-methods
             == === === === ================ ====== =========
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
+
+    def get_dangling_lines_generation(self, all_attributes: bool = False, attributes: List[str] = None,
+                                      **kwargs: ArrayLike):
+        r"""
+        Get a dataframe of the optional generation part of dangling lines.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of the generation part of the network dangling lines.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dangling_line_id**: The ID of the dangling line
+              - **target_p**:
+              - **voltage_regulator_on**:
+              - **target_q**:
+              - **target_v**:
+              - **min_p**:
+              - **max_p**:
+
+            This dataframe is indexed by the id of the dangling lines to which the generation part is attached
+        """
+        return self.get_elements(ElementType.DANGLING_LINE_GENERATION, all_attributes, attributes, **kwargs)
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: List[str] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -3774,6 +3797,39 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs['pairing_key'] = ucte_x_node_code
             kwargs.pop(ucte_xnode_code_str)
         return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
+
+    def create_dangling_line_generation_parts(self, df: Dataframe = None, **kwargs: ArrayLike):
+        """
+        Creates the generation part of already created dangling lines.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **dangling_line_id**: the identifier of the already existing dangling line
+            - **target_p**:
+            - **voltage_regulator_on**:
+            - **target_q**:
+            - **target_v**:
+            - **min_p**:
+            - **max_p**:
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dangling_line_generation_parts(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
+                                              p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
+        """
+        return self._create_elements(ElementType.DANGLING_LINE_GENERATION, [df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

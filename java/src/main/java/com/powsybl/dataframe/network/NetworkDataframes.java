@@ -609,18 +609,6 @@ public final class NetworkDataframes {
                 .booleans("paired", DanglingLine::isPaired)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
-                .doubles("min_p", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getMinP).orElse(NaN)),
-                        (dl, minP, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setMinP(unPerUnitPQ(context, minP))), false)
-                .doubles("max_p", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getMaxP).orElse(NaN)),
-                        (dl, maxP, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setMaxP(unPerUnitPQ(context, maxP))), false)
-                .doubles("target_p", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getTargetP).orElse(NaN)),
-                        (dl, targetP, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setTargetP(unPerUnitPQ(context, targetP))), false)
-                .doubles("target_q", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getTargetQ).orElse(NaN)),
-                        (dl, targetQ, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setTargetQ(unPerUnitPQ(context, targetQ))), false)
-                .doubles("target_v", (dl, context) -> perUnitV(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getTargetV).orElse(NaN), dl.getTerminal()),
-                        (dl, targetV, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setTargetV(unPerUnitV(context, targetV, dl.getTerminal()))), false)
-                .booleans("voltage_regulator_on", dl -> Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::isVoltageRegulationOn).orElse(false),
-                        (dl, voltageRegulatorOn) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setVoltageRegulationOn(voltageRegulatorOn)), false)
                 .addProperties()
                 .build();
     }
