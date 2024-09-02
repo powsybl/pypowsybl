@@ -1065,6 +1065,14 @@ def test_dangling_line_generation():
     df2 = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
                                           'voltage_regulator_on'])
     assert df2['voltage_regulator_on']['DL2']
+    assert math.isnan(df2['target_q']['DL2'])
+
+    n.update_dangling_lines(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
+                                           'voltage_regulator_on'])
+    assert not df3['voltage_regulator_on']['DL2']
+    assert df3['target_q']['DL2']==100
 
 
 def test_batteries():
