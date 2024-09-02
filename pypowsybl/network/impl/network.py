@@ -1234,6 +1234,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
               - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
               - **ucte-xnode-code**: deprecated for pairing key.
+              - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
@@ -2584,6 +2585,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `fictitious`
+            - `pairing_key`
+            - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
 
         See Also:
             :meth:`get_dangling_lines`
@@ -4186,7 +4189,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the new switch
-            - **voltage_level1_id**: the voltage level where the new switch will be connected on side 1.
+            - **voltage_level_id**: the voltage level where the new switch will be connected.
               The voltage level must already exist.
             - **bus1_id**: the bus where the new switch will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
@@ -4208,11 +4211,11 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 # In a bus-breaker voltage level, between configured buses B1 and B2
-                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', bus1_id='B1', bus2_id='B2',
+                network.create_switches(id='BREAKER-1', voltage_level_id='VL1', bus1_id='B1', bus2_id='B2',
                                         kind='BREAKER', open=False)
 
                 # In a node-breaker voltage level, between nodes 5 and 7
-                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', node1=5, node2=7,
+                network.create_switches(id='BREAKER-1', voltage_level_id='VL1', node1=5, node2=7,
                                         kind='BREAKER', open=False)
         """
         return self._create_elements(ElementType.SWITCH, [df], **kwargs)

@@ -785,10 +785,14 @@ def test_sld_parameters():
     assert not parameters.display_current_feeder_info
     assert parameters.topological_coloring
     assert parameters.component_library == 'Convergence'
+    assert parameters.active_power_unit == ""
+    assert parameters.reactive_power_unit == ""
+    assert parameters.current_unit == ""
 
     parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
                                nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
-                               component_library='FlatDesign', display_current_feeder_info=True)
+                               component_library='FlatDesign', display_current_feeder_info=True,
+                               active_power_unit='a', reactive_power_unit='b', current_unit='c')
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
@@ -797,6 +801,9 @@ def test_sld_parameters():
     assert parameters.display_current_feeder_info
     assert not parameters.topological_coloring
     assert parameters.component_library == 'FlatDesign'
+    assert parameters.active_power_unit == 'a'
+    assert parameters.reactive_power_unit == 'b'
+    assert parameters.current_unit == 'c'
 
 
 def test_layout_parameters():
@@ -855,6 +862,10 @@ def test_sld_svg():
     sld_multi_substation4 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation4.svg)
     assert len(sld_multi_substation4.metadata) > 0    
+
+    sld_multi_substation5 = n.get_matrix_multi_substation_single_line_diagram([['S1', ''], ['', 'S2']])
+    assert re.search('.*<svg.*', sld_multi_substation5.svg)
+    assert len(sld_multi_substation5.metadata) > 0    
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -992,18 +1003,18 @@ def test_dangling_lines():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
+                                     'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, nan, nan, nan, 'VL', 'VL_0', True,
-                                   '', '', '']])
+                                   '', '', False, '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
         pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                      data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                    'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
+                                    'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                            data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, nan, nan, nan, 'VL', '', False,
-                                  '', '', '']])
+                                  '', '', False, '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
@@ -2091,6 +2102,12 @@ def test_nad_parameters():
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
+
+def test_update_dangling_line():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
+    network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
+    assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
 
 
 if __name__ == '__main__':

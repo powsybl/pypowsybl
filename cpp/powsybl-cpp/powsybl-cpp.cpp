@@ -1200,6 +1200,9 @@ SldParameters::SldParameters(sld_parameters* src) {
     topological_coloring = (bool) src->topological_coloring;
     component_library = toString(src->component_library);
     display_current_feeder_info = (bool) src->display_current_feeder_info;
+    active_power_unit =  toString(src->active_power_unit);
+    reactive_power_unit =  toString(src->reactive_power_unit);
+    current_unit =  toString(src->current_unit);
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
@@ -1227,6 +1230,9 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
     res.topological_coloring = (unsigned char) topological_coloring;
     res.component_library = copyStringToCharPtr(component_library);
     res.display_current_feeder_info = (unsigned char) display_current_feeder_info;
+    res.active_power_unit = copyStringToCharPtr(active_power_unit);
+    res.reactive_power_unit = copyStringToCharPtr(reactive_power_unit);
+    res.current_unit = copyStringToCharPtr(current_unit);
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {
@@ -1375,6 +1381,7 @@ ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_anal
     with_fortescue_result = (bool) src->with_fortescue_result;
     with_voltage_result = (bool) src->with_voltage_result;
     min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
+    initial_voltage_profile_mode = static_cast<InitialVoltageProfileMode>(src->initial_voltage_profile_mode);
 
     copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
     copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
@@ -1388,6 +1395,7 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->study_type = study_type;
     res->with_fortescue_result = (bool) with_fortescue_result;
     res->min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold;
+    res->initial_voltage_profile_mode = initial_voltage_profile_mode;
 
     res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
     res->provider_parameters_keys_count = provider_parameters_keys.size();

@@ -394,6 +394,9 @@ public:
     bool topological_coloring;
     std::string component_library;
     bool display_current_feeder_info;
+    std::string active_power_unit;
+    std::string reactive_power_unit;
+    std::string current_unit;
 };
 
 enum class NadLayoutType {
@@ -435,6 +438,11 @@ enum ShortCircuitStudyType {
     STEADY_STATE
 };
 
+enum InitialVoltageProfileMode {
+    NOMINAL = 0,
+    PREVIOUS_VALUE
+};
+
 class ShortCircuitAnalysisParameters {
 public:
     ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
@@ -446,6 +454,7 @@ public:
     ShortCircuitStudyType study_type;
     bool with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
+    InitialVoltageProfileMode initial_voltage_profile_mode;
 
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;

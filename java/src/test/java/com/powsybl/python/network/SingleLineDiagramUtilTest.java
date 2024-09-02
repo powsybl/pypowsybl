@@ -47,4 +47,16 @@ class SingleLineDiagramUtilTest {
                      TestUtil.normalizeLineSeparator(svgAndMeta.get(0)));
         assertFalse(svgAndMeta.get(1).isEmpty());
     }
+
+    @Test
+    void testWriteMatrixMultiSubstationSvg() throws IOException {
+        Network network = FourSubstationsNodeBreakerFactory.create();
+        SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters();
+        String[][] matrixIds = {{"S1", "" }, {"", "S2"}};
+        try (StringWriter writer = new StringWriter(); StringWriter writerMeta = new StringWriter()) {
+            SingleLineDiagramUtil.writeMatrixMultiSubstationSvg(network, matrixIds, writer, writerMeta, sldParameters);
+            assertFalse(writer.toString().isEmpty());
+            assertFalse(writerMeta.toString().isEmpty());
+        }
+    }
 }
