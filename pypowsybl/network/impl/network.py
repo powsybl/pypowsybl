@@ -1236,6 +1236,12 @@ class Network:  # pylint: disable=too-many-public-methods
               - **ucte-xnode-code**: deprecated for pairing key.
               - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
+              - **min_p** (optional): Minimum active power output of the dangling line's generation part
+              - **max_p** (optional): Maximum active power output of the dangling line's generation part
+              - **target_p** (optional): Active power target of the generation part
+              - **target_q** (optional): Reactive power target of the generation part
+              - **target_v** (optional): Voltage target of the generation part
+              - **voltage_regulator_on** (optional): ``True`` if the generation part regulates voltage
 
             This dataframe is indexed by the id of the dangling lines
 
