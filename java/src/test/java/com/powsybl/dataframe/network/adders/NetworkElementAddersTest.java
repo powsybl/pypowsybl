@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
+import com.powsybl.cgmes.model.CgmesMetadataModel;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
@@ -340,7 +341,6 @@ class NetworkElementAddersTest {
         HvdcLine l = network.getHvdcLine(lId);
         HvdcAngleDroopActivePowerControl extension = l.getExtension(HvdcAngleDroopActivePowerControl.class);
         assertNull(extension);
-
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", lId);
         addDoubleColumn(dataframe, "droop", droop);
@@ -440,6 +440,31 @@ class NetworkElementAddersTest {
         List<UpdatingDataframe> dataframes = List.of(zoneDataframe, unitDataframe);
         NetworkElementAdders.addExtensions("secondaryVoltageControl", network, dataframes);
         extension = network.getExtension(SecondaryVoltageControl.class);
+        assertNotNull(extension);
+    }
+
+    @Test
+    void cgmesMetadataModelExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String id = "test";
+        String subset = "subset";
+        String description = "description";
+        int version = 1;
+        String modelingAuthoritySet = "modelingAuthoritySet";
+
+        CgmesMetadataModel extension = network.getExtension(CgmesMetadataModel.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "ids", id);
+        addStringColumn(dataframe, "subsets", subset);
+        addStringColumn(dataframe, "descriptions", description);
+        addIntColumn(dataframe, "version", version);
+        addStringColumn(dataframe, "modeling_authority_set", modelingAuthoritySet);
+
+        NetworkElementAdders.addExtensions("cgmesMetadataModel", network, singletonList(dataframe));
+        extension = network.getExtension(CgmesMetadataModel.class);
+
         assertNotNull(extension);
     }
 
