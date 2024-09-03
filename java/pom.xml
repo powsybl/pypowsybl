@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>powsybl-parent</artifactId>
-        <version>14</version>
+        <version>20-SNAPSHOT</version>
         <relativePath/>
     </parent>
 
@@ -210,16 +210,16 @@
             <version>${janino.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.graalvm.sdk</groupId>
-            <artifactId>graal-sdk</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.graalvm.nativeimage</groupId>
             <artifactId>svm</artifactId>
             <version>${graalvm.version}</version>
             <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.graalvm.sdk</groupId>
+                    <artifactId>graal-sdk</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!--
              rdf4j depends on a very old version of mapdb. It is using ObjectStream which is not yet supported
