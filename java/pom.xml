@@ -145,8 +145,11 @@
                 </dependencies>
                 <configuration>
                     <complianceLevel>17</complianceLevel>
-                    <verbose>true</verbose>
                     <showWeaveInfo>false</showWeaveInfo>
+                    <includes>
+                        <include>com/powsybl/python/commons/EntryPointAspect.java</include>
+                        <include>**/*CFunctions.java</include>
+                    </includes>
                 </configuration>
                 <executions>
                     <execution>
