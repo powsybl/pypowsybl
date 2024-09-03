@@ -377,7 +377,6 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "removeVariant")
-    @Catch
     public static void removeVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
