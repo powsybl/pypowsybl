@@ -5,6 +5,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.word.WordFactory;
 
@@ -26,6 +27,8 @@ public class EntryPointAspect {
             return joinPoint.proceed();
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            signature.getReturnType();
         }
         return null;
     }

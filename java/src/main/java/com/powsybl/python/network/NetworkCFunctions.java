@@ -278,7 +278,7 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "freeNetworkBinaryBuffer")
-    public static void freeNetworkBinaryBuffer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<CCharPointer> byteArrayPtr,
+    public static void freeNetworkBinaryBuffer(IsolateThread thread, ArrayPointer<CCharPointer> byteArrayPtr,
                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         freeArrayPointer(byteArrayPtr);
     }
@@ -533,21 +533,21 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getBusBreakerViewSwitches")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         VoltageLevel.BusBreakerView busBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getBusBreakerView();
         return Dataframes.createCDataframe(Dataframes.busBreakerViewSwitches(), busBreakerView);
     }
 
     @CEntryPoint(name = "getBusBreakerViewBuses")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewBuses(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewBuses(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         VoltageLevel voltageLevel1 = network.getVoltageLevel(CTypeUtil.toString(voltageLevel));
         return Dataframes.createCDataframe(Dataframes.busBreakerViewBuses(), voltageLevel1);
     }
 
     @CEntryPoint(name = "getBusBreakerViewElements")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         VoltageLevel voltageLevel1 = network.getVoltageLevel(CTypeUtil.toString(voltageLevel));
         return Dataframes.createCDataframe(Dataframes.busBreakerViewElements(), voltageLevel1);
@@ -957,7 +957,7 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getSingleLineDiagramComponentLibraryNames")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSingleLineDiagramComponentLibraryNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramComponentLibraryNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return createCharPtrArray(SingleLineDiagramUtil.getComponentLibraryNames());
     }
 
@@ -985,7 +985,7 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDisplayedVoltageLevels")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
+    public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                                                                                    int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
         Network network = ObjectHandles.getGlobal().get(networkHandle);
         List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);

@@ -30,7 +30,6 @@ import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
-import static com.powsybl.python.commons.Util.doCatch;
 
 /**
  * Defines C interface for loadflow validation.
@@ -48,10 +47,8 @@ public final class LoadFlowValidationCFunctions {
                                                                                   PyPowsyblApiHeader.ValidationType validationType,
                                                                                   PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
-        });
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
     }
 
     static ArrayPointer<SeriesPointer> createLoadFlowValidationSeriesArray(Network network, PyPowsyblApiHeader.ValidationType validationType,
@@ -110,7 +107,7 @@ public final class LoadFlowValidationCFunctions {
 
     @CEntryPoint(name = "createValidationConfig")
     public static LoadFlowValidationParametersPointer createValidationConfig(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowValidationParametersPointer(createValidationConfig()));
+        return convertToLoadFlowValidationParametersPointer(createValidationConfig());
     }
 
     public static void copyToCLoadFlowValidationParameters(ValidationConfig parameters, LoadFlowValidationParametersPointer cParameters) {
@@ -140,7 +137,7 @@ public final class LoadFlowValidationCFunctions {
     @CEntryPoint(name = "freeValidationConfig")
     public static void freeValidationConfig(IsolateThread thread, LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr));
+        freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr);
     }
 
     public static void freeLoadFlowValidationParametersPointer(LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {

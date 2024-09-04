@@ -65,19 +65,18 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSecurityAnalysisProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSecurityAnalysisProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SecurityAnalysisProvider.findAll()
-                .stream().map(SecurityAnalysisProvider::getName).toList()));
+        return createCharPtrArray(SecurityAnalysisProvider.findAll()
+                .stream().map(SecurityAnalysisProvider::getName).toList());
     }
 
     @CEntryPoint(name = "setDefaultSecurityAnalysisProvider")
     public static void setDefaultSecurityAnalysisProvider(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () ->
-            PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider)));
+        PyPowsyblConfiguration.setDefaultSecurityAnalysisProvider(CTypeUtil.toString(provider));
     }
 
     @CEntryPoint(name = "getDefaultSecurityAnalysisProvider")
     public static CCharPointer getDefaultSecurityAnalysisProvider(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider()));
+        return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider());
     }
 
     @CEntryPoint(name = "addMonitoredElements")
@@ -87,53 +86,43 @@ public final class SecurityAnalysisCFunctions {
                                             CCharPointerPointer threeWindingsTransformerIds, int threeWindingsTransformerIdsCount,
                                             CCharPointerPointer contingencyIds, int contingencyIdsCount,
                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
-            contingencies.forEach(contingency -> analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency.isEmpty() ? null : contingency, convert(contingencyContextType)),
-                    Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
-                    Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount)))));
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        List<String> contingencies = toStringList(contingencyIds, contingencyIdsCount);
+        contingencies.forEach(contingency -> analysisContext.addMonitor(new StateMonitor(new ContingencyContext(contingency.isEmpty() ? null : contingency, convert(contingencyContextType)),
+                Set.copyOf(toStringList(branchIds, branchIdsCount)), Set.copyOf(toStringList(voltageLevelIds, voltageLevelIdCount)),
+                Set.copyOf(toStringList(threeWindingsTransformerIds, threeWindingsTransformerIdsCount)))));
     }
 
     @CEntryPoint(name = "getBranchResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
+        return Dataframes.createCDataframe(Dataframes.branchResultsMapper(), result);
     }
 
     @CEntryPoint(name = "getBusResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
+        return Dataframes.createCDataframe(Dataframes.busResultsMapper(), result);
     }
 
     @CEntryPoint(name = "getThreeWindingsTransformerResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
-            return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
+        return Dataframes.createCDataframe(Dataframes.threeWindingsTransformerResultsMapper(), result);
     }
 
     @CEntryPoint(name = "createSecurityAnalysis")
     public static ObjectHandle createSecurityAnalysis(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SecurityAnalysisContext()));
+        return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
     }
 
     @CEntryPoint(name = "addContingency")
     public static void addContingency(IsolateThread thread, ObjectHandle contingencyContainerHandle, CCharPointer contingencyIdPtr,
                                       CCharPointerPointer elementIdPtrPtr, int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
-            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            List<String> elementIds = toStringList(elementIdPtrPtr, elementCount);
-            contingencyContainer.addContingency(contingencyId, elementIds);
-        });
+        ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
+        String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+        List<String> elementIds = toStringList(elementIdPtrPtr, elementCount);
+        contingencyContainer.addContingency(contingencyId, elementIds);
     }
 
     private static void setPostContingencyResultInSecurityAnalysisResultPointer(PyPowsyblApiHeader.PostContingencyResultPointer contingencyPtr, PostContingencyResult postContingencyResult) {
@@ -222,100 +211,84 @@ public final class SecurityAnalysisCFunctions {
                                                    ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
                                                    CCharPointer providerName, boolean dc, ObjectHandle reportNodeHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SecurityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
-            logger().info("Security analysis provider used for security analysis is : {}", provider.getName());
-            SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(dc, securityAnalysisParametersPointer, provider);
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
-            return ObjectHandles.getGlobal().create(result);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        SecurityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
+        logger().info("Security analysis provider used for security analysis is : {}", provider.getName());
+        SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(dc, securityAnalysisParametersPointer, provider);
+        ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+        SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
+        return ObjectHandles.getGlobal().create(result);
     }
 
     @CEntryPoint(name = "getPostContingencyResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.PostContingencyResultPointer> getPostContingencyResults(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            return createPostContingencyResultArrayPointer(result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+        return createPostContingencyResultArrayPointer(result);
     }
 
     @CEntryPoint(name = "getOperatorStrategyResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.OperatorStrategyResultPointer> getOperatorStrategyResults(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            return createOperatorStrategyResultsArrayPointer(result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+        return createOperatorStrategyResultsArrayPointer(result);
     }
 
     @CEntryPoint(name = "getPreContingencyResult")
     public static PyPowsyblApiHeader.PreContingencyResultPointer getPreContingencyResult(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            return createPreContingencyResultArrayPointer(result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+        return createPreContingencyResultArrayPointer(result);
     }
 
     @CEntryPoint(name = "getLimitViolations")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
-            return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
-        });
+        SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+        return Dataframes.createCDataframe(Dataframes.limitViolationsMapper(), result);
     }
 
     @CEntryPoint(name = "freeContingencyResultArrayPointer")
     public static void freeContingencyResultArrayPointer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.PostContingencyResultPointer> contingencyResultArrayPtr,
                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
-                PyPowsyblApiHeader.PostContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(contingencyResultPtrPlus.getContingencyId());
-                for (int l = 0; l < contingencyResultPtrPlus.limitViolations().getLength(); l++) {
-                    PyPowsyblApiHeader.LimitViolationPointer violation = contingencyResultPtrPlus.limitViolations().getPtr().addressOf(l);
-                    UnmanagedMemory.free(violation.getSubjectId());
-                    UnmanagedMemory.free(violation.getSubjectName());
-                    UnmanagedMemory.free(violation.getLimitName());
-                }
-                UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
+        for (int i = 0; i < contingencyResultArrayPtr.getLength(); i++) {
+            PyPowsyblApiHeader.PostContingencyResultPointer contingencyResultPtrPlus = contingencyResultArrayPtr.getPtr().addressOf(i);
+            UnmanagedMemory.free(contingencyResultPtrPlus.getContingencyId());
+            for (int l = 0; l < contingencyResultPtrPlus.limitViolations().getLength(); l++) {
+                PyPowsyblApiHeader.LimitViolationPointer violation = contingencyResultPtrPlus.limitViolations().getPtr().addressOf(l);
+                UnmanagedMemory.free(violation.getSubjectId());
+                UnmanagedMemory.free(violation.getSubjectName());
+                UnmanagedMemory.free(violation.getLimitName());
             }
-            freeArrayPointer(contingencyResultArrayPtr);
-        });
+            UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
+        }
+        freeArrayPointer(contingencyResultArrayPtr);
     }
 
     @CEntryPoint(name = "freeOperatorStrategyResultArrayPointer")
     public static void freeOperatorStrategyResultArrayPointer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.OperatorStrategyResultPointer> operatorStrategyResultArrayPtr,
                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < operatorStrategyResultArrayPtr.getLength(); i++) {
-                PyPowsyblApiHeader.OperatorStrategyResultPointer strategyResultPtrPlus = operatorStrategyResultArrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(strategyResultPtrPlus.getOperatorStrategyId());
-                for (int l = 0; l < strategyResultPtrPlus.limitViolations().getLength(); l++) {
-                    PyPowsyblApiHeader.LimitViolationPointer violation = strategyResultPtrPlus.limitViolations().getPtr().addressOf(l);
-                    UnmanagedMemory.free(violation.getSubjectId());
-                    UnmanagedMemory.free(violation.getSubjectName());
-                    UnmanagedMemory.free(violation.getLimitName());
-                }
-                UnmanagedMemory.free(strategyResultPtrPlus.limitViolations().getPtr());
+        for (int i = 0; i < operatorStrategyResultArrayPtr.getLength(); i++) {
+            PyPowsyblApiHeader.OperatorStrategyResultPointer strategyResultPtrPlus = operatorStrategyResultArrayPtr.getPtr().addressOf(i);
+            UnmanagedMemory.free(strategyResultPtrPlus.getOperatorStrategyId());
+            for (int l = 0; l < strategyResultPtrPlus.limitViolations().getLength(); l++) {
+                PyPowsyblApiHeader.LimitViolationPointer violation = strategyResultPtrPlus.limitViolations().getPtr().addressOf(l);
+                UnmanagedMemory.free(violation.getSubjectId());
+                UnmanagedMemory.free(violation.getSubjectName());
+                UnmanagedMemory.free(violation.getLimitName());
             }
-            freeArrayPointer(operatorStrategyResultArrayPtr);
-        });
+            UnmanagedMemory.free(strategyResultPtrPlus.limitViolations().getPtr());
+        }
+        freeArrayPointer(operatorStrategyResultArrayPtr);
     }
 
     @CEntryPoint(name = "freeSecurityAnalysisParameters")
     public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer parameters,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
-            UnmanagedMemory.free(parameters);
-        });
+        LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
+        UnmanagedMemory.free(parameters);
     }
 
     @CEntryPoint(name = "createSecurityAnalysisParameters")
     public static SecurityAnalysisParametersPointer createSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToSecurityAnalysisParametersPointer(SecurityAnalysisCUtils.createSecurityAnalysisParameters()));
+        return convertToSecurityAnalysisParametersPointer(SecurityAnalysisCUtils.createSecurityAnalysisParameters());
     }
 
     private static SecurityAnalysisParametersPointer convertToSecurityAnalysisParametersPointer(SecurityAnalysisParameters parameters) {
@@ -333,10 +306,8 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSecurityAnalysisProviderParametersNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(SecurityAnalysisCUtils.getSecurityAnalysisProvider(providerStr).getSpecificParametersNames());
-        });
+        String providerStr = CTypeUtil.toString(provider);
+        return Util.createCharPtrArray(SecurityAnalysisCUtils.getSecurityAnalysisProvider(providerStr).getSpecificParametersNames());
     }
 
     @CEntryPoint(name = "addLoadActivePowerAction")
@@ -344,17 +315,15 @@ public final class SecurityAnalysisCFunctions {
                                                 CCharPointer actionId, CCharPointer loadId, boolean relativeValue,
                                                 double activePowerValue,
                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String loadIdStr = CTypeUtil.toString(loadId);
-            LoadAction action = new LoadActionBuilder().withId(actionIdStr)
-                    .withLoadId(loadIdStr)
-                    .withRelativeValue(relativeValue)
-                    .withActivePowerValue(activePowerValue)
-                    .build();
-            analysisContext.addAction(action);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String loadIdStr = CTypeUtil.toString(loadId);
+        LoadAction action = new LoadActionBuilder().withId(actionIdStr)
+                .withLoadId(loadIdStr)
+                .withRelativeValue(relativeValue)
+                .withActivePowerValue(activePowerValue)
+                .build();
+        analysisContext.addAction(action);
     }
 
     @CEntryPoint(name = "addLoadReactivePowerAction")
@@ -362,89 +331,77 @@ public final class SecurityAnalysisCFunctions {
                                                 CCharPointer actionId, CCharPointer loadId, boolean relativeValue,
                                                 double reactivePowerValue,
                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String loadIdStr = CTypeUtil.toString(loadId);
-            LoadAction action = new LoadActionBuilder().withId(actionIdStr)
-                    .withLoadId(loadIdStr)
-                    .withRelativeValue(relativeValue)
-                    .withReactivePowerValue(reactivePowerValue)
-                    .build();
-            analysisContext.addAction(action);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String loadIdStr = CTypeUtil.toString(loadId);
+        LoadAction action = new LoadActionBuilder().withId(actionIdStr)
+                .withLoadId(loadIdStr)
+                .withRelativeValue(relativeValue)
+                .withReactivePowerValue(reactivePowerValue)
+                .build();
+        analysisContext.addAction(action);
     }
 
     @CEntryPoint(name = "addGeneratorActivePowerAction")
     public static void addGeneratorActivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                           CCharPointer actionId, CCharPointer generatorId, boolean relativeValue, double activePower,
                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String generatorIdStr = CTypeUtil.toString(generatorId);
-            GeneratorActionBuilder builder = new GeneratorActionBuilder().withId(actionIdStr)
-                    .withGeneratorId(generatorIdStr)
-                    .withActivePowerRelativeValue(relativeValue)
-                    .withActivePowerValue(activePower);
-            analysisContext.addAction(builder.build());
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String generatorIdStr = CTypeUtil.toString(generatorId);
+        GeneratorActionBuilder builder = new GeneratorActionBuilder().withId(actionIdStr)
+                .withGeneratorId(generatorIdStr)
+                .withActivePowerRelativeValue(relativeValue)
+                .withActivePowerValue(activePower);
+        analysisContext.addAction(builder.build());
     }
 
     @CEntryPoint(name = "addSwitchAction")
     public static void addSwitchAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                          CCharPointer actionId, CCharPointer switchId, boolean open,
                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String switchIdStr = CTypeUtil.toString(switchId);
-            SwitchAction action = new SwitchAction(actionIdStr, switchIdStr, open);
-            analysisContext.addAction(action);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String switchIdStr = CTypeUtil.toString(switchId);
+        SwitchAction action = new SwitchAction(actionIdStr, switchIdStr, open);
+        analysisContext.addAction(action);
     }
 
     @CEntryPoint(name = "addPhaseTapChangerPositionAction")
     public static void addPhaseTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                         CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
                                                         int tapPosition, PyPowsyblApiHeader.ThreeSideType side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String transformerIdStr = CTypeUtil.toString(transformerId);
-            PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
-            analysisContext.addAction(pstAction);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String transformerIdStr = CTypeUtil.toString(transformerId);
+        PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
+        analysisContext.addAction(pstAction);
     }
 
     @CEntryPoint(name = "addRatioTapChangerPositionAction")
     public static void addRatioTapChangerPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                         CCharPointer actionId, CCharPointer transformerId, boolean isRelative,
                                                         int tapPosition, PyPowsyblApiHeader.ThreeSideType side, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String transformerIdStr = CTypeUtil.toString(transformerId);
-            RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
-            analysisContext.addAction(ratioTapChangerAction);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String transformerIdStr = CTypeUtil.toString(transformerId);
+        RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
+        analysisContext.addAction(ratioTapChangerAction);
     }
 
     @CEntryPoint(name = "addShuntCompensatorPositionAction")
     public static void addShuntCompensatorPositionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                          CCharPointer actionId, CCharPointer shuntCompensatorId, int sectionCount,
                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String actionIdStr = CTypeUtil.toString(actionId);
-            String shuntCompensatorIdStr = CTypeUtil.toString(shuntCompensatorId);
-            ShuntCompensatorPositionActionBuilder builder = new ShuntCompensatorPositionActionBuilder();
-            ShuntCompensatorPositionAction action = builder.withId(actionIdStr)
-                    .withShuntCompensatorId(shuntCompensatorIdStr)
-                    .withSectionCount(sectionCount)
-                    .build();
-            analysisContext.addAction(action);
-        });
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String actionIdStr = CTypeUtil.toString(actionId);
+        String shuntCompensatorIdStr = CTypeUtil.toString(shuntCompensatorId);
+        ShuntCompensatorPositionActionBuilder builder = new ShuntCompensatorPositionActionBuilder();
+        ShuntCompensatorPositionAction action = builder.withId(actionIdStr)
+                .withShuntCompensatorId(shuntCompensatorIdStr)
+                .withSectionCount(sectionCount)
+                .build();
+        analysisContext.addAction(action);
     }
 
     @CEntryPoint(name = "addOperatorStrategy")
@@ -455,18 +412,16 @@ public final class SecurityAnalysisCFunctions {
                                          CCharPointerPointer subjectIds, int subjectIdsCount,
                                          CIntPointer violationTypes, int violationTypesCount,
                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String operationStrategyIdStr = CTypeUtil.toString(operationStrategyId);
-            String contingencyIdStr = CTypeUtil.toString(contingencyId);
-            List<String> actionsStrList = CTypeUtil.toStringList(actions, actionCount);
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String operationStrategyIdStr = CTypeUtil.toString(operationStrategyId);
+        String contingencyIdStr = CTypeUtil.toString(contingencyId);
+        List<String> actionsStrList = CTypeUtil.toStringList(actions, actionCount);
 
-            Condition condition = buildCondition(conditionType, subjectIds, subjectIdsCount, violationTypes, violationTypesCount);
+        Condition condition = buildCondition(conditionType, subjectIds, subjectIdsCount, violationTypes, violationTypesCount);
 
-            OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
-                    ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
-            analysisContext.addOperatorStrategy(op);
-        });
+        OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
+                ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
+        analysisContext.addOperatorStrategy(op);
     }
 
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,

@@ -39,56 +39,44 @@ public final class GlskCFunctions {
 
     @CEntryPoint(name = "createGLSKdocument")
     public static ObjectHandle createGLSKdocument(IsolateThread thread, CCharPointer fileNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            GlskDocumentContext importer = new GlskDocumentContext();
-            String filename = CTypeUtil.toString(fileNamePtr);
-            importer.load(filename);
-            return ObjectHandles.getGlobal().create(importer);
-        });
+        GlskDocumentContext importer = new GlskDocumentContext();
+        String filename = CTypeUtil.toString(fileNamePtr);
+        importer.load(filename);
+        return ObjectHandles.getGlobal().create(importer);
     }
 
     @CEntryPoint(name = "getGLSKinjectionkeys")
     public static ArrayPointer<CCharPointerPointer> getGLSKinjectionkeys(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String country = CTypeUtil.toString(countryPtr);
-            return createCharPtrArray(importer.getInjectionIdForCountry(network, country, Instant.ofEpochSecond(instant)));
-        });
+        GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String country = CTypeUtil.toString(countryPtr);
+        return createCharPtrArray(importer.getInjectionIdForCountry(network, country, Instant.ofEpochSecond(instant)));
     }
 
     @CEntryPoint(name = "getGLSKcountries")
     public static ArrayPointer<CCharPointerPointer> getGLSKcountries(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
-            return createCharPtrArray(importer.getCountries());
-        });
+        GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+        return createCharPtrArray(importer.getCountries());
     }
 
     @CEntryPoint(name = "getInjectionFactor")
     public static ArrayPointer<CDoublePointer> getInjectionFactor(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle importerHandle, CCharPointer countryPtr, long instant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
-            String country = CTypeUtil.toString(countryPtr);
-            List<Double> values = importer.getInjectionFactorForCountryTimeinterval(network, country, Instant.ofEpochSecond(instant));
-            return createDoubleArray(values);
-        });
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+        String country = CTypeUtil.toString(countryPtr);
+        List<Double> values = importer.getInjectionFactorForCountryTimeinterval(network, country, Instant.ofEpochSecond(instant));
+        return createDoubleArray(values);
     }
 
     @CEntryPoint(name = "getInjectionFactorStartTimestamp")
     public static long getInjectionFactorStartTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
-            return importer.getInjectionFactorStart().getEpochSecond();
-        });
+        GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+        return importer.getInjectionFactorStart().getEpochSecond();
     }
 
     @CEntryPoint(name = "getInjectionFactorEndTimestamp")
     public static long getInjectionFactorEndTimestamp(IsolateThread thread, ObjectHandle importerHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
-            return importer.getInjectionFactorEnd().getEpochSecond();
-        });
+        GlskDocumentContext importer = ObjectHandles.getGlobal().get(importerHandle);
+        return importer.getInjectionFactorEnd().getEpochSecond();
     }
 }

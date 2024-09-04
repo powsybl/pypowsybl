@@ -18,8 +18,6 @@ import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.slf4j.LoggerFactory;
 
-import static com.powsybl.python.commons.Util.doCatch;
-
 /**
  * C functions related to logging.
  *
@@ -40,14 +38,12 @@ public final class LoggingCFunctions {
 
     @CEntryPoint(name = "setupLoggerCallback")
     public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> loggerCallback = fpointer);
+        loggerCallback = fpointer;
     }
 
     @CEntryPoint(name = "setLogLevel")
     public static void setLogLevel(IsolateThread thread, int logLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
-            powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
-        });
+        Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
+        powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
     }
 }

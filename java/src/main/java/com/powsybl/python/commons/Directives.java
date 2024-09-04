@@ -20,6 +20,8 @@ public class Directives implements CContext.Directives {
 
     @Override
     public List<String> getHeaderFiles() {
+        System.out.println("AAA " + ProjectHeaderFile.resolve("com.powsybl.python", "powsybl-api.h"));
+        System.out.println(System.getProperty("--image-args-file"));
         return Collections.singletonList(ProjectHeaderFile.resolve("com.powsybl.python", "powsybl-api.h"));
     }
 }

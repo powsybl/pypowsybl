@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.freeArrayPointer;
 import static com.powsybl.python.commons.Util.createCharPtrArray;
-import static com.powsybl.python.commons.Util.doCatch;
 
 /**
  * C functions related to loadflow.
@@ -53,35 +52,33 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "setDefaultLoadFlowProvider")
     public static void setDefaultLoadFlowProvider(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider)));
+        PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
     }
 
     @CEntryPoint(name = "getDefaultLoadFlowProvider")
     public static CCharPointer getDefaultLoadFlowProvider(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider()));
+        return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultLoadFlowProvider());
     }
 
     @CEntryPoint(name = "freeLoadFlowComponentResultPointer")
     public static void freeLoadFlowComponentResultPointer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> componentResultArrayPtr,
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
-                PyPowsyblApiHeader.LoadFlowComponentResultPointer loadFlowComponentResultPointer = componentResultArrayPtr.getPtr().addressOf(i);
-                UnmanagedMemory.free(loadFlowComponentResultPointer.getStatusText());
-                UnmanagedMemory.free(loadFlowComponentResultPointer.getReferenceBusId());
-                for (int j = 0; j < loadFlowComponentResultPointer.slackBusResults().getLength(); j++) {
-                    PyPowsyblApiHeader.SlackBusResultPointer slackBusResultPointer = loadFlowComponentResultPointer.slackBusResults().getPtr().addressOf(j);
-                    UnmanagedMemory.free(slackBusResultPointer.getId());
-                }
+        for (int i = 0; i < componentResultArrayPtr.getLength(); i++) {
+            PyPowsyblApiHeader.LoadFlowComponentResultPointer loadFlowComponentResultPointer = componentResultArrayPtr.getPtr().addressOf(i);
+            UnmanagedMemory.free(loadFlowComponentResultPointer.getStatusText());
+            UnmanagedMemory.free(loadFlowComponentResultPointer.getReferenceBusId());
+            for (int j = 0; j < loadFlowComponentResultPointer.slackBusResults().getLength(); j++) {
+                PyPowsyblApiHeader.SlackBusResultPointer slackBusResultPointer = loadFlowComponentResultPointer.slackBusResults().getPtr().addressOf(j);
+                UnmanagedMemory.free(slackBusResultPointer.getId());
             }
-            freeArrayPointer(componentResultArrayPtr);
-        });
+        }
+        freeArrayPointer(componentResultArrayPtr);
     }
 
     @CEntryPoint(name = "getLoadFlowProviderNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getLoadFlowProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(LoadFlowProvider.findAll()
-                .stream().map(LoadFlowProvider::getName).collect(Collectors.toList())));
+        return createCharPtrArray(LoadFlowProvider.findAll()
+                .stream().map(LoadFlowProvider::getName).collect(Collectors.toList()));
     }
 
     @CEntryPoint(name = "runLoadFlow")
@@ -89,32 +86,28 @@ public final class LoadFlowCFunctions {
                                                                                                                  LoadFlowParametersPointer loadFlowParametersPtr,
                                                                                                                  CCharPointer provider, ObjectHandle reportNodeHandle,
                                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String providerStr = CTypeUtil.toString(provider);
-            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-            logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
+        Network network = ObjectHandles.getGlobal().get(networkHandle);
+        String providerStr = CTypeUtil.toString(provider);
+        LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+        logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
 
-            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
-            LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
-                        CommonObjects.getComputationManager(), parameters, reportNode);
-            return createLoadFlowComponentResultArrayPointer(result);
-        });
+        LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+        LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
+        ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+        LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
+                    CommonObjects.getComputationManager(), parameters, reportNode);
+        return createLoadFlowComponentResultArrayPointer(result);
     }
 
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters()));
+        return convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters());
     }
 
     @CEntryPoint(name = "freeLoadFlowParameters")
     public static void freeLoadFlowParameters(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeLoadFlowParametersPointer(loadFlowParametersPtr);
-        });
+        freeLoadFlowParametersPointer(loadFlowParametersPtr);
     }
 
     public static void freeLoadFlowParametersPointer(LoadFlowParametersPointer loadFlowParametersPtr) {
@@ -187,20 +180,16 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "getLoadFlowProviderParametersNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(LoadFlowCUtils.getLoadFlowProvider(providerStr).getSpecificParameters().stream().map(Parameter::getName).collect(Collectors.toList()));
-        });
+        String providerStr = CTypeUtil.toString(provider);
+        return Util.createCharPtrArray(LoadFlowCUtils.getLoadFlowProvider(providerStr).getSpecificParameters().stream().map(Parameter::getName).collect(Collectors.toList()));
     }
 
     @CEntryPoint(name = "createLoadFlowProviderParametersSeriesArray")
     static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createLoadFlowProviderParametersSeriesArray(IsolateThread thread, CCharPointer providerNamePtr,
                                                                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerName = CTypeUtil.toString(providerNamePtr);
-            LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
-            return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider);
-        });
+        String providerName = CTypeUtil.toString(providerNamePtr);
+        LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
+        return Dataframes.createCDataframe(LoadFlowCUtils.SPECIFIC_PARAMETERS_MAPPER, provider);
     }
 
     private static Logger logger() {
