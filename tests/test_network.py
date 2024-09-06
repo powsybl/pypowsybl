@@ -2025,6 +2025,26 @@ def test_branches():
     assert not twt.connected2
 
 
+def test_branch_and_injection_by_id():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert len(n.get_branches(id='TWT')) == 1
+    assert len(n.get_injections(id='LD2')) == 1
+
+
+def test_branches_and_injections_flow():
+    n = pp.network.create_four_substations_node_breaker_network()
+    expected_branches = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': 'LINE_S2S3', 'p1': 109.8893, 'q1': 190.0229, 'p2': -109.8864, 'q2': -184.5171}])
+    pd.testing.assert_frame_equal(expected_branches,
+                                  n.get_branches(id="LINE_S2S3", attributes=["p1", "q1", "p2", "q2"]),
+                                  check_dtype=False)
+    expected_injections = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': 'LD2', 'p': 60.0, 'q': 5.0}])
+    pd.testing.assert_frame_equal(expected_injections,
+                                  n.get_injections(id="LD2", attributes=["p", "q"]),
+                                  check_dtype=False)
+
+
 def test_terminals():
     n = pp.network.create_four_substations_node_breaker_network()
     terminals = n.get_terminals()

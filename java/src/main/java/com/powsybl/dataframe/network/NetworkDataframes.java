@@ -87,55 +87,55 @@ public final class NetworkDataframes {
         return Collections.unmodifiableMap(mappers);
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP() {
+    static <U extends Injection<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getP());
     }
 
-    static <U extends Injection> ToDoubleFunction<U> getOppositeP() {
+    static <U extends Injection<?>> ToDoubleFunction<U> getOppositeP() {
         return inj -> -inj.getTerminal().getP();
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ() {
+    static <U extends Injection<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP() {
+    static <U extends Injection<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ() {
+    static <U extends Injection<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ() {
         return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP1() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ1() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP1() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ1() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ1() {
         return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP2() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ2() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP2() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ2() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ2() {
         return (b, q, context) -> b.getTerminal2().setQ(unPerUnitPQ(context, q));
     }
 
@@ -958,6 +958,9 @@ public final class NetworkDataframes {
                 .booleans("connected", injection -> injection.getTerminal().isConnected(), connectInjection())
                 .strings("bus_id", injection -> injection.getTerminal().getBusView().getBus() == null ? "" :
                         injection.getTerminal().getBusView().getBus().getId())
+                .doubles("p", getPerUnitP(), setPerUnitP())
+                .doubles("q", getPerUnitQ(), setPerUnitQ())
+                .doubles("i", (l, context) -> perUnitI(context, l.getTerminal()))
                 .build();
     }
 
@@ -977,6 +980,12 @@ public final class NetworkDataframes {
                         branch.getTerminal2().getBusView().getBus().getId())
                 .booleans("connected2", branch -> branch.getTerminal2().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal2(), connected))
+                .doubles("p1", getPerUnitP1(), setPerUnitP1())
+                .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
+                .doubles("i1", (branch, context) -> perUnitI(context, branch.getTerminal1()))
+                .doubles("p2", getPerUnitP2(), setPerUnitP2())
+                .doubles("q2", getPerUnitQ2(), setPerUnitQ2())
+                .doubles("i2", (branch, context) -> perUnitI(context, branch.getTerminal2()))
                 .build();
     }
 

@@ -2287,7 +2287,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
-    def get_identifiables(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_identifiables(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get a dataframe of identifiables
 
@@ -2306,9 +2306,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed on the identifiable ID.
         """
-        return self.get_elements(ElementType.IDENTIFIABLE, all_attributes, attributes)
+        return self.get_elements(ElementType.IDENTIFIABLE, all_attributes, attributes, **kwargs)
 
-    def get_injections(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_injections(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get a dataframe of injections
 
@@ -2329,9 +2329,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed on the injections ID.
         """
-        return self.get_elements(ElementType.INJECTION, all_attributes, attributes)
+        return self.get_elements(ElementType.INJECTION, all_attributes, attributes, **kwargs)
 
-    def get_branches(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_branches(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get a dataframe of branches
 
@@ -2354,7 +2354,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed on the branche ID.
         """
-        return self.get_elements(ElementType.BRANCH, all_attributes, attributes)
+        return self.get_elements(ElementType.BRANCH, all_attributes, attributes, **kwargs)
 
     def get_terminals(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
