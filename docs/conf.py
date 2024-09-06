@@ -131,6 +131,7 @@ todo_include_todos = True
 intersphinx_mapping = {
     'python': ('https://docs.python.org/3', None),
     'pandas': ('https://pandas.pydata.org/docs', None),
+    'pypowsybl-jupyter': ('https://powsybl.readthedocs.io/projects/pypowsybl-jupyter/en/stable/', None),
 }
 
 # Generate one file per method

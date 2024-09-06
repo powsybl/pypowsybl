@@ -348,3 +348,72 @@ the geographical layout:
 
 .. image:: ../_static/images/nad_microgridbe_geo.svg
    :class: forced-white-background
+
+Display diagrams using Jupyter widgets
+--------------------------------------------
+You can also display diagrams through `Jupyter widgets <https://github.com/powsybl/pypowsybl-jupyter>`.
+
+Get a handle on Jupyter widgets
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can use the explorer to check the example notebooks given in the `pypowsybl-jupyter repository <https://github.com/powsybl/pypowsybl-jupyter/tree/main/examples>`:
+
+.. code-block:: bash
+    pip install pypowsybl_jupyter
+    jupyter lab
+
+The network_explorer features three tabs:
+- A tab for network-area diagrams;
+- A tab for single-line diagrams;
+- A tab for a map viewer.
+
+Explore the network_explorer tabs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- The network-area diagram tab
+
+.. image:: ../_static/images/explorer_nad.png
+
+The network-area diagram tab displays the network-area diagram of the selected voltage level in the left column at the desired depth.
+The depth is user-defined, thanks to the slide button above the display zone.
+.. image:: ../_static/images/explorer_slide_button.png
+
+- The single-line diagram tab
+
+.. image:: ../_static/images/explorer_sld.png
+
+The single-line diagram tab displays the single-line diagram of the selected voltage level in the left column.
+You can navigate from voltage level to voltage level using the circled arrows.
+
+.. image:: ../_static/images/explorer_navigate.png
+
+- The map viewer tab
+
+.. image:: ../_static/images/explorer_map.png
+
+The map viewer tab displays a geographical representation of the network with a background map.
+The vertices of the graph are substations and the edges are lines, tie lines or HVDC lines.
+Voltage levels are represented as concentric circles inside a substation:
+
+.. image:: ../_static/images/explorer_substation.png
+
+Selecting a voltage level on the left column will center the map on the corresponding substation.
+
+Users can filter the displayed voltage levels through a nominal voltage filter. By default, only higher nominal voltages are selected.
+
+Please note that if no geographical extensions are available for substations, the tab will be blank.
+
+.. image:: ../_static/images/explorer_map_blank.png
+
+Go further
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check the complete documentation available on the widgets `here <pypowsybl-jupyter>`.
+
+
+
+
+
+
+
+
