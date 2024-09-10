@@ -58,7 +58,6 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             CgmesMetadataModelsAdder.ModelAdder modelAdder = adder.newModel();
             SeriesUtils.applyIfPresent(id, row, modelAdder::setId);
             SeriesUtils.applyIfPresent(subset, row, subset -> modelAdder.setSubset(CgmesSubset.valueOf(subset)));
-            System.out.println(Enum.valueOf(CgmesSubset.class, subset.toString()));
             SeriesUtils.applyIfPresent(description, row, modelAdder::setDescription);
             SeriesUtils.applyIfPresent(version, row, modelAdder::setVersion);
             SeriesUtils.applyIfPresent(modeling_authority_set, row, modelAdder::setModelingAuthoritySet);
@@ -77,5 +76,8 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(row, adder);
         }
+        System.out.println(network.getExtension(CgmesMetadataModelsAdder.class).toString());
+        // ça c'est null, pourquoi ?
+
     }
 }

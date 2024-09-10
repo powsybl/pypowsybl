@@ -18,6 +18,7 @@ import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -448,7 +449,7 @@ class NetworkElementAddersTest {
     void cgmesMetadataModelExtension() {
         var network = EurostagTutorialExample1Factory.create();
         String id = "id";
-        String subset = "EQ";
+        String subset = "EQUIPMENT";
         String description = "description";
         int version = 1;
         String modelingAuthoritySet = "modelingAuthoritySet";
@@ -472,6 +473,7 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addExtensions("cgmesMetadataModels", network, singletonList(dataframe));
         extension = network.getExtension(CgmesMetadataModels.class);
 
+        // extension == null à cause d'un problème dans la méthode create du adder
         assertNotNull(extension);
     }
 
