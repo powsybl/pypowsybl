@@ -31,7 +31,7 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(CgmesMetadataModels.NAME, "Provides information about CGMES metadata models",
                 "index : id (str), cgmes_subset (str), id (str), description (str), " +
-                        "version (int), modeling_authority_set (str)");
+                        "version (int), modeling_authority_set (str), profiles (str), dependent_on (str), supersedes (str) ");
     }
 
     private Stream<CgmesMetadataModel> itemsStream(Network network) {
@@ -49,6 +49,9 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
                 .strings("description", CgmesMetadataModel::getDescription)
                 .ints("version", CgmesMetadataModel::getVersion)
                 .strings("modeling_authority_set", CgmesMetadataModel::getModelingAuthoritySet)
+                .strings("profiles", cgmesMetadataModel -> String.valueOf(cgmesMetadataModel.getProfiles()))
+                .strings("dependent_on", cgmesMetadataModel -> String.valueOf(cgmesMetadataModel.getDependentOn()))
+                .strings("supersedes", cgmesMetadataModel -> String.valueOf(cgmesMetadataModel.getSupersedes()))
                 .build();
 
     }

@@ -7,7 +7,8 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.cgmes.model.CgmesMetadataModel;
+import com.powsybl.cgmes.extensions.CgmesMetadataModels;
+import com.powsybl.cgmes.model.CgmesSubset;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
@@ -446,24 +447,30 @@ class NetworkElementAddersTest {
     @Test
     void cgmesMetadataModelExtension() {
         var network = EurostagTutorialExample1Factory.create();
-        String id = "test";
-        String subset = "subset";
+        String id = "id";
+        String subset = "EQ";
         String description = "description";
         int version = 1;
         String modelingAuthoritySet = "modelingAuthoritySet";
+        String profiles = "profiles";
+        String dependentOn = "true";
+        String supersedes = "true";
 
-        CgmesMetadataModel extension = network.getExtension(CgmesMetadataModel.class);
+        CgmesMetadataModels extension = network.getExtension(CgmesMetadataModels.class);
         assertNull(extension);
 
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(dataframe, "ids", id);
-        addStringColumn(dataframe, "subsets", subset);
-        addStringColumn(dataframe, "descriptions", description);
+        addStringColumn(dataframe, "id", id);
+        addStringColumn(dataframe, "subset", subset);
+        addStringColumn(dataframe, "description", description);
         addIntColumn(dataframe, "version", version);
         addStringColumn(dataframe, "modeling_authority_set", modelingAuthoritySet);
+        addStringColumn(dataframe, "profiles", profiles);
+        addStringColumn(dataframe, "dependent_on", dependentOn);
+        addStringColumn(dataframe,"supersedes", supersedes);
 
-        NetworkElementAdders.addExtensions("cgmesMetadataModel", network, singletonList(dataframe));
-        extension = network.getExtension(CgmesMetadataModel.class);
+        NetworkElementAdders.addExtensions("cgmesMetadataModels", network, singletonList(dataframe));
+        extension = network.getExtension(CgmesMetadataModels.class);
 
         assertNotNull(extension);
     }
