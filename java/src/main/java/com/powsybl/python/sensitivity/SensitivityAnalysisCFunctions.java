@@ -7,12 +7,13 @@
  */
 package com.powsybl.python.sensitivity;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SensitivityAnalysisParametersPointer;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.report.ReportCUtils;
@@ -45,6 +46,7 @@ import static com.powsybl.python.commons.Util.doCatch;
  *
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
+@SuppressWarnings({"java:S1602", "java:S1604"})
 @CContext(Directives.class)
 public final class SensitivityAnalysisCFunctions {
 
@@ -56,47 +58,68 @@ public final class SensitivityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "getSensitivityAnalysisProviderNames")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSensitivityAnalysisProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SensitivityAnalysisProvider.findAll()
-                .stream().map(SensitivityAnalysisProvider::getName).collect(Collectors.toList())));
+    public static ArrayPointer<CCharPointerPointer> getSensitivityAnalysisProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                return createCharPtrArray(SensitivityAnalysisProvider.findAll()
+                        .stream().map(SensitivityAnalysisProvider::getName).collect(Collectors.toList()));
+            }
+        });
     }
 
     @CEntryPoint(name = "setDefaultSensitivityAnalysisProvider")
     public static void setDefaultSensitivityAnalysisProvider(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PyPowsyblConfiguration.setDefaultSensitivityAnalysisProvider(CTypeUtil.toString(provider));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                PyPowsyblConfiguration.setDefaultSensitivityAnalysisProvider(CTypeUtil.toString(provider));
+            }
         });
     }
 
     @CEntryPoint(name = "getDefaultSensitivityAnalysisProvider")
     public static CCharPointer getDefaultSensitivityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() {
+                return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider());
+            }
+        });
     }
 
     @CEntryPoint(name = "createSensitivityAnalysis")
     public static ObjectHandle createSensitivityAnalysis(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new SensitivityAnalysisContext()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() {
+                return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
+            }
+        });
     }
 
     @CEntryPoint(name = "setZones")
     public static void setZones(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
                                 PyPowsyblApiHeader.ZonePointerPointer zonePtrPtr, int zoneCount,
                                 ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<SensitivityVariableSet> variableSets = new ArrayList<>(zoneCount);
-            for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
-                PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
-                String zoneId = CTypeUtil.toString(zonePtrI.getId());
-                List<String> injectionsIds = toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
-                List<Double> injectionsShiftKeys = CTypeUtil.toDoubleList(zonePtrI.getinjectionsShiftKeys(), zonePtrI.getLength());
-                List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
-                for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
-                    variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsShiftKeys.get(injectionIndex)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+                List<SensitivityVariableSet> variableSets = new ArrayList<>(zoneCount);
+                for (int zoneIndex = 0; zoneIndex < zoneCount; zoneIndex++) {
+                    PyPowsyblApiHeader.ZonePointer zonePtrI = zonePtrPtr.read(zoneIndex);
+                    String zoneId = CTypeUtil.toString(zonePtrI.getId());
+                    List<String> injectionsIds = toStringList(zonePtrI.getInjectionsIds(), zonePtrI.getLength());
+                    List<Double> injectionsShiftKeys = CTypeUtil.toDoubleList(zonePtrI.getinjectionsShiftKeys(), zonePtrI.getLength());
+                    List<WeightedSensitivityVariable> variables = new ArrayList<>(injectionsIds.size());
+                    for (int injectionIndex = 0; injectionIndex < injectionsIds.size(); injectionIndex++) {
+                        variables.add(new WeightedSensitivityVariable(injectionsIds.get(injectionIndex), injectionsShiftKeys.get(injectionIndex)));
+                    }
+                    variableSets.add(new SensitivityVariableSet(zoneId, variables));
                 }
-                variableSets.add(new SensitivityVariableSet(zoneId, variables));
+                analysisContext.setVariableSets(variableSets);
             }
-            analysisContext.setVariableSets(variableSets);
         });
     }
 
@@ -110,14 +133,17 @@ public final class SensitivityAnalysisCFunctions {
                                        PyPowsyblApiHeader.SensitivityFunctionType sensitivityFunctionType,
                                        PyPowsyblApiHeader.SensitivityVariableType sensitivityVariableType,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
-            List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
-            String matrixId = CTypeUtil.toString(matrixIdPtr);
-            List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
-            analysisContext.addFactorMatrix(matrixId, branchesIds, variablesIds, contingencies, Util.convert(contingencyContextType), Util.convert(sensitivityFunctionType),
-                    Util.convert(sensitivityVariableType));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+                List<String> branchesIds = toStringList(branchIdPtrPtr, branchIdCount);
+                List<String> variablesIds = toStringList(variableIdPtrPtr, variableIdCount);
+                String matrixId = CTypeUtil.toString(matrixIdPtr);
+                List<String> contingencies = toStringList(contingenciesIdPtrPtr, contingenciesIdCount);
+                analysisContext.addFactorMatrix(matrixId, branchesIds, variablesIds, contingencies, Util.convert(contingencyContextType), Util.convert(sensitivityFunctionType),
+                        Util.convert(sensitivityVariableType));
+            }
         });
     }
 
@@ -126,15 +152,18 @@ public final class SensitivityAnalysisCFunctions {
                                                       ObjectHandle networkHandle, boolean dc, SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPtr,
                                                       CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SensitivityAnalysisProvider provider = getProvider(CTypeUtil.toString(providerName));
-            logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
-            SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(dc, sensitivityAnalysisParametersPtr, provider);
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            SensitivityAnalysisResultContext resultContext = analysisContext.run(network, sensitivityAnalysisParameters, provider.getName(), reportNode);
-            return ObjectHandles.getGlobal().create(resultContext);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() {
+                SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SensitivityAnalysisProvider provider = SensitivityAnalysisCUtils.getSensitivityAnalysisProvider(CTypeUtil.toString(providerName));
+                logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
+                SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(dc, sensitivityAnalysisParametersPtr, provider);
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                SensitivityAnalysisResultContext resultContext = analysisContext.run(network, sensitivityAnalysisParameters, provider.getName(), reportNode);
+                return ObjectHandles.getGlobal().create(resultContext);
+            }
         });
     }
 
@@ -142,11 +171,14 @@ public final class SensitivityAnalysisCFunctions {
     public static PyPowsyblApiHeader.MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                                         CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
                                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
-            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            String matrixId = CTypeUtil.toString(matrixIdPtr);
-            return resultContext.createSensitivityMatrix(matrixId, contingencyId);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<PyPowsyblApiHeader.MatrixPointer>() {
+            @Override
+            public PyPowsyblApiHeader.MatrixPointer get() {
+                SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+                String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+                String matrixId = CTypeUtil.toString(matrixIdPtr);
+                return resultContext.createSensitivityMatrix(matrixId, contingencyId);
+            }
         });
     }
 
@@ -154,34 +186,37 @@ public final class SensitivityAnalysisCFunctions {
     public static PyPowsyblApiHeader.MatrixPointer getReferenceMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                                       CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
-            String contingencyId = CTypeUtil.toString(contingencyIdPtr);
-            String matrixId = CTypeUtil.toString(matrixIdPtr);
-            return resultContext.createReferenceMatrix(matrixId, contingencyId);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<PyPowsyblApiHeader.MatrixPointer>() {
+            @Override
+            public PyPowsyblApiHeader.MatrixPointer get() {
+                SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
+                String contingencyId = CTypeUtil.toString(contingencyIdPtr);
+                String matrixId = CTypeUtil.toString(matrixIdPtr);
+                return resultContext.createReferenceMatrix(matrixId, contingencyId);
+            }
         });
-    }
-
-    private static SensitivityAnalysisProvider getProvider(String name) {
-        String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider() : name;
-        return SensitivityAnalysisProvider.findAll().stream()
-                .filter(provider -> provider.getName().equals(actualName))
-                .findFirst()
-                .orElseThrow(() -> new PowsyblException("No sensitivity analysis provider for name '" + actualName + "'"));
     }
 
     @CEntryPoint(name = "freeSensitivityAnalysisParameters")
     public static void freeSensitivityAnalysisParameters(IsolateThread thread, SensitivityAnalysisParametersPointer parameters,
                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
-            UnmanagedMemory.free(parameters);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
+                UnmanagedMemory.free(parameters);
+            }
         });
     }
 
     @CEntryPoint(name = "createSensitivityAnalysisParameters")
     public static SensitivityAnalysisParametersPointer createSensitivityAnalysisParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<SensitivityAnalysisParametersPointer>() {
+            @Override
+            public SensitivityAnalysisParametersPointer get() {
+                return convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters());
+            }
+        });
     }
 
     private static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
@@ -193,10 +228,13 @@ public final class SensitivityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "getSensitivityAnalysisProviderParametersNames")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(SensitivityAnalysisCUtils.getSensitivityAnalysisProvider(providerStr).getSpecificParametersNames());
+    public static ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                String providerStr = CTypeUtil.toString(provider);
+                return Util.createCharPtrArray(SensitivityAnalysisCUtils.getSensitivityAnalysisProvider(providerStr).getSpecificParametersNames());
+            }
         });
     }
 }

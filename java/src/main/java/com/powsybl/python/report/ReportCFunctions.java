@@ -13,6 +13,7 @@ import com.powsybl.commons.report.ReportNodeJsonModule;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util.PointerProvider;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -29,6 +30,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
+@SuppressWarnings({"java:S1602", "java:S1604"})
 @CContext(Directives.class)
 public final class ReportCFunctions {
 
@@ -37,38 +39,47 @@ public final class ReportCFunctions {
 
     @CEntryPoint(name = "createReportNode")
     public static ObjectHandle createReportNode(IsolateThread thread, CCharPointer taskKeyPtr, CCharPointer defaultNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String taskKey = CTypeUtil.toString(taskKeyPtr);
-            String defaultName = CTypeUtil.toString(defaultNamePtr);
-            ReportNode reportNode = ReportNode.newRootReportNode()
-                .withMessageTemplate(taskKey, defaultName)
-                .build();
-            return ObjectHandles.getGlobal().create(reportNode);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() {
+                String taskKey = CTypeUtil.toString(taskKeyPtr);
+                String defaultName = CTypeUtil.toString(defaultNamePtr);
+                ReportNode reportNode = ReportNode.newRootReportNode()
+                        .withMessageTemplate(taskKey, defaultName)
+                        .build();
+                return ObjectHandles.getGlobal().create(reportNode);
+            }
         });
     }
 
     @CEntryPoint(name = "printReport")
     public static CCharPointer printReport(IsolateThread thread, ObjectHandle reportNodeHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            StringWriter reportNodeOut = new StringWriter();
-            reportNode.print(reportNodeOut);
-            return CTypeUtil.toCharPtr(reportNodeOut.toString());
+        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() throws IOException {
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                StringWriter reportNodeOut = new StringWriter();
+                reportNode.print(reportNodeOut);
+                return CTypeUtil.toCharPtr(reportNodeOut.toString());
+            }
         });
     }
 
     @CEntryPoint(name = "jsonReport")
     public static CCharPointer jsonReport(IsolateThread thread, ObjectHandle reportNodeHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            StringWriter reportNodeOut = new StringWriter();
-            ObjectMapper objectMapper = new ObjectMapper().registerModule(new ReportNodeJsonModule());
-            try {
-                objectMapper.writerWithDefaultPrettyPrinter().writeValue(reportNodeOut, reportNode);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() {
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                StringWriter reportNodeOut = new StringWriter();
+                ObjectMapper objectMapper = new ObjectMapper().registerModule(new ReportNodeJsonModule());
+                try {
+                    objectMapper.writerWithDefaultPrettyPrinter().writeValue(reportNodeOut, reportNode);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                return CTypeUtil.toCharPtr(reportNodeOut.toString());
             }
-            return CTypeUtil.toCharPtr(reportNodeOut.toString());
         });
     }
 }
