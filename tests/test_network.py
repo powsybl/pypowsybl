@@ -26,7 +26,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -782,19 +782,28 @@ def test_sld_parameters():
     assert not parameters.center_name
     assert not parameters.diagonal_label
     assert not parameters.nodes_infos
+    assert not parameters.display_current_feeder_info
     assert parameters.topological_coloring
     assert parameters.component_library == 'Convergence'
+    assert parameters.active_power_unit == ""
+    assert parameters.reactive_power_unit == ""
+    assert parameters.current_unit == ""
 
     parameters = SldParameters(use_name=True, center_name=True, diagonal_label=True,
                                nodes_infos=True, tooltip_enabled=True, topological_coloring=False,
-                               component_library='FlatDesign')
+                               component_library='FlatDesign', display_current_feeder_info=True,
+                               active_power_unit='a', reactive_power_unit='b', current_unit='c')
     assert parameters.use_name
     assert parameters.center_name
     assert parameters.diagonal_label
     assert parameters.nodes_infos
     assert parameters.tool_tip_enabled
+    assert parameters.display_current_feeder_info
     assert not parameters.topological_coloring
     assert parameters.component_library == 'FlatDesign'
+    assert parameters.active_power_unit == 'a'
+    assert parameters.reactive_power_unit == 'b'
+    assert parameters.current_unit == 'c'
 
 
 def test_layout_parameters():
@@ -828,6 +837,35 @@ def test_sld_svg():
     assert re.search('.*<svg.*', sld2.svg)
     assert len(sld2.metadata) > 0
 
+    sld_multi_substation = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']])
+    assert re.search('.*<svg.*', sld_multi_substation.svg)
+    assert len(sld_multi_substation.metadata) > 0
+
+    sld_multi_substation1 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']],
+                                                                              SldParameters(use_name=True, center_name=True,
+                                                                                            diagonal_label=True, topological_coloring=False,
+                                                                                            tooltip_enabled=True))
+    assert re.search('.*<svg.*', sld_multi_substation1.svg)
+    assert len(sld_multi_substation1.metadata) > 0
+
+    sld_multi_substation2 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']],
+                                                                              SldParameters(use_name=True, center_name=True,
+                                                                                            diagonal_label=True, nodes_infos=True, topological_coloring=True,
+                                                                                            tooltip_enabled=True))
+    assert re.search('.*<svg.*', sld_multi_substation2.svg)
+    assert len(sld_multi_substation2.metadata) > 0
+
+    sld_multi_substation3 = n.get_matrix_multi_substation_single_line_diagram([['S1'],['S2']])
+    assert re.search('.*<svg.*', sld_multi_substation3.svg)
+    assert len(sld_multi_substation3.metadata) > 0   
+    
+    sld_multi_substation4 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2']])
+    assert re.search('.*<svg.*', sld_multi_substation4.svg)
+    assert len(sld_multi_substation4.metadata) > 0    
+
+    sld_multi_substation5 = n.get_matrix_multi_substation_single_line_diagram([['S1', ''], ['', 'S2']])
+    assert re.search('.*<svg.*', sld_multi_substation5.svg)
+    assert len(sld_multi_substation5.metadata) > 0    
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -865,7 +903,8 @@ def test_nad():
                                                                          current_value_precision=1,
                                                                          voltage_value_precision=0,
                                                                          bus_legend=False,
-                                                                         substation_description_displayed=True
+                                                                         substation_description_displayed=True,
+                                                                         edge_info_displayed=EdgeInfoType.CURRENT
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -887,7 +926,9 @@ def test_nad():
                                                                             current_value_precision=1,
                                                                             voltage_value_precision=0,
                                                                             bus_legend=False,
-                                                                            substation_description_displayed=True))
+                                                                            substation_description_displayed=True,
+                                                                            edge_info_displayed=EdgeInfoType.REACTIVE_POWER
+                                                                            ))
 
 
 def test_nad_displayed_voltage_levels():
@@ -962,18 +1003,18 @@ def test_dangling_lines():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
+                                     'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, nan, nan, nan, 'VL', 'VL_0', True,
-                                   '', '', '']])
+                                   '', '', False, '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
         pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                      data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
     updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
-                                    'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'tie_line_id'],
+                                    'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                            data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, nan, nan, nan, 'VL', '', False,
-                                  '', '', '']])
+                                  '', '', False, '']])
     pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
@@ -981,6 +1022,24 @@ def test_dangling_lines():
         index=pd.Series(name='id', data=['DL']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['BUS', -1]])
+    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+
+    # test boundary point columns
+    n = pp.network.create_micro_grid_be_network()
+    dangling_lines = n.get_dangling_lines(attributes=['p', 'q',
+                                                      'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['17086487-56ba-4979-b8de-064025a6b4da',
+                                         '78736387-5f60-4832-b3fe-d50daf81b0a6',
+                                         'b18cd1aa-7808-49b9-a7cf-605eaf07b006',
+                                         'a16b4a6c-70b1-4abf-9a9d-bd0fa47f9fe4',
+                                         'ed0c5d75-4a54-43c8-b782-b20d7431630b']),
+        columns=['p', 'q', 'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'],
+        data=[[-25.77,  -2.82, 27.36,   -0.42,  225.49, -5.58],
+              [-36.59,  54.18, 46.81,  -79.19,  411.15, -6.58],
+              [-82.84, 138.45, 90.03, -148.60,  410.88, -6.57],
+              [-23.83,   1.27, 26.80,   -1.48,  224.96, -5.63],
+              [-36.85,  80.68, 43.68,  -84.87,  412.61, -6.74]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
 
 
@@ -2012,8 +2071,9 @@ def test_nad_parameters():
     assert nad_parameters.layout_type == NadLayoutType.FORCE_LAYOUT
     assert nad_parameters.scaling_factor == 150000
     assert nad_parameters.radius_factor == 150.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2026,6 +2086,28 @@ def test_nad_parameters():
     assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
+
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT)
+    assert nad_parameters.edge_name_displayed
+    assert not nad_parameters.edge_info_along_edge
+    assert nad_parameters.id_displayed
+    assert nad_parameters.power_value_precision == 1
+    assert nad_parameters.angle_value_precision == 2
+    assert nad_parameters.current_value_precision == 1
+    assert nad_parameters.voltage_value_precision == 2
+    assert not nad_parameters.bus_legend
+    assert nad_parameters.substation_description_displayed
+    assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
+    assert nad_parameters.scaling_factor == 100000
+    assert nad_parameters.radius_factor == 120.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
+
+def test_update_dangling_line():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
+    network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
+    assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
 
 
 if __name__ == '__main__':

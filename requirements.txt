@@ -3,14 +3,16 @@ pandas==2.2.2; python_version >= "3.9"
 pandas==2.0.3; python_version <= "3.8"
 prettytable==2.0.0
 networkx
-matplotlib
+matplotlib==3.9.0; python_version >= "3.9"
+matplotlib; python_version <= "3.8"
 
 # documentation dependencies
 sphinx==7.1.2
 furo==2024.1.29
 
 # CI dependencies
-wheel==0.38.1
+setuptools==73.0.1
+wheel==0.44.0
 coverage==7.3.2
 pytest>=6.2.5
 mypy==0.982

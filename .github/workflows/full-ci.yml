@@ -11,7 +11,9 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-05-27-2f0b25d
+    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
       matrix:
         python:
@@ -42,12 +44,9 @@ jobs:
           }
 
     steps:
-      - name: Install Linux packages
-        run: yum install -y wget
-
       - name: Install Maven
         run: |
-          wget https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
@@ -117,7 +116,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3
@@ -134,6 +133,14 @@ jobs:
           - {
             name: darwin,
             os: macos-12,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-14,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
           }
           - {
             name: windows,
@@ -186,8 +193,8 @@ jobs:
 
       - name: Build wheel
         env:
-          MACOSX_DEPLOYMENT_TARGET: "10.16" # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-        run: python setup.py bdist_wheel
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
 
       - name: Install wheel
         shell: bash
@@ -206,7 +213,7 @@ jobs:
 
       - name: Run doc examples
         working-directory: ./docs
-        run: make doctest
+        run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
         uses: actions/upload-artifact@v3

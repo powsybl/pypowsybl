@@ -34,6 +34,7 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.BasicForceLayoutFactory;
 import com.powsybl.nad.layout.GeographicalLayoutFactory;
 import com.powsybl.nad.layout.LayoutFactory;
+import com.powsybl.nad.svg.SvgParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -67,6 +68,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.ZipOutputStream;
 
+import static com.powsybl.nad.svg.SvgParameters.EdgeInfoEnum.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -876,6 +878,10 @@ public final class NetworkCFunctions {
         cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
+        cParameters.setDisplayCurrentFeederInfo(parameters.getSvgParameters().isDisplayCurrentFeederInfo());
+        cParameters.setActivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getActivePowerUnit()));
+        cParameters.setReactivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getReactivePowerUnit()));
+        cParameters.setCurrentUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getCurrentUnit()));
     }
 
     public static SldParametersPointer convertToSldParametersPointer(SldParameters parameters) {
@@ -896,6 +902,12 @@ public final class NetworkCFunctions {
     }
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
+        int edgeInfo = switch (parameters.getSvgParameters().getEdgeInfoDisplayed()) {
+            case ACTIVE_POWER -> 0;
+            case REACTIVE_POWER -> 1;
+            case CURRENT -> 2;
+            default -> throw new PowsyblException("Type of information not taken into account");
+        };
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
@@ -905,6 +917,7 @@ public final class NetworkCFunctions {
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
         cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
+        cParameters.setEdgeInfoDisplayed(edgeInfo);
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -943,7 +956,12 @@ public final class NetworkCFunctions {
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
                 .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
-                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled());
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
+                .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo())
+                .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
+                .setActivePowerUnit(CTypeUtil.toString(sldParametersPtr.getActivePowerUnit()))
+                .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()))
+                .setCurrentUnit(CTypeUtil.toString(sldParametersPtr.getCurrentUnit()));
         return sldParameters;
     }
 
@@ -952,6 +970,12 @@ public final class NetworkCFunctions {
         LayoutFactory layoutFactory = switch (nadParametersPointer.getLayoutType()) {
             case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
+        };
+        SvgParameters.EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
+            case 0 -> ACTIVE_POWER;
+            case 1 -> REACTIVE_POWER;
+            case 2 -> CURRENT;
+            default -> throw new PowsyblException("Type of information not taken into account");
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
@@ -963,7 +987,8 @@ public final class NetworkCFunctions {
                 .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
                 .setIdDisplayed(nadParametersPointer.isIdDisplayed())
                 .setBusLegend(nadParametersPointer.isBusLegend())
-                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed());
+                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
+                .setEdgeInfoDisplayed(edgeInfo);
         return nadParameters;
     }
 
@@ -1016,6 +1041,19 @@ public final class NetworkCFunctions {
             String containerIdStr = CTypeUtil.toString(containerId);
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
             List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
+            return createCharPtrArray(svgAndMeta);
+        });
+    }
+
+    @CEntryPoint(name = "getMatrixMultiSubstationSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
+                                                                                           int substationIdCount, int substationIdRowCount,
+                                                                                           SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
             return createCharPtrArray(svgAndMeta);
         });
     }
