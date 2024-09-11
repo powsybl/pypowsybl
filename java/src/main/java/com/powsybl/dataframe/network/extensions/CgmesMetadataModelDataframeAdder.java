@@ -22,9 +22,9 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("subset"),
             SeriesMetadata.strings("description"),
             SeriesMetadata.ints("version"),
-            SeriesMetadata.strings("modeling_authority_set"),
+            SeriesMetadata.strings("modelingAuthoritySet"),
             SeriesMetadata.strings("profiles"),
-            SeriesMetadata.strings("dependent_on"),
+            SeriesMetadata.strings("dependentOn"),
             SeriesMetadata.strings("supersedes")
     );
 
@@ -33,14 +33,14 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
         return Collections.singletonList(METADATA);
     }
 
-    private static class CgmesMetadataSeries {
+    private static final class CgmesMetadataSeries {
         private final StringSeries id;
         private final StringSeries subset;
         private final StringSeries description;
         private final IntSeries version;
-        private final StringSeries modeling_authority_set;
+        private final StringSeries modelingAuthoritySet;
         private final StringSeries profiles;
-        private final StringSeries dependent_on;
+        private final StringSeries dependentOn;
         private final StringSeries supersedes;
 
         private CgmesMetadataSeries(UpdatingDataframe dataframe) {
@@ -48,9 +48,9 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             this.subset = dataframe.getStrings("subset");
             this.description = dataframe.getStrings("description");
             this.version = dataframe.getInts("version");
-            this.modeling_authority_set = dataframe.getStrings("modeling_authority_set");
+            this.modelingAuthoritySet = dataframe.getStrings("modelingAuthoritySet");
             this.profiles = dataframe.getStrings("profiles");
-            dependent_on = dataframe.getStrings("dependent_on");
+            dependentOn = dataframe.getStrings("dependentOn");
             this.supersedes = dataframe.getStrings("supersedes");
         }
 
@@ -60,9 +60,9 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             SeriesUtils.applyIfPresent(subset, row, subset -> modelAdder.setSubset(CgmesSubset.valueOf(subset)));
             SeriesUtils.applyIfPresent(description, row, modelAdder::setDescription);
             SeriesUtils.applyIfPresent(version, row, modelAdder::setVersion);
-            SeriesUtils.applyIfPresent(modeling_authority_set, row, modelAdder::setModelingAuthoritySet);
+            SeriesUtils.applyIfPresent(modelingAuthoritySet, row, modelAdder::setModelingAuthoritySet);
             SeriesUtils.applyIfPresent(profiles, row, modelAdder::addProfile);
-            SeriesUtils.applyIfPresent(dependent_on, row, modelAdder::addDependentOn);
+            SeriesUtils.applyIfPresent(dependentOn, row, modelAdder::addDependentOn);
             SeriesUtils.applyIfPresent(supersedes, row, modelAdder::addSupersedes);
             modelAdder.add();
         }
@@ -76,8 +76,6 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(row, adder);
         }
-        System.out.println(network.getExtension(CgmesMetadataModelsAdder.class).toString());
-        // ça c'est null, pourquoi ?
-
+        adder.add();
     }
 }

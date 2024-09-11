@@ -8,7 +8,6 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
-import com.powsybl.cgmes.model.CgmesSubset;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
@@ -18,7 +17,6 @@ import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.*;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -465,15 +463,14 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "subset", subset);
         addStringColumn(dataframe, "description", description);
         addIntColumn(dataframe, "version", version);
-        addStringColumn(dataframe, "modeling_authority_set", modelingAuthoritySet);
+        addStringColumn(dataframe, "modelingAuthoritySet", modelingAuthoritySet);
         addStringColumn(dataframe, "profiles", profiles);
-        addStringColumn(dataframe, "dependent_on", dependentOn);
-        addStringColumn(dataframe,"supersedes", supersedes);
+        addStringColumn(dataframe, "dependentOn", dependentOn);
+        addStringColumn(dataframe, "supersedes", supersedes);
 
         NetworkElementAdders.addExtensions("cgmesMetadataModels", network, singletonList(dataframe));
         extension = network.getExtension(CgmesMetadataModels.class);
 
-        // extension == null à cause d'un problème dans la méthode create du adder
         assertNotNull(extension);
     }
 

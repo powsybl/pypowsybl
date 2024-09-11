@@ -10,7 +10,6 @@ import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
-import com.powsybl.iidm.network.extensions.BusbarSectionPosition;
 
 import java.util.List;
 import java.util.Objects;
@@ -66,6 +65,6 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
 
     @Override
     public NetworkElementAdder createAdder() {
-       return new CgmesMetadataModelDataframeAdder();
+        return new CgmesMetadataModelDataframeAdder();
     }
 }
