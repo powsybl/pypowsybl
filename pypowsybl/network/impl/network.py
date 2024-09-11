@@ -641,7 +641,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulated_element_id**: the ID of the network element where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
-              - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
+              - **i**: the current on the generator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this generator is connected
               - **bus_id**: bus where this generator is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
@@ -2325,7 +2325,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the injection
               - **voltage_level_id**: at which substation the injection is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this injection is connected
+              - **connected**: ``True`` if the injection is connected to a bus
               - **bus_id**: bus where this injection is connected
+              - **p**: the actual active production of the injection (``NaN`` if no loadflow has been computed)
+              - **q**: the actual reactive production of the injection (``NaN`` if no loadflow has been computed)
+              - **i**: the current on the injection, ``NaN`` if no loadflow has been computed (in A)
 
             This dataframe is indexed on the injections ID.
         """
@@ -2348,9 +2353,19 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the branch (line or 2 windings transformer)
               - **voltage_level1_id**: voltage level where the branch is connected, on side 1
+              - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this branch is connected, on side "1"
+              - **connected1**: ``True`` if the side "1" of the branch is connected to a bus
               - **bus1_id**: bus where this branch is connected, on side 1
               - **voltage_level2_id**: voltage level where the branch is connected, on side 2
+              - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this branch is connected, on side "2"
+              - **connected2**: ``True`` if the side "2" of the branch is connected to a bus
               - **bus2_id**: bus where this branch is connected, on side 2
+              - **p1**: the active flow on the branch at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **q1**: the reactive flow on the branch at its "1" side, ``NaN`` if no loadflow has been computed (in MVAr)
+              - **i1**: the current on the branch at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+              - **p2**: the active flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **q2**: the reactive flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
+              - **i2**: the current on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in A)
 
             This dataframe is indexed on the branche ID.
         """
