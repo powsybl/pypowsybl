@@ -20,10 +20,8 @@ include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_SOURCE_DIR} ${PYP
 link_directories(${PYPOWSYBL_JAVA_LIBRARY_DIR})
 pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
-if (TARGET native-image)
-  add_dependencies(_pypowsybl native-image math-native)
-  add_dependencies(math-native native-image)
-endif()
+add_dependencies(_pypowsybl native-image math-native)
+add_dependencies(math-native native-image)
 
 # Fix related to issue describred here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231
 # Should fix incompatibility between MSVC runtime 14.40.XXX and previous version

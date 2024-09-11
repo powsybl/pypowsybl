@@ -37,9 +37,7 @@ set(POWSYBL_CPP_SOURCES "powsybl-cpp.cpp")
 
 add_library(powsybl-cpp SHARED ${POWSYBL_CPP_SOURCES})
 
-if (TARGET native-image)
-  add_dependencies(powsybl-cpp native-image)
-endif()
+add_dependencies(powsybl-cpp native-image)
 
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     add_custom_command(TARGET powsybl-cpp POST_BUILD ${POWSYBL_CPP_INSTALL_EXTRA_COMMAND} COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:powsybl-cpp> $<TARGET_LINKER_FILE:powsybl-cpp> ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
