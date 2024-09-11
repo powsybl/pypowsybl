@@ -4189,7 +4189,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the new switch
-            - **voltage_level1_id**: the voltage level where the new switch will be connected on side 1.
+            - **voltage_level_id**: the voltage level where the new switch will be connected.
               The voltage level must already exist.
             - **bus1_id**: the bus where the new switch will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
@@ -4211,11 +4211,11 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 # In a bus-breaker voltage level, between configured buses B1 and B2
-                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', bus1_id='B1', bus2_id='B2',
+                network.create_switches(id='BREAKER-1', voltage_level_id='VL1', bus1_id='B1', bus2_id='B2',
                                         kind='BREAKER', open=False)
 
                 # In a node-breaker voltage level, between nodes 5 and 7
-                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', node1=5, node2=7,
+                network.create_switches(id='BREAKER-1', voltage_level_id='VL1', node1=5, node2=7,
                                         kind='BREAKER', open=False)
         """
         return self._create_elements(ElementType.SWITCH, [df], **kwargs)
