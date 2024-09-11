@@ -14,14 +14,14 @@ if(MSVC)
 endif()
 
 set(POWSYBL_CPP_SOURCE_DIR "../powsybl-cpp")
-set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
-include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_BIN_DIR})
+set(PYPOWSYBL_JAVA_SOURCE_DIR "../pypowsybl-java")
+include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_SOURCE_DIR} ${PYPOWSYBL_JAVA_INCLUDE_DIR})
 
-link_directories(${PYPOWSYBL_JAVA_BIN_DIR})
+link_directories(${PYPOWSYBL_JAVA_LIBRARY_DIR})
 pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
 add_dependencies(_pypowsybl native-image math-native)
-add_dependencies(math-native native-image) # because mvn command also copy math native jar
+add_dependencies(math-native native-image)
 
 # Fix related to issue describred here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231
 # Should fix incompatibility between MSVC runtime 14.40.XXX and previous version
