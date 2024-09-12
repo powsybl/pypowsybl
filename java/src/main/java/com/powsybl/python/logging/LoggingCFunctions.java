@@ -10,6 +10,7 @@ package com.powsybl.python.logging;
 import ch.qos.logback.classic.Logger;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util.PointerProvider;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
@@ -25,6 +26,7 @@ import static com.powsybl.python.commons.Util.doCatch;
  *
  * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
  */
+@SuppressWarnings({"java:S1602", "java:S1604"})
 @CContext(Directives.class)
 public final class LoggingCFunctions {
 
@@ -40,14 +42,22 @@ public final class LoggingCFunctions {
 
     @CEntryPoint(name = "setupLoggerCallback")
     public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> loggerCallback = fpointer);
+        doCatch(exceptionHandlerPtr, new PointerProvider<CFunctionPointer>() {
+            @Override
+            public CFunctionPointer get() {
+                return loggerCallback = fpointer;
+            }
+        });
     }
 
     @CEntryPoint(name = "setLogLevel")
     public static void setLogLevel(IsolateThread thread, int logLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
-            powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
+                powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+            }
         });
     }
 }

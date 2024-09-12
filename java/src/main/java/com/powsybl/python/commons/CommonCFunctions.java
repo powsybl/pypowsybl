@@ -8,6 +8,7 @@
 package com.powsybl.python.commons;
 
 import com.powsybl.iidm.network.Network;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.tools.Version;
 import org.graalvm.nativeimage.IsolateThread;
@@ -26,6 +27,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
+@SuppressWarnings({"java:S1602", "java:S1604"})
 @CContext(Directives.class)
 public final class CommonCFunctions {
 
@@ -34,12 +36,22 @@ public final class CommonCFunctions {
 
     @CEntryPoint(name = "setJavaLibraryPath")
     public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath));
+            }
+        });
     }
 
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> PyPowsyblConfiguration.setReadConfig(read));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                PyPowsyblConfiguration.setReadConfig(read);
+            }
+        });
     }
 
     @CEntryPoint(name = "isConfigRead")
@@ -49,30 +61,45 @@ public final class CommonCFunctions {
 
     @CEntryPoint(name = "getVersionTable")
     public static CCharPointer getVersionTable(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.toCharPtr(Version.getTableString()));
+        return doCatch(exceptionHandlerPtr, () -> {
+            return CTypeUtil.toCharPtr(Version.getTableString());
+        });
     }
 
     @CEntryPoint(name = "freeStringArray")
     public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeArrayContent(arrayPtr));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeArrayContent(arrayPtr);
+            }
+        });
     }
 
     @CEntryPoint(name = "freeArray")
     public static <T extends PointerBase> void freeArray(IsolateThread thread, ArrayPointer<T> arrayPointer,
                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
-        UnmanagedMemory.free(arrayPointer.getPtr());
-        UnmanagedMemory.free(arrayPointer);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                UnmanagedMemory.free(arrayPointer.getPtr());
+                UnmanagedMemory.free(arrayPointer);
+            }
+        });
     }
 
     @CEntryPoint(name = "freeSeriesArray")
     public static void freeSeriesArray(IsolateThread thread, ArrayPointer<SeriesPointer> seriesPtrArrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
-                freeSeries(seriesPtrArrayPtr.getPtr().addressOf(i));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < seriesPtrArrayPtr.getLength(); i++) {
+                    freeSeries(seriesPtrArrayPtr.getPtr().addressOf(i));
+                }
+                freeArrayPointer(seriesPtrArrayPtr);
             }
-            freeArrayPointer(seriesPtrArrayPtr);
         });
     }
 
@@ -97,20 +124,33 @@ public final class CommonCFunctions {
 
     @CEntryPoint(name = "destroyObjectHandle")
     public static void destroyObjectHandle(IsolateThread thread, ObjectHandle objectHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().destroy(objectHandle));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                ObjectHandles.getGlobal().destroy(objectHandle);
+            }
+        });
     }
 
     @CEntryPoint(name = "getWorkingVariantId")
     public static CCharPointer getWorkingVariantId(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return CTypeUtil.toCharPtr(network.getVariantManager().getWorkingVariantId());
+        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return CTypeUtil.toCharPtr(network.getVariantManager().getWorkingVariantId());
+            }
         });
     }
 
     @CEntryPoint(name = "freeString")
     public static void freeString(IsolateThread thread, CCharPointer string, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(string));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                UnmanagedMemory.free(string);
+            }
+        });
     }
 
     @CEntryPoint(name = "closePypowsybl")
@@ -120,12 +160,15 @@ public final class CommonCFunctions {
 
     @CEntryPoint(name = "freeStringMap")
     public static void freeStringMap(IsolateThread thread, StringMap map, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < map.getLength(); i++) {
-                UnmanagedMemory.free(map.getKeys().read(i));
-                UnmanagedMemory.free(map.getValues().read(i));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < map.getLength(); i++) {
+                    UnmanagedMemory.free(map.getKeys().read(i));
+                    UnmanagedMemory.free(map.getValues().read(i));
+                }
+                UnmanagedMemory.free(map);
             }
-            UnmanagedMemory.free(map);
         });
     }
 }
