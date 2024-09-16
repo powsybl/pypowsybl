@@ -453,9 +453,12 @@ def test_geo_data():
 
     pd.testing.assert_frame_equal(n.get_extensions('linePosition'), line_expected)
 
-
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
+    assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
+    assert extensions_information.loc['cgmesMetadataModels']['attributes'] == ('index : id (str), cgmes_subset (str), id (str), description (str), ' \
+                                                                            'version (int), modeling_authority_set (str), profiles (str), ' \
+                                                                            'dependent_on (str), supersedes (str) ')
     assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'
     assert extensions_information.loc['measurements']['attributes'] == 'index : element_id (str),id (str), type (str), ' \
                                                                        'standard_deviation (float), value (float), valid (bool)'
