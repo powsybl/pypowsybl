@@ -31,7 +31,7 @@ The supported formats are the following:
 .. doctest::
 
    >>> pp.network.get_import_formats()
-   ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY', 'BIIDM']
+   ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM']
 
 .. Note::
 
@@ -80,7 +80,7 @@ The supported formats are:
 .. doctest::
 
    >>> pp.network.get_export_formats()
-   ['AMPL', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM', 'BIIDM']
+   ['AMPL', 'BIIDM', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
 
 .. Note::
 

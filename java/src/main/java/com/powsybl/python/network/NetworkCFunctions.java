@@ -90,12 +90,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkImportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkImportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Importer.getFormats())));
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Importer.getFormats().stream().sorted().toList()));
     }
 
     @CEntryPoint(name = "getNetworkExportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(new ArrayList<>(Exporter.getFormats())));
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Exporter.getFormats().stream().sorted().toList()));
     }
 
     @CEntryPoint(name = "createNetwork")
