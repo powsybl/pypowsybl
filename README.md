@@ -12,7 +12,6 @@ The PyPowSyBl project gives access PowSyBl Java framework to Python developers. 
 GraalVM to compile Java code to a native library.
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
 
 ## Documentation
 

@@ -182,7 +182,7 @@ jobs:
       - name: Build with Maven (Ubuntu)
         working-directory: ./java
         run: >
-          mvn --batch-mode -Pjacoco install
+          mvn --batch-mode install
 
       - name: Run SonarCloud analysis
         working-directory: ./java
