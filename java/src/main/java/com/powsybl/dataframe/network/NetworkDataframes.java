@@ -954,6 +954,7 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Injection::getId)
                 .strings("type", injection -> injection.getType().toString())
                 .strings("voltage_level_id", injection -> injection.getTerminal().getVoltageLevel().getId())
+                .ints("node", g -> getNode(g.getTerminal()), false)
                 .strings("bus_breaker_bus_id", injection -> getBusBreakerViewBusId(injection.getTerminal()), (injection, id) -> setBusBreakerViewBusId(injection.getTerminal(), id), false)
                 .booleans("connected", injection -> injection.getTerminal().isConnected(), connectInjection())
                 .strings("bus_id", injection -> injection.getTerminal().getBusView().getBus() == null ? "" :
@@ -969,12 +970,14 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Branch::getId)
                 .strings("type", branch -> branch.getType().toString())
                 .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
+                .ints("node1", g -> getNode(g.getTerminal1()), false)
                 .strings("bus_breaker_bus1_id", branch -> getBusBreakerViewBusId(branch.getTerminal1()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal1(), id), false)
                 .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
                         branch.getTerminal1().getBusView().getBus().getId())
                 .booleans("connected1", branch -> branch.getTerminal1().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal1(), connected))
                 .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
+                .ints("node2", g -> getNode(g.getTerminal2()), false)
                 .strings("bus_breaker_bus2_id", branch -> getBusBreakerViewBusId(branch.getTerminal2()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal2(), id), false)
                 .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
                         branch.getTerminal2().getBusView().getBus().getId())
