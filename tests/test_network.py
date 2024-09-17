@@ -148,7 +148,7 @@ def test_save_ucte():
 
 def test_get_import_format():
     formats = pp.network.get_import_formats()
-    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY', 'BIIDM'] == formats
+    assert ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM'] == formats
 
 
 def test_get_import_parameters():
@@ -175,7 +175,7 @@ def test_get_export_parameters():
 
 def test_get_export_format():
     formats = set(pp.network.get_export_formats())
-    assert {'AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM', 'JIIDM'}.intersection(formats)
+    assert {'AMPL', 'BIIDM', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'} == formats
 
 
 def test_load_network():
@@ -2023,6 +2023,26 @@ def test_branches():
     twt = n.get_branches().loc['TWT']
     assert not twt.connected1
     assert not twt.connected2
+
+
+def test_branch_and_injection_by_id():
+    n = pp.network.create_four_substations_node_breaker_network()
+    assert len(n.get_branches(id='TWT')) == 1
+    assert len(n.get_injections(id='LD2')) == 1
+
+
+def test_branches_and_injections_flow():
+    n = pp.network.create_four_substations_node_breaker_network()
+    expected_branches = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': 'LINE_S2S3', 'p1': 109.8893, 'q1': 190.0229, 'p2': -109.8864, 'q2': -184.5171}])
+    pd.testing.assert_frame_equal(expected_branches,
+                                  n.get_branches(id="LINE_S2S3", attributes=["p1", "q1", "p2", "q2"]),
+                                  check_dtype=False)
+    expected_injections = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': 'LD2', 'p': 60.0, 'q': 5.0}])
+    pd.testing.assert_frame_equal(expected_injections,
+                                  n.get_injections(id="LD2", attributes=["p", "q"]),
+                                  check_dtype=False)
 
 
 def test_terminals():
