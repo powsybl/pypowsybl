@@ -29,6 +29,8 @@ import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 
+import java.util.Optional;
+
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.doCatch;
 
@@ -116,8 +118,9 @@ public final class LoadFlowValidationCFunctions {
     public static void copyToCLoadFlowValidationParameters(ValidationConfig parameters, LoadFlowValidationParametersPointer cParameters) {
         cParameters.setThreshold(parameters.getThreshold());
         cParameters.setVerbose(parameters.isVerbose());
-        if (parameters.getLoadFlowName().isPresent()) {
-            cParameters.setLoadFlowName(CTypeUtil.toCharPtr(parameters.getLoadFlowName().get()));
+        Optional<String> optionalName = parameters.getLoadFlowName();
+        if (optionalName.isPresent()) {
+            cParameters.setLoadFlowName(CTypeUtil.toCharPtr(optionalName.get()));
         } else {
             cParameters.setLoadFlowName(CTypeUtil.toCharPtr(""));
         }
