@@ -7,8 +7,7 @@
  */
 package com.powsybl.python.network;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
+import com.powsybl.iidm.network.IdentifiableType;
 
 /**
  * @author Etienne Lesot <etienne.lesot at rte-france.com>
@@ -16,10 +15,12 @@ import java.util.Objects;
 public class NodeContext {
     private final int node;
     private final String connectableId;
+    private final IdentifiableType connectableType;
 
-    public NodeContext(int node, @Nullable String connectableId) {
-        this.node = Objects.requireNonNull(node);
+    public NodeContext(int node, String connectableId, IdentifiableType connectableType) {
+        this.node = node;
         this.connectableId = connectableId;
+        this.connectableType = connectableType;
     }
 
     public int getNode() {
@@ -28,5 +29,9 @@ public class NodeContext {
 
     public String getConnectableId() {
         return connectableId;
+    }
+
+    public IdentifiableType getConnectableType() {
+        return connectableType;
     }
 }
