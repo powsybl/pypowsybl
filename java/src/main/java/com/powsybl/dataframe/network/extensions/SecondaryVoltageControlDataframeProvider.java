@@ -111,7 +111,6 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
                 throw new PowsyblException("No secondary voltage control zone containing control unit " + id + " found.");
             }
 
-
             return new ControlUnitWithZone(zone.getControlUnits().stream()
                     .filter(controlUnit -> controlUnit.getId().equals(id))
                     .findAny().orElse(null),
