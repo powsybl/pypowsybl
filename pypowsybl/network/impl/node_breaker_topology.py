@@ -64,7 +64,7 @@ class NodeBreakerTopology:
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
         return graph
 
-    def write_ampl(self, dir: Union[str, Path]):
+    def write_ampl(self, dir: Union[str, Path]) -> None:
         """
         Write the node/breaker topology in a columned file format (with space as a separator) so that it is
         easily readable by AMPL for running topology optimization.
