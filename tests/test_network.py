@@ -2015,10 +2015,10 @@ def test_branches():
     n = pp.network.create_four_substations_node_breaker_network()
     twt = n.get_branches(all_attributes=True).loc['TWT']
     assert twt.voltage_level1_id == 'S1VL1'
-    assert twt.node1 == 0
+    assert twt.node1 == 4
     assert twt.bus1_id == 'S1VL1_0'
     assert twt.voltage_level2_id == 'S1VL2'
-    assert twt.node2 == 0
+    assert twt.node2 == 3
     assert twt.bus2_id == 'S1VL2_0'
     assert twt.connected1
     assert twt.connected2
