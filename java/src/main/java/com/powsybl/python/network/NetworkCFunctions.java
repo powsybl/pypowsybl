@@ -557,8 +557,14 @@ public final class NetworkCFunctions {
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewSwitches(), nodeBreakerView);
+            String voltageLevelId = CTypeUtil.toString(voltageLevel);
+            VoltageLevel vl = network.getVoltageLevel(voltageLevelId);
+            if (vl != null) {
+                VoltageLevel.NodeBreakerView nodeBreakerView = vl.getNodeBreakerView();
+                return Dataframes.createCDataframe(Dataframes.nodeBreakerViewSwitches(), nodeBreakerView);
+            } else {
+                throw new PowsyblException(String.format("Voltage level with id : %s was not found", voltageLevelId));
+            }
         });
     }
 
@@ -566,10 +572,14 @@ public final class NetworkCFunctions {
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewNodes(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
-
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewNodes(), nodeBreakerView);
-
+            String voltageLevelId = CTypeUtil.toString(voltageLevel);
+            VoltageLevel vl = network.getVoltageLevel(voltageLevelId);
+            if (vl != null) {
+                VoltageLevel.NodeBreakerView nodeBreakerView = vl.getNodeBreakerView();
+                return Dataframes.createCDataframe(Dataframes.nodeBreakerViewNodes(), nodeBreakerView);
+            } else {
+                throw new PowsyblException(String.format("Voltage level with id : %s was not found", voltageLevelId));
+            }
         });
     }
 
@@ -577,8 +587,14 @@ public final class NetworkCFunctions {
     public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewInternalConnections(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.NodeBreakerView nodeBreakerView = network.getVoltageLevel(CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewInternalConnection(), nodeBreakerView);
+            String voltageLevelId = CTypeUtil.toString(voltageLevel);
+            VoltageLevel vl = network.getVoltageLevel(voltageLevelId);
+            if (vl != null) {
+                VoltageLevel.NodeBreakerView nodeBreakerView = vl.getNodeBreakerView();
+                return Dataframes.createCDataframe(Dataframes.nodeBreakerViewInternalConnection(), nodeBreakerView);
+            } else {
+                throw new PowsyblException(String.format("Voltage level with id : %s was not found", voltageLevelId));
+            }
         });
     }
 
@@ -708,7 +724,14 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> ids = CTypeUtil.toStringList(idsPointer, idsCount);
             List<String> properties = CTypeUtil.toStringList(propertiesPointer, propertiesCount);
-            ids.forEach(id -> properties.forEach(property -> network.getIdentifiable(id).removeProperty(property)));
+            ids.forEach(id -> properties.forEach(property -> {
+                Identifiable<?> identifiable = network.getIdentifiable(id);
+                if (identifiable != null) {
+                    identifiable.removeProperty(property);
+                } else {
+                    throw new PowsyblException(String.format("identifiable with id : %s does not exist", id));
+                }
+            }));
         });
     }
 
