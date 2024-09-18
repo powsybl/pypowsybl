@@ -5,6 +5,9 @@ on:
     types:
       - created
 
+permissions:
+  contents: write
+  
 jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
