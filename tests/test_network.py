@@ -1319,6 +1319,10 @@ def test_node_breaker_view():
     assert 7 == len(nodes)
     assert topology.internal_connections.empty
 
+    with pytest.raises(PyPowsyblError) as exc:
+        n.get_node_breaker_topology('wrongVL')
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
+
 
 def test_graph():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1861,6 +1865,10 @@ def test_properties():
     with pytest.raises(PyPowsyblError) as exc:
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.remove_elements_properties(ids='notHere', properties='test')
+    assert "Network element \'notHere\' does not exist." in str(exc)
 
 
 def test_pathlib_load_save(tmpdir):

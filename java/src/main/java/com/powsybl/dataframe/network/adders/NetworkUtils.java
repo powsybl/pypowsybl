@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public final class NetworkUtils {
 
-    private static final String DOES_NOT_EXIST = " does not exist.";
+    private static final String DOES_NOT_EXIST = "' does not exist.";
 
     private NetworkUtils() {
     }
@@ -26,7 +26,7 @@ public final class NetworkUtils {
     public static VoltageLevel getVoltageLevelOrThrow(Network network, String id) {
         VoltageLevel voltageLevel = network.getVoltageLevel(id);
         if (voltageLevel == null) {
-            throw new PowsyblException("Voltage level " + id + DOES_NOT_EXIST);
+            throw new PowsyblException("Voltage level '" + id + DOES_NOT_EXIST);
         }
         return voltageLevel;
     }
@@ -61,7 +61,7 @@ public final class NetworkUtils {
     public static Substation getSubstationOrThrow(Network network, String id) {
         Substation substation = network.getSubstation(id);
         if (substation == null) {
-            throw new PowsyblException("Substation " + id + DOES_NOT_EXIST);
+            throw new PowsyblException("Substation '" + id + DOES_NOT_EXIST);
         }
         return substation;
     }
@@ -69,7 +69,7 @@ public final class NetworkUtils {
     public static Identifiable<?> getIdentifiableOrThrow(Network network, String id) {
         Identifiable<?> identifiable = network.getIdentifiable(id);
         if (identifiable == null) {
-            throw new PowsyblException("Network element " + id + DOES_NOT_EXIST);
+            throw new PowsyblException("Network element '" + id + DOES_NOT_EXIST);
         }
         return identifiable;
     }
