@@ -28,7 +28,7 @@ public final class FlowDecompositionCUtils {
             .setEnableLossesCompensation(loadFlowParametersPtr.isLossesCompensationEnabled())
             .setLossesCompensationEpsilon(loadFlowParametersPtr.getLossesCompensationEpsilon())
             .setSensitivityEpsilon(loadFlowParametersPtr.getSensitivityEpsilon())
-            .setRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
+            .setsetRescaleEnabled(loadFlowParametersPtr.isRescaleEnabled())
             .setDcFallbackEnabledAfterAcDivergence(loadFlowParametersPtr.isDcFallbackEnabledAfterAcDivergence())
             .setSensitivityVariableBatchSize(loadFlowParametersPtr.getSensitivityVariableBatchSize());
     }
