@@ -964,7 +964,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("loadflow_parameters"));
 
     py::enum_<pypowsybl::RescaleMode>(m, "RescaleMode")
-            .value("FORCE_LAYOUT", pypowsybl::RescaleMode::NONE)
+            .value("NONE", pypowsybl::RescaleMode::NONE)
             .value("ACER_METHODOLOGY", pypowsybl::RescaleMode::ACER_METHODOLOGY)
             .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL);
 
