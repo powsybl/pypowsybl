@@ -50,7 +50,7 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             this.version = dataframe.getInts("version");
             this.modelingAuthoritySet = dataframe.getStrings("modelingAuthoritySet");
             this.profiles = dataframe.getStrings("profiles");
-            dependentOn = dataframe.getStrings("dependentOn");
+            this.dependentOn = dataframe.getStrings("dependentOn");
             this.supersedes = dataframe.getStrings("supersedes");
         }
 
@@ -61,10 +61,32 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             SeriesUtils.applyIfPresent(description, row, modelAdder::setDescription);
             SeriesUtils.applyIfPresent(version, row, modelAdder::setVersion);
             SeriesUtils.applyIfPresent(modelingAuthoritySet, row, modelAdder::setModelingAuthoritySet);
-            SeriesUtils.applyIfPresent(profiles, row, modelAdder::addProfile);
-            SeriesUtils.applyIfPresent(dependentOn, row, modelAdder::addDependentOn);
-            SeriesUtils.applyIfPresent(supersedes, row, modelAdder::addSupersedes);
-            modelAdder.add();
+            SeriesUtils.applyIfPresent(profiles, row, profile -> parseProfiles(profile, modelAdder));
+            SeriesUtils.applyIfPresent(dependentOn, row, dependentOn -> parseDependentOn(dependentOn, modelAdder));
+            SeriesUtils.applyIfPresent(supersedes, row, supersedes -> parseSupersedes(supersedes, modelAdder));
+        modelAdder.add();
+
+        }
+
+        private void parseProfiles(String concatenatedProfiles, CgmesMetadataModelsAdder.ModelAdder modelAdder) {
+            List<String> profilesList = new ArrayList<>(Arrays.asList(concatenatedProfiles.split(",")));
+            for (String profile : profilesList) {
+                modelAdder.addProfile(profile);
+            }
+        }
+
+        private void parseDependentOn(String concatenatedDependentOn, CgmesMetadataModelsAdder.ModelAdder modelAdder) {
+            List<String> dependentOnList = new ArrayList<>(Arrays.asList(concatenatedDependentOn.split(",")));
+            for (String dependentOn : dependentOnList) {
+                modelAdder.addDependentOn(dependentOn);
+            }
+        }
+
+        private void parseSupersedes(String concatenatedSupersedes, CgmesMetadataModelsAdder.ModelAdder modelAdder) {
+            List<String> supersedesList = new ArrayList<>(Arrays.asList(concatenatedSupersedes.split(",")));
+            for (String supersedes : supersedesList) {
+                modelAdder.addSupersedes(supersedes);
+            }
         }
 
     }
@@ -73,9 +95,11 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe) {
         CgmesMetadataModelsAdder adder = network.newExtension(CgmesMetadataModelsAdder.class);
         CgmesMetadataSeries series = new CgmesMetadataSeries(dataframe);
-        for (int row = 0; row < dataframe.getRowCount(); row++) {
-            series.create(row, adder);
-        }
+            for (int row = 0; row < dataframe.getRowCount(); row++) {
+                series.create(row, adder);
+            }
         adder.add();
     }
+
+
 }

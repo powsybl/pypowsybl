@@ -35,7 +35,7 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
 
     private Stream<CgmesMetadataModel> itemsStream(Network network) {
         if (network.getExtension(CgmesMetadataModels.class) == null) {
-            throw new PowsyblException("No CGMES metadata model found");
+            return Stream.empty();
         }
         return network.getExtension(CgmesMetadataModels.class).getModels().stream();
     }
@@ -48,9 +48,9 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
                 .strings("description", CgmesMetadataModel::getDescription)
                 .ints("version", CgmesMetadataModel::getVersion)
                 .strings("modeling_authority_set", CgmesMetadataModel::getModelingAuthoritySet)
-                .strings("profiles", cgmesMetadataModel -> String.valueOf(cgmesMetadataModel.getProfiles()))
-                .strings("dependent_on", cgmesMetadataModel -> String.valueOf(cgmesMetadataModel.getDependentOn()))
-                .strings("supersedes", cgmesMetadataModel -> String.valueOf(cgmesMetadataModel.getSupersedes()))
+                .strings("profiles", cgmesMetadataModel -> String.join(",", cgmesMetadataModel.getProfiles()))
+                .strings("dependent_on", cgmesMetadataModel -> String.join(",", cgmesMetadataModel.getDependentOn()))
+                .strings("supersedes", cgmesMetadataModel -> String.join(",", cgmesMetadataModel.getSupersedes()))
                 .build();
 
     }
