@@ -64,7 +64,7 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
             SeriesUtils.applyIfPresent(profiles, row, profile -> parseProfiles(profile, modelAdder));
             SeriesUtils.applyIfPresent(dependentOn, row, dependentOn -> parseDependentOn(dependentOn, modelAdder));
             SeriesUtils.applyIfPresent(supersedes, row, supersedes -> parseSupersedes(supersedes, modelAdder));
-        modelAdder.add();
+            modelAdder.add();
 
         }
 
@@ -95,11 +95,10 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
     public void addElements(Network network, UpdatingDataframe dataframe) {
         CgmesMetadataModelsAdder adder = network.newExtension(CgmesMetadataModelsAdder.class);
         CgmesMetadataSeries series = new CgmesMetadataSeries(dataframe);
-            for (int row = 0; row < dataframe.getRowCount(); row++) {
-                series.create(row, adder);
-            }
+        for (int row = 0; row < dataframe.getRowCount(); row++) {
+            series.create(row, adder);
+        }
         adder.add();
     }
-
 
 }
