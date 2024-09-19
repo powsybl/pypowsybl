@@ -367,6 +367,12 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+enum class RescaleMode {
+    NONE = 0,
+    ACER_METHODOLOGY,
+    PROPORTIONAL
+};
+
 class FlowDecompositionParameters {
 public:
     FlowDecompositionParameters(flow_decomposition_parameters* src);
@@ -375,7 +381,7 @@ public:
     bool enable_losses_compensation;
     float losses_compensation_epsilon;
     float sensitivity_epsilon;
-    bool rescale_enabled;
+    RescaleMode rescale_mode;
     bool dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 };

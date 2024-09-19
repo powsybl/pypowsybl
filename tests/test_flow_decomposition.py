@@ -92,7 +92,7 @@ def test_flow_decomposition_run_full_integration():
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=True,
         losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON,
         sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON,
-        rescale_enabled=True,
+        rescale_mode=pp.flowdecomposition.RescaleMode.PROPORTIONAL,
         dc_fallback_enabled_after_ac_divergence=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_precontingency_monitored_elements(['BLOAD 11 BLOAD 12 2', 'FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
@@ -113,7 +113,7 @@ def test_flow_decomposition_run_demo_user_guide():
     parameters = pp.flowdecomposition.Parameters(enable_losses_compensation=False,
         losses_compensation_epsilon=pp.flowdecomposition.Parameters.DISABLE_LOSSES_COMPENSATION_EPSILON,
         sensitivity_epsilon=pp.flowdecomposition.Parameters.DISABLE_SENSITIVITY_EPSILON,
-        rescale_enabled=False,
+        rescale_mode=pp.flowdecomposition.RescaleMode.NONE,
         dc_fallback_enabled_after_ac_divergence=True)
     flow_decomposition = pp.flowdecomposition.create_decomposition() \
         .add_single_element_contingency('FGEN  11 BLOAD 11 1') \
@@ -142,7 +142,7 @@ def test_flow_decomposition_parameters():
         'enable_losses_compensation': [True, False],
         'losses_compensation_epsilon': [-1, 1e-3, 1e-5],
         'sensitivity_epsilon': [-1, 1e-3, 1e-5],
-        'rescale_enabled': [True, False],
+        'rescale_mode': [pp.flowdecomposition.RescaleMode.NONE, pp.flowdecomposition.RescaleMode.PROPORTIONAL, pp.flowdecomposition.RescaleMode.ACER_METHODOLOGY],
         'dc_fallback_enabled_after_ac_divergence': [True, False],
         'sensitivity_variable_batch_size' : [100, 1000, 5000, 15000]
     }

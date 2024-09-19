@@ -328,7 +328,7 @@ typedef struct flow_decomposition_parameters_struct {
     unsigned char enable_losses_compensation;
     double losses_compensation_epsilon;
     double sensitivity_epsilon;
-    unsigned char rescale_enabled;
+    int rescale_mode;
     unsigned char dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
