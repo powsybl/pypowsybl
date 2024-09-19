@@ -963,12 +963,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_flow_decomposition", &pypowsybl::runFlowDecomposition, "Run flow decomposition on a network",
           py::call_guard<py::gil_scoped_release>(), py::arg("flow_decomposition_context"), py::arg("network"), py::arg("flow_decomposition_parameters"), py::arg("loadflow_parameters"));
 
+    py::enum_<pypowsybl::RescaleMode>(m, "RescaleMode")
+            .value("NONE", pypowsybl::RescaleMode::NONE)
+            .value("ACER_METHODOLOGY", pypowsybl::RescaleMode::ACER_METHODOLOGY)
+            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL);
+
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
                 .def_readwrite("enable_losses_compensation", &pypowsybl::FlowDecompositionParameters::enable_losses_compensation)
                 .def_readwrite("losses_compensation_epsilon", &pypowsybl::FlowDecompositionParameters::losses_compensation_epsilon)
                 .def_readwrite("sensitivity_epsilon", &pypowsybl::FlowDecompositionParameters::sensitivity_epsilon)
-                .def_readwrite("rescale_enabled", &pypowsybl::FlowDecompositionParameters::rescale_enabled)
+                .def_readwrite("rescale_mode", &pypowsybl::FlowDecompositionParameters::rescale_mode)
                 .def_readwrite("dc_fallback_enabled_after_ac_divergence", &pypowsybl::FlowDecompositionParameters::dc_fallback_enabled_after_ac_divergence)
                 .def_readwrite("sensitivity_variable_batch_size", &pypowsybl::FlowDecompositionParameters::sensitivity_variable_batch_size);
 
