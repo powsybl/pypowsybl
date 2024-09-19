@@ -1321,7 +1321,7 @@ def test_node_breaker_view():
 
     with pytest.raises(PyPowsyblError) as exc:
         n.get_node_breaker_topology('wrongVL')
-    assert 'Voltage level with id : wrongVL was not found' in str(exc)
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
 
 
 def test_graph():
@@ -1868,7 +1868,7 @@ def test_properties():
 
     with pytest.raises(PyPowsyblError) as exc:
         network.remove_elements_properties(ids='notHere', properties='test')
-    assert 'identifiable with id : notHere does not exist' in str(exc)
+    assert "Network element \'notHere\' does not exist." in str(exc)
 
 
 def test_pathlib_load_save(tmpdir):

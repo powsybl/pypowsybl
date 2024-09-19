@@ -825,14 +825,14 @@ def test_creating_vl_without_substation():
 def check_unknown_voltage_level_error_message(fn):
     with pytest.raises(PyPowsyblError) as exc:
         fn(voltage_level_id='UNKNOWN', id='S')
-    assert exc.match('Voltage level UNKNOWN does not exist')
+    assert exc.match("Voltage level 'UNKNOWN' does not exist")
 
 
 def test_error_messages():
     network = pn.create_eurostag_tutorial_example1_network()
     with pytest.raises(PyPowsyblError) as exc:
         network.create_voltage_levels(id='VL', substation_id='UNKNOWN', nominal_v=400)
-    assert exc.match('Substation UNKNOWN does not exist')
+    assert exc.match("Substation 'UNKNOWN' does not exist")
 
     check_unknown_voltage_level_error_message(network.create_loads)
     check_unknown_voltage_level_error_message(network.create_generators)
