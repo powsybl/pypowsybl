@@ -2325,6 +2325,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the injection
               - **voltage_level_id**: at which substation the injection is connected
+              - **node**  (optional): node where this injection is connected, in node-breaker voltage levels
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this injection is connected
               - **connected**: ``True`` if the injection is connected to a bus
               - **bus_id**: bus where this injection is connected
@@ -2353,10 +2354,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the branch (line or 2 windings transformer)
               - **voltage_level1_id**: voltage level where the branch is connected, on side 1
+              - **node1** (optional): node where this branch is connected on side 1, in node-breaker voltage levels
               - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this branch is connected, on side "1"
               - **connected1**: ``True`` if the side "1" of the branch is connected to a bus
               - **bus1_id**: bus where this branch is connected, on side 1
               - **voltage_level2_id**: voltage level where the branch is connected, on side 2
+              - **node2** (optional): node where this branch is connected on side 2, in node-breaker voltage levels
               - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this branch is connected, on side "2"
               - **connected2**: ``True`` if the side "2" of the branch is connected to a bus
               - **bus2_id**: bus where this branch is connected, on side 2

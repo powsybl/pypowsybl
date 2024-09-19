@@ -2004,18 +2004,21 @@ def test_identifiables():
 
 def test_injections():
     n = pp.network.create_four_substations_node_breaker_network()
-    load = n.get_injections().loc['LD1']
+    load = n.get_injections(all_attributes=True).loc['LD1']
     assert load.type == 'LOAD'
     assert load.voltage_level_id == 'S1VL1'
     assert load.bus_id == 'S1VL1_0'
+    assert load.node == 2
 
 
 def test_branches():
     n = pp.network.create_four_substations_node_breaker_network()
-    twt = n.get_branches().loc['TWT']
+    twt = n.get_branches(all_attributes=True).loc['TWT']
     assert twt.voltage_level1_id == 'S1VL1'
+    assert twt.node1 == 4
     assert twt.bus1_id == 'S1VL1_0'
     assert twt.voltage_level2_id == 'S1VL2'
+    assert twt.node2 == 3
     assert twt.bus2_id == 'S1VL2_0'
     assert twt.connected1
     assert twt.connected2
