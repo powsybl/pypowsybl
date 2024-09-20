@@ -150,8 +150,8 @@ def create_shunts(n, n_pdp):
             'model_type': model_type,
             'section_count': section_count
         }, index=id)
-        g_per_section = (n_pdp.shunt['p_mw'] / (n_pdp.shunt['vn_kv'] ** 2)).tolist()
-        b_per_section = (n_pdp.shunt['q_mvar'] / (n_pdp.shunt['vn_kv'] ** 2)).tolist()
+        g_per_section = (n_pdp.shunt['p_mw'] / (n_pdp.shunt['vn_kv'] ** 2) * -1.0).tolist()
+        b_per_section = (n_pdp.shunt['q_mvar'] / (n_pdp.shunt['vn_kv'] ** 2) * -1.0).tolist()
         max_section_count = n_pdp.shunt['max_step'].tolist()
         linear_model_df = pd.DataFrame(data={
             'g_per_section': g_per_section,
