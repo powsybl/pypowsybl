@@ -256,7 +256,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
                                                         None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
 
-def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None,
+def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None, post_processors: List[str] = None,
                      reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
@@ -265,6 +265,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
        file_name:    file name
        file_content: file content
        parameters:   a dictionary of import parameters
+       post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
 
@@ -274,7 +275,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-    if parameters is None:
-        parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters,
+    return Network(_pp.load_network_from_string(file_name, file_content,
+                                                {} if parameters is None else parameters,
+                                                [] if post_processors is None else post_processors,
                                                 None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
