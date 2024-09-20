@@ -65,7 +65,7 @@ def test_save_cgmes_zip():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buffer = n.save_to_binary_buffer(format='CGMES')
     with zipfile.ZipFile(buffer, 'r') as zip_file:
-        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SV.xml', 'file_SSH.xml'] == zip_file.namelist()
 
 
 def test_load_zipped_xiidm():
@@ -164,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 20 == len(parameters)
+    assert 21 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
