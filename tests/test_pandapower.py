@@ -5,7 +5,7 @@ from pytest import approx
 import pypowsybl as pp
 import logging
 
-ABS = 0.1
+EPS_V = 0.1
 
 
 @pytest.fixture(autouse=True)
@@ -29,10 +29,7 @@ def run_and_compare(pdp_n, expected_bus_count: int):
     pdp_v = list(pdp_n.res_bus['vm_pu'] * pdp_n.bus['vn_kv'])
     buses = n.get_bus_breaker_view_buses()
     v = list(buses['v_mag'])
-    print()
-    print(pdp_v)
-    print(v)
-    assert pdp_v == approx(v, abs=ABS)
+    assert pdp_v == approx(v, abs=EPS_V)
 
 
 def test_pandapower_case5():

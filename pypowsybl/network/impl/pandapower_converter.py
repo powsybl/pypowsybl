@@ -125,14 +125,17 @@ def create_lines(n, n_pdp):
         name = get_name(n_pdp.line, 'name')
         vl1_id = build_voltage_level_id(n_pdp.line['from_bus'].astype(str))
         vl2_id = build_voltage_level_id(n_pdp.line['to_bus'].astype(str))
-        bus1_id = build_bus_id(n_pdp.line['from_bus'].astype(str))
-        bus2_id = build_bus_id(n_pdp.line['to_bus'].astype(str))
+        connectable_bus1_id = build_bus_id(n_pdp.line['from_bus'].astype(str))
+        connectable_bus2_id = build_bus_id(n_pdp.line['to_bus'].astype(str))
+        bus1_id = np.where(n_pdp.line['in_service'], connectable_bus1_id, "")
+        bus2_id = np.where(n_pdp.line['in_service'], connectable_bus2_id, "")
         r = n_pdp.line['length_km'] * n_pdp.line['r_ohm_per_km'] / n_pdp.line['parallel']
         x = n_pdp.line['length_km'] * n_pdp.line['x_ohm_per_km'] / n_pdp.line['parallel']
         g = n_pdp.line['length_km'] * n_pdp.line['g_us_per_km'] * 1e-6 * n_pdp.line['parallel'] / 2
         b = n_pdp.line['length_km'] * n_pdp.line['c_nf_per_km'] * 1e-9 * 2 * math.pi * n_pdp.f_hz * n_pdp.line['parallel'] / 2
-        n.create_lines(id=id, name=name, voltage_level1_id=vl1_id, bus1_id=bus1_id, voltage_level2_id=vl2_id,
-                       bus2_id=bus2_id, r=r, x=x, g1=g, g2=g, b1=b, b2=b)
+
+        n.create_lines(id=id, name=name, voltage_level1_id=vl1_id, connectable_bus1_id=connectable_bus1_id, bus1_id=bus1_id, voltage_level2_id=vl2_id,
+                       connectable_bus2_id=connectable_bus2_id, bus2_id=bus2_id, r=r, x=x, g1=g, g2=g, b1=b, b2=b)
 
 
 def create_shunts(n, n_pdp):
