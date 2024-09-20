@@ -151,7 +151,7 @@ public final class NetworkCFunctions {
         List<String> postProcessors = new ArrayList<>();
         postProcessors.addAll(ImportConfig.load().getPostProcessors());
         postProcessors.addAll(toStringList(postProcessorsPtrPtr, postProcessorsCount));
-        return new ImportConfig(postProcessors);
+        return new ImportConfig(postProcessors.stream().distinct().toList());
     }
 
     @CEntryPoint(name = "loadNetwork")
