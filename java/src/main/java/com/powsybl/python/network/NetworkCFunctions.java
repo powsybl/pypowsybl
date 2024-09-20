@@ -99,6 +99,11 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Exporter.getFormats().stream().sorted().toList()));
     }
 
+    @CEntryPoint(name = "getNetworkImportPostProcessors")
+    public static ArrayPointer<CCharPointerPointer> getNetworkImportPostProcessors(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Importer.getPostProcessorNames().stream().sorted().toList()));
+    }
+
     @CEntryPoint(name = "createNetwork")
     public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -141,9 +146,19 @@ public final class NetworkCFunctions {
         UnmanagedMemory.free(networkMetadataPointer);
     }
 
+    private static ImportConfig createImportConfig(CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount) {
+        // FIXME to clean when a addPostProcessors will be added to core
+        List<String> postProcessors = new ArrayList<>();
+        postProcessors.addAll(ImportConfig.load().getPostProcessors());
+        postProcessors.addAll(toStringList(postProcessorsPtrPtr, postProcessorsCount));
+        return new ImportConfig(postProcessors);
+    }
+
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
-                                           CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reportNodeHandle,
+                                           CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                           CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
+                                           ObjectHandle reportNodeHandle,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
@@ -152,7 +167,8 @@ public final class NetworkCFunctions {
             if (reportNode == null) {
                 reportNode = ReportNode.NO_OP;
             }
-            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+            var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -161,7 +177,9 @@ public final class NetworkCFunctions {
     public static ObjectHandle loadNetworkFromString(IsolateThread thread, CCharPointer fileName, CCharPointer fileContent,
                                                      CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                      CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
-                                                     ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                     CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
+                                                     ObjectHandle reportNodeHandle,
+                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileNameStr = CTypeUtil.toString(fileName);
             String fileContentStr = CTypeUtil.toString(fileContent);
@@ -171,7 +189,8 @@ public final class NetworkCFunctions {
                 if (reportNode == null) {
                     reportNode = ReportNode.NO_OP;
                 }
-                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), ImportConfig.load(), parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+                var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -180,8 +199,11 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "loadNetworkFromBinaryBuffers")
-    public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount, CCharPointerPointer parameterNamesPtrPtr,
-                                                            int parameterNamesCount, CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount, ObjectHandle reportNodeHandle,
+    public static ObjectHandle loadNetworkFromBinaryBuffers(IsolateThread thread, CCharPointerPointer data, CIntPointer dataSizes, int bufferCount,
+                                                            CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                            CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                            CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
+                                                            ObjectHandle reportNodeHandle,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
@@ -214,6 +236,8 @@ public final class NetworkCFunctions {
                 reportNode = ReportNode.NO_OP;
             }
             MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+            var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+            // FIXME there is no way to pass the import config with powsybl 2024.2.0. To FIX when upgrading to next release.
             Network network = Network.read(dataSource, parameters, reportNode);
             return ObjectHandles.getGlobal().create(network);
         });
