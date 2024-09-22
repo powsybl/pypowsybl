@@ -608,6 +608,13 @@ def test_areas_data_frame():
               ['Region AB', 'Region', nan, 0.0, 0.0, 0.0]])
     pd.testing.assert_frame_equal(expected, areas, check_dtype=False, atol=1e-2)
 
+    n.update_areas(id='ControlArea_A', interchange_target=-400)
+    areas = n.get_areas()
+    assert -400 == areas.loc['ControlArea_A']['interchange_target']
+    n.update_areas(id=['ControlArea_A', 'ControlArea_B'], interchange_target=[-500, 500])
+    areas = n.get_areas()
+    assert -500 == areas.loc['ControlArea_A']['interchange_target']
+    assert +500 == areas.loc['ControlArea_B']['interchange_target']
 
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()

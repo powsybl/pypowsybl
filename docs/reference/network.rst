@@ -117,6 +117,7 @@ Network elements can be modified using dataframes:
 
    Network.update_2_windings_transformers
    Network.update_3_windings_transformers
+   Network.update_areas
    Network.update_batteries
    Network.update_buses
    Network.update_dangling_lines

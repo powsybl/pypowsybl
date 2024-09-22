@@ -3354,6 +3354,35 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.TIE_LINE, df, **kwargs)
 
+    def update_areas(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update areas with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `interchange_target`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_areas`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_areas(id='ControlArea_A', interchange_target=-500)
+                network.update_areas(id=['ControlArea_A', 'ControlArea_B'], interchange_target=[-500, 500])
+        """
+        return self._update_elements(ElementType.AREA, df, **kwargs)
+
     def update_extensions(self, extension_name: str, df: DataFrame = None, table_name: str = "",
                           **kwargs: ArrayLike) -> None:
         """
