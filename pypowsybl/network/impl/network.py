@@ -4792,7 +4792,7 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 network.remove_elements('GENERATOR-1')  # Removes only 1 element
-                network.remove_elements(['GENERATOR-1', 'BUS])
+                network.remove_elements(['GENERATOR-1', 'BUS'])
         """
         if isinstance(elements_ids, str):
             elements_ids = [elements_ids]

@@ -631,6 +631,10 @@ def test_areas_data_frame():
     assert 10. == areas.loc['testAreaA']['interchange_target']
     assert 20. == areas.loc['testAreaB']['interchange_target']
 
+    n.remove_elements(['testArea', 'testAreaA', 'testAreaB'])
+    areas = n.get_areas()
+    assert 3 == len(areas)
+
 
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()

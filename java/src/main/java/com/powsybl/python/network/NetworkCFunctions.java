@@ -524,6 +524,8 @@ public final class NetworkCFunctions {
                     }
                 } else if (identifiable instanceof TieLine tieLine) {
                     tieLine.remove();
+                } else if (identifiable instanceof Area area) {
+                    area.remove();
                 } else {
                     throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
