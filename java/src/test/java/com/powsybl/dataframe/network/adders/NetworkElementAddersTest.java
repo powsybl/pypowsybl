@@ -481,4 +481,16 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addElements(DataframeElementType.THREE_WINDINGS_TRANSFORMER, network, singletonList(dataframe));
         assertEquals(1, network.getThreeWindingsTransformerCount());
     }
+
+    @Test
+    void area() {
+        var network = EurostagTutorialExample1Factory.create();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "myArea");
+        addStringColumn(dataframe, "name", "my area name");
+        addStringColumn(dataframe, "area_type", "ControlArea");
+        addDoubleColumn(dataframe, "interchange_target", 42.0);
+        NetworkElementAdders.addElements(DataframeElementType.AREA, network, singletonList(dataframe));
+        assertEquals(1, network.getAreaCount());
+    }
 }

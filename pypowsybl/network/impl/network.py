@@ -4646,6 +4646,35 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
+    def create_areas(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Create areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new area
+            - **name**: an optional human-readable name
+            - **area_type**: the type of Area (e.g. ControlArea, BiddingZone …)
+            - **interchange_target**: Target active power interchange (MW)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_areas(id='Area1', area_type='ControlArea', interchange_target=120.5)
+        """
+        return self._create_elements(ElementType.AREA, [df], **kwargs)
+
     def add_aliases(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Adds aliases to network elements.

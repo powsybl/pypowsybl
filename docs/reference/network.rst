@@ -153,6 +153,7 @@ Network elements can be created or removed using the following methods:
 
    Network.create_2_windings_transformers
    Network.create_3_windings_transformers
+   Network.create_areas
    Network.create_batteries
    Network.create_busbar_sections
    Network.create_buses
