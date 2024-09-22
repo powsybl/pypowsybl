@@ -327,7 +327,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("INJECTION", element_type::INJECTION)
             .value("BRANCH", element_type::BRANCH)
             .value("TERMINAL", element_type::TERMINAL)
-            .value("SUB_NETWORK", element_type::SUB_NETWORK);
+            .value("SUB_NETWORK", element_type::SUB_NETWORK)
+            .value("AREA", element_type::AREA);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)

@@ -661,4 +661,20 @@ class NetworkDataframesTest {
         assertThat(ext1Series.get(2).getDoubles()).containsExactly(coord1.getLatitude());
         assertThat(ext1Series.get(3).getDoubles()).containsExactly(coord1.getLongitude());
     }
+
+    @Test
+    void areas() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "area_type", "interchange_target",
+                        "interchange", "ac_interchange", "dc_interchange");
+        List<Series> allAttributeSeries = createDataFrame(AREA, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "area_type", "interchange_target",
+                        "interchange", "ac_interchange", "dc_interchange", "fictitious");
+    }
 }

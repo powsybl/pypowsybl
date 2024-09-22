@@ -52,6 +52,7 @@ public final class NetworkDataframes {
     private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
         mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
+        mappers.put(DataframeElementType.AREA, areas());
         mappers.put(DataframeElementType.BUS, buses(false));
         mappers.put(DataframeElementType.BUS_FROM_BUS_BREAKER_VIEW, buses(true));
         mappers.put(DataframeElementType.LINE, lines());
@@ -298,6 +299,21 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(n -> n.getSubnetworks().stream(),
                         getOrThrow(Network::getSubnetwork, "SubNetwork"))
                 .stringsIndex("id", Identifiable::getId)
+                .build();
+    }
+
+    private static NetworkDataframeMapper areas() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getAreaStream,
+                        getOrThrow(Network::getArea, "Area"))
+                .stringsIndex("id", Identifiable::getId)
+                .strings("name", a -> a.getOptionalName().orElse(""))
+                .strings("area_type", Area::getAreaType)
+                .doubles("interchange_target", (a, context) -> perUnitPQ(context, a.getInterchangeTarget().orElse(Double.NaN)), (a, p, context) -> a.setInterchangeTarget(unPerUnitPQ(context, p)))
+                .doubles("interchange", (a, context) -> perUnitPQ(context, a.getInterchange()))
+                .doubles("ac_interchange", (a, context) -> perUnitPQ(context, a.getAcInterchange()))
+                .doubles("dc_interchange", (a, context) -> perUnitPQ(context, a.getDcInterchange()))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
                 .build();
     }
 

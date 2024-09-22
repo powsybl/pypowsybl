@@ -219,6 +219,7 @@ public final class Util {
             case BRANCH -> PyPowsyblApiHeader.ElementType.BRANCH;
             case IDENTIFIABLE -> PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
             case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
+            case AREA -> PyPowsyblApiHeader.ElementType.AREA;
         };
     }
 
@@ -258,6 +259,7 @@ public final class Util {
             case BRANCH -> DataframeElementType.BRANCH;
             case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
             case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
+            case AREA -> DataframeElementType.AREA;
         };
     }
 

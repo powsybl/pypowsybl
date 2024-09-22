@@ -595,6 +595,20 @@ def test_regulated_terminal_bus_breaker():
     assert 'LOAD' == generators['regulated_element_id']['GEN']
 
 
+def test_areas_data_frame():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    areas = n.get_areas(all_attributes=True)
+    assert not areas['fictitious']['ControlArea_A']
+    areas = n.get_areas()
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['ControlArea_A', 'ControlArea_B', 'Region_AB']),
+        columns=['name', 'area_type', 'interchange_target', 'interchange', 'ac_interchange', 'dc_interchange'],
+        data=[['Control Area A', 'ControlArea', -602.6, -602.95, -602.95, 0.0],
+              ['Control Area B', 'ControlArea', +602.6, +602.95, +602.95, 0.0],
+              ['Region AB', 'Region', nan, 0.0, 0.0, 0.0]])
+    pd.testing.assert_frame_equal(expected, areas, check_dtype=False, atol=1e-2)
+
+
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])

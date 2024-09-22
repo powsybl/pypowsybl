@@ -2370,7 +2370,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **q2**: the reactive flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
               - **i2**: the current on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in A)
 
-            This dataframe is indexed on the branche ID.
+            This dataframe is indexed on the branch ID.
         """
         return self.get_elements(ElementType.BRANCH, all_attributes, attributes, **kwargs)
 
@@ -2396,6 +2396,52 @@ class Network:  # pylint: disable=too-many-public-methods
             This dataframe is indexed on the element ID of the terminal.
         """
         return self.get_elements(ElementType.TERMINAL, all_attributes, attributes)
+
+    def get_areas(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of areas.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the areas dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **area_type**: the type of area (e.g. ControlArea, BiddingZone, ...)
+              - **interchange_target**: target active power interchange (MW)
+              - **interchange**: total (AC + DC) active power interchange, in load sign convention (negative is export, positive is import) (MW)
+              - **ac_interchange**: AC active power interchange, in load sign convention (negative is export, positive is import) (MW)
+              - **dc_interchange**: DC active power interchange, in load sign convention (negative is export, positive is import) (MW)
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            This dataframe is indexed on the area ID.
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+                net.get_areas()
+
+            will output something like:
+
+            ============= ============== =========== ================== =========== ============== ==============
+            \                       name   area_type interchange_target interchange ac_interchange dc_interchange
+            ============= ============== =========== ================== =========== ============== ==============
+            id
+            ControlArea_A Control Area A ControlArea             -602.6 -602.948693    -602.948693            0.0
+            ControlArea_B Control Area B ControlArea              602.6  602.944639     602.944639            0.0
+            Region_AB          Region AB      Region                NaN    0.000000       0.000000            0.0
+            ============= ============== =========== ================== =========== ============== ==============
+        """
+        return self.get_elements(ElementType.AREA, all_attributes, attributes, **kwargs)
 
     def _update_elements(self, element_type: ElementType, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
