@@ -73,6 +73,8 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_3_windings_transformers
    Network.get_aliases
    Network.get_areas
+   Network.get_areas_voltage_levels
+   Network.get_areas_boundaries
    Network.get_batteries
    Network.get_branches
    Network.get_bus_breaker_topology

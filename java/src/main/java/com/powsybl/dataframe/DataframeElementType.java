@@ -45,5 +45,7 @@ public enum DataframeElementType {
     BRANCH,
     TERMINAL,
     SUB_NETWORK,
-    AREA
+    AREA,
+    AREA_VOLTAGE_LEVELS,
+    AREA_BOUNDARIES
 }

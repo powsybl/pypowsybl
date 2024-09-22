@@ -220,6 +220,8 @@ public final class Util {
             case IDENTIFIABLE -> PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
             case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
             case AREA -> PyPowsyblApiHeader.ElementType.AREA;
+            case AREA_VOLTAGE_LEVELS -> PyPowsyblApiHeader.ElementType.AREA_VOLTAGE_LEVELS;
+            case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA;
         };
     }
 
@@ -260,6 +262,8 @@ public final class Util {
             case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
             case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
             case AREA -> DataframeElementType.AREA;
+            case AREA_VOLTAGE_LEVELS -> DataframeElementType.AREA_VOLTAGE_LEVELS;
+            case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
         };
     }
 

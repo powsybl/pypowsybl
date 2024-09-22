@@ -636,6 +636,36 @@ def test_areas_data_frame():
     assert 3 == len(areas)
 
 
+def test_areas_voltage_levels_data_frame():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'ControlArea_A', 'ControlArea_A',
+            'ControlArea_B', 'ControlArea_B',
+            'Region_AB', 'Region_AB', 'Region_AB', 'Region_AB']),
+        columns=['voltage_level_id'],
+        data=[['VLGEN'],['VLHV1'],
+              ['VLHV2'], ['VLLOAD'],
+              ['VLGEN'], ['VLHV1'], ['VLHV2'], ['VLLOAD']])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
+
+
+def test_areas_boundaries_data_frame():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    areas_voltage_levels = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'boundary_element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'ControlArea_A', 'ControlArea_A',
+            'ControlArea_B', 'ControlArea_B']),
+        columns=['boundary_type', 'boundary_element', 'boundary_side', 'ac', 'p', 'q'],
+        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.47, -116.51],
+              ['DANGLING_LINE', 'NVH1_XNODE2', '', True, -301.47, -116.51],
+              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False, atol=1e-2)
+
+
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])

@@ -2195,7 +2195,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
               - **target_deadband**: the regulation deadband around the target value
-              - **regulationg_bus_id**: the bus where the phase shifter regulates
+              - **regulating_bus_id**: the bus where the phase shifter regulates
               - **regulated_side** (optional): the side bus where the phase shifter regulates current or active power
               - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
@@ -2442,6 +2442,102 @@ class Network:  # pylint: disable=too-many-public-methods
             ============= ============== =========== ================== =========== ============== ==============
         """
         return self.get_elements(ElementType.AREA, all_attributes, attributes, **kwargs)
+
+    def get_areas_voltage_levels(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of areas voltage levels.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the areas voltage levels dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **id**: area identifier
+              - **voltage_level_id**: voltage level identifier
+
+            This dataframe is indexed on the area ID.
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+                net.get_areas_voltage_levels()
+
+            will output something like:
+
+            ============= ================
+            \             voltage_level_id
+            ============= ================
+            id
+            ControlArea_A VLGEN
+            ControlArea_A VLHV1
+            ControlArea_B VLHV2
+            ControlArea_B VLLOAD
+            Region_AB     VLGEN
+            Region_AB     VLHV1
+            Region_AB     VLHV2
+            Region_AB     VLLOAD
+            ============= ================
+        """
+        return self.get_elements(ElementType.AREA_VOLTAGE_LEVELS, all_attributes, attributes, **kwargs)
+
+    def get_areas_boundaries(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of areas boundaries.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the areas boundaries dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **id**: area identifier
+              - **boundary_type** (optional): either `DANGLING_LINE` or `TERMINAL`
+              - **boundary_element**: either identifier of the Dangling Line or the equipment terminal
+              - **boundary_side** (optional): equipment side
+              - **ac**: True if the boundary is considered as AC and not DC
+              - **p**: Active power at boundary (MW)
+              - **q**: Reactive power at boundary (MW)
+              - **voltage_level_id**: voltage level identifier
+
+            This dataframe is indexed on the area ID.
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+                net.get_areas_boundaries()
+
+            will output something like:
+
+            ============= ================ ===== =========== ===========
+            \             boundary_element    ac           p           q
+            ============= ================ ===== =========== ===========
+            id
+            ControlArea_A      NHV1_XNODE1  True -301.474347 -116.518644
+            ControlArea_A      NVH1_XNODE2  True -301.474347 -116.518644
+            ControlArea_B      XNODE1_NHV2  True  301.472320  116.434157
+            ControlArea_B      XNODE2_NHV2  True  301.472320  116.434157
+            ============= ================ ===== =========== ===========
+        """
+        return self.get_elements(ElementType.AREA_BOUNDARIES, all_attributes, attributes, **kwargs)
 
     def _update_elements(self, element_type: ElementType, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

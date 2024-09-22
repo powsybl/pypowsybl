@@ -677,4 +677,29 @@ class NetworkDataframesTest {
                 .containsExactly("id", "name", "area_type", "interchange_target",
                         "interchange", "ac_interchange", "dc_interchange", "fictitious");
     }
+
+    @Test
+    void areasVoltageLevels() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA_VOLTAGE_LEVELS, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "voltage_level_id");
+    }
+
+    @Test
+    void areasBoundaries() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA_BOUNDARIES, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "boundary_element", "ac", "p", "q");
+
+        List<Series> allAttributeSeries = createDataFrame(AREA_BOUNDARIES, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "boundary_type", "boundary_element", "boundary_side", "ac", "p", "q");
+    }
 }
