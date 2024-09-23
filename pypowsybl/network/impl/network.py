@@ -4435,7 +4435,6 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **element_id**: the ID of the network element on which we want to create new limits
-            - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
               THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
             - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
             - **name**: the name of the limit

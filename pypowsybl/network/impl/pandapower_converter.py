@@ -142,6 +142,15 @@ def create_lines(n, n_pdp):
                        voltage_level2_id=vl2_id, connectable_bus2_id=connectable_bus2_id, bus2_id=bus2_id,
                        r=r, x=x, g1=g, g2=g, b1=b, b2=b)
 
+        limit_side = ['ONE'] * len(n_pdp.line) # create on side on, why not...
+        limit_name = ['permanent'] * len(n_pdp.line)
+        limit_type = ['CURRENT'] * len(n_pdp.line)
+        limit_value = n_pdp.line['max_i_ka'] * 1000.0 / n_pdp.line['parallel']
+        if 'max_loading_percent' in n_pdp.line.columns:
+            limit_value *= n_pdp.line['max_loading_percent'] / 100.0
+        acceptable_duration = [-1] * len(n_pdp.line)
+        n.create_operational_limits(element_id=id, side=limit_side, name=limit_name, type=limit_type, value=limit_value, acceptable_duration=acceptable_duration)
+
 
 def create_shunts(n, n_pdp):
     if len(n_pdp.shunt) > 0:
