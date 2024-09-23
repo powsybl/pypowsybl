@@ -2146,5 +2146,14 @@ def test_update_dangling_line():
     assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
 
 
+def test_update_name():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    generators = n.get_generators(attributes=['name'])
+    assert '' == generators.loc['GEN', 'name']
+    n.update_generators(id='GEN', name='GEN_NAME')
+    generators = n.get_generators(attributes=['name'])
+    assert 'GEN_NAME' == generators.loc['GEN', 'name']
+
+
 if __name__ == '__main__':
     unittest.main()
