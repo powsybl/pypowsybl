@@ -53,6 +53,20 @@ Only zipped network loading are supported for now, but inside the zip file the s
 
 You may also create your own network from scratch, see below.
 
+We can also configure some post processors to be loaded after import.
+To see the list of available post processors:
+
+.. doctest::
+
+   >>> pp.network.get_import_post_processors()
+   ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines']
+
+Then a list of post processors can be pass to the load function:
+
+    .. code-block:: python
+
+       network = pp.network.load('mycgmes.zip', post_processor_names=['replaceTieLinesByLines'])
+
 
 Save a network
 --------------

@@ -61,6 +61,11 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_load_post_processor():
+    assert ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
+
+
 def test_save_cgmes_zip():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buffer = n.save_to_binary_buffer(format='CGMES')
