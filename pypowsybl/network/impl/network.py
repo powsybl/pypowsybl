@@ -4435,14 +4435,13 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **element_id**: the ID of the network element on which we want to create new limits
-            - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
               THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
             - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
             - **name**: the name of the limit
             - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
             - **value**: the value of the limit in A, MVA or MW
             - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
-            - **is_fictitious**: fictitious limit ?
+            - **fictitious**: fictitious limit ?
 
             For each location of the network defined by a couple (element_id, side):
 
@@ -4456,6 +4455,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if df is not None:
             df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
+        if 'is_fictitious' in df.columns:
+            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            df = df.rename(columns={'is_fictitious': 'fictitious'})
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
