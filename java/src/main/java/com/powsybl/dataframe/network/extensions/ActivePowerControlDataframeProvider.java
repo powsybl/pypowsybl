@@ -37,7 +37,12 @@ public class ActivePowerControlDataframeProvider extends AbstractSingleDataframe
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(ActivePowerControl.NAME,
                 "Provides information about the participation of generators to balancing",
-                "index : id (str), participate (bool), droop (float)");
+                "index : id (str), " +
+                        "participate (bool), " +
+                        "droop (float), " +
+                        "participation_factor (float), " +
+                        "max_target_p (float), " +
+                        "min_target_p (float)");
     }
 
     private Stream<ActivePowerControl> itemsStream(Network network) {
@@ -62,8 +67,11 @@ public class ActivePowerControlDataframeProvider extends AbstractSingleDataframe
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
                 .stringsIndex("id", ext -> ((Identifiable<?>) ext.getExtendable()).getId())
-                .doubles("droop", (apc, context) -> apc.getDroop(), (apc, droop, context) -> apc.setDroop((float) droop))
+                .doubles("droop", (apc, context) -> apc.getDroop(), (apc, droop, context) -> apc.setDroop(droop))
                 .booleans("participate", ActivePowerControl::isParticipate, ActivePowerControl::setParticipate)
+                .doubles("participation_factor", (apc, context) -> apc.getParticipationFactor(), (apc, participationFactor, context) -> apc.setParticipationFactor(participationFactor))
+                .doubles("max_target_p", (apc, context) -> apc.getMaxTargetP().orElse(Double.NaN), (apc, maxTargetP, context) -> apc.setMaxTargetP(maxTargetP))
+                .doubles("min_target_p", (apc, context) -> apc.getMinTargetP().orElse(Double.NaN), (apc, minTargetP, context) -> apc.setMinTargetP(minTargetP))
                 .build();
     }
 
