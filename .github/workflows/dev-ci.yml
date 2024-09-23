@@ -1,12 +1,17 @@
 name: Dev CI
 
-on:
-  push:
-    branches:
+#on:
+ # push:
+ #   branches:
       # on all branches except main where full build will be run
-      - '*'
-      - '!main'
+   #   - '*'
+  #    - '!main'
 
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *'  # Exécute tous les deux jours à minuit
+  workflow_dispatch:  # Permet l'exécution manuelle
 jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
