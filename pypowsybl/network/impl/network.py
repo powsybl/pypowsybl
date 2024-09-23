@@ -4462,8 +4462,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
                 df = df.drop(columns=['element_type'])
 
-        if kwargs.get('acceptable_duration') is not None:
-            kwargs['acceptable_duration'] = kwargs.pop('acceptable_duration').map(lambda x: -1 if x == inf else int(x))
         if kwargs.get('is_fictitious') is not None:
             warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
             kwargs['fictitious'] = kwargs.pop('is_fictitious')
