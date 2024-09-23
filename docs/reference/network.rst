@@ -251,6 +251,7 @@ I/O
    Network.dump_to_string
    get_import_formats
    get_import_parameters
+   get_import_post_processors
    get_export_formats
    get_export_parameters
    Network.save
