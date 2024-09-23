@@ -61,6 +61,11 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_load_post_processor():
+    assert ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
+
+
 def test_save_cgmes_zip():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buffer = n.save_to_binary_buffer(format='CGMES')
@@ -2139,6 +2144,15 @@ def test_update_dangling_line():
     network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
     network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
     assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
+
+
+def test_update_name():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    generators = n.get_generators(attributes=['name'])
+    assert '' == generators.loc['GEN', 'name']
+    n.update_generators(id='GEN', name='GEN_NAME')
+    generators = n.get_generators(attributes=['name'])
+    assert 'GEN_NAME' == generators.loc['GEN', 'name']
 
 
 if __name__ == '__main__':

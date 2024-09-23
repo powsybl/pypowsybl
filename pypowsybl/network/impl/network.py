@@ -127,7 +127,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 'nominal_apparent_power': self._nominal_apparent_power}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, None)
+        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, [], None)
         self._per_unit = state['per_unit']
         self._nominal_apparent_power = state['nominal_apparent_power']
         self.__init_from_handle()

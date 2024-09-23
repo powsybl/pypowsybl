@@ -485,6 +485,12 @@ std::vector<std::string> getNetworkExportFormats() {
     return formats.get();
 }
 
+std::vector<std::string> getNetworkImportPostProcessors() {
+    auto postProcessorsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkImportPostProcessors);
+    ToStringVector postProcessors(postProcessorsArrayPtr);
+    return postProcessors.get();
+}
+
 std::vector<std::string> getLoadFlowProviderNames() {
     auto formatsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getLoadFlowProviderNames);
     ToStringVector formats(formatsArrayPtr);
@@ -524,7 +530,7 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) 
     });
 }
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -535,11 +541,13 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
+    ToCharPtrPtr postProcessorsPtr(postProcessors);
     return PowsyblCaller::get()->callJava<JavaHandle>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
-                              parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+                              parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(), postProcessors.size(),
+                              (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -550,9 +558,10 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
     }
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
+    ToCharPtrPtr postProcessorsPtr(postProcessors);
     return PowsyblCaller::get()->callJava<JavaHandle>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
-                           parameterNamesPtr.get(), parameterNames.size(),
-                           parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+                           parameterNamesPtr.get(), parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(),
+                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
