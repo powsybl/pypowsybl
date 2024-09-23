@@ -5,7 +5,7 @@ from pytest import approx
 import pypowsybl as pp
 import logging
 
-EPS_V = 0.1
+EPS_V = 0.01
 
 
 @pytest.fixture(autouse=True)
