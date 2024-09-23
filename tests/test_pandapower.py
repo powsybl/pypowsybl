@@ -29,7 +29,6 @@ def run_and_compare(pdp_n, expected_bus_count: int):
     buses = n.get_bus_breaker_view_buses()
     v = list(buses['v_mag'])
     for index, (pdp_v_val, v_val) in enumerate(zip(pdp_v, v)):
-        print(str(index))
         assert pdp_v_val == pytest.approx(v_val, abs=EPS_V, rel=EPS_V), f"Voltage mismatch at index {index}: {pdp_v_val} != {v_val}"
 
 
