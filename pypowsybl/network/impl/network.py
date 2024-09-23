@@ -4458,6 +4458,19 @@ class Network:  # pylint: disable=too-many-public-methods
             if 'is_fictitious' in df.columns:
                 warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
                 df = df.rename(columns={'is_fictitious': 'fictitious'})
+            if 'element_type' in df.columns:
+                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+                df = df.drop(columns=['element_type'])
+
+        if kwargs.get('acceptable_duration') is not None:
+            kwargs['acceptable_duration'] = kwargs.pop('acceptable_duration').map(lambda x: -1 if x == inf else int(x))
+        if kwargs.get('is_fictitious') is not None:
+            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            kwargs['fictitious'] = kwargs.pop('is_fictitious')
+        if kwargs.get('element_type') is not None:
+            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+            kwargs.pop('element_type')
+
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
