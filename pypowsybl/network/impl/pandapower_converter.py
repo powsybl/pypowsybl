@@ -92,8 +92,10 @@ def create_transformers(n, n_pdp):
         name = get_name(trafo_and_bus, 'name')
         vl1_id = build_voltage_level_id(trafo_and_bus['hv_bus'].astype(str))
         vl2_id = build_voltage_level_id(trafo_and_bus['lv_bus'].astype(str))
-        bus1_id = build_bus_id(trafo_and_bus['hv_bus'].astype(str))
-        bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
+        connectable_bus1_id = build_bus_id(trafo_and_bus['hv_bus'].astype(str))
+        connectable_bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
+        bus1_id = np.where(trafo_and_bus['in_service'], connectable_bus1_id, "")
+        bus2_id = np.where(trafo_and_bus['in_service'], connectable_bus2_id, "")
         n_tap = np.where(~np.isnan(trafo_and_bus['tap_pos']) & ~np.isnan(trafo_and_bus['tap_neutral']) & ~np.isnan(trafo_and_bus['tap_step_percent']),
                          1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0, 1.0)
         rated_u1 = np.where(trafo_and_bus['tap_side'] == "hv", trafo_and_bus['vn_hv_kv'] * n_tap, trafo_and_bus['vn_hv_kv'])
@@ -113,8 +115,8 @@ def create_transformers(n, n_pdp):
         b = bm / zb_tr * trafo_and_bus['parallel']
 
         n.create_2_windings_transformers(id=id, name=name,
-                                         voltage_level1_id=vl1_id, bus1_id=bus1_id,
-                                         voltage_level2_id=vl2_id, bus2_id=bus2_id,
+                                         voltage_level1_id=vl1_id, connectable_bus1_id=connectable_bus1_id, bus1_id=bus1_id,
+                                         voltage_level2_id=vl2_id, connectable_bus2_id=connectable_bus2_id, bus2_id=bus2_id,
                                          rated_u1=rated_u1, rated_u2=rated_u2,
                                          r=r, x=x, g=g, b=b)
 
@@ -134,8 +136,10 @@ def create_lines(n, n_pdp):
         g = n_pdp.line['length_km'] * n_pdp.line['g_us_per_km'] * 1e-6 * n_pdp.line['parallel'] / 2
         b = n_pdp.line['length_km'] * n_pdp.line['c_nf_per_km'] * 1e-9 * 2 * math.pi * n_pdp.f_hz * n_pdp.line['parallel'] / 2
 
-        n.create_lines(id=id, name=name, voltage_level1_id=vl1_id, connectable_bus1_id=connectable_bus1_id, bus1_id=bus1_id, voltage_level2_id=vl2_id,
-                       connectable_bus2_id=connectable_bus2_id, bus2_id=bus2_id, r=r, x=x, g1=g, g2=g, b1=b, b2=b)
+        n.create_lines(id=id, name=name,
+                       voltage_level1_id=vl1_id, connectable_bus1_id=connectable_bus1_id, bus1_id=bus1_id,
+                       voltage_level2_id=vl2_id, connectable_bus2_id=connectable_bus2_id, bus2_id=bus2_id,
+                       r=r, x=x, g1=g, g2=g, b1=b, b2=b)
 
 
 def create_shunts(n, n_pdp):
@@ -143,12 +147,14 @@ def create_shunts(n, n_pdp):
         id = generate_injection_id(n_pdp.shunt, 'shunt')
         name = get_name(n_pdp.shunt, 'name').tolist()
         vl_id = build_voltage_level_id(n_pdp.shunt['bus'].astype(str)).tolist()
-        bus_id = build_bus_id(n_pdp.shunt['bus'].astype(str)).tolist()
+        connectable_bus_id = build_bus_id(n_pdp.shunt['bus'].astype(str)).tolist()
+        bus_id = np.where(n_pdp.shunt['in_service'], connectable_bus_id, "")
         model_type = ['LINEAR'] * len(n_pdp.shunt)
         section_count = n_pdp.shunt['step'].tolist()
         shunt_df = pd.DataFrame(data={
             'name': name,
             'voltage_level_id': vl_id,
+            'connectable_bus_id': connectable_bus_id,
             'bus_id': bus_id,
             'model_type': model_type,
             'section_count': section_count
@@ -170,7 +176,8 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ex
         id = generate_injection_id(gen_and_bus, 'gen')
         name = get_name(gen_and_bus, 'name')
         vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
-        bus_id = build_bus_id(gen_and_bus['bus'].astype(str))
+        connectable_bus_id = build_bus_id(gen_and_bus['bus'].astype(str)).tolist()
+        bus_id = np.where(gen_and_bus['in_service'], connectable_bus_id, "")
         target_p = [0.0001] * len(gen_and_bus) if ext_grid else gen_and_bus['p_mw']
         voltage_regulator_on = [True] * len(gen_and_bus)
         target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv']
@@ -179,9 +186,10 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ex
         for index, row in gen_and_bus.iterrows():
             slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = row['slack_weight']
 
-        n.create_generators(id=id, name=name, voltage_level_id=vl_id, bus_id=bus_id, target_p=target_p,
-                            voltage_regulator_on=voltage_regulator_on,
-                            target_v=target_v, min_p=min_p, max_p=max_p)
+        n.create_generators(id=id, name=name,
+                            voltage_level_id=vl_id, connectable_bus_id=connectable_bus_id, bus_id=bus_id,
+                            target_p=target_p, voltage_regulator_on=voltage_regulator_on, target_v=target_v,
+                            min_p=min_p, max_p=max_p)
 
 
 def create_generators(n, n_pdp, slack_weight_by_gen_id):
@@ -194,10 +202,13 @@ def create_loads(n, n_pdp):
         id = generate_injection_id(n_pdp.load, 'load')
         name = get_name(n_pdp.load, 'name')
         vl_id = build_voltage_level_id(n_pdp.load['bus'].astype(str))
-        bus_id = build_bus_id(n_pdp.load['bus'].astype(str))
+        connectable_bus_id = build_bus_id(n_pdp.load['bus'].astype(str)).tolist()
+        bus_id = np.where(n_pdp.load['in_service'], connectable_bus_id, "")
         p0 = n_pdp.load['p_mw']
         q0 = n_pdp.load['q_mvar']
-        n.create_loads(id=id, name=name, voltage_level_id=vl_id, bus_id=bus_id, p0=p0, q0=q0)
+        n.create_loads(id=id, name=name,
+                       voltage_level_id=vl_id, connectable_bus_id=connectable_bus_id, bus_id=bus_id,
+                       p0=p0, q0=q0)
 
 
 def create_buses(n, n_pdp):
