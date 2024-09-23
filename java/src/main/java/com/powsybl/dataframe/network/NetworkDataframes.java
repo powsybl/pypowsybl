@@ -87,55 +87,55 @@ public final class NetworkDataframes {
         return Collections.unmodifiableMap(mappers);
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP() {
+    static <U extends Injection<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getP());
     }
 
-    static <U extends Injection> ToDoubleFunction<U> getOppositeP() {
+    static <U extends Injection<?>> ToDoubleFunction<U> getOppositeP() {
         return inj -> -inj.getTerminal().getP();
     }
 
-    static <U extends Injection<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ() {
+    static <U extends Injection<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ() {
         return (inj, context) -> perUnitPQ(context, inj.getTerminal().getQ());
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP() {
+    static <U extends Injection<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP() {
         return (inj, p, context) -> inj.getTerminal().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Injection<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ() {
+    static <U extends Injection<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ() {
         return (inj, q, context) -> inj.getTerminal().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP1() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ1() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ1() {
         return (b, context) -> perUnitPQ(context, b.getTerminal1().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP1() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP1() {
         return (b, p, context) -> b.getTerminal1().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ1() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ1() {
         return (b, q, context) -> b.getTerminal1().setQ(unPerUnitPQ(context, q));
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP2() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitP2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getP());
     }
 
-    static <U extends Branch<U>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ2() {
+    static <U extends Branch<?>> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitQ2() {
         return (b, context) -> perUnitPQ(context, b.getTerminal2().getQ());
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP2() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitP2() {
         return (b, p, context) -> b.getTerminal2().setP(unPerUnitPQ(context, p));
     }
 
-    static <U extends Branch<U>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ2() {
+    static <U extends Branch<?>> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitQ2() {
         return (b, q, context) -> b.getTerminal2().setQ(unPerUnitPQ(context, q));
     }
 
@@ -603,8 +603,9 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""), DanglingLine::setPairingKey)
                 .strings("ucte_xnode_code", dl -> Objects.toString(dl.getPairingKey(), ""))
+                .booleans("paired", DanglingLine::isPaired)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .addProperties()
@@ -953,10 +954,14 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Injection::getId)
                 .strings("type", injection -> injection.getType().toString())
                 .strings("voltage_level_id", injection -> injection.getTerminal().getVoltageLevel().getId())
+                .ints("node", g -> getNode(g.getTerminal()), false)
                 .strings("bus_breaker_bus_id", injection -> getBusBreakerViewBusId(injection.getTerminal()), (injection, id) -> setBusBreakerViewBusId(injection.getTerminal(), id), false)
                 .booleans("connected", injection -> injection.getTerminal().isConnected(), connectInjection())
                 .strings("bus_id", injection -> injection.getTerminal().getBusView().getBus() == null ? "" :
                         injection.getTerminal().getBusView().getBus().getId())
+                .doubles("p", getPerUnitP(), setPerUnitP())
+                .doubles("q", getPerUnitQ(), setPerUnitQ())
+                .doubles("i", (l, context) -> perUnitI(context, l.getTerminal()))
                 .build();
     }
 
@@ -965,17 +970,25 @@ public final class NetworkDataframes {
                 .stringsIndex("id", Branch::getId)
                 .strings("type", branch -> branch.getType().toString())
                 .strings("voltage_level1_id", branch -> branch.getTerminal1().getVoltageLevel().getId())
+                .ints("node1", g -> getNode(g.getTerminal1()), false)
                 .strings("bus_breaker_bus1_id", branch -> getBusBreakerViewBusId(branch.getTerminal1()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal1(), id), false)
                 .strings("bus1_id", branch -> branch.getTerminal1().getBusView().getBus() == null ? "" :
                         branch.getTerminal1().getBusView().getBus().getId())
                 .booleans("connected1", branch -> branch.getTerminal1().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal1(), connected))
                 .strings("voltage_level2_id", branch -> branch.getTerminal2().getVoltageLevel().getId())
+                .ints("node2", g -> getNode(g.getTerminal2()), false)
                 .strings("bus_breaker_bus2_id", branch -> getBusBreakerViewBusId(branch.getTerminal2()), (branch, id) -> setBusBreakerViewBusId(branch.getTerminal2(), id), false)
                 .strings("bus2_id", branch -> branch.getTerminal2().getBusView().getBus() == null ? "" :
                         branch.getTerminal2().getBusView().getBus().getId())
                 .booleans("connected2", branch -> branch.getTerminal2().isConnected(),
                     (branch, connected) -> setConnected(branch.getTerminal2(), connected))
+                .doubles("p1", getPerUnitP1(), setPerUnitP1())
+                .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
+                .doubles("i1", (branch, context) -> perUnitI(context, branch.getTerminal1()))
+                .doubles("p2", getPerUnitP2(), setPerUnitP2())
+                .doubles("q2", getPerUnitQ2(), setPerUnitQ2())
+                .doubles("i2", (branch, context) -> perUnitI(context, branch.getTerminal2()))
                 .build();
     }
 

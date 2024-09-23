@@ -1005,11 +1005,11 @@ public final class PyPowsyblApiHeader {
         @CField("sensitivity_epsilon")
         void setSensitivityEpsilon(double sensitivityEpsilon);
 
-        @CField("rescale_enabled")
-        boolean isRescaleEnabled();
+        @CField("rescale_mode")
+        int getRescaleMode();
 
-        @CField("rescale_enabled")
-        void setRescaleEnabled(boolean rescaleEnabled);
+        @CField("rescale_mode")
+        void setRescaleMode(int rescaleMode);
 
         @CField("dc_fallback_enabled_after_ac_divergence")
         boolean isDcFallbackEnabledAfterAcDivergence();
@@ -1074,6 +1074,25 @@ public final class PyPowsyblApiHeader {
 
         @CField("display_current_feeder_info")
         void setDisplayCurrentFeederInfo(boolean displayCurrentInfo);
+
+        @CField("active_power_unit")
+        CCharPointer getActivePowerUnit();
+
+        @CField("active_power_unit")
+        void setActivePowerUnit(CCharPointer activePowerUnit);
+
+        @CField("reactive_power_unit")
+        CCharPointer getReactivePowerUnit();
+
+        @CField("reactive_power_unit")
+        void setReactivePowerUnit(CCharPointer reactivePowerUnit);
+
+        @CField("current_unit")
+        CCharPointer getCurrentUnit();
+
+        @CField("current_unit")
+        void setCurrentUnit(CCharPointer currentUnit);
+
     }
 
     @CStruct("nad_parameters")
@@ -1242,6 +1261,12 @@ public final class PyPowsyblApiHeader {
         @CField("min_voltage_drop_proportional_threshold")
         void setMinVoltageDropProportionalThreshold(double minVoltageDropProportionalThreshold);
 
+        @CField("initial_voltage_profile_mode")
+        int getInitialVoltageProfileMode();
+
+        @CField("initial_voltage_profile_mode")
+        void setInitialVoltageProfileMode(int initialVoltageProfileMode);
+
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
 
@@ -1282,10 +1307,10 @@ public final class PyPowsyblApiHeader {
 
     @CEnum("VoltageInitializerLogLevelAmpl")
     public enum VoltageInitializerLogLevelAmpl {
-        DEBUG,
-        INFO,
-        WARNING,
-        ERROR;
+        LOG_AMPL_DEBUG,
+        LOG_AMPL_INFO,
+        LOG_AMPL_WARNING,
+        LOG_AMPL_ERROR;
 
         @CEnumValue
         public native int getCValue();

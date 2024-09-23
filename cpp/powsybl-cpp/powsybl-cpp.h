@@ -367,6 +367,12 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+enum class RescaleMode {
+    NONE = 0,
+    ACER_METHODOLOGY,
+    PROPORTIONAL
+};
+
 class FlowDecompositionParameters {
 public:
     FlowDecompositionParameters(flow_decomposition_parameters* src);
@@ -375,7 +381,7 @@ public:
     bool enable_losses_compensation;
     float losses_compensation_epsilon;
     float sensitivity_epsilon;
-    bool rescale_enabled;
+    RescaleMode rescale_mode;
     bool dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 };
@@ -394,6 +400,9 @@ public:
     bool topological_coloring;
     std::string component_library;
     bool display_current_feeder_info;
+    std::string active_power_unit;
+    std::string reactive_power_unit;
+    std::string current_unit;
 };
 
 enum class NadLayoutType {
@@ -435,6 +444,11 @@ enum ShortCircuitStudyType {
     STEADY_STATE
 };
 
+enum InitialVoltageProfileMode {
+    NOMINAL = 0,
+    PREVIOUS_VALUE
+};
+
 class ShortCircuitAnalysisParameters {
 public:
     ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src);
@@ -446,6 +460,7 @@ public:
     ShortCircuitStudyType study_type;
     bool with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
+    InitialVoltageProfileMode initial_voltage_profile_mode;
 
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;

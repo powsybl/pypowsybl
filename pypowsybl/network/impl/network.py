@@ -641,7 +641,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulated_element_id**: the ID of the network element where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
-              - **i**: the current on the load, ``NaN`` if no loadflow has been computed (in A)
+              - **i**: the current on the generator, ``NaN`` if no loadflow has been computed (in A)
               - **voltage_level_id**: at which substation this generator is connected
               - **bus_id**: bus where this generator is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
@@ -1234,6 +1234,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
               - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
               - **ucte-xnode-code**: deprecated for pairing key.
+              - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
             This dataframe is indexed by the id of the dangling lines
@@ -2286,7 +2287,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
-    def get_identifiables(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_identifiables(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get a dataframe of identifiables
 
@@ -2305,9 +2306,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
             This dataframe is indexed on the identifiable ID.
         """
-        return self.get_elements(ElementType.IDENTIFIABLE, all_attributes, attributes)
+        return self.get_elements(ElementType.IDENTIFIABLE, all_attributes, attributes, **kwargs)
 
-    def get_injections(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_injections(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get a dataframe of injections
 
@@ -2324,13 +2325,19 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the injection
               - **voltage_level_id**: at which substation the injection is connected
+              - **node**  (optional): node where this injection is connected, in node-breaker voltage levels
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this injection is connected
+              - **connected**: ``True`` if the injection is connected to a bus
               - **bus_id**: bus where this injection is connected
+              - **p**: the actual active production of the injection (``NaN`` if no loadflow has been computed)
+              - **q**: the actual reactive production of the injection (``NaN`` if no loadflow has been computed)
+              - **i**: the current on the injection, ``NaN`` if no loadflow has been computed (in A)
 
             This dataframe is indexed on the injections ID.
         """
-        return self.get_elements(ElementType.INJECTION, all_attributes, attributes)
+        return self.get_elements(ElementType.INJECTION, all_attributes, attributes, **kwargs)
 
-    def get_branches(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_branches(self, all_attributes: bool = False, attributes: List[str] = None, **kwargs: ArrayLike) -> DataFrame:
         """
         Get a dataframe of branches
 
@@ -2347,13 +2354,25 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the branch (line or 2 windings transformer)
               - **voltage_level1_id**: voltage level where the branch is connected, on side 1
+              - **node1** (optional): node where this branch is connected on side 1, in node-breaker voltage levels
+              - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this branch is connected, on side "1"
+              - **connected1**: ``True`` if the side "1" of the branch is connected to a bus
               - **bus1_id**: bus where this branch is connected, on side 1
               - **voltage_level2_id**: voltage level where the branch is connected, on side 2
+              - **node2** (optional): node where this branch is connected on side 2, in node-breaker voltage levels
+              - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this branch is connected, on side "2"
+              - **connected2**: ``True`` if the side "2" of the branch is connected to a bus
               - **bus2_id**: bus where this branch is connected, on side 2
+              - **p1**: the active flow on the branch at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **q1**: the reactive flow on the branch at its "1" side, ``NaN`` if no loadflow has been computed (in MVAr)
+              - **i1**: the current on the branch at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+              - **p2**: the active flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **q2**: the reactive flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
+              - **i2**: the current on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in A)
 
             This dataframe is indexed on the branche ID.
         """
-        return self.get_elements(ElementType.BRANCH, all_attributes, attributes)
+        return self.get_elements(ElementType.BRANCH, all_attributes, attributes, **kwargs)
 
     def get_terminals(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
         """
@@ -2584,6 +2603,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `q`
             - `connected`
             - `fictitious`
+            - `pairing_key`
+            - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
 
         See Also:
             :meth:`get_dangling_lines`
@@ -4186,7 +4207,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the new switch
-            - **voltage_level1_id**: the voltage level where the new switch will be connected on side 1.
+            - **voltage_level_id**: the voltage level where the new switch will be connected.
               The voltage level must already exist.
             - **bus1_id**: the bus where the new switch will be connected on side 1,
               if the voltage level has a bus-breaker topology kind.
@@ -4208,11 +4229,11 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 # In a bus-breaker voltage level, between configured buses B1 and B2
-                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', bus1_id='B1', bus2_id='B2',
+                network.create_switches(id='BREAKER-1', voltage_level_id='VL1', bus1_id='B1', bus2_id='B2',
                                         kind='BREAKER', open=False)
 
                 # In a node-breaker voltage level, between nodes 5 and 7
-                network.create_switches(id='BREAKER-1', voltage_level1_id='VL1', node1=5, node2=7,
+                network.create_switches(id='BREAKER-1', voltage_level_id='VL1', node1=5, node2=7,
                                         kind='BREAKER', open=False)
         """
         return self._create_elements(ElementType.SWITCH, [df], **kwargs)
