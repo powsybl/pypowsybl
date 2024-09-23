@@ -109,7 +109,7 @@ def create_transformers(n, n_pdp):
         gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) / c
         bm = - np.sqrt(ym ** 2 - gm ** 2)
 
-        zb_tr = (trafo_and_bus['vn_kv_lv_bus'] ** 2) / n_pdp.sn_mva
+        zb_tr = (rated_u2 ** 2) / n_pdp.sn_mva
         r = rk * zb_tr / trafo_and_bus['parallel']
         x = xk * zb_tr / trafo_and_bus['parallel']
         g = gm / zb_tr * trafo_and_bus['parallel']

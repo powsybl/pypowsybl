@@ -1,11 +1,10 @@
 import pandapower as pdp
 import pytest
-from pytest import approx
 
 import pypowsybl as pp
 import logging
 
-EPS_V = 0.01
+EPS_V = 0.001
 
 
 @pytest.fixture(autouse=True)
@@ -29,7 +28,9 @@ def run_and_compare(pdp_n, expected_bus_count: int):
     pdp_v = list(pdp_n.res_bus['vm_pu'] * pdp_n.bus['vn_kv'])
     buses = n.get_bus_breaker_view_buses()
     v = list(buses['v_mag'])
-    assert pdp_v == approx(v, abs=EPS_V)
+    for index, (pdp_v_val, v_val) in enumerate(zip(pdp_v, v)):
+        print(str(index))
+        assert pdp_v_val == pytest.approx(v_val, abs=EPS_V, rel=EPS_V), f"Voltage mismatch at index {index}: {pdp_v_val} != {v_val}"
 
 
 def test_pandapower_case5():
@@ -58,6 +59,9 @@ def test_pandapower_case33bw():
 
 def test_pandapower_case39():
     run_and_compare(pdp.networks.case39(), 39)
+
+def test_pandapower_case57():
+    run_and_compare(pdp.networks.case57(), 57)
 
 def test_pandapower_panda_four_load_branch():
     run_and_compare(pdp.networks.panda_four_load_branch(), 6)
