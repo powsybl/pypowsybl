@@ -389,7 +389,7 @@ FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_para
     enable_losses_compensation = (bool) src->enable_losses_compensation;
     losses_compensation_epsilon = (float) src->losses_compensation_epsilon;
     sensitivity_epsilon = (float) src->sensitivity_epsilon;
-    rescale_enabled = (bool) src->rescale_enabled;
+    rescale_mode = static_cast<RescaleMode>(src->rescale_mode);
     dc_fallback_enabled_after_ac_divergence = (bool) src->dc_fallback_enabled_after_ac_divergence;
     sensitivity_variable_batch_size = (int) src->sensitivity_variable_batch_size;
 }
@@ -399,7 +399,7 @@ std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c
     res->enable_losses_compensation = (unsigned char) enable_losses_compensation;
     res->losses_compensation_epsilon = losses_compensation_epsilon;
     res->sensitivity_epsilon = sensitivity_epsilon;
-    res->rescale_enabled = (unsigned char) rescale_enabled;
+    res->rescale_mode = (int) rescale_mode;
     res->dc_fallback_enabled_after_ac_divergence = (unsigned char) dc_fallback_enabled_after_ac_divergence;
     res->sensitivity_variable_batch_size = (int) sensitivity_variable_batch_size;
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)

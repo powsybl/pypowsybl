@@ -65,7 +65,7 @@ def test_save_cgmes_zip():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buffer = n.save_to_binary_buffer(format='CGMES')
     with zipfile.ZipFile(buffer, 'r') as zip_file:
-        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SV.xml', 'file_SSH.xml'] == zip_file.namelist()
 
 
 def test_load_zipped_xiidm():
@@ -164,7 +164,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 20 == len(parameters)
+    assert 21 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -1320,6 +1320,10 @@ def test_node_breaker_view():
     assert 'BUSBAR_SECTION' == nodes.loc[0]['connectable_type']
     assert topology.internal_connections.empty
 
+    with pytest.raises(PyPowsyblError) as exc:
+        n.get_node_breaker_topology('wrongVL')
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
+
 
 def test_graph():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1863,6 +1867,10 @@ def test_properties():
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
+    with pytest.raises(PyPowsyblError) as exc:
+        network.remove_elements_properties(ids='notHere', properties='test')
+    assert "Network element \'notHere\' does not exist." in str(exc)
+
 
 def test_pathlib_load_save(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
@@ -2005,18 +2013,21 @@ def test_identifiables():
 
 def test_injections():
     n = pp.network.create_four_substations_node_breaker_network()
-    load = n.get_injections().loc['LD1']
+    load = n.get_injections(all_attributes=True).loc['LD1']
     assert load.type == 'LOAD'
     assert load.voltage_level_id == 'S1VL1'
     assert load.bus_id == 'S1VL1_0'
+    assert load.node == 2
 
 
 def test_branches():
     n = pp.network.create_four_substations_node_breaker_network()
-    twt = n.get_branches().loc['TWT']
+    twt = n.get_branches(all_attributes=True).loc['TWT']
     assert twt.voltage_level1_id == 'S1VL1'
+    assert twt.node1 == 4
     assert twt.bus1_id == 'S1VL1_0'
     assert twt.voltage_level2_id == 'S1VL2'
+    assert twt.node2 == 3
     assert twt.bus2_id == 'S1VL2_0'
     assert twt.connected1
     assert twt.connected2
