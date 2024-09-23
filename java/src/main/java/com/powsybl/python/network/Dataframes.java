@@ -310,9 +310,9 @@ public final class Dataframes {
         return nodes.stream().map(node -> {
             Terminal terminal = nodeBreakerView.getTerminal(node);
             if (terminal == null) {
-                return new NodeContext(node, null);
+                return new NodeContext(node, null, null);
             } else {
-                return new NodeContext(node, terminal.getConnectable().getId());
+                return new NodeContext(node, terminal.getConnectable().getId(), terminal.getConnectable().getType());
             }
         }).collect(Collectors.toList());
     }
@@ -322,6 +322,7 @@ public final class Dataframes {
                 .itemsProvider(Dataframes::getNodeBreakerViewNodes)
                 .intsIndex("node", NodeContext::getNode)
                 .strings("connectable_id", node -> Objects.toString(node.getConnectableId(), ""))
+                .strings("connectable_type", node -> node.getConnectableType() != null ? node.getConnectableType().name() : "")
                 .build();
     }
 
