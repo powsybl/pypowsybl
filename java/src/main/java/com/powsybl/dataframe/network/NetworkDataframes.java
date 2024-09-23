@@ -309,7 +309,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getAreaStream,
                         getOrThrow(Network::getArea, "Area"))
                 .stringsIndex("id", Identifiable::getId)
-                .strings("name", a -> a.getOptionalName().orElse(""))
+                .strings("name", a -> a.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("area_type", Area::getAreaType)
                 .doubles("interchange_target", (a, context) -> perUnitPQ(context, a.getInterchangeTarget().orElse(Double.NaN)), (a, p, context) -> a.setInterchangeTarget(unPerUnitPQ(context, p)))
                 .doubles("interchange", (a, context) -> perUnitPQ(context, a.getInterchange()))

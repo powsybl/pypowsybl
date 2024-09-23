@@ -614,9 +614,10 @@ def test_areas_data_frame():
               ['Region AB', 'Region', nan, 0.0, 0.0, 0.0]])
     pd.testing.assert_frame_equal(expected, areas, check_dtype=False, atol=1e-2)
 
-    n.update_areas(id='ControlArea_A', interchange_target=-400)
+    n.update_areas(id='ControlArea_A', name='Awesome Control Area A', interchange_target=-400)
     areas = n.get_areas()
     assert -400 == areas.loc['ControlArea_A']['interchange_target']
+    assert 'Awesome Control Area A' == areas.loc['ControlArea_A']['name']
     n.update_areas(id=['ControlArea_A', 'ControlArea_B'], interchange_target=[-500, 500])
     areas = n.get_areas()
     assert -500 == areas.loc['ControlArea_A']['interchange_target']
@@ -630,11 +631,11 @@ def test_areas_data_frame():
 
     n.create_areas(id=['testAreaA', 'testAreaB'],
                    area_type=['testAreaType', 'testAreaType'],
-                   interchange_target=[10., 20.])
+                   interchange_target=[10., nan])
     areas = n.get_areas()
     assert 6 == len(areas)
     assert 10. == areas.loc['testAreaA']['interchange_target']
-    assert 20. == areas.loc['testAreaB']['interchange_target']
+    assert np.isnan(areas.loc['testAreaB']['interchange_target'])
 
     n.remove_elements(['testArea', 'testAreaA', 'testAreaB'])
     areas = n.get_areas()
