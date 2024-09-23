@@ -107,7 +107,7 @@ mode of installation:
 
 ```bash
 pip install -e .
-# or, to build the C extension with debug symbols:
+# or, to build the C extension with debug  $JAVAsymbols:
 python setup.py build --debug develop --user
 ```
 

@@ -1,0 +1,151 @@
+name: Update Dependency
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *'  # Exécute tous les deux jours à minuit
+  workflow_dispatch:  # Permet l'exécution manuelle
+
+jobs:
+  build_dependencies:
+    name: Build OS ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+
+    steps:
+
+  #SETUP JDK
+      - name: Set up JDK 17
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+  #SETUP PYTHON
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+  #SETUP GRAALVM
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1.1.5
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  #CHECK_DEPENCIES_VERSION
+      - name: Checkout powsybl-depencies
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl-dependencies
+          ref: main
+      - name: create versions file
+        run : touch version.txt
+
+  #BUILD CORE
+      - name: Checkout core-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-core
+          ref: main
+      - name: Build with Maven
+        run: | 
+          mvn --batch-mode clean install
+          echo "powsybl-core.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+
+  #BUILD LOADFLOW
+      - name: Checkout loadflow-sources
+        uses: actions/checkout@v4
+        with:
+            repository: powsybl/powsybl-open-loadflow
+            ref: main
+      - name: Build with Maven
+        run: | 
+          mvn --batch-mode clean install
+          echo "powsybl-open-loadflow.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+
+  #BUILD DIAGRAM
+      - name: Checkout diagram-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-diagram
+          ref: main
+      - name: Build with Maven
+        run: |  
+          mvn --batch-mode clean install
+          echo "powsybl-diagram.versio=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+
+
+  #BUILD ENTSOE
+      - name: Checkout entsoe-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-entsoe
+          ref: main
+      - name: Build with Maven
+        run: |  
+          mvn clean --batch-mode clean install
+          echo "powsybl-entsoe.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+
+
+  #BUILD DYNAWO
+      - name: Checkout dynawo-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-dynawo
+          ref: main
+      - name: Build with Maven
+        run: | 
+          mvn --batch-mode clean install
+          echo "powsybl-dynawo.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+
+
+  #BUILD PYPOWSYBL
+      - name: Checkout pypowsybl-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/pypowsybl
+          ref: main
+      - name: Install and build
+        run: | 
+          pip install --upgrade setuptools pip
+          pip install -r requirements.txt
+          pip install .
+      - name: Run test
+        run: pytest tests
+
+
+  #UPDATE VERSION DEPENDCIES
+      - name: Update powsybl-dependencies
+        run: |
+          cd powsybl-dependencies
+          if [ ! -s ../versions.txt ]; then
+            echo "Error: versions.txt is empty or does not exist"
+            exit 1
+          fi
+          
+          # Backup original pom.xml
+          cp pom.xml pom.xml.bak
+          
+          # Update version
+          while IFS= read -r line; do
+            key=$(echo $line | cut -d'=' -f1)
+            value=$(echo $line | cut -d'=' -f2)
+            sed -i "s/^$key.version=.*/$key.version=$value/" pom.xml
+          done < ../versions.txt
+          
+          # Check if any changes were made
+          if diff -q pom.xml pom.xml.bak > /dev/null; then
+            echo "No changes were made to pom.xml"
+          else
+            echo "pom.xml has been updated"
+          fi
