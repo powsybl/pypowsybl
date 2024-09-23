@@ -91,7 +91,7 @@ class ShortCircuitAnalysisTest {
         List<Series> feederResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeFeederResultsMapper(false), fakeResults);
         Assertions.assertThat(feederResultsSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "connectable_id", "current");
+                .containsExactly("id", "connectable_id", "current", "side");
         Assertions.assertThat(feederResultsSeries.get(0).getStrings())
                 .containsExactly("f1", "f1");
         Assertions.assertThat(feederResultsSeries.get(1).getStrings())
