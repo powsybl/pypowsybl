@@ -651,15 +651,41 @@ def test_areas_voltage_levels_data_frame():
             'ControlArea_B', 'ControlArea_B',
             'Region_AB', 'Region_AB', 'Region_AB', 'Region_AB']),
         columns=['voltage_level_id'],
-        data=[['VLGEN'],['VLHV1'],
+        data=[['VLGEN'], ['VLHV1'],
               ['VLHV2'], ['VLLOAD'],
               ['VLGEN'], ['VLHV1'], ['VLHV2'], ['VLLOAD']])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
+
+    # test creation
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_areas(id=['testAreaA', 'testAreaB'],
+                   area_type=['testAreaType', 'testAreaType'],
+                   interchange_target=[10., nan])
+    n.create_areas_voltage_levels(id=['testAreaA', 'testAreaA', 'testAreaB'],
+                                  voltage_level_id=['VLGEN', 'VLHV1', 'VLLOAD'])
+    areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'testAreaA', 'testAreaA',
+            'testAreaB']),
+        columns=['voltage_level_id'],
+        data=[['VLGEN'], ['VLHV1'],
+              ['VLLOAD']])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
+
+    # removal is a bit special, have to supply an empty string
+    n.create_areas_voltage_levels(id='testAreaA', voltage_level_id='')
+    areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['testAreaB']),
+        columns=['voltage_level_id'],
+        data=[['VLLOAD']])
     pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
 
 
 def test_areas_boundaries_data_frame():
     n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
-    areas_voltage_levels = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'boundary_element'])
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'boundary_element'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=[
             'ControlArea_A', 'ControlArea_A',
@@ -669,7 +695,41 @@ def test_areas_boundaries_data_frame():
               ['DANGLING_LINE', 'NVH1_XNODE2', '', True, -301.47, -116.51],
               ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
               ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
-    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False, atol=1e-2)
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+    # test creation
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    n.create_areas_boundaries(id='ControlArea_A', boundary_element='', boundary_side='', ac=False)
+    n.create_areas_boundaries(id='ControlArea_B', boundary_element='', boundary_side='', ac=False)
+    n.create_areas(id=['testAreaA', 'testAreaB'],
+                   area_type=['testAreaType', 'testAreaType'],
+                   interchange_target=[10., nan])
+    n.create_areas_boundaries(id=['testAreaA', 'testAreaA', 'testAreaB', 'testAreaB'],
+                              boundary_element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
+                              boundary_side=['', '', '', ''],
+                              ac=[True, True, True, True])
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'boundary_element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'testAreaA', 'testAreaA',
+            'testAreaB', 'testAreaB']),
+        columns=['boundary_type', 'boundary_element', 'boundary_side', 'ac', 'p', 'q'],
+        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.47, -116.51],
+              ['DANGLING_LINE', 'NVH1_XNODE2', '', True, -301.47, -116.51],
+              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+    # removal is a bit special, have to supply an empty string
+    n.create_areas_boundaries(id='testAreaA', boundary_element='', boundary_side='', ac=False)
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'boundary_element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'testAreaB', 'testAreaB']),
+        columns=['boundary_type', 'boundary_element', 'boundary_side', 'ac', 'p', 'q'],
+        data=[['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
 
 def test_update_unknown_data():

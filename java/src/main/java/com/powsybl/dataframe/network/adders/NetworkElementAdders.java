@@ -49,7 +49,9 @@ public final class NetworkElementAdders {
             Map.entry(REACTIVE_CAPABILITY_CURVE_POINT, new CurveReactiveLimitsDataframeAdder()),
             Map.entry(ALIAS, new AliasDataframeAdder()),
             Map.entry(TIE_LINE, new TieLineDataframeAdder()),
-            Map.entry(AREA, new AreaDataframeAdder())
+            Map.entry(AREA, new AreaDataframeAdder()),
+            Map.entry(AREA_VOLTAGE_LEVELS, new AreaVoltageLevelsDataframeAdder()),
+            Map.entry(AREA_BOUNDARIES, new AreaBoundariesDataframeAdder())
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();

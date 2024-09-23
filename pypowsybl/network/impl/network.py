@@ -4784,6 +4784,69 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.AREA, [df], **kwargs)
 
+    def create_areas_voltage_levels(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Associate voltage levels to (existing) areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the area
+            - **voltage_level_id**: the identifier of the voltage level to be associated with the area
+
+        Examples:
+            To associate voltage levels VL1 and VL2 to Area1. Note that any other voltage level than VL1 and VL2
+            previously associated to Area1 will be dissociated from Area1. Any existing other area than Area1 is
+            kept unchanged.
+
+            .. code-block:: python
+
+                # Note that any other voltage level than VL1 and VL2 previously associated to Area1 will be
+                # dissociated from Area1. Any existing other area than Area1 is kept unchanged.
+                network.create_areas(id=['Area1', 'Area1'], voltage_level_id=['VL1', 'VL2'])
+
+            To clear all voltage associations of Area2.
+
+            .. code-block:: python
+
+                # Any existing other area than Area2 is kept unchanged.
+                network.create_areas(id='Area2', voltage_level_id='')
+        """
+        return self._create_elements(ElementType.AREA_VOLTAGE_LEVELS, [df], **kwargs)
+
+    def create_areas_boundaries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Define boundaries of (existing) areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the area
+            - **boundary_element**: dangling line identifier, or any connectable
+            - **boundary_side**: if boundary_element is not a dangling line (e.g. a branch or transformer), the terminal side
+            - **ac**: True is boundary is to be considered as AC
+
+        Examples:
+            TODO
+        """
+        return self._create_elements(ElementType.AREA_BOUNDARIES, [df], **kwargs)
+
     def add_aliases(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Adds aliases to network elements.

@@ -73,8 +73,8 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_3_windings_transformers
    Network.get_aliases
    Network.get_areas
-   Network.get_areas_voltage_levels
    Network.get_areas_boundaries
+   Network.get_areas_voltage_levels
    Network.get_batteries
    Network.get_branches
    Network.get_bus_breaker_topology
@@ -156,6 +156,8 @@ Network elements can be created or removed using the following methods:
    Network.create_2_windings_transformers
    Network.create_3_windings_transformers
    Network.create_areas
+   Network.create_areas_boundaries
+   Network.create_areas_voltage_levels
    Network.create_batteries
    Network.create_busbar_sections
    Network.create_buses
