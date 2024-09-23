@@ -31,9 +31,7 @@ jobs:
           python-version: '3.8'
 
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        run: python -m pip install --upgrade pip
 
   #SETUP GRAALVM
       - name: Setup GraalVM
@@ -47,7 +45,7 @@ jobs:
       - name: Checkout powsybl-depencies
         uses: actions/checkout@v4
         with:
-          repository: powsybl-dependencies
+          repository: powsybl/powsybl-dependencies
           ref: main
       - name: create versions file
         run : touch versions.txt
