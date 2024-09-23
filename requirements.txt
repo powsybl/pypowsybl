@@ -7,7 +7,7 @@ matplotlib==3.9.0; python_version >= "3.9"
 matplotlib; python_version <= "3.8"
 
 # optional dependencies
-pandapower
+pandapower==2.14.11
 
 # documentation dependencies
 sphinx==7.1.2
