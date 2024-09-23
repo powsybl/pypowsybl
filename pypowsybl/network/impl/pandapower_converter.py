@@ -189,6 +189,9 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ge
         target_q = gen_and_bus['q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else [0.0] * len(gen_and_bus)
         min_p = [DEFAULT_MIN_P] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID or 'min_p_mw' not in gen_and_bus.columns else np.nan_to_num(gen_and_bus['min_p_mw'], nan=DEFAULT_MIN_P)
         max_p = [DEFAULT_MAX_P] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID or 'max_p_mw' not in gen_and_bus.columns else np.nan_to_num(gen_and_bus['max_p_mw'], nan=DEFAULT_MAX_P)
+        min_q = gen_and_bus['min_q_mvar'] if 'min_q_mvar' in gen_and_bus.columns else None
+        max_q = gen_and_bus['max_q_mvar'] if 'max_q_mvar' in gen_and_bus.columns else None
+
         if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR:
             for index, row in gen_and_bus.iterrows():
                 slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = row['slack_weight']
@@ -197,6 +200,8 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ge
                             voltage_level_id=vl_id, connectable_bus_id=connectable_bus_id, bus_id=bus_id,
                             target_p=target_p,  voltage_regulator_on=voltage_regulator_on, target_v=target_v, target_q=target_q,
                             min_p=min_p, max_p=max_p)
+        if min_q is not None and max_q is not None:
+            n.create_minmax_reactive_limits(id=id, min_q=min_q, max_q=max_q)
 
 
 def create_generators(n, n_pdp, slack_weight_by_gen_id):
