@@ -18,7 +18,7 @@ def setup():
 
 
 def run_and_compare(pdp_n, expected_bus_count: int):
-    pdp.runpp(pdp_n, numba=True, enforce_q_lims=False, distributed_slack=False, trafo_model="pi")
+    pdp.runpp(pdp_n, numba=True, enforce_q_lims=False, distributed_slack=True, trafo_model="pi")
     n = pp.network.convert_from_pandapower(pdp_n)
     assert len(n.get_buses()) == expected_bus_count
     param = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.UNIFORM_VALUES,
@@ -26,7 +26,7 @@ def run_and_compare(pdp_n, expected_bus_count: int):
                                    use_reactive_limits=False,
                                    shunt_compensator_voltage_control_on=False,
                                    phase_shifter_regulation_on=False,
-                                   distributed_slack=False)
+                                   distributed_slack=True)
     results = pp.loadflow.run_ac(n, param)
     assert pp.loadflow.ComponentStatus.CONVERGED == results[0].status
     pdp_v = list(pdp_n.res_bus['vm_pu'] * pdp_n.bus['vn_kv'])

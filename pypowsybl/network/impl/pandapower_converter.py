@@ -12,6 +12,8 @@ from pandas import Series
 from .network import Network
 from .network_creation_util import create_empty
 
+MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
+
 DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
 
@@ -32,12 +34,16 @@ def convert_from_pandapower(n_pdp) -> Network:
         create_lines(n, n_pdp)
         create_transformers(n, n_pdp)
 
-        # create slack bus extension
-        slack_gen_ids = [key for key, value in slack_weight_by_gen_id.items() if value == 1.0]
-        if len(slack_gen_ids) > 0:
-            generators = n.get_generators(attributes=['voltage_level_id'])
-            slack_gen = generators.loc[slack_gen_ids[0]]
-            n.create_extensions(extension_name='slackTerminal', element_id=slack_gen_ids[0], voltage_level_id=slack_gen['voltage_level_id'])
+        if len(slack_weight_by_gen_id) > 0:
+            for index, (gen_id, weight) in enumerate(slack_weight_by_gen_id.items()):
+                if index == 0:
+                    # create slack bus extension for first one
+                    generators = n.get_generators(attributes=['voltage_level_id'])
+                    slack_gen = generators.loc[gen_id]
+                    n.create_extensions(extension_name='slackTerminal', element_id=gen_id, voltage_level_id=slack_gen['voltage_level_id'])
+
+                # create active power control extension to define the distribution key
+                n.create_extensions(extension_name='activePowerControl', id=gen_id, participate=True if weight != 0.0 else False, droop=weight)
 
         return n
 
@@ -194,7 +200,7 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ge
         vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
         connectable_bus_id = build_bus_id(gen_and_bus['bus'].astype(str)).tolist()
         bus_id = np.where(gen_and_bus['in_service'], connectable_bus_id, "")
-        target_p = [0.0] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw']
+        target_p = [MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
         voltage_regulator_on = [True] * len(gen_and_bus)
         target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv'] if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else [1.0] * len(gen_and_bus)
         target_q = gen_and_bus['q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else [0.0] * len(gen_and_bus)
@@ -205,7 +211,8 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ge
 
         if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR:
             for index, row in gen_and_bus.iterrows():
-                slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = row['slack_weight']
+                weight = row['slack_weight'] if generator_type == PandaPowerGeneratorType.EXT_GRID or row['slack'] else 0.0
+                slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = weight
 
         n.create_generators(id=id, name=name,
                             voltage_level_id=vl_id, connectable_bus_id=connectable_bus_id, bus_id=bus_id,
