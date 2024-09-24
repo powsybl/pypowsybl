@@ -64,7 +64,7 @@ jobs:
   #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads powsybl/powsybl-open-loadflow | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git| grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
@@ -92,7 +92,7 @@ jobs:
   #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads powsybl/powsybl-diagram | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
