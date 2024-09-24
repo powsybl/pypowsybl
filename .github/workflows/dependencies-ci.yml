@@ -1,4 +1,10 @@
 name: Snapshot CI
+env :
+  CORE_VERSION : ""
+  LOADFLOW_VERSION : ""
+  DIAGRAM_VERSION : ""
+  ENTSOE_VERSION : ""
+  DYNAFLOW_VERSION: ""
 
 on:
   push:
@@ -14,7 +20,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-
 
     steps:
   #SETUP JDK
@@ -41,14 +46,6 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-  #CHECK_DEPENCIES_VERSION
-      - name: Checkout powsybl-depencies
-        uses: actions/checkout@v4
-        with:
-          repository: powsybl/powsybl-dependencies
-          ref: main
-      - name: create versions file
-        run : touch versions.txt
 
   #BUILD CORE
       - name: Checkout core-sources
@@ -57,9 +54,10 @@ jobs:
           repository: powsybl/powsybl-core
           ref: main
       - name: Build with Maven
-        run: | 
-          mvn --batch-mode clean install
-          echo "powsybl-core.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+        run: mvn --batch-mode clean install -DskipTests
+      - name : Get core version
+        run : echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
 
   #BUILD LOADFLOW
       - name: Checkout loadflow-sources
@@ -69,8 +67,10 @@ jobs:
             ref: main
       - name: Build with Maven
         run: | 
-          mvn --batch-mode clean install
-          echo "powsybl-open-loadflow.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+          mvn --batch-mode clean install -DskipTests
+      - name: Get loadflow version
+        run : echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
 
   #BUILD DIAGRAM
       - name: Checkout diagram-sources
@@ -80,9 +80,9 @@ jobs:
           ref: main
       - name: Build with Maven
         run: |  
-          mvn --batch-mode clean install
-          echo "powsybl-diagram.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
-
+          mvn --batch-mode clean install -DskipTests
+      - name: Get diagram version
+        run : echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #BUILD ENTSOE
       - name: Checkout entsoe-sources
@@ -92,9 +92,9 @@ jobs:
           ref: main
       - name: Build with Maven
         run: |  
-          mvn clean --batch-mode clean install
-          echo "powsybl-entsoe.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
-
+          mvn clean --batch-mode clean install -DskipTests
+      - name: Get entsoe version
+        run : echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #BUILD DYNAWO
       - name: Checkout dynawo-sources
@@ -104,34 +104,27 @@ jobs:
           ref: main
       - name: Build with Maven
         run: | 
-          mvn --batch-mode clean install
-          echo "powsybl-dynawo.version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> ../version.txt
+          mvn --batch-mode clean install -DskipTests
+      - name: Get diagram version
+        run : echo "DINAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-  #UPDATE VERSION DEPENDCIES
-      - name: Update powsybl-dependencies
+  #CHECKOUT_PYPOWSYBL_DEPENCIES
+      - name: Checkout powsybl-depencies
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-dependencies
+          ref: main
+
+  #UPDATE/INSTALL_PYPOWSYBL_DEPENCIES
+      - name: Update dependencies versions
         run: |
-          cd powsybl-dependencies
-          if [ ! -s ../versions.txt ]; then
-            echo "Error: versions.txt is empty or does not exist"
-            exit 1
-          fi
-          
-          # Backup original pom.xml
-          cp pom.xml pom.xml.bak
-          
-          # Update version
-          while IFS= read -r line; do
-            key=$(echo $line | cut -d'=' -f1)
-            value=$(echo $line | cut -d'=' -f2)
-            sed -i "s/^$key.version=.*/$key.version=$value/" pom.xml
-          done < ../versions.txt
-          
-          # Check if any changes were made
-          if diff -q pom.xml pom.xml.bak > /dev/null; then
-            echo "No changes were made to pom.xml"
-          else
-            echo "pom.xml has been updated"
-          fi
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-open-loadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-diagram.version -DnewVersion=$DIAGRAM_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
+      - name: Install powsybl-dependencies
+        run: mvn clean install
 
 
   #BUILD PYPOWSYBL
