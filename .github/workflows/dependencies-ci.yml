@@ -1,5 +1,6 @@
 name: Snapshot CI
 env :
+  DEPENDENCIES_VERSION  : ""
   CORE_VERSION : ""
   LOADFLOW_VERSION : ""
   DIAGRAM_VERSION : ""
@@ -115,6 +116,8 @@ jobs:
         with:
           repository: powsybl/powsybl-dependencies
           ref: main
+      - name: Get dependencies version
+        run: echo "DEPENDENCIES_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #UPDATE/INSTALL_PYPOWSYBL_DEPENCIES
       - name: Update dependencies versions
@@ -141,10 +144,9 @@ jobs:
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
 
       - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
+        run: pip3 install dist/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
