@@ -716,11 +716,11 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "boundary_element", "ac", "p", "q");
+                .containsExactly("id", "element", "ac", "p", "q");
 
         List<Series> allAttributeSeries = createDataFrame(AREA_BOUNDARIES, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "boundary_type", "boundary_element", "boundary_side", "ac", "p", "q");
+                .containsExactly("id", "boundary_type", "element", "side", "ac", "p", "q");
     }
 }

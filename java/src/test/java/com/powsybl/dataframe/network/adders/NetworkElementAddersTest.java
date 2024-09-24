@@ -550,8 +550,7 @@ class NetworkElementAddersTest {
                 .add();
         var dataframe = new DefaultUpdatingDataframe(4);
         addStringColumn(dataframe, "id", "area1", "area1", "area2", "area2");
-        addStringColumn(dataframe, "boundary_element", "NHV1_XNODE1", "NVH1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
-        addStringColumn(dataframe, "boundary_side", "", "", "", "");
+        addStringColumn(dataframe, "element", "NHV1_XNODE1", "NVH1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
         addIntColumn(dataframe, "ac", 1, 1, 1, 1);
         assertEquals(0, area1.getAreaBoundaryStream().count());
         assertEquals(0, area2.getAreaBoundaryStream().count());
@@ -561,8 +560,7 @@ class NetworkElementAddersTest {
 
         dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", "area1");
-        addStringColumn(dataframe, "boundary_element", "");
-        addStringColumn(dataframe, "boundary_side", "");
+        addStringColumn(dataframe, "element", "");
         addIntColumn(dataframe, "ac", 1);
         NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
         assertEquals(0, area1.getAreaBoundaryStream().count()); // cleared
@@ -570,8 +568,8 @@ class NetworkElementAddersTest {
 
         dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", "area1");
-        addStringColumn(dataframe, "boundary_element", "NGEN_NHV1");
-        addStringColumn(dataframe, "boundary_side", "TWO");
+        addStringColumn(dataframe, "element", "NGEN_NHV1");
+        addStringColumn(dataframe, "side", "TWO");
         addIntColumn(dataframe, "ac", 1);
         NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
         assertEquals(1, area1.getAreaBoundaryStream().count());

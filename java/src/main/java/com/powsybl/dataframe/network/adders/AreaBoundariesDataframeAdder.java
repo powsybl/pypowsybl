@@ -27,8 +27,8 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.strings("boundary_element"),
-            SeriesMetadata.strings("boundary_side"),
+            SeriesMetadata.strings("element"),
+            SeriesMetadata.strings("side"),
             SeriesMetadata.booleans("ac")
     );
 
@@ -40,14 +40,14 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
     private static final class AreaBoundaries {
 
         private final StringSeries ids;
-        private final StringSeries boundaryElements;
-        private final StringSeries boundarySides;
+        private final StringSeries elements;
+        private final StringSeries sides;
         private final IntSeries acs;
 
         AreaBoundaries(UpdatingDataframe dataframe) {
             this.ids = getRequiredStrings(dataframe, "id");
-            this.boundaryElements = getRequiredStrings(dataframe, "boundary_element");
-            this.boundarySides = getRequiredStrings(dataframe, "boundary_side");
+            this.elements = getRequiredStrings(dataframe, "element");
+            this.sides = dataframe.getStrings("side");
             this.acs = getRequiredInts(dataframe, "ac");
         }
 
@@ -55,12 +55,12 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
             return ids;
         }
 
-        public StringSeries getBoundaryElements() {
-            return boundaryElements;
+        public StringSeries getElements() {
+            return elements;
         }
 
-        public StringSeries getBoundarySides() {
-            return boundarySides;
+        public StringSeries getSides() {
+            return sides;
         }
 
         public IntSeries getAcs() {
@@ -77,17 +77,17 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
         Map<Area, List<Pair<Terminal, Boolean>>> terminalBoundaries = new HashMap<>();
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String areaId = series.getIds().get(i);
-            String boundaryElement = series.getBoundaryElements().get(i);
-            String boundarySide = series.getBoundarySides().get(i);
+            String element = series.getElements().get(i);
+            String side = series.getSides() == null ? "" : series.getSides().get(i);
             boolean ac = series.getAcs().get(i) == 1;
             Area area = network.getArea(areaId);
             if (area == null) {
                 throw new PowsyblException("Area " + areaId + " not found");
             }
-            // an empty boundaryElement alone for an area indicates remove all boundaries in area
-            Connectable<?> connectable = boundaryElement.isEmpty() ? null : network.getConnectable(boundaryElement);
-            if (!boundaryElement.isEmpty() && connectable == null) {
-                throw new PowsyblException("Connectable " + boundaryElement + " not found");
+            // an empty element alone for an area indicates remove all boundaries in area
+            Connectable<?> connectable = element.isEmpty() ? null : network.getConnectable(element);
+            if (!element.isEmpty() && connectable == null) {
+                throw new PowsyblException("Connectable " + element + " not found");
             }
             if (connectable == null) {
                 danglingLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(null, null));
@@ -97,9 +97,9 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
             } else if (connectable instanceof Injection<?> injection) {
                 terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(injection.getTerminal(), ac));
             } else if (connectable instanceof Branch<?> branch) {
-                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(branch.getTerminal(TwoSides.valueOf(boundarySide)), ac));
+                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(branch.getTerminal(TwoSides.valueOf(side)), ac));
             } else if (connectable instanceof ThreeWindingsTransformer t3wt) {
-                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(t3wt.getTerminal(ThreeSides.valueOf(boundarySide)), ac));
+                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(t3wt.getTerminal(ThreeSides.valueOf(side)), ac));
             }
         }
         // delete boundaries of involved areas

@@ -2509,8 +2509,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **id**: area identifier
               - **boundary_type** (optional): either `DANGLING_LINE` or `TERMINAL`
-              - **boundary_element**: either identifier of the Dangling Line or the equipment terminal
-              - **boundary_side** (optional): equipment side
+              - **element**: either identifier of the Dangling Line or the equipment terminal
+              - **side** (optional): equipment side
               - **ac**: True if the boundary is considered as AC and not DC
               - **p**: Active power at boundary (MW)
               - **q**: Reactive power at boundary (MW)
@@ -2528,7 +2528,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will output something like:
 
             ============= ================ ===== =========== ===========
-            \             boundary_element    ac           p           q
+            \             element    ac           p           q
             ============= ================ ===== =========== ===========
             id
             ControlArea_A      NHV1_XNODE1  True -301.474347 -116.518644
@@ -4803,9 +4803,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **voltage_level_id**: the identifier of the voltage level to be associated with the area
 
         Examples:
-            To associate voltage levels VL1 and VL2 to Area1. Note that any other voltage level than VL1 and VL2
-            previously associated to Area1 will be dissociated from Area1. Any existing other area than Area1 is
-            kept unchanged.
+            To associate voltage levels VL1 and VL2 to Area1.
 
             .. code-block:: python
 
@@ -4838,12 +4836,28 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the area
-            - **boundary_element**: dangling line identifier, or any connectable
-            - **boundary_side**: if boundary_element is not a dangling line (e.g. a branch or transformer), the terminal side
+            - **element**: dangling line identifier, or any connectable
+            - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
             - **ac**: True is boundary is to be considered as AC
 
         Examples:
-            TODO
+            To associate voltage levels VL1 and VL2 to Area1.
+
+            .. code-block:: python
+
+                # define dangling lines NHV1_XNODE1 and NVH1_XNODE2 as boundaries of AreaA, and
+                # define dangling lines XNODE1_NHV2 and XNODE2_NHV2 as boundaries of AreaB
+                network.create_areas_boundaries(id=['AreaA', 'AreaA', 'AreaB', 'AreaB'],
+                                                element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
+                                                side=['', '', '', ''],
+                                                ac=[True, True, True, True])
+
+            To clear all boundaries of Area2.
+
+            .. code-block:: python
+
+                # Any existing other area than AreaA is kept unchanged.
+                n.create_areas_boundaries(id='AreaA', element='', side='', ac=False)
         """
         return self._create_elements(ElementType.AREA_BOUNDARIES, [df], **kwargs)
 
