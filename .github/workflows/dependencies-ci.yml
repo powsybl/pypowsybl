@@ -120,7 +120,7 @@ jobs:
   #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads powsybl/powsybl-entsoe | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
@@ -138,7 +138,7 @@ jobs:
       - name: Change core version
         run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Change open-loadflow version
-        run : mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run : mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
         run: |
           cat pom.xml || true
@@ -149,7 +149,7 @@ jobs:
   #BUILD DYNAWO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads powsybl/powsybl-dynawo | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
