@@ -1,3 +1,5 @@
+import pathlib
+
 import pandapower as pdp
 import pytest
 
@@ -6,6 +8,8 @@ import logging
 
 EPS_V = 0.001
 
+TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent / 'data'
 
 @pytest.fixture(autouse=True)
 def setup():
@@ -67,3 +71,6 @@ def test_pandapower_panda_four_load_branch():
 
 def test_pandapower_four_loads_with_branches_out():
     run_and_compare(pdp.networks.four_loads_with_branches_out(), 10)
+
+def test_educ_case14_storage():
+    run_and_compare(pdp.from_json(DATA_DIR / 'educ_case14_storage.json'), 14)
