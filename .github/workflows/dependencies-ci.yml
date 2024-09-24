@@ -4,7 +4,7 @@ env :
   LOADFLOW_VERSION : ""
   DIAGRAM_VERSION : ""
   ENTSOE_VERSION : ""
-  DYNAFLOW_VERSION: ""
+  DYNAWO_VERSION: ""
 
 on:
   push:
@@ -105,8 +105,8 @@ jobs:
       - name: Build with Maven
         run: | 
           mvn --batch-mode clean install -DskipTests
-      - name: Get diagram version
-        run : echo "DINAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: Get dynawo version
+        run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #CHECKOUT_PYPOWSYBL_DEPENCIES
       - name: Checkout powsybl-depencies
