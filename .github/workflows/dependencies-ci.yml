@@ -57,9 +57,9 @@ jobs:
       - name: Build with Maven
         run: mvn --batch-mode clean install -DskipTests
       - name : Get core version
-        run : echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-
-
+        run : |
+          echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV*
+          cat pom.xml || true
 
   #BUILD LOADFLOW
       - name: Checkout loadflow-sources
@@ -67,8 +67,11 @@ jobs:
         with:
             repository: powsybl/powsybl-open-loadflow
             ref: main
+      - name: Change core version
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
         run: | 
+          cat pom.xml || true
           mvn --batch-mode clean install -DskipTests
       - name: Get loadflow version
         run : echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -80,8 +83,11 @@ jobs:
         with:
           repository: powsybl/powsybl-diagram
           ref: main
+      - name: Change core version
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
-        run: |  
+        run: |
+          cat pom.xml || true
           mvn --batch-mode clean install -DskipTests
       - name: Get diagram version
         run : echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -92,8 +98,13 @@ jobs:
         with:
           repository: powsybl/powsybl-entsoe
           ref: main
+      - name: Change core version
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+      - name: Change open-loadflow version
+        run : mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
-        run: |  
+        run: |
+          cat pom.xml || true
           mvn clean --batch-mode clean install -DskipTests
       - name: Get entsoe version
         run : echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -104,8 +115,11 @@ jobs:
         with:
           repository: powsybl/powsybl-dynawo
           ref: main
+      - name: Change core version
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
         run: | 
+          cat pom.xml || true
           mvn --batch-mode clean install -DskipTests
       - name: Get dynawo version
         run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -138,6 +152,12 @@ jobs:
         with:
           submodules: true
 
+      - name: Change java-pom.xml
+        working-directory: ./java
+        run : |
+          mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
+          cat pom.xml || true
+
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
@@ -155,5 +175,7 @@ jobs:
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: pytest
+
+
 
 
