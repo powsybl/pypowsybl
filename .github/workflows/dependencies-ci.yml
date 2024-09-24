@@ -59,6 +59,7 @@ jobs:
         run : echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
 
+
   #BUILD LOADFLOW
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
@@ -123,22 +124,34 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-diagram.version -DnewVersion=$DIAGRAM_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
+          cat pom.xml || true
       - name: Install powsybl-dependencies
         run: mvn clean install
 
 
   #BUILD PYPOWSYBL
-      - name: Checkout pypowsybl-sources
+      - name: Checkout sources
         uses: actions/checkout@v4
         with:
-          repository: powsybl/pypowsybl
-          ref: main
-      - name: Install and build
-        run: | 
-          pip install --upgrade setuptools pip
-          pip install -r requirements.txt
-          pip install .
-      - name: Run test
-        run: pytest tests
+          submodules: true
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Build wheel
+        run: |
+          python3 setup.py bdist_wheel
+          auditwheel repair dist/*.whl
+
+      - name: Install wheel
+        run: pip3 install wheelhouse/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: pytest
 
 
