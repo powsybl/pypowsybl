@@ -370,7 +370,8 @@ public:
 enum class RescaleMode {
     NONE = 0,
     ACER_METHODOLOGY,
-    PROPORTIONAL
+    PROPORTIONAL,
+    MAX_CURRENT_OVERLOAD
 };
 
 class FlowDecompositionParameters {
