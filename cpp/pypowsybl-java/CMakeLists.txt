@@ -14,6 +14,7 @@ include(ExternalProject)
 if(NOT DEFINED PYPOWSYBL_JAVA_SRC_DIR)
     set(PYPOWSYBL_JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../java)
 endif()
+set(PYPOWSYBL_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../data)
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
 set(PYPOWSYBL_JAVA_BIN_DIR ${PYPOWSYBL_JAVA_BIN_DIR}/../java PARENT_SCOPE)
 set(PYPOWSYBL_JAVA_OLD_LIB pypowsybl-java${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -78,7 +79,7 @@ if(DEFINED ENV{PYPOWSYBL_PGO})
         PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl-pgo/target/pypowsybl-java-pgo.jar${EXTRA_JARS} --pgo-instrument -march=compatibility --no-fallback --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java-pgo -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR} com.powsybl.python.pgo.Main
         CONFIGURE_COMMAND ""
         BUILD_COMMAND ""
-        INSTALL_COMMAND ${PYPOWSYBL_JAVA_BIN_DIR}/pypowsybl-java-pgo COMMAND ${CMAKE_COMMAND} -E copy default.iprof ${PYPOWSYBL_JAVA_BIN_DIR}/
+        INSTALL_COMMAND ${PYPOWSYBL_JAVA_BIN_DIR}/pypowsybl-java-pgo ${PYPOWSYBL_DATA_DIR} COMMAND ${CMAKE_COMMAND} -E copy default.iprof ${PYPOWSYBL_JAVA_BIN_DIR}/
     )
 endif()
 

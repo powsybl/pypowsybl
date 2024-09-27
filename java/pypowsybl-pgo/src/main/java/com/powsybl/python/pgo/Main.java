@@ -1,7 +1,8 @@
 package com.powsybl.python.pgo;
 
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+
+import java.nio.file.Path;
 
 public final class Main {
 
@@ -9,6 +10,9 @@ public final class Main {
     }
 
     public static void main(String[] args) {
-        Network network = EurostagTutorialExample1Factory.create();
+        Path dataDir = Path.of(args[0]);
+        for (int i = 0; i < 10; i++) {
+            Network network = Network.read(dataDir.resolve("CGMES_v2_4_15_RealGridTestConfiguration_v2.zip"));
+        }
     }
 }
