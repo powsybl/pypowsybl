@@ -14,6 +14,7 @@ include(ExternalProject)
 if(NOT DEFINED PYPOWSYBL_JAVA_SRC_DIR)
     set(PYPOWSYBL_JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../java)
 endif()
+set(PYPOWSYBL_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../data)
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
 set(PYPOWSYBL_JAVA_BIN_DIR ${PYPOWSYBL_JAVA_BIN_DIR}/../java PARENT_SCOPE)
 set(PYPOWSYBL_JAVA_OLD_LIB pypowsybl-java${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -66,13 +67,29 @@ else()
     set(NATIVE_IMAGE_GC "serial")
 endif()
 
+if(DEFINED ENV{PYPOWSYBL_PGO})
+    set(NATIVE_IMAGE_EXTRA_DEPENDS "native-image-pgo")
+    set(NATIVE_IMAGE_PGO_OPTION "--pgo=${PYPOWSYBL_JAVA_BIN_DIR}/default.iprof")
+    # first build a profiling binary, run it to generate an iprof file
+    # and then pass the iprof file to the library build
+    ExternalProject_Add(native-image-pgo
+        DEPENDS mvn
+        SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
+        DOWNLOAD_COMMAND ""
+        PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl-pgo/target/pypowsybl-java-pgo.jar${EXTRA_JARS} --pgo-instrument -march=compatibility --no-fallback --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java-pgo -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR} com.powsybl.python.pgo.Main
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ${PYPOWSYBL_JAVA_BIN_DIR}/pypowsybl-java-pgo ${PYPOWSYBL_DATA_DIR} COMMAND ${CMAKE_COMMAND} -E copy default.iprof ${PYPOWSYBL_JAVA_BIN_DIR}/
+    )
+endif()
+
 # as GraalVm does not follow same library naming convention (lib prefix is missing on Linux and MacOS) we need to rename
 # it in the install command step
 ExternalProject_Add(native-image
-    DEPENDS mvn
+    DEPENDS mvn ${NATIVE_IMAGE_EXTRA_DEPENDS}
     SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} -march=compatibility --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl/target/pypowsybl-java.jar${EXTRA_JARS} ${NATIVE_IMAGE_PGO_OPTION} -march=compatibility --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${NATIVE_IMAGE_INSTALL_EXTRA_COMMAND}
@@ -80,7 +97,7 @@ ExternalProject_Add(native-image
 
 # extract powsybl math native from jar for current platform
 # powsybl-math-native.jar has been previously copied by maven build
-add_custom_target(math-native ALL COMMAND ${CMAKE_COMMAND} -E tar x ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar ${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${MATH_NATIVE_INSTALL_EXTRA_COMMAND})
+add_custom_target(math-native ALL COMMAND ${CMAKE_COMMAND} -E tar x ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl/target/dependency/powsybl-math-native.jar ${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${MATH_NATIVE_INSTALL_EXTRA_COMMAND})
 
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
     add_custom_command(TARGET native-image POST_BUILD ${POWSYBL_CPP_INSTALL_EXTRA_COMMAND} COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
