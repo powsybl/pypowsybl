@@ -10,7 +10,7 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.Curve;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynawaltz.curves.DynawoCurvesBuilder;
+import com.powsybl.dynawo.curves.DynawoCurvesBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;

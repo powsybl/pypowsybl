@@ -166,11 +166,11 @@ jobs:
           repository: powsybl/powsybl-open-rao
           ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run : mvn versions:set-property -Dproperty=powsybl.core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Change entsoe version
         run : mvn versions:set-property -Dproperty=powsybl.entsoe.version -DnewVersion=$ENTSOE_VERSION  -DgenerateBackupPoms=false
       - name: Change open-loadflow version
-        run : mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=$LOADFLOW_VERSION-DgenerateBackupPoms=false
+        run : mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
         run: | 
           cat pom.xml || true
