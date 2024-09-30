@@ -147,33 +147,6 @@ jobs:
       - name: Get entsoe version
         run : echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
-  #BUILD DYNAWO
-      - name: Check for SNAPSHOT branch
-        run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
-          if [ -n "$SNAPSHOT_BRANCH" ]; then
-            echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
-            echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
-          else
-            echo "No SNAPSHOT branch found"
-            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
-            echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
-          fi
-      - name: Checkout dynawo-sources
-        uses: actions/checkout@v4
-        with:
-          repository: powsybl/powsybl-dynawo
-          ref: ${{ env.SNAPSHOT_BRANCH }}
-      - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
-      - name: Build with Maven
-        run: | 
-          cat pom.xml || true
-          mvn --batch-mode clean install -DskipTests
-      - name: Get dynawo version
-        run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-
   #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
         run: |
@@ -204,6 +177,36 @@ jobs:
           mvn --batch-mode clean install -DskipTests
       - name: Get open-rao version
         run : echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+
+
+  #BUILD DYNAWO
+      - name: Check for SNAPSHOT branch
+        run: |
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          if [ -n "$SNAPSHOT_BRANCH" ]; then
+            echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
+            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
+            echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
+          else
+            echo "No SNAPSHOT branch found"
+            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
+            echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
+          fi
+      - name: Checkout dynawo-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-dynawo
+          ref: ${{ env.SNAPSHOT_BRANCH }}
+      - name: Change core version
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+      - name: Build with Maven
+        run: | 
+          cat pom.xml || true
+          mvn --batch-mode clean install -DskipTests
+      - name: Get dynawo version
+        run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
 
   #CHECKOUT_PYPOWSYBL_DEPENCIES
       - name: Checkout powsybl-depencies
