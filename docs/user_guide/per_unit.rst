@@ -110,4 +110,4 @@ with Sn the nominal apparent power
 
 #. Angle
 
-the angle are in degrees in PyPowSyBl, but in per-united it is in radian while it is not really related to per-uniting.
+the angle are in degrees in PyPowSyBl, but when per-united it is in radian while it is not really related to per-uniting.
