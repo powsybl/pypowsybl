@@ -446,7 +446,7 @@ enum ShortCircuitStudyType {
 
 enum InitialVoltageProfileMode {
     NOMINAL = 0,
-    PREVIOUS_VALUE
+    PREVIOUS_VALUE = 2
 };
 
 class ShortCircuitAnalysisParameters {
