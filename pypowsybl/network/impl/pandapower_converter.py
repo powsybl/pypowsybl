@@ -35,8 +35,9 @@ def convert_from_pandapower(n_pdp) -> Network:
         create_transformers(n, n_pdp)
 
         if len(slack_weight_by_gen_id) > 0:
+            highest_weight_gen_id = max(slack_weight_by_gen_id, key=slack_weight_by_gen_id.get)
             for index, (gen_id, weight) in enumerate(slack_weight_by_gen_id.items()):
-                if index == 0:
+                if gen_id == highest_weight_gen_id:
                     # create slack bus extension for first one
                     generators = n.get_generators(attributes=['voltage_level_id'])
                     slack_gen = generators.loc[gen_id]
@@ -113,7 +114,7 @@ def create_transformers(n, n_pdp):
         xk = np.sqrt(zk ** 2 - rk ** 2)
         ym = trafo_and_bus['i0_percent'] / 100
         gm = trafo_and_bus['pfe_kw'] / (trafo_and_bus['sn_mva'] * 1000) / c
-        bm = - np.sqrt(ym ** 2 - gm ** 2)
+        bm = -1 * np.sign(ym) * np.sqrt(ym ** 2 - gm ** 2)
 
         zb_tr = (rated_u2 ** 2) / n_pdp.sn_mva
         r = rk * zb_tr / trafo_and_bus['parallel']
