@@ -6,6 +6,7 @@ env :
   DIAGRAM_VERSION : ""
   ENTSOE_VERSION : ""
   DYNAWO_VERSION: ""
+  OPENRAO_VERSION: ""
 
 on:
   push:
@@ -173,6 +174,37 @@ jobs:
       - name: Get dynawo version
         run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
+  #BUILD OPENRAO
+      - name: Check for SNAPSHOT branch
+        run: |
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          if [ -n "$SNAPSHOT_BRANCH" ]; then
+            echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
+            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
+            echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
+          else
+            echo "No SNAPSHOT branch found"
+            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
+            echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
+          fi
+      - name: Checkout open-rao-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-open-rao
+          ref: ${{ env.SNAPSHOT_BRANCH }}
+      - name: Change core version
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+      - name: Change entsoe version
+        run : mvn versions:set-property -Dproperty=powsybl.entsoe.version -DnewVersion=$ENTSOE_VERSION  -DgenerateBackupPoms=false
+      - name: Change open-loadflow version
+        run : mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=$LOADFLOW_VERSION-DgenerateBackupPoms=false
+      - name: Build with Maven
+        run: | 
+          cat pom.xml || true
+          mvn --batch-mode clean install -DskipTests
+      - name: Get open-rao version
+        run : echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
   #CHECKOUT_PYPOWSYBL_DEPENCIES
       - name: Checkout powsybl-depencies
         uses: actions/checkout@v4
@@ -190,6 +222,7 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-diagram.version -DnewVersion=$DIAGRAM_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
           cat pom.xml || true
       - name: Install powsybl-dependencies
         run: mvn clean install

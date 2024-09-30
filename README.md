@@ -1,4 +1,4 @@
-# PyPowSyBl
+pip# PyPowSyBl
 
 [![Actions Status](https://github.com/powsybl/pypowsybl/workflows/CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
