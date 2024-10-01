@@ -81,7 +81,8 @@ jobs:
             repository: powsybl/powsybl-open-loadflow
             ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run : |
+          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
           cat pom.xml || true
@@ -110,7 +111,8 @@ jobs:
           repository: powsybl/powsybl-diagram
           ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run : |
+          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: |
           cat pom.xml || true
@@ -137,9 +139,11 @@ jobs:
           repository: powsybl/powsybl-entsoe
           ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run : |
+          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Change open-loadflow version
-        run : mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
+        run : |
+          sed -i 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
       - name: Build with Maven
         run: |
           cat pom.xml || true
@@ -166,11 +170,14 @@ jobs:
           repository: powsybl/powsybl-open-rao
           ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl.core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run: |
+          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Change entsoe version
-        run : mvn versions:set-property -Dproperty=powsybl.entsoe.version -DnewVersion=$ENTSOE_VERSION  -DgenerateBackupPoms=false
+        run: |
+          sed -i 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
       - name: Change open-loadflow version
-        run : mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
+        run: |
+          sed -i 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
       - name: Build with Maven
         run: | 
           cat pom.xml || true
@@ -199,7 +206,8 @@ jobs:
           repository: powsybl/powsybl-dynawo
           ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run: |
+          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
           cat pom.xml || true
