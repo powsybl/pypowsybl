@@ -1,12 +1,8 @@
 name: Snapshot CI
-env :
-  MAVEN_OPTS: -Xmx3072m
-  MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress -T 1C
 
 on:
   push:
     branches:
-      # on all branches except main where full build will be run
       - '*'
       - '!main'
 
@@ -25,6 +21,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'maven'
 
   #SETUP PYTHON
       - name: Set up Python
@@ -43,20 +40,6 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache Maven packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
-      - name: Cache pip packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
-
 
   #BUILD CORE
       - name: Checkout core-sources
@@ -64,8 +47,9 @@ jobs:
         with:
           repository: powsybl/powsybl-core
           ref: main
+          fetch-depth: 1
       - name: Build with Maven
-        run: mvn $MAVEN_CLI_OPTS clean install -DskipTests
+        run:  mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name : Get core version
         run : |
           echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -73,7 +57,7 @@ jobs:
   #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git| grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -86,12 +70,13 @@ jobs:
         with:
             repository: powsybl/powsybl-open-loadflow
             ref: ${{ env.SNAPSHOT_BRANCH }}
+            fetch-depth: 1
       - name: Change core version
         run : |
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
-          mvn $MAVEN_CLI_OPTS clean install -DskipTests
+          mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name: Get loadflow version
         run : echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -99,7 +84,7 @@ jobs:
   #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -113,19 +98,20 @@ jobs:
         with:
           repository: powsybl/powsybl-diagram
           ref: ${{ env.SNAPSHOT_BRANCH }}
+          fetch-depth: 1
       - name: Change core version
         run : |
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: |
-          mvn $MAVEN_CLI_OPTS clean install -DskipTests
+          mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name: Get diagram version
         run : echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -138,6 +124,7 @@ jobs:
         with:
           repository: powsybl/powsybl-entsoe
           ref: ${{ env.SNAPSHOT_BRANCH }}
+          fetch-depth: 1
       - name: Change core version
         run : |
           sed -i 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
@@ -147,14 +134,14 @@ jobs:
       - name: Build with Maven
         run: |
           cat pom.xml || true
-          mvn $MAVEN_CLI_OPTS clean install -DskipTests
+          mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name: Get entsoe version
         run : echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -167,6 +154,7 @@ jobs:
         with:
           repository: powsybl/powsybl-open-rao
           ref: ${{ env.SNAPSHOT_BRANCH }}
+          fetch-depth: 1
       - name: Change core version
         run: |
           sed -i 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
@@ -178,7 +166,7 @@ jobs:
           sed -i 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
       - name: Build with Maven
         run: | 
-          mvn $MAVEN_CLI_OPTS clean install -DskipTests
+          mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name: Get open-rao version
         run : echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -187,7 +175,7 @@ jobs:
   #BUILD DYNAWO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -199,14 +187,15 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-dynawo
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }
+          fetch-depth: 1
       - name: Change core version
         run: |
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
           cat pom.xml || true
-          mvn $MAVEN_CLI_OPTS clean install -DskipTests
+          mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name: Get dynawo version
         run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -231,7 +220,7 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
           cat pom.xml || true
       - name: Install powsybl-dependencies
-        run: mvn $MAVEN_CLI_OPTS clean install -DskipTests
+          mvn -batch-mode --no-transfer-progress clean install -DskipTests
 
 
   #BUILD PYPOWSYBL
