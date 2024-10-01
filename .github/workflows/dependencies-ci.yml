@@ -53,14 +53,10 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Check Maven Versions plugin
-        run: |
-          mvn help:describe -Dplugin=org.codehaus.mojo:versions-maven-plugin
-        continue-on-error: true
-      - name: Install Maven Versions plugin if not present
-        if: failure()
-        run: |
-          mvn org.codehaus.mojo:versions-maven-plugin:2.8.1:help
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.2
 
   #MISE EN CACHE DES DEPENDENCES
       - name: Cache Maven packages
@@ -76,7 +72,6 @@ jobs:
         with:
           repository: powsybl/powsybl-core
           ref: main
-          fetch-depth: 1
       - name: Build with Maven
         run:  mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name : Get core version
@@ -99,11 +94,9 @@ jobs:
         with:
             repository: powsybl/powsybl-open-loadflow
             ref: ${{ env.SNAPSHOT_BRANCH }}
-            fetch-depth: 1
+
       - name: Change core version
-        run : |
-          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
-          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
         run: | 
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
@@ -128,7 +121,7 @@ jobs:
         with:
           repository: powsybl/powsybl-diagram
           ref: ${{ env.SNAPSHOT_BRANCH }}
-          fetch-depth: 1
+
       - name: Change core version
         run : |
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
@@ -154,7 +147,7 @@ jobs:
         with:
           repository: powsybl/powsybl-entsoe
           ref: ${{ env.SNAPSHOT_BRANCH }}
-          fetch-depth: 1
+
       - name: Change core version
         run : |
           sed -i 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
@@ -184,7 +177,7 @@ jobs:
         with:
           repository: powsybl/powsybl-open-rao
           ref: ${{ env.SNAPSHOT_BRANCH }}
-          fetch-depth: 1
+
       - name: Change core version
         run: |
           sed -i 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
@@ -218,7 +211,7 @@ jobs:
         with:
           repository: powsybl/powsybl-dynawo
           ref: ${{ env.SNAPSHOT_BRANCH }}
-          fetch-depth: 1
+
       - name: Change core version
         run: |
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
