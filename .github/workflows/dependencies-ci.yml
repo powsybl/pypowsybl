@@ -68,11 +68,9 @@ jobs:
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git| grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
           else
             echo "No SNAPSHOT branch found"
-            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
       - name: Checkout loadflow-sources
@@ -82,6 +80,7 @@ jobs:
             ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
         run : |
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
@@ -97,11 +96,9 @@ jobs:
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
           else
             echo "No SNAPSHOT branch found"
-            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
 
@@ -126,11 +123,9 @@ jobs:
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
           else
             echo "No SNAPSHOT branch found"
-            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
       - name: Checkout entsoe-sources
@@ -157,11 +152,9 @@ jobs:
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
           else
             echo "No SNAPSHOT branch found"
-            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
       - name: Checkout open-rao-sources
@@ -193,11 +186,9 @@ jobs:
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-            echo "SNAPSHOT_EXIST=true" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
           else
             echo "No SNAPSHOT branch found"
-            echo "SNAPSHOT_EXIST=false" >> $GITHUB_ENV
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
       - name: Checkout dynawo-sources
@@ -228,8 +219,8 @@ jobs:
   #UPDATE/INSTALL_PYPOWSYBL_DEPENCIES
       - name: Update dependencies versions
         run: |
-          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
-          sed -i 's|<powsybl-open-loadflow.version>.*</powsybl-open-loadflow.version>|<powsybl-open-loadflow.version>'"$LOADFLOW_VERSION"'</powsybl-open-loadflow.version>|' pom.xml
+          mvn versions:set-property -Dproperty=powsybl-open-loadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-diagram.version -DnewVersion=$DIAGRAM_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
