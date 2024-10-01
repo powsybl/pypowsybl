@@ -1,4 +1,12 @@
 name: Snapshot CI
+env:
+  CORE_VERSION: ''
+  LOADFLOW_VERSION: ''
+  DIAGRAM_VERSION: ''
+  ENTSOE_VERSION: ''
+  OPENRAO_VERSION: ''
+  DYNAWO_VERSION: ''
+  DEPENDENCIES_VERSION: ''
 
 on:
   push:
@@ -64,7 +72,7 @@ jobs:
   #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --sort=-committerdate --heads https://github.com/powsybl/powsybl-open-loadflow.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -91,7 +99,7 @@ jobs:
   #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --sort=-committerdate --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -118,7 +126,7 @@ jobs:
   #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --sort=-committerdate --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -148,7 +156,7 @@ jobs:
   #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --sort=-committerdate --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -182,7 +190,7 @@ jobs:
   #BUILD DYNAWO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --sort=-committerdate --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | head -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -260,6 +268,14 @@ jobs:
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: pytest
 
-
+      - name: Log all versions
+        run: |
+          echo "Core version: ${{ env.CORE_VERSION }}"
+          echo "LoadFlow version: ${{ env.LOADFLOW_VERSION }}"
+          echo "Diagram version: ${{ env.DIAGRAM_VERSION }}"
+          echo "ENTSO-E version: ${{ env.ENTSOE_VERSION }}"
+          echo "OpenRAO version: ${{ env.OPENRAO_VERSION }}"
+          echo "Dynawo version: ${{ env.DYNAWO_VERSION }}"
+          echo "Dependencies version: ${{ env.DEPENDENCIES_VERSION }}"
 
 
