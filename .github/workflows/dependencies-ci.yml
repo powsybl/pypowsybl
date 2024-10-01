@@ -85,8 +85,10 @@ jobs:
           fi
       - name: Build with Maven
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
-      - name: Get ${{ matrix.component }} version
-        run: echo "${{ upper(matrix.component) }}_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: Get component version
+        run: |
+          COMPONENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "${matrix.component^^}_VERSION=$COMPONENT_VERSION" >> $GITHUB_ENV
     outputs:
       loadflow_version: ${{ env.LOADFLOW_VERSION }}
       diagram_version: ${{ env.DIAGRAM_VERSION }}
