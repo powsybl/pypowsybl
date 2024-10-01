@@ -29,13 +29,13 @@ We can get the list of supported load flow implementations (so called providers)
     'OpenLoadFlow'
 
 By default, load flows are based on the OpenLoadFlow implementation,
-fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
+fully described `here <https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/>`_.
 OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 You may also use DynaFlow, provided by the `Dynawo <https://dynawo.github.io>`_ project.
 DynaFlow is a new steady-state simulation tool that aims at calculating the steady-state point by using
 a simplified time-domain simulation.
-Please see configuration instructions on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/dynaflow.html>`__.
+Please see configuration instructions `here <https://powsybl.readthedocs.io/projects/powsybl-dynawo/en/latest/>`__.
 
 
 Parameters
@@ -51,7 +51,7 @@ Let's have a look at the default ones:
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
-All parameters are also fully described in `Powsybl load flow parameters documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+All parameters are also fully described in `Powsybl load flow parameters documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/simulation/loadflow/configuration.html>`_.
 
 Parameters specific to a provider
 ---------------------------------

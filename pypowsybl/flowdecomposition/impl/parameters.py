@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from pypowsybl import _pypowsybl
-
+from pypowsybl._pypowsybl import RescaleMode
 
 class Parameters:  # pylint: disable=too-few-public-methods
     """
@@ -41,7 +41,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  enable_losses_compensation: bool = None,
                  losses_compensation_epsilon: float = None,
                  sensitivity_epsilon: float = None,
-                 rescale_enabled: bool = None,
+                 rescale_mode: RescaleMode = None,
                  dc_fallback_enabled_after_ac_divergence: bool = None,
                  sensitivity_variable_batch_size: int = None):
 
@@ -52,8 +52,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.losses_compensation_epsilon = losses_compensation_epsilon
         if sensitivity_epsilon is not None:
             self.sensitivity_epsilon = sensitivity_epsilon
-        if rescale_enabled is not None:
-            self.rescale_enabled = rescale_enabled
+        if rescale_mode is not None:
+            self.rescale_mode = rescale_mode
         if dc_fallback_enabled_after_ac_divergence is not None:
             self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
         if sensitivity_variable_batch_size is not None:
@@ -64,7 +64,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.enable_losses_compensation = default_parameters.enable_losses_compensation
         self.losses_compensation_epsilon = default_parameters.losses_compensation_epsilon
         self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
-        self.rescale_enabled = default_parameters.rescale_enabled
+        self.rescale_mode = default_parameters.rescale_mode
         self.dc_fallback_enabled_after_ac_divergence = default_parameters.dc_fallback_enabled_after_ac_divergence
         self.sensitivity_variable_batch_size = default_parameters.sensitivity_variable_batch_size
 
@@ -73,7 +73,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.enable_losses_compensation = self.enable_losses_compensation
         c_parameters.losses_compensation_epsilon = self.losses_compensation_epsilon
         c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
-        c_parameters.rescale_enabled = self.rescale_enabled
+        c_parameters.rescale_mode = self.rescale_mode
         c_parameters.dc_fallback_enabled_after_ac_divergence = self.dc_fallback_enabled_after_ac_divergence
         c_parameters.sensitivity_variable_batch_size = self.sensitivity_variable_batch_size
         return c_parameters
@@ -83,7 +83,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f"enable_losses_compensation={self.enable_losses_compensation!r}" \
                f", losses_compensation_epsilon={self.losses_compensation_epsilon!r}" \
                f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
-               f", rescale_enabled={self.rescale_enabled!r}" \
+               f", rescale_mode={self.rescale_mode!r}" \
                f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
                f", sensitivity_variable_batch_size={self.sensitivity_variable_batch_size}" \
                f")"
