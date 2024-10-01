@@ -12,7 +12,7 @@ from pandas import Series
 from .network import Network
 from .network_creation_util import create_empty
 
-MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
+MIN_TARGET_P_TO_NOT_BEEN_DISCARDED_FROM_ACTIVE_POWER_CONTROL = 0.0001
 
 DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
@@ -104,8 +104,15 @@ def create_transformers(n, n_pdp):
         connectable_bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
         bus1_id = np.where(trafo_and_bus['in_service'], connectable_bus1_id, "")
         bus2_id = np.where(trafo_and_bus['in_service'], connectable_bus2_id, "")
-        n_tap = np.where(~np.isnan(trafo_and_bus['tap_pos']) & ~np.isnan(trafo_and_bus['tap_neutral']) & ~np.isnan(trafo_and_bus['tap_step_percent']),
-                         1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0, 1.0)
+        # Run this for trafos which are not phase shifters
+        n_tap = np.where(
+            (~np.isnan(trafo_and_bus['tap_pos']) &
+             ~np.isnan(trafo_and_bus['tap_neutral']) &
+             ~np.isnan(trafo_and_bus['tap_step_percent']) &
+             trafo_and_bus['tap_phase_shifter']),  # Additional condition
+            1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0,
+            1.0
+        )
         rated_u1 = np.where(trafo_and_bus['tap_side'] == "hv", trafo_and_bus['vn_hv_kv'] * n_tap, trafo_and_bus['vn_hv_kv'])
         rated_u2 = np.where(trafo_and_bus['tap_side'] == "lv", trafo_and_bus['vn_lv_kv'] * n_tap, trafo_and_bus['vn_lv_kv'])
         c = n_pdp.sn_mva / n_pdp.trafo['sn_mva']
