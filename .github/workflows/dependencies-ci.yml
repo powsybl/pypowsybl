@@ -1,12 +1,7 @@
 name: Snapshot CI
 env :
-  DEPENDENCIES_VERSION  : ""
-  CORE_VERSION : ""
-  LOADFLOW_VERSION : ""
-  DIAGRAM_VERSION : ""
-  ENTSOE_VERSION : ""
-  DYNAWO_VERSION: ""
-  OPENRAO_VERSION: ""
+  MAVEN_OPTS: -Xmx3072m
+  MAVEN_CLI_OPTS: --batch-mode --no-transfer-progress -T 1C
 
 on:
   push:
@@ -48,6 +43,20 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: ${{ runner.os }}-pip-
+
 
   #BUILD CORE
       - name: Checkout core-sources
@@ -56,11 +65,10 @@ jobs:
           repository: powsybl/powsybl-core
           ref: main
       - name: Build with Maven
-        run: mvn --batch-mode clean install -DskipTests
+        run: mvn $MAVEN_CLI_OPTS clean install -DskipTests
       - name : Get core version
         run : |
           echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-          cat pom.xml || true
 
   #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
@@ -80,11 +88,10 @@ jobs:
             ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
         run : |
-          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false -DprocessDependencies=false
+          sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
-          cat pom.xml || true
-          mvn --batch-mode clean install -DskipTests
+          mvn $MAVEN_CLI_OPTS clean install -DskipTests
       - name: Get loadflow version
         run : echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -111,8 +118,7 @@ jobs:
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: |
-          cat pom.xml || true
-          mvn --batch-mode clean install -DskipTests
+          mvn $MAVEN_CLI_OPTS clean install -DskipTests
       - name: Get diagram version
         run : echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -141,7 +147,7 @@ jobs:
       - name: Build with Maven
         run: |
           cat pom.xml || true
-          mvn clean --batch-mode clean install -DskipTests
+          mvn $MAVEN_CLI_OPTS clean install -DskipTests
       - name: Get entsoe version
         run : echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -172,8 +178,7 @@ jobs:
           sed -i 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
       - name: Build with Maven
         run: | 
-          cat pom.xml || true
-          mvn --batch-mode clean install -DskipTests
+          mvn $MAVEN_CLI_OPTS clean install -DskipTests
       - name: Get open-rao version
         run : echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -201,7 +206,7 @@ jobs:
       - name: Build with Maven
         run: | 
           cat pom.xml || true
-          mvn --batch-mode clean install -DskipTests
+          mvn $MAVEN_CLI_OPTS clean install -DskipTests
       - name: Get dynawo version
         run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
@@ -226,7 +231,7 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
           cat pom.xml || true
       - name: Install powsybl-dependencies
-        run: mvn clean install
+        run: mvn $MAVEN_CLI_OPTS clean install -DskipTests
 
 
   #BUILD PYPOWSYBL
