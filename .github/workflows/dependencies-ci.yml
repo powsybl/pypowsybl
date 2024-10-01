@@ -188,7 +188,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-dynawo
-          ref: ${{ env.SNAPSHOT_BRANCH }
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           fetch-depth: 1
       - name: Change core version
         run: |
