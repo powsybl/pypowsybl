@@ -40,6 +40,11 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Check Java version
+        run: |
+           java -version
+           javac -version
+           echo $JAVA_HOME
       - name: Checkout core-sources
         uses: actions/checkout@v4
         with:
