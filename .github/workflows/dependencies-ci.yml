@@ -17,7 +17,7 @@ on:
 
 jobs:
   build_dependencies:
-    name: Build linux ${{ matrix.python.name }} wheel
+    name: Build linux ${{ matrix.python.name }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -53,10 +53,6 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v5
-        with:
-          maven-version: 3.8.2
 
   #MISE EN CACHE DES DEPENDENCES
       - name: Cache Maven packages
@@ -75,8 +71,7 @@ jobs:
       - name: Build with Maven
         run:  mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name : Get core version
-        run : |
-          echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        run : echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
   #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
@@ -96,7 +91,11 @@ jobs:
             ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
+        run : |
+          echo $CORE_VERSION
+          cat pom.xml
+          mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
       - name: Build with Maven
         run: | 
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
