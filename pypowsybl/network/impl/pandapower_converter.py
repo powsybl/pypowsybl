@@ -109,7 +109,7 @@ def create_transformers(n, n_pdp):
             (~np.isnan(trafo_and_bus['tap_pos']) &
              ~np.isnan(trafo_and_bus['tap_neutral']) &
              ~np.isnan(trafo_and_bus['tap_step_percent']) &
-             trafo_and_bus['tap_phase_shifter']),  # Additional condition
+             ~trafo_and_bus['tap_phase_shifter']),  # Additional condition
             1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0,
             1.0
         )
