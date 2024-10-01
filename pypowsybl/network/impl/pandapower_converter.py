@@ -105,14 +105,9 @@ def create_transformers(n, n_pdp):
         bus1_id = np.where(trafo_and_bus['in_service'], connectable_bus1_id, "")
         bus2_id = np.where(trafo_and_bus['in_service'], connectable_bus2_id, "")
         # Run this for trafos which are not phase shifters
-        n_tap = np.where(
-            (~np.isnan(trafo_and_bus['tap_pos']) &
-             ~np.isnan(trafo_and_bus['tap_neutral']) &
-             ~np.isnan(trafo_and_bus['tap_step_percent']) &
-             ~trafo_and_bus['tap_phase_shifter']),  # Additional condition
-            1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0,
-            1.0
-        )
+        # Here we enable also the cross regulator
+        # For case of PST if tap_step_degree and tap_step_percent is defined , it will lead to error in power flow
+        n_tap = extract_tap_info(trafo_and_bus)
         rated_u1 = np.where(trafo_and_bus['tap_side'] == "hv", trafo_and_bus['vn_hv_kv'] * n_tap, trafo_and_bus['vn_hv_kv'])
         rated_u2 = np.where(trafo_and_bus['tap_side'] == "lv", trafo_and_bus['vn_lv_kv'] * n_tap, trafo_and_bus['vn_lv_kv'])
         c = n_pdp.sn_mva / n_pdp.trafo['sn_mva']
@@ -134,6 +129,27 @@ def create_transformers(n, n_pdp):
                                          voltage_level2_id=vl2_id, connectable_bus2_id=connectable_bus2_id, bus2_id=bus2_id,
                                          rated_u1=rated_u1, rated_u2=rated_u2,
                                          r=r, x=x, g=g, b=b)
+
+
+def extract_tap_info(trafo_and_bus):
+    # Create a copy of 'tap_step_percent' to modify
+    tap_step_percent_new = trafo_and_bus['tap_step_percent'].copy()
+    # Check if 'tap_step_degree' is not NaN (available) for all transformers
+    degree_mask = ~np.isnan(trafo_and_bus['tap_step_degree'])
+    # For transformers where 'tap_step_degree' is present, convert to percent and add it to 'tap_step_percent'
+    tap_step_percent_new[degree_mask] = (
+            tap_step_percent_new[degree_mask] +
+            100 * 2 * np.arcsin(0.5 * trafo_and_bus['tap_step_degree'][degree_mask] / 100)
+    )
+    # Now calculate n_tap based on the updated tap_step_percent
+    n_tap = np.where(
+        (~np.isnan(trafo_and_bus['tap_pos']) &
+         ~np.isnan(trafo_and_bus['tap_neutral']) &
+         ~np.isnan(tap_step_percent_new)),  # Use the updated 'tap_step_percent_new'
+        1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * tap_step_percent_new / 100.0,
+        1.0
+    )
+    return n_tap
 
 
 def create_limits(n, n_pdp, id):
