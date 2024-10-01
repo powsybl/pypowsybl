@@ -65,7 +65,7 @@ Then a list of post processors can be pass to the load function:
 
     .. code-block:: python
 
-       network = pp.network.load('mycgmes.zip', post_processors=['replaceTieLinesByLines'])
+       network = pp.network.load('mycgmes.zip', post_processor_names=['replaceTieLinesByLines'])
 
 
 Save a network
