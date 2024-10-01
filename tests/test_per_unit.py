@@ -409,7 +409,7 @@ def test_ratio_tap_changers_per_unit():
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
-                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 1.00, nan]])
+                            data=[[1, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0', 1.00, nan]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
@@ -429,12 +429,12 @@ def test_ratio_tap_changer_steps_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.per_unit = True
     steps = n.get_ratio_tap_changer_steps()
-    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
-    assert steps.loc['NHV2_NLOAD', 1]['rho'] == pytest.approx(2.54, rel=1e-1)
-    assert steps.loc['NHV2_NLOAD', 2]['rho'] == pytest.approx(2.92, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(0.850566, rel=1e-6)
+    assert steps.loc['NHV2_NLOAD', 1]['rho'] == pytest.approx(1.000666, rel=1e-6)
+    assert steps.loc['NHV2_NLOAD', 2]['rho'] == pytest.approx(1.150766, rel=1e-6)
     n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, r=1, x=3, g=4, b=2)
     steps = n.get_ratio_tap_changer_steps()
-    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(0.850566, rel=1e-6)
     assert steps.loc['NHV2_NLOAD', 0]['r'] == pytest.approx(1, rel=1e-1)
     assert steps.loc['NHV2_NLOAD', 0]['x'] == pytest.approx(3, rel=1e-1)
     assert steps.loc['NHV2_NLOAD', 0]['g'] == pytest.approx(4, rel=1e-1)
