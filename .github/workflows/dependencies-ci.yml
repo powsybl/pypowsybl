@@ -17,11 +17,16 @@ on:
 
 jobs:
   build_dependencies:
-    name: Build OS ${{ matrix.os }}
+    name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
+        python:
+          - name: python3.8,
+            version: '3.8'
+      fail-fast: false
+
 
     steps:
   #SETUP JDK
@@ -32,10 +37,10 @@ jobs:
           java-version: '17'
 
   #SETUP PYTHON
-      - name: Set up Python
+      - name: Set up Python ${{ matrix.python.version }}
         uses: actions/setup-python@v4
         with:
-          python-version: '3.8'
+          python-version: ${{ matrix.python.version }}
 
       - name: Install Python dependencies
         run: python -m pip install --upgrade pip
@@ -47,6 +52,15 @@ jobs:
           java-version: '17'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check Maven Versions plugin
+        run: |
+          mvn help:describe -Dplugin=org.codehaus.mojo:versions-maven-plugin
+        continue-on-error: true
+      - name: Install Maven Versions plugin if not present
+        if: failure()
+        run: |
+          mvn org.codehaus.mojo:versions-maven-plugin:2.8.1:help
 
   #MISE EN CACHE DES DEPENDENCES
       - name: Cache Maven packages
@@ -72,7 +86,7 @@ jobs:
   #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')          
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -88,6 +102,7 @@ jobs:
             fetch-depth: 1
       - name: Change core version
         run : |
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
@@ -99,7 +114,7 @@ jobs:
   #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -126,7 +141,7 @@ jobs:
   #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -156,7 +171,7 @@ jobs:
   #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -190,7 +205,7 @@ jobs:
   #BUILD DYNAWO
       - name: Check for SNAPSHOT branch
         run: |
-          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep 'refs/heads/.*SNAPSHOT' | sort -V | tail -n 1 | sed 's/.*refs\/heads\///')
+          SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-dynawo.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
           if [ -n "$SNAPSHOT_BRANCH" ]; then
             echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
             echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
@@ -209,7 +224,6 @@ jobs:
           sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
       - name: Build with Maven
         run: | 
-          cat pom.xml || true
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
       - name: Get dynawo version
         run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -233,7 +247,6 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
-          cat pom.xml || true
       - name: Install powsybl-dependencies
         run : mvn -batch-mode --no-transfer-progress clean install -DskipTests
 
@@ -260,22 +273,21 @@ jobs:
       - name: Install wheel
         run: pip3 install dist/*.whl --user
 
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: pytest
 
-      - name: Log all versions
-        run: |
-          echo "Core version: ${{ env.CORE_VERSION }}"
-          echo "LoadFlow version: ${{ env.LOADFLOW_VERSION }}"
-          echo "Diagram version: ${{ env.DIAGRAM_VERSION }}"
-          echo "ENTSO-E version: ${{ env.ENTSOE_VERSION }}"
-          echo "OpenRAO version: ${{ env.OPENRAO_VERSION }}"
-          echo "Dynawo version: ${{ env.DYNAWO_VERSION }}"
-          echo "Dependencies version: ${{ env.DEPENDENCIES_VERSION }}"
+      - name: Upload wheel
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
+          path: dist/*.whl
+
+      - name: check pypowsybl versions
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
+
+
 
 
