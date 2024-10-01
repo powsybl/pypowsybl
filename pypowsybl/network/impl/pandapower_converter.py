@@ -4,6 +4,7 @@ from enum import Enum
 from importlib import util
 from typing import Dict
 
+import logging
 import numpy as np
 import pandas as pd
 import pypowsybl._pypowsybl as _pp
@@ -12,7 +13,7 @@ from pandas import Series
 from .network import Network
 from .network_creation_util import create_empty
 
-MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
+MIN_TARGET_P_TO_NOT_BEEN_DISCARDED_FROM_ACTIVE_POWER_CONTROL = 0.0001
 
 DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
@@ -104,8 +105,10 @@ def create_transformers(n, n_pdp):
         connectable_bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
         bus1_id = np.where(trafo_and_bus['in_service'], connectable_bus1_id, "")
         bus2_id = np.where(trafo_and_bus['in_service'], connectable_bus2_id, "")
-        n_tap = np.where(~np.isnan(trafo_and_bus['tap_pos']) & ~np.isnan(trafo_and_bus['tap_neutral']) & ~np.isnan(trafo_and_bus['tap_step_percent']),
-                         1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0, 1.0)
+        # Run this for trafos which are not phase shifters
+        # Here we enable also the cross regulator
+        # For case of PST if tap_step_degree and tap_step_percent is defined , it will lead to error in power flow
+        n_tap = extract_tap_info(trafo_and_bus)
         rated_u1 = np.where(trafo_and_bus['tap_side'] == "hv", trafo_and_bus['vn_hv_kv'] * n_tap, trafo_and_bus['vn_hv_kv'])
         rated_u2 = np.where(trafo_and_bus['tap_side'] == "lv", trafo_and_bus['vn_lv_kv'] * n_tap, trafo_and_bus['vn_lv_kv'])
         c = n_pdp.sn_mva / n_pdp.trafo['sn_mva']
@@ -128,6 +131,45 @@ def create_transformers(n, n_pdp):
                                          rated_u1=rated_u1, rated_u2=rated_u2,
                                          r=r, x=x, g=g, b=b)
 
+
+def extract_tap_info(trafo_and_bus):
+    # Setup logging configuration
+    logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
+
+    # Create a copy of 'tap_step_percent' to modify
+    tap_step_percent_new = np.zeros_like(trafo_and_bus['tap_step_percent'])
+
+    # Check if 'tap_step_degree' is not NaN (available) for transformers
+    degree_mask = ~np.isnan(trafo_and_bus['tap_step_degree'])
+
+    # Identify phase shift transformers (tap_phase_shifter == True)
+    phase_shift_mask = trafo_and_bus['tap_phase_shifter']
+
+    # Log error if both tap_step_degree and tap_step_percent are parameterized for phase shift transformers
+    both_parameterized_mask = phase_shift_mask & degree_mask & ~np.isnan(trafo_and_bus['tap_step_percent'])
+
+    if np.any(both_parameterized_mask):
+        for idx in trafo_and_bus.index[both_parameterized_mask]:
+            logging.error(
+                f"Transformer at index {idx} has both 'tap_step_degree' and 'tap_step_percent' parameterized.")
+
+    # For transformers where 'tap_step_degree' is present, calculate tap_step_percent_new
+    tap_step_percent_new[degree_mask] = (
+            0.01 * (2 * np.sin(0.5 * trafo_and_bus['tap_step_degree'][degree_mask]))  # Correct formula
+    )
+
+    # Add the newly calculated tap_step_percent_new to the existing tap_step_percent
+    trafo_and_bus['tap_step_percent'] += tap_step_percent_new  # Update original tap_step_percent
+
+    # Now calculate n_tap based on the updated tap_step_percent
+    n_tap = np.where(
+        (~np.isnan(trafo_and_bus['tap_pos']) &
+         ~np.isnan(trafo_and_bus['tap_neutral']) &
+         ~np.isnan(trafo_and_bus['tap_step_percent'])),  # Use the updated 'tap_step_percent'
+        1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0,
+        1.0
+    )
+    return n_tap
 
 def create_limits(n, n_pdp, id):
     limit_side = ['ONE'] * len(n_pdp.line)  # create on side on, why not...
@@ -201,7 +243,7 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ge
         vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
         connectable_bus_id = build_bus_id(gen_and_bus['bus'].astype(str)).tolist()
         bus_id = np.where(gen_and_bus['in_service'], connectable_bus_id, "")
-        target_p = [MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
+        target_p = [MIN_TARGET_P_TO_NOT_BEEN_DISCARDED_FROM_ACTIVE_POWER_CONTROL] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
         voltage_regulator_on = [True] * len(gen_and_bus)
         target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv'] if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else [1.0] * len(gen_and_bus)
         target_q = gen_and_bus['q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else [0.0] * len(gen_and_bus)
