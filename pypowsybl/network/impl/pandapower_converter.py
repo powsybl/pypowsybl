@@ -4,6 +4,7 @@ from enum import Enum
 from importlib import util
 from typing import Dict
 
+import logging
 import numpy as np
 import pandas as pd
 import pypowsybl._pypowsybl as _pp
@@ -132,25 +133,43 @@ def create_transformers(n, n_pdp):
 
 
 def extract_tap_info(trafo_and_bus):
+    # Setup logging configuration
+    logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
+
     # Create a copy of 'tap_step_percent' to modify
-    tap_step_percent_new = trafo_and_bus['tap_step_percent'].copy()
-    # Check if 'tap_step_degree' is not NaN (available) for all transformers
+    tap_step_percent_new = np.zeros_like(trafo_and_bus['tap_step_percent'])
+
+    # Check if 'tap_step_degree' is not NaN (available) for transformers
     degree_mask = ~np.isnan(trafo_and_bus['tap_step_degree'])
-    # For transformers where 'tap_step_degree' is present, convert to percent and add it to 'tap_step_percent'
+
+    # Identify phase shift transformers (tap_phase_shifter == True)
+    phase_shift_mask = trafo_and_bus['tap_phase_shifter']
+
+    # Log error if both tap_step_degree and tap_step_percent are parameterized for phase shift transformers
+    both_parameterized_mask = phase_shift_mask & degree_mask & ~np.isnan(trafo_and_bus['tap_step_percent'])
+
+    if np.any(both_parameterized_mask):
+        for idx in trafo_and_bus.index[both_parameterized_mask]:
+            logging.error(
+                f"Transformer at index {idx} has both 'tap_step_degree' and 'tap_step_percent' parameterized.")
+
+    # For transformers where 'tap_step_degree' is present, calculate tap_step_percent_new
     tap_step_percent_new[degree_mask] = (
-            tap_step_percent_new[degree_mask] +
-            100 * 2 * np.arcsin(0.5 * trafo_and_bus['tap_step_degree'][degree_mask] / 100)
+            0.01 * (2 * np.sin(0.5 * trafo_and_bus['tap_step_degree'][degree_mask]))  # Correct formula
     )
+
+    # Add the newly calculated tap_step_percent_new to the existing tap_step_percent
+    trafo_and_bus['tap_step_percent'] += tap_step_percent_new  # Update original tap_step_percent
+
     # Now calculate n_tap based on the updated tap_step_percent
     n_tap = np.where(
         (~np.isnan(trafo_and_bus['tap_pos']) &
          ~np.isnan(trafo_and_bus['tap_neutral']) &
-         ~np.isnan(tap_step_percent_new)),  # Use the updated 'tap_step_percent_new'
-        1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * tap_step_percent_new / 100.0,
+         ~np.isnan(trafo_and_bus['tap_step_percent'])),  # Use the updated 'tap_step_percent'
+        1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0,
         1.0
     )
     return n_tap
-
 
 def create_limits(n, n_pdp, id):
     limit_side = ['ONE'] * len(n_pdp.line)  # create on side on, why not...
