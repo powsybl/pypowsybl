@@ -20,7 +20,7 @@ jobs:
           - {
             name: cp313,
             abi: cp313,
-            version: '3.13.0',
+            version: '3.13',
           }
 
     steps:
@@ -127,7 +127,7 @@ jobs:
         python:
           - {
             name: cp313,
-            version: '3.13.0',
+            version: '3.13',
           }
 
     steps:
