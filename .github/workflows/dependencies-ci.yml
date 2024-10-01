@@ -59,7 +59,7 @@ jobs:
         run: mvn --batch-mode clean install -DskipTests
       - name : Get core version
         run : |
-          echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV*
+          echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
           cat pom.xml || true
 
   #BUILD LOADFLOW
