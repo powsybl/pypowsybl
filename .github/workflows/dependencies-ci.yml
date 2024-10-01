@@ -3,6 +3,7 @@ name: Snapshot CI
 on:
   push:
     branches:
+      # on all branches except main where full build will be run
       - '*'
       - '!main'
 
@@ -220,7 +221,7 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
           cat pom.xml || true
       - name: Install powsybl-dependencies
-          mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        run : mvn -batch-mode --no-transfer-progress clean install -DskipTests
 
 
   #BUILD PYPOWSYBL
