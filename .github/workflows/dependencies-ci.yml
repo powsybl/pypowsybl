@@ -80,7 +80,7 @@ jobs:
             ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
         run : |
-          mvn versions:update-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false -DprocessDependencies=false
       - name: Build with Maven
         run: | 
           cat pom.xml || true
