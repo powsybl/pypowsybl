@@ -457,15 +457,29 @@ def test_geo_data():
 def test_cgmes_metadata_extension():
     n = pn.create_eurostag_tutorial_example1_network()
     extension_name = 'cgmesMetadataModels'
+    metadata = pd.DataFrame.from_records(index='id',
+                                        columns=['id', 'cgmes_subset', 'description', 'version',
+                                                 'modeling_authority_set', 'profiles', 'dependent_on', 'supersedes'],
+                                        data=[('sshId', 'STEADY_STATE_HYPOTHESIS', 'SSH description', 1,
+                                               'http://powsybl.org', 'steady-state-hypothesis',
+                                               'ssh-dependency1/ssh-dependency2', '')])
 
-    metadata= pd.DataFrame.from_records(index='id',
-                                        columns=['id', 'cgmes_subset', 'description', 'version', 'modeling_authority_set', 'profiles', 'dependent_on', 'supersedes'],
-                                        data=[('sshId', 'STEADY_STATE_HYPOTHESIS', 'SSH description', 1, 'http://powsybl.org', 'steady-state-hypothesis', 'ssh-dependency1/ssh-dependency2', '')])
     n.create_extensions(extension_name, [metadata])
     test = n.get_extensions(extension_name)
-  #  n.create_extensions(extension_name, [metadata_expected])
-    print(test)
- # pd.testing.assert_frame_equal(n.get_extensions(extension_name), metadata_expected)
+
+    metadata_2 = pd.DataFrame.from_records(index='id',
+                                           columns=['id', 'cgmes_subset', 'description', 'version',
+                                                    'modeling_authority_set', 'profiles', 'dependent_on', 'supersedes'],
+                                           data=[('sshId', 'EQUIPMENT', 'SSH description', 2,
+                                                  'http://powsybl.org', 'equipment',
+                                                  'ssh-dependency1/ssh-dependency2', '')])
+
+    n.update_extensions(extension_name, metadata_2)
+    test2 = n.get_extensions(extension_name)
+
+    assert metadata_2.equals(test2)
+    assert test2.version == 2
+
 
 
 
