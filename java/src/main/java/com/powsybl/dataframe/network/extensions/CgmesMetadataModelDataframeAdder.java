@@ -19,12 +19,12 @@ import java.util.*;
 public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.strings("subset"),
+            SeriesMetadata.strings("cgmes_subset"),
             SeriesMetadata.strings("description"),
             SeriesMetadata.ints("version"),
-            SeriesMetadata.strings("modelingAuthoritySet"),
+            SeriesMetadata.strings("modeling_authority_set"),
             SeriesMetadata.strings("profiles"),
-            SeriesMetadata.strings("dependentOn"),
+            SeriesMetadata.strings("dependent_on"),
             SeriesMetadata.strings("supersedes")
     );
 
@@ -45,12 +45,12 @@ public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {
 
         private CgmesMetadataSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
-            this.subset = dataframe.getStrings("subset");
+            this.subset = dataframe.getStrings("cgmes_subset");
             this.description = dataframe.getStrings("description");
             this.version = dataframe.getInts("version");
-            this.modelingAuthoritySet = dataframe.getStrings("modelingAuthoritySet");
+            this.modelingAuthoritySet = dataframe.getStrings("modeling_authority_set");
             this.profiles = dataframe.getStrings("profiles");
-            this.dependentOn = dataframe.getStrings("dependentOn");
+            this.dependentOn = dataframe.getStrings("dependent_on");
             this.supersedes = dataframe.getStrings("supersedes");
         }
 

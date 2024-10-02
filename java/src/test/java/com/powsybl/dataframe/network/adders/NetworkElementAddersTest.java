@@ -460,12 +460,12 @@ class NetworkElementAddersTest {
 
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", id);
-        addStringColumn(dataframe, "subset", subset);
+        addStringColumn(dataframe, "cgmes_subset", subset);
         addStringColumn(dataframe, "description", description);
         addIntColumn(dataframe, "version", version);
-        addStringColumn(dataframe, "modelingAuthoritySet", modelingAuthoritySet);
+        addStringColumn(dataframe, "modeling_authority_set", modelingAuthoritySet);
         addStringColumn(dataframe, "profiles", profiles);
-        addStringColumn(dataframe, "dependentOn", dependentOn);
+        addStringColumn(dataframe, "dependent_on", dependentOn);
         addStringColumn(dataframe, "supersedes", supersedes);
 
         NetworkElementAdders.addExtensions("cgmesMetadataModels", network, singletonList(dataframe));

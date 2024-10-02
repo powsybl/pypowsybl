@@ -28,7 +28,7 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(CgmesMetadataModels.NAME, "Provides information about CGMES metadata models",
-                "index : id (str), cgmes_subset (str), id (str), description (str), " +
+                "index : id (str), cgmes_subset (str), description (str), " +
                         "version (int), modeling_authority_set (str), profiles (str), dependent_on (str), supersedes (str) ");
     }
 
@@ -51,7 +51,6 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
                 .strings("dependent_on", cgmesMetadataModel -> String.join(",", cgmesMetadataModel.getDependentOn()))
                 .strings("supersedes", cgmesMetadataModel -> String.join(",", cgmesMetadataModel.getSupersedes()))
                 .build();
-
     }
 
     @Override

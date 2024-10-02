@@ -453,10 +453,26 @@ def test_geo_data():
 
     pd.testing.assert_frame_equal(n.get_extensions('linePosition'), line_expected)
 
+
+def test_cgmes_metadata_extension():
+    n = pn.create_eurostag_tutorial_example1_network()
+    extension_name = 'cgmesMetadataModels'
+
+    metadata= pd.DataFrame.from_records(index='id',
+                                        columns=['id', 'cgmes_subset', 'description', 'version', 'modeling_authority_set', 'profiles', 'dependent_on', 'supersedes'],
+                                        data=[('sshId', 'STEADY_STATE_HYPOTHESIS', 'SSH description', 1, 'http://powsybl.org', 'steady-state-hypothesis', 'ssh-dependency1/ssh-dependency2', '')])
+    n.create_extensions(extension_name, [metadata])
+    test = n.get_extensions(extension_name)
+  #  n.create_extensions(extension_name, [metadata_expected])
+    print(test)
+ # pd.testing.assert_frame_equal(n.get_extensions(extension_name), metadata_expected)
+
+
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
-    assert extensions_information.loc['cgmesMetadataModels']['attributes'] == ('index : id (str), cgmes_subset (str), id (str), description (str), ' \
+    assert extensions_information.loc['cgmesMetadataModels']['attributes'] == ('index : id (str), cgmes_subset (str), description (str), ' \
                                                                             'version (int), modeling_authority_set (str), profiles (str), ' \
                                                                             'dependent_on (str), supersedes (str) ')
     assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'
