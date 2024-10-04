@@ -447,7 +447,9 @@ enum ShortCircuitStudyType {
 
 enum InitialVoltageProfileMode {
     NOMINAL = 0,
-    PREVIOUS_VALUE
+    // The enum is incomplete, the last case (CONFIGURED) will be done later.
+    // For now the value of PREVIOUS_VALUE must be specified.
+    PREVIOUS_VALUE = 2
 };
 
 class ShortCircuitAnalysisParameters {
