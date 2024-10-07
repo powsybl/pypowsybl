@@ -67,15 +67,27 @@ jobs:
         run: echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         shell: bash
 
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Define check_snapshot_branch function
+        run: |
+          check_snapshot_branch() {
+              local repo=$1
+              local core_version=$2
+          
+              SNAPSHOT_BRANCH=$(git ls-remote --heads "$repo" | grep -E "refs/heads/$(echo $core_version | grep -q SNAPSHOT && echo "$core_version" || echo "$core_version-SNAPSHOT")" | sed 's/.*refs\/heads\///')
+          
+              if [ -n "$SNAPSHOT_BRANCH" ]; then
+              echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
+              echo "SNAPSHOT_BRANCH=$SNAPSHOT_BRANCH" >> $GITHUB_ENV
+              else
+              echo "No SNAPSHOT branch found"
+              echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
+              fi
+          }
+        shell: bash
 
       #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
         run: |
-          source .github/workflows/check-snapshot-branch.sh
           check_snapshot_branch "https://github.com/powsybl/powsybl-open-loadflow.git" "$CORE_VERSION"
         shell: bash
 
@@ -100,7 +112,6 @@ jobs:
       #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
         run: |
-          source .github/workflows/check-snapshot-branch.sh
           check_snapshot_branch "https://github.com/powsybl/powsybl-diagram.git" "$CORE_VERSION"
         shell: bash
       - name: Checkout diagram-sources
@@ -123,7 +134,6 @@ jobs:
       #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
         run: |
-          source .github/workflows/check-snapshot-branch.sh
           check_snapshot_branch "https://github.com/powsybl/powsybl-entsoe.git" "$CORE_VERSION"
         shell: bash
       - name: Checkout entsoe-sources
@@ -148,7 +158,6 @@ jobs:
       #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
         run: |
-          source .github/workflows/check-snapshot-branch.sh
           check_snapshot_branch "https://github.com/powsybl/powsybl-open-rao.git" "$CORE_VERSION"
         shell: bash
       - name: Checkout open-rao-sources
@@ -177,7 +186,6 @@ jobs:
       #BUILD DYNAWO
       - name: Check for SNAPSHOT branch
         run: |
-          source .github/workflows/check-snapshot-branch.sh
           check_snapshot_branch "https://github.com/powsybl/powsybl-dynawo.git" "$CORE_VERSION"
           shell: bash
       - name: Checkout dynawo-sources
