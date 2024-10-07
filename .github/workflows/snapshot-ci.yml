@@ -25,10 +25,15 @@ jobs:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-latest, sed_inplace: "-i" }
-
+          - { name: darwin, os: macos-12, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64", sed_inplace: "-i ''" }
+          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64", sed_inplace: "-i ''" }
+          - { name: windows, os: windows-2022, sed_inplace: "-i" }
         python:
           - { name: cp38, version: '3.8' }
-
+          - { name: cp39, version: '3.9' }
+          - { name: cp310, version: '3.10' }
+          - { name: cp311, version: '3.11' }
+          - { name: cp312, version: '3.12' }
 
     steps:
       - name: Set up JDK 17
@@ -52,34 +57,35 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
+      #BUILD CORE
+      - name: Checkout core-sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-core
+          ref: main
+      - name: Build with Maven
+        run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+      - name: Get core version
+        run: echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
+
+
       - name: Build and install dependencies
         id: build_deps
-        env:
-          REPOS: >-
-            powsybl/powsybl-core
-            powsybl/powsybl-open-loadflow
-            powsybl/powsybl-diagram
-            powsybl/powsybl-entsoe
-            powsybl/powsybl-open-rao
-            powsybl/powsybl-dynawo
         run: |
-          versions=""
+          REPOS="powsybl/powsybl-open-loadflow powsybl/powsybl-diagram powsybl/powsybl-entsoe powsybl/powsybl-open-rao powsybl/powsybl-dynawo"
           for repo in $REPOS
           do
             echo "Processing $repo"
           
-          
-            if [ "$repo" = "powsybl/powsybl-core" ]; then
-              BRANCH="main"
+            SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/$repo.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
+            if [ -n "$SNAPSHOT_BRANCH" ]; then
+              echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
+              BRANCH="$SNAPSHOT_BRANCH"
             else
-              SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/$repo.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
-              if [ -n "$SNAPSHOT_BRANCH" ]; then
-                echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
-                BRANCH="$SNAPSHOT_BRANCH"
-              else
-                echo "No SNAPSHOT branch found"
-                BRANCH="main"
-              fi
+              echo "No SNAPSHOT branch found"
+              BRANCH="main"
             fi
           
             git clone -b $BRANCH https://github.com/$repo.git
@@ -91,34 +97,24 @@ jobs:
           
             if [ "$repo" = "powsybl/powsybl-entsoe" ]; then
               sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
-              sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
+              sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$POWSYBL_OPEN_LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
             fi
           
             if [ "$repo" = "powsybl/powsybl-open-rao" ]; then
               sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
-              sed ${{ matrix.config.sed_inplace }} 's|<powsybl-entsoe.version>.*</powsybl-entsoe.version>|<powsybl-entsoe.version>'"$ENTSOE_VERSION"'</powsybl-entsoe.version>|' pom.xml
-              sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
+              sed ${{ matrix.config.sed_inplace }} 's|<powsybl-entsoe.version>.*</powsybl-entsoe.version>|<powsybl-entsoe.version>'"$POWSYBL_ENTSOE_VERSION"'</powsybl-entsoe.version>|' pom.xml
+              sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$POWSYBL_OPEN_LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
             fi
           
             mvn -batch-mode --no-transfer-progress clean install -DskipTests
           
             VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             repo_name=$(echo $repo | cut -d'/' -f2 | tr '-' '_' | tr '[:lower:]' '[:upper:]')
-            versions="${versions}${repo_name}_VERSION=${VERSION}\n"
+            echo "${repo_name}_VERSION=$VERSION" >> $GITHUB_ENV
           
             cd ..
           done
-          echo -e "$versions" >> $GITHUB_OUTPUT
         shell: bash
-
-      - name: Set version variables
-        run: |
-          echo "${{ steps.build_deps.outputs.POWSYBL_CORE_VERSION }}" >> $GITHUB_ENV
-          echo "${{ steps.build_deps.outputs.POWSYBL_OPEN_LOADFLOW_VERSION }}" >> $GITHUB_ENV
-          echo "${{ steps.build_deps.outputs.POWSYBL_DIAGRAM_VERSION }}" >> $GITHUB_ENV
-          echo "${{ steps.build_deps.outputs.POWSYBL_ENTSOE_VERSION }}" >> $GITHUB_ENV
-          echo "${{ steps.build_deps.outputs.POWSYBL_OPEN_RAO_VERSION }}" >> $GITHUB_ENV
-          echo "${{ steps.build_deps.outputs.POWSYBL_DYNAWO_VERSION }}" >> $GITHUB_ENV
 
       - name: Checkout powsybl-dependencies
         uses: actions/checkout@v4
