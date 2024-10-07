@@ -11,23 +11,57 @@ env:
 on:
   push:
     branches:
-      # on all branches except main where full build will be run
       - '*'
       - '!main'
 
 jobs:
-  build_dependencies:
-    name: Build linux ${{ matrix.python.name }}
-    runs-on: ${{ matrix.os }}
+  buil_pypowsybl:
+    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        config:
+          - {
+            name: ubuntu,
+            os: ubuntu-latest,
+          }
+          - {
+            name: darwin,
+            os: macos-12,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-14,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+          }
         python:
-          - name: python3.8,
-            version: '3.8'
-          - name: python3.9,
-            version: '3.9'
-      fail-fast: false
+            - {
+              name: cp38,
+              version: '3.8',
+            }
+            - {
+              name: cp3   9,
+              version: '3.9',
+            }
+            - {
+              name: cp310,
+              version: '3.10',
+            }
+            - {
+              name: cp311,
+              version: '3.11',
+            }
+            - {
+              name: cp312,
+              version: '3.12',
+            }
 
 
     steps:
@@ -267,16 +301,29 @@ jobs:
         working-directory: ./tests # Run in subdir to use installed lib, not sources
         run: pytest
 
-      - name: Upload wheel
-        uses: actions/upload-artifact@v3
-        with:
-          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
-          path: dist/*.whl
 
       - name: check pypowsybl versions
         working-directory: ./tests
         run: python3 basic_import_test.py
 
+
+  package:
+    name: Package wheels
+    runs-on: ubuntu-latest
+    needs: [buil_pypowsybl]
+
+    steps:
+      - name: Download wheels
+        uses: actions/download-artifact@v3
+        with:
+          path: download
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v3
+        with:
+          name: pypowsybl-wheels
+          path: |
+            download/**/*.whl
 
 
 
