@@ -25,15 +25,10 @@ jobs:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-latest, sed_inplace: "-i" }
-          - { name: darwin, os: macos-12, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64", sed_inplace: "-i ''" }
-          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64", sed_inplace: "-i ''" }
-          - { name: windows, os: windows-2022, sed_inplace: "-i" }
+
         python:
           - { name: cp38, version: '3.8' }
-          - { name: cp39, version: '3.9' }
-          - { name: cp310, version: '3.10' }
-          - { name: cp311, version: '3.11' }
-          - { name: cp312, version: '3.12' }
+
 
     steps:
       - name: Set up JDK 17
