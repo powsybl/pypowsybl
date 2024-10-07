@@ -106,6 +106,7 @@ jobs:
             VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
             repo_name=$(echo $repo | cut -d'/' -f2 | tr '-' '_' | tr '[:lower:]' '[:upper:]')
             echo "${repo_name}_VERSION=$VERSION" >> $GITHUB_ENV
+            echo "${repo_name}_VERSION=$VERSION"
           
             cd ..
           done
