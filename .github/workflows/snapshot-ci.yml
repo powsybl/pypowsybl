@@ -86,16 +86,16 @@ jobs:
             git clone -b $BRANCH https://github.com/$repo.git
             cd $(basename $repo)
           
-            if [ "$repo" == "powsybl/powsybl-open-loadflow" ] || [ "$repo" = "powsybl/powsybl-diagram" ] || [ "$repo" = "powsybl/powsybl-dynawo" ]; then
+            if [ "$repo" == "powsybl/powsybl-open-loadflow" ] || [ "$repo" == "powsybl/powsybl-diagram" ] || [ "$repo" == "powsybl/powsybl-dynawo" ]; then
               sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
             fi
           
-            if [ "$repo" = "powsybl/powsybl-entsoe" ]; then
+            if [ "$repo" == "powsybl/powsybl-entsoe" ]; then
               sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
               sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$POWSYBL_OPEN_LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
             fi
           
-            if [ "$repo" = "powsybl/powsybl-open-rao" ]; then
+            if [ "$repo" == "powsybl/powsybl-open-rao" ]; then
               sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
               sed ${{ matrix.config.sed_inplace }} 's|<powsybl-entsoe.version>.*</powsybl-entsoe.version>|<powsybl-entsoe.version>'"$POWSYBL_ENTSOE_VERSION"'</powsybl-entsoe.version>|' pom.xml
               sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$POWSYBL_OPEN_LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
