@@ -67,7 +67,22 @@ jobs:
           for repo in $REPOS
           do
             echo "Processing $repo"
-            git clone https://github.com/$repo.git
+          
+          
+            if [ "$repo" = "powsybl/powsybl-core" ]; then
+              BRANCH="main"
+            else
+              SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/$repo.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
+              if [ -n "$SNAPSHOT_BRANCH" ]; then
+                echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
+                BRANCH="$SNAPSHOT_BRANCH"
+              else
+                echo "No SNAPSHOT branch found"
+                BRANCH="main"
+              fi
+            fi
+          
+            git clone -b $BRANCH https://github.com/$repo.git
             cd $(basename $repo)
           
             if [ "$repo" == "powsybl/powsybl-open-loadflow" ] || [ "$repo" = "powsybl/powsybl-diagram" ] || [ "$repo" = "powsybl/powsybl-dynawo" ]; then
