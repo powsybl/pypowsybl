@@ -10,6 +10,7 @@ env:
 
 on:
   workflow_dispatch:
+  push:
 
 jobs:
   buil_pypowsybl:
@@ -112,7 +113,8 @@ jobs:
           repository: powsybl/powsybl-diagram
           ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run: |
+          sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
         shell: bash
       - name: Build with Maven
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
