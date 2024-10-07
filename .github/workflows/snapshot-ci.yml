@@ -9,9 +9,11 @@ env:
   DEPENDENCIES_VERSION: ''
 
 on:
-  schedule:
-    - cron: '0 3 * * *'
-  workflow_dispatch:
+  push:
+    branches:
+      # on all branches except main where full build will be run
+      - '*'
+      - '!main'
 
 jobs:
   buil_pypowsybl:
@@ -21,50 +23,18 @@ jobs:
       matrix:
         config:
           - {
-            name: ubuntu,
-            os: ubuntu-latest,
-            sed_inplace: "-i",
-          }
-          - {
             name: darwin,
             os: macos-12,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
             bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
             sed_inplace: "-i ''",
           }
-          - {
-            name: darwin-arm64,
-            os: macos-14,
-            macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-            sed_inplace: "-i ''",
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-            sed_inplace: "-i",
-          }
         python:
             - {
               name: cp38,
               version: '3.8',
             }
-            - {
-              name: cp3   9,
-              version: '3.9',
-            }
-            - {
-              name: cp310,
-              version: '3.10',
-            }
-            - {
-              name: cp311,
-              version: '3.11',
-            }
-            - {
-              name: cp312,
-              version: '3.12',
-            }
+
 
 
     steps:
