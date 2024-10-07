@@ -12,7 +12,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * *'
-
+  push:
+    branches:
+      - snapshot_ci
 jobs:
   buil_pypowsybl:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
