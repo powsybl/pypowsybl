@@ -122,7 +122,6 @@ jobs:
 
       #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
-      - name: Check for SNAPSHOT branch
         run: |
           source .github/workflows/check-snapshot-branch.sh
           check_snapshot_branch "https://github.com/powsybl/powsybl-entsoe.git" "$CORE_VERSION"
