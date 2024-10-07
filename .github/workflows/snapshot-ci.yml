@@ -29,6 +29,24 @@ jobs:
 
 
     steps:
+
+      # 1. Checkout du dépôt principal
+      - name: Checkout main repository
+        uses: actions/checkout@v4
+
+      # 2. Vérifier que les scripts sont présents (Étape de débogage)
+      - name: List scripts directory
+        run: ls -la .github/workflows/
+        shell: bash
+
+      # 3. Donner les permissions d'exécution aux scripts
+      - name: Make scripts executable
+        run: chmod +x .github/workflows/*.sh
+        shell: bash
+
+
+
+
       #SETUP JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
