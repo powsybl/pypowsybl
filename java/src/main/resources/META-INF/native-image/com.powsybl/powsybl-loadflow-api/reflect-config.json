@@ -2,6 +2,6 @@
   {
     "name":"com.powsybl.loadflow.AbstractLoadFlowDefaultParametersLoader",
     "allPublicMethods":true,
-    "methods":[{"name":"<init>","parameterTypes":[] }]
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String", "java.lang.String"] }]
   }
 ]
