@@ -134,13 +134,11 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run : |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run : sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
         shell: bash
 
       - name: Build with Maven
-        run: |
-          mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
         shell: bash
 
       - name: Get diagram version
@@ -168,18 +166,15 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run : |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
+        run : sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
         shell: bash
 
       - name: Change open-loadflow version
-        run : |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
+        run : sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
         shell: bash
 
       - name: Build with Maven
-        run: |
-          mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
         shell: bash
 
       - name: Get entsoe version
@@ -207,23 +202,19 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
+        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
         shell: bash
 
       - name: Change entsoe version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
+        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
         shell: bash
 
       - name: Change open-loadflow version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
+        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
         shell: bash
 
       - name: Build with Maven
-        run: |
-          mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
         shell: bash
 
       - name: Get open-rao version
@@ -252,13 +243,11 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
         shell: bash
 
       - name: Build with Maven
-        run: |
-          mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
         shell: bash
 
       - name: Get dynawo version
@@ -300,8 +289,7 @@ jobs:
 
       - name: Change java-pom.xml
         working-directory: ./java
-        run : |
-          mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
+        run : mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
         shell: bash
 
       - name: Install dependencies
@@ -309,12 +297,15 @@ jobs:
 
       - name: Build wheel
         run: python3 setup.py bdist_wheel
+        shell: bash
+
 
       - name: Install wheel
-        run: pip3 install dist/*.whl --user
+        run: python -m pip install dist/*.whl --user
+        shell: bash
 
       - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        working-directory: ./tests
         run: pytest
 
       - name: check pypowsybl versions
@@ -339,8 +330,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: pypowsybl-wheels
-          path: |
-            download/**/*.whl
+          path: download/**/*.whl
 
 
 
