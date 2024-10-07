@@ -27,25 +27,6 @@ jobs:
             os: ubuntu-latest,
             sed_inplace: "-i",
           }
-          - {
-            name: darwin,
-            os: macos-12,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-            sed_inplace: "-i ''",
-          }
-          - {
-            name: darwin-arm64,
-            os: macos-14,
-            macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-            sed_inplace: "-i ''",
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-            sed_inplace: "-i",
-          }
         python:
             - {
               name: cp38,
@@ -122,7 +103,7 @@ jobs:
             ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run : sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
         shell: bash
 
       - name: Build with Maven
@@ -157,8 +138,8 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run : |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
+
         shell: bash
 
       - name: Build with Maven
@@ -191,13 +172,11 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run : |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsyblcore.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
         shell: bash
 
       - name: Change open-loadflow version
-        run : |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
         shell: bash
 
       - name: Build with Maven
@@ -230,18 +209,15 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
 
       - name: Change core version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsybl.core.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
         shell: bash
 
       - name: Change entsoe version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsybl.entsoe.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
         shell: bash
 
       - name: Change open-loadflow version
-        run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
+        run : mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=$CORE_VERSION -DallowSnapshots=true -DgenerateBackupPoms=false
         shell: bash
 
       - name: Build with Maven
@@ -276,7 +252,7 @@ jobs:
 
       - name: Change core version
         run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+          mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
         shell: bash
 
       - name: Build with Maven
