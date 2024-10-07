@@ -16,26 +16,22 @@ on:
       - '!main'
 
 jobs:
-  buil_pypowsybl:
+  buil_pypowsybl_unix:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
         config:
           - {
-            name: darwin,
-            os: macos-12,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-            sed_inplace: "-i ''",
+            name: windows,
+            os: windows-2022,
           }
+
         python:
             - {
               name: cp38,
               version: '3.8',
             }
-
-
 
     steps:
   #SETUP JDK
@@ -79,10 +75,15 @@ jobs:
           ref: main
       - name: Build with Maven
         run:  mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+
       - name : Get core version
         run : echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
-  #BUILD LOADFLOW
+
+
+      #BUILD LOADFLOW
       - name: Check for SNAPSHOT branch
         run: |
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-loadflow.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')          
@@ -93,6 +94,8 @@ jobs:
             echo "No SNAPSHOT branch found"
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
+        shell: bash
+
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
         with:
@@ -101,14 +104,20 @@ jobs:
 
       - name: Change core version
         run : sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        shell: bash
+
       - name: Build with Maven
         run: | 
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+
       - name: Get loadflow version
         run : echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
 
-  #BUILD DIAGRAM
+
+      #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
         run: |
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-diagram.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
@@ -119,6 +128,8 @@ jobs:
             echo "No SNAPSHOT branch found"
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
+        shell: bash
+
 
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
@@ -129,13 +140,19 @@ jobs:
       - name: Change core version
         run : |
           sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        shell: bash
+
       - name: Build with Maven
         run: |
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+
       - name: Get diagram version
         run : echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
-  #BUILD ENTSOE
+
+      #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
         run: |
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-entsoe.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
@@ -146,6 +163,8 @@ jobs:
             echo "No SNAPSHOT branch found"
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
+        shell: bash
+
       - name: Checkout entsoe-sources
         uses: actions/checkout@v4
         with:
@@ -155,17 +174,24 @@ jobs:
       - name: Change core version
         run : |
           sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
+        shell: bash
+
       - name: Change open-loadflow version
         run : |
           sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
+        shell: bash
+
       - name: Build with Maven
         run: |
-          cat pom.xml || true
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+
       - name: Get entsoe version
         run : echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
-  #BUILD OPENRAO
+
+      #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
         run: |
           SNAPSHOT_BRANCH=$(git ls-remote --heads https://github.com/powsybl/powsybl-open-rao.git | grep -E "refs/heads/$(echo $CORE_VERSION | grep -q SNAPSHOT && echo "$CORE_VERSION" || echo "$CORE_VERSION-SNAPSHOT")" | sed 's/.*refs\/heads\///')
@@ -176,6 +202,8 @@ jobs:
             echo "No SNAPSHOT branch found"
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
+        shell: bash
+
       - name: Checkout open-rao-sources
         uses: actions/checkout@v4
         with:
@@ -185,17 +213,26 @@ jobs:
       - name: Change core version
         run: |
           sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
+        shell: bash
+
       - name: Change entsoe version
         run: |
           sed ${{ matrix.config.sed_inplace }} 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
+        shell: bash
+
       - name: Change open-loadflow version
         run: |
           sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
+        shell: bash
+
       - name: Build with Maven
         run: | 
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+
       - name: Get open-rao version
         run : echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
 
 
@@ -210,6 +247,8 @@ jobs:
             echo "No SNAPSHOT branch found"
             echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
           fi
+        shell: bash
+
       - name: Checkout dynawo-sources
         uses: actions/checkout@v4
         with:
@@ -219,11 +258,16 @@ jobs:
       - name: Change core version
         run: |
           sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        shell: bash
+
       - name: Build with Maven
         run: | 
           mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
+
       - name: Get dynawo version
         run : echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
 
   #CHECKOUT_PYPOWSYBL_DEPENCIES
@@ -234,6 +278,7 @@ jobs:
           ref: main
       - name: Get dependencies version
         run: echo "DEPENDENCIES_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        shell: bash
 
   #UPDATE/INSTALL_PYPOWSYBL_DEPENCIES
       - name: Update dependencies versions
@@ -244,8 +289,11 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
+        shell: bash
+
       - name: Install powsybl-dependencies
         run : mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        shell: bash
 
 
   #BUILD PYPOWSYBL
@@ -258,7 +306,7 @@ jobs:
         working-directory: ./java
         run : |
           mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
-          cat pom.xml || true
+        shell: bash
 
       - name: Install dependencies
         run: pip3 install -r requirements.txt
@@ -280,10 +328,12 @@ jobs:
         run: python3 basic_import_test.py
 
 
+
+
   package:
     name: Package wheels
     runs-on: ubuntu-latest
-    needs: [buil_pypowsybl]
+    needs: [buil_pypowsybl_unix]
 
     steps:
       - name: Download wheels
