@@ -127,7 +127,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 'nominal_apparent_power': self._nominal_apparent_power}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, None)
+        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, [], None)
         self._per_unit = state['per_unit']
         self._nominal_apparent_power = state['nominal_apparent_power']
         self.__init_from_handle()
@@ -2325,6 +2325,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the injection
               - **voltage_level_id**: at which substation the injection is connected
+              - **node**  (optional): node where this injection is connected, in node-breaker voltage levels
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this injection is connected
               - **connected**: ``True`` if the injection is connected to a bus
               - **bus_id**: bus where this injection is connected
@@ -2353,10 +2354,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **type**: the type of the branch (line or 2 windings transformer)
               - **voltage_level1_id**: voltage level where the branch is connected, on side 1
+              - **node1** (optional): node where this branch is connected on side 1, in node-breaker voltage levels
               - **bus_breaker_bus1_id** (optional): bus of the bus-breaker view where this branch is connected, on side "1"
               - **connected1**: ``True`` if the side "1" of the branch is connected to a bus
               - **bus1_id**: bus where this branch is connected, on side 1
               - **voltage_level2_id**: voltage level where the branch is connected, on side 2
+              - **node2** (optional): node where this branch is connected on side 2, in node-breaker voltage levels
               - **bus_breaker_bus2_id** (optional): bus of the bus-breaker view where this branch is connected, on side "2"
               - **connected2**: ``True`` if the side "2" of the branch is connected to a bus
               - **bus2_id**: bus where this branch is connected, on side 2
@@ -4432,14 +4435,13 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **element_id**: the ID of the network element on which we want to create new limits
-            - **element_type**: the type of the network element (LINE, TWO_WINDINGS_TRANSFORMER,
               THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
             - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
             - **name**: the name of the limit
             - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
             - **value**: the value of the limit in A, MVA or MW
             - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
-            - **is_fictitious**: fictitious limit ?
+            - **fictitious**: fictitious limit ?
 
             For each location of the network defined by a couple (element_id, side):
 
@@ -4453,6 +4455,20 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if df is not None:
             df['acceptable_duration'] = df['acceptable_duration'].map(lambda x: -1 if x == inf else int(x))
+            if 'is_fictitious' in df.columns:
+                warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+                df = df.rename(columns={'is_fictitious': 'fictitious'})
+            if 'element_type' in df.columns:
+                warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+                df = df.drop(columns=['element_type'])
+
+        if kwargs.get('is_fictitious') is not None:
+            warnings.warn("operation limits is_fictitious attribute has been renamed fictitious", DeprecationWarning)
+            kwargs['fictitious'] = kwargs.pop('is_fictitious')
+        if kwargs.get('element_type') is not None:
+            warnings.warn("useless operation limits element_type attribute has been removed", DeprecationWarning)
+            kwargs.pop('element_type')
+
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:

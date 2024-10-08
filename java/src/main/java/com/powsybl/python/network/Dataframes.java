@@ -458,7 +458,8 @@ public final class Dataframes {
                 .strings("contingency_id", XnecWithDecompositionContext::getContingencyId)
                 .strings("country1", XnecWithDecompositionContext::getCountry1String)
                 .strings("country2", XnecWithDecompositionContext::getCountry2String)
-                .doubles("ac_reference_flow", XnecWithDecompositionContext::getAcReferenceFlow)
+                .doubles("ac_reference_flow1", XnecWithDecompositionContext::getAcTerminal1ReferenceFlow)
+                .doubles("ac_reference_flow2", XnecWithDecompositionContext::getAcTerminal2ReferenceFlow)
                 .doubles("dc_reference_flow", XnecWithDecompositionContext::getDcReferenceFlow)
                 .doubles("commercial_flow", XnecWithDecompositionContext::getAllocatedFlow)
                 .doubles("x_node_flow", XnecWithDecompositionContext::getXNodeFlow)
@@ -588,6 +589,7 @@ public final class Dataframes {
                 .stringsIndex("id", MagnitudeFeederResultContext::getFaultId)
                 .stringsIndex("connectable_id", MagnitudeFeederResultContext::getConnectableId)
                 .doubles("current", MagnitudeFeederResultContext::getCurrent)
+                .enums("side", ThreeSides.class, MagnitudeFeederResultContext::getSide)
                 .build();
     }
 
@@ -608,6 +610,7 @@ public final class Dataframes {
                         fortescueFeederResultContext.getCurrent().getZeroMagnitude(), false)
                 .doubles("current_zero_angle", fortescueFeederResultContext ->
                         fortescueFeederResultContext.getCurrent().getZeroAngle(), false)
+                .enums("side", ThreeSides.class, FortescueFeederResultContext::getSide)
                 .build();
     }
 
