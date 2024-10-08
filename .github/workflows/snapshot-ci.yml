@@ -7,7 +7,7 @@ on:
     - cron: '0 3 * * *'
 
 env:
-  SCRIPT_PATH: .pypowsybl/.github/workflows/script/check_snapshot_branch.sh
+  SCRIPT_PATH: ./pypowsybl/.github/workflows/script/check_snapshot_branch.sh
 
 jobs:
   buil_pypowsybl:
