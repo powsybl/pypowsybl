@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: '0 3 * * *'
 
+env:
+  SCRIPT_PATH: .github/workflows/script/check_snapshot_branch.sh
+
 jobs:
   buil_pypowsybl:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -13,7 +16,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - { name: ubuntu, os: ubuntu-latest, sed_inplace: "-i" }
+          - { name: ubuntu, os: ubuntu-latest}
         python:
           - { name: cp38, version: '3.8' }
 
@@ -62,30 +65,24 @@ jobs:
       - name: Checkout repository for script
         uses: actions/checkout@v4
         with:
-          sparse-checkout: .github/workflows
+          sparse-checkout: .github/workflows/script
           sparse-checkout-cone-mode: false
-          path: script
+          path: .
 
       #BUILD LOADFLOW
-      - name : check directory
-        run : |
-          pwd
-          ls -a
       - name: Check SNAPSHOT branch
-        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
-
+        run : ${{ env.SCRIPT_PATH }} "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-open-loadflow
           ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-open-loadflow
-      - name : check directory
-        run : |
-          pwd
-          ls -a
       - name: Change core version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then
+            sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+          fi
         shell: bash
         working-directory: ./powsybl-open-loadflow
       - name: Build with Maven
@@ -97,15 +94,9 @@ jobs:
         working-directory: ./powsybl-open-loadflow
         shell: bash
 
-
-
       #BUILD DIAGRAM
-      - name: check directory
-        run: |
-          pwd
-          ls -a
       - name: Check for SNAPSHOT branch
-        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+        run : ${{ env.SCRIPT_PATH }}  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
@@ -115,7 +106,9 @@ jobs:
           path: powsybl-diagram
       - name: Change core version
         run: |
-          sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then
+            sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+          fi
         working-directory: ./powsybl-diagram
         shell: bash
       - name: Build with Maven
@@ -126,14 +119,9 @@ jobs:
         working-directory: ./powsybl-diagram
         shell: bash
 
-
       #BUILD ENTSOE
-      - name: check directory
-        run: |
-          pwd
-          ls -a
       - name: Check for SNAPSHOT branch
-        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
+        run : ${{ env.SCRIPT_PATH }}  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout entsoe-sources
         uses: actions/checkout@v4
@@ -142,11 +130,17 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-enstoe
       - name: Change core version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then
+            sed -i 's|<powsyblcore.version>.*</powsyblcore.version>|<powsyblcore.version>'"$CORE_VERSION"'</powsyblcore.version>|' pom.xml
+          fi
         working-directory: ./powsybl-enstoe
         shell: bash
       - name: Change open-loadflow version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then
+            sed -i 's|<powsyblopenloadflow.version>.*</powsyblopenloadflow.version>|<powsyblopenloadflow.version>'"$LOADFLOW_VERSION"'</powsyblopenloadflow.version>|' pom.xml
+          fi
         working-directory: ./powsybl-enstoe
         shell: bash
       - name: Build with Maven
@@ -157,14 +151,9 @@ jobs:
         working-directory: ./powsybl-enstoe
         shell: bash
 
-
       #BUILD OPENRAO
-      - name: check directory
-        run: |
-          pwd
-          ls -a
       - name: Check for SNAPSHOT branch
-        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
+        run :  ${{ env.SCRIPT_PATH }}  "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout open-rao-sources
         uses: actions/checkout@v4
@@ -173,15 +162,24 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-openrao
       - name: Change core version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then
+            sed -i 's|<powsybl.core.version>.*</powsybl.core.version>|<powsybl.core.version>'"$CORE_VERSION"'</powsybl.core.version>|' pom.xml
+          fi
         working-directory: ./powsybl-openrao
         shell: bash
       - name: Change entsoe version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then
+            sed -i 's|<powsybl.entsoe.version>.*</powsybl.entsoe.version>|<powsybl.entsoe.version>'"$ENTSOE_VERSION"'</powsybl.entsoe.version>|' pom.xml
+          fi
         working-directory: ./powsybl-openrao
         shell: bash
       - name: Change open-loadflow version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then          
+            sed -i 's|<powsybl.openloadflow.version>.*</powsybl.openloadflow.version>|<powsybl.openloadflow.version>'"$LOADFLOW_VERSION"'</powsybl.openloadflow.version>|' pom.xml
+          fi
         working-directory: ./powsybl-openrao
         shell: bash
       - name: Build with Maven
@@ -192,15 +190,9 @@ jobs:
         working-directory: ./powsybl-openrao
         shell: bash
 
-
-
       #BUILD DYNAWO
-      - name: check directory
-        run: |
-          pwd
-          ls -a
       - name: Check for SNAPSHOT branch
-        run: ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
+        run: ${{ env.SCRIPT_PATH }} "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout dynawo-sources
         uses: actions/checkout@v4
@@ -209,7 +201,10 @@ jobs:
           ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-dynawo
       - name: Change core version
-        run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+        run: |
+          if [ ${{ matrix.config.name }} == "ubuntu" ] ; then          
+            sed -i 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
+          fi
         working-directory: ./powsybl-dynawo
         shell: bash
       - name: Build with Maven
@@ -263,12 +258,12 @@ jobs:
         run: python3 setup.py bdist_wheel
       - name: Install wheel
         run: python -m pip install dist/*.whl --user
-      - name: Run tests
-        working-directory: ./tests
-        run: pytest
       - name: check pypowsybl versions
         working-directory: ./tests
         run: python3 basic_import_test.py
+      - name: Run tests
+        working-directory: ./tests
+        run: pytest
       - name: Upload wheel
         uses: actions/upload-artifact@v3
         with:

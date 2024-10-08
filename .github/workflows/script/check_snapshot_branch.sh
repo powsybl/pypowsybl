@@ -1,10 +1,7 @@
 #!/bin/bash
 
-
 repo=$1
 core_version=$2
-
-echo "$1"
 
 SNAPSHOT_BRANCH=$(git ls-remote --heads "$repo" | grep -E "refs/heads/$(echo $core_version | grep -q SNAPSHOT && echo "$core_version" || echo "$core_version-SNAPSHOT")" | sed 's/.*refs\/heads\///')
 if [ -n "$SNAPSHOT_BRANCH" ]; then
