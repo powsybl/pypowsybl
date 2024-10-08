@@ -9,17 +9,11 @@ package com.powsybl.python.dynamic;
 
 import java.util.ServiceLoader;
 
+import com.powsybl.dynamicsimulation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynamicsimulation.DynamicSimulation;
-import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
-import com.powsybl.dynamicsimulation.DynamicSimulationProvider;
-import com.powsybl.dynamicsimulation.DynamicSimulationResult;
-import com.powsybl.dynamicsimulation.EventModelsSupplier;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -29,10 +23,10 @@ public class DynamicSimulationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamicSimulationContext.class);
 
     public DynamicSimulationResult run(Network network,
-            DynamicModelsSupplier dynamicModelsSupplier,
-            EventModelsSupplier eventModelsSupplier,
-            CurvesSupplier curvesSupplier,
-            DynamicSimulationParameters parameters) {
+                                       DynamicModelsSupplier dynamicModelsSupplier,
+                                       EventModelsSupplier eventModelsSupplier,
+                                       OutputVariablesSupplier curvesSupplier,
+                                       DynamicSimulationParameters parameters) {
         DynamicSimulationProvider provider = getDynamicProvider("");
         LOGGER.info(String.format("Running dynamic simulation with %s", provider.getName()));
         DynamicSimulation.Runner runner = new DynamicSimulation.Runner(provider);
