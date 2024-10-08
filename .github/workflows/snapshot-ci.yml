@@ -247,25 +247,3 @@ jobs:
 
 
 
-  notify:
-    name: Notify Slack on failure
-    needs: [buil_pypowsybl]
-    runs-on: ubuntu-latest
-    if: failure()
-    steps:
-      - name: Slack Notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow
-          author_name: GitHub Actions
-          mention: here
-          if_mention: failure,cancelled
-          job_name: ${{ job.job }}
-          channel: ci-pypowsybl
-          icon_emoji: ':github:'
-          username: GitHub Actions
-          text: 'Workflow failed! :x:'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SLACK_WEBHOOK_URL: https://hooks.slack.com/services/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
