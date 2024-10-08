@@ -56,11 +56,12 @@ jobs:
         shell: bash
 
       #CHECKOUT REPO TO GET SCRIPT
-      - name: ckeckout pypowsybl repo
+      - name: Checkout sources
         uses: actions/checkout@v4
         with:
-          ref: snapshot-ci
           submodules: true
+          ref: snapshot-ci
+          fetch-depth: 0
 
       #BUILD LOADFLOW
       - name: Check SNAPSHOT branch
