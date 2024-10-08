@@ -60,10 +60,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-          ref: snapshot-ci
-          fetch-depth: 0
+          ref: snapshot_ci
 
       #BUILD LOADFLOW
+      - name : check directory
+        run : |
+          pwd
+          ls -a
       - name: Check SNAPSHOT branch
         run : ./.github/workflows/check_snapshot_branch.sh https://github.com/powsybl/powsybl-open-loadflow.git ${{ env.CORE_VERSION }}
       - name: Checkout loadflow-sources
