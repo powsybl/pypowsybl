@@ -59,22 +59,17 @@ jobs:
       - name: ckeckout pypowsybl repo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          ref: ${{ github.ref }}
+          repository: powsybl/pypowsybl
+          ref: snapshot-ci
 
       #BUILD LOADFLOW
       - name: Check SNAPSHOT branch
-        uses: ./.github/workflows/check_snapshot_branch.yml
-        id: check_loadflow
-        with:
-          repository: powsybl/powsybl-open-loadflow
-          core_version: ${{ env.CORE_VERSION }}
-
+        run : .github/workflows/check_snapshot_branch.sh "powsybl/powsybl-open-loadflow" ${{ env.CORE_VERSION }}
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: ${{ steps.check_loadflow.outputs.snapshot_branch  }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
       - name: Change core version
         run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
         shell: bash
