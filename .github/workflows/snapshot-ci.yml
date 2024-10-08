@@ -33,7 +33,6 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python.version }}
-
       - name: Install Python dependencies
         run: python -m pip install --upgrade pip
 
@@ -268,5 +267,22 @@ jobs:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
 
+      - name: Report Status
+        if: always()
+        uses: ravsamhq/notify-slack-action@v1
+        with:
+          status: ${{ job.status }}
+          notify_when: 'failure'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.ACTION_MONITORING_SLACK }}
 
+      - name: Slack Notification if failure
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+            status: ${{ job.status }}
+            fields: repo,message,action,eventName,ref,workflow,job,took
+            text: 'Workflow fail : ${{ steps.failed_step.outputs.step }}'
+        env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
