@@ -7,7 +7,7 @@ on:
     - cron: '0 3 * * *'
 
 env:
-  SCRIPT_PATH: .github/workflows/script/check_snapshot_branch.sh
+  SCRIPT_PATH: .pypowsybl/.github/workflows/script/check_snapshot_branch.sh
 
 jobs:
   buil_pypowsybl:
@@ -61,13 +61,12 @@ jobs:
         working-directory: ./powsybl-core
         shell: bash
 
-      #CHECKOUT REPO TO GET SCRIPT
+      #CHECKOUT PYPOSSYBL
       - name: Checkout repository for script
         uses: actions/checkout@v4
         with:
-          sparse-checkout: .github/workflows/script
-          sparse-checkout-cone-mode: false
-          path: .
+          path: pypowsybl
+          submodules: true
 
       #BUILD LOADFLOW
       - name: Check SNAPSHOT branch
@@ -245,24 +244,23 @@ jobs:
         shell: bash
 
       #BUILD PYPOWSYBL
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Change java-pom.xml
-        working-directory: ./java
+      - name: update java/pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
+        working-directory: ./pypowsybl/java
       - name: Install dependencies
         run: pip3 install -r requirements.txt
+        working-directory: ./pypowsybl
       - name: Build wheel
         run: python3 setup.py bdist_wheel
+        working-directory: ./pypowsybl
       - name: Install wheel
         run: python -m pip install dist/*.whl --user
+        working-directory: ./pypowsybl
       - name: check pypowsybl versions
-        working-directory: ./tests
+        working-directory: ./pypowsybl/tests
         run: python3 basic_import_test.py
       - name: Run tests
-        working-directory: ./tests
+        working-directory: ./pypowsybl/tests
         run: pytest
       - name: Upload wheel
         uses: actions/upload-artifact@v3
