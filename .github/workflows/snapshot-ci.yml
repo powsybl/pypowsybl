@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
-          ref: snapshot_ci
+          ref: ${{ github.ref }}
 
       #BUILD LOADFLOW
       - name : check directory
@@ -69,11 +69,16 @@ jobs:
           ls -a
       - name: Check SNAPSHOT branch
         run : ./.github/workflows/check_snapshot_branch.sh https://github.com/powsybl/powsybl-open-loadflow.git ${{ env.CORE_VERSION }}
+      - name: check env
+        run: | 
+          echo ${{ env.SNAPSHOT_BRANCH }}
+          echo ${{ env }}
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-open-loadflow
           ref: ${{ env.SNAPSHOT_BRANCH }}
+
       - name: Change core version
         run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
         shell: bash
@@ -89,9 +94,7 @@ jobs:
 
       #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
-        run: |
-          source .github/workflows/check-snapshot-branch.sh
-          check_snapshot_branch "https://github.com/powsybl/powsybl-diagram.git" "$CORE_VERSION"
+        run : /home/runner/work/pypowsybl/pypowsybl/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
@@ -112,9 +115,8 @@ jobs:
 
       #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
-        run: |
-          source .github/workflows/check-snapshot-branch.sh
-          check_snapshot_branch "https://github.com/powsybl/powsybl-entsoe.git" "$CORE_VERSION"
+        run : ./.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
+
         shell: bash
       - name: Checkout entsoe-sources
         uses: actions/checkout@v4
