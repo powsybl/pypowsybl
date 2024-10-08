@@ -1,12 +1,4 @@
 name: Snapshot CI
-env:
-  CORE_VERSION: ''
-  LOADFLOW_VERSION: ''
-  DIAGRAM_VERSION: ''
-  ENTSOE_VERSION: ''
-  OPENRAO_VERSION: ''
-  DYNAWO_VERSION: ''
-  DEPENDENCIES_VERSION: ''
 
 on:
   workflow_dispatch:
@@ -59,10 +51,15 @@ jobs:
       - name: Build with Maven
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
         shell: bash
-
       - name: Get core version
         run: echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         shell: bash
+
+      #CHECKOUT REPO TO GET WORKFLOW
+      - name: ckeckout pypowsybl repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       #BUILD LOADFLOW
       - name: Check SNAPSHOT branch
@@ -183,14 +180,13 @@ jobs:
         shell: bash
       - name: Build with Maven
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
-        shell: bash
       - name: Get dynawo version
         run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         shell: bash
 
 
       #CHECKOUT_PYPOWSYBL_DEPENCIES
-      - name: Checkout powsybl-depencies
+      - name: Checkout powsybl-dependencies
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-dependencies
@@ -208,7 +204,6 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-entsoe.version -DnewVersion=$ENTSOE_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-open-rao.version -DnewVersion=$OPENRAO_VERSION -DgenerateBackupPoms=false
-        shell: bash
 
       - name: Install powsybl-dependencies
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
@@ -222,15 +217,12 @@ jobs:
       - name: Change java-pom.xml
         working-directory: ./java
         run: mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
-        shell: bash
       - name: Install dependencies
         run: pip3 install -r requirements.txt
       - name: Build wheel
         run: python3 setup.py bdist_wheel
-        shell: bash
       - name: Install wheel
         run: python -m pip install dist/*.whl --user
-        shell: bash
       - name: Run tests
         working-directory: ./tests
         run: pytest
