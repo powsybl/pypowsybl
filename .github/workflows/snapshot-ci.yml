@@ -68,7 +68,7 @@ jobs:
           pwd
           ls -a
       - name: Check SNAPSHOT branch
-        run : ./.github/workflows/check_snapshot_branch.sh https://github.com/powsybl/powsybl-open-loadflow.git ${{ env.CORE_VERSION }}
+        run : ./.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
       - name: check env
         run: | 
           echo ${{ env.SNAPSHOT_BRANCH }}
@@ -93,8 +93,12 @@ jobs:
 
 
       #BUILD DIAGRAM
+      - name: check directory
+        run: |
+          pwd
+          ls -a
       - name: Check for SNAPSHOT branch
-        run : /home/runner/work/pypowsybl/pypowsybl/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+        run : ./home/runner/work/pypowsybl/pypowsybl/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
