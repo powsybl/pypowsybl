@@ -133,7 +133,7 @@ jobs:
           pwd
           ls -a
       - name: Check for SNAPSHOT branch
-        run : ./script/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
+        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout entsoe-sources
         uses: actions/checkout@v4
