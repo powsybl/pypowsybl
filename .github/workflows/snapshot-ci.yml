@@ -64,7 +64,7 @@ jobs:
 
       - name: Store check_snapshot_branch script
         run: |
-          cp .github/workflows/check_snapshot_branch.sh $GITHUB_WORKSPACE
+          cp .github/workflows/check_snapshot_branch.sh ../$GITHUB_WORKSPACE
 
       #BUILD LOADFLOW
       - name : check directory
@@ -72,7 +72,7 @@ jobs:
           pwd
           ls -a
       - name: Check SNAPSHOT branch
-        run : $GITHUB_WORKSPACE/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
+        run : ../check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
@@ -98,7 +98,7 @@ jobs:
 
       #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
-        run : $GITHUB_WORKSPACE/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+        run : ../check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
@@ -123,7 +123,7 @@ jobs:
           pwd
           ls -a
       - name: Check for SNAPSHOT branch
-        run : $GITHUB_WORKSPACE/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
+        run : ../check_snapshot_branch.sh "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout entsoe-sources
         uses: actions/checkout@v4
@@ -181,7 +181,7 @@ jobs:
           pwd
           ls -a
       - name: Check for SNAPSHOT branch
-        run: $GITHUB_WORKSPACE/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
+        run: ../check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout dynawo-sources
         uses: actions/checkout@v4
