@@ -71,9 +71,8 @@ jobs:
         run : |
           pwd
           ls -a
-          ls ./script -a
       - name: Check SNAPSHOT branch
-        run : ./script/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
+        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
@@ -101,8 +100,12 @@ jobs:
 
 
       #BUILD DIAGRAM
+      - name: check directory
+        run: |
+          pwd
+          ls -a
       - name: Check for SNAPSHOT branch
-        run : ./script/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
@@ -161,7 +164,7 @@ jobs:
           pwd
           ls -a
       - name: Check for SNAPSHOT branch
-        run : ./script/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
+        run : ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout open-rao-sources
         uses: actions/checkout@v4
@@ -197,7 +200,7 @@ jobs:
           pwd
           ls -a
       - name: Check for SNAPSHOT branch
-        run: ../script/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
+        run: ./script/.github/workflows/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout dynawo-sources
         uses: actions/checkout@v4
