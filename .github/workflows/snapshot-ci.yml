@@ -22,31 +22,12 @@ jobs:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-latest, sed_inplace: "-i" }
-
         python:
           - { name: cp38, version: '3.8' }
 
 
 
     steps:
-
-      # 1. Checkout du dépôt principal
-      - name: Checkout main repository
-        uses: actions/checkout@v4
-
-      # 2. Vérifier que les scripts sont présents (Étape de débogage)
-      - name: List scripts directory
-        run: ls -la .github/workflows/
-        shell: bash
-
-      # 3. Donner les permissions d'exécution aux scripts
-      - name: Make scripts executable
-        run: chmod +x .github/workflows/*.sh
-        shell: bash
-
-
-
-
       #SETUP JDK
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -85,16 +66,19 @@ jobs:
         run: echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         shell: bash
 
-
       #BUILD LOADFLOW
-      - name: Check for SNAPSHOT branch in Loadflow
-        run: bash "${{ github.workspace }}/.github/workflows/check_snapshot_branch.sh" "https://github.com/powsybl/powsybl-open-loadflow.git" "$CORE_VERSION"
-        shell: bash
+      - name: Check SNAPSHOT branch
+        uses: ./.github/workflows/check_snapshot_branch.yml
+        id: check_loadflow
+        with:
+          repository: powsybl/powsybl-open-loadflow
+          core_version: ${{ env.CORE_VERSION }}
+
       - name: Checkout loadflow-sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ steps.check_loadflow.outputs.snapshot_branch  }}
       - name: Change core version
         run: sed ${{ matrix.config.sed_inplace }} 's|<powsybl-core.version>.*</powsybl-core.version>|<powsybl-core.version>'"$CORE_VERSION"'</powsybl-core.version>|' pom.xml
         shell: bash
@@ -110,7 +94,9 @@ jobs:
 
       #BUILD DIAGRAM
       - name: Check for SNAPSHOT branch
-        run: bash "${{ github.workspace }}/.github/workflows/check_snapshot_branch.sh" "https://github.com/powsybl/powsybl-diagram.git" "$CORE_VERSION"
+        run: |
+          source .github/workflows/check-snapshot-branch.sh
+          check_snapshot_branch "https://github.com/powsybl/powsybl-diagram.git" "$CORE_VERSION"
         shell: bash
       - name: Checkout diagram-sources
         uses: actions/checkout@v4
@@ -131,7 +117,9 @@ jobs:
 
       #BUILD ENTSOE
       - name: Check for SNAPSHOT branch
-        run: bash "${{ github.workspace }}/.github/workflows/check_snapshot_branch.sh" "https://github.com/powsybl/powsybl-entsoe.git" "$CORE_VERSION"
+        run: |
+          source .github/workflows/check-snapshot-branch.sh
+          check_snapshot_branch "https://github.com/powsybl/powsybl-entsoe.git" "$CORE_VERSION"
         shell: bash
       - name: Checkout entsoe-sources
         uses: actions/checkout@v4
@@ -154,7 +142,9 @@ jobs:
 
       #BUILD OPENRAO
       - name: Check for SNAPSHOT branch
-        run: bash "${{ github.workspace }}/.github/workflows/check_snapshot_branch.sh" "https://github.com/powsybl/powsybl-open-rao.git" "$CORE_VERSION"
+        run: |
+          source .github/workflows/check-snapshot-branch.sh
+          check_snapshot_branch "https://github.com/powsybl/powsybl-open-rao.git" "$CORE_VERSION"
         shell: bash
       - name: Checkout open-rao-sources
         uses: actions/checkout@v4
@@ -181,8 +171,10 @@ jobs:
 
       #BUILD DYNAWO
       - name: Check for SNAPSHOT branch
-        run: bash "${{ github.workspace }}/.github/workflows/check_snapshot_branch.sh"  "https://github.com/powsybl/powsybl-dynawo.git" "$CORE_VERSION"
-        shell: bash
+        run: |
+          source .github/workflows/check-snapshot-branch.sh
+          check_snapshot_branch "https://github.com/powsybl/powsybl-dynawo.git" "$CORE_VERSION"
+          shell: bash
       - name: Checkout dynawo-sources
         uses: actions/checkout@v4
         with:

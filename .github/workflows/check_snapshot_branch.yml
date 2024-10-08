@@ -1,0 +1,34 @@
+name: Check SNAPSHOT Branch
+
+on:
+  workflow_call:
+    inputs:
+      repository:
+        required: true
+        type: string
+      core_version:
+        required: true
+        type: string
+    outputs:
+      snapshot_branch:
+        description: "The name of the SNAPSHOT branch if it exists, or 'main' otherwise"
+        value: ${{ jobs.check.outputs.snapshot_branch }}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      snapshot_branch: ${{ steps.check_branch.outputs.branch }}
+    steps:
+      - name: Check for SNAPSHOT branch
+        id: check_branch
+        run: |
+          SNAPSHOT_BRANCH=$(git ls-remote --heads "${{ inputs.repository }}" | grep -E "refs/heads/$(echo ${{ inputs.core_version }} | grep -q SNAPSHOT && echo "${{ inputs.core_version }}" || echo "${{ inputs.core_version }}-SNAPSHOT")" | sed 's/.*refs\/heads\///')
+          if [ -n "$SNAPSHOT_BRANCH" ]; then
+            echo "SNAPSHOT VERSION EXIST: $SNAPSHOT_BRANCH"
+            echo "branch=$SNAPSHOT_BRANCH" >> $GITHUB_OUTPUT
+          else
+            echo "No SNAPSHOT branch found"
+            echo "branch=main" >> $GITHUB_OUTPUT
+          fi
+        shell: bash
