@@ -64,7 +64,7 @@ jobs:
 
       - name: Store check_snapshot_branch script
         run: |
-          cp .github/workflows/check_snapshot_branch.sh ../$GITHUB_WORKSPACE
+          cp .github/workflows/check_snapshot_branch.sh ..$GITHUB_WORKSPACE
 
       #BUILD LOADFLOW
       - name : check directory
@@ -150,7 +150,7 @@ jobs:
           pwd
           ls -a
       - name: Check for SNAPSHOT branch
-        run : $GITHUB_WORKSPACE/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
+        run : ../check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
         shell: bash
       - name: Checkout open-rao-sources
         uses: actions/checkout@v4
