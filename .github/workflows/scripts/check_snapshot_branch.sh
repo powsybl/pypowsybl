@@ -11,3 +11,5 @@ else
     echo "No SNAPSHOT branch found"
     echo "SNAPSHOT_BRANCH=main" >> $GITHUB_ENV
 fi
+
+
