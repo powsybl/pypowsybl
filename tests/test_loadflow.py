@@ -340,3 +340,6 @@ def test_wrong_regulated_bus_id():
     pp.loadflow.run_ac(net)
     parameters = lf.ValidationParameters()
     validation = pp.loadflow.run_validation(net, validation_parameters=parameters)
+
+def test():
+    pass
