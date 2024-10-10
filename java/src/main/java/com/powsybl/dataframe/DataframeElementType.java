@@ -44,5 +44,8 @@ public enum DataframeElementType {
     INJECTION,
     BRANCH,
     TERMINAL,
-    SUB_NETWORK
+    SUB_NETWORK,
+    AREA,
+    AREA_VOLTAGE_LEVELS,
+    AREA_BOUNDARIES
 }
