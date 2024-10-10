@@ -102,7 +102,7 @@ def generate_transformer_id(df: pd.DataFrame, index_offset: int) -> pd.Series:
 def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.trafo) > 0:
         bus = n_pdp.bus[['vn_kv']]
-        trafo_and_bus = n_pdp.trafo.merge(bus.rename(columns=lambda x: x + '_lv_bus'), left_on='lv_bus', right_index=True, how='inner')
+        trafo_and_bus = n_pdp.trafo.merge(bus.rename(columns=lambda x: x + '_lv_bus'), left_on='lv_bus', right_index=True, how='left')
         trafo_id = generate_transformer_id(trafo_and_bus, len(n_pdp.line))
         name = get_name(trafo_and_bus, 'name')
         vl1_id = build_voltage_level_id(trafo_and_bus['hv_bus'].astype(str))
@@ -202,7 +202,7 @@ class PandaPowerGeneratorType(Enum):
 
 def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_by_gen_id: Dict[str, float], generator_type: PandaPowerGeneratorType) -> None:
     if len(gen) > 0:
-        gen_and_bus: DataFrame = gen.merge(bus, left_on='bus', right_index=True, how='inner', suffixes=('', '_x'))
+        gen_and_bus: DataFrame = gen.merge(bus, left_on='bus', right_index=True, how='left', suffixes=('', '_x'))
         gen_id = generate_injection_id(gen_and_bus, 'gen' if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else 'sgen')
         name = get_name(gen_and_bus, 'name')
         vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
