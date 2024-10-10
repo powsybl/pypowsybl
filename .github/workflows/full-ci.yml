@@ -13,7 +13,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    container: quay.io/pypa/manylinux2014_x86_64:2024-10-07-1887322
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
@@ -43,6 +43,11 @@ jobs:
             name: cp312,
             abi: cp312,
             version: '3.12'
+          }
+          - {
+            name: cp313,
+            abi: cp313,
+            version: '3.13'
           }
 
     steps:
@@ -168,6 +173,10 @@ jobs:
           - {
             name: cp312,
             version: '3.12',
+          }
+          - {
+            name: cp313,
+            version: '3.13',
           }
 
     steps:
