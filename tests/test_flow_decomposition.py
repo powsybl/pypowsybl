@@ -142,7 +142,7 @@ def test_flow_decomposition_parameters():
         'enable_losses_compensation': [True, False],
         'losses_compensation_epsilon': [-1, 1e-3, 1e-5],
         'sensitivity_epsilon': [-1, 1e-3, 1e-5],
-        'rescale_mode': [pp.flowdecomposition.RescaleMode.NONE, pp.flowdecomposition.RescaleMode.PROPORTIONAL, pp.flowdecomposition.RescaleMode.ACER_METHODOLOGY],
+        'rescale_mode': [pp.flowdecomposition.RescaleMode.NONE, pp.flowdecomposition.RescaleMode.PROPORTIONAL, pp.flowdecomposition.RescaleMode.ACER_METHODOLOGY, pp.flowdecomposition.RescaleMode.MAX_CURRENT_OVERLOAD],
         'dc_fallback_enabled_after_ac_divergence': [True, False],
         'sensitivity_variable_batch_size' : [100, 1000, 5000, 15000]
     }
