@@ -8,6 +8,7 @@ matplotlib; python_version <= "3.8"
 
 # optional dependencies
 pandapower==2.14.11
+scipy==1.10.1
 
 # documentation dependencies
 sphinx==7.1.2
