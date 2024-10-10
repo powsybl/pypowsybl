@@ -73,3 +73,4 @@ from .impl.network_element_modification_util import (
     remove_feeder_bays
 )
 from .impl.perunit import (PerUnitView, per_unit_view)
+from .impl.pandapower_converter import convert_from_pandapower

@@ -41,14 +41,15 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFra
     columns = {}
     expected_size = None
     for key, value in kwargs.items():
-        col = _to_array(value)
-        size = col.shape[0]
-        if expected_size is None:
-            expected_size = size
-        elif size != expected_size:
-            raise ValueError(f'Network elements update: all arguments must have the same size, '
-                             f'got size {size} for series {key}, expected {expected_size}')
-        columns[key] = col
+        if value is not None:
+            col = _to_array(value)
+            size = col.shape[0]
+            if expected_size is None:
+                expected_size = size
+            elif size != expected_size:
+                raise ValueError(f'Network elements update: all arguments must have the same size, '
+                                 f'got size {size} for series {key}, expected {expected_size}')
+            columns[key] = col
 
     index = None
     if len(index_columns) == 1:
