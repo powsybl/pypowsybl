@@ -456,8 +456,6 @@ def test_geo_data():
 
 
 def test_cgmes_metadata_extension():
-    logging.basicConfig()
-    logging.getLogger('powsybl').setLevel(1)
     n = pn.create_eurostag_tutorial_example1_network()
     extension_name = 'cgmesMetadataModels'
     cgmes_id = 'sshId'
@@ -479,7 +477,7 @@ def test_cgmes_metadata_extension():
 
     #test get_extensions
     pd.testing.assert_frame_equal(n.get_extensions(extension_name), metadata)
-    
+
 
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
