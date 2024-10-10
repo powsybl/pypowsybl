@@ -10,6 +10,8 @@ import com.powsybl.dataframe.network.adders.NetworkElementAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
@@ -55,10 +57,7 @@ public class CgmesMetadataModelDataframeProvider extends AbstractSingleDataframe
 
     @Override
     public void removeExtensions(Network network, List<String> ids) {
-        ids.stream().filter(Objects::nonNull)
-                .map(id -> network.getExtension(CgmesMetadataModels.class))
-                .filter(Objects::nonNull)
-                .forEach(model -> ((CgmesMetadataModels) model).getModels().remove(model));
+        throw new UnsupportedOperationException("Cannot remove CGMES metadata models");
     }
 
     @Override
