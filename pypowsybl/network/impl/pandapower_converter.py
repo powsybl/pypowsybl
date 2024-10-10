@@ -1,5 +1,5 @@
-
 import math
+import typing
 from enum import Enum
 from importlib import util
 from typing import Dict
@@ -7,7 +7,9 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import pypowsybl._pypowsybl as _pp
+from pandapower import pandapowerNet
 from pandas import Series
+from pandas import DataFrame
 
 from .network import Network
 from .network_creation_util import create_empty
@@ -18,7 +20,7 @@ DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
 
 
-def convert_from_pandapower(n_pdp) -> Network:
+def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     if util.find_spec("pandapower") is None:
         raise _pp.PyPowsyblError("pandapower is not installed")
     else:
@@ -28,14 +30,14 @@ def convert_from_pandapower(n_pdp) -> Network:
         n.create_substations(id='s')
         create_buses(n, n_pdp)
         create_loads(n, n_pdp)
-        slack_weight_by_gen_id = {}
+        slack_weight_by_gen_id: Dict[str, float] = {}
         create_generators(n, n_pdp, slack_weight_by_gen_id)
         create_shunts(n, n_pdp)
         create_lines(n, n_pdp)
         create_transformers(n, n_pdp)
 
         if len(slack_weight_by_gen_id) > 0:
-            highest_weight_gen_id = max(slack_weight_by_gen_id, key=slack_weight_by_gen_id.get)
+            highest_weight_gen_id = max(slack_weight_by_gen_id, key=lambda k: slack_weight_by_gen_id[k])
             for index, (gen_id, weight) in enumerate(slack_weight_by_gen_id.items()):
                 if gen_id == highest_weight_gen_id:
                     # create slack bus extension for first one
@@ -50,21 +52,21 @@ def convert_from_pandapower(n_pdp) -> Network:
 
 
 def get_name(df: pd.DataFrame, name: str) -> pd.Series:
-    name = df[name]
+    name_col = df[name]
     replace_none = np.vectorize(lambda x: '' if x is None else x, otypes=[np.string_])
-    name_cleaned = replace_none(name)
+    name_cleaned = replace_none(name_col)
     return name_cleaned.astype(str)
 
 
-def build_voltage_level_id(bus: Series):
+def build_voltage_level_id(bus: Series) -> pd.Series:
     return 'sub_' + bus
 
 
-def build_bus_id(bus: Series):
+def build_bus_id(bus: Series) -> pd.Series:
     return 'bus_' + bus
 
 
-def build_injection_id(prefix, bus, index):
+def build_injection_id(prefix: str, bus: pd.Series, index: int) -> str:
     return "{}_{}_{}".format(prefix, bus, index) # because it is required by grid2op to build IDs like this is case of missing name
 
 
@@ -72,7 +74,7 @@ def generate_injection_id(df: pd.DataFrame, prefix: str) -> pd.Series:
     return df.apply(lambda row: build_injection_id(prefix, row['bus'], row.name), axis=1)
 
 
-def build_line_id(row, index):
+def build_line_id(row: pd.Series, index: int) -> str:
     from_bus = row['from_bus']
     to_bus = row['to_bus']
     return "{}_{}_{}".format(from_bus, to_bus, index) # because it is required by grid2op to build IDs like this is case of missing name
@@ -82,7 +84,7 @@ def generate_line_id(df: pd.DataFrame) -> pd.Series:
     return df.apply(lambda row: build_line_id(row, row.name), axis=1)
 
 
-def build_transformer_id(row, index, index_offset: int):
+def build_transformer_id(row: pd.Series, index: int, index_offset: int) -> str:
     hv_bus = row['hv_bus']
     lv_bus = row['lv_bus']
     return "{}_{}_{}".format(hv_bus, lv_bus, index_offset + index) # because it is required by grid2op to build IDs like this is case of missing name
@@ -92,7 +94,7 @@ def generate_transformer_id(df: pd.DataFrame, index_offset: int) -> pd.Series:
     return df.apply(lambda row: build_transformer_id(row, row.name, index_offset), axis=1)
 
 
-def create_transformers(n, n_pdp):
+def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.trafo) > 0:
         bus = n_pdp.bus[['vn_kv']]
         trafo_and_bus = n_pdp.trafo.merge(bus.rename(columns=lambda x: x + '_lv_bus'), left_on='lv_bus', right_index=True, how='inner')
@@ -129,7 +131,7 @@ def create_transformers(n, n_pdp):
                                          r=r, x=x, g=g, b=b)
 
 
-def create_limits(n, n_pdp, id):
+def create_limits(n: Network, n_pdp: pandapowerNet, id: pd.Series) -> None:
     limit_side = ['ONE'] * len(n_pdp.line)  # create on side on, why not...
     limit_name = ['permanent'] * len(n_pdp.line)
     limit_type = ['CURRENT'] * len(n_pdp.line)
@@ -139,7 +141,7 @@ def create_limits(n, n_pdp, id):
     n.create_operational_limits(element_id=id, side=limit_side, name=limit_name, type=limit_type, value=limit_value,
                                 acceptable_duration=acceptable_duration)
 
-def create_lines(n, n_pdp):
+def create_lines(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.line) > 0:
         id = generate_line_id(n_pdp.line)
         name = get_name(n_pdp.line, 'name')
@@ -161,7 +163,7 @@ def create_lines(n, n_pdp):
         create_limits(n, n_pdp, id)
 
 
-def create_shunts(n, n_pdp):
+def create_shunts(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.shunt) > 0:
         id = generate_injection_id(n_pdp.shunt, 'shunt')
         name = get_name(n_pdp.shunt, 'name').tolist()
@@ -193,25 +195,26 @@ class PandaPowerGeneratorType(Enum):
     EXT_GRID = 2
     STATIC_GENERATOR = 3
 
-def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], generator_type: PandaPowerGeneratorType):
+def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_by_gen_id: Dict[str, float], generator_type: PandaPowerGeneratorType) -> None:
     if len(gen) > 0:
-        gen_and_bus = gen.merge(bus, left_on='bus', right_index=True, how='inner', suffixes=('', '_x'))
+        gen_and_bus: DataFrame = gen.merge(bus, left_on='bus', right_index=True, how='inner', suffixes=('', '_x'))
         id = generate_injection_id(gen_and_bus, 'gen' if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else 'sgen')
         name = get_name(gen_and_bus, 'name')
         vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
         connectable_bus_id = build_bus_id(gen_and_bus['bus'].astype(str)).tolist()
         bus_id = np.where(gen_and_bus['in_service'], connectable_bus_id, "")
-        target_p = [MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
+        target_p = pd.Series([MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(gen_and_bus)) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
         voltage_regulator_on = [True] * len(gen_and_bus)
-        target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv'] if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else [1.0] * len(gen_and_bus)
-        target_q = gen_and_bus['q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else [0.0] * len(gen_and_bus)
-        min_p = [DEFAULT_MIN_P] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID or 'min_p_mw' not in gen_and_bus.columns else np.nan_to_num(gen_and_bus['min_p_mw'], nan=DEFAULT_MIN_P)
-        max_p = [DEFAULT_MAX_P] * len(gen_and_bus) if generator_type == PandaPowerGeneratorType.EXT_GRID or 'max_p_mw' not in gen_and_bus.columns else np.nan_to_num(gen_and_bus['max_p_mw'], nan=DEFAULT_MAX_P)
+        target_v = gen_and_bus['vm_pu'] * gen_and_bus['vn_kv'] if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else pd.Series([1.0] * len(gen_and_bus))
+        target_q = gen_and_bus['q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else pd.Series([0.0] * len(gen_and_bus))
+        min_p = pd.Series([DEFAULT_MIN_P] * len(gen_and_bus)) if generator_type == PandaPowerGeneratorType.EXT_GRID or 'min_p_mw' not in gen_and_bus.columns else pd.Series(np.nan_to_num(gen_and_bus['min_p_mw'], nan=DEFAULT_MIN_P))
+        max_p = pd.Series([DEFAULT_MAX_P] * len(gen_and_bus)) if generator_type == PandaPowerGeneratorType.EXT_GRID or 'max_p_mw' not in gen_and_bus.columns else pd.Series(np.nan_to_num(gen_and_bus['max_p_mw'], nan=DEFAULT_MAX_P))
         min_q = gen_and_bus['min_q_mvar'] if 'min_q_mvar' in gen_and_bus.columns else None
         max_q = gen_and_bus['max_q_mvar'] if 'max_q_mvar' in gen_and_bus.columns else None
 
         if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR:
             for index, row in gen_and_bus.iterrows():
+                index = typing.cast(int, index) # safe cas from hashtable to int needed by mypy
                 weight = row['slack_weight'] if generator_type == PandaPowerGeneratorType.EXT_GRID or row['slack'] else 0.0
                 slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = weight
 
@@ -223,13 +226,13 @@ def _create_generators(n, gen, bus, slack_weight_by_gen_id: Dict[str, float], ge
             n.create_minmax_reactive_limits(id=id, min_q=min_q, max_q=max_q)
 
 
-def create_generators(n, n_pdp, slack_weight_by_gen_id):
+def create_generators(n: Network, n_pdp: pandapowerNet, slack_weight_by_gen_id: Dict[str, float]) -> None:
     _create_generators(n, n_pdp.gen, n_pdp.bus, slack_weight_by_gen_id, PandaPowerGeneratorType.GENERATOR)
     _create_generators(n, n_pdp.ext_grid, n_pdp.bus, slack_weight_by_gen_id, PandaPowerGeneratorType.EXT_GRID)
     _create_generators(n, n_pdp.sgen, n_pdp.bus, slack_weight_by_gen_id, PandaPowerGeneratorType.STATIC_GENERATOR)
 
 
-def create_loads(n, n_pdp):
+def create_loads(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.load) > 0:
         id = generate_injection_id(n_pdp.load, 'load')
         name = get_name(n_pdp.load, 'name')
@@ -243,7 +246,7 @@ def create_loads(n, n_pdp):
                        p0=p0, q0=q0)
 
 
-def create_buses(n, n_pdp):
+def create_buses(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.bus) > 0:
         vl_id = build_voltage_level_id(n_pdp.bus.index.astype(str))
         topology_kind = ['BUS_BREAKER'] * len(n_pdp.bus)
