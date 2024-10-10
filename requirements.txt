@@ -14,7 +14,7 @@ furo==2024.1.29
 setuptools==73.0.1
 wheel==0.44.0
 coverage==7.3.2
-pytest>=6.2.5
+pytest>=8.3.3
 mypy==0.982
 pandas-stubs==2.2.2.240603; python_version >= "3.9"
 pandas-stubs==2.0.3.230814; python_version <= "3.8"
