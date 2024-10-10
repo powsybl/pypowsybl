@@ -7,7 +7,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-09-28-6a3e6bb
+    container: quay.io/pypa/manylinux2014_x86_64:2024-10-07-1887322
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
