@@ -22,11 +22,7 @@ import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.Coordinate;
-import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.extensions.LinePositionAdder;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
+import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.python.network.Networks;
@@ -681,5 +677,20 @@ class NetworkDataframesTest {
         assertThat(ext1Series.get(1).getInts()).containsExactly(0);
         assertThat(ext1Series.get(2).getDoubles()).containsExactly(coord1.getLatitude());
         assertThat(ext1Series.get(3).getDoubles()).containsExactly(coord1.getLongitude());
+    }
+
+    @Test
+    void testOperationalLimits() {
+        Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
+        List<Series> limits = createDataFrame(OPERATIONAL_LIMITS, network);
+        List<Series> selectedLimits = createDataFrame(SELECTED_OPERATIONAL_LIMITS, network);
+
+        assertThat(limits)
+            .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
+                "name", "type", "value", "acceptable_duration", "group_id", "selected");
+        assertThat(selectedLimits)
+                .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
+                        "name", "type", "value", "acceptable_duration");
+        assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
     }
 }
