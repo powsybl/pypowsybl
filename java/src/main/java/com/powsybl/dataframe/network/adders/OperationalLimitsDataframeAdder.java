@@ -23,7 +23,8 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         SeriesMetadata.strings("type"),
         SeriesMetadata.doubles("value"),
         SeriesMetadata.ints("acceptable_duration"),
-        SeriesMetadata.booleans("fictitious")
+        SeriesMetadata.booleans("fictitious"),
+        SeriesMetadata.strings("group_id")
     );
 
     @Override
@@ -40,6 +41,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries values;
         private final IntSeries acceptableDurations;
         private final IntSeries fictitious;
+        private final StringSeries groupId;
 
         OperationalLimitsSeries(UpdatingDataframe dataframe) {
             this.elementIds = getRequiredStrings(dataframe, "element_id");
@@ -49,6 +51,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             this.values = getRequiredDoubles(dataframe, "value");
             this.acceptableDurations = getRequiredInts(dataframe, "acceptable_duration");
             this.fictitious = dataframe.getInts("fictitious");
+            this.groupId = dataframe.getStrings("group_id");
         }
 
         public StringSeries getElementIds() {
@@ -77,6 +80,10 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
         public IntSeries getFictitious() {
             return fictitious;
+        }
+
+        public StringSeries getGroupId() {
+            return groupId;
         }
     }
 
