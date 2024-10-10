@@ -10,15 +10,11 @@ package com.powsybl.dataframe.network;
 import com.google.common.collect.ImmutableMap;
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
 import com.powsybl.cgmes.extensions.CgmesMetadataModelsAdder;
-import com.powsybl.cgmes.model.CgmesMetadataModel;
-import com.powsybl.cgmes.model.CgmesMetadataModelImpl;
-import com.powsybl.cgmes.model.CgmesSubset;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
-import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
@@ -49,7 +45,6 @@ import static com.powsybl.cgmes.model.CgmesSubset.EQUIPMENT;
 import static com.powsybl.cgmes.model.CgmesSubset.TOPOLOGY;
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static com.powsybl.dataframe.DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -703,9 +698,7 @@ class NetworkDataframesTest {
         assertNotNull(extension);
 
         List<String> ids = List.of("sshId1");
-        assertThrows(UnsupportedOperationException.class, () -> {NetworkExtensions.removeExtensions(network, "cgmesMetadataModels", ids);});
-
+        assertThrows(UnsupportedOperationException.class, () -> NetworkExtensions.removeExtensions(network, "cgmesMetadataModels", ids));
 
     }
 }
-
