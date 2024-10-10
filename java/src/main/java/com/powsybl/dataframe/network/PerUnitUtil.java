@@ -274,16 +274,12 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? rho * twt.getTerminal1().getVoltageLevel().getNominalV() / twt.getTerminal2().getVoltageLevel().getNominalV() : rho;
     }
 
-    public static double unPerUnitRho(NetworkDataframeContext context, TwoWindingsTransformer twt, double rho) {
-        return context.isPerUnit() ? rho * twt.getTerminal2().getVoltageLevel().getNominalV() / twt.getTerminal1().getVoltageLevel().getNominalV() : rho;
-    }
-
     public static double perUnitAngle(NetworkDataframeContext context, double angle) {
-        return context.isPerUnit() ? toRadians(angle) : angle;
+        return context.isPerUnit() ? toRadians(angle) : angle; // this is not per-uniting but a convention to have radian in per unit view
     }
 
     public static double unPerUnitAngle(NetworkDataframeContext context, double angle) {
-        return context.isPerUnit() ? toDegrees(angle) : angle;
+        return context.isPerUnit() ? toDegrees(angle) : angle; // this is not per-uniting but a convention to have radian in per unit view
     }
 
     private static Complex computeY(double r, double x) {
