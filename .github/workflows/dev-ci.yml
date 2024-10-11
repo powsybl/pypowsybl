@@ -16,32 +16,7 @@ jobs:
           - {
             name: cp38,
             abi: cp38,
-            version: '3.8'
-          }
-          - {
-            name: cp39,
-            abi: cp39,
-            version: '3.9'
-          }
-          - {
-            name: cp310,
-            abi: cp310,
-            version: '3.10'
-          }
-          - {
-            name: cp311,
-            abi: cp311,
-            version: '3.11'
-          }
-          - {
-            name: cp312,
-            abi: cp312,
-            version: '3.12'
-          }
-          - {
-            name: cp313,
-            abi: cp313,
-            version: '3.13'
+            version: '3.8',
           }
 
     steps:
@@ -149,26 +124,6 @@ jobs:
           - {
             name: cp38,
             version: '3.8',
-          }
-          - {
-            name: cp39,
-            version: '3.9',
-          }
-          - {
-            name: cp310,
-            version: '3.10',
-          }
-          - {
-            name: cp311,
-            version: '3.11',
-          }
-          - {
-            name: cp312,
-            version: '3.12',
-          }
-          - {
-            name: cp313,
-            version: '3.13',
           }
 
     steps:
