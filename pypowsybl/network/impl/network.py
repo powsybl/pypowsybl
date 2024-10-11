@@ -3422,7 +3422,7 @@ class Network:  # pylint: disable=too-many-public-methods
             columns.append('fictitious')
         return current_limits[columns]
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
 
@@ -3438,17 +3438,23 @@ class Network:  # pylint: disable=too-many-public-methods
           - **value**:      The value of the limit
           - **acceptable_duration**: The duration, in seconds, for which the element can securely be
             operated under the limit value. By convention, the value -1 represents an infinite duration.
-          - **is_fictitious**: true if this limit is fictitious
+          - **is_fictitious** (optional): `True` if this limit is fictitious
+          - **group_name** (optional): The name of the operational limit group this limit is in
+          - **selected** (optional): `True` if this limit's operational group is the selected one
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            only_selected_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
             All limits on the network
         """
-        return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        if show_inactive_sets:
+            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        else:
+            return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """

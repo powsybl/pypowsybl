@@ -687,7 +687,7 @@ class NetworkDataframesTest {
 
         assertThat(limits)
             .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
-                "name", "type", "value", "acceptable_duration", "group_id", "selected");
+                "name", "type", "value", "acceptable_duration");
         assertThat(selectedLimits)
                 .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
                         "name", "type", "value", "acceptable_duration");

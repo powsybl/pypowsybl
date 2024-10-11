@@ -78,8 +78,8 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER, rtcs());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER, ptcs());
         mappers.put(DataframeElementType.REACTIVE_CAPABILITY_CURVE_POINT, reactiveCapabilityCurves());
-        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits());
-        mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, selectedOperationalLimits());
+        mappers.put(DataframeElementType.OPERATIONAL_LIMITS, operationalLimits(false));
+        mappers.put(DataframeElementType.SELECTED_OPERATIONAL_LIMITS, operationalLimits(true));
         mappers.put(DataframeElementType.ALIAS, aliases());
         mappers.put(DataframeElementType.IDENTIFIABLE, identifiables());
         mappers.put(DataframeElementType.INJECTION, injections());
@@ -1086,8 +1086,8 @@ public final class NetworkDataframes {
         transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
 
-    private static NetworkDataframeMapper operationalLimits() {
-        return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getLimits)
+    private static NetworkDataframeMapper operationalLimits(boolean onlyActive) {
+        return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits)
                 .stringsIndex("element_id", TemporaryLimitData::getId)
                 .enums("element_type", IdentifiableType.class, TemporaryLimitData::getElementType)
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
@@ -1096,21 +1096,8 @@ public final class NetworkDataframes {
                 .doubles("value", TemporaryLimitData::getValue)
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
-                .strings("group_id", TemporaryLimitData::getGroupId)
-                .booleans("selected", TemporaryLimitData::isSelected)
-                .build();
-    }
-
-    private static NetworkDataframeMapper selectedOperationalLimits() {
-        return NetworkDataframeMapperBuilder.ofStream(NetworkUtil::getSelectedLimits)
-                .stringsIndex("element_id", TemporaryLimitData::getId)
-                .enums("element_type", IdentifiableType.class, TemporaryLimitData::getElementType)
-                .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
-                .strings("name", TemporaryLimitData::getName)
-                .enums("type", LimitType.class, TemporaryLimitData::getType)
-                .doubles("value", TemporaryLimitData::getValue)
-                .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
-                .booleans("fictitious", TemporaryLimitData::isFictitious, false)
+                .strings("group_name", TemporaryLimitData::getGroupId, false)
+                .booleans("selected", TemporaryLimitData::isSelected, false)
                 .build();
     }
 
