@@ -163,24 +163,45 @@ class NetworkDataframesTest {
         List<Series> series = createExtensionDataFrame("activePowerControl", network);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "droop", "participate");
+                .containsExactly("id", "droop", "participate",
+                        "participation_factor",
+                        "max_target_p",
+                        "min_target_p");
         assertThat(series.get(1).getDoubles())
-                .containsExactly(1.1f);
+                .containsExactly(1.1);
         assertThat(series.get(2).getBooleans())
                 .containsExactly(true);
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(Double.NaN);
+        assertThat(series.get(4).getDoubles())
+                .containsExactly(Double.NaN);
+        assertThat(series.get(5).getDoubles())
+                .containsExactly(Double.NaN);
 
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         dataframe.addSeries("id", true, new TestStringSeries("GEN"));
         dataframe.addSeries("droop", false, new TestDoubleSeries(1.2));
+        dataframe.addSeries("participation_factor", false, new TestDoubleSeries(1.5));
+        dataframe.addSeries("max_target_p", false, new TestDoubleSeries(900.));
+        dataframe.addSeries("min_target_p", false, new TestDoubleSeries(200.));
         updateExtension("activePowerControl", network, dataframe);
         series = createExtensionDataFrame("activePowerControl", network);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "droop", "participate");
+                .containsExactly("id", "droop", "participate",
+                        "participation_factor",
+                        "max_target_p",
+                        "min_target_p");
         assertThat(series.get(1).getDoubles())
-                .containsExactly(1.2f);
+                .containsExactly(1.2);
         assertThat(series.get(2).getBooleans())
                 .containsExactly(true);
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(1.5);
+        assertThat(series.get(4).getDoubles())
+                .containsExactly(900.);
+        assertThat(series.get(5).getDoubles())
+                .containsExactly(200.);
 
         NetworkExtensions.removeExtensions(network, "activePowerControl",
                 network.getGeneratorStream().map(Generator::getNameOrId).collect(Collectors.toList()));
@@ -608,7 +629,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level_id", "connected", "bus_id");
+                .containsExactly("id", "type", "voltage_level_id", "connected", "bus_id", "p", "q", "i");
     }
 
     @Test
@@ -618,7 +639,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1", "voltage_level2_id", "bus2_id", "connected2");
+                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1", "voltage_level2_id", "bus2_id", "connected2", "p1", "q1", "i1", "p2", "q2", "i2");
     }
 
     @Test

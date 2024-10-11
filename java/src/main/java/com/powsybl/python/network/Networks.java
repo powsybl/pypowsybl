@@ -125,7 +125,7 @@ public final class Networks {
         network.getGenerator("GEN")
                 .newExtension(ActivePowerControlAdder.class)
                 .withParticipate(true)
-                .withDroop(1.1f)
+                .withDroop(1.1)
                 .add();
         return network;
     }

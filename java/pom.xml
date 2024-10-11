@@ -58,7 +58,7 @@
     </developers>
 
     <packaging>jar</packaging>
-    <version>1.7.0-SNAPSHOT</version>
+    <version>1.8.0-SNAPSHOT</version>
 
     <properties>
         <java.version>17</java.version>
@@ -68,7 +68,7 @@
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2024.1.2</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2024.2.0</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
@@ -169,7 +169,6 @@
 
     <dependencies>
         <!-- compile -->
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -303,6 +302,10 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-entsoe-commons</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-iidm-geodata</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
