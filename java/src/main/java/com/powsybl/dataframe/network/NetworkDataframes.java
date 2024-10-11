@@ -75,7 +75,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.SWITCH, switches());
         mappers.put(DataframeElementType.VOLTAGE_LEVEL, voltageLevels());
         mappers.put(DataframeElementType.SUBSTATION, substations());
-        mappers.put(DataframeElementType.BUSBAR_SECTION, busBars());
+        mappers.put(DataframeElementType.BUSBAR_SECTION, busbarSections());
         mappers.put(DataframeElementType.HVDC_LINE, hvdcs());
         mappers.put(DataframeElementType.RATIO_TAP_CHANGER_STEP, rtcSteps());
         mappers.put(DataframeElementType.PHASE_TAP_CHANGER_STEP, ptcSteps());
@@ -799,7 +799,7 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static NetworkDataframeMapper busBars() {
+    private static NetworkDataframeMapper busbarSections() {
         return NetworkDataframeMapperBuilder.ofStream(Network::getBusbarSectionStream, getOrThrow(Network::getBusbarSection, "Bus bar section"))
                 .stringsIndex("id", BusbarSection::getId)
                 .strings("name", bbs -> bbs.getOptionalName().orElse(""), Identifiable::setName)
@@ -842,16 +842,16 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(ratioTapChangerSteps, NetworkDataframes::getRatioTapChangers)
                 .stringsIndex("id", triple -> triple.getLeft().getId())
                 .intsIndex("position", Triple::getRight)
-                .doubles("rho", (p, context) -> perUnitRho(context, p.getLeft(), p.getMiddle().getStep(p.getRight()).getRho()),
-                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(unPerUnitRho(context, p.getLeft(), rho)))
-                .doubles("r", (p, context) -> perUnitRX(context, p.getMiddle().getStep(p.getRight()).getR(), p.getLeft()),
-                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(unPerUnitRX(context, p.getLeft(), r)))
-                .doubles("x", (p, context) -> perUnitRX(context, p.getMiddle().getStep(p.getRight()).getX(), p.getLeft()),
-                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(unPerUnitRX(context, p.getLeft(), x)))
-                .doubles("g", (p, context) -> perUnitBG(context, p.getLeft(), p.getMiddle().getStep(p.getRight()).getG()),
-                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(unPerUnitBG(context, p.getLeft(), g)))
-                .doubles("b", (p, context) -> perUnitBG(context, p.getLeft(), p.getMiddle().getStep(p.getRight()).getB()),
-                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(unPerUnitBG(context, p.getLeft(), b)))
+                .doubles("rho", (p, context) -> p.getMiddle().getStep(p.getRight()).getRho(),
+                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                .doubles("r", (p, context) -> p.getMiddle().getStep(p.getRight()).getR(),
+                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                .doubles("x", (p, context) -> p.getMiddle().getStep(p.getRight()).getX(),
+                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                .doubles("g", (p, context) -> p.getMiddle().getStep(p.getRight()).getG(),
+                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                .doubles("b", (p, context) -> p.getMiddle().getStep(p.getRight()).getB(),
+                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
     }
 
@@ -873,18 +873,18 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(phaseTapChangerSteps, NetworkDataframes::getPhaseTapChangers)
                 .stringsIndex("id", triple -> triple.getLeft().getId())
                 .intsIndex("position", Triple::getRight)
-                .doubles("rho", (p, context) -> perUnitRho(context, p.getLeft(), p.getMiddle().getStep(p.getRight()).getRho()),
-                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(unPerUnitRho(context, p.getLeft(), rho)))
+                .doubles("rho", (p, context) -> p.getMiddle().getStep(p.getRight()).getRho(),
+                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
                 .doubles("alpha", (p, context) -> perUnitAngle(context, p.getMiddle().getStep(p.getRight()).getAlpha()),
                     (p, alpha, context) -> p.getMiddle().getStep(p.getRight()).setAlpha(unPerUnitAngle(context, alpha)))
-                .doubles("r", (p, context) -> perUnitRX(context, p.getMiddle().getStep(p.getRight()).getR(), p.getLeft()),
-                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(unPerUnitRX(context, p.getLeft(), r)))
-                .doubles("x", (p, context) -> perUnitRX(context, p.getMiddle().getStep(p.getRight()).getX(), p.getLeft()),
-                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(unPerUnitRX(context, p.getLeft(), x)))
-                .doubles("g", (p, context) -> perUnitBG(context, p.getLeft(), p.getMiddle().getStep(p.getRight()).getG()),
-                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(unPerUnitBG(context, p.getLeft(), g)))
-                .doubles("b", (p, context) -> perUnitBG(context, p.getLeft(), p.getMiddle().getStep(p.getRight()).getB()),
-                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(unPerUnitBG(context, p.getLeft(), b)))
+                .doubles("r", (p, context) -> p.getMiddle().getStep(p.getRight()).getR(),
+                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                .doubles("x", (p, context) -> p.getMiddle().getStep(p.getRight()).getX(),
+                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                .doubles("g", (p, context) -> p.getMiddle().getStep(p.getRight()).getG(),
+                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                .doubles("b", (p, context) -> p.getMiddle().getStep(p.getRight()).getB(),
+                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
     }
 
