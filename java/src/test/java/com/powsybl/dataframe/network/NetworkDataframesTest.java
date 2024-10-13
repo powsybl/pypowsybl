@@ -14,19 +14,9 @@ import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
-import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
-import com.powsybl.dataframe.update.TestDoubleSeries;
-import com.powsybl.dataframe.update.TestStringSeries;
-import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.HvdcLine;
-import com.powsybl.iidm.network.Line;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.Coordinate;
-import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.extensions.LinePositionAdder;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
+import com.powsybl.dataframe.update.*;
+import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.python.network.Networks;
@@ -681,5 +671,29 @@ class NetworkDataframesTest {
         assertThat(ext1Series.get(1).getInts()).containsExactly(0);
         assertThat(ext1Series.get(2).getDoubles()).containsExactly(coord1.getLatitude());
         assertThat(ext1Series.get(3).getDoubles()).containsExactly(coord1.getLongitude());
+    }
+
+    @Test
+    void referencePrioritiesExtensions() {
+        Network network = EurostagTutorialExample1Factory.create();
+        Generator gen = network.getGenerator("GEN");
+        Load load = network.getLoad("LOAD");
+        ReferencePriority.set(gen, 1);
+        ReferencePriority.set(load, 2);
+
+        List<Series> ext1Series = createExtensionDataFrame(ReferencePriorities.NAME, network);
+        assertThat(ext1Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "priority");
+        assertThat(ext1Series.get(0).getStrings()).containsExactly("GEN", "LOAD");
+        assertThat(ext1Series.get(1).getInts()).containsExactly(1, 2);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        dataframe.addSeries("id", true, new TestStringSeries("GEN", "LOAD"));
+        dataframe.addSeries("priority", false, new TestIntSeries(3, 4));
+        updateExtension(ReferencePriorities.NAME, network, dataframe);
+        List<Series> ext2Series = createExtensionDataFrame(ReferencePriorities.NAME, network);
+        assertThat(ext2Series.get(0).getStrings()).containsExactly("GEN", "LOAD");
+        assertThat(ext2Series.get(1).getInts()).containsExactly(3, 4);
     }
 }
