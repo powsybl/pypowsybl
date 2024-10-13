@@ -13,11 +13,10 @@ import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
-import org.apache.commons.lang3.tuple.Pair;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.*;
 
-import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredInts;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredStrings;
 
 /**
@@ -25,8 +24,20 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredString
  */
 public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
 
+    public enum AdderType {
+        ADD,
+        REMOVE
+    }
+
+    private final AdderType adderType;
+
+    public AreaBoundariesDataframeAdder(AdderType adderType) {
+        this.adderType = adderType;
+    }
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
+            SeriesMetadata.strings("boundary_type"),
             SeriesMetadata.strings("element"),
             SeriesMetadata.strings("side"),
             SeriesMetadata.booleans("ac")
@@ -40,19 +51,25 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
     private static final class AreaBoundaries {
 
         private final StringSeries ids;
+        private final StringSeries boundaryTypes;
         private final StringSeries elements;
         private final StringSeries sides;
         private final IntSeries acs;
 
         AreaBoundaries(UpdatingDataframe dataframe) {
             this.ids = getRequiredStrings(dataframe, "id");
+            this.boundaryTypes = getRequiredStrings(dataframe, "boundary_type");
             this.elements = getRequiredStrings(dataframe, "element");
             this.sides = dataframe.getStrings("side");
-            this.acs = getRequiredInts(dataframe, "ac");
+            this.acs = dataframe.getInts("ac");
         }
 
         public StringSeries getIds() {
             return ids;
+        }
+
+        public StringSeries getBoundaryTypes() {
+            return boundaryTypes;
         }
 
         public StringSeries getElements() {
@@ -73,60 +90,52 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
         UpdatingDataframe primaryTable = dataframes.get(0);
         AreaBoundaries series = new AreaBoundaries(primaryTable);
 
-        Map<Area, List<Pair<DanglingLine, Boolean>>> danglingLineBoundaries = new HashMap<>();
-        Map<Area, List<Pair<Terminal, Boolean>>> terminalBoundaries = new HashMap<>();
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String areaId = series.getIds().get(i);
+            PyPowsyblApiHeader.ElementType boundaryType = PyPowsyblApiHeader.ElementType.valueOf(series.getBoundaryTypes().get(i));
+            if (!Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.DANGLING_LINE) &&
+                    !Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.TERMINAL)) {
+                throw new PowsyblException("Area boundary boundary_type must be either DANGLING_LINE or TERMINAL");
+            }
             String element = series.getElements().get(i);
             String side = series.getSides() == null ? "" : series.getSides().get(i);
-            boolean ac = series.getAcs().get(i) == 1;
+            boolean ac = series.getAcs() == null || series.getAcs().get(i) == 1;
             Area area = network.getArea(areaId);
             if (area == null) {
                 throw new PowsyblException("Area " + areaId + " not found");
             }
-            // an empty element alone for an area indicates remove all boundaries in area
-            Connectable<?> connectable = element.isEmpty() ? null : network.getConnectable(element);
-            if (!element.isEmpty() && connectable == null) {
-                throw new PowsyblException("Connectable " + element + " not found");
-            }
+            Connectable<?> connectable = network.getConnectable(element);
             if (connectable == null) {
-                danglingLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(null, null));
-                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(null, null));
-            } else if (connectable instanceof DanglingLine danglingLine) {
-                danglingLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(danglingLine, ac));
-            } else if (connectable instanceof Injection<?> injection) {
-                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(injection.getTerminal(), ac));
-            } else if (connectable instanceof Branch<?> branch) {
-                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(branch.getTerminal(TwoSides.valueOf(side)), ac));
-            } else if (connectable instanceof ThreeWindingsTransformer t3wt) {
-                terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(t3wt.getTerminal(ThreeSides.valueOf(side)), ac));
+                throw new PowsyblException("Element " + element + " not found");
+            }
+            if (Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.DANGLING_LINE)) {
+                // Boundary modeled by a dangling line
+                if (connectable instanceof DanglingLine danglingLine) {
+                    switch (adderType) {
+                        case ADD -> area.newAreaBoundary().setBoundary(danglingLine.getBoundary()).setAc(ac).add();
+                        case REMOVE -> area.removeAreaBoundary(danglingLine.getBoundary());
+                    }
+                } else {
+                    throw new PowsyblException(element + " is not a dangling line");
+                }
+            } else if (Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.TERMINAL)) {
+                // Boundary modeled by a terminal
+                Terminal terminal;
+                if (connectable instanceof Injection<?> injection) {
+                    terminal = injection.getTerminal();
+                } else if (connectable instanceof Branch<?> branch) {
+                    terminal = branch.getTerminal(TwoSides.valueOf(side));
+                } else if (connectable instanceof ThreeWindingsTransformer t3wt) {
+                    terminal = t3wt.getTerminal(ThreeSides.valueOf(side));
+                } else {
+                    // Never supposed to happen
+                    throw new PowsyblException("Element " + element + " is not an injection, branch, or three windings transformer");
+                }
+                switch (adderType) {
+                    case ADD -> area.newAreaBoundary().setTerminal(terminal).setAc(ac).add();
+                    case REMOVE -> area.removeAreaBoundary(terminal);
+                }
             }
         }
-        // delete boundaries of involved areas
-        Set<Area> areas = new HashSet<>(danglingLineBoundaries.keySet());
-        areas.addAll(terminalBoundaries.keySet());
-        areas.forEach(a -> {
-            a.getAreaBoundaryStream().toList().forEach(areaBoundary -> {
-                areaBoundary.getBoundary().ifPresent(a::removeAreaBoundary);
-                areaBoundary.getTerminal().ifPresent(a::removeAreaBoundary);
-            });
-        });
-        // create new boundaries
-        danglingLineBoundaries.forEach((area, list) -> {
-            list.stream()
-                    .filter(pair -> !(pair.getLeft() == null))
-                    .forEach(pair -> area.newAreaBoundary()
-                    .setBoundary(pair.getLeft().getBoundary())
-                    .setAc(pair.getRight())
-                    .add());
-        });
-        terminalBoundaries.forEach((area, list) -> {
-            list.stream()
-                    .filter(pair -> !(pair.getLeft() == null))
-                    .forEach(pair -> area.newAreaBoundary()
-                    .setTerminal(pair.getLeft())
-                    .setAc(pair.getRight())
-                    .add());
-        });
     }
 }

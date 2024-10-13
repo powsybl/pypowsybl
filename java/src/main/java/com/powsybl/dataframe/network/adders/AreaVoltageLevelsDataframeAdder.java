@@ -24,6 +24,17 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.*;
  */
 public class AreaVoltageLevelsDataframeAdder implements NetworkElementAdder {
 
+    public enum AdderType {
+        ADD,
+        REMOVE
+    }
+
+    private final AdderType adderType;
+
+    public AreaVoltageLevelsDataframeAdder(AdderType adderType) {
+        this.adderType = adderType;
+    }
+
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("voltage_level_id")
@@ -58,27 +69,21 @@ public class AreaVoltageLevelsDataframeAdder implements NetworkElementAdder {
         UpdatingDataframe primaryTable = dataframes.get(0);
         AreaVoltageLevels series = new AreaVoltageLevels(primaryTable);
 
-        Map<Area, List<VoltageLevel>> areaVoltageLevels = new HashMap<>();
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String areaId = series.getIds().get(i);
             String voltageLevelId = series.getVoltageLevels().get(i);
             Area area = network.getArea(areaId);
-            // an empty voltageLevelId alone for an area indicates remove all voltage levels in area
             VoltageLevel voltageLevel = voltageLevelId.isEmpty() ? null : network.getVoltageLevel(voltageLevelId);
             if (area == null) {
                 throw new PowsyblException("Area " + areaId + " not found");
             }
-            if (!voltageLevelId.isEmpty() && voltageLevel == null) {
+            if (voltageLevel == null) {
                 throw new PowsyblException("VoltageLevel " + voltageLevelId + " not found");
             }
-            areaVoltageLevels.computeIfAbsent(area, k -> new ArrayList<>()).add(voltageLevel);
+            switch (adderType) {
+                case ADD -> area.addVoltageLevel(voltageLevel);
+                case REMOVE -> area.removeVoltageLevel(voltageLevel);
+            }
         }
-        areaVoltageLevels.forEach((area, voltageLevels) -> {
-            // For each area, remove all existing voltageLevels and add new ones.
-            // If a given area has *only* a null voltageLevel in the updating dataframe, this results
-            // in the area having all its voltage levels unlinked.
-            area.getVoltageLevelStream().toList().forEach(area::removeVoltageLevel);
-            voltageLevels.stream().filter(Objects::nonNull).forEach(area::addVoltageLevel);
-        });
     }
 }

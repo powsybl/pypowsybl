@@ -50,8 +50,10 @@ public final class NetworkElementAdders {
             Map.entry(ALIAS, new AliasDataframeAdder()),
             Map.entry(TIE_LINE, new TieLineDataframeAdder()),
             Map.entry(AREA, new AreaDataframeAdder()),
-            Map.entry(AREA_VOLTAGE_LEVELS, new AreaVoltageLevelsDataframeAdder()),
-            Map.entry(AREA_BOUNDARIES, new AreaBoundariesDataframeAdder())
+            Map.entry(AREA_ADD_VOLTAGE_LEVELS, new AreaVoltageLevelsDataframeAdder(AreaVoltageLevelsDataframeAdder.AdderType.ADD)),
+            Map.entry(AREA_REMOVE_VOLTAGE_LEVELS, new AreaVoltageLevelsDataframeAdder(AreaVoltageLevelsDataframeAdder.AdderType.REMOVE)),
+            Map.entry(AREA_ADD_BOUNDARIES, new AreaBoundariesDataframeAdder(AreaBoundariesDataframeAdder.AdderType.ADD)),
+            Map.entry(AREA_REMOVE_BOUNDARIES, new AreaBoundariesDataframeAdder(AreaBoundariesDataframeAdder.AdderType.REMOVE))
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();

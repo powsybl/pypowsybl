@@ -221,7 +221,11 @@ public final class Util {
             case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
             case AREA -> PyPowsyblApiHeader.ElementType.AREA;
             case AREA_VOLTAGE_LEVELS -> PyPowsyblApiHeader.ElementType.AREA_VOLTAGE_LEVELS;
-            case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA;
+            case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_BOUNDARIES;
+            case AREA_ADD_VOLTAGE_LEVELS -> PyPowsyblApiHeader.ElementType.AREA_ADD_VOLTAGE_LEVELS;
+            case AREA_REMOVE_VOLTAGE_LEVELS -> PyPowsyblApiHeader.ElementType.AREA_REMOVE_VOLTAGE_LEVELS;
+            case AREA_ADD_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_ADD_BOUNDARIES;
+            case AREA_REMOVE_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_REMOVE_BOUNDARIES;
         };
     }
 
@@ -264,6 +268,10 @@ public final class Util {
             case AREA -> DataframeElementType.AREA;
             case AREA_VOLTAGE_LEVELS -> DataframeElementType.AREA_VOLTAGE_LEVELS;
             case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
+            case AREA_ADD_VOLTAGE_LEVELS -> DataframeElementType.AREA_ADD_VOLTAGE_LEVELS;
+            case AREA_REMOVE_VOLTAGE_LEVELS -> DataframeElementType.AREA_REMOVE_VOLTAGE_LEVELS;
+            case AREA_ADD_BOUNDARIES -> DataframeElementType.AREA_ADD_BOUNDARIES;
+            case AREA_REMOVE_BOUNDARIES -> DataframeElementType.AREA_REMOVE_BOUNDARIES;
         };
     }
 

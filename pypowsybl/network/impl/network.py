@@ -2514,7 +2514,6 @@ class Network:  # pylint: disable=too-many-public-methods
               - **ac**: True if the boundary is considered as AC and not DC
               - **p**: Active power at boundary (MW)
               - **q**: Reactive power at boundary (MW)
-              - **voltage_level_id**: voltage level identifier
 
             This dataframe is indexed on the area ID.
 
@@ -4784,7 +4783,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.AREA, [df], **kwargs)
 
-    def create_areas_voltage_levels(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_areas_voltage_levels(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Associate voltage levels to (existing) areas.
 
@@ -4807,20 +4806,38 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                # Note that any other voltage level than VL1 and VL2 previously associated to Area1 will be
-                # dissociated from Area1. Any existing other area than Area1 is kept unchanged.
-                network.create_areas(id=['Area1', 'Area1'], voltage_level_id=['VL1', 'VL2'])
+                network.add_areas_voltage_levels(id=['Area1', 'Area1'], voltage_level_id=['VL1', 'VL2'])
+        """
+        return self._create_elements(ElementType.AREA_ADD_VOLTAGE_LEVELS, [df], **kwargs)
 
-            To clear all voltage associations of Area2.
+    def remove_areas_voltage_levels(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Remove voltage levels from (existing) areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the area
+            - **voltage_level_id**: the identifier of the voltage level to be dissociated from the area
+
+        Examples:
+            To dissociate voltage levels VL1 and VL2 from Area1.
 
             .. code-block:: python
 
-                # Any existing other area than Area2 is kept unchanged.
-                network.create_areas(id='Area2', voltage_level_id='')
+                network.remove_areas_voltage_levels(id=['Area1', 'Area1'], voltage_level_id=['VL1', 'VL2'])
         """
-        return self._create_elements(ElementType.AREA_VOLTAGE_LEVELS, [df], **kwargs)
+        return self._create_elements(ElementType.AREA_REMOVE_VOLTAGE_LEVELS, [df], **kwargs)
 
-    def create_areas_boundaries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_areas_boundaries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Define boundaries of (existing) areas.
 
@@ -4836,30 +4853,55 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the area
+            - **element_type**: either `DANGLING_LINE` or `TERMINAL`
             - **element**: dangling line identifier, or any connectable
             - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
             - **ac**: True is boundary is to be considered as AC
 
         Examples:
-            To associate voltage levels VL1 and VL2 to Area1.
 
             .. code-block:: python
 
                 # define dangling lines NHV1_XNODE1 and NVH1_XNODE2 as boundaries of AreaA, and
                 # define dangling lines XNODE1_NHV2 and XNODE2_NHV2 as boundaries of AreaB
                 network.create_areas_boundaries(id=['AreaA', 'AreaA', 'AreaB', 'AreaB'],
+                                                boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
                                                 element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
-                                                side=['', '', '', ''],
                                                 ac=[True, True, True, True])
+        """
+        return self._create_elements(ElementType.AREA_ADD_BOUNDARIES, [df], **kwargs)
 
-            To clear all boundaries of Area2.
+    def remove_areas_boundaries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Remove boundaries of (existing) areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the area
+            - **element_type**: either `DANGLING_LINE` or `TERMINAL`
+            - **element**: dangling line identifier, or any connectable
+            - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
+
+        Examples:
 
             .. code-block:: python
 
-                # Any existing other area than AreaA is kept unchanged.
-                n.create_areas_boundaries(id='AreaA', element='', side='', ac=False)
+                # remove NVH1_XNODE2 dangling line boundary from areaA
+                # remove XNODE2_NHV2 dangling line boundary from areaB
+                network.remove_areas_boundaries(id=['AreaA', 'AreaB'],
+                                                boundary_type=['DANGLING_LINE', 'DANGLING_LINE'],
+                                                element=['NVH1_XNODE2', 'XNODE2_NHV2'])
         """
-        return self._create_elements(ElementType.AREA_BOUNDARIES, [df], **kwargs)
+        return self._create_elements(ElementType.AREA_REMOVE_BOUNDARIES, [df], **kwargs)
 
     def add_aliases(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

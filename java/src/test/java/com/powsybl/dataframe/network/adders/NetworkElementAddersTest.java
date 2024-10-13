@@ -511,7 +511,7 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "voltage_level_id", "VLGEN", "VLHV1", "VLHV2");
         assertEquals(0, area1.getVoltageLevelStream().count());
         assertEquals(0, area2.getVoltageLevelStream().count());
-        NetworkElementAdders.addElements(DataframeElementType.AREA_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        NetworkElementAdders.addElements(DataframeElementType.AREA_ADD_VOLTAGE_LEVELS, network, singletonList(dataframe));
         assertEquals(2, area1.getVoltageLevelStream().count());
         assertEquals(1, area2.getVoltageLevelStream().count());
         assertEquals(area1, network.getVoltageLevel("VLGEN").getArea(areaType).orElseThrow());
@@ -520,20 +520,11 @@ class NetworkElementAddersTest {
 
         dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", "area1");
-        addStringColumn(dataframe, "voltage_level_id", "");
-        NetworkElementAdders.addElements(DataframeElementType.AREA_VOLTAGE_LEVELS, network, singletonList(dataframe));
-        assertEquals(0, area1.getVoltageLevelStream().count()); // cleared
-        assertEquals(1, area2.getVoltageLevelStream().count()); // unchanged because area2 is not in updating df
-
-        dataframe = new DefaultUpdatingDataframe(2);
-        addStringColumn(dataframe, "id", "area1", "area1");
-        addStringColumn(dataframe, "voltage_level_id", "", "VLGEN");
-        NetworkElementAdders.addElements(DataframeElementType.AREA_VOLTAGE_LEVELS, network, singletonList(dataframe));
-        assertEquals(1, area1.getVoltageLevelStream().count()); // empty ("") voltage level is ignored because not alone
-        assertEquals(1, area2.getVoltageLevelStream().count()); // unchanged because area2 is not in updating df
-        assertEquals(area1, network.getVoltageLevel("VLGEN").getArea(areaType).orElseThrow());
-        assertFalse(network.getVoltageLevel("VLHV1").getArea(areaType).isPresent());
-        assertEquals(area2, network.getVoltageLevel("VLHV2").getArea(areaType).orElseThrow());
+        addStringColumn(dataframe, "voltage_level_id", "VLGEN");
+        NetworkElementAdders.addElements(DataframeElementType.AREA_REMOVE_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        assertEquals(1, area1.getVoltageLevelStream().count());
+        assertTrue(network.getVoltageLevel("VLGEN").getArea(areaType).isEmpty());
+        assertEquals(1, area2.getVoltageLevelStream().count());
     }
 
     @Test
@@ -550,29 +541,21 @@ class NetworkElementAddersTest {
                 .add();
         var dataframe = new DefaultUpdatingDataframe(4);
         addStringColumn(dataframe, "id", "area1", "area1", "area2", "area2");
+        addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE");
         addStringColumn(dataframe, "element", "NHV1_XNODE1", "NVH1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
         addIntColumn(dataframe, "ac", 1, 1, 1, 1);
         assertEquals(0, area1.getAreaBoundaryStream().count());
         assertEquals(0, area2.getAreaBoundaryStream().count());
-        NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
+        NetworkElementAdders.addElements(DataframeElementType.AREA_ADD_BOUNDARIES, network, singletonList(dataframe));
         assertEquals(2, area1.getAreaBoundaryStream().count());
         assertEquals(2, area2.getAreaBoundaryStream().count());
 
-        dataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(dataframe, "id", "area1");
-        addStringColumn(dataframe, "element", "");
-        addIntColumn(dataframe, "ac", 1);
-        NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
-        assertEquals(0, area1.getAreaBoundaryStream().count()); // cleared
-        assertEquals(2, area2.getAreaBoundaryStream().count()); // unchanged because area2 is not in updating df
-
-        dataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(dataframe, "id", "area1");
-        addStringColumn(dataframe, "element", "NGEN_NHV1");
-        addStringColumn(dataframe, "side", "TWO");
-        addIntColumn(dataframe, "ac", 1);
-        NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
+        dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "id", "area1", "area2");
+        addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE");
+        addStringColumn(dataframe, "element", "NVH1_XNODE2", "XNODE2_NHV2");
+        NetworkElementAdders.addElements(DataframeElementType.AREA_REMOVE_BOUNDARIES, network, singletonList(dataframe));
         assertEquals(1, area1.getAreaBoundaryStream().count());
-        assertEquals(2, area2.getAreaBoundaryStream().count()); // unchanged because area2 is not in updating df
+        assertEquals(1, area2.getAreaBoundaryStream().count());
     }
 }
