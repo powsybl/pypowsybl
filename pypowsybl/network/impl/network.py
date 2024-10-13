@@ -2528,7 +2528,7 @@ class Network:  # pylint: disable=too-many-public-methods
             will output something like:
 
             ============= ================ ===== =========== ===========
-            \             element    ac           p           q
+            \                      element    ac           p           q
             ============= ================ ===== =========== ===========
             id
             ControlArea_A      NHV1_XNODE1  True -301.474347 -116.518644
