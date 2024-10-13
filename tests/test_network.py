@@ -674,7 +674,7 @@ def test_areas_voltage_levels_data_frame():
     pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
 
     # test removal
-    n.remove_areas_voltage_levels(id=['testAreaA'], voltage_level_id='VLGEN')
+    n.remove_areas_voltage_levels(id=['testAreaA'], voltage_level_id=['VLGEN'])
     areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=[

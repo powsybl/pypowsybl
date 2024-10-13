@@ -4853,7 +4853,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the area
-            - **element_type**: either `DANGLING_LINE` or `TERMINAL`
+            - **boundary_type**: either `DANGLING_LINE` or `TERMINAL`
             - **element**: dangling line identifier, or any connectable
             - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
             - **ac**: True is boundary is to be considered as AC
