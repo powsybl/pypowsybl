@@ -66,9 +66,9 @@ parameters could be specified in a less typed way than common parameters using t
 
       ``provider_parameters={'someStringParam' : 'myStringValue', 'someIntegerParam' : '42'}``
 
-    * for float (double) parameters, use the dot as decimal separator and optionally a scientific notation:
+    * for float (double) parameters, use the dot as decimal separator. E notation is also supported:
 
-      ``provider_parameters={'someDoubleParam' : '1.23', 'someOtherDoubleParam' : '4.56e-2'}``
+      ``provider_parameters={'someDoubleParam' : '1.23', 'someOtherDoubleParam' : '4.56E-2'}``
 
     * for boolean parameters, use either `'True'`, `'true'`, `'False'`, `'false'`:
 
