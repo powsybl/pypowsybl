@@ -473,8 +473,7 @@ def test_geo_data():
 
 def test_reference_priorities():
     network = pn.create_eurostag_tutorial_example1_network()
-    # e = network.get_extensions('referencePriorities')
-    # assert e.empty()
+    assert network.get_extensions('referencePriorities').empty
 
     network.create_extensions('referencePriorities', id='GEN', priority=1)
     e = network.get_extensions('referencePriorities')
