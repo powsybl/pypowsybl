@@ -948,3 +948,66 @@ S1VL1 is connected to S1VL2 by the transformer TWT, so it is kept after the netw
 It is the only voltage level connected to S1VL1 by one branch.
 
 the parameter "ids" can be used to specify the exact voltage levels that will be kept
+
+Using operational limits
+------------------------
+
+Operational limits can be added on various network elements :
+- each side of the branches (lines and 2 windings transformers)
+- each leg of 3 windings transformers
+- dangling lines
+
+For more information on the model of operational limits, see `the internal model documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_model/additional.html#loading-limits>`_
+
+Limits are defined in operational limit groups, that are represented by an `id`. Each line, transformer or dangling line is associated with a collection of groups, and for each element one of its groups is the selected one.
+The id of the selected limit group can be found in the data of each element :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_eurostag_tutorial_example1_network()
+    >>> net.get_lines(attributes=["selected_limits_group_1", "selected_limits_group_2"])
+
+                selected_limits_group_1 selected_limits_group_2
+    id
+    NHV1_NHV2_1                 DEFAULT                 DEFAULT
+    NHV1_NHV2_2                 DEFAULT                 DEFAULT
+
+To retrieve the limits present on a network, the user can use the `get_operational_limits` method (choosing with the `show_inactive_sets` parameter whether to get all groups or only the active ones).
+For example on a network with a line that has two sets of current limits :
+
+.. code-block:: python
+
+    >>> net.get_operational_limits() # only selected sets
+
+                element_type side             name     type     value  acceptable_duration
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60
+
+    >>> net.get_operational_limits(all_attributes=True, show_inactive_sets=True) # all sets
+
+                element_type side             name     type     value  acceptable_duration  fictitious     group_name  selected
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1       False        DEFAULT      True
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600       False        DEFAULT      True
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT      True
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP     False
+
+
+Finally, the user can change the selected group of limits using the respective update methods of network elements.
+Using the same example as above :
+
+.. code-block:: python
+
+    >>> net.update_lines(id='LINE1', 'selected_limits_group_2'='OTHER_GROUP')
+    >>> net.get_operational_limits(all_attributes=True, show_inactive_sets=True)
+
+                element_type side             name     type     value  acceptable_duration  fictitious     group_name  selected
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1       False        DEFAULT     False
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600       False        DEFAULT     False
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT     False
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP      True
+
