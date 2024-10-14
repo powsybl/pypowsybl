@@ -1776,13 +1776,14 @@ def test_multiple_limit_groups():
          'acceptable_duration': 60, 'fictitious': False, 'group_name': 'SUMMER'}
     ]))
 
-    limits = network.get_operational_limits(all_attributes=True, show_inactive_sets=False)
+    limits = network.get_operational_limits(all_attributes=True)
     assert('APPARENT_POWER' not in limits['type'].values)
     all_limits = network.get_operational_limits(all_attributes=True, show_inactive_sets=True)
     assert('APPARENT_POWER' in all_limits['type'].values)
 
-    
-
+    assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "DEFAULT")
+    network.update_lines(id="NHV1_NHV2_1", selected_limits_group_1="SUMMER")
+    assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "SUMMER")
 
 def test_validation_level():
     n = pp.network.create_ieee14()

@@ -486,6 +486,10 @@ public final class NetworkDataframes {
                 .booleans("connected1", l -> l.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", l -> l.getTerminal2().isConnected(), connectBranchSide2())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("selected_limits_group_1", line -> line.getSelectedOperationalLimitsGroupId1().orElse("DEFAULT"),
+                        Line::setSelectedOperationalLimitsGroup1, false)
+                .strings("selected_limits_group_2", line -> line.getSelectedOperationalLimitsGroupId2().orElse("DEFAULT"),
+                        Line::setSelectedOperationalLimitsGroup2, false)
                 .addProperties()
                 .build();
     }
@@ -520,6 +524,10 @@ public final class NetworkDataframes {
                 .booleans("connected1", twt -> twt.getTerminal1().isConnected(), connectBranchSide1())
                 .booleans("connected2", twt -> twt.getTerminal2().isConnected(), connectBranchSide2())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("selected_limits_group_1", twt -> twt.getSelectedOperationalLimitsGroupId1().orElse("DEFAULT"),
+                        TwoWindingsTransformer::setSelectedOperationalLimitsGroup1, false)
+                .strings("selected_limits_group_2", twt -> twt.getSelectedOperationalLimitsGroupId2().orElse("DEFAULT"),
+                        TwoWindingsTransformer::setSelectedOperationalLimitsGroup2, false)
                 .addProperties()
                 .build();
     }
@@ -545,6 +553,8 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus1_id", twt -> getBusBreakerViewBusId(twt.getLeg1().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg1().getTerminal(), id), false)
                 .ints("node1", twt -> getNode(twt.getLeg1().getTerminal()), false)
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected(), connectLeg1())
+                .strings("selected_limits_group_1", twt -> twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse("DEFAULT"),
+                        (twt, groupId) -> twt.getLeg1().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
                 .doubles("x2", (twt, context) -> perUnitRX(context, twt.getLeg2().getX(), twt), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
                 .doubles("g2", (twt, context) -> perUnitBG(context, twt.getLeg2().getG(), twt), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitBG(context, twt, g2)))
@@ -561,6 +571,8 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus2_id", twt -> getBusBreakerViewBusId(twt.getLeg2().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg2().getTerminal(), id), false)
                 .ints("node2", twt -> getNode(twt.getLeg2().getTerminal()), false)
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected(), connectLeg2())
+                .strings("selected_limits_group_2", twt -> twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse("DEFAULT"),
+                        (twt, groupId) -> twt.getLeg2().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
                 .doubles("x3", (twt, context) -> perUnitRX(context, twt.getLeg3().getX(), twt), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
                 .doubles("g3", (twt, context) -> perUnitBG(context, twt.getLeg3().getG(), twt), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitBG(context, twt, g3)))
@@ -577,6 +589,8 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus3_id", twt -> getBusBreakerViewBusId(twt.getLeg3().getTerminal()), (twt, id) -> setBusBreakerViewBusId(twt.getLeg3().getTerminal(), id), false)
                 .ints("node3", twt -> getNode(twt.getLeg3().getTerminal()), false)
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected(), connectLeg3())
+                .strings("selected_limits_group_3", twt -> twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse("DEFAULT"),
+                        (twt, groupId) -> twt.getLeg3().setSelectedOperationalLimitsGroup(groupId), false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -609,6 +623,8 @@ public final class NetworkDataframes {
                 .booleans("paired", DanglingLine::isPaired)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
+                .strings("selected_limits_group", dl -> dl.getSelectedOperationalLimitsGroupId().orElse("DEFAULT"),
+                        DanglingLine::setSelectedOperationalLimitsGroup, false)
                 .addProperties()
                 .build();
     }
@@ -990,6 +1006,10 @@ public final class NetworkDataframes {
                 .doubles("p2", getPerUnitP2(), setPerUnitP2())
                 .doubles("q2", getPerUnitQ2(), setPerUnitQ2())
                 .doubles("i2", (branch, context) -> perUnitI(context, branch.getTerminal2()))
+                .strings("selected_limits_group_1", branch -> (String) branch.getSelectedOperationalLimitsGroupId1().orElse("DEFAULT"),
+                        Branch::setSelectedOperationalLimitsGroup1, false)
+                .strings("selected_limits_group_2", branch -> (String) branch.getSelectedOperationalLimitsGroupId2().orElse("DEFAULT"),
+                        Branch::setSelectedOperationalLimitsGroup2, false)
                 .build();
     }
 
