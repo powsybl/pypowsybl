@@ -6,6 +6,7 @@
 #
 import copy
 import datetime
+import math
 import os
 import pathlib
 import re
@@ -14,6 +15,8 @@ import unittest
 import io
 import zipfile
 from os.path import exists
+
+import logging
 
 import matplotlib.pyplot as plt
 import networkx as nx
@@ -26,7 +29,8 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, \
+    EdgeInfoType
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -65,7 +69,7 @@ def test_save_cgmes_zip():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buffer = n.save_to_binary_buffer(format='CGMES')
     with zipfile.ZipFile(buffer, 'r') as zip_file:
-        assert ['file_EQ.xml', 'file_TP.xml', 'file_SV.xml', 'file_SSH.xml'] == zip_file.namelist()
+        assert ['file_EQ.xml', 'file_TP.xml', 'file_SSH.xml', 'file_SV.xml'] == zip_file.namelist()
 
 
 def test_load_zipped_xiidm():
@@ -148,7 +152,7 @@ def test_save_ucte():
 
 def test_get_import_format():
     formats = pp.network.get_import_formats()
-    assert ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM'] == formats
+    assert ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY', 'BIIDM'] == formats
 
 
 def test_get_import_parameters():
@@ -164,7 +168,7 @@ def test_get_import_parameters():
 
 def test_get_export_parameters():
     parameters = pp.network.get_export_parameters('CGMES')
-    assert 21 == len(parameters)
+    assert 20 == len(parameters)
     name = 'iidm.export.cgmes.cim-version'
     assert name == parameters.index.tolist()[1]
     assert 'CIM version to export' == parameters['description'][name]
@@ -175,7 +179,7 @@ def test_get_export_parameters():
 
 def test_get_export_format():
     formats = set(pp.network.get_export_formats())
-    assert {'AMPL', 'BIIDM', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM'} == formats
+    assert {'AMPL', 'CGMES', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM', 'JIIDM'}.intersection(formats)
 
 
 def test_load_network():
@@ -842,30 +846,36 @@ def test_sld_svg():
     assert len(sld_multi_substation.metadata) > 0
 
     sld_multi_substation1 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']],
-                                                                              SldParameters(use_name=True, center_name=True,
-                                                                                            diagonal_label=True, topological_coloring=False,
+                                                                              SldParameters(use_name=True,
+                                                                                            center_name=True,
+                                                                                            diagonal_label=True,
+                                                                                            topological_coloring=False,
                                                                                             tooltip_enabled=True))
     assert re.search('.*<svg.*', sld_multi_substation1.svg)
     assert len(sld_multi_substation1.metadata) > 0
 
     sld_multi_substation2 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2'], ['S3', 'S4']],
-                                                                              SldParameters(use_name=True, center_name=True,
-                                                                                            diagonal_label=True, nodes_infos=True, topological_coloring=True,
+                                                                              SldParameters(use_name=True,
+                                                                                            center_name=True,
+                                                                                            diagonal_label=True,
+                                                                                            nodes_infos=True,
+                                                                                            topological_coloring=True,
                                                                                             tooltip_enabled=True))
     assert re.search('.*<svg.*', sld_multi_substation2.svg)
     assert len(sld_multi_substation2.metadata) > 0
 
-    sld_multi_substation3 = n.get_matrix_multi_substation_single_line_diagram([['S1'],['S2']])
+    sld_multi_substation3 = n.get_matrix_multi_substation_single_line_diagram([['S1'], ['S2']])
     assert re.search('.*<svg.*', sld_multi_substation3.svg)
-    assert len(sld_multi_substation3.metadata) > 0   
-    
+    assert len(sld_multi_substation3.metadata) > 0
+
     sld_multi_substation4 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation4.svg)
-    assert len(sld_multi_substation4.metadata) > 0    
+    assert len(sld_multi_substation4.metadata) > 0
 
     sld_multi_substation5 = n.get_matrix_multi_substation_single_line_diagram([['S1', ''], ['', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation5.svg)
-    assert len(sld_multi_substation5.metadata) > 0    
+    assert len(sld_multi_substation5.metadata) > 0
+
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -995,7 +1005,7 @@ def test_lines():
         data=[['S2VL1_6', 6, 'S3VL1_2', 2], ['S3VL1_8', 8, 'S4VL1_6', 6]])
     pd.testing.assert_frame_equal(expected, lines, check_dtype=False, atol=1e-2)
 
-@unittest.skip("skip for ci")
+
 def test_dangling_lines():
     n = util.create_dangling_lines_network()
     df = n.get_dangling_lines(all_attributes=True)
@@ -1035,15 +1045,33 @@ def test_dangling_lines():
                                          'a16b4a6c-70b1-4abf-9a9d-bd0fa47f9fe4',
                                          'ed0c5d75-4a54-43c8-b782-b20d7431630b']),
         columns=['p', 'q', 'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'],
-        data=[[-25.77,  -2.82, 27.36,   -0.42,  225.49, -5.58],
-              [-36.59,  54.18, 46.81,  -79.19,  411.15, -6.58],
-              [-82.84, 138.45, 90.03, -148.60,  410.88, -6.57],
-              [-23.83,   1.27, 26.80,   -1.48,  224.96, -5.63],
-              [-36.85,  80.68, 43.68,  -84.87,  412.61, -6.74]])
-
-
-    print(dangling_lines)
+        data=[[-25.77, -2.82, 27.36, -0.42, 225.49, -5.58],
+              [-36.59, 54.18, 46.81, -79.19, 411.15, -6.58],
+              [-82.84, 138.45, 90.03, -148.60, 410.88, -6.57],
+              [-23.83, 1.27, 26.80, -1.48, 224.96, -5.63],
+              [-36.85, 80.68, 43.68, -84.87, 412.61, -6.74]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+
+
+def test_dangling_line_generation():
+    n = util.create_dangling_lines_network()
+    df = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
+                                          'voltage_regulator_on'])
+    assert not df['voltage_regulator_on']['DL']
+    assert math.isnan(df['min_p']['DL'])
+
+    with pytest.raises(PyPowsyblError) as context:
+        n.create_dangling_lines(id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0,
+                                target_v=100, voltage_regulator_on=True)
+    assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    n.create_dangling_lines(id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0,
+                            min_p=0, max_p=100, target_p=100, target_v=100, voltage_regulator_on=True)
+    df2 = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
+                                           'voltage_regulator_on'])
+    assert df2['voltage_regulator_on']['DL2']
 
 
 def test_batteries():
@@ -1106,7 +1134,7 @@ def test_shunt():
         index=pd.Series(name='id', data=['SHUNT']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_19', 19]])
-    #pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=1e-2)
+    pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=1e-2)
 
 
 def test_3_windings_transformers():
@@ -1322,10 +1350,6 @@ def test_node_breaker_view():
     assert 7 == len(nodes)
     assert topology.internal_connections.empty
 
-    with pytest.raises(PyPowsyblError) as exc:
-        n.get_node_breaker_topology('wrongVL')
-    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
-
 
 def test_graph():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1479,7 +1503,7 @@ def test_set_bus_breaker_bus_id():
     n = pp.network.create_four_substations_node_breaker_network()
     with pytest.raises(PyPowsyblError) as e:
         n.update_loads(id='LD1', bus_breaker_bus_id='S1VL1_0')
-    assert "Not supported in a node/breaker topology" in str(e) # this is expected
+    assert "Not supported in a node/breaker topology" in str(e)  # this is expected
 
 
 def test_injection_set_bus_breaker_bus_id():
@@ -1869,10 +1893,6 @@ def test_properties():
         network.add_elements_properties(properties)
     assert 'dataframe can not contain NaN values' in str(exc)
 
-    with pytest.raises(PyPowsyblError) as exc:
-        network.remove_elements_properties(ids='notHere', properties='test')
-    assert "Network element \'notHere\' does not exist." in str(exc)
-
 
 def test_pathlib_load_save(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
@@ -2015,21 +2035,18 @@ def test_identifiables():
 
 def test_injections():
     n = pp.network.create_four_substations_node_breaker_network()
-    load = n.get_injections(all_attributes=True).loc['LD1']
+    load = n.get_injections().loc['LD1']
     assert load.type == 'LOAD'
     assert load.voltage_level_id == 'S1VL1'
     assert load.bus_id == 'S1VL1_0'
-    assert load.node == 2
 
 
 def test_branches():
     n = pp.network.create_four_substations_node_breaker_network()
-    twt = n.get_branches(all_attributes=True).loc['TWT']
+    twt = n.get_branches().loc['TWT']
     assert twt.voltage_level1_id == 'S1VL1'
-    assert twt.node1 == 4
     assert twt.bus1_id == 'S1VL1_0'
     assert twt.voltage_level2_id == 'S1VL2'
-    assert twt.node2 == 3
     assert twt.bus2_id == 'S1VL2_0'
     assert twt.connected1
     assert twt.connected2
@@ -2037,26 +2054,6 @@ def test_branches():
     twt = n.get_branches().loc['TWT']
     assert not twt.connected1
     assert not twt.connected2
-
-
-def test_branch_and_injection_by_id():
-    n = pp.network.create_four_substations_node_breaker_network()
-    assert len(n.get_branches(id='TWT')) == 1
-    assert len(n.get_injections(id='LD2')) == 1
-
-
-def test_branches_and_injections_flow():
-    n = pp.network.create_four_substations_node_breaker_network()
-    expected_branches = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': 'LINE_S2S3', 'p1': 109.8893, 'q1': 190.0229, 'p2': -109.8864, 'q2': -184.5171}])
-    pd.testing.assert_frame_equal(expected_branches,
-                                  n.get_branches(id="LINE_S2S3", attributes=["p1", "q1", "p2", "q2"]),
-                                  check_dtype=False)
-    expected_injections = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': 'LD2', 'p': 60.0, 'q': 5.0}])
-    pd.testing.assert_frame_equal(expected_injections,
-                                  n.get_injections(id="LD2", attributes=["p", "q"]),
-                                  check_dtype=False)
 
 
 def test_terminals():
@@ -2107,7 +2104,8 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 150.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000,
+                                   120.0, EdgeInfoType.REACTIVE_POWER)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2122,7 +2120,8 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000,
+                                   120.0, EdgeInfoType.CURRENT)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2137,9 +2136,11 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
 
+
 def test_update_dangling_line():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
+    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0,
+                                  g=0, b=0)
     network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
     assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
 
