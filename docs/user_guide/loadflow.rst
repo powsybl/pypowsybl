@@ -60,7 +60,23 @@ Some parameters are not supported by all load flow providers but specific to onl
 parameters could be specified in a less typed way than common parameters using the `provider_parameters` attribute.
 
 .. warning::
-    `provider_parameters` is dictionary and all keys and values have to be a string even in case of a numeric value.
+    `provider_parameters` is a dictionary in which all keys and values **must** be a string, even in case of a numeric value:
+
+    * string and integer parameters do not bring much challenge:
+
+      ``provider_parameters={'someStringParam' : 'myStringValue', 'someIntegerParam' : '42'}``
+
+    * for float (double) parameters, use the dot as decimal separator. E notation is also supported:
+
+      ``provider_parameters={'someDoubleParam' : '1.23', 'someOtherDoubleParam' : '4.56E-2'}``
+
+    * for boolean parameters, use either `'True'`, `'true'`, `'False'`, `'false'`:
+
+      ``provider_parameters={'someBooleanParam' : 'true'}``
+
+    * for string list parameters, use the comma as a separator:
+
+      ``provider_parameters={'someStringListParam' : 'value1,value2,value3'}``
 
 We can list supported parameters specific to default provider using:
 
@@ -69,7 +85,8 @@ We can list supported parameters specific to default provider using:
     >>> lf.get_provider_parameters_names()
     ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', ...]
 
-And get more detailed information about theses parameters using:
+And get more detailed information about theses parameters, such as parameter description, type, default value if any,
+possible values if applicable, using:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
