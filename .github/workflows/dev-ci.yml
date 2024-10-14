@@ -1,0 +1,195 @@
+name: Dev CI
+
+#on:
+ # push:
+ #   branches:
+      # on all branches except main where full build will be run
+   #   - '*'
+  #    - '!main'
+
+
+on:
+  schedule:
+    - cron: '0 0 */2 * *'  # Exécute tous les deux jours à minuit
+  workflow_dispatch:  # Permet l'exécution manuelle
+jobs:
+  manylinux_build:
+    name: Build linux ${{ matrix.python.name }} wheel
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    strategy:
+      matrix:
+        python:
+          - {
+            name: cp38,
+            abi: cp38,
+            version: '3.8',
+          }
+
+    steps:
+      - name: Install Maven
+        run: |
+          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
+          tar xf /tmp/apache-maven-*.tar.gz -C /opt
+          echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup path
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Build wheel
+        run: |
+          python3 setup.py bdist_wheel
+          auditwheel repair dist/*.whl
+
+      - name: Install wheel
+        run: pip3 install wheelhouse/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: |
+          pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
+        run: |
+          pip3 uninstall -y pypowsybl
+          python3 setup.py develop
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Sonar analysis
+        uses: sonarsource/sonarcloud-github-action@v2.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        shell: bash
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+
+  macos_windows_build:
+    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        config:
+          - {
+            name: darwin,
+            os: macos-12,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-14,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+          }
+        python:
+          - {
+            name: cp38,
+            version: '3.8',
+          }
+
+    steps:
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python.version }}
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Build wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+
+      - name: Install wheel
+        shell: bash
+        run: python -m pip install dist/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests
+        run: python3 -m pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        shell: bash
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+          
+          
+          
+          
