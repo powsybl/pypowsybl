@@ -481,4 +481,81 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addElements(DataframeElementType.THREE_WINDINGS_TRANSFORMER, network, singletonList(dataframe));
         assertEquals(1, network.getThreeWindingsTransformerCount());
     }
+
+    @Test
+    void area() {
+        var network = EurostagTutorialExample1Factory.create();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "myArea");
+        addStringColumn(dataframe, "name", "my area name");
+        addStringColumn(dataframe, "area_type", "ControlArea");
+        addDoubleColumn(dataframe, "interchange_target", 42.0);
+        NetworkElementAdders.addElements(DataframeElementType.AREA, network, singletonList(dataframe));
+        assertEquals(1, network.getAreaCount());
+    }
+
+    @Test
+    void areaVoltageLevels() {
+        var network = EurostagTutorialExample1Factory.create();
+        final String areaType = "ControlArea";
+        var area1 = network.newArea()
+                .setId("area1")
+                .setAreaType(areaType)
+                .add();
+        var area2 = network.newArea()
+                .setId("area2")
+                .setAreaType(areaType)
+                .add();
+        var dataframe = new DefaultUpdatingDataframe(3);
+        addStringColumn(dataframe, "id", "area1", "area1", "area2");
+        addStringColumn(dataframe, "voltage_level_id", "VLGEN", "VLHV1", "VLHV2");
+        assertEquals(0, area1.getVoltageLevelStream().count());
+        assertEquals(0, area2.getVoltageLevelStream().count());
+        NetworkElementAdders.addElements(DataframeElementType.AREA_ADD_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        assertEquals(2, area1.getVoltageLevelStream().count());
+        assertEquals(1, area2.getVoltageLevelStream().count());
+        assertEquals(area1, network.getVoltageLevel("VLGEN").getArea(areaType).orElseThrow());
+        assertEquals(area1, network.getVoltageLevel("VLHV1").getArea(areaType).orElseThrow());
+        assertEquals(area2, network.getVoltageLevel("VLHV2").getArea(areaType).orElseThrow());
+
+        dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "area1");
+        addStringColumn(dataframe, "voltage_level_id", "VLGEN");
+        NetworkElementAdders.addElements(DataframeElementType.AREA_REMOVE_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        assertEquals(1, area1.getVoltageLevelStream().count());
+        assertTrue(network.getVoltageLevel("VLGEN").getArea(areaType).isEmpty());
+        assertEquals(1, area2.getVoltageLevelStream().count());
+    }
+
+    @Test
+    void areaBoundaries() {
+        var network = EurostagTutorialExample1Factory.createWithTieLine();
+        final String areaType = "ControlArea";
+        var area1 = network.newArea()
+                .setId("area1")
+                .setAreaType(areaType)
+                .add();
+        var area2 = network.newArea()
+                .setId("area2")
+                .setAreaType(areaType)
+                .add();
+        var dataframe = new DefaultUpdatingDataframe(4);
+        addStringColumn(dataframe, "id", "area1", "area1", "area2", "area2");
+        addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE");
+        addStringColumn(dataframe, "element", "NHV1_XNODE1", "NVH1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
+        addIntColumn(dataframe, "ac", 1, 1, 1, 1);
+        assertEquals(0, area1.getAreaBoundaryStream().count());
+        assertEquals(0, area2.getAreaBoundaryStream().count());
+        NetworkElementAdders.addElements(DataframeElementType.AREA_ADD_BOUNDARIES, network, singletonList(dataframe));
+        assertEquals(2, area1.getAreaBoundaryStream().count());
+        assertEquals(2, area2.getAreaBoundaryStream().count());
+
+        dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "id", "area1", "area2");
+        addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE");
+        addStringColumn(dataframe, "element", "NVH1_XNODE2", "XNODE2_NHV2");
+        NetworkElementAdders.addElements(DataframeElementType.AREA_REMOVE_BOUNDARIES, network, singletonList(dataframe));
+        assertEquals(1, area1.getAreaBoundaryStream().count());
+        assertEquals(1, area2.getAreaBoundaryStream().count());
+    }
 }
