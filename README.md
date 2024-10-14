@@ -11,11 +11,9 @@
 The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on
 GraalVM to compile Java code to a native library.
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
-
 ## Documentation
 
-Latest version of the documentation with API reference and many code samples is [here](https://pypowsybl.readthedocs.io/).
+Latest version of the documentation with API reference and many code samples is [here](https://pypowsybl.readthedocs.io/).  
 
 ## Notebooks
 
@@ -92,13 +90,13 @@ Requirements:
 - Cmake >= 3.14
 - C++11 compiler
 - Python >= 3.8 for Linux, Windows and MacOS (amd64 and arm64)
-- [Oracle GraalVM Java 17](https://www.graalvm.org/downloads/)
+- [Oracle GraalVM  17](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
 
 ```bash
 git clone --recursive https://github.com/powsybl/pypowsybl.git
-export JAVA_HOME=<path to GraalVM>
+export _HOME=<path to GraalVM>
 pip install --upgrade setuptools pip
 pip install -r requirements.txt
 pip install .

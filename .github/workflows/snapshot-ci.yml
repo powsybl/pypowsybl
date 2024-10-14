@@ -2,6 +2,7 @@ name: Snapshot CI
 
 on:
   workflow_dispatch:
+  push:
   schedule:
     - cron: '0 3 * * *'
 
@@ -22,6 +23,7 @@ jobs:
           - { name: cp310, version: '3.10' }
           - { name: cp311, version: '3.11' }
           - { name: cp312, version: '3.12' }
+
       fail-fast: false
 
     steps:
@@ -49,16 +51,6 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      #DEFINE SCRIPTS PATH
-      - name: Set up script path
-        shell: bash
-        run: |
-          SCRIPTS_PATH="${GITHUB_WORKSPACE}/scripts/.github/workflows/scripts"
-          if [[ "${{ matrix.config.name }}" == "windows" ]]; then
-            SCRIPTS_PATH=$(echo "$SCRIPTS_PATH" | sed 's/\\/\//g')
-          fi
-          echo "SCRIPTS_PATH=$SCRIPTS_PATH" >> $GITHUB_ENV  
-
       #BUILD CORE
       - name: Checkout core-sources
         uses: actions/checkout@v4
@@ -75,14 +67,22 @@ jobs:
         working-directory: ./powsybl-core
         shell: bash
 
-      #CHECKOUT SCRIPT
-      - name: checkout script
+      #CHECKOUT PYPOSSYBL
+      - name: Checkout pypowsybl
         uses: actions/checkout@v4
         with:
-          sparse-checkout: |
-            .github
-          sparse-checkout-cone-mode: false
-          path: scripts
+          path: pypowsybl
+          submodules: true
+
+      #DEFINE SCRIPTS PATH
+      - name: Set up script path
+        shell: bash
+        run: |
+          SCRIPTS_PATH="${GITHUB_WORKSPACE}/pypowsybl/.github/workflows/scripts"
+          if [[ "${{ matrix.config.name }}" == "windows" ]]; then
+            SCRIPTS_PATH=$(echo "$SCRIPTS_PATH" | sed 's/\\/\//g')
+          fi
+          echo "SCRIPTS_PATH=$SCRIPTS_PATH" >> $GITHUB_ENV  
 
       #BUILD LOADFLOW
       - name: Check LOADFLOW SNAPSHOT branch
@@ -229,16 +229,6 @@ jobs:
         shell: bash
 
       #BUILD PYPOWSYBL
-      - name: Check PYPOWSYBL SNAPSHOT branch
-        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
-        shell: bash
-      - name: Checkout pypowsybl
-        uses: actions/checkout@v4
-        with:
-          repository: powsybl/pypowsybl
-          ref: ${{ env.SNAPSHOT_BRANCH }}
-          path: pypowsybl
-          submodules: true
       - name: update java/pom.xml
         shell: bash
         run: mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
@@ -264,3 +254,22 @@ jobs:
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
+
+      #SLACK NOTIFICATION ON FAILURE
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            Repository: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            Job: ${{ github.job }}
+            Status: ${{ job.status }}
+            Event: ${{ github.event_name }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref }}
+            Author: ${{ github.actor }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
