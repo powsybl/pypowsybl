@@ -10,7 +10,6 @@ package com.powsybl.dataframe.network.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
-import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.DanglingLineAdder;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
-import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -45,13 +43,7 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
         SeriesMetadata.doubles("x"),
         SeriesMetadata.doubles("g"),
         SeriesMetadata.doubles("b"),
-        SeriesMetadata.strings("pairing_key"),
-        SeriesMetadata.doubles("min_p"),
-        SeriesMetadata.doubles("max_p"),
-        SeriesMetadata.doubles("target_p"),
-        SeriesMetadata.doubles("target_q"),
-        SeriesMetadata.doubles("target_v"),
-        SeriesMetadata.booleans("voltage_regulator_on")
+        SeriesMetadata.strings("pairing_key")
     );
 
     @Override
@@ -70,12 +62,6 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries b;
         private final StringSeries busOrBusbarSections;
         private final StringSeries pairingKey;
-        private final DoubleSeries minP;
-        private final DoubleSeries maxP;
-        private final DoubleSeries targetP;
-        private final DoubleSeries targetQ;
-        private final DoubleSeries targetV;
-        private final IntSeries voltageRegulatorOn;
 
         DanglingLineSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -88,12 +74,6 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
             this.b = dataframe.getDoubles("b");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
             this.pairingKey = dataframe.getStrings("pairing_key");
-            this.minP = dataframe.getDoubles("min_p");
-            this.maxP = dataframe.getDoubles("max_p");
-            this.targetP = dataframe.getDoubles("target_p");
-            this.targetQ = dataframe.getDoubles("target_q");
-            this.targetV = dataframe.getDoubles("target_v");
-            this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
         }
 
         Optional<DanglingLineAdder> createAdder(Network network, int row, boolean throwException) {
@@ -109,26 +89,10 @@ public class DanglingLineDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(g, row, adder::setG);
                 applyIfPresent(b, row, adder::setB);
                 applyIfPresent(pairingKey, row, adder::setPairingKey);
-                addGenerationIfPresent(adder, row);
                 return Optional.of(adder);
             } else {
                 return Optional.empty();
             }
-        }
-
-        private void addGenerationIfPresent(DanglingLineAdder adder, int row) {
-            if (minP == null && maxP == null && targetV == null && targetP == null && targetQ == null
-                    && voltageRegulatorOn == null) {
-                return;
-            }
-            DanglingLineAdder.GenerationAdder genAdder = adder.newGeneration();
-            applyIfPresent(minP, row, genAdder::setMinP);
-            applyIfPresent(maxP, row, genAdder::setMaxP);
-            applyIfPresent(targetP, row, genAdder::setTargetP);
-            applyIfPresent(targetQ, row, genAdder::setTargetQ);
-            applyIfPresent(targetV, row, genAdder::setTargetV);
-            applyBooleanIfPresent(voltageRegulatorOn, row, genAdder::setVoltageRegulationOn);
-            genAdder.add();
         }
     }
 

@@ -143,31 +143,6 @@ class NetworkElementAddersTest {
     }
 
     @Test
-    void danglingLineWithGeneration() {
-        var network = DanglingLineNetworkFactory.create();
-        var dataframe = new DefaultUpdatingDataframe(1);
-        addStringColumn(dataframe, "id", "dl2");
-        addStringColumn(dataframe, "name", "name-dl2");
-        addStringColumn(dataframe, "connectable_bus_id", "BUS");
-        addStringColumn(dataframe, "bus_id", "BUS");
-        addStringColumn(dataframe, "voltage_level_id", "VL");
-        addDoubleColumn(dataframe, "r", 0.6d);
-        addDoubleColumn(dataframe, "x", 1d);
-        addDoubleColumn(dataframe, "g", Math.pow(10, -6));
-        addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
-        addDoubleColumn(dataframe, "p0", 102d);
-        addDoubleColumn(dataframe, "q0", 151d);
-        addDoubleColumn(dataframe, "min_p", 0);
-        addDoubleColumn(dataframe, "max_p", 200d);
-        addDoubleColumn(dataframe, "target_p", 102d);
-        addDoubleColumn(dataframe, "target_q", 151d);
-        addDoubleColumn(dataframe, "target_v", 100d);
-        addIntColumn(dataframe, "voltage_regulator_on", 1);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, singletonList(dataframe));
-        assertEquals(2, network.getDanglingLineCount());
-    }
-
-    @Test
     void busbar() {
         var network = HvdcTestNetwork.createBase();
         var dataframe = new DefaultUpdatingDataframe(1);
