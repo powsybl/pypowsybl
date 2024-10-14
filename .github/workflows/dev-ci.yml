@@ -199,3 +199,14 @@ jobs:
         working-directory: ./java
         run: >
           mvn --batch-mode install
+
+      - name: Run SonarCloud analysis
+        working-directory: ./java
+        run: >
+          mvn --batch-mode -DskipTests sonar:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=powsybl-ci-github
+          -Dsonar.projectKey=powsybl_pypowsybl-java
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
