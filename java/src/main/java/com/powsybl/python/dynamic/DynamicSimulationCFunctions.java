@@ -11,7 +11,6 @@ import static com.powsybl.python.commons.Util.doCatch;
 
 import java.util.ArrayList;
 
-import com.powsybl.dynamicsimulation.OutputVariablesSupplier;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -25,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import com.powsybl.dataframe.dynamic.CurvesSeries;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdderFactory;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
@@ -94,7 +94,7 @@ public final class DynamicSimulationCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
-            OutputVariablesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
+            CurvesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
             DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
                     stopTime);
             DynamicSimulationResult result = dynamicContext.run(network,
