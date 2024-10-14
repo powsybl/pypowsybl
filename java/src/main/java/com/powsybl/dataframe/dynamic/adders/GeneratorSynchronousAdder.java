@@ -11,7 +11,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.DynamicModel;
-import com.powsybl.dynawo.models.generators.SynchronizedGeneratorBuilder;
+import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 

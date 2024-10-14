@@ -8,9 +8,9 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dynamicsimulation.OutputVariable;
-import com.powsybl.dynamicsimulation.OutputVariablesSupplier;
-import com.powsybl.dynawo.outputvariables.DynawoOutputVariablesBuilder;
+import com.powsybl.dynamicsimulation.Curve;
+import com.powsybl.dynamicsimulation.CurvesSupplier;
+import com.powsybl.dynawaltz.curves.DynawoCurvesBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;
@@ -20,16 +20,16 @@ import java.util.List;
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
-public class CurveMappingSupplier implements OutputVariablesSupplier {
+public class CurveMappingSupplier implements CurvesSupplier {
 
-    private final List<OutputVariable> curves;
+    private final List<Curve> curves;
 
     public CurveMappingSupplier() {
         curves = new LinkedList<>();
     }
 
     public void addCurve(String dynamicId, String variable) {
-        curves.addAll(new DynawoOutputVariablesBuilder().dynamicModelId(dynamicId).variable(variable).build());
+        curves.addAll(new DynawoCurvesBuilder().dynamicModelId(dynamicId).variable(variable).build());
     }
 
     public void addCurves(String dynamicId, Collection<String> variablesCol) {
@@ -39,12 +39,12 @@ public class CurveMappingSupplier implements OutputVariablesSupplier {
     }
 
     @Override
-    public List<OutputVariable> get(Network network, ReportNode reportNode) {
+    public List<Curve> get(Network network, ReportNode reportNode) {
         return get(network);
     }
 
     @Override
-    public List<OutputVariable> get(Network network) {
+    public List<Curve> get(Network network) {
         return curves;
     }
 
