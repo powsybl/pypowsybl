@@ -1,4 +1,4 @@
-# PyPowSyBl
+pip# PyPowSyBl
 
 [![Actions Status](https://github.com/powsybl/pypowsybl/workflows/CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
@@ -90,13 +90,13 @@ Requirements:
 - Cmake >= 3.14
 - C++11 compiler
 - Python >= 3.8 for Linux, Windows and MacOS (amd64 and arm64)
-- [Oracle GraalVM  17](https://www.graalvm.org/downloads/)
+- [Oracle GraalVM Java 17](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
 
 ```bash
 git clone --recursive https://github.com/powsybl/pypowsybl.git
-export _HOME=<path to GraalVM>
+export JAVA_HOME=<path to GraalVM>
 pip install --upgrade setuptools pip
 pip install -r requirements.txt
 pip install .
@@ -107,7 +107,7 @@ mode of installation:
 
 ```bash
 pip install -e .
-# or, to build the C extension with debug symbols:
+# or, to build the C extension with debug  $JAVAsymbols:
 python setup.py build --debug develop --user
 ```
 
