@@ -903,7 +903,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
-              - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
+            - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
+            - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+            - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed by the id of the lines.
 
@@ -997,6 +999,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
             - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
             - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
+            - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+            - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -2369,6 +2373,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p2**: the active flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
               - **q2**: the reactive flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
               - **i2**: the current on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+              - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+              - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed on the branche ID.
         """
@@ -2605,6 +2611,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `fictitious`
             - `pairing_key`
             - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
+            - `selected_limits_group`
 
         See Also:
             :meth:`get_dangling_lines`
@@ -2786,6 +2793,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `connected2`
             - `fictitious`
+            - `selected_limits_group_1`
+            - `selected_limits_group_2`
 
         See Also:
             :meth:`get_lines`
@@ -2827,6 +2836,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `connected2`
             - `fictitious`
+            - `selected_limits_group_1`
+            - `selected_limits_group_2`
 
         See Also:
             :meth:`get_2_windings_transformers`
@@ -2865,6 +2876,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `ratio_tap_position1`
             - `phase_tap_position1`
+            - `selected_limits_group_1`
             - `r2`
             - `x2`
             - `g2`
@@ -2876,6 +2888,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected2`
             - `ratio_tap_position2`
             - `phase_tap_position2`
+            - `selected_limits_group_2`
             - `r3`
             - `x3`
             - `g3`
@@ -2887,6 +2900,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected3`
             - `ratio_tap_position3`
             - `phase_tap_position3`
+            - `selected_limits_group_3`
             - `fictitious`
 
         See Also:
