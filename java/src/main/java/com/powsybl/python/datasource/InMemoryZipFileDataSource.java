@@ -120,5 +120,4 @@ public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
     public boolean isDataExtension(String ext) {
         return true;
     }
-    
 }
