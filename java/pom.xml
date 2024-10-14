@@ -298,7 +298,7 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-dynawo-simulation</artifactId>
+            <artifactId>powsybl-dynawaltz</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>

@@ -82,10 +82,4 @@ public class ZipMemDataSource implements DataSource {
     public Set<String> listNames(String regex) {
         throw new UnsupportedOperationException();
     }
-
-    @Override
-    public boolean isDataExtension(String ext) {
-        return true;
-    }
-
 }
