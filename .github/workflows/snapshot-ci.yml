@@ -238,3 +238,26 @@ jobs:
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
+
+    #SLACK NOTIFICATION ON FAILURE
+      - name: Slack Notification
+        uses: 8398a7/action-slack@v3
+        if: failure()
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,action,eventName,ref,workflow
+          text: |
+            :x: *Échec du workflow ${{ github.workflow }}
+            
+            *Workflow:* ${{ github.workflow }}
+            *Job:* ${{ github.job }}
+            *Étape:* ${{ github.action }}
+            
+            *Détails:*
+            • Repo: ${{ github.repository }}
+            • Branche: ${{ github.ref_name }}
+            • Événement déclencheur: ${{ github.event_name }}
+            
+            [Voir les logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
