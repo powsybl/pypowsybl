@@ -995,7 +995,7 @@ def test_lines():
         data=[['S2VL1_6', 6, 'S3VL1_2', 2], ['S3VL1_8', 8, 'S4VL1_6', 6]])
     pd.testing.assert_frame_equal(expected, lines, check_dtype=False, atol=1e-2)
 
-@unittest.skip("skip for ci")
+
 def test_dangling_lines():
     n = util.create_dangling_lines_network()
     df = n.get_dangling_lines(all_attributes=True)
