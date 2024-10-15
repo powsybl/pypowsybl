@@ -60,9 +60,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
                 .forEach(zone -> {
                     units.addAll(zone.getControlUnits()
                             .stream()
-                            .map(unit -> {
-                                return new ControlUnitWithZone(unit, zone.getName());
-                            })
+                            .map(unit -> new ControlUnitWithZone(unit, zone.getName()))
                             .collect(toList())
                     );
                 });
@@ -100,23 +98,26 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
                 throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
             }
             String id = updatingDataframe.getStringValue("unit_id", lineNumber).orElse(null);
+
             ControlZone zone = ext.getControlZones().stream()
-                    .filter(controlZone -> {
-                        return controlZone.getControlUnits().stream()
-                                .anyMatch(controlUnit -> {
-                                    return controlUnit.getId().equals(id);
-                                });
-                    })
+                    .filter(controlZone ->
+                        controlZone.getControlUnits().stream()
+                                .anyMatch(controlUnit -> controlUnit.getId().equals(id))
+                    )
                     .findAny()
                     .orElse(null);
             if (zone == null) {
                 throw new PowsyblException("No secondary voltage control zone containing control unit " + id + " found.");
             }
 
-            return new ControlUnitWithZone(zone.getControlUnits().stream().filter(controlUnit -> {
-                return controlUnit.getId().equals(id);
-            }).findAny().get(),
-                    zone.getName());
+            ControlUnit unit = zone.getControlUnits()
+                    .stream()
+                    .filter(controlUnit -> controlUnit.getId().equals(id))
+                    .findAny().orElse(null);
+            if (unit == null) {
+                throw new PowsyblException("No control unit " + id + " found in secondary voltage control zone " + zone.getName() + ".");
+            }
+            return new ControlUnitWithZone(unit, zone.getName());
         }
     }
 

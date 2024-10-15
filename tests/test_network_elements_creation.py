@@ -629,18 +629,18 @@ def test_create_node_breaker_network_and_run_loadflow():
 def test_create_limits():
     net = pn.create_eurostag_tutorial_example1_network()
     net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
-         'acceptable_duration': 60, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': 60, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
-         'acceptable_duration': 60, 'is_fictitious': False}
+         'acceptable_duration': 60, 'fictitious': False}
     ]))
     expected = pd.DataFrame.from_records(
         index='element_id',
@@ -1023,20 +1023,20 @@ def test_3_windings_transformers_creation():
 
     #Add some limits
     n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
-         'acceptable_duration': 60, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'acceptable_duration': 60, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
-         'acceptable_duration': 60, 'is_fictitious': False}
+         'acceptable_duration': 60, 'fictitious': False}
     ]))
     operational_limits = n.get_operational_limits().loc['TWT_TEST']
     assert operational_limits.shape[0] == 4

@@ -22,7 +22,7 @@ namespace py = pybind11;
 //Explicitly update log level on java side
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc);
 
-pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode);
 
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
@@ -238,7 +238,7 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_low_active_power_default_limit", &pypowsybl::voltageInitializerSetLowActivePowerDefaultLimit, py::arg("params_handle"), py::arg("low_active_power_default_limit"));
     m.def("voltage_initializer_set_default_minimal_qp_range", &pypowsybl::voltageInitializerSetDefaultMinimalQPRange, py::arg("params_handle"), py::arg("default_minimal_qp_range"));
     m.def("voltage_initializer_set_default_qmax_pmax_ratio", &pypowsybl::voltageInitializerSetDefaultQmaxPmaxRatio, py::arg("params_handle"), py::arg("default_qmax_pmax_ratio"));
-    
+
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
     m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
@@ -367,7 +367,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
     m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
-
+    m.def("get_network_import_post_processors", &pypowsybl::getNetworkImportPostProcessors, "Get supported import post processors");
 
     m.def("get_loadflow_provider_names", &pypowsybl::getLoadFlowProviderNames, "Get supported loadflow providers");
     m.def("get_security_analysis_provider_names", &pypowsybl::getSecurityAnalysisProviderNames, "Get supported security analysis providers");
@@ -380,13 +380,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("format"));
 
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
-          py::arg("file"), py::arg("parameters"), py::arg("report_node"));
+          py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
-              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("report_node"));
+              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
     m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
-              py::arg("buffers"), py::arg("parameters"), py::arg("report_node"));
+              py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
@@ -966,7 +966,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::RescaleMode>(m, "RescaleMode")
             .value("NONE", pypowsybl::RescaleMode::NONE)
             .value("ACER_METHODOLOGY", pypowsybl::RescaleMode::ACER_METHODOLOGY)
-            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL);
+            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL)
+            .value("MAX_CURRENT_OVERLOAD", pypowsybl::RescaleMode::MAX_CURRENT_OVERLOAD);
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
@@ -1056,7 +1057,7 @@ void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handl
      }
 }
 
-pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode) {
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -1067,6 +1068,7 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
     }
     pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
     pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
+    pypowsybl::ToCharPtrPtr postProcessorsPtr(postProcessors);
 
     char** dataPtrs = new char*[byteBuffers.size()];
     int* dataSizes = new int[byteBuffers.size()];
@@ -1077,8 +1079,8 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
     }
 
     pypowsybl::JavaHandle networkHandle = pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
-                           parameterNamesPtr.get(), parameterNames.size(),
-                           parameterValuesPtr.get(), parameterValues.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+                           parameterNamesPtr.get(), parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(),
+                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
     delete[] dataPtrs;
     delete[] dataSizes;
     return networkHandle;
