@@ -115,7 +115,7 @@ public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
         }
         return names;
     }
-    
+
     @Override
     public boolean isDataExtension(String ext) {
         return true;
