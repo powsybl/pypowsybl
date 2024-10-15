@@ -22,11 +22,10 @@ jobs:
           - { name: cp310, version: '3.10' }
           - { name: cp311, version: '3.11' }
           - { name: cp312, version: '3.12' }
-          - { name: cp313, version: '3.13' }
+      fail-fast: false
     defaults:
       run:
         shell: bash
-
 
     steps:
 
@@ -72,7 +71,7 @@ jobs:
       #CHECKOUT SCRIPT
       #The script check_snapshot_branch.sh is located in the workflow folder of the pypowsybl repository
       #It is necessary for checking out the integration branch if it exists (pypowsybl include)
-      - name: checkout script
+      - name: Checkout script
         uses: actions/checkout@v4
         with:
           sparse-checkout: |
@@ -81,9 +80,9 @@ jobs:
           path: scripts
 
       #BUILD OPENLOADFLOW
-      - name: Checkout openloadflow sources
+      - name: Checking for openloadflow snapshot branch
         run : ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
-      - name: Checkout loadflow-sources
+      - name: Checkout openloadflow sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-open-loadflow
@@ -100,9 +99,9 @@ jobs:
         working-directory: ./powsybl-open-loadflow
 
       #BUILD DIAGRAM
-      - name: Checkout diagram sources
+      - name: Checking for diagram snapshot branch
         run : ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
-      - name: Checkout diagram-sources
+      - name: Checkout diagram sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-diagram
@@ -119,9 +118,9 @@ jobs:
         working-directory: ./powsybl-diagram
 
       #BUILD ENTSOE
-      - name: Checkout entsoe sources
+      - name: Checking for entsoe snapshot branch
         run : ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
-      - name: Checkout entsoe-sources
+      - name: Checkout entsoe sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-entsoe
@@ -140,9 +139,9 @@ jobs:
         working-directory: ./powsybl-enstoe
 
       #BUILD OPENRAO
-      - name: Checkout openrao sources
+      - name: Checking for openrao snapshot branch
         run :  ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
-      - name: Checkout open-rao-sources
+      - name: Checkout openrao sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-open-rao
@@ -162,9 +161,9 @@ jobs:
         working-directory: ./powsybl-openrao
 
       #BUILD DYNAWO
-      - name: Checkout dynawo sources
+      - name: Checking for dynawo snapshot branch
         run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
-      - name: Checkout dynawo-sources
+      - name: Checkout dynawo sources
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-dynawo
@@ -207,7 +206,7 @@ jobs:
         working-directory: ./powsybl-dependencies
 
       #BUILD PYPOWSYBL
-      - name: Checkout pypowsybl sources
+      - name: Checking dor pypowsybl snapshot branch
         run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
       - name: Checkout pypowsybl
         uses: actions/checkout@v4
@@ -219,7 +218,7 @@ jobs:
       - name: update java/pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
         working-directory: ./pypowsybl/java
-      - name: Install dependencies
+      - name: Install requirement.txt
         run: pip3 install -r requirements.txt
         working-directory: ./pypowsybl
       - name: Build wheel
