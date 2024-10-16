@@ -282,6 +282,6 @@ jobs:
           mvn --batch-mode -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=powsybl-ci-github
-          -Dsonar.projectKey=powsybl_pypowsybl
+          -Dsonar.projectKey=powsybl_pypowsybl-java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
