@@ -13,7 +13,6 @@ import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.iidm.network.ThreeSides;
-import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;

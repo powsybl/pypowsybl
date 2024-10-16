@@ -8,7 +8,6 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.dynamicsimulation.*;
-import com.powsybl.dynawaltz.curves.DynawoCurve;
 import com.powsybl.dynawaltz.curves.DynawoCurvesBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
