@@ -31,8 +31,8 @@ def test_add_mapping():
     model_mapping.add_synchronous_generator(static_id, parameter_id, "GeneratorSynchronousThreeWindings")
     model_mapping.add_wecc(static_id, parameter_id, "WT4BWeccCurrentSource")
     model_mapping.add_grid_forming_converter(static_id, parameter_id, "GridFormingConverterMatchingControl")
-    model_mapping.add_hvdc_p(static_id, parameter_id, model_name="HvdcPV")
-    model_mapping.add_hvdc_vsc(static_id, parameter_id, pp.dynamic.Side.ONE, "HvdcVSCDanglingP")
+    model_mapping.add_hvdc_p(static_id, parameter_id, "HvdcPV")
+    model_mapping.add_hvdc_vsc(static_id, parameter_id, "HvdcVSCDanglingP")
     model_mapping.add_base_transformer(static_id, parameter_id, "TransformerFixedRatio")
     model_mapping.add_base_static_var_compensator(static_id, parameter_id, "StaticVarCompensatorPV")
     model_mapping.add_base_line(static_id, parameter_id, "Line")
@@ -48,6 +48,7 @@ def test_add_mapping():
     model_mapping.add_under_voltage_automation_system(dynamic_id, parameter_id, "GEN", "UnderVoltage")
     model_mapping.add_phase_shifter_i_automation_system(dynamic_id, parameter_id, "TRA", "PhaseShifterI")
     model_mapping.add_phase_shifter_p_automation_system(dynamic_id, parameter_id, "TRA", "PhaseShifterP")
+    model_mapping.add_phase_shifter_blocking_i_automation_system(dynamic_id, parameter_id, "PSI", "PhaseShifterBlockingI")
     model_mapping.add_tap_changer_automation_system(dynamic_id, parameter_id, "LOAD", 'HIGH_VOLTAGE',
                                                     "TapChangerAutomaton")
     model_mapping.add_tap_changer_blocking_automation_system(dynamic_id, parameter_id, "TRA", "BUS",

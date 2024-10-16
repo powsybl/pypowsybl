@@ -7,7 +7,7 @@
 from typing import Union
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl._pypowsybl import DynamicMappingType, Side # pylint: disable=protected-access
+from pypowsybl._pypowsybl import DynamicMappingType # pylint: disable=protected-access
 from pypowsybl.utils import \
     _adapt_df_or_kwargs, _add_index_to_kwargs, _create_c_dataframe # pylint: disable=protected-access
 
@@ -336,6 +336,22 @@ class ModelMapping:
                                       transformer=transformer,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.PHASE_SHIFTER_P)
+
+    def add_phase_shifter_blocking_i_automation_system(self, dynamic_model_id: str, parameter_set_id: str,
+                                                       phase_shifter_id: str, model_name: str = None) -> None:
+        """
+        Add a dynamic phase shifter blocking I automation system (not link to a network element)
+
+        :param dynamic_model_id: id of the phase shifter blocking I automation system
+        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param phase_shifter_id: id of the phase shifter I automation system controlled by the automation system
+        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        """
+        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
+                                      parameter_set_id=parameter_set_id,
+                                      phase_shifter_id=phase_shifter_id,
+                                      model_name=model_name,
+                                      mapping_type=DynamicMappingType.PHASE_SHIFTER_BLOCKING_I)
 
     def add_tap_changer_automation_system(self, dynamic_model_id: str, parameter_set_id: str, static_id: str,
                                           side: str = None, model_name: str = None) -> None:

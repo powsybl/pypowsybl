@@ -391,6 +391,7 @@ typedef enum {
     UNDER_VOLTAGE,
     PHASE_SHIFTER_I,
     PHASE_SHIFTER_P,
+    PHASE_SHIFTER_BLOCKING_I,
     TAP_CHANGER,
     TAP_CHANGER_BLOCKING,
 } DynamicMappingType;

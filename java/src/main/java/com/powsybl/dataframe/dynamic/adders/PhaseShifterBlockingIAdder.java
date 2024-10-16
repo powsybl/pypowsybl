@@ -11,8 +11,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.TransformerSide;
-import com.powsybl.dynawaltz.models.automationsystems.TapChangerAutomationSystemBuilder;
+import com.powsybl.dynawaltz.models.automationsystems.phaseshifters.PhaseShifterBlockingIAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.List;
@@ -23,51 +22,46 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
+public class PhaseShifterBlockingIAdder extends AbstractDynamicModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
             SeriesMetadata.strings(PARAMETER_SET_ID),
-            SeriesMetadata.strings(MODEL_NAME),
-            SeriesMetadata.strings(STATIC_ID),
-            SeriesMetadata.strings(SIDE));
+            SeriesMetadata.strings(PHASE_SHIFTER_ID));
 
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
     }
 
-    private static class TapChangerSeries extends AbstractAutomationSystemSeries<TapChangerAutomationSystemBuilder> {
+    private static class PhaseShifterBlockingISeries extends AbstractAutomationSystemSeries<PhaseShifterBlockingIAutomationSystemBuilder> {
 
-        private final StringSeries staticIds;
-        private final StringSeries sides;
+        private final StringSeries phaseShifterId;
 
-        TapChangerSeries(UpdatingDataframe dataframe) {
+        PhaseShifterBlockingISeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.sides = dataframe.getStrings(SIDE);
+            this.phaseShifterId = dataframe.getStrings(PHASE_SHIFTER_ID);
         }
 
         @Override
-        protected void applyOnBuilder(int row, TapChangerAutomationSystemBuilder builder) {
+        protected void applyOnBuilder(int row, PhaseShifterBlockingIAutomationSystemBuilder builder) {
             super.applyOnBuilder(row, builder);
-            applyIfPresent(staticIds, row, builder::staticId);
-            applyIfPresent(sides, row, TransformerSide.class, builder::side);
+            applyIfPresent(phaseShifterId, row, builder::phaseShifterId);
         }
 
         @Override
-        protected TapChangerAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return TapChangerAutomationSystemBuilder.of(network, reportNode);
+        protected PhaseShifterBlockingIAutomationSystemBuilder createBuilder(Network network, ReportNode reportNode) {
+            return PhaseShifterBlockingIAutomationSystemBuilder.of(network, reportNode);
         }
 
         @Override
-        protected TapChangerAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
-            return TapChangerAutomationSystemBuilder.of(network, modelName, reportNode);
+        protected PhaseShifterBlockingIAutomationSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
+            return PhaseShifterBlockingIAutomationSystemBuilder.of(network, modelName, reportNode);
         }
     }
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new TapChangerSeries(dataframe);
+        return new PhaseShifterBlockingISeries(dataframe);
     }
 }

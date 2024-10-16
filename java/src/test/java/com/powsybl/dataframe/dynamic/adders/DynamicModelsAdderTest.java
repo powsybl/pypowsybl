@@ -143,6 +143,8 @@ public class DynamicModelsAdderTest {
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
                 Arguments.of(PHASE_SHIFTER_P, "PhaseShifterP",
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
+                Arguments.of(PHASE_SHIFTER_BLOCKING_I, "PhaseShifterBlockingI",
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(PHASE_SHIFTER_ID, false, createTwoRowsSeries("PSI"))),
                 Arguments.of(TAP_CHANGER, "TapChangerAutomaton",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"));
