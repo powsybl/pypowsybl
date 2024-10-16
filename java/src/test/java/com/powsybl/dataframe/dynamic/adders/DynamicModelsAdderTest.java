@@ -65,7 +65,7 @@ public class DynamicModelsAdderTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("automationSystemProvider")
     void testAutomationSystemAdders(PyPowsyblApiHeader.DynamicMappingType mappingType, String modelName, Consumer<DefaultUpdatingDataframe> updateDataframe) {
-        Network network = EurostagTutorialExample1Factory.create();
+        Network network = EurostagTutorialExample1Factory.createWithLFResults();
         String dynamicModelId = "BBM_automation_system";
         setupDataFrame(dataframe, dynamicModelId, modelName);
         updateDataframe.accept(dataframe);
@@ -167,9 +167,5 @@ public class DynamicModelsAdderTest {
 
     private static TestStringSeries createTwoRowsSeries(String value) {
         return new TestStringSeries(value, value);
-    }
-
-    private static TestIntSeries createTwoRowsSeries(int value) {
-        return new TestIntSeries(value, value);
     }
 }

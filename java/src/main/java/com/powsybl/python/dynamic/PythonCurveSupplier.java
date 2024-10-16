@@ -21,7 +21,6 @@ import java.util.function.Consumer;
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-//TODO handle static id
 public class PythonCurveSupplier implements CurvesSupplier {
 
     private final List<BiConsumer<Consumer<Curve>, ReportNode>> curvesSupplierListRR = new ArrayList<>();
@@ -44,6 +43,6 @@ public class PythonCurveSupplier implements CurvesSupplier {
     public List<Curve> get(Network network, ReportNode reportNode) {
         List<Curve> curves = new ArrayList<>();
         curvesSupplierListRR.forEach(c -> c.accept(curves::add, reportNode));
-        return curves.stream().filter(Objects::nonNull).toList();
+        return curves;
     }
 }
