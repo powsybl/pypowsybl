@@ -10,16 +10,17 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.hvdc.HvdcPBuilder;
+import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class HvdcPAdder extends AbstractHvdcAdder {
+public class HvdcPAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractHvdcSeries<HvdcPBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<HvdcLine, HvdcPBuilder>(dataframe) {
 
             @Override
             protected HvdcPBuilder createBuilder(Network network, ReportNode reportNode) {

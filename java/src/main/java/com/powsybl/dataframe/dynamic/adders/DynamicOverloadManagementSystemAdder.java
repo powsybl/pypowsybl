@@ -9,12 +9,11 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.python.commons.Util;
+import com.powsybl.iidm.network.TwoSides;
 
 import java.util.List;
 
@@ -43,13 +42,13 @@ public class DynamicOverloadManagementSystemAdder extends AbstractDynamicModelAd
 
         private final StringSeries controlledBranch;
         private final StringSeries iMeasurement;
-        private final IntSeries iMeasurementSide;
+        private final StringSeries iMeasurementSide;
 
         OverloadManagementSystemSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.controlledBranch = dataframe.getStrings(CONTROLLED_BRANCH);
             this.iMeasurement = dataframe.getStrings(I_MEASUREMENT);
-            this.iMeasurementSide = dataframe.getInts(I_MEASUREMENT_SIDE);
+            this.iMeasurementSide = dataframe.getStrings(I_MEASUREMENT_SIDE);
         }
 
         @Override
@@ -57,7 +56,7 @@ public class DynamicOverloadManagementSystemAdder extends AbstractDynamicModelAd
             super.applyOnBuilder(row, builder);
             applyIfPresent(controlledBranch, row, builder::controlledBranch);
             applyIfPresent(iMeasurement, row, builder::iMeasurement);
-            applyIfPresent(iMeasurementSide, row, Util::convertToTwoSides, builder::iMeasurementSide);
+            applyIfPresent(iMeasurementSide, row, TwoSides.class, builder::iMeasurementSide);
         }
 
         @Override

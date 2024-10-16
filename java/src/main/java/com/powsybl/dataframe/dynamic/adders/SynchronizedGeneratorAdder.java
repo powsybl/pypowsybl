@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
+import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -19,7 +20,7 @@ public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<SynchronizedGeneratorBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<Generator, SynchronizedGeneratorBuilder>(dataframe) {
 
             @Override
             protected SynchronizedGeneratorBuilder createBuilder(Network network, ReportNode reportNode) {

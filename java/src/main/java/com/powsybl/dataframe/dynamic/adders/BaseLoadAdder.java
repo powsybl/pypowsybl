@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.loads.BaseLoadBuilder;
+import com.powsybl.iidm.network.Load;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -19,7 +20,7 @@ public class BaseLoadAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<BaseLoadBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<Load, BaseLoadBuilder>(dataframe) {
 
             @Override
             protected BaseLoadBuilder createBuilder(Network network, ReportNode reportNode) {

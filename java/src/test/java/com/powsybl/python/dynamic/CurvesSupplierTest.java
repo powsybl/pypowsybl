@@ -8,12 +8,14 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.dynamicsimulation.*;
-import com.powsybl.dynawaltz.DynaWaltzCurve;
+import com.powsybl.dynawaltz.curves.DynawoCurve;
+import com.powsybl.dynawaltz.curves.DynawoCurvesBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -35,9 +37,11 @@ class CurvesSupplierTest {
         PythonCurveSupplier curvesSupplier = new PythonCurveSupplier();
         curvesSupplier.addCurve("BBM_GEN", "generator_omegaPu");
         curvesSupplier.addCurves("GEN2", List.of("generator_omegaPu", "generator_PGen"));
-        List<Curve> expectedResult = List.of(new DynaWaltzCurve("BBM_GEN", "generator_omegaPu"),
-                new DynaWaltzCurve("GEN2", "generator_omegaPu"),
-                new DynaWaltzCurve("GEN2", "generator_PGen"));
+        List<Curve> expectedResult = new ArrayList<>();
+        //TODO remove test ?
+        new DynawoCurvesBuilder().dynamicModelId("BBM_GEN").variable("generator_omegaPu").add(expectedResult::add);
+        new DynawoCurvesBuilder().dynamicModelId("GEN2").variable("generator_omegaPu").add(expectedResult::add);
+        new DynawoCurvesBuilder().dynamicModelId("GEN2").variable("generator_PGen").add(expectedResult::add);
         assertThat(curvesSupplier.get(network)).usingRecursiveFieldByFieldElementComparator().containsExactlyInAnyOrderElementsOf(expectedResult);
     }
 }

@@ -9,12 +9,11 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicTwoLevelsOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.python.commons.Util;
+import com.powsybl.iidm.network.TwoSides;
 
 import java.util.List;
 
@@ -45,17 +44,17 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynam
 
         private final StringSeries controlledBranch;
         private final StringSeries iMeasurement1;
-        private final IntSeries iMeasurement1Side;
+        private final StringSeries iMeasurement1Side;
         private final StringSeries iMeasurement2;
-        private final IntSeries iMeasurement2Side;
+        private final StringSeries iMeasurement2Side;
 
         OverloadManagementSystemSeries(UpdatingDataframe dataframe) {
             super(dataframe);
             this.controlledBranch = dataframe.getStrings(CONTROLLED_BRANCH);
             this.iMeasurement1 = dataframe.getStrings(I_MEASUREMENT_1);
-            this.iMeasurement1Side = dataframe.getInts(I_MEASUREMENT_1_SIDE);
+            this.iMeasurement1Side = dataframe.getStrings(I_MEASUREMENT_1_SIDE);
             this.iMeasurement2 = dataframe.getStrings(I_MEASUREMENT_2);
-            this.iMeasurement2Side = dataframe.getInts(I_MEASUREMENT_2_SIDE);
+            this.iMeasurement2Side = dataframe.getStrings(I_MEASUREMENT_2_SIDE);
         }
 
         @Override
@@ -63,9 +62,9 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynam
             super.applyOnBuilder(row, builder);
             applyIfPresent(controlledBranch, row, builder::controlledBranch);
             applyIfPresent(iMeasurement1, row, builder::iMeasurement1);
-            applyIfPresent(iMeasurement1Side, row, Util::convertToTwoSides, builder::iMeasurement1Side);
+            applyIfPresent(iMeasurement1Side, row, TwoSides.class, builder::iMeasurement1Side);
             applyIfPresent(iMeasurement2, row, builder::iMeasurement2);
-            applyIfPresent(iMeasurement2Side, row, Util::convertToTwoSides, builder::iMeasurement2Side);
+            applyIfPresent(iMeasurement2Side, row, TwoSides.class, builder::iMeasurement2Side);
         }
 
         @Override

@@ -20,13 +20,13 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_disconnection(self, static_id: str, start_time: float, disconnect_only: Side = Side.NONE) -> None:
+    def add_disconnection(self, static_id: str, start_time: float, disconnect_only: str = None) -> None:
         """ Creates an equipment disconnection event
 
         Args:
             static_id: id of the network element to disconnect
             start_time: timestep at which the event happens
-            disconnect_only: the disconnection is made on the provided side only (NONE by default)
+            disconnect_only: the disconnection is made on the provided side only (ONE or TWO)
         """
         self.add_all_event_mappings(static_id=static_id,
                                     start_time=start_time,
@@ -64,7 +64,7 @@ class EventMapping:
                                     mapping_type=EventMappingType.NODE_FAULT)
 
     def add_all_event_mappings(self, mapping_type: EventMappingType, mapping_df: pd.DataFrame = None,
-                               **kwargs: Union[str, float, Side, EventMappingType]) -> None:
+                               **kwargs: Union[str, float, EventMappingType]) -> None:
         """
         Update the event mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -74,9 +74,9 @@ class EventMapping:
         |     - mapping_type: value of enum EventMappingType
 
         """
-        # TODO index df on static id + event type
         metadata = _pp.get_event_mappings_meta_data(mapping_type)
         if kwargs:
+            # TODO index df on static id + event type
             kwargs = _add_index_to_kwargs(metadata, **kwargs)
         mapping_df = _adapt_df_or_kwargs(metadata, mapping_df, **kwargs)
         c_mapping_df = _create_c_dataframe(mapping_df, metadata)

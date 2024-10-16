@@ -11,6 +11,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.svarcs.BaseStaticVarCompensatorBuilder;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.StaticVarCompensator;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
@@ -19,7 +20,7 @@ public class StaticVarCompensatorAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<BaseStaticVarCompensatorBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<StaticVarCompensator, BaseStaticVarCompensatorBuilder>(dataframe) {
 
             @Override
             protected BaseStaticVarCompensatorBuilder createBuilder(Network network, ReportNode reportNode) {

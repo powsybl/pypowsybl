@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.lines.LineBuilder;
+import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -19,7 +20,7 @@ public class LineAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<LineBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<Line, LineBuilder>(dataframe) {
 
             @Override
             protected LineBuilder createBuilder(Network network, ReportNode reportNode) {

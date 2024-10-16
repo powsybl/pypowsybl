@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.generators.WeccBuilder;
+import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -19,7 +20,7 @@ public class WeccAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<WeccBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<Generator, WeccBuilder>(dataframe) {
 
             @Override
             protected WeccBuilder createBuilder(Network network, ReportNode reportNode) {

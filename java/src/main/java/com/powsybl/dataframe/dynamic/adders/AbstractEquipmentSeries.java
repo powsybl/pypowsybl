@@ -10,6 +10,9 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.builders.EquipmentModelBuilder;
+import com.powsybl.iidm.network.Bus;
+import com.powsybl.iidm.network.Identifiable;
+import com.powsybl.iidm.network.Line;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
@@ -17,7 +20,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEquipmentSeries<T extends EquipmentModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
+abstract class AbstractEquipmentSeries<E extends Identifiable<?>, B extends EquipmentModelBuilder<E, B>> extends AbstractDynamicModelSeries<B> {
 
     protected final StringSeries staticIds;
 
@@ -26,7 +29,7 @@ abstract class AbstractEquipmentSeries<T extends EquipmentModelBuilder<T>> exten
         this.staticIds = dataframe.getStrings(STATIC_ID);
     }
 
-    protected void applyOnBuilder(int row, T builder) {
+    protected void applyOnBuilder(int row, B builder) {
         applyIfPresent(staticIds, row, builder::staticId);
         applyIfPresent(parameterSetIds, row, builder::parameterSetId);
     }
