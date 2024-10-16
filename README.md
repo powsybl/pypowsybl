@@ -1,13 +1,17 @@
 # PyPowSyBl
 
-[![Actions Status](https://github.com/powsybl/pypowsybl/workflows/Full%20CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
-[![Quality Gate Status (python)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
-[![Quality Gate Status (java)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/pypowsybl.svg)](https://pypi.org/project/pypowsybl/)
 [![Documentation Status](https://readthedocs.org/projects/pypowsybl/badge/?version=latest)](https://pypowsybl.readthedocs.io/en/latest/?badge=latest)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
 [![Slack](https://img.shields.io/badge/slack-powsybl-blueviolet.svg?logo=slack)](https://join.slack.com/t/powsybl/shared_invite/zt-rzvbuzjk-nxi0boim1RKPS5PjieI0rA)
+[![Actions Status](https://github.com/powsybl/pypowsybl/workflows/Full%20CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
+
+Python code quality :
+[![Quality Gate Status (python)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
+
+Java code quality :
+[![Quality Gate Status (java)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
 
 The PyPowSyBl project gives access PowSyBl Java framework to Python developers. This Python integration relies on
 GraalVM to compile Java code to a native library.
