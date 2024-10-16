@@ -6,8 +6,10 @@ on:
 jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     container: quay.io/pypa/manylinux2014_x86_64:2024-10-07-1887322
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
       matrix:
         python:
@@ -18,6 +20,8 @@ jobs:
           }
 
     steps:
+      - name: Test Node
+        run:
       - name: Install Maven
         run: |
           curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
@@ -25,7 +29,7 @@ jobs:
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
 
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1 # !!! this is last version compatible with manylinux 2014
+        uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
         with:
           java-version: '17'
           distribution: 'graalvm'
