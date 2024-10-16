@@ -2,7 +2,7 @@
 
 [![Actions Status](https://github.com/powsybl/pypowsybl/workflows/Full%20CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
 [![Quality Gate Status (python)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)![img.png](img.png)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
 [![Quality Gate Status (java)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
 [![PyPI Latest Release](https://img.shields.io/pypi/v/pypowsybl.svg)](https://pypi.org/project/pypowsybl/)
 [![Documentation Status](https://readthedocs.org/projects/pypowsybl/badge/?version=latest)](https://pypowsybl.readthedocs.io/en/latest/?badge=latest)
