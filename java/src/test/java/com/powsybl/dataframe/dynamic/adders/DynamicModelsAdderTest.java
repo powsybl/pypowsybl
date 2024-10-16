@@ -8,7 +8,6 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
-import com.powsybl.dataframe.update.TestIntSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dynawaltz.models.AbstractPureDynamicBlackBoxModel;
 import com.powsybl.dynawaltz.models.TransformerSide;

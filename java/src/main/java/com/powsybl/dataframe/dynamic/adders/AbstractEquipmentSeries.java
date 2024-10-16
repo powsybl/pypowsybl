@@ -10,9 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.builders.EquipmentModelBuilder;
-import com.powsybl.iidm.network.Bus;
 import com.powsybl.iidm.network.Identifiable;
-import com.powsybl.iidm.network.Line;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;

@@ -15,7 +15,6 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 
 import java.util.function.Consumer;
 import java.util.function.DoubleConsumer;
-import java.util.function.Function;
 import java.util.function.IntConsumer;
 
 /**
