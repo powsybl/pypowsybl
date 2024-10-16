@@ -152,36 +152,30 @@ class ModelMapping:
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.GRID_FORMING_CONVERTER)
 
-    def add_hvdc_p(self, static_id: str, parameter_set_id: str, dangling_side: Side = Side.NONE,
-                   model_name: str = None) -> None:
+    def add_hvdc_p(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
         """
         Add an HVDC P mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
-        :param dangling_side: side of a dangling line if the model have this property (NONE by default)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
                                       model_name=model_name,
-                                      dangling_side=dangling_side,
                                       mapping_type=DynamicMappingType.HVDC_P)
 
-    def add_hvdc_vsc(self, static_id: str, parameter_set_id: str, dangling_side: Side = Side.NONE,
-                     model_name: str = None) -> None:
+    def add_hvdc_vsc(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
         """
         Add an HVDC VSC mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
-        :param dangling_side: side of a dangling line if the model have this property (NONE by default)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
                                       model_name=model_name,
-                                      dangling_side=dangling_side,
                                       mapping_type=DynamicMappingType.HVDC_VSC)
 
     def add_base_transformer(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
@@ -250,7 +244,7 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.INFINITE_BUS)
 
     def add_overload_management_system(self, dynamic_model_id: str, parameter_set_id: str, controlled_branch: str,
-                                       i_measurement: str, i_measurement_side: Side, model_name: str = None) -> None:
+                                       i_measurement: str, i_measurement_side: str, model_name: str = None) -> None:
         """
         Add a dynamic overload management system (not link to a network element)
 
@@ -258,7 +252,7 @@ class ModelMapping:
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param controlled_branch: id of the branch controlled by the automation system
         :param i_measurement: id of the branch used for the current intensity measurement
-        :param i_measurement_side: measured side of the i_measurement branch
+        :param i_measurement_side: measured side of the i_measurement branch (ONE or TWO)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
@@ -270,19 +264,19 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM)
 
     def add_two_levels_overload_management_system(self, dynamic_model_id: str, parameter_set_id: str, controlled_branch: str,
-                                                  i_measurement_1: str, i_measurement_1_side: Side,
-                                                  i_measurement_2: str, i_measurement_2_side: Side,
+                                                  i_measurement_1: str, i_measurement_1_side: str,
+                                                  i_measurement_2: str, i_measurement_2_side: str,
                                                   model_name: str = None) -> None:
         """
         Add a dynamic two levels overload management system (not link to a network element)
 
-        :param dynamic_model_id: id of the overload management system
+        :param dynamic_model_id: id of the two levels overload management system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param controlled_branch: id of the branch controlled by the automation system
         :param i_measurement_1: id of the first branch used for the current intensity measurement
-        :param i_measurement_1_side: measured side of the i_measurement_1 branch
+        :param i_measurement_1_side: measured side of the i_measurement_1 branch (ONE or TWO)
         :param i_measurement_2: id of the second branch used for the current intensity measurement
-        :param i_measurement_2_side: measured side of the i_measurement_2 branch
+        :param i_measurement_2_side: measured side of the i_measurement_2 branch (ONE or TWO)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
@@ -300,7 +294,7 @@ class ModelMapping:
         """
         Add a dynamic under voltage automation system (not link to a network element)
 
-        :param dynamic_model_id: id of the overload management system
+        :param dynamic_model_id: id of the under voltage automation system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param generator: id of the generator controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
@@ -316,7 +310,7 @@ class ModelMapping:
         """
         Add a dynamic phase shifter I automation system (not link to a network element)
 
-        :param dynamic_model_id: id of the overload management system
+        :param dynamic_model_id: id of the phase shifter I automation system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param transformer: id of the transformer controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
@@ -332,7 +326,7 @@ class ModelMapping:
         """
         Add a dynamic phase shifter P automation system (not link to a network element)
 
-        :param dynamic_model_id: id of the overload management system
+        :param dynamic_model_id: id of the phase shifter P automation system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param transformer: id of the transformer controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
@@ -344,14 +338,14 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.PHASE_SHIFTER_P)
 
     def add_tap_changer_automation_system(self, dynamic_model_id: str, parameter_set_id: str, static_id: str,
-                                          side: Side, model_name: str = None) -> None:
+                                          side: str = None, model_name: str = None) -> None:
         """
         Add a dynamic tap changer automation system (not link to a network element)
 
-        :param dynamic_model_id: id of the overload management system
+        :param dynamic_model_id: id of the tap changer automation system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param static_id: id of the load on which the tap changer is added
-        :param side: side of the tap changer
+        :param side: transformer side of the tap changer (HIGH_VOLTAGE, LOW_VOLTAGE or NONE)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
@@ -366,7 +360,7 @@ class ModelMapping:
         """
         Add a dynamic tap changer blocking automation system (not link to a network element)
 
-        :param dynamic_model_id: id of the overload management system
+        :param dynamic_model_id: id of the tap changer blocking automation system
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
         :param transformers: ids of the transformers controlled by the automation system
         :param u_measurements: id of the bus or busbar section used for the voltage measurement
@@ -380,7 +374,7 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.TAP_CHANGER_BLOCKING)
 
     def add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_df: pd.DataFrame = None,
-                                 **kwargs: Union[str, Side, DynamicMappingType]) -> None:
+                                 **kwargs: Union[str, DynamicMappingType]) -> None:
         """
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 

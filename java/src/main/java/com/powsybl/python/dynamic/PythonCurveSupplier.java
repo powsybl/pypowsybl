@@ -10,44 +10,40 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.Curve;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynawaltz.DynaWaltzCurve;
+import com.powsybl.dynawaltz.curves.DynawoCurvesBuilder;
 import com.powsybl.iidm.network.Network;
 
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
+//TODO handle static id
 public class PythonCurveSupplier implements CurvesSupplier {
 
-    private final List<Supplier<DynaWaltzCurve>> curvesSupplierList;
-
-    public PythonCurveSupplier() {
-        curvesSupplierList = new LinkedList<>();
-    }
+    private final List<BiConsumer<Consumer<Curve>, ReportNode>> curvesSupplierListRR = new ArrayList<>();
 
     public void addCurve(String dynamicId, String variable) {
-        curvesSupplierList.add(() -> new DynaWaltzCurve(dynamicId, variable));
+        curvesSupplierListRR.add((c, r) -> new DynawoCurvesBuilder(r)
+                .dynamicModelId(dynamicId)
+                .variable(variable)
+                .add(c));
     }
 
-    public void addCurves(String dynamicId, Collection<String> variablesCol) {
-        for (String variable : variablesCol) {
-            addCurve(dynamicId, variable);
-        }
+    public void addCurves(String dynamicId, List<String> variables) {
+        curvesSupplierListRR.add((c, r) -> new DynawoCurvesBuilder(r)
+                .dynamicModelId(dynamicId)
+                .variables(variables)
+                .add(c));
     }
 
     @Override
     public List<Curve> get(Network network, ReportNode reportNode) {
-        return get(network);
+        List<Curve> curves = new ArrayList<>();
+        curvesSupplierListRR.forEach(c -> c.accept(curves::add, reportNode));
+        return curves.stream().filter(Objects::nonNull).toList();
     }
-
-    @Override
-    public List<Curve> get(Network network) {
-        return curvesSupplierList.stream().map(Supplier::get).collect(Collectors.toList());
-    }
-
 }

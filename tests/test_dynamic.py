@@ -40,15 +40,15 @@ def test_add_mapping():
     model_mapping.add_infinite_bus(static_id, parameter_id, "InfiniteBus")
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_id, parameter_id, "LINE1", "LINE2",
-                                                 pp.dynamic.Side.TWO, "OverloadManagementSystem")
+                                                 'TWO', "OverloadManagementSystem")
     model_mapping.add_two_levels_overload_management_system(dynamic_id, parameter_id, "LINE1",
-                                                            "LINE1", pp.dynamic.Side.TWO,
-                                                            "LINE2", pp.dynamic.Side.ONE,
+                                                            "LINE1", 'TWO',
+                                                            "LINE2", 'ONE',
                                                             "TwoLevelsOverloadManagementSystem")
     model_mapping.add_under_voltage_automation_system(dynamic_id, parameter_id, "GEN", "UnderVoltage")
     model_mapping.add_phase_shifter_i_automation_system(dynamic_id, parameter_id, "TRA", "PhaseShifterI")
     model_mapping.add_phase_shifter_p_automation_system(dynamic_id, parameter_id, "TRA", "PhaseShifterP")
-    model_mapping.add_tap_changer_automation_system(dynamic_id, parameter_id, "LOAD", pp.dynamic.Side.ONE,
+    model_mapping.add_tap_changer_automation_system(dynamic_id, parameter_id, "LOAD", 'HIGH_VOLTAGE',
                                                     "TapChangerAutomaton")
     model_mapping.add_tap_changer_blocking_automation_system(dynamic_id, parameter_id, "TRA", "BUS",
                                                              "TapChangerBlockingAutomaton")
@@ -74,7 +74,7 @@ def test_dynamic_dataframe_mapping():
 def test_add_event():
     events = dyn.EventMapping()
     events.add_disconnection("GEN", 5)
-    events.add_disconnection("LINE", 3.3, pp.dynamic.Side.TWO)
+    events.add_disconnection("LINE", 3.3, 'TWO')
     events.add_active_power_variation("LOAD", 14, 2)
     events.add_node_fault("BUS", 12, 2, 0.1, 0.2)
 

@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.loads.LoadOneTransformerTapChangerBuilder;
+import com.powsybl.iidm.network.Load;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -19,7 +20,7 @@ public class LoadOneTransformerTapChangerAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<LoadOneTransformerTapChangerBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<Load, LoadOneTransformerTapChangerBuilder>(dataframe) {
 
             @Override
             protected LoadOneTransformerTapChangerBuilder createBuilder(Network network, ReportNode reportNode) {

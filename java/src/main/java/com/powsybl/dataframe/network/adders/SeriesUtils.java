@@ -61,16 +61,6 @@ public final class SeriesUtils {
         }
     }
 
-    public static <E extends Enum<E>> void applyIfPresent(IntSeries series, int index, Function<Integer, E> converter,
-                                                          Consumer<E> consumer) {
-        if (series != null) {
-            E convertedEnum = converter.apply(series.get(index));
-            if (convertedEnum != null) {
-                consumer.accept(convertedEnum);
-            }
-        }
-    }
-
     public static StringSeries getRequiredStrings(UpdatingDataframe dataframe, String name) {
         StringSeries series = dataframe.getStrings(name);
         if (series == null) {

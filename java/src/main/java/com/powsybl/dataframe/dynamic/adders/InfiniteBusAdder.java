@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.buses.InfiniteBusBuilder;
+import com.powsybl.iidm.network.Bus;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -19,7 +20,7 @@ public class InfiniteBusAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<InfiniteBusBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<Bus, InfiniteBusBuilder>(dataframe) {
 
             @Override
             protected InfiniteBusBuilder createBuilder(Network network, ReportNode reportNode) {

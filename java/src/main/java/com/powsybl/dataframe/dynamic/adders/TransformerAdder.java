@@ -11,6 +11,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.transformers.TransformerFixedRatioBuilder;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.TwoWindingsTransformer;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
@@ -19,7 +20,7 @@ public class TransformerAdder extends AbstractEquipmentAdder {
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {
-        return new AbstractEquipmentSeries<TransformerFixedRatioBuilder>(dataframe) {
+        return new AbstractEquipmentSeries<TwoWindingsTransformer, TransformerFixedRatioBuilder>(dataframe) {
 
             @Override
             protected TransformerFixedRatioBuilder createBuilder(Network network, ReportNode reportNode) {
