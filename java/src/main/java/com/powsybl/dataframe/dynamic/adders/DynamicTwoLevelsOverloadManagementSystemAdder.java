@@ -31,9 +31,9 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynam
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(CONTROLLED_BRANCH),
             SeriesMetadata.strings(I_MEASUREMENT_1),
-            SeriesMetadata.ints(I_MEASUREMENT_1_SIDE),
+            SeriesMetadata.strings(I_MEASUREMENT_1_SIDE),
             SeriesMetadata.strings(I_MEASUREMENT_2),
-            SeriesMetadata.ints(I_MEASUREMENT_2_SIDE));
+            SeriesMetadata.strings(I_MEASUREMENT_2_SIDE));
 
     @Override
     public List<SeriesMetadata> getMetadata() {

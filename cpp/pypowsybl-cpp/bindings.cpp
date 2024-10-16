@@ -165,6 +165,7 @@ void dynamicSimulationBindings(py::module_& m) {
         .value("UNDER_VOLTAGE", DynamicMappingType::UNDER_VOLTAGE)
         .value("PHASE_SHIFTER_I", DynamicMappingType::PHASE_SHIFTER_I)
         .value("PHASE_SHIFTER_P", DynamicMappingType::PHASE_SHIFTER_P)
+        .value("PHASE_SHIFTER_BLOCKING_I", DynamicMappingType::PHASE_SHIFTER_BLOCKING_I)
         .value("TAP_CHANGER", DynamicMappingType::TAP_CHANGER)
         .value("TAP_CHANGER_BLOCKING", DynamicMappingType::TAP_CHANGER_BLOCKING);
 

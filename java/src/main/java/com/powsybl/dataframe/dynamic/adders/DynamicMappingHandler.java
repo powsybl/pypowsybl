@@ -44,6 +44,7 @@ public final class DynamicMappingHandler {
             Map.entry(DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM, new DynamicTwoLevelsOverloadManagementSystemAdder()),
             Map.entry(DynamicMappingType.PHASE_SHIFTER_I, new PhaseShifterIAdder()),
             Map.entry(DynamicMappingType.PHASE_SHIFTER_P, new PhaseShifterPAdder()),
+            Map.entry(DynamicMappingType.PHASE_SHIFTER_BLOCKING_I, new PhaseShifterBlockingIAdder()),
             Map.entry(DynamicMappingType.UNDER_VOLTAGE, new UnderVoltageAutomationSystemAdder()),
             Map.entry(DynamicMappingType.TAP_CHANGER, new TapChangerAutomationSystemAdder()),
             Map.entry(DynamicMappingType.TAP_CHANGER_BLOCKING, new TapChangerBlockingAutomationSystemAdder()));

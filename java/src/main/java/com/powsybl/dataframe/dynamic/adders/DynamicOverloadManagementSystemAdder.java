@@ -31,7 +31,7 @@ public class DynamicOverloadManagementSystemAdder extends AbstractDynamicModelAd
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(CONTROLLED_BRANCH),
             SeriesMetadata.strings(I_MEASUREMENT),
-            SeriesMetadata.ints(I_MEASUREMENT_SIDE));
+            SeriesMetadata.strings(I_MEASUREMENT_SIDE));
 
     @Override
     public List<SeriesMetadata> getMetadata() {
