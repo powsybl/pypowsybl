@@ -967,7 +967,6 @@ The id of the selected limit group can be found in the data of each element :
 
     >>> net = pp.network.create_eurostag_tutorial_example1_network()
     >>> net.get_lines(attributes=["selected_limits_group_1", "selected_limits_group_2"])
-
                 selected_limits_group_1 selected_limits_group_2
     id
     NHV1_NHV2_1                 DEFAULT                 DEFAULT
