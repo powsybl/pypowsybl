@@ -22,11 +22,7 @@ import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.Coordinate;
-import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.extensions.LinePositionAdder;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
+import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.python.network.Networks;
@@ -290,7 +286,9 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
                         "boundary_p", "boundary_q", "boundary_v_mag", "boundary_v_angle",
-                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "pairing_key", "ucte_xnode_code", "paired", "fictitious", "tie_line_id");
+                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected",
+                        "pairing_key", "ucte_xnode_code", "paired", "fictitious", "tie_line_id",
+                        "selected_limits_group");
     }
 
     @Test
@@ -321,7 +319,8 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g1", "b1", "g2", "b2", "p1", "q1", "i1", "p2", "q2", "i2",
                         "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1",
-                        "bus2_id", "bus_breaker_bus2_id", "node2", "connected1", "connected2", "fictitious");
+                        "bus2_id", "bus_breaker_bus2_id", "node2", "connected1", "connected2", "fictitious",
+                        "selected_limits_group_1", "selected_limits_group_2");
     }
 
     @Test
@@ -386,7 +385,7 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
                         "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1", "bus2_id", "bus_breaker_bus2_id", "node2",
-                        "connected1", "connected2", "fictitious");
+                        "connected1", "connected2", "fictitious", "selected_limits_group_1", "selected_limits_group_2");
     }
 
     @Test
@@ -404,9 +403,9 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "rated_u0",
-                        "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "bus_breaker_bus1_id", "node1", "connected1",
-                        "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "bus_breaker_bus2_id", "node2", "connected2",
-                        "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "bus_breaker_bus3_id", "node3", "connected3",
+                        "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "bus_breaker_bus1_id", "node1", "connected1", "selected_limits_group_1",
+                        "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "bus_breaker_bus2_id", "node2", "connected2", "selected_limits_group_2",
+                        "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "bus_breaker_bus3_id", "node3", "connected3", "selected_limits_group_3",
                         "fictitious");
     }
 
@@ -639,7 +638,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1", "voltage_level2_id", "bus2_id", "connected2", "p1", "q1", "i1", "p2", "q2", "i2");
+                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1",
+                        "voltage_level2_id", "bus2_id", "connected2", "p1", "q1", "i1", "p2", "q2", "i2");
     }
 
     @Test
@@ -681,5 +681,20 @@ class NetworkDataframesTest {
         assertThat(ext1Series.get(1).getInts()).containsExactly(0);
         assertThat(ext1Series.get(2).getDoubles()).containsExactly(coord1.getLatitude());
         assertThat(ext1Series.get(3).getDoubles()).containsExactly(coord1.getLongitude());
+    }
+
+    @Test
+    void testOperationalLimits() {
+        Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
+        List<Series> limits = createDataFrame(OPERATIONAL_LIMITS, network);
+        List<Series> selectedLimits = createDataFrame(SELECTED_OPERATIONAL_LIMITS, network);
+
+        assertThat(limits)
+            .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
+                "name", "type", "value", "acceptable_duration");
+        assertThat(selectedLimits)
+                .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
+                        "name", "type", "value", "acceptable_duration");
+        assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
     }
 }
