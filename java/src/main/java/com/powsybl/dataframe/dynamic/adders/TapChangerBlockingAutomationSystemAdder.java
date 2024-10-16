@@ -38,6 +38,7 @@ public class TapChangerBlockingAutomationSystemAdder extends AbstractDynamicMode
 
     private static class TapChangerBlockingSeries extends AbstractAutomationSystemSeries<TapChangerBlockingAutomationSystemBuilder> {
 
+        // TODO handle list
         private final StringSeries uMeasurements;
         private final StringSeries transformers;
 
