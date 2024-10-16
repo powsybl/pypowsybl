@@ -1,6 +1,6 @@
 # PyPowSyBl
 
-[![Actions Status](https://github.com/powsybl/pypowsybl/workflows/full-ci.yml/badge.svg?branch=main)](https://github.com/powsybl/pypowsybl/actions)
+[![Actions Status](https://github.com/powsybl/pypowsybl/workflows/Full%20CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
 [![Quality Gate Status (python)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl&metric=coverage)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl)![img.png](img.png)
 [![Quality Gate Status (java)](https://sonarcloud.io/api/project_badges/measure?project=powsybl_pypowsybl-java&metric=alert_status)](https://sonarcloud.io/dashboard?id=powsybl_pypowsybl-java)
