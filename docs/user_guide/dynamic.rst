@@ -70,12 +70,12 @@ To run a Dynawaltz simulation:
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_alpha_beta_load("LOAD", "LAB") # and so on
+    model_mapping.add_base_load("LOAD", "LAB", "LoadAlphaBeta") # and so on
 
     # events mapping
     events = dyn.EventMapping()
-    events.add_event("GEN_DISCONNECTION", dyn.EventType.DISCONNECTION, "GEN")
-    events.add_event("LINE_DISCONNECTION", dyn.EventType.DISCONNECTION, "NHV1_NHV2_1", BranchSide.ONE)
+    events.add.add_disconnection("GEN_DISCONNECTION", 10, "GEN")
+    events.add_disconnection("LINE_DISCONNECTION", "NHV1_NHV2_1", 10, Side.ONE)
 
     # curves mapping
     curves = dyn.CurveMapping()
