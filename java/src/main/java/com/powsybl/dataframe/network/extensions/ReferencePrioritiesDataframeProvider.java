@@ -13,6 +13,7 @@ import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
+import com.powsybl.dataframe.network.adders.NetworkUtils;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ReferencePriorities;
 import com.powsybl.iidm.network.extensions.ReferencePriority;
@@ -50,7 +51,7 @@ public class ReferencePrioritiesDataframeProvider extends AbstractSingleDatafram
     }
 
     private ReferencePriorities getOrThrow(Network network, String id) {
-        Identifiable<?> identifiable = getAndCheckInjection(network, id);
+        Identifiable<?> identifiable = NetworkUtils.getGenOrLoadOrBusbarSectionOrThrow(network, id);
         ReferencePriorities referencePriorities = identifiable.getExtension(ReferencePriorities.class);
         if (referencePriorities == null) {
             throw new PowsyblException("Injection '" + id + "' has no ReferencePriorities extension");
@@ -79,16 +80,5 @@ public class ReferencePrioritiesDataframeProvider extends AbstractSingleDatafram
     @Override
     public NetworkElementAdder createAdder() {
         return new ReferencePrioritiesDataframeAdder();
-    }
-
-    static Injection getAndCheckInjection(Network network, String id) {
-        Identifiable<?> identifiable = network.getIdentifiable(id);
-        if (identifiable == null) {
-            throw new PowsyblException("Identifiable '" + id + "' not found");
-        }
-        if (!(identifiable instanceof Generator) && !(identifiable instanceof BusbarSection) && !(identifiable instanceof Load)) {
-            throw new PowsyblException("Identifiable '" + id + "' is not a generator, bus bar section, or load");
-        }
-        return (Injection) identifiable;
     }
 }

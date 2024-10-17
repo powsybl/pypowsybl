@@ -9,6 +9,7 @@ package com.powsybl.dataframe.network.extensions;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
+import com.powsybl.dataframe.network.adders.NetworkUtils;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
@@ -47,7 +48,7 @@ public class ReferencePrioritiesDataframeAdder extends AbstractSimpleAdder {
 
         void create(Network network, int row) {
             String id = this.id.get(row);
-            Injection<?> injection = ReferencePrioritiesDataframeProvider.getAndCheckInjection(network, id);
+            Injection<?> injection = NetworkUtils.getGenOrLoadOrBusbarSectionOrThrow(network, id);
             SeriesUtils.applyIfPresent(this.priority, row, priority -> ReferencePriority.set(injection, priority));
         }
     }
