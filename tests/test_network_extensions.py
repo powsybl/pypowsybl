@@ -471,6 +471,38 @@ def test_geo_data():
     pd.testing.assert_frame_equal(n.get_extensions('linePosition'), line_expected)
 
 
+def test_reference_priorities():
+    network = pn.create_eurostag_tutorial_example1_network()
+    assert network.get_extensions('referencePriorities').empty
+
+    network.create_extensions('referencePriorities', id='GEN', priority=1)
+    e = network.get_extensions('referencePriorities')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['GEN']),
+        columns=['priority'],
+        data=[[1]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.create_extensions('referencePriorities', id='LOAD', priority=2)
+    e = network.get_extensions('referencePriorities')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['GEN', 'LOAD']),
+        columns=['priority'],
+        data=[[1], [2]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('referencePriorities', id=['GEN', 'LOAD'], priority=[3, 4])
+    e = network.get_extensions('referencePriorities')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['GEN', 'LOAD']),
+        columns=['priority'],
+        data=[[3], [4]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('referencePriorities', ['GEN', 'LOAD'])
+    assert network.get_extensions('referencePriorities').empty
+
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'
@@ -512,3 +544,5 @@ def test_get_extensions_information():
     assert extensions_information.loc['secondaryVoltageControl']['attributes'] == '[dataframe "zones"] index : name (str), target_v (float), bus_ids (str) / [dataframe "units"] index : unit_id (str), participate (bool), zone_name (str)'
     assert extensions_information.loc['substationPosition']['attributes'] == 'index : id (str), latitude (float), longitude (float)'
     assert extensions_information.loc['linePosition']['attributes'] == 'index : id (str), num (int), latitude (float), longitude (float)'
+    assert extensions_information.loc['referencePriorities']['detail'] == 'Defines the angle reference generator, busbar section or load of a power flow calculation, i.e. which bus will be used with a zero-voltage angle.'
+    assert extensions_information.loc['referencePriorities']['attributes'] == 'index : id (str), priority (int)'
