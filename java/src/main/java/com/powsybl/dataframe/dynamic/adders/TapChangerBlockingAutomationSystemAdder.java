@@ -29,6 +29,7 @@ public class TapChangerBlockingAutomationSystemAdder extends AbstractDynamicMode
             SeriesMetadata.strings(PARAMETER_SET_ID),
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(U_MEASUREMENTS),
+            //TODO add meta data U_MEASUREMENTS_ALT handling 2D list for alternative bus name
             SeriesMetadata.strings(TRANSFORMERS));
 
     @Override

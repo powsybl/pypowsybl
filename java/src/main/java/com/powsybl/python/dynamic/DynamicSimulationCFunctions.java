@@ -11,6 +11,8 @@ import static com.powsybl.python.commons.Util.doCatch;
 
 import java.util.ArrayList;
 
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.python.report.ReportCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -84,12 +86,14 @@ public final class DynamicSimulationCFunctions {
 
     @CEntryPoint(name = "runDynamicModel")
     public static ObjectHandle runDynamicModel(IsolateThread thread,
-            ObjectHandle dynamicContextHandle,
-            ObjectHandle networkHandle,
-            ObjectHandle dynamicMappingHandle,
-            ObjectHandle eventModelsSupplierHandle,
-            ObjectHandle curvesSupplierHandle,
-            int startTime, int stopTime,
+                                               ObjectHandle dynamicContextHandle,
+                                               ObjectHandle networkHandle,
+                                               ObjectHandle dynamicMappingHandle,
+                                               ObjectHandle eventModelsSupplierHandle,
+                                               ObjectHandle curvesSupplierHandle,
+                                               int startTime,
+                                               int stopTime,
+                                               ObjectHandle reportNodeHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
@@ -97,13 +101,15 @@ public final class DynamicSimulationCFunctions {
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
             CurvesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
                     stopTime);
             DynamicSimulationResult result = dynamicContext.run(network,
                     dynamicMapping,
                     eventModelsSupplier,
                     curvesSupplier,
-                    dynamicSimulationParameters);
+                    dynamicSimulationParameters,
+                    reportNode);
             logger().info("Dynamic simulation ran successfully in java");
             return ObjectHandles.getGlobal().create(result);
         });
