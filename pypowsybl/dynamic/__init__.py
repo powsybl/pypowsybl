@@ -8,4 +8,4 @@ from .impl.curve_mapping import CurveMapping
 from .impl.event_mapping import EventMapping, EventMappingType
 from .impl.simulation_result import SimulationResult
 from .impl.simulation import Simulation
-from .impl.model_mapping import ModelMapping, Side, DynamicMappingType
+from .impl.model_mapping import ModelMapping, DynamicMappingType

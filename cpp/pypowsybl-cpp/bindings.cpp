@@ -182,7 +182,7 @@ void dynamicSimulationBindings(py::module_& m) {
 
     //running simulations
     m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
-        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
 
     //model mapping
     m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));

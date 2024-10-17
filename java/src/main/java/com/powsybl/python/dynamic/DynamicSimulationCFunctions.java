@@ -11,6 +11,8 @@ import static com.powsybl.python.commons.Util.doCatch;
 
 import java.util.ArrayList;
 
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.python.report.ReportCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -25,7 +27,7 @@ import com.powsybl.dataframe.dynamic.CurvesSeries;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingHandler;
 import com.powsybl.dataframe.dynamic.adders.EventMappingHandler;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynamicsimulation.OutputVariablesSupplier;
+import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
@@ -46,7 +48,7 @@ import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.TimeSeries;
 
 /**
- * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
+ * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  */
 @CContext(Directives.class)
 public final class DynamicSimulationCFunctions {
@@ -84,26 +86,30 @@ public final class DynamicSimulationCFunctions {
 
     @CEntryPoint(name = "runDynamicModel")
     public static ObjectHandle runDynamicModel(IsolateThread thread,
-            ObjectHandle dynamicContextHandle,
-            ObjectHandle networkHandle,
-            ObjectHandle dynamicMappingHandle,
-            ObjectHandle eventModelsSupplierHandle,
-            ObjectHandle curvesSupplierHandle,
-            int startTime, int stopTime,
+                                               ObjectHandle dynamicContextHandle,
+                                               ObjectHandle networkHandle,
+                                               ObjectHandle dynamicMappingHandle,
+                                               ObjectHandle eventModelsSupplierHandle,
+                                               ObjectHandle curvesSupplierHandle,
+                                               int startTime,
+                                               int stopTime,
+                                               ObjectHandle reportNodeHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
-            OutputVariablesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
+            CurvesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
                     stopTime);
             DynamicSimulationResult result = dynamicContext.run(network,
                     dynamicMapping,
                     eventModelsSupplier,
                     curvesSupplier,
-                    dynamicSimulationParameters);
+                    dynamicSimulationParameters,
+                    reportNode);
             logger().info("Dynamic simulation ran successfully in java");
             return ObjectHandles.getGlobal().create(result);
         });

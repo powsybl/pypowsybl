@@ -7,6 +7,8 @@
  */
 package com.powsybl.python.dynamic;
 
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulation;
@@ -23,14 +25,18 @@ public class DynamicSimulationContext {
     private static final String DEFAULT_PROVIDER = "DynaWaltz";
 
     public DynamicSimulationResult run(Network network,
-            DynamicModelsSupplier dynamicModelsSupplier,
-            EventModelsSupplier eventModelsSupplier,
-            CurvesSupplier curvesSupplier,
-            DynamicSimulationParameters parameters) {
+                                       DynamicModelsSupplier dynamicModelsSupplier,
+                                       EventModelsSupplier eventModelsSupplier,
+                                       CurvesSupplier curvesSupplier,
+                                       DynamicSimulationParameters parameters,
+                                       ReportNode reportNode) {
         return DynamicSimulation.find(DEFAULT_PROVIDER).run(network,
                 dynamicModelsSupplier,
                 eventModelsSupplier,
                 curvesSupplier,
-                parameters);
+                network.getVariantManager().getWorkingVariantId(),
+                LocalComputationManager.getDefault(),
+                parameters,
+                reportNode);
     }
 }

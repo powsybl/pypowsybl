@@ -764,7 +764,7 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode);
 
 // timeseries/curves mapping
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);

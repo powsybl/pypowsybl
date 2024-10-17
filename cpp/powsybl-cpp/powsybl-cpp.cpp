@@ -1331,8 +1331,8 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf) {
