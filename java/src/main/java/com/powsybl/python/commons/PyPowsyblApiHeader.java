@@ -626,11 +626,7 @@ public final class PyPowsyblApiHeader {
         SUB_NETWORK,
         AREA,
         AREA_VOLTAGE_LEVELS,
-        AREA_BOUNDARIES,
-        AREA_ADD_VOLTAGE_LEVELS,
-        AREA_REMOVE_VOLTAGE_LEVELS,
-        AREA_ADD_BOUNDARIES,
-        AREA_REMOVE_BOUNDARIES;
+        AREA_BOUNDARIES;
 
         @CEnumValue
         public native int getCValue();

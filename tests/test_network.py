@@ -661,7 +661,7 @@ def test_areas_voltage_levels_data_frame():
     n.create_areas(id=['testAreaA', 'testAreaB'],
                    area_type=['testAreaType', 'testAreaType'],
                    interchange_target=[10., nan])
-    n.add_areas_voltage_levels(id=['testAreaA', 'testAreaA', 'testAreaB'],
+    n.create_areas_voltage_levels(id=['testAreaA', 'testAreaA', 'testAreaB'],
                                voltage_level_id=['VLGEN', 'VLHV1', 'VLLOAD'])
     areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
     expected = pd.DataFrame(
@@ -674,15 +674,12 @@ def test_areas_voltage_levels_data_frame():
     pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
 
     # test removal
-    n.remove_areas_voltage_levels(id=['testAreaA'], voltage_level_id=['VLGEN'])
+    n.create_areas_voltage_levels(id=['testAreaA'], voltage_level_id=[''])
     areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
     expected = pd.DataFrame(
-        index=pd.Series(name='id', data=[
-            'testAreaA',
-            'testAreaB']),
+        index=pd.Series(name='id', data=['testAreaB']),
         columns=['voltage_level_id'],
-        data=[['VLHV1'],
-              ['VLLOAD']])
+        data=[['VLLOAD']])
     pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
 
 
@@ -706,7 +703,7 @@ def test_areas_boundaries_data_frame():
     n.create_areas(id=['testAreaA', 'testAreaB'],
                    area_type=['testAreaType', 'testAreaType'],
                    interchange_target=[10., nan])
-    n.add_areas_boundaries(id=['testAreaA', 'testAreaA', 'testAreaB', 'testAreaB'],
+    n.create_areas_boundaries(id=['testAreaA', 'testAreaA', 'testAreaB', 'testAreaB'],
                               boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
                               element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
                               ac=[True, True, True, True])
@@ -723,16 +720,16 @@ def test_areas_boundaries_data_frame():
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test removal
-    n.remove_areas_boundaries(id=['testAreaA', 'testAreaB'],
-                              boundary_type=['DANGLING_LINE', 'DANGLING_LINE'],
-                              element=['NVH1_XNODE2', 'XNODE2_NHV2'])
+    n.create_areas_boundaries(id=['testAreaA'],
+                              boundary_type=[''],
+                              element=[''])
     areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=[
-            'testAreaA', 'testAreaB']),
+            'testAreaB', 'testAreaB']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.47, -116.51],
-              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43]])
+        data=[['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test using terminals instead of dangling lines, e.g. boundary located at NGEN_NHV1 HV side
@@ -742,7 +739,7 @@ def test_areas_boundaries_data_frame():
                    interchange_target=[10., nan])
     n.update_2_windings_transformers(id='NGEN_NHV1', p2=-600, q2=-50)
     n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], p1=[300, 300], q1=[25, 25])
-    n.add_areas_boundaries(id=['testAreaA', 'testAreaB', 'testAreaB'],
+    n.create_areas_boundaries(id=['testAreaA', 'testAreaB', 'testAreaB'],
                               boundary_type=['TERMINAL', 'TERMINAL', 'TERMINAL'],
                               element=['NGEN_NHV1', 'NHV1_NHV2_1', 'NHV1_NHV2_2'],
                               side=['TWO', 'ONE', 'ONE'],
@@ -757,10 +754,8 @@ def test_areas_boundaries_data_frame():
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test removal
-    n.remove_areas_boundaries(id=['testAreaA'],
-                              boundary_type=['TERMINAL'],
-                              element=['NGEN_NHV1'],
-                              side=['TWO'])
+    n.create_areas_boundaries(id=['testAreaA'],
+                              element=[''])
     areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['testAreaB', 'testAreaB']),

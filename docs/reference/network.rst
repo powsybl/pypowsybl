@@ -177,8 +177,8 @@ Network elements can be created or removed using the following methods:
    Network.create_2_windings_transformers
    Network.create_3_windings_transformers
    Network.create_areas
-   Network.add_areas_voltage_levels
-   Network.add_areas_boundaries
+   Network.create_areas_voltage_levels
+   Network.create_areas_boundaries
    Network.create_batteries
    Network.create_busbar_sections
    Network.create_buses
@@ -201,8 +201,6 @@ Network elements can be created or removed using the following methods:
    Network.create_vsc_converter_stations
    Network.create_tie_lines
    Network.remove_elements
-   Network.remove_areas_voltage_levels
-   Network.remove_areas_boundaries
 
 
 Network variants management
