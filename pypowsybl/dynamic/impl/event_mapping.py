@@ -26,7 +26,7 @@ class EventMapping:
         Args:
             static_id: id of the network element to disconnect
             start_time: timestep at which the event happens
-            disconnect_only: the disconnection is made on the provided side only (ONE or TWO)
+            disconnect_only: the disconnection is made on the provided side only for branch equipment (ONE or TWO)
         """
         self.add_all_event_mappings(static_id=static_id,
                                     start_time=start_time,
@@ -77,7 +77,7 @@ class EventMapping:
         metadata = _pp.get_event_mappings_meta_data(mapping_type)
         if kwargs:
             # TODO index df on static id + event type
-            kwargs = _add_index_to_kwargs(metadata, **kwargs)
+            kwargs = _add_index_to_kwargs(metadata, **{k:v for k, v in kwargs.items() if v is not None})
         mapping_df = _adapt_df_or_kwargs(metadata, mapping_df, **kwargs)
         c_mapping_df = _create_c_dataframe(mapping_df, metadata)
         _pp.add_all_event_mappings(self._handle, mapping_type, c_mapping_df)

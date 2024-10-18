@@ -34,7 +34,7 @@ public final class DynamicModelDataframeConstants {
     public static final String FAULT_TIME = "fault_time";
     public static final String X_PU = "x_pu";
     public static final String R_PU = "r_pu";
-    public static final String PHASE_SHIFTER_ID = "phaseShifterId";
+    public static final String PHASE_SHIFTER_ID = "phase_shifter_id";
 
     private DynamicModelDataframeConstants() {
     }
