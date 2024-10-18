@@ -3452,7 +3452,7 @@ class Network:  # pylint: disable=too-many-public-methods
           - **value**:      The value of the limit
           - **acceptable_duration**: The duration, in seconds, for which the element can securely be
             operated under the limit value. By convention, the value -1 represents an infinite duration.
-          - **is_fictitious** (optional): `True` if this limit is fictitious
+          - **fictitious** (optional): `True` if this limit is fictitious
           - **group_name** (optional): The name of the operational limit group this limit is in
           - **selected** (optional): `True` if this limit's operational group is the selected one
 

@@ -26,7 +26,7 @@ public class TemporaryLimitData {
     private final int acceptableDuration;
     private final boolean isFictitious;
     private final String groupId;
-    private final boolean isSelected;
+    private final boolean selected;
 
     public enum Side {
         NONE,
@@ -36,7 +36,7 @@ public class TemporaryLimitData {
     }
 
     public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
-                              int acceptableDuration, boolean isFictitious, String groupId, boolean isSelected) {
+                              int acceptableDuration, boolean isFictitious, String groupId, boolean selected) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
         this.side = side;
@@ -46,7 +46,7 @@ public class TemporaryLimitData {
         this.acceptableDuration = acceptableDuration;
         this.isFictitious = isFictitious;
         this.groupId = Objects.requireNonNull(groupId);
-        this.isSelected = isSelected;
+        this.selected = selected;
     }
 
     public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
@@ -91,6 +91,6 @@ public class TemporaryLimitData {
     }
 
     public boolean isSelected() {
-        return isSelected;
+        return selected;
     }
 }
