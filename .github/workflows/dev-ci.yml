@@ -14,14 +14,16 @@ jobs:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp313,
+            abi: cp313,
+            version: '3.13',
           }
 
     steps:
       - name: Install Maven
         run: |
+          yum update
+          yum install -y openblas-devel
           curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
@@ -122,8 +124,8 @@ jobs:
           }
         python:
           - {
-            name: cp38,
-            version: '3.8',
+            name: cp313,
+            version: '3.13',
           }
 
     steps:
