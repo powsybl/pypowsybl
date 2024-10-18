@@ -1394,4 +1394,16 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native VoltageInitializerStatus fromCValue(int value);
     }
+
+    @CEnum("RaoComputationStatus")
+    public enum RaoComputationStatus {
+        DEFAULT,
+        FAILURE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native RaoComputationStatus fromCValue(int value);
+    }
 }
