@@ -13,7 +13,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    container: quay.io/pypa/manylinux2014_x86_64:2024-10-07-1887322
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
@@ -44,6 +44,11 @@ jobs:
             abi: cp312,
             version: '3.12'
           }
+          - {
+            name: cp313,
+            abi: cp313,
+            version: '3.13'
+          }
 
     steps:
       - name: Install Maven
@@ -55,7 +60,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
         with:
-          java-version: '17'
+          java-version: '17.0.12'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -169,6 +174,10 @@ jobs:
             name: cp312,
             version: '3.12',
           }
+          - {
+            name: cp313,
+            version: '3.13',
+          }
 
     steps:
       - name: Setup GraalVM
@@ -273,6 +282,6 @@ jobs:
           mvn --batch-mode -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=powsybl-ci-github
-          -Dsonar.projectKey=powsybl_pypowsybl
+          -Dsonar.projectKey=powsybl_pypowsybl-java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

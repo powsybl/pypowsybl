@@ -74,6 +74,14 @@ public final class NetworkUtils {
         return identifiable;
     }
 
+    public static Injection<?> getGenOrLoadOrBusbarSectionOrThrow(Network network, String id) {
+        Identifiable<?> identifiable = getIdentifiableOrThrow(network, id);
+        if (!(identifiable instanceof Generator) && !(identifiable instanceof Load) && !(identifiable instanceof BusbarSection)) {
+            throw new PowsyblException("Network element  '" + id + "' is not a generator, bus bar section, or load");
+        }
+        return (Injection<?>) identifiable;
+    }
+
     public static Area getAreaOrThrow(Network network, String id) {
         Area area = network.getArea(id);
         if (area == null) {
