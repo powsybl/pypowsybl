@@ -25,10 +25,8 @@ from pypowsybl.network import per_unit_view
 
 __version__ = '1.8.0.dev1'
 
-# set JVM java.library.path to pypowsybl module installation directory to be able to load math library
+# set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
-
-_pypowsybl.load_ortools_library("D:/Work/pypowsybl/ortools/jniortools.dll")
 
 # make this modules importable with pythonic syntax "from pypowsybl.XXX import YYY
 # for example:
