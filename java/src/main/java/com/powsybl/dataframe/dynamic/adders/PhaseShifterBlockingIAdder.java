@@ -27,6 +27,7 @@ public class PhaseShifterBlockingIAdder extends AbstractDynamicModelAdder {
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
             SeriesMetadata.strings(PARAMETER_SET_ID),
+            SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(PHASE_SHIFTER_ID));
 
     @Override
