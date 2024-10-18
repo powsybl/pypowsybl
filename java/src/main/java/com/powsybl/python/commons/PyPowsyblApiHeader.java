@@ -617,6 +617,7 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
+        SELECTED_OPERATIONAL_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
         IDENTIFIABLE,

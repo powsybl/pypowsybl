@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.LINEAR;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.NON_LINEAR;
@@ -480,5 +481,45 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "rated_u0", 4.0);
         NetworkElementAdders.addElements(DataframeElementType.THREE_WINDINGS_TRANSFORMER, network, singletonList(dataframe));
         assertEquals(1, network.getThreeWindingsTransformerCount());
+    }
+
+    @Test
+    void operationalLimits() {
+        var network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "element_id", "NHV1_NHV2_1", "NHV1_NHV2_1");
+        addStringColumn(dataframe, "name", "permanent_limit", "1'");
+        addStringColumn(dataframe, "side", "ONE", "ONE");
+        addStringColumn(dataframe, "type", "APPARENT_POWER", "APPARENT_POWER");
+        addDoubleColumn(dataframe, "value", 600, 1000);
+        addIntColumn(dataframe, "acceptable_duration", -1, 60);
+        NetworkElementAdders.addElements(DataframeElementType.OPERATIONAL_LIMITS, network, singletonList(dataframe));
+        Optional<ApparentPowerLimits> optionalLimits = network.getLine("NHV1_NHV2_1").getApparentPowerLimits(TwoSides.ONE);
+        assertTrue(optionalLimits.isPresent());
+        ApparentPowerLimits limits = optionalLimits.get();
+        assertEquals(600, limits.getPermanentLimit());
+        assertEquals(1, limits.getTemporaryLimits().size());
+    }
+
+    @Test
+    void multipleOperationalLimitsGroups() {
+        var network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "element_id", "NHV1_NHV2_1", "NHV1_NHV2_1");
+        addStringColumn(dataframe, "name", "permanent_limit", "1'");
+        addStringColumn(dataframe, "side", "ONE", "ONE");
+        addStringColumn(dataframe, "type", "APPARENT_POWER", "APPARENT_POWER");
+        addDoubleColumn(dataframe, "value", 600, 1000);
+        addIntColumn(dataframe, "acceptable_duration", -1, 60);
+        addStringColumn(dataframe, "group_name", "SUMMER", "SUMMER");
+        NetworkElementAdders.addElements(DataframeElementType.OPERATIONAL_LIMITS, network, singletonList(dataframe));
+        Optional<ApparentPowerLimits> optionalLimits = network.getLine("NHV1_NHV2_1").getApparentPowerLimits(TwoSides.ONE);
+        assertTrue(optionalLimits.isEmpty());
+        Optional<OperationalLimitsGroup> group = network.getLine("NHV1_NHV2_1").getOperationalLimitsGroup1("SUMMER");
+        assertTrue(group.isPresent());
+        optionalLimits = group.get().getApparentPowerLimits();
+        assertTrue(optionalLimits.isPresent());
+        assertEquals(600, optionalLimits.get().getPermanentLimit());
+        assertEquals(1, optionalLimits.get().getTemporaryLimits().size());
     }
 }
