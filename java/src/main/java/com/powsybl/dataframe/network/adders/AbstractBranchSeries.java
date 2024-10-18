@@ -52,12 +52,28 @@ abstract class AbstractBranchSeries extends IdentifiableSeries {
     protected void setBranchAttributes(BranchAdder<?, ?> adder, int row) {
         setIdentifiableAttributes(adder, row);
         applyIfPresent(voltageLevels1, row, adder::setVoltageLevel1);
-        applyIfPresent(connectableBuses1, row, adder::setConnectableBus1);
-        applyIfPresent(buses1, row, adder::setBus1);
+        applyIfPresent(connectableBuses1, row, connectableBusId1 -> {
+            if (!connectableBusId1.isEmpty()) {
+                adder.setConnectableBus1(connectableBusId1);
+            }
+        });
+        applyIfPresent(buses1, row, bus1 -> {
+            if (!bus1.isEmpty()) {
+                adder.setBus1(bus1);
+            }
+        });
         applyIfPresent(nodes1, row, adder::setNode1);
         applyIfPresent(voltageLevels2, row, adder::setVoltageLevel2);
-        applyIfPresent(connectableBuses2, row, adder::setConnectableBus2);
-        applyIfPresent(buses2, row, adder::setBus2);
+        applyIfPresent(connectableBuses2, row, connectableBusId2 -> {
+            if (!connectableBusId2.isEmpty()) {
+                adder.setConnectableBus2(connectableBusId2);
+            }
+        });
+        applyIfPresent(buses2, row, bus2 -> {
+            if (!bus2.isEmpty()) {
+                adder.setBus2(bus2);
+            }
+        });
         applyIfPresent(nodes2, row, adder::setNode2);
     }
 

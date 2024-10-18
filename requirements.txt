@@ -6,6 +6,9 @@ networkx
 matplotlib==3.9.2; python_version >= "3.9"
 matplotlib==3.7.5; python_version <= "3.8"
 
+# optional dependencies
+pandapower==2.14.11
+
 # documentation dependencies
 sphinx==7.1.2
 furo==2024.1.29
