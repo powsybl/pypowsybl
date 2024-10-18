@@ -483,6 +483,8 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
+void loadORtoolsLib(const std::string& libraryPath);
+
 void setConfigRead(bool configRead);
 
 void setDefaultLoadFlowProvider(const std::string& loadFlowProvider);
@@ -836,6 +838,11 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
+
+// OpenRao
+JavaHandle createRao();
+void runRao(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const std::string &cracPath, const std::string &parametersPath, const std::string &glsksPath);
+void serializeRaoResults(const JavaHandle& raoHandle, const std::string &filePath);
 
 }
 #endif //PYPOWSYBL_H
