@@ -88,10 +88,7 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
             String element = series.getElements().get(i);
             String side = series.getSides() == null ? "" : series.getSides().get(i);
             boolean ac = series.getAcs() == null || series.getAcs().get(i) == 1;
-            Area area = network.getArea(areaId);
-            if (area == null) {
-                throw new PowsyblException("Area " + areaId + " not found");
-            }
+            Area area = NetworkUtils.getAreaOrThrow(network, areaId);
             // an empty element alone for an area indicates remove all boundaries in area
             Connectable<?> connectable = element.isEmpty() ? null : NetworkUtils.getConnectableOrThrow(network, element);
             if (connectable == null) {
@@ -125,13 +122,13 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
                 }));
         // create new boundaries
         danglingLineBoundaries.forEach((area, list) -> list.stream()
-                .filter(pair -> !(pair.getLeft() == null))
+                .filter(pair -> pair.getLeft() != null)
                 .forEach(pair -> area.newAreaBoundary()
                         .setBoundary(pair.getLeft().getBoundary())
                         .setAc(pair.getRight())
                         .add()));
         terminalBoundaries.forEach((area, list) -> list.stream()
-                .filter(pair -> !(pair.getLeft() == null))
+                .filter(pair -> pair.getLeft() != null)
                 .forEach(pair -> area.newAreaBoundary()
                         .setTerminal(pair.getLeft())
                         .setAc(pair.getRight())
