@@ -61,6 +61,8 @@ public class EventModelsAdderTest {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("NHV1_NHV2_1"));
                             df.addSeries(DISCONNECT_ONLY, false, new TestStringSeries(TwoSides.ONE.toString()));
                         }),
+                Arguments.of(DISCONNECT,
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"))),
                 Arguments.of(ACTIVE_POWER_VARIATION,
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));

@@ -150,6 +150,8 @@ public class DynamicModelsAdderTest {
                             df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"));
                             df.addSeries(SIDE, false, createTwoRowsSeries(TransformerSide.LOW_VOLTAGE.toString()));
                         }),
+                Arguments.of(TAP_CHANGER, "TapChangerAutomaton",
+                        (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"))),
                 Arguments.of(TAP_CHANGER_BLOCKING, "TapChangerBlockingAutomaton",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(TRANSFORMERS, false, createTwoRowsSeries("NGEN_NHV1"));
