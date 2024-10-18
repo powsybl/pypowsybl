@@ -14,9 +14,9 @@ jobs:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp313,
+            abi: cp313,
+            version: '3.13',
           }
 
     steps:
@@ -206,6 +206,7 @@ jobs:
           mvn --batch-mode -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=powsybl-ci-github
+          -Dsonar.projectName=pypowsybl-java
           -Dsonar.projectKey=powsybl_pypowsybl-java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}          
