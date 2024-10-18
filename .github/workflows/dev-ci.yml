@@ -7,7 +7,7 @@ jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    container: quay.io/pypa/manylinux2014_x86_64:2024-10-07-1887322
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
@@ -29,7 +29,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
         with:
-          java-version: '17'
+          java-version: '17.0.12'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 

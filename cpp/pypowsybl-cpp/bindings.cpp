@@ -238,7 +238,7 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_low_active_power_default_limit", &pypowsybl::voltageInitializerSetLowActivePowerDefaultLimit, py::arg("params_handle"), py::arg("low_active_power_default_limit"));
     m.def("voltage_initializer_set_default_minimal_qp_range", &pypowsybl::voltageInitializerSetDefaultMinimalQPRange, py::arg("params_handle"), py::arg("default_minimal_qp_range"));
     m.def("voltage_initializer_set_default_qmax_pmax_ratio", &pypowsybl::voltageInitializerSetDefaultQmaxPmaxRatio, py::arg("params_handle"), py::arg("default_qmax_pmax_ratio"));
-    
+
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
     m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
@@ -967,7 +967,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::RescaleMode>(m, "RescaleMode")
             .value("NONE", pypowsybl::RescaleMode::NONE)
             .value("ACER_METHODOLOGY", pypowsybl::RescaleMode::ACER_METHODOLOGY)
-            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL);
+            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL)
+            .value("MAX_CURRENT_OVERLOAD", pypowsybl::RescaleMode::MAX_CURRENT_OVERLOAD);
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
