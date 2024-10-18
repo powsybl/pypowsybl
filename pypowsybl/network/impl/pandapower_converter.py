@@ -1,3 +1,9 @@
+# Copyright (c) 2024, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
 import math
 import typing
 from enum import Enum
@@ -14,7 +20,7 @@ from pandas import DataFrame
 from .network import Network
 from .network_creation_util import create_empty
 
-MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
+MIN_TARGET_P_TO_NOT_BE_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
 
 DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
@@ -141,7 +147,7 @@ def create_limits(n: Network, n_pdp: pandapowerNet, id: pd.Series) -> None:
     limit_name = ['permanent'] * len(n_pdp.line)
     limit_type = ['CURRENT'] * len(n_pdp.line)
     limit_value = n_pdp.line['max_i_ka'] * 1000.0 / n_pdp.line['parallel']
-    limit_value *= n_pdp.line['df'] / 100.0
+    limit_value *= n_pdp.line['df']
     acceptable_duration = [-1] * len(n_pdp.line)
     n.create_operational_limits(element_id=id, side=limit_side, name=limit_name, type=limit_type, value=limit_value,
                                 acceptable_duration=acceptable_duration)
@@ -209,7 +215,7 @@ def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_
         connectable_bus_id = build_bus_id(gen_and_bus['bus'].astype(str)).tolist()
         bus_id = np.where(gen_and_bus['in_service'], connectable_bus_id, "")
         target_p = create_generator_target_p(gen_and_bus, generator_type)
-        voltage_regulator_on = [True] * len(gen_and_bus)
+        voltage_regulator_on = [generator_type != PandaPowerGeneratorType.STATIC_GENERATOR] * len(gen_and_bus)
         target_v = create_generator_target_v(gen_and_bus, generator_type)
         target_q = create_generator_target_q(gen_and_bus, generator_type)
         min_p = create_generator_min_p(gen_and_bus, generator_type)
@@ -228,7 +234,7 @@ def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_
 
 
 def create_generator_target_p(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType) -> pd.Series:
-    return pd.Series([MIN_TARGET_P_TO_NOT_BEEN_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(
+    return pd.Series([MIN_TARGET_P_TO_NOT_BE_DISCADED_FROM_ACTIVE_POWER_CONTROL] * len(
         gen_and_bus)) if generator_type == PandaPowerGeneratorType.EXT_GRID else gen_and_bus['p_mw'] # keep a small value of target_p to avoid be discarded to slack distribution
 
 
