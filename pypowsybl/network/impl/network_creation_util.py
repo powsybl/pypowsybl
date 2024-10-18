@@ -113,6 +113,16 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
     return _create_network('eurostag_tutorial_example1_with_power_limits')
 
 
+def create_eurostag_tutorial_example1_with_tie_lines_and_areas() -> Network:
+    """
+    Create an instance of example 1 network of Eurostag tutorial with tie lines and areas
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial with tie lines and areas
+    """
+    return _create_network('eurostag_tutorial_example1_with_tie_lines_and_areas')
+
+
 def create_four_substations_node_breaker_network() -> Network:
     """
     Create an instance of powsybl "4 substations" test case.

@@ -15,6 +15,7 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.extensions.ExtensionDataframeKey;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.NetworkUtil;
 import com.powsybl.python.network.SideEnum;
 import com.powsybl.python.network.TemporaryLimitData;
@@ -54,6 +55,9 @@ public final class NetworkDataframes {
     private static Map<DataframeElementType, NetworkDataframeMapper> createMappers() {
         Map<DataframeElementType, NetworkDataframeMapper> mappers = new EnumMap<>(DataframeElementType.class);
         mappers.put(DataframeElementType.SUB_NETWORK, subNetworks());
+        mappers.put(DataframeElementType.AREA, areas());
+        mappers.put(DataframeElementType.AREA_VOLTAGE_LEVELS, areaVoltageLevels());
+        mappers.put(DataframeElementType.AREA_BOUNDARIES, areaBoundaries());
         mappers.put(DataframeElementType.BUS, buses(false));
         mappers.put(DataframeElementType.BUS_FROM_BUS_BREAKER_VIEW, buses(true));
         mappers.put(DataframeElementType.LINE, lines());
@@ -301,6 +305,21 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(n -> n.getSubnetworks().stream(),
                         getOrThrow(Network::getSubnetwork, "SubNetwork"))
                 .stringsIndex("id", Identifiable::getId)
+                .build();
+    }
+
+    private static NetworkDataframeMapper areas() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getAreaStream,
+                        getOrThrow(Network::getArea, "Area"))
+                .stringsIndex("id", Identifiable::getId)
+                .strings("name", a -> a.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("area_type", Area::getAreaType)
+                .doubles("interchange_target", (a, context) -> perUnitPQ(context, a.getInterchangeTarget().orElse(Double.NaN)), (a, p, context) -> a.setInterchangeTarget(unPerUnitPQ(context, p)))
+                .doubles("interchange", (a, context) -> perUnitPQ(context, a.getInterchange()))
+                .doubles("ac_interchange", (a, context) -> perUnitPQ(context, a.getAcInterchange()))
+                .doubles("dc_interchange", (a, context) -> perUnitPQ(context, a.getDcInterchange()))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
                 .build();
     }
 
@@ -1104,6 +1123,26 @@ public final class NetworkDataframes {
         return "";
     }
 
+    private static String getTerminalSideStr(ThreeWindingsTransformer t3wt, Terminal terminal) {
+        if (terminal == t3wt.getLeg1().getTerminal()) {
+            return ThreeSides.ONE.name();
+        } else if (terminal == t3wt.getLeg2().getTerminal()) {
+            return ThreeSides.TWO.name();
+        } else if (terminal == t3wt.getLeg3().getTerminal()) {
+            return ThreeSides.THREE.name();
+        }
+        return "";
+    }
+
+    private static String getTerminalSideStr(Identifiable<?> identifiable, Terminal terminal) {
+        if (identifiable instanceof Branch<?> branch) {
+            return getTerminalSideStr(branch, terminal);
+        } else if (identifiable instanceof ThreeWindingsTransformer t3wt) {
+            return getTerminalSideStr(t3wt, terminal);
+        }
+        return "";
+    }
+
     static void setPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
         transformer.getPhaseTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
     }
@@ -1253,6 +1292,60 @@ public final class NetworkDataframes {
         return network.getIdentifiables().stream()
                 .flatMap(identifiable -> identifiable.getAliases().stream()
                         .map(alias -> Pair.of(identifiable, alias)));
+    }
+
+    private static NetworkDataframeMapper areaVoltageLevels() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::areaVoltageLevelsData)
+                .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("voltage_level_id", pair -> pair.getRight().getId())
+                .build();
+    }
+
+    private static Stream<Pair<Area, VoltageLevel>> areaVoltageLevelsData(Network network) {
+        return network.getAreaStream()
+                .flatMap(area -> area.getVoltageLevelStream()
+                        .map(voltageLevel -> Pair.of(area, voltageLevel)));
+    }
+
+    private static NetworkDataframeMapper areaBoundaries() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::areaBoundariesData)
+                .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("boundary_type", pair -> getAreaBoundaryType(pair.getRight()), false)
+                .strings("element", pair -> getAreaBoundaryElement(pair.getRight()))
+                .strings("side", pair -> getAreaBoundarySide(pair.getRight()), false)
+                .booleans("ac", pair -> pair.getRight().isAc())
+                .doubles("p", (pair, context) -> perUnitPQ(context, pair.getRight().getP()))
+                .doubles("q", (pair, context) -> perUnitPQ(context, pair.getRight().getQ()))
+                .build();
+    }
+
+    private static String getAreaBoundaryType(AreaBoundary areaBoundary) {
+        Objects.requireNonNull(areaBoundary);
+        return areaBoundary.getBoundary().map(
+                b -> PyPowsyblApiHeader.ElementType.DANGLING_LINE.name()
+        ).orElse(PyPowsyblApiHeader.ElementType.TERMINAL.name());
+    }
+
+    private static String getAreaBoundaryElement(AreaBoundary areaBoundary) {
+        Objects.requireNonNull(areaBoundary);
+        return areaBoundary.getBoundary().map(
+                b -> b.getDanglingLine().getId()
+        ).orElseGet(() -> areaBoundary.getTerminal().orElseThrow().getConnectable().getId());
+    }
+
+    private static String getAreaBoundarySide(AreaBoundary areaBoundary) {
+        Objects.requireNonNull(areaBoundary);
+        if (areaBoundary.getBoundary().isPresent()) {
+            return "";
+        }
+        Terminal terminal = areaBoundary.getTerminal().orElseThrow();
+        return getTerminalSideStr(terminal.getConnectable(), terminal);
+    }
+
+    private static Stream<Pair<Area, AreaBoundary>> areaBoundariesData(Network network) {
+        return network.getAreaStream()
+                .flatMap(area -> area.getAreaBoundaryStream()
+                        .map(areaBoundary -> Pair.of(area, areaBoundary)));
     }
 
 }
