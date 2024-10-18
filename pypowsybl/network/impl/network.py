@@ -903,7 +903,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
-              - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
+            - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
+            - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+            - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed by the id of the lines.
 
@@ -997,6 +999,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
             - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
             - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
+            - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+            - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -2369,6 +2373,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p2**: the active flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
               - **q2**: the reactive flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
               - **i2**: the current on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+              - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+              - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed on the branch ID.
         """
@@ -2746,6 +2752,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `fictitious`
             - `pairing_key`
             - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
+            - `selected_limits_group`
 
         See Also:
             :meth:`get_dangling_lines`
@@ -2927,6 +2934,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `connected2`
             - `fictitious`
+            - `selected_limits_group_1`
+            - `selected_limits_group_2`
 
         See Also:
             :meth:`get_lines`
@@ -2968,6 +2977,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `connected2`
             - `fictitious`
+            - `selected_limits_group_1`
+            - `selected_limits_group_2`
 
         See Also:
             :meth:`get_2_windings_transformers`
@@ -3006,6 +3017,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `ratio_tap_position1`
             - `phase_tap_position1`
+            - `selected_limits_group_1`
             - `r2`
             - `x2`
             - `g2`
@@ -3017,6 +3029,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected2`
             - `ratio_tap_position2`
             - `phase_tap_position2`
+            - `selected_limits_group_2`
             - `r3`
             - `x3`
             - `g3`
@@ -3028,6 +3041,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected3`
             - `ratio_tap_position3`
             - `phase_tap_position3`
+            - `selected_limits_group_3`
             - `fictitious`
 
         See Also:
@@ -3592,7 +3606,7 @@ class Network:  # pylint: disable=too-many-public-methods
             columns.append('fictitious')
         return current_limits[columns]
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
 
@@ -3608,17 +3622,23 @@ class Network:  # pylint: disable=too-many-public-methods
           - **value**:      The value of the limit
           - **acceptable_duration**: The duration, in seconds, for which the element can securely be
             operated under the limit value. By convention, the value -1 represents an infinite duration.
-          - **is_fictitious**: true if this limit is fictitious
+          - **fictitious** (optional): `True` if this limit is fictitious
+          - **group_name** (optional): The name of the operational limit group this limit is in
+          - **selected** (optional): `True` if this limit's operational group is the selected one
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            only_selected_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
             All limits on the network
         """
-        return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        if show_inactive_sets:
+            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        else:
+            return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
