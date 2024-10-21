@@ -714,7 +714,8 @@ class NetworkDataframesTest {
 
         List<String> ids = List.of("sshId1");
         assertThrows(UnsupportedOperationException.class, () -> NetworkExtensions.removeExtensions(network, "cgmesMetadataModels", ids));
-    
+    }
+
     @Test
     void referencePrioritiesExtensions() {
         Network network = EurostagTutorialExample1Factory.create();
