@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import pathlib
 import pytest
-import logging
 
 import pypowsybl.network
 import pypowsybl.network as pn
