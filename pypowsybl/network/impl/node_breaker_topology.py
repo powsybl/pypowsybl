@@ -31,6 +31,17 @@ class NodeBreakerTopology:
     def switches(self) -> DataFrame:
         """
         The list of switches of the voltage level, together with their connection status, as a dataframe.
+
+        The dataframe includes the following columns:
+
+        - **name**: Switch name
+        - **kind**: Switch kind (BREAKER, DISCONNECTOR, ...)
+        - **open**: True if the switch is opened
+        - **retained**: True if the switch is to be retained in the Bus/Breaker view
+        - **node1**: node where the switch is connected at side 1
+        - **node2**: node where the switch is connected at side 2
+
+        This dataframe is indexed by the id of the switches.
         """
         return self._switchs
 
@@ -39,6 +50,12 @@ class NodeBreakerTopology:
         """
         The list of nodes of the voltage level, together with their corresponding network element (if any),
         as a dataframe.
+
+        The dataframe includes the following columns:
+
+        - **connectable_id**: Connected element, if any.
+
+        This dataframe is indexed by the id of the nodes.
         """
         return self._nodes
 
@@ -46,6 +63,11 @@ class NodeBreakerTopology:
     def internal_connections(self) -> DataFrame:
         """
         The list of internal connection of the voltage level, together with the nodes they connect.
+
+        The dataframe includes the following columns:
+
+        - **node1**: node where the internal connection is connected at side 1
+        - **node2**: node where the internal connection is connected at side 2
         """
         return self._internal_connections
 

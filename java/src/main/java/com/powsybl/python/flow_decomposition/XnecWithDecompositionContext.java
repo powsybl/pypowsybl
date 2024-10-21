@@ -8,6 +8,7 @@
 package com.powsybl.python.flow_decomposition;
 
 import com.powsybl.flow_decomposition.DecomposedFlow;
+import com.powsybl.flow_decomposition.DecomposedFlowBuilder;
 import com.powsybl.flow_decomposition.NetworkUtil;
 import com.powsybl.iidm.network.Country;
 
@@ -21,17 +22,18 @@ import java.util.function.ToDoubleFunction;
  */
 public class XnecWithDecompositionContext extends DecomposedFlow {
     public XnecWithDecompositionContext(DecomposedFlow decomposedFlow) {
-        super(decomposedFlow.getBranchId(),
-            decomposedFlow.getContingencyId(),
-            decomposedFlow.getCountry1(),
-            decomposedFlow.getCountry2(),
-            decomposedFlow.getAcReferenceFlow(),
-            decomposedFlow.getDcReferenceFlow(),
-            decomposedFlow.getAllocatedFlow(),
-            decomposedFlow.getXNodeFlow(),
-            decomposedFlow.getPstFlow(),
-            decomposedFlow.getInternalFlow(),
-            decomposedFlow.getLoopFlows());
+        super(new DecomposedFlowBuilder().withBranchId(decomposedFlow.getBranchId())
+                .withContingencyId(decomposedFlow.getContingencyId())
+                .withCountry1(decomposedFlow.getCountry1())
+                .withCountry2(decomposedFlow.getCountry2())
+                .withAcTerminal1ReferenceFlow(decomposedFlow.getAcTerminal1ReferenceFlow())
+                .withAcTerminal2ReferenceFlow(decomposedFlow.getAcTerminal2ReferenceFlow())
+                .withDcReferenceFlow(decomposedFlow.getDcReferenceFlow())
+                .withAllocatedFlow(decomposedFlow.getAllocatedFlow())
+                .withXNodeFlow(decomposedFlow.getXNodeFlow())
+                .withPstFlow(decomposedFlow.getPstFlow())
+                .withInternalFlow(decomposedFlow.getInternalFlow())
+                .withLoopFlowsMap(decomposedFlow.getLoopFlows()));
     }
 
     public String getCountry1String() {

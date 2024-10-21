@@ -26,23 +26,33 @@ def test_extensions():
     assert len(generators_extensions) == 1
     assert generators_extensions['participate']['GEN']
     assert generators_extensions['droop']['GEN'] == pytest.approx(1.1, abs=1e-3)
+    assert np.isnan(generators_extensions['participation_factor']['GEN'])
+    assert np.isnan(generators_extensions['max_target_p']['GEN'])
+    assert np.isnan(generators_extensions['min_target_p']['GEN'])
     assert n.get_extensions('hvdcOperatorActivePowerRange').empty
 
 
 def test_update_extensions():
     n = pn._create_network('eurostag_tutorial_example1_with_apc_extension')
     n.update_extensions('activePowerControl', pd.DataFrame.from_records(index='id', data=[
-        {'id': 'GEN', 'droop': 1.2}
+        {'id': 'GEN', 'droop': 1.2, 'participation_factor': 1.5, 'max_target_p': 900., 'min_target_p': 200.}
     ]))
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 1
     assert generators_extensions['participate']['GEN']
     assert generators_extensions['droop']['GEN'] == pytest.approx(1.2, abs=1e-3)
-    n.update_extensions('activePowerControl', id='GEN', droop=1.4)
+    assert generators_extensions['participation_factor']['GEN'] == pytest.approx(1.5, abs=1e-3)
+    assert generators_extensions['max_target_p']['GEN'] == pytest.approx(900., abs=1e-3)
+    assert generators_extensions['min_target_p']['GEN'] == pytest.approx(200., abs=1e-3)
+    n.update_extensions('activePowerControl',
+                        id='GEN', droop=1.4, participation_factor=1.8, max_target_p=800., min_target_p=150.)
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 1
     assert generators_extensions['participate']['GEN']
     assert generators_extensions['droop']['GEN'] == pytest.approx(1.4, abs=1e-3)
+    assert generators_extensions['participation_factor']['GEN'] == pytest.approx(1.8, abs=1e-3)
+    assert generators_extensions['max_target_p']['GEN'] == pytest.approx(800., abs=1e-3)
+    assert generators_extensions['min_target_p']['GEN'] == pytest.approx(150., abs=1e-3)
 
 
 def test_remove_extensions():
@@ -56,18 +66,25 @@ def test_remove_extensions():
 def test_create_extensions():
     n = pn._create_network('eurostag_tutorial_example1')
     n.create_extensions('activePowerControl', pd.DataFrame.from_records(index='id', data=[
-        {'id': 'GEN', 'droop': 1.2, 'participate': True}
+        {'id': 'GEN', 'droop': 1.2, 'participate': True, 'participation_factor': 1.5,
+         'max_target_p': 900., 'min_target_p': 200.}
     ]))
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 1
     assert generators_extensions['participate']['GEN']
     assert generators_extensions['droop']['GEN'] == pytest.approx(1.2, abs=1e-3)
+    assert generators_extensions['participation_factor']['GEN'] == pytest.approx(1.5, abs=1e-3)
+    assert generators_extensions['max_target_p']['GEN'] == pytest.approx(900., abs=1e-3)
+    assert generators_extensions['min_target_p']['GEN'] == pytest.approx(200., abs=1e-3)
 
     n.create_extensions('activePowerControl', id='GEN2', droop=1.3, participate=False)
     generators_extensions = n.get_extensions('activePowerControl')
     assert len(generators_extensions) == 2
     assert not generators_extensions['participate']['GEN2']
     assert generators_extensions['droop']['GEN2'] == pytest.approx(1.3, abs=1e-3)
+    assert np.isnan(generators_extensions['participation_factor']['GEN2'])
+    assert np.isnan(generators_extensions['max_target_p']['GEN2'])
+    assert np.isnan(generators_extensions['min_target_p']['GEN2'])
 
 
 def test_entsoe_area():
@@ -479,6 +496,38 @@ def test_cgmes_metadata_extension():
     pd.testing.assert_frame_equal(n.get_extensions(extension_name), metadata)
 
 
+def test_reference_priorities():
+    network = pn.create_eurostag_tutorial_example1_network()
+    assert network.get_extensions('referencePriorities').empty
+
+    network.create_extensions('referencePriorities', id='GEN', priority=1)
+    e = network.get_extensions('referencePriorities')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['GEN']),
+        columns=['priority'],
+        data=[[1]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.create_extensions('referencePriorities', id='LOAD', priority=2)
+    e = network.get_extensions('referencePriorities')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['GEN', 'LOAD']),
+        columns=['priority'],
+        data=[[1], [2]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('referencePriorities', id=['GEN', 'LOAD'], priority=[3, 4])
+    e = network.get_extensions('referencePriorities')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['GEN', 'LOAD']),
+        columns=['priority'],
+        data=[[3], [4]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('referencePriorities', ['GEN', 'LOAD'])
+    assert network.get_extensions('referencePriorities').empty
+
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
@@ -505,7 +554,7 @@ def test_get_extensions_information():
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['detail'] == ''
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['attributes'] == 'index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)'
     assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators to balancing'
-    assert extensions_information.loc['activePowerControl']['attributes'] == 'index : id (str), participate (bool), droop (float)'
+    assert extensions_information.loc['activePowerControl']['attributes'] == 'index : id (str), participate (bool), droop (float), participation_factor (float), max_target_p (float), min_target_p (float)'
     assert extensions_information.loc['entsoeCategory']['detail'] == 'Provides Entsoe category code for a generator'
     assert extensions_information.loc['entsoeCategory']['attributes'] == 'index : id (str), code (int)'
     assert extensions_information.loc['entsoeArea']['detail'] == 'Provides Entsoe geographical code for a substation'
@@ -524,3 +573,5 @@ def test_get_extensions_information():
     assert extensions_information.loc['secondaryVoltageControl']['attributes'] == '[dataframe "zones"] index : name (str), target_v (float), bus_ids (str) / [dataframe "units"] index : unit_id (str), participate (bool), zone_name (str)'
     assert extensions_information.loc['substationPosition']['attributes'] == 'index : id (str), latitude (float), longitude (float)'
     assert extensions_information.loc['linePosition']['attributes'] == 'index : id (str), num (int), latitude (float), longitude (float)'
+    assert extensions_information.loc['referencePriorities']['detail'] == 'Defines the angle reference generator, busbar section or load of a power flow calculation, i.e. which bus will be used with a zero-voltage angle.'
+    assert extensions_information.loc['referencePriorities']['attributes'] == 'index : id (str), priority (int)'

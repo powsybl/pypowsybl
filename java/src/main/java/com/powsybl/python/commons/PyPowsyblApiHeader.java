@@ -617,6 +617,7 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
+        SELECTED_OPERATIONAL_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
         IDENTIFIABLE,
@@ -1005,11 +1006,11 @@ public final class PyPowsyblApiHeader {
         @CField("sensitivity_epsilon")
         void setSensitivityEpsilon(double sensitivityEpsilon);
 
-        @CField("rescale_enabled")
-        boolean isRescaleEnabled();
+        @CField("rescale_mode")
+        int getRescaleMode();
 
-        @CField("rescale_enabled")
-        void setRescaleEnabled(boolean rescaleEnabled);
+        @CField("rescale_mode")
+        void setRescaleMode(int rescaleMode);
 
         @CField("dc_fallback_enabled_after_ac_divergence")
         boolean isDcFallbackEnabledAfterAcDivergence();

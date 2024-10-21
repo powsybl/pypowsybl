@@ -629,36 +629,36 @@ def test_create_node_breaker_network_and_run_loadflow():
 def test_create_limits():
     net = pn.create_eurostag_tutorial_example1_network()
     net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
-         'acceptable_duration': 60, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': 60, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
-         'acceptable_duration': 60, 'is_fictitious': False}
+         'acceptable_duration': 60, 'fictitious': False}
     ]))
     expected = pd.DataFrame.from_records(
         index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious'],
-        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False],
-              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False]])
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
+        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False, 'DEFAULT', True]])
     limits = net.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     permanent_limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False)
 
     expected = pd.DataFrame.from_records(
         index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious'],
-        data=[['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
+        data=[['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False, 'DEFAULT', True]])
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
 
@@ -825,14 +825,14 @@ def test_creating_vl_without_substation():
 def check_unknown_voltage_level_error_message(fn):
     with pytest.raises(PyPowsyblError) as exc:
         fn(voltage_level_id='UNKNOWN', id='S')
-    assert exc.match('Voltage level UNKNOWN does not exist')
+    assert exc.match("Voltage level 'UNKNOWN' does not exist")
 
 
 def test_error_messages():
     network = pn.create_eurostag_tutorial_example1_network()
     with pytest.raises(PyPowsyblError) as exc:
         network.create_voltage_levels(id='VL', substation_id='UNKNOWN', nominal_v=400)
-    assert exc.match('Substation UNKNOWN does not exist')
+    assert exc.match("Substation 'UNKNOWN' does not exist")
 
     check_unknown_voltage_level_error_message(network.create_loads)
     check_unknown_voltage_level_error_message(network.create_generators)
@@ -1023,20 +1023,20 @@ def test_3_windings_transformers_creation():
 
     #Add some limits
     n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
-         'acceptable_duration': 60, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'acceptable_duration': 60, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
-         'acceptable_duration': 60, 'is_fictitious': False}
+         'acceptable_duration': 60, 'fictitious': False}
     ]))
     operational_limits = n.get_operational_limits().loc['TWT_TEST']
     assert operational_limits.shape[0] == 4

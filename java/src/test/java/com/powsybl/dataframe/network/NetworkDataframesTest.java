@@ -16,19 +16,9 @@ import com.powsybl.dataframe.DoubleIndexedSeries;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
-import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
-import com.powsybl.dataframe.update.TestDoubleSeries;
-import com.powsybl.dataframe.update.TestStringSeries;
-import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.HvdcLine;
-import com.powsybl.iidm.network.Line;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.Coordinate;
-import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControlAdder;
-import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRangeAdder;
-import com.powsybl.iidm.network.extensions.LinePositionAdder;
-import com.powsybl.iidm.network.extensions.SecondaryVoltageControlAdder;
+import com.powsybl.dataframe.update.*;
+import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.python.network.Networks;
@@ -166,24 +156,45 @@ class NetworkDataframesTest {
         List<Series> series = createExtensionDataFrame("activePowerControl", network);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "droop", "participate");
+                .containsExactly("id", "droop", "participate",
+                        "participation_factor",
+                        "max_target_p",
+                        "min_target_p");
         assertThat(series.get(1).getDoubles())
-                .containsExactly(1.1f);
+                .containsExactly(1.1);
         assertThat(series.get(2).getBooleans())
                 .containsExactly(true);
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(Double.NaN);
+        assertThat(series.get(4).getDoubles())
+                .containsExactly(Double.NaN);
+        assertThat(series.get(5).getDoubles())
+                .containsExactly(Double.NaN);
 
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         dataframe.addSeries("id", true, new TestStringSeries("GEN"));
         dataframe.addSeries("droop", false, new TestDoubleSeries(1.2));
+        dataframe.addSeries("participation_factor", false, new TestDoubleSeries(1.5));
+        dataframe.addSeries("max_target_p", false, new TestDoubleSeries(900.));
+        dataframe.addSeries("min_target_p", false, new TestDoubleSeries(200.));
         updateExtension("activePowerControl", network, dataframe);
         series = createExtensionDataFrame("activePowerControl", network);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "droop", "participate");
+                .containsExactly("id", "droop", "participate",
+                        "participation_factor",
+                        "max_target_p",
+                        "min_target_p");
         assertThat(series.get(1).getDoubles())
-                .containsExactly(1.2f);
+                .containsExactly(1.2);
         assertThat(series.get(2).getBooleans())
                 .containsExactly(true);
+        assertThat(series.get(3).getDoubles())
+                .containsExactly(1.5);
+        assertThat(series.get(4).getDoubles())
+                .containsExactly(900.);
+        assertThat(series.get(5).getDoubles())
+                .containsExactly(200.);
 
         NetworkExtensions.removeExtensions(network, "activePowerControl",
                 network.getGeneratorStream().map(Generator::getNameOrId).collect(Collectors.toList()));
@@ -272,7 +283,9 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
                         "boundary_p", "boundary_q", "boundary_v_mag", "boundary_v_angle",
-                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "pairing_key", "ucte_xnode_code", "paired", "fictitious", "tie_line_id");
+                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected",
+                        "pairing_key", "ucte_xnode_code", "paired", "fictitious", "tie_line_id",
+                        "selected_limits_group");
     }
 
     @Test
@@ -303,7 +316,8 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g1", "b1", "g2", "b2", "p1", "q1", "i1", "p2", "q2", "i2",
                         "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1",
-                        "bus2_id", "bus_breaker_bus2_id", "node2", "connected1", "connected2", "fictitious");
+                        "bus2_id", "bus_breaker_bus2_id", "node2", "connected1", "connected2", "fictitious",
+                        "selected_limits_group_1", "selected_limits_group_2");
     }
 
     @Test
@@ -368,7 +382,7 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
                         "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1", "bus2_id", "bus_breaker_bus2_id", "node2",
-                        "connected1", "connected2", "fictitious");
+                        "connected1", "connected2", "fictitious", "selected_limits_group_1", "selected_limits_group_2");
     }
 
     @Test
@@ -386,9 +400,9 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "rated_u0",
-                        "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "bus_breaker_bus1_id", "node1", "connected1",
-                        "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "bus_breaker_bus2_id", "node2", "connected2",
-                        "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "bus_breaker_bus3_id", "node3", "connected3",
+                        "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "bus_breaker_bus1_id", "node1", "connected1", "selected_limits_group_1",
+                        "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "bus_breaker_bus2_id", "node2", "connected2", "selected_limits_group_2",
+                        "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "bus_breaker_bus3_id", "node3", "connected3", "selected_limits_group_3",
                         "fictitious");
     }
 
@@ -621,7 +635,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1", "voltage_level2_id", "bus2_id", "connected2", "p1", "q1", "i1", "p2", "q2", "i2");
+                .containsExactly("id", "type", "voltage_level1_id", "bus1_id", "connected1",
+                        "voltage_level2_id", "bus2_id", "connected2", "p1", "q1", "i1", "p2", "q2", "i2");
     }
 
     @Test
@@ -699,6 +714,43 @@ class NetworkDataframesTest {
 
         List<String> ids = List.of("sshId1");
         assertThrows(UnsupportedOperationException.class, () -> NetworkExtensions.removeExtensions(network, "cgmesMetadataModels", ids));
+    
+    @Test
+    void referencePrioritiesExtensions() {
+        Network network = EurostagTutorialExample1Factory.create();
+        Generator gen = network.getGenerator("GEN");
+        Load load = network.getLoad("LOAD");
+        ReferencePriority.set(gen, 1);
+        ReferencePriority.set(load, 2);
 
+        List<Series> ext1Series = createExtensionDataFrame(ReferencePriorities.NAME, network);
+        assertThat(ext1Series)
+                .extracting(Series::getName)
+                .containsExactly("id", "priority");
+        assertThat(ext1Series.get(0).getStrings()).containsExactly("GEN", "LOAD");
+        assertThat(ext1Series.get(1).getInts()).containsExactly(1, 2);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        dataframe.addSeries("id", true, new TestStringSeries("GEN", "LOAD"));
+        dataframe.addSeries("priority", false, new TestIntSeries(3, 4));
+        updateExtension(ReferencePriorities.NAME, network, dataframe);
+        List<Series> ext2Series = createExtensionDataFrame(ReferencePriorities.NAME, network);
+        assertThat(ext2Series.get(0).getStrings()).containsExactly("GEN", "LOAD");
+        assertThat(ext2Series.get(1).getInts()).containsExactly(3, 4);
+    }
+
+    @Test
+    void testOperationalLimits() {
+        Network network = EurostagTutorialExample1Factory.createWithFixedLimits();
+        List<Series> limits = createDataFrame(OPERATIONAL_LIMITS, network);
+        List<Series> selectedLimits = createDataFrame(SELECTED_OPERATIONAL_LIMITS, network);
+
+        assertThat(limits)
+            .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
+                "name", "type", "value", "acceptable_duration");
+        assertThat(selectedLimits)
+                .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
+                        "name", "type", "value", "acceptable_duration");
+        assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
     }
 }

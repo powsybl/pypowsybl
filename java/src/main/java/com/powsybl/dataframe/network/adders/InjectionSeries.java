@@ -34,8 +34,16 @@ class InjectionSeries extends IdentifiableSeries {
 
     protected void setInjectionAttributes(InjectionAdder<?, ?> adder, int row) {
         setIdentifiableAttributes(adder, row);
-        applyIfPresent(connectableBuses, row, adder::setConnectableBus);
-        applyIfPresent(buses, row, adder::setBus);
+        applyIfPresent(connectableBuses, row, connectableBusId -> {
+            if (!connectableBusId.isEmpty()) {
+                adder.setConnectableBus(connectableBusId);
+            }
+        });
+        applyIfPresent(buses, row, bus -> {
+            if (!bus.isEmpty()) {
+                adder.setBus(bus);
+            }
+        });
         applyIfPresent(nodes, row, adder::setNode);
     }
 }
