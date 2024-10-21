@@ -31,6 +31,14 @@ public final class NetworkUtils {
         return voltageLevel;
     }
 
+    public static VoltageLevel.NodeBreakerView getVoltageLevelNodeBreakerViewOrThrow(Network network, String id) {
+        VoltageLevel voltageLevel = getVoltageLevelOrThrow(network, id);
+        if (voltageLevel.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            throw new PowsyblException("Voltage level '" + id + "' is not of Node/Breaker topology kind.");
+        }
+        return voltageLevel.getNodeBreakerView();
+    }
+
     public static Optional<VoltageLevel> getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections, boolean throwException) {
         if (voltageLevels == null) {
             if (busOrBusbarSections != null) {

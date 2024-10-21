@@ -624,7 +624,8 @@ public final class PyPowsyblApiHeader {
         INJECTION,
         BRANCH,
         TERMINAL,
-        SUB_NETWORK;
+        SUB_NETWORK,
+        INTERNAL_CONNECTION;
 
         @CEnumValue
         public native int getCValue();

@@ -168,7 +168,8 @@ typedef enum {
     INJECTION,
     BRANCH,
     TERMINAL,
-    SUB_NETWORK
+    SUB_NETWORK,
+    INTERNAL_CONNECTION
 } element_type;
 
 typedef enum {

@@ -220,6 +220,7 @@ public final class Util {
             case BRANCH -> PyPowsyblApiHeader.ElementType.BRANCH;
             case IDENTIFIABLE -> PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
             case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
+            case INTERNAL_CONNECTION -> PyPowsyblApiHeader.ElementType.INTERNAL_CONNECTION;
         };
     }
 
@@ -260,6 +261,7 @@ public final class Util {
             case BRANCH -> DataframeElementType.BRANCH;
             case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
             case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
+            case INTERNAL_CONNECTION -> DataframeElementType.INTERNAL_CONNECTION;
         };
     }
 
