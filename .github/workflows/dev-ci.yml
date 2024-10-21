@@ -50,7 +50,7 @@ jobs:
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
-          auditwheel --verbose --exclude libortools.so.9 --exclude libjniortools.so repair dist/*.whl
+          auditwheel --verbose repair --plat manylinux2014_x86_64 dist/*.whl --exclude libortools.so.9 --exclude libjniortools.so
 
       - name: Install wheel
         run: pip3 install wheelhouse/*.whl --user
