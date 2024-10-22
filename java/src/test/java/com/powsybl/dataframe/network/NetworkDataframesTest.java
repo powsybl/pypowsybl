@@ -754,4 +754,45 @@ class NetworkDataframesTest {
                         "name", "type", "value", "acceptable_duration");
         assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
     }
+
+    @Test
+    void areas() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "area_type", "interchange_target",
+                        "interchange", "ac_interchange", "dc_interchange");
+        List<Series> allAttributeSeries = createDataFrame(AREA, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "area_type", "interchange_target",
+                        "interchange", "ac_interchange", "dc_interchange", "fictitious");
+    }
+
+    @Test
+    void areasVoltageLevels() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA_VOLTAGE_LEVELS, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "voltage_level_id");
+    }
+
+    @Test
+    void areasBoundaries() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA_BOUNDARIES, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "element", "ac", "p", "q");
+
+        List<Series> allAttributeSeries = createDataFrame(AREA_BOUNDARIES, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "boundary_type", "element", "side", "ac", "p", "q");
+    }
 }
