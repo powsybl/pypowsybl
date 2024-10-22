@@ -51,14 +51,15 @@ public class DynamicModelsAdderTest {
     void testEquipmentsAdder(PyPowsyblApiHeader.DynamicMappingType mappingType, String modelName, Network network, String staticId) {
 
         dataframe.addSeries(STATIC_ID, true, createTwoRowsSeries(staticId));
+        dataframe.addSeries(DYNAMIC_MODEL_ID, false, createTwoRowsSeries("BBM" + staticId));
         dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("eq_par"));
         dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(modelName, ""));
         DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, dataframe);
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
-                model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", staticId)
+                model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", "BBM" + staticId)
                         .hasFieldOrPropertyWithValue("lib", modelName),
-                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", staticId));
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", "BBM" + staticId));
     }
 
     @ParameterizedTest(name = "{0}")

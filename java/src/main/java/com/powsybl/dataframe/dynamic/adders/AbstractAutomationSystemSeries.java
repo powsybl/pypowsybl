@@ -19,11 +19,8 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  */
 abstract class AbstractAutomationSystemSeries<T extends AbstractAutomationSystemModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
 
-    protected final StringSeries dynamicModelIds;
-
     AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
         super(dataframe);
-        this.dynamicModelIds = dataframe.getStrings(DYNAMIC_MODEL_ID);
     }
 
     protected void applyOnBuilder(int row, T builder) {

@@ -23,10 +23,12 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
  */
 abstract class AbstractDynamicModelSeries<T extends ModelBuilder<DynamicModel>> implements DynamicModelSeries {
 
+    protected final StringSeries dynamicModelIds;
     protected final StringSeries parameterSetIds;
     protected final StringSeries modelsNames;
 
     AbstractDynamicModelSeries(UpdatingDataframe dataframe) {
+        this.dynamicModelIds = dataframe.getStrings(DYNAMIC_MODEL_ID);
         this.parameterSetIds = dataframe.getStrings(PARAMETER_SET_ID);
         this.modelsNames = dataframe.getStrings(MODEL_NAME);
     }

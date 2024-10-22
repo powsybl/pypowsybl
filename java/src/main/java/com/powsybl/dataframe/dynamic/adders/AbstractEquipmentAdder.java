@@ -20,6 +20,7 @@ abstract class AbstractEquipmentAdder extends AbstractDynamicModelAdder {
     protected static final List<SeriesMetadata> EQUIPMENT_METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
             SeriesMetadata.strings(PARAMETER_SET_ID),
+            SeriesMetadata.strings(DYNAMIC_MODEL_ID),
             SeriesMetadata.strings(MODEL_NAME));
 
     @Override

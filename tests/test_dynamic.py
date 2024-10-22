@@ -21,23 +21,23 @@ def test_add_mapping():
     parameter_id = "test_parameter"
     model_mapping = dyn.ModelMapping()
     # Equipments
-    model_mapping.add_base_load(static_id, parameter_id, "LoadPQ")
-    model_mapping.add_load_one_transformer(static_id, parameter_id, "LoadOneTransformer")
-    model_mapping.add_load_one_transformer_tap_changer(static_id, parameter_id, "LoadOneTransformerTapChanger")
-    model_mapping.add_load_two_transformers(static_id, parameter_id, "LoadTwoTransformers")
-    model_mapping.add_load_two_transformers_tap_changers(static_id, parameter_id, "LoadTwoTransformersTapChangers")
-    model_mapping.add_base_generator(static_id, parameter_id, "GeneratorFictitious")
-    model_mapping.add_synchronized_generator(static_id, parameter_id, "GeneratorPVFixed")
-    model_mapping.add_synchronous_generator(static_id, parameter_id, "GeneratorSynchronousThreeWindings")
-    model_mapping.add_wecc(static_id, parameter_id, "WT4BWeccCurrentSource")
-    model_mapping.add_grid_forming_converter(static_id, parameter_id, "GridFormingConverterMatchingControl")
-    model_mapping.add_hvdc_p(static_id, parameter_id, "HvdcPV")
-    model_mapping.add_hvdc_vsc(static_id, parameter_id, "HvdcVSCDanglingP")
-    model_mapping.add_base_transformer(static_id, parameter_id, "TransformerFixedRatio")
-    model_mapping.add_base_static_var_compensator(static_id, parameter_id, "StaticVarCompensatorPV")
-    model_mapping.add_base_line(static_id, parameter_id, "Line")
-    model_mapping.add_base_bus(static_id, parameter_id, "Bus")
-    model_mapping.add_infinite_bus(static_id, parameter_id, "InfiniteBus")
+    model_mapping.add_base_load(static_id, parameter_id, dynamic_id, "LoadPQ")
+    model_mapping.add_load_one_transformer(static_id, parameter_id, dynamic_id, "LoadOneTransformer")
+    model_mapping.add_load_one_transformer_tap_changer(static_id, parameter_id, dynamic_id, "LoadOneTransformerTapChanger")
+    model_mapping.add_load_two_transformers(static_id, parameter_id, dynamic_id, "LoadTwoTransformers")
+    model_mapping.add_load_two_transformers_tap_changers(static_id, parameter_id, dynamic_id, "LoadTwoTransformersTapChangers")
+    model_mapping.add_base_generator(static_id, parameter_id, dynamic_id, "GeneratorFictitious")
+    model_mapping.add_synchronized_generator(static_id, parameter_id, dynamic_id, "GeneratorPVFixed")
+    model_mapping.add_synchronous_generator(static_id, parameter_id, dynamic_id, "GeneratorSynchronousThreeWindings")
+    model_mapping.add_wecc(static_id, parameter_id, dynamic_id, "WT4BWeccCurrentSource")
+    model_mapping.add_grid_forming_converter(static_id, parameter_id, dynamic_id, "GridFormingConverterMatchingControl")
+    model_mapping.add_hvdc_p(static_id, parameter_id, dynamic_id, "HvdcPV")
+    model_mapping.add_hvdc_vsc(static_id, parameter_id, dynamic_id, "HvdcVSCDanglingP")
+    model_mapping.add_base_transformer(static_id, parameter_id, dynamic_id, "TransformerFixedRatio")
+    model_mapping.add_base_static_var_compensator(static_id, parameter_id, dynamic_id, "StaticVarCompensatorPV")
+    model_mapping.add_base_line(static_id, parameter_id, dynamic_id, "Line")
+    model_mapping.add_base_bus(static_id, parameter_id, dynamic_id, "Bus")
+    model_mapping.add_infinite_bus(static_id, parameter_id, dynamic_id, "InfiniteBus")
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_id, parameter_id, "LINE1", "LINE2",
                                                  'TWO', "OverloadManagementSystem")
@@ -53,6 +53,9 @@ def test_add_mapping():
                                                     "TapChangerAutomaton")
     model_mapping.add_tap_changer_blocking_automation_system(dynamic_id, parameter_id, "TRA", "BUS",
                                                              "TapChangerBlockingAutomaton")
+    # Equipment with default model name and dynamic id
+    model_mapping.add_base_load(static_id, parameter_id)
+
 
 
 def test_dynamic_dataframe_mapping():
