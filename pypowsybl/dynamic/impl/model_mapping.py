@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union
+from typing import Union, Optional
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicMappingType # pylint: disable=protected-access
@@ -20,226 +20,260 @@ class ModelMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
 
-    def add_base_load(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_base_load(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a load mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.BASE_LOAD)
 
-    def add_load_one_transformer(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_load_one_transformer(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a load with one transformer mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.LOAD_ONE_TRANSFORMER)
 
     def add_load_one_transformer_tap_changer(self, static_id: str, parameter_set_id: str,
-                                             model_name: str = None) -> None:
+                                             dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a load with one transformer and tap changer mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.LOAD_ONE_TRANSFORMER_TAP_CHANGER)
 
-    def add_load_two_transformers(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_load_two_transformers(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a load with two transformers mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.LOAD_TWO_TRANSFORMERS)
 
     def add_load_two_transformers_tap_changers(self, static_id: str, parameter_set_id: str,
-                                               model_name: str = None) -> None:
+                                               dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a load with two transformers and tap changers mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.LOAD_TWO_TRANSFORMERS_TAP_CHANGERS)
 
-    def add_base_generator(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_base_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a base generator mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.BASE_GENERATOR)
 
-    def add_synchronized_generator(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_synchronized_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a synchronized generator mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.SYNCHRONIZED_GENERATOR)
 
-    def add_synchronous_generator(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_synchronous_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a synchronous generator mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.SYNCHRONOUS_GENERATOR)
 
-    def add_wecc(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_wecc(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a WECC mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.WECC)
 
-    def add_grid_forming_converter(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_grid_forming_converter(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a grid forming converter mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.GRID_FORMING_CONVERTER)
 
-    def add_hvdc_p(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_hvdc_p(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add an HVDC P mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.HVDC_P)
 
-    def add_hvdc_vsc(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_hvdc_vsc(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add an HVDC VSC mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.HVDC_VSC)
 
-    def add_base_transformer(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_base_transformer(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a transformer mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.BASE_TRANSFORMER)
 
-    def add_base_static_var_compensator(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_base_static_var_compensator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a static var compensator mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR)
 
-    def add_base_line(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_base_line(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a line mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.BASE_LINE)
 
-    def add_base_bus(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_base_bus(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add a base bus mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.BASE_BUS)
 
-    def add_infinite_bus(self, static_id: str, parameter_set_id: str, model_name: str = None) -> None:
+    def add_infinite_bus(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add an infinite bus mapping
 
         :param static_id: id of the network element to map
         :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.INFINITE_BUS)
 
@@ -390,7 +424,7 @@ class ModelMapping:
                                       mapping_type=DynamicMappingType.TAP_CHANGER_BLOCKING)
 
     def add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_df: pd.DataFrame = None,
-                                 **kwargs: Union[str, DynamicMappingType]) -> None:
+                                 **kwargs: Union[str, Optional[str]]) -> None:
         """
         Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 
@@ -402,7 +436,7 @@ class ModelMapping:
         """
         metadata = _pp.get_dynamic_mappings_meta_data(mapping_type)
         if kwargs:
-            kwargs = _add_index_to_kwargs(metadata, **kwargs)
+            kwargs = _add_index_to_kwargs(metadata, **{k:v for k, v in kwargs.items() if v is not None})
         mapping_df = _adapt_df_or_kwargs(metadata, mapping_df, **kwargs)
         c_mapping_df = _create_c_dataframe(mapping_df, metadata)
         _pp.add_all_dynamic_mappings(self._handle, mapping_type, c_mapping_df)

@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union
+from typing import Union, Optional
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import EventMappingType  # pylint: disable=protected-access
@@ -64,7 +64,7 @@ class EventMapping:
                                     mapping_type=EventMappingType.NODE_FAULT)
 
     def add_all_event_mappings(self, mapping_type: EventMappingType, mapping_df: pd.DataFrame = None,
-                               **kwargs: Union[str, float, EventMappingType]) -> None:
+                               **kwargs: Union[str, Optional[str], float]) -> None:
         """
         Update the event mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
 

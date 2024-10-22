@@ -116,10 +116,10 @@ public final class DynamicSimulationCFunctions {
     }
 
     @CEntryPoint(name = "addDynamicMappings")
-    public static void addDynamicMapping(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            DynamicMappingType mappingType,
-            DataframePointer mappingDataframePtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void addDynamicMappings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
+                                          DynamicMappingType mappingType,
+                                          DataframePointer mappingDataframePtr,
+                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             UpdatingDataframe mappingDataframe = NetworkCFunctions.createDataframe(mappingDataframePtr);
@@ -135,10 +135,10 @@ public final class DynamicSimulationCFunctions {
     }
 
     @CEntryPoint(name = "addEventMappings")
-    public static void addEventMapping(IsolateThread thread, ObjectHandle eventMappingHandle,
-                                       EventMappingType mappingType,
-                                       DataframePointer mappingDataframePtr,
-                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void addEventMappings(IsolateThread thread, ObjectHandle eventMappingHandle,
+                                        EventMappingType mappingType,
+                                        DataframePointer mappingDataframePtr,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             PythonEventModelsSupplier eventMapping = ObjectHandles.getGlobal().get(eventMappingHandle);
             UpdatingDataframe mappingDataframe = NetworkCFunctions.createDataframe(mappingDataframePtr);
