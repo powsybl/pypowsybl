@@ -2417,6 +2417,12 @@ class Network:  # pylint: disable=too-many-public-methods
         Returns:
             the areas dataframe
 
+        See Also:
+            - :meth:`get_areas_voltage_levels` to retrieve the voltage levels of the areas
+            - :meth:`get_areas_boundaries` to retrieve the voltage levels of the areas boundaries
+            - :meth:`create_areas` to create areas
+            - :meth:`update_areas` to update areas
+
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
@@ -2462,6 +2468,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             the areas voltage levels dataframe
+
+        See Also:
+            :meth:`create_areas_voltage_levels`
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
@@ -2509,6 +2518,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             the areas boundaries dataframe
+
+        See Also:
+            :meth:`create_areas_boundaries`
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
@@ -4782,6 +4794,9 @@ class Network:  # pylint: disable=too-many-public-methods
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
 
+        See Also:
+            :meth:`get_areas`
+
         Notes:
 
             Data may be provided as a dataframe or as keyword arguments.
@@ -4824,6 +4839,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **id**: the identifier of the area
             - **voltage_level_id**: the identifier of the voltage level to be associated with the area
 
+        See Also:
+            :meth:`get_areas_voltage_levels`
+
         Examples:
             To associate voltage levels VL1 and VL2 to Area1.
 
@@ -4862,6 +4880,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **element**: dangling line identifier, or any connectable
             - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
             - **ac**: True is boundary is to be considered as AC
+
+        See Also:
+            :meth:`get_areas_boundaries`
 
         Examples:
 
