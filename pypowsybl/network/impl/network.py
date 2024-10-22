@@ -4612,6 +4612,10 @@ class Network:  # pylint: disable=too-many-public-methods
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
 
+        See Also:
+            - :meth:`get_node_breaker_topology`
+            - :meth:`remove_internal_connections`
+
         Notes:
 
             Data may be provided as a dataframe or as keyword arguments.
@@ -4763,6 +4767,10 @@ class Network:  # pylint: disable=too-many-public-methods
         Args:
             df: Attributes as a dataframe.
             kwargs: Attributes as keyword arguments.
+
+        See Also:
+            - :meth:`get_node_breaker_topology`
+            - :meth:`create_internal_connections`
 
         Notes:
 
