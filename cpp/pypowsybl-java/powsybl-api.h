@@ -171,7 +171,8 @@ typedef enum {
     SUB_NETWORK,
     AREA,
     AREA_VOLTAGE_LEVELS,
-    AREA_BOUNDARIES
+    AREA_BOUNDARIES,
+    INTERNAL_CONNECTION
 } element_type;
 
 typedef enum {

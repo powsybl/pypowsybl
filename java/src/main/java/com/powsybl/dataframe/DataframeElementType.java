@@ -48,5 +48,6 @@ public enum DataframeElementType {
     SUB_NETWORK,
     AREA,
     AREA_VOLTAGE_LEVELS,
-    AREA_BOUNDARIES
+    AREA_BOUNDARIES,
+    INTERNAL_CONNECTION
 }
