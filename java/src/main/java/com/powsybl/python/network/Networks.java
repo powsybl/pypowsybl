@@ -142,6 +142,10 @@ public final class Networks {
     public static Network eurostagWithTieLine() {
         Network network = EurostagTutorialExample1Factory.createWithTieLine();
         return fix(network);
+    }
 
+    public static Network eurostagWithTieLinesAndAreas() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        return fix(network);
     }
 }

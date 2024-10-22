@@ -8,6 +8,8 @@
 package com.powsybl.dataframe.network;
 
 import com.google.common.collect.ImmutableMap;
+import com.powsybl.cgmes.extensions.CgmesMetadataModels;
+import com.powsybl.cgmes.extensions.CgmesMetadataModelsAdder;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DoubleIndexedSeries;
@@ -29,11 +31,12 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.powsybl.cgmes.model.CgmesSubset.EQUIPMENT;
+import static com.powsybl.cgmes.model.CgmesSubset.TOPOLOGY;
 import static com.powsybl.dataframe.DataframeElementType.*;
 import static com.powsybl.dataframe.DataframeFilter.AttributeFilterType.ALL_ATTRIBUTES;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
@@ -678,6 +681,42 @@ class NetworkDataframesTest {
     }
 
     @Test
+    void cgmesMetadataModelsExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        CgmesMetadataModels extension = network.getExtension(CgmesMetadataModels.class);
+        assertNull(extension);
+
+        CgmesMetadataModelsAdder adder = network.newExtension(CgmesMetadataModelsAdder.class)
+                .newModel()
+                .setId("sshId1")
+                .setSubset(EQUIPMENT)
+                .setDescription("description")
+                .setVersion(1)
+                .setModelingAuthoritySet(" ")
+                .addProfile("profile")
+                .addDependentOn("true")
+                .addSupersedes(" ")
+                .add()
+                .newModel()
+                .setId("sshId2")
+                .setSubset(TOPOLOGY)
+                .setDescription("description")
+                .setVersion(1)
+                .setModelingAuthoritySet(" ")
+                .addProfile("profile")
+                .addDependentOn("true")
+                .addSupersedes(" ")
+                .add();
+        adder.add();
+
+        extension = network.getExtension(CgmesMetadataModels.class);
+        assertNotNull(extension);
+
+        List<String> ids = List.of("sshId1");
+        assertThrows(UnsupportedOperationException.class, () -> NetworkExtensions.removeExtensions(network, "cgmesMetadataModels", ids));
+    }
+
+    @Test
     void referencePrioritiesExtensions() {
         Network network = EurostagTutorialExample1Factory.create();
         Generator gen = network.getGenerator("GEN");
@@ -714,5 +753,46 @@ class NetworkDataframesTest {
                 .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
                         "name", "type", "value", "acceptable_duration");
         assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
+    }
+
+    @Test
+    void areas() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "area_type", "interchange_target",
+                        "interchange", "ac_interchange", "dc_interchange");
+        List<Series> allAttributeSeries = createDataFrame(AREA, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "area_type", "interchange_target",
+                        "interchange", "ac_interchange", "dc_interchange", "fictitious");
+    }
+
+    @Test
+    void areasVoltageLevels() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA_VOLTAGE_LEVELS, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "voltage_level_id");
+    }
+
+    @Test
+    void areasBoundaries() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        List<Series> series = createDataFrame(AREA_BOUNDARIES, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "element", "ac", "p", "q");
+
+        List<Series> allAttributeSeries = createDataFrame(AREA_BOUNDARIES, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "boundary_type", "element", "side", "ac", "p", "q");
     }
 }

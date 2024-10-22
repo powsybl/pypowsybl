@@ -89,4 +89,44 @@ public final class NetworkUtils {
         }
         return (Injection<?>) identifiable;
     }
+
+    public static Area getAreaOrThrow(Network network, String id) {
+        Area area = network.getArea(id);
+        if (area == null) {
+            throw new PowsyblException("Area '" + id + DOES_NOT_EXIST);
+        }
+        return area;
+    }
+
+    public static DanglingLine getDanglingLineOrThrow(Network network, String id) {
+        DanglingLine danglingLine = network.getDanglingLine(id);
+        if (danglingLine == null) {
+            throw new PowsyblException("Dangling Line '" + id + DOES_NOT_EXIST);
+        }
+        return danglingLine;
+    }
+
+    public static Connectable<?> getConnectableOrThrow(Network network, String id) {
+        Connectable<?> connectable = network.getConnectable(id);
+        if (connectable == null) {
+            throw new PowsyblException("Connectable '" + id + DOES_NOT_EXIST);
+        }
+        return connectable;
+    }
+
+    public static Terminal getTerminalOrThrow(Network network, String id, String side) {
+        Connectable<?> connectable = getConnectableOrThrow(network, id);
+        Terminal terminal;
+        if (connectable instanceof Injection<?> injection) {
+            terminal = injection.getTerminal();
+        } else if (connectable instanceof Branch<?> branch) {
+            terminal = branch.getTerminal(TwoSides.valueOf(side));
+        } else if (connectable instanceof ThreeWindingsTransformer t3wt) {
+            terminal = t3wt.getTerminal(ThreeSides.valueOf(side));
+        } else {
+            // Never supposed to happen
+            throw new PowsyblException("Connectable '" + id + "' is not an injection, branch, or three windings transformer");
+        }
+        return terminal;
+    }
 }

@@ -169,6 +169,9 @@ typedef enum {
     BRANCH,
     TERMINAL,
     SUB_NETWORK,
+    AREA,
+    AREA_VOLTAGE_LEVELS,
+    AREA_BOUNDARIES,
     INTERNAL_CONNECTION
 } element_type;
 
