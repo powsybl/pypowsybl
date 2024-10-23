@@ -57,7 +57,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     #   extract_and_install_native_lib(${ortools-jar} ortools-linux-${ARCH_ID} libjniortools.so)
     #   extract_and_install_native_lib(${ortools-jar} ortools-linux-${ARCH_ID} libortools.so.9)
     # Thus download and package compatible libraries
-    set(compatible-jar-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/or-tools-centos-7)
+    set(compatible-jar-path ${PYPOWSYBL_JAVA_SRC_DIR}/or-tools-centos-7)
     ExternalProject_Add(or-tools-centos-7
         URL "https://github.com/google/or-tools/releases/download/v9.10/or-tools_amd64_centos-7_java_v9.10.4067.tar.gz"
         URL_HASH SHA256=0bc48cab508f13d15c7245a47b598e6b31eca209ef2f4d45e5f15d21643e0d86
