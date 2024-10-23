@@ -37,6 +37,11 @@ public final class CommonCFunctions {
         doCatch(exceptionHandlerPtr, () -> System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath)));
     }
 
+    @CEntryPoint(name = "loadORtoolsLib")
+    public static void loadORtoolsLib(IsolateThread thread, CCharPointer libraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> System.load(CTypeUtil.toString(libraryPath)));
+    }
+
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> PyPowsyblConfiguration.setReadConfig(read));

@@ -26,6 +26,10 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
 
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
+void runRaoFromStreamedInputs(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, py::buffer crac, py::buffer parameters, py::buffer glsks);
+
+py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext);
+
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
     py::class_<T>(m, className.c_str())
@@ -262,6 +266,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
 
     m.def("set_java_library_path", &pypowsybl::setJavaLibraryPath, "Set java.library.path JVM property");
+
+    m.def("load_ortools_library", &pypowsybl::loadORtoolsLib, "load google ortools library used by openrao");
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
 
@@ -1050,6 +1056,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
+    m.def("create_rao", &pypowsybl::createRao, "Create rao context");
+    m.def("run_rao", &pypowsybl::runRao, "Run a rao", py::arg("network"), py::arg("rao_context"), py::arg("crac_path"), py::arg("parameters_path"), py::arg("glsks_path"));
+    m.def("run_rao_from_buffers", ::runRaoFromStreamedInputs, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
+        py::arg("network"), py::arg("rao_context"), py::arg("crac_buffer"), py::arg("parameters_buffer"), py::arg("glsks_buffer"));
+    m.def("serialize_rao_results_to_file", &pypowsybl::serializeRaoResults, "Run a rao", py::arg("rao_context"), py::arg("file"));
+    m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_context"));
+
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {
@@ -1105,6 +1118,26 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
                      parameterValuesPtr.get(), parameterValues.size(), reportNode == nullptr ? nullptr : *reportNode);
     py::gil_scoped_acquire acquire;
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
-    pypowsybl::PowsyblCaller::get()->callJava<>(::freeNetworkBinaryBuffer, byteArray);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
     return bytes;
 }
+
+void runRaoFromStreamedInputs(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, py::buffer crac, py::buffer parameters, py::buffer glsks) {
+    py::buffer_info cracInfo = crac.request();
+    py::buffer_info parametersInfo = parameters.request();
+    py::buffer_info glsksInfo = glsks.request();
+    pypowsybl::PowsyblCaller::get()->callJava<>(::runRaoFromStreamedInput,
+     networkHandle, raoHandle,
+     static_cast<char*>(cracInfo.ptr), cracInfo.size,
+     static_cast<char*>(parametersInfo.ptr), parametersInfo.size,
+     static_cast<char*>(glsksInfo.ptr), glsksInfo.size);
+}
+
+py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext) {
+    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::serializeRaoResultsToBuffer, raoContext);
+    py::gil_scoped_acquire acquire;
+    py::bytes bytes((char*) byteArray->ptr, byteArray->length);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
+    return bytes;
+}
+

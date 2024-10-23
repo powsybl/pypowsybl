@@ -412,6 +412,10 @@ void setJavaLibraryPath(const std::string& javaLibraryPath) {
     PowsyblCaller::get()->callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
 }
 
+void loadORtoolsLib(const std::string& libraryPath) {
+    PowsyblCaller::get()->callJava<>(::loadORtoolsLib, (char*) libraryPath.data());
+}
+
 void setConfigRead(bool configRead) {
     PowsyblCaller::get()->callJava<>(::setConfigRead, configRead);
 }
@@ -1611,6 +1615,18 @@ std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHan
 
 JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, const JavaHandle& paramsHandle) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
+}
+
+void runRao(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const std::string &cracPath, const std::string &parametersPath, const std::string &glsksPath) {
+    pypowsybl::PowsyblCaller::get()->callJava(::runRao, networkHandle, raoHandle, (char*) cracPath.c_str(), (char*) parametersPath.c_str(), (char*) glsksPath.c_str());
+}
+
+JavaHandle createRao() {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createRao);
+}
+
+void serializeRaoResults(const JavaHandle& raoHandle, const std::string &filePath) {
+    pypowsybl::PowsyblCaller::get()->callJava<>(::serializeRaoResults, raoHandle, (char*) filePath.c_str());
 }
 
 }
