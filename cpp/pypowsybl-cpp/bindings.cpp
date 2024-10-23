@@ -187,6 +187,7 @@ void dynamicSimulationBindings(py::module_& m) {
     //model mapping
     m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
     m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
+    m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("mapping_type"));
 
     // timeseries/curves mapping
     m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));

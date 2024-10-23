@@ -15,6 +15,7 @@ import com.powsybl.dynawaltz.models.TransformerSide;
 import com.powsybl.dynawaltz.models.automationsystems.TapChangerAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collection;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -35,6 +36,11 @@ public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public Collection<String> getSupportedModels() {
+        return TapChangerAutomationSystemBuilder.getSupportedLibs();
     }
 
     private static class TapChangerSeries extends AbstractAutomationSystemSeries<TapChangerAutomationSystemBuilder> {

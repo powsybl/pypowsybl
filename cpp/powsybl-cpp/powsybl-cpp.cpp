@@ -1360,6 +1360,11 @@ std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
     return vector.get();
 }
 
+std::vector<std::string> getSupportedModels(DynamicMappingType mappingType) {
+    ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, mappingType));
+    return vector.get();
+}
+
 std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType) {
     dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getDynamicMappingsMetaData, mappingType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);

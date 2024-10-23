@@ -14,6 +14,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawaltz.models.automationsystems.TapChangerBlockingAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collection;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -35,6 +36,11 @@ public class TapChangerBlockingAutomationSystemAdder extends AbstractDynamicMode
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public Collection<String> getSupportedModels() {
+        return TapChangerBlockingAutomationSystemBuilder.getSupportedLibs();
     }
 
     private static class TapChangerBlockingSeries extends AbstractAutomationSystemSeries<TapChangerBlockingAutomationSystemBuilder> {

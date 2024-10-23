@@ -15,6 +15,7 @@ import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.Dynamic
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
+import java.util.Collection;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -38,6 +39,11 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynam
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public Collection<String> getSupportedModels() {
+        return DynamicTwoLevelsOverloadManagementSystemBuilder.getSupportedLibs();
     }
 
     private static class OverloadManagementSystemSeries extends AbstractAutomationSystemSeries<DynamicTwoLevelsOverloadManagementSystemBuilder> {

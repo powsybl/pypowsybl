@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union, Optional
+from typing import Union, Optional, List
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicMappingType # pylint: disable=protected-access
@@ -440,3 +440,6 @@ class ModelMapping:
         mapping_df = _adapt_df_or_kwargs(metadata, mapping_df, **kwargs)
         c_mapping_df = _create_c_dataframe(mapping_df, metadata)
         _pp.add_all_dynamic_mappings(self._handle, mapping_type, c_mapping_df)
+
+    def get_supported_models(self, mapping_type: DynamicMappingType) -> List[str]:
+        return _pp.get_supported_models(mapping_type)
