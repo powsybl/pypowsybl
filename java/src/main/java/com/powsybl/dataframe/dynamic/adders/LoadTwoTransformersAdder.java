@@ -13,10 +13,17 @@ import com.powsybl.dynawaltz.models.loads.LoadTwoTransformersBuilder;
 import com.powsybl.iidm.network.Load;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collection;
+
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class LoadTwoTransformersAdder extends AbstractEquipmentAdder {
+
+    @Override
+    public Collection<String> getSupportedModels() {
+        return LoadTwoTransformersBuilder.getSupportedLibs();
+    }
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {

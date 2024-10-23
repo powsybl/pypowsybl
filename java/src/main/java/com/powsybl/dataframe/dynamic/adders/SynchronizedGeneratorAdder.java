@@ -13,10 +13,17 @@ import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collection;
+
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
+
+    @Override
+    public Collection<String> getSupportedModels() {
+        return SynchronizedGeneratorBuilder.getSupportedLibs();
+    }
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {

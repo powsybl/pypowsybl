@@ -10,6 +10,7 @@ package com.powsybl.python.dynamic;
 import static com.powsybl.python.commons.Util.doCatch;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.python.report.ReportCUtils;
@@ -132,6 +133,13 @@ public final class DynamicSimulationCFunctions {
             DynamicMappingType mappingType,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(DynamicMappingHandler.getMetadata(mappingType)));
+    }
+
+    @CEntryPoint(name = "getSupportedModels")
+    public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
+                                                                      DynamicMappingType mappingType,
+                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(mappingType))));
     }
 
     @CEntryPoint(name = "addEventMappings")

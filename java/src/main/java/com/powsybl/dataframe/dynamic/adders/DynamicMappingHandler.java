@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +56,10 @@ public final class DynamicMappingHandler {
 
     public static List<SeriesMetadata> getMetadata(DynamicMappingType type) {
         return ADDERS.get(type).getMetadata();
+    }
+
+    public static Collection<String> getSupportedModels(DynamicMappingType type) {
+        return ADDERS.get(type).getSupportedModels();
     }
 
     private DynamicMappingHandler() {

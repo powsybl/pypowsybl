@@ -13,10 +13,17 @@ import com.powsybl.dynawaltz.models.hvdc.HvdcPBuilder;
 import com.powsybl.iidm.network.HvdcLine;
 import com.powsybl.iidm.network.Network;
 
+import java.util.Collection;
+
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class HvdcPAdder extends AbstractEquipmentAdder {
+
+    @Override
+    public Collection<String> getSupportedModels() {
+        return HvdcPBuilder.getSupportedLibs();
+    }
 
     @Override
     protected DynamicModelSeries createDynamicModelSeries(UpdatingDataframe dataframe) {

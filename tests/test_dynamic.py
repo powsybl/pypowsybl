@@ -55,6 +55,9 @@ def test_add_mapping():
                                                              "TapChangerBlockingAutomaton")
     # Equipment with default model name and dynamic id
     model_mapping.add_base_load(static_id, parameter_id)
+    # Equipment model from Supported models
+    model_name = model_mapping.get_supported_models(dyn.DynamicMappingType.BASE_LOAD)[0]
+    model_mapping.add_base_load(static_id, parameter_id, dynamic_id, model_name)
 
 
 
