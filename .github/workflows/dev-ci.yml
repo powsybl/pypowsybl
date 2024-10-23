@@ -47,7 +47,7 @@ jobs:
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
-          auditwheel --verbose repair manylinux2014_x86_64 dist/*.whl
+          auditwheel repair dist/*.whl
 
       - name: Install wheel
         run: pip3 install wheelhouse/*.whl --user
