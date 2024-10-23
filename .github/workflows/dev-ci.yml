@@ -44,13 +44,10 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
-      - name: CMake info
-        run: cmake --system-information
-
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
-          auditwheel --verbose repair --plat manylinux2014_x86_64 dist/*.whl --exclude libortools.so.9 --exclude libjniortools.so
+          auditwheel --verbose repair manylinux2014_x86_64 dist/*.whl
 
       - name: Install wheel
         run: pip3 install wheelhouse/*.whl --user
