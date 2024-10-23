@@ -15,45 +15,82 @@ def set_up():
     pp.set_config_read(False)
 
 
-def test_get_possible_events():
-    assert set(dyn.EventMapping.get_possible_events()) == {dyn.EventType.DISCONNECTION}
-
-
 def test_add_mapping():
-    id = "test_id"
+    static_id = "test_id"
+    dynamic_id = "test_dynamic_id"
     parameter_id = "test_parameter"
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_alpha_beta_load(id, parameter_id)
-    model_mapping.add_one_transformer_load(id, parameter_id)
-    model_mapping.add_generator_synchronous_three_windings(id, parameter_id)
-    model_mapping.add_generator_synchronous_three_windings_proportional_regulations(
-        id, parameter_id)
-    model_mapping.add_generator_synchronous_four_windings(id, parameter_id)
-    model_mapping.add_generator_synchronous_four_windings_proportional_regulations(
-        id, parameter_id)
-    model_mapping.add_current_limit_automaton(
-        id, parameter_id, dyn.Side.TWO)
+    # Equipments
+    model_mapping.add_base_load(static_id, parameter_id, dynamic_id, "LoadPQ")
+    model_mapping.add_load_one_transformer(static_id, parameter_id, dynamic_id, "LoadOneTransformer")
+    model_mapping.add_load_one_transformer_tap_changer(static_id, parameter_id, dynamic_id, "LoadOneTransformerTapChanger")
+    model_mapping.add_load_two_transformers(static_id, parameter_id, dynamic_id, "LoadTwoTransformers")
+    model_mapping.add_load_two_transformers_tap_changers(static_id, parameter_id, dynamic_id, "LoadTwoTransformersTapChangers")
+    model_mapping.add_base_generator(static_id, parameter_id, dynamic_id, "GeneratorFictitious")
+    model_mapping.add_synchronized_generator(static_id, parameter_id, dynamic_id, "GeneratorPVFixed")
+    model_mapping.add_synchronous_generator(static_id, parameter_id, dynamic_id, "GeneratorSynchronousThreeWindings")
+    model_mapping.add_wecc(static_id, parameter_id, dynamic_id, "WT4BWeccCurrentSource")
+    model_mapping.add_grid_forming_converter(static_id, parameter_id, dynamic_id, "GridFormingConverterMatchingControl")
+    model_mapping.add_hvdc_p(static_id, parameter_id, dynamic_id, "HvdcPV")
+    model_mapping.add_hvdc_vsc(static_id, parameter_id, dynamic_id, "HvdcVSCDanglingP")
+    model_mapping.add_base_transformer(static_id, parameter_id, dynamic_id, "TransformerFixedRatio")
+    model_mapping.add_base_static_var_compensator(static_id, parameter_id, dynamic_id, "StaticVarCompensatorPV")
+    model_mapping.add_base_line(static_id, parameter_id, dynamic_id, "Line")
+    model_mapping.add_base_bus(static_id, parameter_id, dynamic_id, "Bus")
+    model_mapping.add_infinite_bus(static_id, parameter_id, dynamic_id, "InfiniteBus")
+    # Dynamic automation systems
+    model_mapping.add_overload_management_system(dynamic_id, parameter_id, "LINE1", "LINE2",
+                                                 'TWO', "OverloadManagementSystem")
+    model_mapping.add_two_levels_overload_management_system(dynamic_id, parameter_id, "LINE1",
+                                                            "LINE1", 'TWO',
+                                                            "LINE2", 'ONE',
+                                                            "TwoLevelsOverloadManagementSystem")
+    model_mapping.add_under_voltage_automation_system(dynamic_id, parameter_id, "GEN", "UnderVoltage")
+    model_mapping.add_phase_shifter_i_automation_system(dynamic_id, parameter_id, "TRA", "PhaseShifterI")
+    model_mapping.add_phase_shifter_p_automation_system(dynamic_id, parameter_id, "TRA", "PhaseShifterP")
+    model_mapping.add_phase_shifter_blocking_i_automation_system(dynamic_id, parameter_id, "PSI", "PhaseShifterBlockingI")
+    model_mapping.add_tap_changer_automation_system(dynamic_id, parameter_id, "LOAD", 'HIGH_VOLTAGE',
+                                                    "TapChangerAutomaton")
+    model_mapping.add_tap_changer_blocking_automation_system(dynamic_id, parameter_id, "TRA", "BUS",
+                                                             "TapChangerBlockingAutomaton")
+    # Equipment with default model name and dynamic id
+    model_mapping.add_base_load(static_id, parameter_id)
+    # Equipment model from Supported models
+    model_name = model_mapping.get_supported_models(dyn.DynamicMappingType.BASE_LOAD)[0]
+    model_mapping.add_base_load(static_id, parameter_id, dynamic_id, model_name)
 
 
-def test_dataframe_mapping():
+
+def test_dynamic_dataframe_mapping():
     network = pp.network.create_ieee9()
     model_mapping = dyn.ModelMapping()
     load_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_loads().loc[l].name for l in network.get_loads().index],
-                                              "parameter_set_id": ["LAB" for l in network.get_loads().index]})
+                                              "parameter_set_id": ["LAB" for l in network.get_loads().index],
+                                              "model_name": ["LoadPQ" for l in network.get_loads().index]})
     generator_mapping_df = pd.DataFrame.from_dict({"static_id": [network.get_generators().loc[l].name for l in network.get_generators().index],
-                                                   "parameter_set_id": ["GSTWPR" for l in network.get_generators().index]})
+                                                   "parameter_set_id": ["GSTWPR" for l in network.get_generators().index],
+                                                   "model_name": ["GeneratorSynchronousThreeWindings" for l in network.get_generators().index]})
 
-    model_mapping.add_all_dynamic_mappings(dyn.DynamicMappingType.ALPHA_BETA_LOAD,
+    model_mapping.add_all_dynamic_mappings(dyn.DynamicMappingType.BASE_LOAD,
                                            load_mapping_df.set_index("static_id"))
     model_mapping.add_all_dynamic_mappings(
-        dyn.DynamicMappingType.GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS, generator_mapping_df.set_index("static_id"))
+        dyn.DynamicMappingType.SYNCHRONOUS_GENERATOR,
+        generator_mapping_df.set_index("static_id"))
 
 
 def test_add_event():
     events = dyn.EventMapping()
-    events.add_disconnection("test_quadripole_id", 5, pp.dynamic.Side.ONE)
-    events.add_disconnection("test_generator_id", 3.3, pp.dynamic.Side.TWO)
-    events.add_disconnection("test_generator_id", 8.2, pp.dynamic.Side.TWO)
+    events.add_disconnection("GEN", 5)
+    events.add_disconnection("LINE", 3.3, 'TWO')
+    events.add_active_power_variation("LOAD", 14, 2)
+    events.add_node_fault("BUS", 12, 2, 0.1, 0.2)
+
+
+def test_event_dataframe_mapping():
+    events = dyn.EventMapping()
+    event_mapping_df = pd.DataFrame.from_dict({"static_id": ["GEN"], "start_time": [10], "delta_p": [2]})
+
+    events.add_all_event_mappings(dyn.EventMappingType.ACTIVE_POWER_VARIATION, event_mapping_df.set_index("static_id"))
 
 
 def test_add_curve():

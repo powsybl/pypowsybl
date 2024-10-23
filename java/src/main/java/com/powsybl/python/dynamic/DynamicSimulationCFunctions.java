@@ -10,7 +10,10 @@ package com.powsybl.python.dynamic;
 import static com.powsybl.python.commons.Util.doCatch;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import com.powsybl.commons.report.ReportNode;
+import com.powsybl.python.report.ReportCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -22,7 +25,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.powsybl.dataframe.dynamic.CurvesSeries;
-import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdderFactory;
+import com.powsybl.dataframe.dynamic.adders.DynamicMappingHandler;
+import com.powsybl.dataframe.dynamic.adders.EventMappingHandler;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.CurvesSupplier;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
@@ -36,6 +40,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
+import com.powsybl.python.commons.PyPowsyblApiHeader.EventMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.network.Dataframes;
@@ -71,23 +76,25 @@ public final class DynamicSimulationCFunctions {
     @CEntryPoint(name = "createTimeseriesMapping")
     public static ObjectHandle createTimeseriesMapping(IsolateThread thread,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new CurveMappingSupplier()));
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new PythonCurveSupplier()));
     }
 
     @CEntryPoint(name = "createEventMapping")
     public static ObjectHandle createEventMapping(IsolateThread thread,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new EventSupplier()));
+        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new PythonEventModelsSupplier()));
     }
 
     @CEntryPoint(name = "runDynamicModel")
     public static ObjectHandle runDynamicModel(IsolateThread thread,
-            ObjectHandle dynamicContextHandle,
-            ObjectHandle networkHandle,
-            ObjectHandle dynamicMappingHandle,
-            ObjectHandle eventModelsSupplierHandle,
-            ObjectHandle curvesSupplierHandle,
-            int startTime, int stopTime,
+                                               ObjectHandle dynamicContextHandle,
+                                               ObjectHandle networkHandle,
+                                               ObjectHandle dynamicMappingHandle,
+                                               ObjectHandle eventModelsSupplierHandle,
+                                               ObjectHandle curvesSupplierHandle,
+                                               int startTime,
+                                               int stopTime,
+                                               ObjectHandle reportNodeHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
@@ -95,27 +102,29 @@ public final class DynamicSimulationCFunctions {
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
             CurvesSupplier curvesSupplier = ObjectHandles.getGlobal().get(curvesSupplierHandle);
+            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
             DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
                     stopTime);
             DynamicSimulationResult result = dynamicContext.run(network,
                     dynamicMapping,
                     eventModelsSupplier,
                     curvesSupplier,
-                    dynamicSimulationParameters);
+                    dynamicSimulationParameters,
+                    reportNode);
             logger().info("Dynamic simulation ran successfully in java");
             return ObjectHandles.getGlobal().create(result);
         });
     }
 
     @CEntryPoint(name = "addDynamicMappings")
-    public static void addDynamicMapping(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-            DynamicMappingType mappingType,
-            DataframePointer mappingDataframePtr,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void addDynamicMappings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
+                                          DynamicMappingType mappingType,
+                                          DataframePointer mappingDataframePtr,
+                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             UpdatingDataframe mappingDataframe = NetworkCFunctions.createDataframe(mappingDataframePtr);
-            DynamicMappingAdderFactory.getAdder(mappingType).addElements(dynamicMapping, mappingDataframe);
+            DynamicMappingHandler.addElements(mappingType, dynamicMapping, mappingDataframe);
         });
     }
 
@@ -123,7 +132,33 @@ public final class DynamicSimulationCFunctions {
     public static DataframeMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
             DynamicMappingType mappingType,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(DynamicMappingAdderFactory.getAdder(mappingType).getMetadata()));
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(DynamicMappingHandler.getMetadata(mappingType)));
+    }
+
+    @CEntryPoint(name = "getSupportedModels")
+    public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
+                                                                      DynamicMappingType mappingType,
+                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(mappingType))));
+    }
+
+    @CEntryPoint(name = "addEventMappings")
+    public static void addEventMappings(IsolateThread thread, ObjectHandle eventMappingHandle,
+                                        EventMappingType mappingType,
+                                        DataframePointer mappingDataframePtr,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            PythonEventModelsSupplier eventMapping = ObjectHandles.getGlobal().get(eventMappingHandle);
+            UpdatingDataframe mappingDataframe = NetworkCFunctions.createDataframe(mappingDataframePtr);
+            EventMappingHandler.addElements(mappingType, eventMapping, mappingDataframe);
+        });
+    }
+
+    @CEntryPoint(name = "getEventMappingsMetaData")
+    public static DataframeMetadataPointer getEventMappingsMetaData(IsolateThread thread,
+                                                                    EventMappingType mappingType,
+                                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(EventMappingHandler.getMetadata(mappingType)));
     }
 
     @CEntryPoint(name = "addCurve")
@@ -135,22 +170,8 @@ public final class DynamicSimulationCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             String dynamicId = CTypeUtil.toString(dynamicIdPtr);
             String variable = CTypeUtil.toString(variablePtr);
-            CurveMappingSupplier timeSeriesSupplier = ObjectHandles.getGlobal().get(timeseriesSupplier);
+            PythonCurveSupplier timeSeriesSupplier = ObjectHandles.getGlobal().get(timeseriesSupplier);
             timeSeriesSupplier.addCurve(dynamicId, variable);
-        });
-    }
-
-    @CEntryPoint(name = "addEventDisconnection")
-    public static void addEventDisconnection(IsolateThread thread,
-            ObjectHandle eventSupplierHandle,
-            CCharPointer staticIdPtr,
-            double eventTime,
-            int disconnectOnly,
-            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String staticId = CTypeUtil.toString(staticIdPtr);
-            EventSupplier eventSupplier = ObjectHandles.getGlobal().get(eventSupplierHandle);
-            eventSupplier.addEventDisconnection(staticId, eventTime, Util.convert(PyPowsyblApiHeader.ThreeSideType.fromCValue(disconnectOnly)).toTwoSides());
         });
     }
 

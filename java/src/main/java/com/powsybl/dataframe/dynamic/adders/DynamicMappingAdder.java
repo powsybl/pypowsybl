@@ -11,6 +11,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -29,5 +30,10 @@ public interface DynamicMappingAdder {
      * can provide additional data.
      */
     void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe);
+
+    /**
+     * Returns supported model names for the given adder
+     */
+    Collection<String> getSupportedModels();
 
 }
