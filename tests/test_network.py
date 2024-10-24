@@ -610,8 +610,8 @@ def test_areas_data_frame():
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['ControlArea_A', 'ControlArea_B', 'Region_AB']),
         columns=['name', 'area_type', 'interchange_target', 'interchange', 'ac_interchange', 'dc_interchange'],
-        data=[['Control Area A', 'ControlArea', -602.6, -602.95, -602.95, 0.0],
-              ['Control Area B', 'ControlArea', +602.6, +602.95, +602.95, 0.0],
+        data=[['Control Area A', 'ControlArea', -602.6, -602.88, -602.88, 0.0],
+              ['Control Area B', 'ControlArea', +602.6, +602.88, +602.88, 0.0],
               ['Region AB', 'Region', nan, 0.0, 0.0, 0.0]])
     pd.testing.assert_frame_equal(expected, areas, check_dtype=False, atol=1e-2)
 
@@ -692,10 +692,10 @@ def test_areas_boundaries_data_frame():
             'ControlArea_A', 'ControlArea_A',
             'ControlArea_B', 'ControlArea_B']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.47, -116.51],
-              ['DANGLING_LINE', 'NVH1_XNODE2', '', True, -301.47, -116.51],
-              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
-              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
+        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test adding boundaries to area
@@ -706,7 +706,7 @@ def test_areas_boundaries_data_frame():
                    interchange_target=[10., nan])
     n.create_areas_boundaries(id=['testAreaA', 'testAreaA', 'testAreaB', 'testAreaB'],
                               boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
-                              element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
+                              element=['NHV1_XNODE1', 'NHV1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
                               ac=[True, True, True, True])
     areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
     expected = pd.DataFrame(
@@ -714,10 +714,10 @@ def test_areas_boundaries_data_frame():
             'testAreaA', 'testAreaA',
             'testAreaB', 'testAreaB']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.47, -116.51],
-              ['DANGLING_LINE', 'NVH1_XNODE2', '', True, -301.47, -116.51],
-              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
-              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
+        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test removal
@@ -729,8 +729,8 @@ def test_areas_boundaries_data_frame():
         index=pd.Series(name='id', data=[
             'testAreaB', 'testAreaB']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.47, +116.43],
-              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.47, +116.43]])
+        data=[['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test using terminals instead of dangling lines, e.g. boundary located at NGEN_NHV1 HV side
