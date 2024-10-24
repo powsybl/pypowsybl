@@ -1301,7 +1301,7 @@ void removeElementsModification(pypowsybl::JavaHandle network, const std::vector
     pypowsybl::PowsyblCaller::get()->callJava(::removeElementsModification, network, connectableIdsPtr.get(), connectableIds.size(), dataframe, removeModificationType, throwException, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-/*---------------------------------DYNAMIC MODELLING WITH DYNAWALTZ---------------------------*/
+/*---------------------------------DYNAMIC MODELLING WITH DYNAWO---------------------------*/
 JavaHandle createDynamicSimulationContext() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createDynamicSimulationContext);
 }

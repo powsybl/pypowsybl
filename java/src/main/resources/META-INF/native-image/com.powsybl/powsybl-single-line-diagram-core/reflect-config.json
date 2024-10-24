@@ -99,7 +99,7 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.svg.GraphMetadata$ElectricalNodeInfoMetadata",
+    "name":"com.powsybl.sld.svg.GraphMetadata$BusLegendInfoMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true

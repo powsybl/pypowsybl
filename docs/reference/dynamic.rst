@@ -1,5 +1,5 @@
 =========
-Dynawaltz
+Simulation with Dynawo
 =========
 
 .. module:: pypowsybl.dynamic

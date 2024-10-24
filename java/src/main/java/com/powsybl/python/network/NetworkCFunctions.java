@@ -903,7 +903,7 @@ public final class NetworkCFunctions {
         cParameters.setCenterName(parameters.getSvgParameters().isLabelCentered());
         cParameters.setDiagonalLabel(parameters.getSvgParameters().isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.getStyleProviderFactory() instanceof DefaultStyleProviderFactory);
-        cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
+        cParameters.setBusesLegendAdded(parameters.getSvgParameters().isBusesLegendAdded());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
         cParameters.setDisplayCurrentFeederInfo(parameters.getSvgParameters().isDisplayCurrentFeederInfo());
@@ -983,7 +983,7 @@ public final class NetworkCFunctions {
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
-                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
+                .setBusesLegendAdded(sldParametersPtr.isBusesLegendAdded())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
                 .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())

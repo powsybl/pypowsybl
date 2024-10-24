@@ -752,7 +752,7 @@ SldParameters* createSldParameters();
 
 NadParameters* createNadParameters();
 
-//=======dynamic modeling for dynawaltz package==========
+//=======dynamic modeling for dynawo package==========
 
 //handle creation
 JavaHandle createDynamicSimulationContext();
@@ -777,7 +777,7 @@ std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResult
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
-//=======END OF dynamic modeling for dynawaltz package==========
+//=======END OF dynamic modeling for dynawo package==========
 
 //=======Voltage initializer mapping========
 
