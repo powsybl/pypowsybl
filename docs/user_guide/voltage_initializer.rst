@@ -8,7 +8,7 @@ Prerequisites
 
 For now the voltage initializer tool rely on Ampl and Knitro. the binary knitroampl must be in your PATH.
 
-The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the ampl section to find your dynawaltz installation and defaults parameters
+The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the ampl section to find your dynawo installation and defaults parameters
 Here is an example of a simple config.yaml file.
 
 .. code-block:: yaml+jinja

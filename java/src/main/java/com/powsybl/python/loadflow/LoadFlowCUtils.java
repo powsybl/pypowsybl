@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 public final class LoadFlowCUtils {
 
     static final DataframeMapper<LoadFlowProvider, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<LoadFlowProvider, Parameter, Void>()
-            .itemsProvider(LoadFlowProvider::getSpecificParameters)
+            .itemsProvider(provider -> provider.getSpecificParameters())
             .stringsIndex("name", Parameter::getName)
             .strings("description", Parameter::getDescription)
             .enums("type", ParameterType.class, Parameter::getType)

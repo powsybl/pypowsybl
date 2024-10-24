@@ -1,4 +1,4 @@
-Running a dynamic simulation with dynawaltz
+Running a dynamic simulation with dynawo
 ===========================================
 
 .. currentmodule:: pypowsybl.dynamic
@@ -14,12 +14,12 @@ Start by importing the module:
 
 Providers
 ---------
-For now we only support the Dynawaltz integration, provided by the `Dynawo <https://dynawo.github.io>`_ project.
+For now we only support the Dynawo simulator integration, provided by the `Dynawo <https://dynawo.github.io>`_ project.
 
 
 Prerequisites
 -------------
-The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the dynawaltz section to find your dynawaltz installation and defaults parameters
+The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the dynawo section to find your dynawo installation and defaults parameters
 Here is an example of a simple config.yaml file. It uses the same configurations as in powsybl-dynawatlz.
 
 .. code-block:: yaml+jinja
@@ -27,10 +27,10 @@ Here is an example of a simple config.yaml file. It uses the same configurations
     dynamic-simulation-default-parameters:
         startTime: 0
         stopTime: 30
-    dynawaltz:
+    dynawo:
         homeDir: PATH_TO_DYNAWO
         debug: true
-    dynawaltz-default-parameters:
+    dynawo-simulation-default-parameters:
         parametersFile: ./models.par
         network.parametersFile: ./network.par
         network.parametersId: "1"
@@ -50,15 +50,15 @@ To make a dynamic simulation, you need multiple things:
 
 There is a class for each of these elements.
 
-You will see a lot of arguments called parameterSetId. Dynawaltz use a lot of parameters that will be stored in files.
+You will see a lot of arguments called parameterSetId. Dynawo simulator use a lot of parameters that will be stored in files.
 
-Pypowsybl will find the path to this file in the powsybl config.yaml in dynawaltz-default-parameters.parametersFile value.
+Pypowsybl will find the path to this file in the powsybl config.yaml in dynawo-simulation-default-parameters.parametersFile value.
 
 The parameterSetId argument must match an id in this file (generally called models.par).
 
 Simple example
 --------------
-To run a Dynawaltz simulation:
+To run a Dynawo simulation:
 
 .. code-block:: python
 

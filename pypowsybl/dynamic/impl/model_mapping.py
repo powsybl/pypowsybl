@@ -25,7 +25,7 @@ class ModelMapping:
         Add a alpha beta load mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
@@ -36,7 +36,7 @@ class ModelMapping:
         Add a one transformer load mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
@@ -47,7 +47,7 @@ class ModelMapping:
         Add a generator synchronous three windings mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
@@ -59,7 +59,7 @@ class ModelMapping:
         Add a generator synchronous three windings proportional regulations mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
@@ -70,7 +70,7 @@ class ModelMapping:
         Add a generator synchronous four windings mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
@@ -82,7 +82,7 @@ class ModelMapping:
         Add a generator synchronous four windings proportional regulations mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,
@@ -94,7 +94,7 @@ class ModelMapping:
 
         :param branch_side:
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo simulation configuration
         """
         self.add_all_dynamic_mappings(static_id=static_id,
                                       parameter_set_id=parameter_set_id,

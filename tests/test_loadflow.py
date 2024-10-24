@@ -274,11 +274,14 @@ def test_get_provider_parameters_names():
                                    'voltageTargetPriorities',
                                    'transformerVoltageControlUseInitialTapPosition',
                                    'generatorVoltageControlMinNominalVoltage',
-                                   'fictitiousGeneratorVoltageControlCheckMode']
+                                   'fictitiousGeneratorVoltageControlCheckMode',
+                                   'areaInterchangeControl',
+                                   'areaInterchangeControlAreaType',
+                                   'areaInterchangePMaxMismatch']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 68 == len(specific_parameters)
+    assert 71 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
