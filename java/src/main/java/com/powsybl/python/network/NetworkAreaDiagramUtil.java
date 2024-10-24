@@ -55,10 +55,25 @@ public final class NetworkAreaDiagramUtil {
         }
     }
 
-    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile,
+    static List<String> getSvgAndMetadata(Network network, List<String> voltageLevelIds, NadParameters nadParameters) {
+        return getSvgAndMetadata(network, voltageLevelIds, 0, -1, -1, nadParameters);
+    }
+
+    static List<String> getSvgAndMetadata(Network network, List<String> voltageLevelIds, int depth,
+                                          double nominalVoltageUpperBound, double nominalVoltageLowerBound, NadParameters nadParameters) {
+        try (StringWriter writer = new StringWriter(); StringWriter metadataWriter = new StringWriter()) {
+            writeSvg(network, voltageLevelIds, depth, writer, metadataWriter, nominalVoltageUpperBound,
+                    nominalVoltageLowerBound, nadParameters);
+            return List.of(writer.toString(), metadataWriter.toString());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    static void writeSvg(Network network, List<String> voltageLevelIds, int depth, String svgFile, String metadataFile,
                          Double nominalVoltageUpperBound, Double nominalVoltageLowerBound, NadParameters nadParameters) {
-        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8); Writer metadataWriter = new StringWriter()) {
-            // TO CHECK : do we want to write the metadata too ?
+        try (Writer writer = Files.newBufferedWriter(Paths.get(svgFile), StandardCharsets.UTF_8);
+             Writer metadataWriter = metadataFile == null || metadataFile.isEmpty() ? new StringWriter() : Files.newBufferedWriter(Paths.get(metadataFile))) {
             writeSvg(network, voltageLevelIds, depth, writer, metadataWriter, nominalVoltageUpperBound, nominalVoltageLowerBound, nadParameters);
         } catch (IOException e) {
             throw new UncheckedIOException(e);

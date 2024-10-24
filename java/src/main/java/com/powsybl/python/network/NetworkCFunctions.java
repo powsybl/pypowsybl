@@ -1092,16 +1092,17 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
-    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
+    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile, CCharPointer metadataFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
                                                   double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
+            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
 
