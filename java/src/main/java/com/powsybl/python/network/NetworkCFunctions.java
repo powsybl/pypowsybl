@@ -548,6 +548,8 @@ public final class NetworkCFunctions {
                     }
                 } else if (identifiable instanceof TieLine tieLine) {
                     tieLine.remove();
+                } else if (identifiable instanceof Area area) {
+                    area.remove();
                 } else {
                     throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
                 }
@@ -903,7 +905,7 @@ public final class NetworkCFunctions {
         cParameters.setCenterName(parameters.getSvgParameters().isLabelCentered());
         cParameters.setDiagonalLabel(parameters.getSvgParameters().isLabelDiagonal());
         cParameters.setTopologicalColoring(parameters.getStyleProviderFactory() instanceof DefaultStyleProviderFactory);
-        cParameters.setAddNodesInfos(parameters.getSvgParameters().isAddNodesInfos());
+        cParameters.setBusesLegendAdded(parameters.getSvgParameters().isBusesLegendAdded());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
         cParameters.setDisplayCurrentFeederInfo(parameters.getSvgParameters().isDisplayCurrentFeederInfo());
@@ -983,7 +985,7 @@ public final class NetworkCFunctions {
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
-                .setAddNodesInfos(sldParametersPtr.isAddNodesInfos())
+                .setBusesLegendAdded(sldParametersPtr.isBusesLegendAdded())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
                 .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
@@ -1092,16 +1094,17 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
-    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile,
+    public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile, CCharPointer metadataFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
                                                   double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
+            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
 

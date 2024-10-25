@@ -624,7 +624,10 @@ public final class PyPowsyblApiHeader {
         INJECTION,
         BRANCH,
         TERMINAL,
-        SUB_NETWORK;
+        SUB_NETWORK,
+        AREA,
+        AREA_VOLTAGE_LEVELS,
+        AREA_BOUNDARIES;
 
         @CEnumValue
         public native int getCValue();
@@ -1047,10 +1050,10 @@ public final class PyPowsyblApiHeader {
         void setDiagonalLabel(boolean diagonalLabel);
 
         @CField("nodes_infos")
-        boolean isAddNodesInfos();
+        boolean isBusesLegendAdded();
 
         @CField("nodes_infos")
-        void setAddNodesInfos(boolean addNodeInfos);
+        void setBusesLegendAdded(boolean addNodeInfos);
 
         @CField("tooltip_enabled")
         void setTooltipEnabled(boolean tooltipEnabled);
