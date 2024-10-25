@@ -315,7 +315,7 @@ and postcontingency_branch_flow_factor_matrix methods.
     LOAD         -0.5         -0.5
     >>> result.get_sensitivity_matrix('postcontingency', 'NHV1_NHV2_1')
          NHV1_NHV2_1  NHV1_NHV2_2
-    GEN          0.0          0.0
+    GEN          0.0         -0.0
 
 Advanced sensitivity analysis factors configuration
 ---------------------------------------------------

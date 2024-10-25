@@ -1050,10 +1050,10 @@ public final class PyPowsyblApiHeader {
         void setDiagonalLabel(boolean diagonalLabel);
 
         @CField("nodes_infos")
-        boolean isAddNodesInfos();
+        boolean isBusesLegendAdded();
 
         @CField("nodes_infos")
-        void setAddNodesInfos(boolean addNodeInfos);
+        void setBusesLegendAdded(boolean addNodeInfos);
 
         @CField("tooltip_enabled")
         void setTooltipEnabled(boolean tooltipEnabled);
