@@ -349,7 +349,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                        edge_name_displayed: bool = False) -> None:
         """
         .. deprecated:: 1.1.0
-          Use :class:`write_network_area_diagram_svg` with  `NadParameters` instead.
+          Use :class:`write_network_area_diagram` with  `NadParameters` instead.
 
         Create a network area diagram in SVG format and write it to a file.
         Args:
@@ -367,12 +367,14 @@ class Network:  # pylint: disable=too-many-public-methods
     def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
                                    depth: int = 0, high_nominal_voltage_bound: float = -1,
                                    low_nominal_voltage_bound: float = -1,
-                                   nad_parameters: NadParameters = None) -> None:
+                                   nad_parameters: NadParameters = None,
+                                   metadata_file: PathOrStr = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
         Args:
             svg_file: a svg file path
+            metadata_file: a json metadata file path (optional)
             voltage_level_ids: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
@@ -385,8 +387,8 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
-        _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
-                                           low_nominal_voltage_bound, nad_p)
+        _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
+                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,

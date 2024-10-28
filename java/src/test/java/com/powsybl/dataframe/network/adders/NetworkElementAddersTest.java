@@ -623,7 +623,7 @@ class NetworkElementAddersTest {
         var dataframe = new DefaultUpdatingDataframe(4);
         addStringColumn(dataframe, "id", "area1", "area1", "area2", "area2");
         addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE");
-        addStringColumn(dataframe, "element", "NHV1_XNODE1", "NVH1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
+        addStringColumn(dataframe, "element", "NHV1_XNODE1", "NHV1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
         addIntColumn(dataframe, "ac", 1, 1, 1, 1);
         assertEquals(0, area1.getAreaBoundaryStream().count());
         assertEquals(0, area2.getAreaBoundaryStream().count());
