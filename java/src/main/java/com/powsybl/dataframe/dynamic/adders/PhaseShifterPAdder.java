@@ -11,7 +11,8 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.automationsystems.phaseshifters.PhaseShifterPAutomationSystemBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.automationsystems.phaseshifters.PhaseShifterPAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;
@@ -37,8 +38,8 @@ public class PhaseShifterPAdder extends AbstractDynamicModelAdder {
     }
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return PhaseShifterPAutomationSystemBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return PhaseShifterPAutomationSystemBuilder.getSupportedModelInfos();
     }
 
     private static class PhaseShifterPSeries extends AbstractAutomationSystemSeries<PhaseShifterPAutomationSystemBuilder> {

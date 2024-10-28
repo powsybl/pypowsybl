@@ -9,7 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.generators.GridFormingConverterBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.generators.GridFormingConverterBuilder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 
@@ -21,8 +22,8 @@ import java.util.Collection;
 public class GridFormingConverterAdder extends AbstractEquipmentAdder {
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return GridFormingConverterBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return GridFormingConverterBuilder.getSupportedModelInfos();
     }
 
     @Override

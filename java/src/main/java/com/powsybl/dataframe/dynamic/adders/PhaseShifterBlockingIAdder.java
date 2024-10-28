@@ -11,7 +11,8 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.automationsystems.phaseshifters.PhaseShifterBlockingIAutomationSystemBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.automationsystems.phaseshifters.PhaseShifterBlockingIAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;
@@ -37,8 +38,8 @@ public class PhaseShifterBlockingIAdder extends AbstractDynamicModelAdder {
     }
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return PhaseShifterBlockingIAutomationSystemBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return PhaseShifterBlockingIAutomationSystemBuilder.getSupportedModelInfos();
     }
 
     private static class PhaseShifterBlockingISeries extends AbstractAutomationSystemSeries<PhaseShifterBlockingIAutomationSystemBuilder> {

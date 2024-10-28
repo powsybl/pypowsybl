@@ -9,7 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.transformers.TransformerFixedRatioBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.transformers.TransformerFixedRatioBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoWindingsTransformer;
 
@@ -21,8 +22,8 @@ import java.util.Collection;
 public class TransformerAdder extends AbstractEquipmentAdder {
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return TransformerFixedRatioBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return TransformerFixedRatioBuilder.getSupportedModelInfos();
     }
 
     @Override

@@ -11,7 +11,8 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicTwoLevelsOverloadManagementSystemBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.automationsystems.overloadmanagments.DynamicTwoLevelsOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
@@ -42,8 +43,8 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynam
     }
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return DynamicTwoLevelsOverloadManagementSystemBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return DynamicTwoLevelsOverloadManagementSystemBuilder.getSupportedModelInfos();
     }
 
     private static class OverloadManagementSystemSeries extends AbstractAutomationSystemSeries<DynamicTwoLevelsOverloadManagementSystemBuilder> {

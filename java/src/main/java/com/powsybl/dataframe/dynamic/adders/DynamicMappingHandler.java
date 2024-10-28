@@ -13,6 +13,7 @@ import java.util.Map;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
@@ -33,6 +34,7 @@ public final class DynamicMappingHandler {
             Map.entry(DynamicMappingType.SYNCHRONOUS_GENERATOR, new SynchronousGeneratorAdder()),
             Map.entry(DynamicMappingType.WECC, new WeccAdder()),
             Map.entry(DynamicMappingType.GRID_FORMING_CONVERTER, new GridFormingConverterAdder()),
+            Map.entry(DynamicMappingType.SIGNAL_N_GENERATOR, new SignalNGeneratorAdder()),
             Map.entry(DynamicMappingType.HVDC_P, new HvdcPAdder()),
             Map.entry(DynamicMappingType.HVDC_VSC, new HvdcVscAdder()),
             Map.entry(DynamicMappingType.BASE_TRANSFORMER, new TransformerAdder()),
@@ -59,7 +61,8 @@ public final class DynamicMappingHandler {
     }
 
     public static Collection<String> getSupportedModels(DynamicMappingType type) {
-        return ADDERS.get(type).getSupportedModels();
+        // TODO return ModelInfo directly
+        return ADDERS.get(type).getSupportedModels().stream().map(ModelInfo::name).toList();
     }
 
     private DynamicMappingHandler() {

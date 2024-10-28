@@ -8,9 +8,9 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dynamicsimulation.Curve;
-import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynawaltz.curves.DynawoCurvesBuilder;
+import com.powsybl.dynamicsimulation.OutputVariable;
+import com.powsybl.dynamicsimulation.OutputVariablesSupplier;
+import com.powsybl.dynawo.outputvariables.DynawoOutputVariablesBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.*;
@@ -21,27 +21,27 @@ import java.util.function.Consumer;
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class PythonCurveSupplier implements CurvesSupplier {
+public class PythonCurveSupplier implements OutputVariablesSupplier {
 
-    private final List<BiConsumer<Consumer<Curve>, ReportNode>> curvesSupplierListRR = new ArrayList<>();
+    private final List<BiConsumer<Consumer<OutputVariable>, ReportNode>> curvesSupplierListRR = new ArrayList<>();
 
     public void addCurve(String dynamicId, String variable) {
-        curvesSupplierListRR.add((c, r) -> new DynawoCurvesBuilder(r)
+        curvesSupplierListRR.add((c, r) -> new DynawoOutputVariablesBuilder(r)
                 .dynamicModelId(dynamicId)
                 .variable(variable)
                 .add(c));
     }
 
     public void addCurves(String dynamicId, List<String> variables) {
-        curvesSupplierListRR.add((c, r) -> new DynawoCurvesBuilder(r)
+        curvesSupplierListRR.add((c, r) -> new DynawoOutputVariablesBuilder(r)
                 .dynamicModelId(dynamicId)
                 .variables(variables)
                 .add(c));
     }
 
     @Override
-    public List<Curve> get(Network network, ReportNode reportNode) {
-        List<Curve> curves = new ArrayList<>();
+    public List<OutputVariable> get(Network network, ReportNode reportNode) {
+        List<OutputVariable> curves = new ArrayList<>();
         curvesSupplierListRR.forEach(c -> c.accept(curves::add, reportNode));
         return curves;
     }

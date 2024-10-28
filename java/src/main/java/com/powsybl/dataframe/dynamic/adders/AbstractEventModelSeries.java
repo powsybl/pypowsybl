@@ -9,7 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.EventModel;
-import com.powsybl.dynawaltz.builders.ModelBuilder;
+import com.powsybl.dynawo.builders.ModelBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.function.BiFunction;

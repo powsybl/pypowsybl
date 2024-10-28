@@ -9,7 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.lines.LineBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.lines.LineBuilder;
 import com.powsybl.iidm.network.Line;
 import com.powsybl.iidm.network.Network;
 
@@ -21,8 +22,8 @@ import java.util.Collection;
 public class LineAdder extends AbstractEquipmentAdder {
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return LineBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return LineBuilder.getSupportedModelInfos();
     }
 
     @Override

@@ -153,6 +153,7 @@ void dynamicSimulationBindings(py::module_& m) {
         .value("SYNCHRONOUS_GENERATOR", DynamicMappingType::SYNCHRONOUS_GENERATOR)
         .value("WECC", DynamicMappingType::WECC)
         .value("GRID_FORMING_CONVERTER", DynamicMappingType::GRID_FORMING_CONVERTER)
+        .value("SIGNAL_N_GENERATOR", DynamicMappingType::SIGNAL_N_GENERATOR)
         .value("HVDC_P", DynamicMappingType::HVDC_P)
         .value("HVDC_VSC", DynamicMappingType::HVDC_VSC)
         .value("BASE_TRANSFORMER", DynamicMappingType::BASE_TRANSFORMER)

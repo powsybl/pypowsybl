@@ -1193,6 +1193,7 @@ public final class PyPowsyblApiHeader {
         SYNCHRONOUS_GENERATOR,
         WECC,
         GRID_FORMING_CONVERTER,
+        SIGNAL_N_GENERATOR,
         HVDC_P,
         HVDC_VSC,
         BASE_TRANSFORMER,

@@ -9,8 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestStringSeries;
-import com.powsybl.dynawaltz.models.AbstractPureDynamicBlackBoxModel;
-import com.powsybl.dynawaltz.models.TransformerSide;
+import com.powsybl.dynawo.models.AbstractPureDynamicBlackBoxModel;
+import com.powsybl.dynawo.models.TransformerSide;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -113,6 +113,7 @@ public class DynamicModelsAdderTest {
                 Arguments.of(SYNCHRONOUS_GENERATOR, EurostagTutorialExample1Factory.create(), "GEN"),
                 Arguments.of(WECC, EurostagTutorialExample1Factory.create(), "GEN"),
                 Arguments.of(GRID_FORMING_CONVERTER, EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of(SIGNAL_N_GENERATOR, EurostagTutorialExample1Factory.create(), "GEN"),
                 Arguments.of(BASE_TRANSFORMER, EurostagTutorialExample1Factory.create(), "NGEN_NHV1"),
                 Arguments.of(BASE_STATIC_VAR_COMPENSATOR, SvcTestCaseFactory.create(), "SVC2"),
                 Arguments.of(BASE_LINE, EurostagTutorialExample1Factory.create(), "NHV1_NHV2_1"),

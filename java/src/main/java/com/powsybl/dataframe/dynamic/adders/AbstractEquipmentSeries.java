@@ -9,7 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.builders.EquipmentModelBuilder;
+import com.powsybl.dynawo.builders.EquipmentModelBuilder;
 import com.powsybl.iidm.network.Identifiable;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;

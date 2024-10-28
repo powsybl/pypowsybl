@@ -9,12 +9,7 @@ package com.powsybl.python.dynamic;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.computation.local.LocalComputationManager;
-import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynamicsimulation.DynamicSimulation;
-import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
-import com.powsybl.dynamicsimulation.DynamicSimulationResult;
-import com.powsybl.dynamicsimulation.EventModelsSupplier;
+import com.powsybl.dynamicsimulation.*;
 import com.powsybl.iidm.network.Network;
 
 /**
@@ -27,7 +22,7 @@ public class DynamicSimulationContext {
     public DynamicSimulationResult run(Network network,
                                        DynamicModelsSupplier dynamicModelsSupplier,
                                        EventModelsSupplier eventModelsSupplier,
-                                       CurvesSupplier curvesSupplier,
+                                       OutputVariablesSupplier curvesSupplier,
                                        DynamicSimulationParameters parameters,
                                        ReportNode reportNode) {
         return DynamicSimulation.find(DEFAULT_PROVIDER).run(network,

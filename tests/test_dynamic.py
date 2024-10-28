@@ -31,6 +31,7 @@ def test_add_mapping():
     model_mapping.add_synchronous_generator(static_id, parameter_id, dynamic_id, "GeneratorSynchronousThreeWindings")
     model_mapping.add_wecc(static_id, parameter_id, dynamic_id, "WT4BWeccCurrentSource")
     model_mapping.add_grid_forming_converter(static_id, parameter_id, dynamic_id, "GridFormingConverterMatchingControl")
+    model_mapping.add_signal_n_generator(static_id, parameter_id, dynamic_id, "GeneratorPVSignalN")
     model_mapping.add_hvdc_p(static_id, parameter_id, dynamic_id, "HvdcPV")
     model_mapping.add_hvdc_vsc(static_id, parameter_id, dynamic_id, "HvdcVSCDanglingP")
     model_mapping.add_base_transformer(static_id, parameter_id, dynamic_id, "TransformerFixedRatio")

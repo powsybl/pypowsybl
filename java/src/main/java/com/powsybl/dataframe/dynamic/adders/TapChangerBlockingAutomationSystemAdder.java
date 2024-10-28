@@ -11,7 +11,8 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.automationsystems.TapChangerBlockingAutomationSystemBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;
@@ -39,8 +40,8 @@ public class TapChangerBlockingAutomationSystemAdder extends AbstractDynamicMode
     }
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return TapChangerBlockingAutomationSystemBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return TapChangerBlockingAutomationSystemBuilder.getSupportedModelInfos();
     }
 
     private static class TapChangerBlockingSeries extends AbstractAutomationSystemSeries<TapChangerBlockingAutomationSystemBuilder> {

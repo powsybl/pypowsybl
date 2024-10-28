@@ -10,7 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
-import com.powsybl.dynawaltz.models.events.AbstractEvent;
+import com.powsybl.dynawo.models.events.AbstractEvent;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;

@@ -9,7 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.generators.SynchronousGeneratorBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.generators.SynchronousGeneratorBuilder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
 
@@ -22,8 +23,8 @@ import java.util.Collection;
 public class SynchronousGeneratorAdder extends AbstractEquipmentAdder {
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return SynchronousGeneratorBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return SynchronousGeneratorBuilder.getSupportedModelInfos();
     }
 
     @Override

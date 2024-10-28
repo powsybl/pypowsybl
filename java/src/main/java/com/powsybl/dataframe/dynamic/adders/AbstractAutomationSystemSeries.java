@@ -8,7 +8,7 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.automationsystems.AbstractAutomationSystemModelBuilder;
+import com.powsybl.dynawo.models.automationsystems.AbstractAutomationSystemModelBuilder;
 
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 

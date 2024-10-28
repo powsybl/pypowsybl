@@ -12,7 +12,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.events.EventActivePowerVariationBuilder;
+import com.powsybl.dynawo.models.events.EventActivePowerVariationBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.List;

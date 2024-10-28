@@ -11,7 +11,7 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.DynamicModel;
-import com.powsybl.dynawaltz.builders.ModelBuilder;
+import com.powsybl.dynawo.builders.ModelBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.function.BiFunction;

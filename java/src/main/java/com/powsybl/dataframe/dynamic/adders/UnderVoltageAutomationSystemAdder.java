@@ -11,7 +11,8 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawaltz.models.automationsystems.UnderVoltageAutomationSystemBuilder;
+import com.powsybl.dynawo.builders.ModelInfo;
+import com.powsybl.dynawo.models.automationsystems.UnderVoltageAutomationSystemBuilder;
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;
@@ -37,8 +38,8 @@ public class UnderVoltageAutomationSystemAdder extends AbstractDynamicModelAdder
     }
 
     @Override
-    public Collection<String> getSupportedModels() {
-        return UnderVoltageAutomationSystemBuilder.getSupportedLibs();
+    public Collection<ModelInfo> getSupportedModels() {
+        return UnderVoltageAutomationSystemBuilder.getSupportedModelInfos();
     }
 
     private static class UnderVoltageSeries extends AbstractAutomationSystemSeries<UnderVoltageAutomationSystemBuilder> {

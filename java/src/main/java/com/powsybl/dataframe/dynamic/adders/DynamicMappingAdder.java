@@ -9,6 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 import java.util.Collection;
@@ -34,6 +35,6 @@ public interface DynamicMappingAdder {
     /**
      * Returns supported model names for the given adder
      */
-    Collection<String> getSupportedModels();
+    Collection<ModelInfo> getSupportedModels();
 
 }

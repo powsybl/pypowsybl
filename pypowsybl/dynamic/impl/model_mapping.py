@@ -25,7 +25,7 @@ class ModelMapping:
         Add a load mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -40,7 +40,7 @@ class ModelMapping:
         Add a load with one transformer mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -56,7 +56,7 @@ class ModelMapping:
         Add a load with one transformer and tap changer mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -71,7 +71,7 @@ class ModelMapping:
         Add a load with two transformers mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -87,7 +87,7 @@ class ModelMapping:
         Add a load with two transformers and tap changers mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -102,7 +102,7 @@ class ModelMapping:
         Add a base generator mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -117,7 +117,7 @@ class ModelMapping:
         Add a synchronized generator mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -132,7 +132,7 @@ class ModelMapping:
         Add a synchronous generator mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -147,7 +147,7 @@ class ModelMapping:
         Add a WECC mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -162,7 +162,7 @@ class ModelMapping:
         Add a grid forming converter mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -172,12 +172,27 @@ class ModelMapping:
                                       model_name=model_name,
                                       mapping_type=DynamicMappingType.GRID_FORMING_CONVERTER)
 
+    def add_signal_n_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        """
+        Add a signal N generator mapping
+
+        :param static_id: id of the network element to map
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
+        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
+        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        """
+        self.add_all_dynamic_mappings(static_id=static_id,
+                                      parameter_set_id=parameter_set_id,
+                                      dynamic_model_id=dynamic_model_id,
+                                      model_name=model_name,
+                                      mapping_type=DynamicMappingType.SIGNAL_N_GENERATOR)
+
     def add_hvdc_p(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
         """
         Add an HVDC P mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -192,7 +207,7 @@ class ModelMapping:
         Add an HVDC VSC mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -207,7 +222,7 @@ class ModelMapping:
         Add a transformer mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -222,7 +237,7 @@ class ModelMapping:
         Add a static var compensator mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -237,7 +252,7 @@ class ModelMapping:
         Add a line mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -252,7 +267,7 @@ class ModelMapping:
         Add a base bus mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -267,7 +282,7 @@ class ModelMapping:
         Add an infinite bus mapping
 
         :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -283,7 +298,7 @@ class ModelMapping:
         Add a dynamic overload management system (not link to a network element)
 
         :param dynamic_model_id: id of the overload management system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param controlled_branch: id of the branch controlled by the automation system
         :param i_measurement: id of the branch used for the current intensity measurement
         :param i_measurement_side: measured side of the i_measurement branch (ONE or TWO)
@@ -305,7 +320,7 @@ class ModelMapping:
         Add a dynamic two levels overload management system (not link to a network element)
 
         :param dynamic_model_id: id of the two levels overload management system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param controlled_branch: id of the branch controlled by the automation system
         :param i_measurement_1: id of the first branch used for the current intensity measurement
         :param i_measurement_1_side: measured side of the i_measurement_1 branch (ONE or TWO)
@@ -329,7 +344,7 @@ class ModelMapping:
         Add a dynamic under voltage automation system (not link to a network element)
 
         :param dynamic_model_id: id of the under voltage automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param generator: id of the generator controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -345,7 +360,7 @@ class ModelMapping:
         Add a dynamic phase shifter I automation system (not link to a network element)
 
         :param dynamic_model_id: id of the phase shifter I automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param transformer: id of the transformer controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -361,7 +376,7 @@ class ModelMapping:
         Add a dynamic phase shifter P automation system (not link to a network element)
 
         :param dynamic_model_id: id of the phase shifter P automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param transformer: id of the transformer controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -377,7 +392,7 @@ class ModelMapping:
         Add a dynamic phase shifter blocking I automation system (not link to a network element)
 
         :param dynamic_model_id: id of the phase shifter blocking I automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param phase_shifter_id: id of the phase shifter I automation system controlled by the automation system
         :param model_name: name of the model used for the mapping (if none the default model will be used)
         """
@@ -393,7 +408,7 @@ class ModelMapping:
         Add a dynamic tap changer automation system (not link to a network element)
 
         :param dynamic_model_id: id of the tap changer automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param static_id: id of the load on which the tap changer is added
         :param side: transformer side of the tap changer (HIGH_VOLTAGE, LOW_VOLTAGE or NONE)
         :param model_name: name of the model used for the mapping (if none the default model will be used)
@@ -411,7 +426,7 @@ class ModelMapping:
         Add a dynamic tap changer blocking automation system (not link to a network element)
 
         :param dynamic_model_id: id of the tap changer blocking automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawaltz configuration
+        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
         :param transformers: ids of the transformers controlled by the automation system
         :param u_measurements: id of the bus or busbar section used for the voltage measurement
         :param model_name: name of the model used for the mapping (if none the default model will be used)
