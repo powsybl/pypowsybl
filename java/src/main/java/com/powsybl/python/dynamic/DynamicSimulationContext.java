@@ -17,7 +17,7 @@ import com.powsybl.iidm.network.Network;
  */
 public class DynamicSimulationContext {
 
-    private static final String DEFAULT_PROVIDER = "DynaWaltz";
+    private static final String DEFAULT_PROVIDER = "Dynawo";
 
     public DynamicSimulationResult run(Network network,
                                        DynamicModelsSupplier dynamicModelsSupplier,

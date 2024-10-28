@@ -37,4 +37,4 @@ class SimulationResult:
         curve_name_lst = _pp.get_all_dynamic_curves_ids(self._handle)
         df_curves = [self._get_curve(curve_name)
                      for curve_name in curve_name_lst]
-        return pd.concat(df_curves, axis=1)
+        return pd.concat(df_curves, axis=1) if df_curves else None

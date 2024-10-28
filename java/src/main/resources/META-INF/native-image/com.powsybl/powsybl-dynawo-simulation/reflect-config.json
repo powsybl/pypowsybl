@@ -1,6 +1,6 @@
 [
   {
-    "name":"com.powsybl.dynawaltz.DynaWaltzParameters",
+    "name":"com.powsybl.dynawo.DynawoSimulationParameters",
     "queryAllDeclaredConstructors" : true,
     "queryAllPublicConstructors" : true,
     "queryAllDeclaredMethods" : true,
@@ -12,7 +12,7 @@
     "allPublicConstructors" : true
   },
   {
-    "name":"com.powsybl.dynawaltz.builders.ModelConfigsHandler",
+    "name":"com.powsybl.dynawo.builders.ModelConfigsHandler",
     "queryAllDeclaredConstructors" : true,
     "queryAllPublicConstructors" : true,
     "queryAllDeclaredMethods" : true,
