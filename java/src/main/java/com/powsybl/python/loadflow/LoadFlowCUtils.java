@@ -21,6 +21,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.graalvm.nativeimage.UnmanagedMemory;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,8 +32,9 @@ import java.util.stream.Collectors;
 public final class LoadFlowCUtils {
 
     static final DataframeMapper<LoadFlowProvider, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<LoadFlowProvider, Parameter, Void>()
-            .itemsProvider(provider -> provider.getSpecificParameters())
+            .itemsProvider(provider -> provider.getSpecificParameters().stream().sorted(Comparator.comparing(Parameter::getCategoryKey).thenComparing(Parameter::getName)).toList())
             .stringsIndex("name", Parameter::getName)
+            .strings("category_key", p -> Objects.toString(p.getCategoryKey(), ""))
             .strings("description", Parameter::getDescription)
             .enums("type", ParameterType.class, Parameter::getType)
             .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
