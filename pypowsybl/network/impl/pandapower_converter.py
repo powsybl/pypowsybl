@@ -18,8 +18,6 @@ from pandas import DataFrame
 try:
     from pandapower import pandapowerNet
 except ImportError:
-    print("No installation of pandapower found, network.convert_from_pandapower method will not be usable")
-    print("Use 'pip install pypowsybl[pandapower]' to install the optional dependency if needed.")
     pandapowerNet = any
 
 from .network import Network
