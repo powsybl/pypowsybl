@@ -100,6 +100,8 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
                         "voltage_level_id");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("VLGEN_0", "VLHV1_0", "VLHV2_0", "VLLOAD_0");
         assertThat(series.get(2).getDoubles())
                 .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
@@ -108,6 +110,28 @@ class NetworkDataframesTest {
                 .containsExactly(0, 0, 0, 0);
         assertThat(series.get(6).getStrings())
                 .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
+    }
+
+    @Test
+    void busBreakerViewBuses() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(BUS_FROM_BUS_BREAKER_VIEW, network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
+                        "voltage_level_id", "bus_id");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("NGEN", "NHV1", "NHV2", "NLOAD");
+        assertThat(series.get(2).getDoubles())
+                .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        assertThat(series.get(4).getInts())
+                .containsExactly(0, 0, 0, 0);
+        assertThat(series.get(4).getInts())
+                .containsExactly(0, 0, 0, 0);
+        assertThat(series.get(6).getStrings())
+                .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
+        assertThat(series.get(7).getStrings())
+                .containsExactly("VLGEN_0", "VLHV1_0", "VLHV2_0", "VLLOAD_0");
     }
 
     @Test

@@ -1623,11 +1623,11 @@ def test_bus_breaker_view_buses():
     expected_buses = pd.DataFrame(
         index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
-                 'voltage_level_id'],
-        data=[['', nan, nan, 0, 0, 'VLGEN'],
-              ['', 380, nan, 0, 0, 'VLHV1'],
-              ['', 380, nan, 0, 0, 'VLHV2'],
-              ['', nan, nan, 0, 0, 'VLLOAD']])
+                 'voltage_level_id', 'bus_id'],
+        data=[['', nan, nan, 0, 0, 'VLGEN', 'VLGEN_0'],
+              ['', 380, nan, 0, 0, 'VLHV1', 'VLHV1_0'],
+              ['', 380, nan, 0, 0, 'VLHV2', 'VLHV2_0'],
+              ['', nan, nan, 0, 0, 'VLLOAD', 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
 
 

@@ -540,7 +540,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **synchronous_component**: the number of synchronous components that the bus is part of
               - **voltage_level_id**: at which substation the bus is connected
 
-            This dataframe is indexed on the bus ID.
+            This dataframe is indexed on the bus ID in the bus view.
+
+        See Also:
+            :meth:`get_bus_breaker_view_buses`
 
         Examples:
 
@@ -603,8 +606,74 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_bus_breaker_view_buses(self, all_attributes: bool = False, attributes: List[str] = None,
                                    **kwargs: ArrayLike) -> DataFrame:
         r"""
-              Get a dataframe of buses from the bus/breaker view.
-              See :meth:`get_buses` for documentation as attributes are the same.
+        Get a dataframe of buses from the bus/breaker view.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of buses from the bus/breaker view
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **v_mag**: Get the voltage magnitude of the bus (in kV)
+              - **v_angle**: the voltage angle of the bus (in degree)
+              - **connected_component**: the number of terminals connected to this bus
+              - **synchronous_component**: the number of synchronous components that the bus is part of
+              - **voltage_level_id**: at which substation the bus is connected
+              - **bus_id**: the bus ID in the bus view
+
+            This dataframe is indexed on the bus ID in the bus/breaker view.
+
+        See Also:
+            :meth:`get_buses`
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_bus_breaker_view_buses()
+
+            It outputs something like:
+            ======= ===== ========= ======== ==================== ====================== ================ ========
+            \        name     v_mag  v_angle  connected_component  synchronous_component voltage_level_id   bus_id
+            ======= ===== ========= ======== ==================== ====================== ================ ========
+            id
+            S1VL1_0        224.6139   2.2822                    0                      1            S1VL1  S1VL1_0
+            S1VL1_2        224.6139   2.2822                    0                      1            S1VL1  S1VL1_0
+            S1VL1_4        224.6139   2.2822                    0                      1            S1VL1  S1VL1_0
+            S1VL2_0        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_1        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_3        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_5        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_7        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_9        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_11       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_13       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_15       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_17       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_19       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_21       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S2VL1_0        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S2VL1_2        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S2VL1_4        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S2VL1_6        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S3VL1_0        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_2        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_4        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_6        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_8        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_10       400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S4VL1_0        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            S4VL1_6        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            S4VL1_2        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            S4VL1_4        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            ======= ===== ========= ======== ==================== ====================== ================ ========
         """
         return self.get_elements(ElementType.BUS_FROM_BUS_BREAKER_VIEW, all_attributes, attributes, **kwargs)
 
