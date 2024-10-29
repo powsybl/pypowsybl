@@ -13,9 +13,14 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 import pypowsybl._pypowsybl as _pp
-from pandapower import pandapowerNet
 from pandas import Series
 from pandas import DataFrame
+try:
+    from pandapower import pandapowerNet
+except ImportError:
+    print("No installation of pandapower found, network.convert_from_pandapower method will not be usable")
+    print("Use 'pip install pypowsybl[pandapower]' to install the optional dependency if needed.")
+    pandapowerNet = any
 
 from .network import Network
 from .network_creation_util import create_empty
