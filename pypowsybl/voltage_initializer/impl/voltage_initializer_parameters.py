@@ -184,7 +184,7 @@ class VoltageInitializerParameters:
             log_level_solver: the log level.
         """
         voltage_initializer_set_reactive_slack_buses_mode(self._handle, reactive_slack_buses_mode)
-        
+
     def set_min_plausible_low_voltage_limit(self, min_plausible_low_voltage_level: float) -> None:
         """
         Changes the minimal plausible value for low voltage limits (in p.u.) in ACOPF solving.
@@ -332,4 +332,3 @@ class VoltageInitializerParameters:
             twt_ratio_variable_scaling_factor: is > 0.
         """
         voltage_initializer_set_twt_ratio_variable_scaling_factor(self._handle, twt_ratio_variable_scaling_factor)
-

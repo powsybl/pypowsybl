@@ -162,15 +162,16 @@ def test_ac_security_analysis_with_report():
     assert len(report2) >= len(report1)
 
 def test_ac_security_analysis_with_deprecated_report():
-    report_node = rp.Reporter()
-    report1 = str(report_node)
-    assert len(report1) > 0
-    n = pp.network.create_eurostag_tutorial_example1_network()
-    sa = pp.security.create_analysis()
-    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    sa.run_ac(n, reporter=report_node)
-    report2 = str(report_node)
-    assert len(report2) >= len(report1)
+    with pytest.deprecated_call():
+        report_node = rp.Reporter()
+        report1 = str(report_node)
+        assert len(report1) > 0
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sa = pp.security.create_analysis()
+        sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+        sa.run_ac(n, reporter=report_node)
+        report2 = str(report_node)
+        assert len(report2) >= len(report1)
 
 def test_dc_analysis_with_report():
     report_node = rp.ReportNode()

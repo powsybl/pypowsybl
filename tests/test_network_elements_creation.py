@@ -851,10 +851,11 @@ def test_tie_line_creation():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
-                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
-                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
-                                  ucte_xnode_code=['XNODE', 'XNODE'])
+    with pytest.deprecated_call():
+        network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                      bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                      p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
+                                      ucte_xnode_code=['XNODE', 'XNODE'])
     df = pd.DataFrame.from_records(
         columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
         data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
