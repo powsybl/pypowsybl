@@ -36,8 +36,6 @@ ModelMapping
     ModelMapping.add_phase_shifter_p_automation_system
     ModelMapping.add_tap_changer_automation_system
     ModelMapping.add_tap_changer_blocking_automation_system
-    ModelMapping.add_all_dynamic_mappings
-
 
 EventMapping
 ------------
@@ -48,7 +46,6 @@ EventMapping
     EventMapping.add_disconnection
     EventMapping.add_active_power_variation
     EventMapping.add_node_fault
-    EventMapping.add_all_event_mappings
 
 CurveMapping
 ------------

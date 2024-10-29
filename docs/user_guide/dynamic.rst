@@ -20,7 +20,7 @@ For now we only support the Dynawo simulator integration, provided by the `Dynaw
 Prerequisites
 -------------
 The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the dynawo section to find your dynawo installation and defaults parameters
-Here is an example of a simple config.yaml file. It uses the same configurations as in powsybl-dynawatlz.
+Here is an example of a simple config.yaml file. It uses the same configurations as in powsybl-dynawo.
 
 .. code-block:: yaml+jinja
 
@@ -45,8 +45,8 @@ Parameters
 To make a dynamic simulation, you need multiple things:
 
     1. A dynamic mapping, it links the static elements (generators, loads, lines) to their dynamic behavior (alpha beta load)
-    2. A curve mapping, it records the given values to be watch by the simulation tool. Curves are the output of the simulation
-    3. A event mapping, it maps the different events. (their time event is done in configurations file for now)
+    2. A event mapping, it maps the different events. (e.g equipment disconnection)
+    3. A curve mapping, it records the given values to be watch by the simulation tool. Curves are the output of the simulation
 
 There is a class for each of these elements.
 
@@ -70,22 +70,26 @@ To run a Dynawo simulation:
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_base_load("LOAD", "LAB", "LoadAlphaBeta") # and so on
+    model_mapping.add_base_load(static_id='LOAD',
+                                parameter_set_id='LAB',
+                                dynamic_model_id='DM_LOAD',
+                                model_name='LoadAlphaBeta') # and so on
 
     # events mapping
-    events = dyn.EventMapping()
-    events.add.add_disconnection("GEN_DISCONNECTION", 10, "GEN")
-    events.add_disconnection("LINE_DISCONNECTION", "NHV1_NHV2_1", 10, Side.ONE)
+    event_mapping = dyn.EventMapping()
+    event_mapping.add.add_disconnection(static_id='GEN', start_time=10)
+    event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
-    curves = dyn.CurveMapping()
-    curves.add_curves("LOAD", ["load_PPu", "load_QPu"])
+    curve_mapping = dyn.CurveMapping()
+    curve_mapping.add_curves("LOAD", ["load_PPu", "load_QPu"])
 
     # simulations parameters
     start_time = 0
     end_time = 50
     sim = dyn.Simulation()
     # running the simulation
-    results = sim.run(network, model_mapping, events, curves, start_time, end_time)
+    results = sim.run(network, model_mapping, event_mapping, curve_mapping, start_time, end_time)
     # getting the results
-    results.curves() # dataframe containing the curves mapped
+    results.status()
+    results.curves() # dataframe containing the mapped curves
