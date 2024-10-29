@@ -4,8 +4,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union, Optional, List
-import pandas as pd
+from typing import List, Optional
+from numpy.typing import ArrayLike
+from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicMappingType # pylint: disable=protected-access
 from pypowsybl.utils import \
@@ -20,441 +21,861 @@ class ModelMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
 
-    def add_base_load(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+    def get_supported_models(self, mapping_type: DynamicMappingType) -> List[str]:
+        return _pp.get_supported_models(mapping_type)
+
+    def add_base_load(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a load mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.BASE_LOAD)
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_load_one_transformer(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_base_load(static_id='LOAD',
+                                            parameter_set_id='lab',
+                                            dynamic_model_id='DM_LOAD',
+                                            model_name='LoadPQ')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.BASE_LOAD, df, **kwargs)
+
+    def add_load_one_transformer(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with one transformer mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.LOAD_ONE_TRANSFORMER)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_load_one_transformer_tap_changer(self, static_id: str, parameter_set_id: str,
-                                             dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_load_one_transformer(static_id='LOAD',
+                                                       parameter_set_id='lt',
+                                                       dynamic_model_id='DM_LT',
+                                                       model_name='LoadOneTransformer')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_ONE_TRANSFORMER, df, **kwargs)
+
+    def add_load_one_transformer_tap_changer(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with one transformer and tap changer mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.LOAD_ONE_TRANSFORMER_TAP_CHANGER)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_load_two_transformers(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_load_one_transformer_tap_changer(static_id='LOAD',
+                                                                   parameter_set_id='lt_tc',
+                                                                   dynamic_model_id='DM_LT_TC',
+                                                                   model_name='LoadOneTransformerTapChanger')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_ONE_TRANSFORMER_TAP_CHANGER, df, **kwargs)
+
+    def add_load_two_transformers(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with two transformers mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.LOAD_TWO_TRANSFORMERS)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_load_two_transformers_tap_changers(self, static_id: str, parameter_set_id: str,
-                                               dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_load_two_transformers(static_id='LOAD',
+                                                        parameter_set_id='ltt',
+                                                        dynamic_model_id='DM_LTT',
+                                                        model_name='LoadTwoTransformers')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_TWO_TRANSFORMERS, df, **kwargs)
+
+    def add_load_two_transformers_tap_changers(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with two transformers and tap changers mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.LOAD_TWO_TRANSFORMERS_TAP_CHANGERS)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_base_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_load_two_transformers_tap_changers(static_id='LOAD',
+                                                                     parameter_set_id='ltt_tc',
+                                                                     dynamic_model_id='DM_LTT_TC',
+                                                                     model_name='LoadTwoTransformersTapChangers')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_TWO_TRANSFORMERS_TAP_CHANGERS, df, **kwargs)
+
+    def add_base_generator(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a base generator mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.BASE_GENERATOR)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_synchronized_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_base_generator(static_id='GEN',
+                                                 parameter_set_id='gen',
+                                                 dynamic_model_id='DM_GEN',
+                                                 model_name='GeneratorFictitious')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.BASE_GENERATOR, df, **kwargs)
+
+    def add_synchronized_generator(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a synchronized generator mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.SYNCHRONIZED_GENERATOR)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_synchronous_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_synchronized_generator(static_id='GEN',
+                                                         parameter_set_id='sgen',
+                                                         dynamic_model_id='DM_SYNCH_GEN',
+                                                         model_name='GeneratorPVFixed')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.SYNCHRONIZED_GENERATOR, df, **kwargs)
+
+    def add_synchronous_generator(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a synchronous generator mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.SYNCHRONOUS_GENERATOR)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_wecc(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                    model_mapping.add_synchronous_generator(static_id='GEN',
+                                                            parameter_set_id='ssgen',
+                                                            dynamic_model_id='DM_SYNCHRONOUS_GEN',
+                                                            model_name='GeneratorSynchronousThreeWindings')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.SYNCHRONOUS_GENERATOR, df, **kwargs)
+
+    def add_wecc(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a WECC mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.WECC)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_grid_forming_converter(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                    model_mapping.add_wecc(static_id='GEN',
+                                           parameter_set_id='wecc',
+                                           dynamic_model_id='DM_WECC',
+                                           model_name='WT4BWeccCurrentSource')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.WECC, df, **kwargs)
+
+    def add_grid_forming_converter(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a grid forming converter mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.GRID_FORMING_CONVERTER)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_signal_n_generator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_grid_forming_converter(static_id='GEN',
+                                                         parameter_set_id='gf',
+                                                         dynamic_model_id='DM_GF',
+                                                         model_name='GridFormingConverterMatchingControl')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.GRID_FORMING_CONVERTER, df, **kwargs)
+
+    def add_signal_n_generator(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a signal N generator mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.SIGNAL_N_GENERATOR)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_hvdc_p(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_signal_n_generator(static_id='GEN',
+                                                     parameter_set_id='signal_n',
+                                                     dynamic_model_id='DM_SIGNAL_N',
+                                                     model_name='GeneratorPVSignalN')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.SIGNAL_N_GENERATOR, df, **kwargs)
+
+    def add_hvdc_p(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add an HVDC P mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.HVDC_P)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_hvdc_vsc(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_hvdc_p(static_id='HVDC_LINE',
+                                         parameter_set_id='hvdc_p',
+                                         dynamic_model_id='DM_HVDC_P',
+                                         model_name='HvdcPV')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.HVDC_P, df, **kwargs)
+
+    def add_hvdc_vsc(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add an HVDC VSC mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.HVDC_VSC)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_base_transformer(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_hvdc_vsc(static_id='HVDC_LINE',
+                                           parameter_set_id='hvdc_vsc',
+                                           dynamic_model_id='DM_HVDC_VSC',
+                                           model_name='HvdcVSCDanglingP')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.HVDC_VSC, df, **kwargs)
+
+    def add_base_transformer(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a transformer mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.BASE_TRANSFORMER)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_base_static_var_compensator(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_base_transformer(static_id='TFO',
+                                                   parameter_set_id='tfo',
+                                                   dynamic_model_id='DM_TFO',
+                                                   model_name='TransformerFixedRatio')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.BASE_TRANSFORMER, df, **kwargs)
+
+    def add_base_static_var_compensator(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a static var compensator mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_base_line(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_base_static_var_compensator(static_id='SVARC',
+                                                              parameter_set_id='svarc',
+                                                              dynamic_model_id='DM_SVARC',
+                                                              model_name='StaticVarCompensatorPV')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR, df, **kwargs)
+
+    def add_base_line(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a line mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.BASE_LINE)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_base_bus(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                mmodel_mapping.add_base_line(static_id='LINE',
+                                             parameter_set_id='l',
+                                             dynamic_model_id='DM_LINE',
+                                             model_name='Line')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.BASE_LINE, df, **kwargs)
+
+    def add_base_bus(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a base bus mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.BASE_BUS)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_infinite_bus(self, static_id: str, parameter_set_id: str, dynamic_model_id: str = None, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_base_bus(static_id='BUS',
+                                           parameter_set_id='bus',
+                                           dynamic_model_id='DM_BUS',
+                                           model_name='Bus')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.BASE_BUS, df, **kwargs)
+
+    def add_infinite_bus(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add an infinite bus mapping
 
-        :param static_id: id of the network element to map
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param dynamic_model_id: id of the model mapping the network element (if none the static id will be used)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(static_id=static_id,
-                                      parameter_set_id=parameter_set_id,
-                                      dynamic_model_id=dynamic_model_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.INFINITE_BUS)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_overload_management_system(self, dynamic_model_id: str, parameter_set_id: str, controlled_branch: str,
-                                       i_measurement: str, i_measurement_side: str, model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_infinite_bus(static_id='BUS',
+                                               parameter_set_id='inf_bus',
+                                               dynamic_model_id='DM_INF_BUS',
+                                               model_name='InfiniteBus')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.INFINITE_BUS, df, **kwargs)
+
+    def add_overload_management_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic overload management system (not link to a network element)
+        
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        :param dynamic_model_id: id of the overload management system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param controlled_branch: id of the branch controlled by the automation system
-        :param i_measurement: id of the branch used for the current intensity measurement
-        :param i_measurement_side: measured side of the i_measurement branch (ONE or TWO)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the overload management system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **controlled_branch**: id of the branch controlled by the automation system
+                - **i_measurement**: id of the branch used for the current intensity measurement
+                - **i_measurement_side**: measured side of the i_measurement branch (ONE or TWO)
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_overload_management_system(dynamic_model_id='DM_OV',
+                                                             parameter_set_id='ov',
+                                                             controlled_branch='LINE1',
+                                                             i_measurement='LINE2',
+                                                             i_measurement_side='TWO',
+                                                             model_name='OverloadManagementSystem')
         """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      controlled_branch=controlled_branch,
-                                      i_measurement=i_measurement,
-                                      i_measurement_side=i_measurement_side,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM)
+        self._add_all_dynamic_mappings(DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM, df, **kwargs)
 
-    def add_two_levels_overload_management_system(self, dynamic_model_id: str, parameter_set_id: str, controlled_branch: str,
-                                                  i_measurement_1: str, i_measurement_1_side: str,
-                                                  i_measurement_2: str, i_measurement_2_side: str,
-                                                  model_name: str = None) -> None:
+    def add_two_levels_overload_management_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic two levels overload management system (not link to a network element)
 
-        :param dynamic_model_id: id of the two levels overload management system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param controlled_branch: id of the branch controlled by the automation system
-        :param i_measurement_1: id of the first branch used for the current intensity measurement
-        :param i_measurement_1_side: measured side of the i_measurement_1 branch (ONE or TWO)
-        :param i_measurement_2: id of the second branch used for the current intensity measurement
-        :param i_measurement_2_side: measured side of the i_measurement_2 branch (ONE or TWO)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      controlled_branch=controlled_branch,
-                                      i_measurement_1=i_measurement_1,
-                                      i_measurement_1_side=i_measurement_1_side,
-                                      i_measurement_2=i_measurement_2,
-                                      i_measurement_2_side=i_measurement_2_side,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_under_voltage_automation_system(self, dynamic_model_id: str, parameter_set_id: str, generator: str,
-                                            model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the two levels overload management system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **controlled_branch**: id of the branch controlled by the automation system
+                - **i_measurement_1**: id of the first branch used for the current intensity measurement
+                - **i_measurement_1_side**: measured side of the i_measurement_1 branch (ONE or TWO)
+                - **i_measurement_2**: id of the second branch used for the current intensity measurement
+                - **i_measurement_2_side**: measured side of the i_measurement_2 branch (ONE or TWO)
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_two_levels_overload_management_system(dynamic_model_id='DM_TOV',
+                                                                        parameter_set_id='tov',
+                                                                        controlled_branch= 'LINE1',
+                                                                        i_measurement_1='LINE1',
+                                                                        i_measurement_1_side='TWO',
+                                                                        i_measurement_2='LINE2',
+                                                                        i_measurement_2_side='ONE',
+                                                                        model_name='TwoLevelsOverloadManagementSystem')
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM, df, **kwargs)
+
+    def add_under_voltage_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic under voltage automation system (not link to a network element)
 
-        :param dynamic_model_id: id of the under voltage automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param generator: id of the generator controlled by the automation system
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
-        """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      generator=generator,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.UNDER_VOLTAGE)
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-    def add_phase_shifter_i_automation_system(self, dynamic_model_id: str, parameter_set_id: str, transformer: str,
-                                              model_name: str = None) -> None:
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the under voltage automation system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **generator**: id of the generator controlled by the automation system
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_under_voltage_automation_system(dynamic_model_id='DM_UV',
+                                                                  parameter_set_id='psi',
+                                                                  generator='GEN',
+                                                                  model_name='UnderVoltage'
+        """
+        self._add_all_dynamic_mappings(DynamicMappingType.UNDER_VOLTAGE, df, **kwargs)
+
+    def add_phase_shifter_i_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic phase shifter I automation system (not link to a network element)
+        
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        :param dynamic_model_id: id of the phase shifter I automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param transformer: id of the transformer controlled by the automation system
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the phase shifter I automation system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **transformer**: id of the transformer controlled by the automation system
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_phase_shifter_i_automation_system(dynamic_model_id='DM_PS_I',
+                                                                    parameter_set_id='psi',
+                                                                    transformer='TRA',
+                                                                    model_name='PhaseShifterI')
         """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      transformer=transformer,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.PHASE_SHIFTER_I)
+        self._add_all_dynamic_mappings(DynamicMappingType.PHASE_SHIFTER_I, df, **kwargs)
 
-    def add_phase_shifter_p_automation_system(self, dynamic_model_id: str, parameter_set_id: str, transformer: str,
-                                              model_name: str = None) -> None:
+    def add_phase_shifter_p_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic phase shifter P automation system (not link to a network element)
+        
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        :param dynamic_model_id: id of the phase shifter P automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param transformer: id of the transformer controlled by the automation system
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the phase shifter P automation system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **transformer**: id of the transformer controlled by the automation system
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_phase_shifter_p_automation_system(dynamic_model_id='DM_PS_P',
+                                                                    parameter_set_id='ov',
+                                                                    transformer='TRA',
+                                                                    model_name='PhaseShifterP')
         """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      transformer=transformer,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.PHASE_SHIFTER_P)
+        self._add_all_dynamic_mappings(DynamicMappingType.PHASE_SHIFTER_P, df, **kwargs)
 
-    def add_phase_shifter_blocking_i_automation_system(self, dynamic_model_id: str, parameter_set_id: str,
-                                                       phase_shifter_id: str, model_name: str = None) -> None:
+    def add_phase_shifter_blocking_i_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic phase shifter blocking I automation system (not link to a network element)
+        
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        :param dynamic_model_id: id of the phase shifter blocking I automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param phase_shifter_id: id of the phase shifter I automation system controlled by the automation system
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the phase shifter blocking I automation system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **phase_shifter_id**: id of the phase shifter I automation system controlled by the automation system
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_phase_shifter_blocking_i_automation_system(dynamic_model_id='DM_PSB_I',
+                                                                             parameter_set_id='psb',
+                                                                             phase_shifter_id='PSI',
+                                                                             model_name='PhaseShifterBlockingI')
         """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      phase_shifter_id=phase_shifter_id,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.PHASE_SHIFTER_BLOCKING_I)
+        self._add_all_dynamic_mappings(DynamicMappingType.PHASE_SHIFTER_BLOCKING_I, df, **kwargs)
 
-    def add_tap_changer_automation_system(self, dynamic_model_id: str, parameter_set_id: str, static_id: str,
-                                          side: str = None, model_name: str = None) -> None:
+    def add_tap_changer_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic tap changer automation system (not link to a network element)
+        
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        :param dynamic_model_id: id of the tap changer automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param static_id: id of the load on which the tap changer is added
-        :param side: transformer side of the tap changer (HIGH_VOLTAGE, LOW_VOLTAGE or NONE)
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the tap changer automation system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **static_id**: id of the load on which the tap changer is added
+                - **side**: transformer side of the tap changer (HIGH_VOLTAGE, LOW_VOLTAGE or NONE)
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_tap_changer_automation_system(dynamic_model_id='DM_TC',
+                                                                parameter_set_id='tc',
+                                                                static_id='LOAD',
+                                                                side='HIGH_VOLTAGE',
+                                                                model_name='TapChangerAutomaton')
         """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      static_id=static_id,
-                                      side=side,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.TAP_CHANGER)
+        self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER, df, **kwargs)
 
-    def add_tap_changer_blocking_automation_system(self, dynamic_model_id: str, parameter_set_id: str, transformers: str,
-                                                   u_measurements: str, model_name: str = None) -> None:
+    def add_tap_changer_blocking_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic tap changer blocking automation system (not link to a network element)
+        
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
 
-        :param dynamic_model_id: id of the tap changer blocking automation system
-        :param parameter_set_id: id of the parameter for this model given in the dynawo configuration
-        :param transformers: ids of the transformers controlled by the automation system
-        :param u_measurements: id of the bus or busbar section used for the voltage measurement
-        :param model_name: name of the model used for the mapping (if none the default model will be used)
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+            
+                - **dynamic_model_id**: id of the tap changer blocking automation system
+                - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+                - **transformers**: ids of the transformers controlled by the automation system
+                - **u_measurements**: id of the bus or busbar section used for the voltage measurement
+                - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_tap_changer_blocking_automation_system(dynamic_model_id='DM_TCB',
+                                                                         parameter_set_id='tcb',
+                                                                         transformers='TRA',
+                                                                         u_measurements='BUS',
+                                                                         model_name='TapChangerBlockingAutomaton')
         """
-        self.add_all_dynamic_mappings(dynamic_model_id=dynamic_model_id,
-                                      parameter_set_id=parameter_set_id,
-                                      transformers=transformers,
-                                      u_measurements=u_measurements,
-                                      model_name=model_name,
-                                      mapping_type=DynamicMappingType.TAP_CHANGER_BLOCKING)
+        self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER_BLOCKING, df, **kwargs)
 
-    def add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_df: pd.DataFrame = None,
-                                 **kwargs: Union[str, Optional[str]]) -> None:
-        """
-        Update the dynamic mapping of a simulation, must provide a :class:`~pandas.DataFrame` or as named arguments.
-
-        | If it's an equipment, the dataframe must contain these three columns:
-        |     - static_id: id of the network element to map
-        |     - parameter_set_id: set id in the parameter file
-        |     - mapping_type: value of enum DynamicMappingType
-
-        """
+    def _add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_df: Optional[DataFrame], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_dynamic_mappings_meta_data(mapping_type)
         if kwargs:
-            kwargs = _add_index_to_kwargs(metadata, **{k:v for k, v in kwargs.items() if v is not None})
+            kwargs = _add_index_to_kwargs(metadata, **kwargs)
         mapping_df = _adapt_df_or_kwargs(metadata, mapping_df, **kwargs)
         c_mapping_df = _create_c_dataframe(mapping_df, metadata)
         _pp.add_all_dynamic_mappings(self._handle, mapping_type, c_mapping_df)
-
-    def get_supported_models(self, mapping_type: DynamicMappingType) -> List[str]:
-        return _pp.get_supported_models(mapping_type)
