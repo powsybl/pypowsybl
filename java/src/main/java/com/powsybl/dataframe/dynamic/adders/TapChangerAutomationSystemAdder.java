@@ -9,6 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
@@ -51,8 +52,8 @@ public class TapChangerAutomationSystemAdder extends AbstractDynamicModelAdder {
 
         TapChangerSeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.sides = dataframe.getStrings(SIDE);
+            this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
+            this.sides = PersistentStringSeries.copyOf(dataframe, SIDE);
         }
 
         @Override

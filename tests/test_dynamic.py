@@ -70,14 +70,20 @@ def test_add_mapping():
 def test_dynamic_dataframe():
     network = pp.network.create_ieee9()
     model_mapping = dyn.ModelMapping()
-    load_mapping_df = (pd.DataFrame.from_dict({'static_id': [network.get_loads().loc[l].name for l in network.get_loads().index],
-                                              'parameter_set_id': ['LAB' for l in network.get_loads().index],
-                                              'model_name': ['LoadPQ' for l in network.get_loads().index]})
-                       .set_index('static_id'))
-    generator_mapping_df = (pd.DataFrame.from_dict({'static_id': [network.get_generators().loc[l].name for l in network.get_generators().index],
-                                                   'parameter_set_id': ['GSTWPR' for l in network.get_generators().index],
-                                                   'model_name': ['GeneratorSynchronousThreeWindings' for l in network.get_generators().index]})
-                            .set_index('static_id'))
+    load_mapping_df = pd.DataFrame(
+        index=pd.Series(name='static_id', data=network.get_loads().index),
+        data={
+            'parameter_set_id': 'LAB',
+            'model_name': 'LoadPQ'
+        }
+    )
+    generator_mapping_df = pd.DataFrame(
+        index=pd.Series(name='static_id', data=network.get_generators().index),
+        data={
+            'parameter_set_id': 'GSTWPR',
+            'model_name': 'GeneratorSynchronousThreeWindings'
+        }
+    )
 
     model_mapping.add_base_load(load_mapping_df)
     model_mapping.add_synchronous_generator(generator_mapping_df)
@@ -92,10 +98,15 @@ def test_add_event():
 
 
 def test_add_event_dataframe():
-    events = dyn.EventMapping()
-    event_mapping_df = (pd.DataFrame.from_dict({'static_id': ['GEN', 'LOAD'], 'start_time': [10, 15], 'delta_p': [2, 4]})
-                        .set_index('static_id'))
-    events.add_active_power_variation(event_mapping_df)
+    event_mapping = dyn.EventMapping()
+    event_mapping_df = pd.DataFrame(
+        index=pd.Series(name='static_id', data=['GEN', 'LOAD']),
+        data={
+            'start_time': [10, 15],
+            'delta_p': [2, 4]
+        },
+    )
+    event_mapping.add_active_power_variation(event_mapping_df)
 
 
 def test_add_curve():

@@ -9,6 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
@@ -53,9 +54,9 @@ public class DynamicOverloadManagementSystemAdder extends AbstractDynamicModelAd
 
         OverloadManagementSystemSeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.controlledBranch = dataframe.getStrings(CONTROLLED_BRANCH);
-            this.iMeasurement = dataframe.getStrings(I_MEASUREMENT);
-            this.iMeasurementSide = dataframe.getStrings(I_MEASUREMENT_SIDE);
+            this.controlledBranch = PersistentStringSeries.copyOf(dataframe, CONTROLLED_BRANCH);
+            this.iMeasurement = PersistentStringSeries.copyOf(dataframe, I_MEASUREMENT);
+            this.iMeasurementSide = PersistentStringSeries.copyOf(dataframe, I_MEASUREMENT_SIDE);
         }
 
         @Override

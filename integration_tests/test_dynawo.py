@@ -8,6 +8,8 @@
 import pypowsybl as pp
 import pypowsybl.dynamic as dyn
 import pypowsybl.report as rp
+import pandas as pd
+
 
 def test_simulation():
     """
@@ -18,19 +20,29 @@ def test_simulation():
     report_node = rp.Reporter()
 
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_base_load("_LOAD__10_EC", "LAB", "BBM_LOAD", "LoadAlphaBeta")
-    model_mapping.add_synchronous_generator("_GEN____6_SM", "GSTWPR_GEN____6_SM", "BBM_GEN6", "GeneratorSynchronousThreeWindingsProportionalRegulations")
-    model_mapping.add_synchronous_generator("_GEN____8_SM", "GSTWPR_GEN____8_SM", "BBM_GEN8", "GeneratorSynchronousThreeWindingsProportionalRegulations")
+    model_mapping.add_base_load(static_id='B3-L', parameter_set_id='LAB', dynamic_model_id='BBM_LOAD', model_name='LoadAlphaBeta')
+
+    generator_mapping_df = pd.DataFrame(
+        index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
+        data={
+            'dynamic_model_id': ['BBM_GEN6', 'BBM_GEN8'],
+            'parameter_set_id': ['GSTWPR_GEN____6_SM', 'GSTWPR_GEN____8_SM'],
+            'model_name': 'GeneratorSynchronousThreeWindingsProportionalRegulations'
+        }
+    )
+    model_mapping.add_synchronous_generator(generator_mapping_df)
 
     event_mapping = dyn.EventMapping()
-    event_mapping.add_disconnection("_BUS____1-BUS____5-1_AC", 1, "TWO")
+    event_mapping.add_disconnection(static_id='L1-2-1', start_time=5, disconnect_only='TWO')
+    event_mapping.add_active_power_variation(static_id='B3-L', start_time=4, delta_p=0.02)
 
     curves_mapping = dyn.CurveMapping()
-    curves_mapping.add_curves("BBM_LOAD", ["load_PPu", "load_QPu"])
+    curves_mapping.add_curves('BBM_LOAD', ['load_PPu', 'load_QPu'])
 
     sim = dyn.Simulation()
-    res = sim.run(network, model_mapping, event_mapping, curves_mapping, 1, 10, report_node)
+    res = sim.run(network, model_mapping, event_mapping, curves_mapping, 0, 100, report_node)
 
+    assert report_node
     assert 'Ok' == res.status()
     assert 'BBM_LOAD_load_PPu' in res.curves()
     assert 'BBM_LOAD_load_QPu' in res.curves()

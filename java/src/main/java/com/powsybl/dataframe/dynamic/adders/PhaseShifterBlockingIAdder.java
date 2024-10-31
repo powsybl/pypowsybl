@@ -9,6 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
@@ -48,7 +49,7 @@ public class PhaseShifterBlockingIAdder extends AbstractDynamicModelAdder {
 
         PhaseShifterBlockingISeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.phaseShifterId = dataframe.getStrings(PHASE_SHIFTER_ID);
+            this.phaseShifterId = PersistentStringSeries.copyOf(dataframe, PHASE_SHIFTER_ID);
         }
 
         @Override

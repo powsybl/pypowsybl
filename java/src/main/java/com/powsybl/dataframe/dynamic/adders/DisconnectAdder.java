@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -43,9 +45,9 @@ public class DisconnectAdder extends AbstractEventModelAdder {
         private final StringSeries disconnectOnly;
 
         DisconnectSeries(UpdatingDataframe dataframe) {
-            this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.startTimes = dataframe.getDoubles(START_TIME);
-            this.disconnectOnly = dataframe.getStrings(DISCONNECT_ONLY);
+            this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
+            this.startTimes = PersistentDoubleSeries.copyOf(dataframe, START_TIME);
+            this.disconnectOnly = PersistentStringSeries.copyOf(dataframe, DISCONNECT_ONLY);
         }
 
         @Override

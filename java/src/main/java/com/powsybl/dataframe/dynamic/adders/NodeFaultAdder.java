@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -46,11 +48,11 @@ public class NodeFaultAdder extends AbstractEventModelAdder {
         private final DoubleSeries xPu;
 
         NodeFaultSeries(UpdatingDataframe dataframe) {
-            this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.startTimes = dataframe.getDoubles(START_TIME);
-            this.faultTimes = dataframe.getDoubles(FAULT_TIME);
-            this.rPu = dataframe.getDoubles(R_PU);
-            this.xPu = dataframe.getDoubles(X_PU);
+            this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
+            this.startTimes = PersistentDoubleSeries.copyOf(dataframe, START_TIME);
+            this.faultTimes = PersistentDoubleSeries.copyOf(dataframe, FAULT_TIME);
+            this.rPu = PersistentDoubleSeries.copyOf(dataframe, R_PU);
+            this.xPu = PersistentDoubleSeries.copyOf(dataframe, X_PU);
         }
 
         @Override

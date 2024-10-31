@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -42,9 +44,9 @@ public class ActivePowerVariationAdder extends AbstractEventModelAdder {
         private final DoubleSeries deltaPs;
 
         ActivePowerVariationSeries(UpdatingDataframe dataframe) {
-            this.staticIds = dataframe.getStrings(STATIC_ID);
-            this.startTimes = dataframe.getDoubles(START_TIME);
-            this.deltaPs = dataframe.getDoubles(DELTA_P);
+            this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
+            this.startTimes = PersistentDoubleSeries.copyOf(dataframe, START_TIME);
+            this.deltaPs = PersistentDoubleSeries.copyOf(dataframe, DELTA_P);
         }
 
         @Override

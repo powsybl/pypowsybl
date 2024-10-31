@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynamicsimulation.DynamicModel;
@@ -28,9 +29,9 @@ abstract class AbstractDynamicModelSeries<T extends ModelBuilder<DynamicModel>> 
     protected final StringSeries modelsNames;
 
     AbstractDynamicModelSeries(UpdatingDataframe dataframe) {
-        this.dynamicModelIds = dataframe.getStrings(DYNAMIC_MODEL_ID);
-        this.parameterSetIds = dataframe.getStrings(PARAMETER_SET_ID);
-        this.modelsNames = dataframe.getStrings(MODEL_NAME);
+        this.dynamicModelIds = PersistentStringSeries.copyOf(dataframe, DYNAMIC_MODEL_ID);
+        this.parameterSetIds = PersistentStringSeries.copyOf(dataframe, PARAMETER_SET_ID);
+        this.modelsNames = PersistentStringSeries.copyOf(dataframe, MODEL_NAME);
     }
 
     @Override

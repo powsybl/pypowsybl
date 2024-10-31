@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.EquipmentModelBuilder;
@@ -24,7 +25,7 @@ abstract class AbstractEquipmentSeries<E extends Identifiable<?>, B extends Equi
 
     AbstractEquipmentSeries(UpdatingDataframe dataframe) {
         super(dataframe);
-        this.staticIds = dataframe.getStrings(STATIC_ID);
+        this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
     }
 
     protected void applyOnBuilder(int row, B builder) {
