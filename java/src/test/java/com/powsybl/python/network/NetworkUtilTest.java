@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class NetworkUtilTest {
+public class NetworkUtilTest {
 
     @Test
     void test() {
@@ -51,7 +51,7 @@ class NetworkUtilTest {
         });
     }
 
-    private static Network createTopologyTestNetwork() {
+    public static Network createTopologyTestNetwork() {
         Network network = NetworkFactory.findDefault().createNetwork("test", "code");
 
         var vl1 = network.newVoltageLevel().setTopologyKind(TopologyKind.BUS_BREAKER).setId("VL1").setNominalV(400.).add();
