@@ -152,7 +152,7 @@ class NetworkDataframesTest {
                 .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
                 .containsExactly(0, 0, -99999, 1, 1, -99999);
-        assertThat(series.get(4).getInts())
+        assertThat(series.get(5).getInts())
                 .containsExactly(0, 0, -99999, 1, 1, -99999);
         assertThat(series.get(6).getStrings())
                 .containsExactly("VL1", "VL1", "VL1", "VL2", "VL2", "VL2");
