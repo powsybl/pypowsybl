@@ -21,6 +21,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
+import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Test;
 
@@ -106,7 +107,7 @@ class NetworkDataframesTest {
                 .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
                 .containsExactly(0, 0, 0, 0);
-        assertThat(series.get(4).getInts())
+        assertThat(series.get(5).getInts())
                 .containsExactly(0, 0, 0, 0);
         assertThat(series.get(6).getStrings())
                 .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
@@ -114,24 +115,69 @@ class NetworkDataframesTest {
 
     @Test
     void busBreakerViewBuses() {
-        Network network = EurostagTutorialExample1Factory.create();
+        // VL1 is Node/Breaker, VL2 is Bus/Breaker
+        Network network = TwoVoltageLevelNetworkFactory.create();
         List<Series> series = createDataFrame(BUS_FROM_BUS_BREAKER_VIEW, network);
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
                         "voltage_level_id", "bus_id");
         assertThat(series.get(0).getStrings())
-                .containsExactly("NGEN", "NHV1", "NHV2", "NLOAD");
+                .containsExactly("BUS1", "BUS2", "VL1_0", "VL1_3");
         assertThat(series.get(2).getDoubles())
                 .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
-                .containsExactly(0, 0, 0, 0);
-        assertThat(series.get(4).getInts())
-                .containsExactly(0, 0, 0, 0);
+                .containsExactly(0, 0, 1, -99999);
+        assertThat(series.get(5).getInts())
+                .containsExactly(0, 0, 1, -99999);
         assertThat(series.get(6).getStrings())
-                .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
+                .containsExactly("VL2", "VL2", "VL1", "VL1");
         assertThat(series.get(7).getStrings())
-                .containsExactly("VLGEN_0", "VLHV1_0", "VLHV2_0", "VLLOAD_0");
+                .containsExactly("VL2_0", "VL2_0", "VL1_0", "");
+    }
+
+    @Test
+    void busBreakerViewBusesNoConnectedTerminalOnBus() {
+        // Configured Bus B2 has no connected terminal, only a closed switch to B1 having a Load.
+        // B3 has nothing connected.
+        Network network = NetworkFactory.findDefault().createNetwork("test", "code");
+
+        var vl1 = network.newVoltageLevel().setTopologyKind(TopologyKind.BUS_BREAKER).setId("VL1").setNominalV(400.).add();
+        vl1.getBusBreakerView().newBus().setId("B1").add();
+        vl1.getBusBreakerView().newBus().setId("B2").add();
+        vl1.getBusBreakerView().newBus().setId("B3").add();
+        vl1.getBusBreakerView().newSwitch().setId("CB1.1").setOpen(false).setBus1("B1").setBus2("B2").add();
+        vl1.getBusBreakerView().newSwitch().setId("CB1.2").setOpen(true).setBus1("B1").setBus2("B2").add();
+        vl1.newLoad().setId("L1").setP0(10.).setQ0(3.).setConnectableBus("B1").setBus("B1").add();
+
+        var vl2 = network.newVoltageLevel().setTopologyKind(TopologyKind.NODE_BREAKER).setId("VL2").setNominalV(400.).add();
+        vl2.getNodeBreakerView().newBusbarSection().setId("BBS1").setNode(0).add();
+        vl2.getNodeBreakerView()
+                .newSwitch()
+                .setId("CB2.1").setOpen(false).setRetained(true).setKind(SwitchKind.BREAKER).setNode1(0).setNode2(1).add();
+        vl2.getNodeBreakerView()
+                .newSwitch()
+                .setId("CB2.2").setOpen(true).setRetained(true).setKind(SwitchKind.BREAKER).setNode1(1).setNode2(2).add();
+        vl2.newLoad().setId("L2").setP0(10.).setQ0(3.).setNode(3).add();
+        vl2.getNodeBreakerView().newInternalConnection().setNode1(0).setNode2(3).add();
+
+        List<Series> series = createDataFrame(BUS_FROM_BUS_BREAKER_VIEW, network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
+                        "voltage_level_id", "bus_id");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("B1", "B2", "B3", "VL2_0", "VL2_1", "VL2_2");
+        assertThat(series.get(2).getDoubles())
+                .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        assertThat(series.get(4).getInts())
+                .containsExactly(0, 0, -99999, 1, 1, -99999);
+        assertThat(series.get(4).getInts())
+                .containsExactly(0, 0, -99999, 1, 1, -99999);
+        assertThat(series.get(6).getStrings())
+                .containsExactly("VL1", "VL1", "VL1", "VL2", "VL2", "VL2");
+        assertThat(series.get(7).getStrings())
+                .containsExactly("VL1_0", "VL1_0", "", "VL2_0", "VL2_0", "");
     }
 
     @Test
