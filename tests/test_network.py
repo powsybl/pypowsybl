@@ -1054,6 +1054,7 @@ def test_nad():
     n = pp.network.create_ieee14()
     nad = n.get_network_area_diagram()
     assert re.search('.*<svg.*', nad.svg)
+    assert len(nad.metadata) > 0
     nad = n.get_network_area_diagram(voltage_level_ids=None)
     assert re.search('.*<svg.*', nad.svg)
     nad = n.get_network_area_diagram('VL1')
