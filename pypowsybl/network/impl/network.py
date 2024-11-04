@@ -411,9 +411,11 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
-        return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
+        svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    nad_p))
+                                                    nad_p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
+
 
     def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: Union[str, List[str]],
                                                           depth: int = 0) -> List[str]:

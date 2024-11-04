@@ -1133,6 +1133,19 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
+                                                        int voltageLevelIdCount, int depth, double highNominalVoltageBound,
+                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+            List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            return createCharPtrArray(svgAndMeta);
+        });
+    }
+
     @CEntryPoint(name = "getNetworkAreaDiagramDisplayedVoltageLevels")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                                                                                    int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
