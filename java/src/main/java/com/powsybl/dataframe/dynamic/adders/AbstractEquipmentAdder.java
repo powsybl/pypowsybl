@@ -8,6 +8,8 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
+
+import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -15,7 +17,7 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEquipmentAdder extends AbstractDynamicModelAdder {
+abstract class AbstractEquipmentAdder extends AbstractSimpleDynamicModelAdder {
 
     protected static final List<SeriesMetadata> EQUIPMENT_METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
@@ -24,7 +26,7 @@ abstract class AbstractEquipmentAdder extends AbstractDynamicModelAdder {
             SeriesMetadata.strings(MODEL_NAME));
 
     @Override
-    public List<SeriesMetadata> getMetadata() {
-        return EQUIPMENT_METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(EQUIPMENT_METADATA);
     }
 }

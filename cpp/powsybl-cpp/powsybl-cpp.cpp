@@ -1335,8 +1335,8 @@ JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, J
     return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, reportNode);
 }
 
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf) {
-    PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, mappingDf);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
+    PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, dataframes);
 }
 
 void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
@@ -1365,11 +1365,14 @@ std::vector<std::string> getSupportedModels(DynamicMappingType mappingType) {
     return vector.get();
 }
 
-std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType) {
-    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getDynamicMappingsMetaData, mappingType);
-    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
-    PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
-    return res;
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType) {
+    dataframes_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframes_metadata*>(::getDynamicMappingsMetaData, mappingType);
+    std::vector<std::vector<SeriesMetadata>> res;
+        for (int i =0; i < metadata->dataframes_count; i++) {
+            res.push_back(convertDataframeMetadata(metadata->dataframes_metadata + i));
+        }
+        pypowsybl::PowsyblCaller::get()->callJava(::freeDataframesMetadata, metadata);
+        return res;
 }
 
 std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType) {

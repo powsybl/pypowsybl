@@ -27,7 +27,7 @@ public final class DynamicModelDataframeConstants {
     public static final String TRANSFORMER = "transformer";
     public static final String SIDE = "side";
     public static final String U_MEASUREMENTS = "u_measurements";
-    public static final String TRANSFORMERS = "transformers";
+    public static final String TRANSFORMER_ID = "transformer_id";
     public static final String START_TIME = "start_time";
     public static final String DISCONNECT_ONLY = "disconnect_only";
     public static final String DELTA_P = "delta_p";

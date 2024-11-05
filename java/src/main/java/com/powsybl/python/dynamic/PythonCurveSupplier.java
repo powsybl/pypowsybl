@@ -42,7 +42,10 @@ public class PythonCurveSupplier implements OutputVariablesSupplier {
     @Override
     public List<OutputVariable> get(Network network, ReportNode reportNode) {
         List<OutputVariable> curves = new ArrayList<>();
-        curvesSupplierListRR.forEach(c -> c.accept(curves::add, reportNode));
+        ReportNode supplierReportNode = SupplierReport.createSupplierReportNode(reportNode,
+                "pypowsyblOutputVariables",
+                "PyPowsybl Output Variables Supplier");
+        curvesSupplierListRR.forEach(c -> c.accept(curves::add, supplierReportNode));
         return curves;
     }
 }

@@ -134,6 +134,11 @@ void createExtensionsBind(pypowsybl::JavaHandle network, const std::vector<dataf
     pypowsybl::createExtensions(network, dataframeArray.get(), name);
 }
 
+void addDynamicMappingsBind(pypowsybl::JavaHandle dynamic_mapping_handle, DynamicMappingType mapping_type, const std::vector<dataframe*>& dataframes) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::addDynamicMappings(dynamic_mapping_handle, mapping_type, dataframeArray.get());
+}
+
 template<typename T>
 py::array seriesAsNumpyArray(const series& series) {
 	//Last argument is to bind lifetime of series to the returned array
@@ -186,7 +191,7 @@ void dynamicSimulationBindings(py::module_& m) {
         py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
 
     //model mapping
-    m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("dataframes"));
     m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
     m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("mapping_type"));
 

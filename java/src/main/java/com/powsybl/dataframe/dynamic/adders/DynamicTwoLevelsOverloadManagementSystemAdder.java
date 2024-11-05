@@ -18,6 +18,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -26,7 +27,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynamicModelAdder {
+public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractSimpleDynamicModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
@@ -39,8 +40,8 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractDynam
             SeriesMetadata.strings(I_MEASUREMENT_2_SIDE));
 
     @Override
-    public List<SeriesMetadata> getMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override

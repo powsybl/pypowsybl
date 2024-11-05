@@ -52,11 +52,11 @@ public final class DynamicMappingHandler {
             Map.entry(DynamicMappingType.TAP_CHANGER, new TapChangerAutomationSystemAdder()),
             Map.entry(DynamicMappingType.TAP_CHANGER_BLOCKING, new TapChangerBlockingAutomationSystemAdder()));
 
-    public static void addElements(DynamicMappingType type, PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe) {
-        ADDERS.get(type).addElements(modelMapping, dataframe);
+    public static void addElements(DynamicMappingType type, PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframes) {
+        ADDERS.get(type).addElements(modelMapping, dataframes);
     }
 
-    public static List<SeriesMetadata> getMetadata(DynamicMappingType type) {
+    public static List<List<SeriesMetadata>> getMetadata(DynamicMappingType type) {
         return ADDERS.get(type).getMetadata();
     }
 

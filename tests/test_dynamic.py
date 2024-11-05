@@ -70,6 +70,7 @@ def test_add_mapping():
 def test_dynamic_dataframe():
     network = pp.network.create_ieee9()
     model_mapping = dyn.ModelMapping()
+
     load_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=network.get_loads().index),
         data={
@@ -77,6 +78,8 @@ def test_dynamic_dataframe():
             'model_name': 'LoadPQ'
         }
     )
+    model_mapping.add_base_load(load_mapping_df)
+
     generator_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=network.get_generators().index),
         data={
@@ -84,9 +87,19 @@ def test_dynamic_dataframe():
             'model_name': 'GeneratorSynchronousThreeWindings'
         }
     )
-
-    model_mapping.add_base_load(load_mapping_df)
     model_mapping.add_synchronous_generator(generator_mapping_df)
+
+    tcb_df = pd.DataFrame.from_records(
+        index='dynamic_model_id',
+        columns=['dynamic_model_id', 'parameter_set_id', 'u_measurements', 'model_name'],
+        data=[('DM_TCB', 'tcb', 'BUS', 'TapChangerBlockingAutomaton')])
+    tfo_df = pd.DataFrame.from_records(
+        index='dynamic_model_id',
+        columns=['dynamic_model_id', 'transformer_id'],
+        data=[('DM_TCB', 'TFO1'),
+              ('DM_TCB', 'TFO2'),
+              ('DM_TCB', 'TFO3')])
+    model_mapping.add_tap_changer_blocking_automation_system(tcb_df, tfo_df)
 
 
 def test_add_event():

@@ -774,8 +774,8 @@ void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingTyp
 std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
 
 // dynamic model mapping
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes);
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType);
 std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 
 // results

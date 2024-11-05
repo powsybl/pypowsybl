@@ -17,6 +17,7 @@ import com.powsybl.dynawo.models.automationsystems.UnderVoltageAutomationSystemB
 import com.powsybl.iidm.network.Network;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
@@ -25,7 +26,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class UnderVoltageAutomationSystemAdder extends AbstractDynamicModelAdder {
+public class UnderVoltageAutomationSystemAdder extends AbstractSimpleDynamicModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
@@ -34,8 +35,8 @@ public class UnderVoltageAutomationSystemAdder extends AbstractDynamicModelAdder
             SeriesMetadata.strings(GENERATOR));
 
     @Override
-    public List<SeriesMetadata> getMetadata() {
-        return METADATA;
+    public List<List<SeriesMetadata>> getMetadata() {
+        return Collections.singletonList(METADATA);
     }
 
     @Override
