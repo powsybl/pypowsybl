@@ -1218,6 +1218,35 @@ def test_dangling_lines():
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
 
 
+def test_dangling_line_generation():
+    n = util.create_dangling_lines_network()
+    df = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
+                                          'voltage_regulator_on'])
+    assert not df['voltage_regulator_on']['DL']
+    assert math.isnan(df['min_p']['DL'])
+
+    with pytest.raises(PyPowsyblError) as context:
+        n.create_dangling_lines(id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0,
+                                target_v=100, voltage_regulator_on=True)
+    assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    n.create_dangling_lines(id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0,
+                            min_p=0, max_p=100, target_p=100, target_v=100, voltage_regulator_on=True)
+    df2 = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
+                                          'voltage_regulator_on'])
+    assert df2['voltage_regulator_on']['DL2']
+    assert math.isnan(df2['target_q']['DL2'])
+
+    n.update_dangling_lines(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_dangling_lines(attributes=['min_p', 'max_p', 'target_p', 'target_q', 'target_v',
+                                           'voltage_regulator_on'])
+    assert not df3['voltage_regulator_on']['DL2']
+    assert df3['target_q']['DL2']==100
+
+
 def test_batteries():
     n = util.create_battery_network()
     df = n.get_batteries(all_attributes=True)
