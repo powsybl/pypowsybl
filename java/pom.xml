@@ -70,6 +70,7 @@
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <powsybl-dependencies.version>2024.3.0</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
+        <powsybl-core.version>6.6.0-SNAPSHOT</powsybl-core.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
 
@@ -157,6 +158,13 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-core</artifactId>
+                <version>${powsybl-core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.powsybl</groupId>
                 <artifactId>powsybl-dependencies</artifactId>

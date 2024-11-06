@@ -2403,5 +2403,26 @@ def test_deprecated_operational_limits_element_type_kwargs():
                                       acceptable_duration=[-1, 60], fictitious=[False, True])
 
 
+def test_topology_kind_update():
+    network = pp.network.create_four_substations_node_breaker_network()
+    switches = network.get_switches(attributes=['voltage_level_id', 'retained'])
+    switches_s1vl2 = switches[switches['voltage_level_id'] == 'S1VL2']
+    switches_s1vl2['retained'] = False
+    switches_s1vl2.loc['S1VL2_COUPLER', 'retained'] = True
+    network.update_switches(switches_s1vl2[['retained']])
+    network.update_voltage_levels(id='S1VL2', topology_kind='BUS_BREAKER')
+    voltage_levels = network.get_voltage_levels(all_attributes=True)
+    assert voltage_levels.loc['S1VL2'].topology_kind == 'BUS_BREAKER'
+    topo = network.get_bus_breaker_topology('S1VL2')
+    assert ['S1VL2_COUPLER'] == list(topo.switches.index)
+    assert ['S1VL2_0', 'S1VL2_1'] == list(topo.buses.index)
+
+    # not yet implemented to go to node/breaker topo
+    with pytest.raises(PyPowsyblError) as exc_infos:
+        network.update_voltage_levels(id='S1VL2', topology_kind='NODE_BREAKER')
+
+    assert str(exc_infos.value) == "Topology model conversion from bus/breaker to node/breaker not yet supported"
+
+
 if __name__ == '__main__':
     unittest.main()
