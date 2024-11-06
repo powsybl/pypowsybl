@@ -4,9 +4,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from typing import Optional
 from numpy.typing import ArrayLike
 from pandas import DataFrame
-from typing import Optional
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import EventMappingType  # pylint: disable=protected-access
 from pypowsybl.utils import _add_index_to_kwargs, \

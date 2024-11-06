@@ -11,10 +11,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -22,10 +19,13 @@ import java.util.function.Consumer;
  */
 public final class DynamicModelSeriesUtils {
 
-    private DynamicModelSeriesUtils(){
+    private DynamicModelSeriesUtils() {
     }
 
     public static Map<String, List<String>> createIdMap(UpdatingDataframe dataframe, String indexColumn, String idColumn) {
+        if (dataframe.getRowCount() == 0) {
+            return Collections.emptyMap();
+        }
         StringSeries joinIds = dataframe.getStrings(indexColumn);
         if (joinIds == null) {
             throw new PowsyblException("Join dataframe: %s column is not set".formatted(indexColumn));

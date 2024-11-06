@@ -9,9 +9,6 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.dynamic.PersistentStringSeries;
-import com.powsybl.dataframe.network.adders.SeriesUtils;
-import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystemBuilder;
@@ -32,14 +29,25 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
             SeriesMetadata.strings(PARAMETER_SET_ID),
-            SeriesMetadata.strings(MODEL_NAME),
-            SeriesMetadata.strings(U_MEASUREMENTS));
+            SeriesMetadata.strings(MODEL_NAME));
 
     private static final List<SeriesMetadata> TRANSFORMER_METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
             SeriesMetadata.strings(TRANSFORMER_ID));
 
-    private static final List<List<SeriesMetadata>> METADATA_LIST = List.of(METADATA, TRANSFORMER_METADATA);
+    private static final List<SeriesMetadata> U_MEASUREMENT_METADATA = List.of(
+            SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
+            SeriesMetadata.strings(MEASUREMENT_POINT_ID));
+
+    private static final List<List<SeriesMetadata>> METADATA_LIST = List.of(METADATA,
+            TRANSFORMER_METADATA,
+            U_MEASUREMENT_METADATA,
+            U_MEASUREMENT_METADATA,
+            U_MEASUREMENT_METADATA,
+            U_MEASUREMENT_METADATA,
+            U_MEASUREMENT_METADATA);
+
+    private static final int MAX_MEASUREMENTS = 5;
 
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
@@ -53,12 +61,17 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
 
     @Override
     public void addElements(PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframes) {
-        if (dataframes.size() != 2) {
-            throw new IllegalArgumentException("Expected 2 dataframes: one for TCB, one for transformers.");
+        if (dataframes.size() < 3) {
+            throw new IllegalArgumentException("Expected at least 3 dataframes: one for TCB, one for transformers and one for measurement points.");
         }
         UpdatingDataframe dataframe = dataframes.get(0);
-        UpdatingDataframe tfo_dataframe = dataframes.get(1);
-        DynamicModelSeries series = new TapChangerBlockingSeries(dataframe, tfo_dataframe);
+        UpdatingDataframe tfoDataframe = dataframes.get(1);
+        List<UpdatingDataframe> measurementDataframe = new ArrayList<>(MAX_MEASUREMENTS);
+        for (int i = 2; i < dataframes.size(); i++) {
+            measurementDataframe.add(dataframes.get(i));
+        }
+
+        DynamicModelSeries series = new TapChangerBlockingSeries(dataframe, tfoDataframe, measurementDataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             modelMapping.addModel(series.getModelSupplier(row));
         }
@@ -66,21 +79,25 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
 
     private static class TapChangerBlockingSeries extends AbstractAutomationSystemSeries<TapChangerBlockingAutomationSystemBuilder> {
 
-        private final StringSeries uMeasurements;
         private final Map<String, List<String>> transformers;
+        private final List<Map<String, List<String>>> uMeasurements = new ArrayList<>(MAX_MEASUREMENTS);
 
-        TapChangerBlockingSeries(UpdatingDataframe tcbDataframe, UpdatingDataframe tfoDataframe) {
+        TapChangerBlockingSeries(UpdatingDataframe tcbDataframe, UpdatingDataframe tfoDataframe, List<UpdatingDataframe> measurementDataframe) {
             super(tcbDataframe);
-            this.uMeasurements = PersistentStringSeries.copyOf(tcbDataframe, U_MEASUREMENTS);
             this.transformers = createIdMap(tfoDataframe, DYNAMIC_MODEL_ID, TRANSFORMER_ID);
+            measurementDataframe.forEach(mdf -> uMeasurements.add(createIdMap(mdf, DYNAMIC_MODEL_ID, MEASUREMENT_POINT_ID)));
         }
 
         @Override
         protected void applyOnBuilder(int row, TapChangerBlockingAutomationSystemBuilder builder) {
             super.applyOnBuilder(row, builder);
-            SeriesUtils.applyIfPresent(uMeasurements, row, builder::uMeasurements);
             String tcbId = dynamicModelIds.get(row);
             applyIfPresent(transformers, tcbId, builder::transformers);
+            List<Collection<String>> id2dList = new ArrayList<>();
+            uMeasurements.forEach(idMap -> applyIfPresent(idMap, tcbId, id2dList::add));
+            if (!id2dList.isEmpty()) {
+                builder.uMeasurements(id2dList.toArray(new Collection[0]));
+            }
         }
 
         @Override

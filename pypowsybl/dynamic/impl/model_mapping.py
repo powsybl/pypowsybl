@@ -837,26 +837,34 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER, [df], **kwargs)
 
-    def add_tap_changer_blocking_automation_system(self, df: DataFrame, tfo_df: DataFrame) -> None:
+    def add_tap_changer_blocking_automation_system(self, df: DataFrame, tfo_df: DataFrame, mp1_df: DataFrame,
+                                                   mp2_df: DataFrame = None, mp3_df: DataFrame = None,
+                                                   mp5_df: DataFrame = None, mp4_df: DataFrame = None) -> None:
         """
         Add a dynamic tap changer blocking automation system (not link to a network element)
         
         :Args:
             df: Primary attributes as a dataframe.
             tfo_df: Dataframe for transformer data.
+            mpN_df: Dataframes for a measurement point data, the automation system can handle up to 5 measurement points,
+            at least 1 measurement point is expected. For each measurement point dataframe, alternative points can be input
+            (for example bus or busbar section) the first energized element found in the network will be used
 
         Notes:
 
-            Valid attributes for thr primary dataframes are:
+            Valid attributes for the primary dataframes are:
             
                 - **dynamic_model_id**: id of the tap changer blocking automation system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-                - **u_measurements**: id of the bus or busbar section used for the voltage measurement
                 - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
-            Valid attributes for thr primary dataframes are:
+            Valid attributes for the transformer dataframes are:
                 - **dynamic_model_id**: id of the tap changer blocking automation system
                 - **transformer_id**: id of a transformer controlled by the automation system
+
+            Valid attributes for the measurement point dataframes are:
+                - **dynamic_model_id**: id of the tap changer blocking automation system
+                - **measurement_point_id**: id of the bus or busbar section used for the voltage measurement
 
         Examples:
 
@@ -874,9 +882,19 @@ class ModelMapping:
                     data=[('DM_TCB', 'TFO1'),
                           ('DM_TCB', 'TFO2'),
                           ('DM_TCB', 'TFO3')])
-                model_mapping.add_tap_changer_blocking_automation_system(df, tfo_df)
+                measurement1_df = pd.DataFrame.from_records(
+                    index='dynamic_model_id',
+                    columns=['dynamic_model_id', 'measurement_point_id'],
+                    data=[('DM_TCB', 'B1'),
+                          ('DM_TCB', 'BS1')])
+                measurement2_df = pd.DataFrame.from_records(
+                    index='dynamic_model_id',
+                    columns=['dynamic_model_id', 'measurement_point_id'],
+                    data=[('DM_TCB', 'B4')])
+                model_mapping.add_tap_changer_blocking_automation_system(df, tfo_df, measurement1_df, measurement2_df)
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER_BLOCKING, [df, tfo_df])
+        dfs = [df, tfo_df, mp1_df, mp2_df, mp3_df, mp4_df, mp5_df]
+        self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER_BLOCKING, [DataFrame() if df is None else df for df in dfs])
 
     def _add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_dynamic_mappings_meta_data(mapping_type)

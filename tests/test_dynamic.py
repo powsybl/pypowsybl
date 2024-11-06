@@ -16,9 +16,6 @@ def set_up():
 
 
 def test_add_mapping():
-    static_id = 'test_id'
-    dynamic_id = 'test_dynamic_id'
-    parameter_id = 'test_parameter'
     model_mapping = dyn.ModelMapping()
     # Equipments
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', dynamic_model_id='DM_LOAD', model_name='LoadPQ')
@@ -57,9 +54,6 @@ def test_add_mapping():
                                                                  phase_shifter_id='PSI', model_name='PhaseShifterBlockingI')
     model_mapping.add_tap_changer_automation_system(dynamic_model_id='DM_TC', parameter_set_id='tc', static_id='LOAD',
                                                     side='HIGH_VOLTAGE', model_name='TapChangerAutomaton')
-    model_mapping.add_tap_changer_blocking_automation_system(dynamic_model_id='DM_TCB', parameter_set_id='tcb',
-                                                             transformers='TRA', u_measurements='BUS',
-                                                             model_name='TapChangerBlockingAutomaton')
     # Equipment with default model name and dynamic id
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab')
     # Equipment model from Supported models
@@ -91,15 +85,24 @@ def test_dynamic_dataframe():
 
     tcb_df = pd.DataFrame.from_records(
         index='dynamic_model_id',
-        columns=['dynamic_model_id', 'parameter_set_id', 'u_measurements', 'model_name'],
-        data=[('DM_TCB', 'tcb', 'BUS', 'TapChangerBlockingAutomaton')])
+        columns=['dynamic_model_id', 'parameter_set_id', 'model_name'],
+        data=[('DM_TCB', 'tcb', 'TapChangerBlockingAutomaton')])
     tfo_df = pd.DataFrame.from_records(
         index='dynamic_model_id',
         columns=['dynamic_model_id', 'transformer_id'],
         data=[('DM_TCB', 'TFO1'),
               ('DM_TCB', 'TFO2'),
               ('DM_TCB', 'TFO3')])
-    model_mapping.add_tap_changer_blocking_automation_system(tcb_df, tfo_df)
+    measurement1_df = pd.DataFrame.from_records(
+        index='dynamic_model_id',
+        columns=['dynamic_model_id', 'measurement_point_id'],
+        data=[('DM_TCB', 'B1'),
+              ('DM_TCB', 'BS1')])
+    measurement2_df = pd.DataFrame.from_records(
+        index='dynamic_model_id',
+        columns=['dynamic_model_id', 'measurement_point_id'],
+        data=[('DM_TCB', 'B4')])
+    model_mapping.add_tap_changer_blocking_automation_system(tcb_df, tfo_df, measurement1_df, measurement2_df)
 
 
 def test_add_event():

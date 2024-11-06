@@ -11,6 +11,7 @@ import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dynawo.models.AbstractPureDynamicBlackBoxModel;
 import com.powsybl.dynawo.models.TransformerSide;
+import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystem;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -18,6 +19,7 @@ import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -77,7 +79,8 @@ class DynamicModelsAdderTest {
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
                         .isInstanceOf(AbstractPureDynamicBlackBoxModel.class),
-                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId + DEFAULT_SUFFIX));
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId + DEFAULT_SUFFIX)
+                        .isInstanceOf(AbstractPureDynamicBlackBoxModel.class));
     }
 
     @Test
@@ -88,17 +91,30 @@ class DynamicModelsAdderTest {
         String defaultDynamicModelId = dynamicModelId + DEFAULT_SUFFIX;
         // Setup Tcb df
         setupDataFrame(dataframe, dynamicModelId, expectedModelName);
-        dataframe.addSeries(U_MEASUREMENTS, false, createTwoRowsSeries("NHV1"));
         // Setup Tfo df
         DefaultUpdatingDataframe tfoDataFrame = new DefaultUpdatingDataframe(3);
         tfoDataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId, defaultDynamicModelId));
         tfoDataFrame.addSeries(TRANSFORMER_ID, false, new TestStringSeries("NGEN_NHV1", "NHV2_NLOAD", "NHV2_NLOAD"));
-        DynamicMappingHandler.addElements(TAP_CHANGER_BLOCKING, dynamicModelsSupplier, List.of(dataframe, tfoDataFrame));
+        // Setup measurement points df
+        DefaultUpdatingDataframe m1DataFrame = new DefaultUpdatingDataframe(3);
+        m1DataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId, defaultDynamicModelId));
+        m1DataFrame.addSeries(MEASUREMENT_POINT_ID, false, new TestStringSeries("BBS_NGEN", "NGEN", "NHV1"));
+        DefaultUpdatingDataframe m2DataFrame = new DefaultUpdatingDataframe(2);
+        m2DataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId));
+        m2DataFrame.addSeries(MEASUREMENT_POINT_ID, false, new TestStringSeries("OLD_NLOAD_ID", "NLOAD"));
+        DynamicMappingHandler.addElements(TAP_CHANGER_BLOCKING, dynamicModelsSupplier, List.of(dataframe, tfoDataFrame, m1DataFrame, m2DataFrame));
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
-                        .isInstanceOf(AbstractPureDynamicBlackBoxModel.class),
-                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", defaultDynamicModelId));
+                        .isInstanceOf(TapChangerBlockingAutomationSystem.class)
+                        .extracting("uMeasurements")
+                        .asInstanceOf(InstanceOfAssertFactories.LIST)
+                        .containsExactly(network.getBusBreakerView().getBus("NGEN"), network.getBusBreakerView().getBus("NLOAD")),
+                model2 -> assertThat(model2).hasFieldOrPropertyWithValue("dynamicModelId", defaultDynamicModelId)
+                        .isInstanceOf(TapChangerBlockingAutomationSystem.class)
+                        .extracting("uMeasurements")
+                        .asInstanceOf(InstanceOfAssertFactories.LIST)
+                        .containsExactly(network.getBusBreakerView().getBus("NHV1")));
     }
 
     @Test
