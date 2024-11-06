@@ -14,10 +14,7 @@ import tempfile
 import unittest
 import io
 import zipfile
-from netrc import netrc
 from os.path import exists
-
-import logging
 
 import matplotlib.pyplot as plt
 import networkx as nx
