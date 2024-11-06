@@ -41,6 +41,16 @@ def get_export_formats() -> List[str]:
     return _pp.get_network_export_formats()
 
 
+def get_import_post_processors() -> List[str]:
+    """
+    Get list of supported import post processors
+
+    Returns:
+         the list of supported import post processors
+    """
+    return _pp.get_network_import_post_processors()
+
+
 def get_import_parameters(fmt: str) -> DataFrame:
     """
     Supported import parameters for a given format.

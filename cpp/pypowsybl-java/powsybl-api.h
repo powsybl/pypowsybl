@@ -161,13 +161,17 @@ typedef enum {
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
     OPERATIONAL_LIMITS,
+    SELECTED_OPERATIONAL_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
     IDENTIFIABLE,
     INJECTION,
     BRANCH,
     TERMINAL,
-    SUB_NETWORK
+    SUB_NETWORK,
+    AREA,
+    AREA_VOLTAGE_LEVELS,
+    AREA_BOUNDARIES
 } element_type;
 
 typedef enum {
@@ -328,7 +332,7 @@ typedef struct flow_decomposition_parameters_struct {
     unsigned char enable_losses_compensation;
     double losses_compensation_epsilon;
     double sensitivity_epsilon;
-    unsigned char rescale_enabled;
+    int rescale_mode;
     unsigned char dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;

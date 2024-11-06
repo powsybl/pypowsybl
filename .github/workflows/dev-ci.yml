@@ -1,17 +1,13 @@
 name: Dev CI
 
 on:
-  push:
-    branches:
-      # on all branches except main where full build will be run
-      - '*'
-      - '!main'
+  pull_request:
 
 jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
+    container: quay.io/pypa/manylinux2014_x86_64:2024-10-07-1887322
     env:
       ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
     strategy:
@@ -33,7 +29,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
         with:
-          java-version: '17'
+          java-version: '17.0.12'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -94,6 +90,14 @@ jobs:
         working-directory: ./docs
         run: make html doctest SPHINXOPTS="-W"
 
+      - name: Test standalone cpp build
+        shell: bash
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
@@ -126,7 +130,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17'
+          java-version: '17.0.12'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -168,3 +172,41 @@ jobs:
       - name: Run doc examples
         working-directory: ./docs
         run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        shell: bash
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+          
+  build:
+    name: Run SonarCloud analysis for Java code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4.0.0
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Build with Maven (Ubuntu)
+        working-directory: ./java
+        run: >
+          mvn --batch-mode install
+
+      - name: Run SonarCloud analysis
+        working-directory: ./java
+        run: >
+          mvn --batch-mode -DskipTests sonar:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=powsybl-ci-github
+          -Dsonar.projectKey=powsybl_pypowsybl-java
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}          
+

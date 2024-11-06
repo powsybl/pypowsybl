@@ -14,12 +14,10 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
-import com.powsybl.security.detectors.DefaultLimitViolationDetector;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.strategy.OperatorStrategy;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,21 +33,15 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, ReportNode reportNode) {
         ContingenciesProvider contingencies = this::createContingencies;
+        SecurityAnalysisRunParameters runParameters = new SecurityAnalysisRunParameters()
+                .setSecurityAnalysisParameters(securityAnalysisParameters)
+                .setComputationManager(CommonObjects.getComputationManager())
+                .setOperatorStrategies(operatorStrategies)
+                .setActions(actions)
+                .setMonitors(monitors)
+                .setReportNode(reportNode == null ? ReportNode.NO_OP : reportNode);
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
-                .run(
-                        network,
-                        network.getVariantManager().getWorkingVariantId(),
-                        contingencies,
-                        securityAnalysisParameters,
-                        CommonObjects.getComputationManager(),
-                        new LimitViolationFilter(),
-                        new DefaultLimitViolationDetector(),
-                        Collections.emptyList(),
-                        operatorStrategies,
-                        actions,
-                        monitors,
-                        (reportNode == null) ? ReportNode.NO_OP : reportNode
-                );
+                .run(network, network.getVariantManager().getWorkingVariantId(), contingencies, runParameters);
         return report.getResult();
     }
 

@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public final class NetworkUtils {
 
-    private static final String DOES_NOT_EXIST = " does not exist.";
+    private static final String DOES_NOT_EXIST = "' does not exist.";
 
     private NetworkUtils() {
     }
@@ -26,7 +26,7 @@ public final class NetworkUtils {
     public static VoltageLevel getVoltageLevelOrThrow(Network network, String id) {
         VoltageLevel voltageLevel = network.getVoltageLevel(id);
         if (voltageLevel == null) {
-            throw new PowsyblException("Voltage level " + id + DOES_NOT_EXIST);
+            throw new PowsyblException("Voltage level '" + id + DOES_NOT_EXIST);
         }
         return voltageLevel;
     }
@@ -61,7 +61,7 @@ public final class NetworkUtils {
     public static Substation getSubstationOrThrow(Network network, String id) {
         Substation substation = network.getSubstation(id);
         if (substation == null) {
-            throw new PowsyblException("Substation " + id + DOES_NOT_EXIST);
+            throw new PowsyblException("Substation '" + id + DOES_NOT_EXIST);
         }
         return substation;
     }
@@ -69,8 +69,56 @@ public final class NetworkUtils {
     public static Identifiable<?> getIdentifiableOrThrow(Network network, String id) {
         Identifiable<?> identifiable = network.getIdentifiable(id);
         if (identifiable == null) {
-            throw new PowsyblException("Network element " + id + DOES_NOT_EXIST);
+            throw new PowsyblException("Network element '" + id + DOES_NOT_EXIST);
         }
         return identifiable;
+    }
+
+    public static Injection<?> getGenOrLoadOrBusbarSectionOrThrow(Network network, String id) {
+        Identifiable<?> identifiable = getIdentifiableOrThrow(network, id);
+        if (!(identifiable instanceof Generator) && !(identifiable instanceof Load) && !(identifiable instanceof BusbarSection)) {
+            throw new PowsyblException("Network element  '" + id + "' is not a generator, bus bar section, or load");
+        }
+        return (Injection<?>) identifiable;
+    }
+
+    public static Area getAreaOrThrow(Network network, String id) {
+        Area area = network.getArea(id);
+        if (area == null) {
+            throw new PowsyblException("Area '" + id + DOES_NOT_EXIST);
+        }
+        return area;
+    }
+
+    public static DanglingLine getDanglingLineOrThrow(Network network, String id) {
+        DanglingLine danglingLine = network.getDanglingLine(id);
+        if (danglingLine == null) {
+            throw new PowsyblException("Dangling Line '" + id + DOES_NOT_EXIST);
+        }
+        return danglingLine;
+    }
+
+    public static Connectable<?> getConnectableOrThrow(Network network, String id) {
+        Connectable<?> connectable = network.getConnectable(id);
+        if (connectable == null) {
+            throw new PowsyblException("Connectable '" + id + DOES_NOT_EXIST);
+        }
+        return connectable;
+    }
+
+    public static Terminal getTerminalOrThrow(Network network, String id, String side) {
+        Connectable<?> connectable = getConnectableOrThrow(network, id);
+        Terminal terminal;
+        if (connectable instanceof Injection<?> injection) {
+            terminal = injection.getTerminal();
+        } else if (connectable instanceof Branch<?> branch) {
+            terminal = branch.getTerminal(TwoSides.valueOf(side));
+        } else if (connectable instanceof ThreeWindingsTransformer t3wt) {
+            terminal = t3wt.getTerminal(ThreeSides.valueOf(side));
+        } else {
+            // Never supposed to happen
+            throw new PowsyblException("Connectable '" + id + "' is not an injection, branch, or three windings transformer");
+        }
+        return terminal;
     }
 }

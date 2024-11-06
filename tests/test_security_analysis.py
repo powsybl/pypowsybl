@@ -201,10 +201,8 @@ def test_loadflow_parameters():
 
 def test_security_analysis_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
-         'type': 'CURRENT', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False}]))
+    network.create_operational_limits(element_id='NHV1_NHV2_1', name='permanent_limit', side='ONE', type='CURRENT', value=400.0,
+         acceptable_duration=-1, fictitious=False)
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('', 'First contingency')
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
@@ -241,8 +239,8 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
 

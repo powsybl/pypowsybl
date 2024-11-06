@@ -367,6 +367,13 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+enum class RescaleMode {
+    NONE = 0,
+    ACER_METHODOLOGY,
+    PROPORTIONAL,
+    MAX_CURRENT_OVERLOAD
+};
+
 class FlowDecompositionParameters {
 public:
     FlowDecompositionParameters(flow_decomposition_parameters* src);
@@ -375,7 +382,7 @@ public:
     bool enable_losses_compensation;
     float losses_compensation_epsilon;
     float sensitivity_epsilon;
-    bool rescale_enabled;
+    RescaleMode rescale_mode;
     bool dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 };
@@ -440,7 +447,9 @@ enum ShortCircuitStudyType {
 
 enum InitialVoltageProfileMode {
     NOMINAL = 0,
-    PREVIOUS_VALUE
+    // The enum is incomplete, the last case (CONFIGURED) will be done later.
+    // For now the value of PREVIOUS_VALUE must be specified.
+    PREVIOUS_VALUE = 2
 };
 
 class ShortCircuitAnalysisParameters {
@@ -512,6 +521,8 @@ std::vector<std::string> getNetworkImportFormats();
 
 std::vector<std::string> getNetworkExportFormats();
 
+std::vector<std::string> getNetworkImportPostProcessors();
+
 std::vector<std::string> getLoadFlowProviderNames();
 
 std::vector<std::string> getSecurityAnalysisProviderNames();
@@ -524,9 +535,9 @@ SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
 
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
@@ -566,9 +577,11 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -741,7 +754,7 @@ SldParameters* createSldParameters();
 
 NadParameters* createNadParameters();
 
-//=======dynamic modeling for dynawaltz package==========
+//=======dynamic modeling for dynawo package==========
 
 //handle creation
 JavaHandle createDynamicSimulationContext();
@@ -766,7 +779,7 @@ std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResult
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
-//=======END OF dynamic modeling for dynawaltz package==========
+//=======END OF dynamic modeling for dynawo package==========
 
 //=======Voltage initializer mapping========
 

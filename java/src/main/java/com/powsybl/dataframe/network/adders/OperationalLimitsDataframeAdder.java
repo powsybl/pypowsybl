@@ -19,12 +19,12 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
         SeriesMetadata.stringIndex("element_id"),
         SeriesMetadata.strings("name"),
-        SeriesMetadata.strings("element_type"),
         SeriesMetadata.strings("side"),
         SeriesMetadata.strings("type"),
         SeriesMetadata.doubles("value"),
         SeriesMetadata.ints("acceptable_duration"),
-        SeriesMetadata.booleans("is_fictitious")
+        SeriesMetadata.booleans("fictitious"),
+        SeriesMetadata.strings("group_name")
     );
 
     @Override
@@ -36,22 +36,22 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
         private final StringSeries elementIds;
         private final StringSeries names;
-        private final StringSeries elementTypes;
         private final StringSeries sides;
         private final StringSeries types;
         private final DoubleSeries values;
         private final IntSeries acceptableDurations;
         private final IntSeries fictitious;
+        private final StringSeries groupNames;
 
         OperationalLimitsSeries(UpdatingDataframe dataframe) {
             this.elementIds = getRequiredStrings(dataframe, "element_id");
             this.names = dataframe.getStrings("name");
-            this.elementTypes = getRequiredStrings(dataframe, "element_type");
             this.sides = getRequiredStrings(dataframe, "side");
             this.types = getRequiredStrings(dataframe, "type");
             this.values = getRequiredDoubles(dataframe, "value");
             this.acceptableDurations = getRequiredInts(dataframe, "acceptable_duration");
-            this.fictitious = dataframe.getInts("is_fictitious");
+            this.fictitious = dataframe.getInts("fictitious");
+            this.groupNames = dataframe.getStrings("group_name");
         }
 
         public StringSeries getElementIds() {
@@ -60,10 +60,6 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
         public StringSeries getNames() {
             return names;
-        }
-
-        public StringSeries getElementTypes() {
-            return elementTypes;
         }
 
         public StringSeries getSides() {
@@ -85,6 +81,10 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         public IntSeries getFictitious() {
             return fictitious;
         }
+
+        public StringSeries getGroupNames() {
+            return groupNames;
+        }
     }
 
     @Override
@@ -97,7 +97,12 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             String elementId = series.getElementIds().get(i);
             String side = series.getSides().get(i);
             String limitType = series.getTypes().get(i);
-            LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType);
+            StringSeries groupNames = series.getGroupNames();
+            String groupName = null;
+            if (groupNames != null) {
+                groupName = series.getGroupNames().get(i);
+            }
+            LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType, groupName);
             indexMap.computeIfAbsent(key, k -> new TIntArrayList()).add(i);
         }
 
@@ -106,23 +111,22 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
     private static void addElements(Network network, OperationalLimitsSeries series, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
         indexMap.forEach((key, indexList) -> createLimits(network, series, key.getElementId(),
-            key.getSide(), key.getLimitType(), indexList));
+            key.getSide(), key.getLimitType(), key.getGroupId(), indexList));
     }
 
     private static void createLimits(Network network, OperationalLimitsSeries series, String elementId, String side, String type,
-                                     TIntArrayList indexList) {
-        IdentifiableType elementType = IdentifiableType.valueOf(series.getElementTypes().get(indexList.get(0)));
+                                     String groupId, TIntArrayList indexList) {
         LimitType limitType = LimitType.valueOf(type);
         TemporaryLimitData.Side limitSide = TemporaryLimitData.Side.valueOf(side);
 
-        LoadingLimitsAdder adder = getAdder(network, elementType, elementId, limitType, limitSide);
+        LoadingLimitsAdder<?, ?> adder = getAdder(network, elementId, limitType, limitSide, groupId);
         for (int index : indexList.toArray()) {
             createLimits(adder, index, series);
         }
         adder.add();
     }
 
-    private static void createLimits(LoadingLimitsAdder adder, int row, OperationalLimitsSeries series) {
+    private static void createLimits(LoadingLimitsAdder<?, ?> adder, int row, OperationalLimitsSeries series) {
         int acceptableDuration = series.getAcceptableDurations().get(row);
         if (acceptableDuration == -1) {
             applyIfPresent(series.getValues(), row, adder::setPermanentLimit);
@@ -249,30 +253,20 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         };
     }
 
-    private static FlowsLimitsHolder getLimitsHolder(Network network, IdentifiableType identifiableType, String elementId, TemporaryLimitData.Side side) {
-        switch (identifiableType) {
+    private static FlowsLimitsHolder getLimitsHolder(Network network, String elementId, TemporaryLimitData.Side side) {
+        Identifiable<?> identifiable = NetworkUtils.getIdentifiableOrThrow(network, elementId);
+        switch (identifiable.getType()) {
             case LINE, TWO_WINDINGS_TRANSFORMER -> {
-                Branch<?> branch = network.getBranch(elementId);
-                if (branch == null) {
-                    throw new PowsyblException(String.format("Branch %s does not exist.", elementId));
-                }
-                return getBranchAsFlowsLimitsHolder(branch, toBranchSide(side));
+                return getBranchAsFlowsLimitsHolder((Branch<?>) identifiable, toBranchSide(side));
             }
             case DANGLING_LINE -> {
-                DanglingLine dl = network.getDanglingLine(elementId);
-                if (dl == null) {
-                    throw new PowsyblException(String.format("Dangling line %s does not exist.", elementId));
-                }
                 if (side != TemporaryLimitData.Side.NONE) {
                     throw new PowsyblException(String.format("Invalid value for dangling line side: %s, must be NONE", side));
                 }
-                return dl;
+                return (DanglingLine) identifiable;
             }
             case THREE_WINDINGS_TRANSFORMER -> {
-                ThreeWindingsTransformer transformer = network.getThreeWindingsTransformer(elementId);
-                if (transformer == null) {
-                    throw new PowsyblException(String.format("Three windings transformer %s does not exist.", elementId));
-                }
+                ThreeWindingsTransformer transformer = (ThreeWindingsTransformer) identifiable;
                 return switch (side) {
                     case ONE -> transformer.getLeg1();
                     case TWO -> transformer.getLeg2();
@@ -281,16 +275,28 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
                 };
             }
             default ->
-                throw new PowsyblException("Cannot create operational limits for element of type " + identifiableType);
+                throw new PowsyblException("Cannot create operational limits for element of type " + identifiable.getType());
         }
     }
 
-    private static LoadingLimitsAdder getAdder(Network network, IdentifiableType identifiableType, String elementId, LimitType type, TemporaryLimitData.Side side) {
-        FlowsLimitsHolder limitsHolder = getLimitsHolder(network, identifiableType, elementId, side);
+    private static LoadingLimitsAdder<?, ?> getAdder(Network network, String elementId, LimitType type,
+                                                     TemporaryLimitData.Side side, String groupId) {
+        FlowsLimitsHolder limitsHolder = getLimitsHolder(network, elementId, side);
+        OperationalLimitsGroup group;
+        if (groupId == null) {
+            String selectedGroupId = limitsHolder.getSelectedOperationalLimitsGroupId().orElse("DEFAULT");
+            group = limitsHolder.getSelectedOperationalLimitsGroup()
+                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup("DEFAULT"));
+            limitsHolder.setSelectedOperationalLimitsGroup(selectedGroupId);
+        } else {
+            group = limitsHolder.getOperationalLimitsGroup(groupId)
+                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup(groupId));
+        }
+
         return switch (type) {
-            case CURRENT -> limitsHolder.newCurrentLimits();
-            case ACTIVE_POWER -> limitsHolder.newActivePowerLimits();
-            case APPARENT_POWER -> limitsHolder.newApparentPowerLimits();
+            case CURRENT -> group.newCurrentLimits();
+            case ACTIVE_POWER -> group.newActivePowerLimits();
+            case APPARENT_POWER -> group.newApparentPowerLimits();
             default -> throw new PowsyblException(String.format("Limit type %s does not exist.", type));
         };
     }
