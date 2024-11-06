@@ -875,15 +875,15 @@ public final class NetworkDataframes {
                 .stringsIndex("id", triple -> triple.getLeft().getId())
                 .intsIndex("position", Triple::getRight)
                 .doubles("rho", (p, context) -> p.getMiddle().getStep(p.getRight()).getRho(),
-                        (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
                 .doubles("r", (p, context) -> p.getMiddle().getStep(p.getRight()).getR(),
-                        (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
                 .doubles("x", (p, context) -> p.getMiddle().getStep(p.getRight()).getX(),
-                        (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
                 .doubles("g", (p, context) -> p.getMiddle().getStep(p.getRight()).getG(),
-                        (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
                 .doubles("b", (p, context) -> p.getMiddle().getStep(p.getRight()).getB(),
-                        (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
+                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
     }
 
@@ -906,17 +906,17 @@ public final class NetworkDataframes {
                 .stringsIndex("id", triple -> triple.getLeft().getId())
                 .intsIndex("position", Triple::getRight)
                 .doubles("rho", (p, context) -> p.getMiddle().getStep(p.getRight()).getRho(),
-                        (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
+                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
                 .doubles("alpha", (p, context) -> perUnitAngle(context, p.getMiddle().getStep(p.getRight()).getAlpha()),
                     (p, alpha, context) -> p.getMiddle().getStep(p.getRight()).setAlpha(unPerUnitAngle(context, alpha)))
                 .doubles("r", (p, context) -> p.getMiddle().getStep(p.getRight()).getR(),
-                        (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
+                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
                 .doubles("x", (p, context) -> p.getMiddle().getStep(p.getRight()).getX(),
-                        (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
+                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
                 .doubles("g", (p, context) -> p.getMiddle().getStep(p.getRight()).getG(),
-                        (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
+                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
                 .doubles("b", (p, context) -> p.getMiddle().getStep(p.getRight()).getB(),
-                        (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
+                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
                 .build();
     }
 
@@ -1306,6 +1306,7 @@ public final class NetworkDataframes {
                 .flatMap(identifiable -> identifiable.getAliases().stream()
                         .map(alias -> Pair.of(identifiable, alias)));
     }
+
     private static NetworkDataframeMapper areaVoltageLevels() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::areaVoltageLevelsData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
@@ -1359,6 +1360,5 @@ public final class NetworkDataframes {
                 .flatMap(area -> area.getAreaBoundaryStream()
                         .map(areaBoundary -> Pair.of(area, areaBoundary)));
     }
-    
 }
 
