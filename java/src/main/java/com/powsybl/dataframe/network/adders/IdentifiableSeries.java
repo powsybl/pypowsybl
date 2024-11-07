@@ -17,7 +17,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * This hierarchy of classes aims at gathering usual columns on initialization
  * and set the corresponding data into IIDM adders.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 class IdentifiableSeries {
     protected final StringSeries ids;

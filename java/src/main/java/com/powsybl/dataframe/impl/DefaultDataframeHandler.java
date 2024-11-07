@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 /**
  * Writes series data to POJOs.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public class DefaultDataframeHandler implements DataframeHandler {
 

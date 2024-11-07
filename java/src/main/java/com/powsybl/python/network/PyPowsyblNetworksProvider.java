@@ -19,7 +19,7 @@ import static com.powsybl.python.network.Networks.factory;
 /**
  * Provides pypowsybl named networks.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 @AutoService(Networks.NetworksProvider.class)
 public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {

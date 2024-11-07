@@ -5,7 +5,7 @@ import com.powsybl.security.LimitViolation;
 import java.util.Objects;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class LimitViolationContext extends LimitViolation {
 

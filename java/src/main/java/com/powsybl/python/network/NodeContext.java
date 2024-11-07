@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class NodeContext {
     private final int node;

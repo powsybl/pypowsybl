@@ -13,7 +13,7 @@ import com.powsybl.computation.local.LocalComputationManager;
 /**
  * Manages common runtime objects, typically library-wide singletons.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class CommonObjects {
 
