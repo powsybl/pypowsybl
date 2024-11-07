@@ -363,15 +363,9 @@ public final class Dataframes {
     }
 
     private static List<BusBreakerViewBusData> getBusBreakerViewBuses(VoltageLevel voltageLevel) {
-        return voltageLevel.getBusBreakerView().getBusStream().map(bus -> {
-            Bus busViewBus = bus.getConnectedTerminalStream()
-                    .map(t -> t.getBusView().getBus())
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-            return new BusBreakerViewBusData(bus, busViewBus);
-        }).collect(Collectors.toList());
-
+        return voltageLevel.getBusBreakerView().getBusStream()
+                .map(bus -> new BusBreakerViewBusData(bus, NetworkUtil.getBusViewBus(bus)))
+                .toList();
     }
 
     private static DataframeMapper<VoltageLevel, Void> createBusBreakerViewBuses() {
