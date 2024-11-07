@@ -10,7 +10,7 @@ package com.powsybl.python.security;
 import com.powsybl.security.results.ThreeWindingsTransformerResult;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class ThreeWindingsTransformerResultContext extends ThreeWindingsTransformerResult {
 
