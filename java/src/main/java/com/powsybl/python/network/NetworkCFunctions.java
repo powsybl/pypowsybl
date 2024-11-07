@@ -94,6 +94,11 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Importer.getFormats().stream().sorted().toList()));
     }
 
+    @CEntryPoint(name = "getNetworkImportSupportedExtensions")
+    public static ArrayPointer<CCharPointerPointer> getNetworkImportSupportedExtensions(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Importer.list().stream().flatMap(l -> l.getSupportedExtensions().stream()).distinct().sorted().toList()));
+    }
+
     @CEntryPoint(name = "getNetworkExportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Exporter.getFormats().stream().sorted().toList()));

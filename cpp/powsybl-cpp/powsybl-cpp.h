@@ -519,6 +519,8 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 
 std::vector<std::string> getNetworkImportFormats();
 
+std::vector<std::string> getNetworkImportSupportedExtensions();
+
 std::vector<std::string> getNetworkExportFormats();
 
 std::vector<std::string> getNetworkImportPostProcessors();

@@ -491,6 +491,12 @@ std::vector<std::string> getNetworkImportPostProcessors() {
     return postProcessors.get();
 }
 
+std::vector<std::string> getNetworkImportSupportedExtensions() {
+    auto supportedExtensionsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkImportSupportedExtensions);
+    ToStringVector postProcessors(supportedExtensionsArrayPtr);
+    return postProcessors.get();
+}
+
 std::vector<std::string> getLoadFlowProviderNames() {
     auto formatsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getLoadFlowProviderNames);
     ToStringVector formats(formatsArrayPtr);
