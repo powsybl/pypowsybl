@@ -255,7 +255,7 @@ def create_generator_min_p(gen_and_bus: DataFrame, generator_type: PandaPowerGen
 
 def create_generator_target_q(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType) -> pd.Series:
     return gen_and_bus[
-        'q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else pd.Series(
+        'q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR and 'q_mvar' in gen_and_bus.columns else pd.Series(
         [0.0] * len(gen_and_bus))
 
 
