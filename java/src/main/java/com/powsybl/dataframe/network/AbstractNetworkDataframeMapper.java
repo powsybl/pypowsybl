@@ -20,7 +20,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public abstract class AbstractNetworkDataframeMapper<T> extends AbstractDataframeMapper<Network, T, NetworkDataframeContext> implements NetworkDataframeMapper {
 

@@ -53,7 +53,7 @@ import java.util.function.Supplier;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public final class Util {
 

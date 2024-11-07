@@ -14,7 +14,7 @@ import java.util.List;
  * It defines a name for the series, a way to retrieve data from the underlying objects
  * as a series, and a way to write data to the objects from a series input.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public interface SeriesMapper<T, C> {
 
