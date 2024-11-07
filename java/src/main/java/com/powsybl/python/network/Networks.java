@@ -98,6 +98,11 @@ public final class Networks {
         return fix(network);
     }
 
+    public static Network createEurostagTutorialExampleWithMoreGenerators() {
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
+        return fix(network);
+    }
+
     public static Network createEurostagTutorialExample1WithFixedCurrentLimits() {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         return fix(network);
