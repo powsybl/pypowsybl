@@ -27,9 +27,9 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPre
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public class VscStationDataframeAdder extends AbstractSimpleAdder {
 

@@ -20,7 +20,7 @@ import java.util.stream.Stream;
  * Specific build for network mappers :
  * it provides network-specific features, in particular the {@link #addProperties()} method.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public class NetworkDataframeMapperBuilder<T> extends BaseDataframeMapperBuilder<Network, T, NetworkDataframeContext, NetworkDataframeMapperBuilder<T>> {
 

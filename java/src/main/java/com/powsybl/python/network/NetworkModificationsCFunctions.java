@@ -42,7 +42,7 @@ import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 /**
  * Defines the C functions for network modifications.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 @CContext(Directives.class)
 public final class NetworkModificationsCFunctions {

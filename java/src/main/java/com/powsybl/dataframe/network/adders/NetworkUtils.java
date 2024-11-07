@@ -14,7 +14,7 @@ import com.powsybl.iidm.network.*;
 import java.util.Optional;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class NetworkUtils {
 
