@@ -3,6 +3,7 @@ import pytest
 import pypowsybl as pp
 import pandas as pd
 import pathlib
+import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
 
@@ -28,7 +29,7 @@ def test_voltage_level_topology_creation_deprecated_report():
     df = pd.DataFrame.from_records(index="id", data=[
         {'id': 'VL1', 'aligned_buses_or_busbar_count': 3, 'switch_kinds': 'BREAKER, DISCONNECTOR'}
     ])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -187,7 +188,7 @@ def test_add_load_bay_node_breaker_deprecated_reporter():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame(index=["new_load"], columns=["id", "p0", "q0", "bus_or_busbar_section_id", "position_order"],
                       data=[["new_load", 10.0, 3.0, "S1VL1_BBS", 0]])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -245,7 +246,7 @@ def test_add_generator_bay():
 
 def test_add_generator_bay_deprecated_report():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -306,7 +307,7 @@ def test_add_battery_bay_deprecated_report():
         columns=['id', 'bus_or_busbar_section_id', 'max_p', 'min_p', 'target_p', 'target_q', 'position_order'],
         data=[('new_battery', 'S1VL1_BBS', 100, 10, 90, 20, 15)],
         index='id')
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -385,7 +386,7 @@ def test_add_dangling_line_bay_deprecated_reporter():
         'position_order': 15,
         'bus_or_busbar_section_id': 'S1VL1_BBS'
     }])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -639,7 +640,7 @@ def test_add_svc_bay_deprecated_report():
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -714,7 +715,7 @@ def test_add_lcc_bay_deprecated_report():
                'position_order': 15,
                'loss_factor': 0.1,
                'power_factor': 0.2}])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -787,7 +788,7 @@ def test_add_vsc_bay_deprecated_report():
                'voltage_regulator_on': True,
                'loss_factor': 1.0,
                'target_v': 400}])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -852,7 +853,7 @@ def test_create_branch_feeder_bays_twt_bus_breaker_deprecated_reporter():
                       columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g', 'b',
                                'rated_u1', 'rated_u2', 'rated_s'],
                       data=[['new_twt', 'NGEN', 'NHV1', 5.0, 50.0, 2.0, 4.0, 225.0, 400.0, 1.0]])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -893,7 +894,7 @@ def test_create_branch_feeder_bays_line_bus_breaker_deprecated_report():
     df = pd.DataFrame(index=['new_line'],
                       columns=['id', 'bus_or_busbar_section_id_1', 'bus_or_busbar_section_id_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
                       data=[['new_line', 'NHV1', 'NHV2', 5.0, 50.0, 20.0, 30.0, 40.0, 50.0]])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -955,7 +956,7 @@ def test_create_coupling_device_deprecated_report():
     coupling_device = pd.DataFrame.from_records(index='bus_or_busbar_section_id_1', data=[
         {'bus_or_busbar_section_id_1': 'BBS1', 'bus_or_busbar_section_id_2': 'BBS2'},
     ])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -1017,7 +1018,7 @@ def test_remove_feeder_bay_deprecated_report():
                                'position_order_2', 'direction_1', 'direction_2', 'r', 'x', 'g1', 'g2', 'b1', 'b2'],
                       data=[['new_line', 'S1VL2_BBS1', 'S2VL1_BBS', 115, 121, 'TOP', 'TOP', 5.0, 50.0, 20.0, 30.0, 40.0,
                              50.0]])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -1345,7 +1346,7 @@ def test_remove_voltage_level_deprecated_report():
 
     assert 'VLTEST' in n.get_voltage_levels().index
 
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
@@ -1378,7 +1379,7 @@ def test_remove_hvdc_deprecated_report():
     assert 'SHUNT' not in n.get_shunt_compensators().index
     assert n.get_lcc_converter_stations().empty
 
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0

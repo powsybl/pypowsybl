@@ -978,14 +978,14 @@ def test_sld_parameters():
 
 
 def test_layout_parameters():
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
         parameters = LayoutParameters()
         assert not parameters.use_name
         assert not parameters.center_name
         assert not parameters.diagonal_label
         assert parameters.topological_coloring
         assert not parameters.nodes_infos
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
         parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
                                       nodes_infos=True)
         assert parameters.use_name
@@ -1042,12 +1042,12 @@ def test_sld_svg():
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
         sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
                                                                   topological_coloring=False))
         assert re.search('.*<svg.*', sld.svg)
         assert len(sld.metadata) > 0
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
         sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
                                                                    topological_coloring=True, nodes_infos=True))
         assert re.search('.*<svg.*', sld1.svg)
@@ -1115,11 +1115,11 @@ def test_nad_displayed_voltage_levels():
 
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
         assert 9 == len(network.get_current_limits())
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
         assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
         current_limit = network.get_current_limits().sort_index().loc['NHV1_NHV2_1', '10\'']
         expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
                                                                 tuples=[('NHV1_NHV2_1', '10\'')]),
@@ -2357,7 +2357,7 @@ def test_update_name():
 
 def test_deprecated_operational_limits_is_fictitious():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
         network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
             {'element_id': 'NHV1_NHV2_1',
              'name': '',
@@ -2380,8 +2380,8 @@ def test_deprecated_operational_limits_is_fictitious():
 
 def test_deprecated_operational_limits_is_fictitious_kwargs():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.deprecated_call():
-        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'],
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
                                           name=['', ''],
                                           side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
                                           acceptable_duration=[-1, 60], is_fictitious=[False, True])
@@ -2392,7 +2392,7 @@ def test_deprecated_operational_limits_is_fictitious_kwargs():
 def test_deprecated_operational_limits_element_type():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
         network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
             {'element_id': 'NHV1_NHV2_1',
              'element_type': 'LINE',
@@ -2401,14 +2401,14 @@ def test_deprecated_operational_limits_element_type():
              'type': 'CURRENT',
              'value': 400.0,
              'acceptable_duration': -1,
-             'is_fictitious': False},
+             'fictitious': False},
         ]))
 
 
 def test_deprecated_operational_limits_element_type_kwargs():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
         network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
                                           side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
                                           acceptable_duration=[-1, 60], fictitious=[False, True])

@@ -10,6 +10,7 @@ import pypowsybl as pp
 import pandas as pd
 import pypowsybl.report as rp
 from pypowsybl._pypowsybl import ConditionType
+import re
 
 
 @pytest.fixture(autouse=True)
@@ -162,7 +163,7 @@ def test_ac_security_analysis_with_report():
     assert len(report2) >= len(report1)
 
 def test_ac_security_analysis_with_deprecated_report():
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0

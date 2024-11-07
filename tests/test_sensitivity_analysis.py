@@ -8,6 +8,7 @@ import pathlib
 import pytest
 import pypowsybl as pp
 import pandas as pd
+import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
 from pypowsybl.sensitivity import SensitivityFunctionType, SensitivityVariableType, ContingencyContextType
@@ -270,7 +271,7 @@ def test_voltage_sensitivities_with_report():
     assert len(report2) > len(report1)
 
 def test_voltage_sensitivities_with_deprecated_report():
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0

@@ -6,6 +6,7 @@
 #
 import pathlib
 import json
+import re
 
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
@@ -315,7 +316,7 @@ def test_run_lf_with_report():
     assert len(report3) > len(report2)
 
 def test_run_lf_with_deprecated_reporter():
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
         n = pp.network.create_ieee14()
         report_node = rp.Reporter()
         report1 = str(report_node)
