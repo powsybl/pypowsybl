@@ -78,7 +78,7 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
 /**
  * Defines the basic C functions for a network.
  *
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class NetworkCFunctions {
@@ -1118,6 +1118,19 @@ public final class NetworkCFunctions {
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return CTypeUtil.toCharPtr(svg);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
+    public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
+                                                        int voltageLevelIdCount, int depth, double highNominalVoltageBound,
+                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+            List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            return createCharPtrArray(svgAndMeta);
         });
     }
 

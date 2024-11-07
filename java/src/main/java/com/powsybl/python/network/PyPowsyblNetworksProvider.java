@@ -19,7 +19,7 @@ import static com.powsybl.python.network.Networks.factory;
 /**
  * Provides pypowsybl named networks.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 @AutoService(Networks.NetworksProvider.class)
 public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
@@ -37,6 +37,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("four_substations_node_breaker", (Supplier<Network>) FourSubstationsNodeBreakerFactory::create),
             factory("four_substations_node_breaker_with_extensions", (Supplier<Network>) FourSubstationsNodeBreakerWithExtensionsFactory::create),
             factory("eurostag_tutorial_example1", Networks::createEurostagTutorialExample1WithFixedCurrentLimits),
+            factory("eurostag_tutorial_example1_with_more_generators", Networks::createEurostagTutorialExampleWithMoreGenerators),
             factory("eurostag_tutorial_example1_with_power_limits", Networks::createEurostagTutorialExample1WithFixedPowerLimits),
             factory("eurostag_tutorial_example1_with_apc_extension", Networks::createEurostagTutorialExample1WithApcExtension),
             factory("eurostag_tutorial_example1_with_entsoe_category", Networks::eurostagWithEntsoeCategory),

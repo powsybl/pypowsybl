@@ -15,7 +15,7 @@ import java.util.function.ToIntFunction;
  * Utility methods to help mapping objects to values.
  *
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class MappingUtils {
 

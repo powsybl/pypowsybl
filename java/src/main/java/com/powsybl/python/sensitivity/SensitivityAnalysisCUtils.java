@@ -19,7 +19,7 @@ import com.powsybl.sensitivity.SensitivityAnalysisProvider;
 import java.util.Map;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.com>}
  */
 public final class SensitivityAnalysisCUtils {
 

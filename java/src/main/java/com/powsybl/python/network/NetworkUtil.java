@@ -253,31 +253,29 @@ public final class NetworkUtil {
      * @return bus in bus view containing b if there is one, or null if none.
      */
     public static Bus getBusViewBus(Bus b) {
-        // First we try the fast and easy way using connected terminals. Works for the vast majority of buses.
-        Bus busInBusView = b.getConnectedTerminalStream().map(t -> t.getBusView().getBus())
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
-        if (busInBusView != null) {
-            return busInBusView;
-        }
-        // Didn't find using connected terminals. There is the possibility that the bus has zero connected terminal
-        // on its own but is still part of a Merged Bus via a closed retained switch. We examine this case below.
         VoltageLevel voltageLevel = b.getVoltageLevel();
         if (voltageLevel.getTopologyKind() == TopologyKind.BUS_BREAKER) {
             // Bus/Breaker. There is an easy method directly available.
             return voltageLevel.getBusView().getMergedBus(b.getId());
         } else {
-            // Node/Breaker. We should probably build something more efficient on powsybl-core side to avoid having
-            // to loop over all buses in the voltage level.
-            for (Bus bus : voltageLevel.getBusView().getBuses()) {
-                boolean found = voltageLevel.getBusBreakerView().getBusStreamFromBusViewBusId(bus.getId())
-                        .anyMatch(b2 -> b.getId().equals(b2.getId()));
-                if (found) {
-                    return bus;
-                }
+            // Node/Breaker.
+            // First we try the fast and easy way using connected terminals. Works for the vast majority of buses.
+            Bus busInBusView = b.getConnectedTerminalStream().map(t -> t.getBusView().getBus())
+                    .filter(Objects::nonNull)
+                    .findFirst()
+                    .orElse(null);
+            if (busInBusView != null) {
+                return busInBusView;
             }
-            return null;
+            // Didn't find using connected terminals. There is the possibility that the bus has zero connected terminal
+            // on its own but is still part of a Merged Bus via a closed retained switch. We examine this case below.
+            // We should probably build something more efficient on powsybl-core side to avoid having
+            // to loop over all buses in the voltage level.
+            return voltageLevel.getBusView().getBusStream()
+                    .filter(busViewBus -> voltageLevel.getBusBreakerView().getBusStreamFromBusViewBusId(busViewBus.getId())
+                            .anyMatch(b2 -> b.getId().equals(b2.getId())))
+                    .findFirst()
+                    .orElse(null);
         }
     }
 }
