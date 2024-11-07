@@ -120,8 +120,10 @@ def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
         connectable_bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
         bus1_id = np.where(trafo_and_bus['in_service'], connectable_bus1_id, "")
         bus2_id = np.where(trafo_and_bus['in_service'], connectable_bus2_id, "")
-        n_tap = np.where(~np.isnan(trafo_and_bus['tap_pos']) & ~np.isnan(trafo_and_bus['tap_neutral']) & ~np.isnan(trafo_and_bus['tap_step_percent']),
-                         1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0, 1.0)
+        # Run this for trafos which are not phase shifters
+        # Here we enable also the cross regulator
+        # For case of PST if tap_step_degree and tap_step_percent is defined , it will lead to error in power flow
+        n_tap = extract_tap_info(trafo_and_bus)
         rated_u1 = np.where(trafo_and_bus['tap_side'] == "hv", trafo_and_bus['vn_hv_kv'] * n_tap, trafo_and_bus['vn_hv_kv'])
         rated_u2 = np.where(trafo_and_bus['tap_side'] == "lv", trafo_and_bus['vn_lv_kv'] * n_tap, trafo_and_bus['vn_lv_kv'])
         c = n_pdp.sn_mva / n_pdp.trafo['sn_mva']
@@ -203,6 +205,51 @@ def create_shunts(n: Network, n_pdp: pandapowerNet) -> None:
             'max_section_count': max_section_count,
         }, index=shunt_id)
         n.create_shunt_compensators(shunt_df=shunt_df, linear_model_df=linear_model_df)
+
+def extract_tap_info(trafo_and_bus):
+    """
+    This function ensures that the pandapower model was correct wrt phase_shifter boolean
+    Furthermore, the tap_step_percent is calculated from tap_step_degree which is
+    then augmented to the tap_step_percent already present, this means powsybl can just use
+    tap_step_percent for the calculations and then calculates the n_tap value
+    """
+    # Setup logging configuration
+    logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
+
+    # Create a copy of 'tap_step_percent' to modify
+    tap_step_percent_new = np.zeros_like(trafo_and_bus['tap_step_percent'])
+
+    # Check if 'tap_step_degree' is not NaN (available) for transformers
+    degree_mask = ~np.isnan(trafo_and_bus['tap_step_degree'])
+
+    # Identify phase shift transformers (tap_phase_shifter == True)
+    phase_shift_mask = trafo_and_bus['tap_phase_shifter']
+
+    # Log error if both tap_step_degree and tap_step_percent are parameterized for phase shift transformers
+    both_parameterized_mask = phase_shift_mask & degree_mask & ~np.isnan(trafo_and_bus['tap_step_percent'])
+
+    if np.any(both_parameterized_mask):
+        for idx in trafo_and_bus.index[both_parameterized_mask]:
+            logging.error(
+                f"Transformer at index {idx} has both 'tap_step_degree' and 'tap_step_percent' parameterized.")
+
+    # For transformers where 'tap_step_degree' is present, calculate tap_step_percent_new
+    tap_step_percent_new[degree_mask] = (
+            0.01 * (2 * np.sin(0.5 * trafo_and_bus['tap_step_degree'][degree_mask]))  # Correct formula
+    )
+
+    # Add the newly calculated tap_step_percent_new to the existing tap_step_percent
+    trafo_and_bus['tap_step_percent'] += tap_step_percent_new  # Update original tap_step_percent
+
+    # Now calculate n_tap based on the updated tap_step_percent
+    n_tap = np.where(
+        (~np.isnan(trafo_and_bus['tap_pos']) &
+         ~np.isnan(trafo_and_bus['tap_neutral']) &
+         ~np.isnan(trafo_and_bus['tap_step_percent'])),  # Use the updated 'tap_step_percent'
+        1.0 + (trafo_and_bus['tap_pos'] - trafo_and_bus['tap_neutral']) * trafo_and_bus['tap_step_percent'] / 100.0,
+        1.0
+    )
+    return n_tap
 
 class PandaPowerGeneratorType(Enum):
     GENERATOR = 1
