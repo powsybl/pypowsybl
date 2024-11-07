@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class StandByAutomatonDataframeProvider extends AbstractSingleDataframeNetworkExtension {

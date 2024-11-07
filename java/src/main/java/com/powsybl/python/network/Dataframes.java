@@ -42,7 +42,7 @@ import static java.lang.Integer.MIN_VALUE;
 /**
  * Mappers to dataframes.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class Dataframes {
 
@@ -363,15 +363,9 @@ public final class Dataframes {
     }
 
     private static List<BusBreakerViewBusData> getBusBreakerViewBuses(VoltageLevel voltageLevel) {
-        return voltageLevel.getBusBreakerView().getBusStream().map(bus -> {
-            Bus busViewBus = bus.getConnectedTerminalStream()
-                    .map(t -> t.getBusView().getBus())
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-            return new BusBreakerViewBusData(bus, busViewBus);
-        }).collect(Collectors.toList());
-
+        return voltageLevel.getBusBreakerView().getBusStream()
+                .map(bus -> new BusBreakerViewBusData(bus, NetworkUtil.getBusViewBus(bus)))
+                .toList();
     }
 
     private static DataframeMapper<VoltageLevel, Void> createBusBreakerViewBuses() {

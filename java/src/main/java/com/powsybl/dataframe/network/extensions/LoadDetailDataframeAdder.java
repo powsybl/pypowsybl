@@ -24,7 +24,7 @@ import java.util.List;
 import static com.powsybl.dataframe.network.extensions.LoadDetailDataframeProvider.*;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.com>}
  */
 public class LoadDetailDataframeAdder extends AbstractSimpleAdder {
 

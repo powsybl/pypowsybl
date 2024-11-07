@@ -52,13 +52,13 @@ Information can be obtained on buses, branches and three windings transformers.
 .. doctest:: security.monitored_elements
     :options: +NORMALIZE_WHITESPACE
 
-    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> network = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
     >>> security_analysis = pp.security.create_analysis()
     >>> security_analysis.add_single_element_contingency('NHV1_NHV2_1', 'NHV1_NHV2_1')
-    >>> security_analysis.add_single_element_contingency('NGEN_NHV1', 'NGEN_NHV1')
+    >>> security_analysis.add_single_element_contingency('GEN', 'GEN')
     >>> security_analysis.add_monitored_elements(voltage_level_ids=['VLHV2'])
-    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
-    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
+    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'GEN'])
+    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='GEN')
     >>> security_analysis.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
     >>> results = security_analysis.run_ac(network)
     >>> results.bus_results
@@ -69,8 +69,8 @@ Information can be obtained on buses, branches and three windings transformers.
                                                         p1     q1       i1      p2      q2       i2  flow_transfer
     contingency_id operator_strategy_id branch_id
                                         NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
-    NGEN_NHV1                           NHV1_NHV2_1 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
-                                        NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
+    GEN                                 NHV1_NHV2_1 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
+                                        NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
     NHV1_NHV2_1                         NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83            NaN
 
 It also possible to get flow transfer on monitored branches in case of N-1 branch contingencies:
