@@ -1041,3 +1041,105 @@ def test_3_windings_transformers_creation():
     operational_limits = n.get_operational_limits().loc['TWT_TEST']
     assert operational_limits.shape[0] == 4
 
+
+def test_internal_connections_creation_removal():
+    network = pn.create_empty()
+    network.create_substations(id='S1')
+    network.create_voltage_levels(id=['VL1', 'VL2'], nominal_v=[380, 380],
+                                  topology_kind=['NODE_BREAKER', 'NODE_BREAKER'])
+
+    busbar_sections = pd.DataFrame.from_records(index='voltage_level_id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'VL1BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'VL1BBS2', 'node': 1},
+        {'voltage_level_id': 'VL2', 'id': 'VL2BBS1', 'node': 0},
+        {'voltage_level_id': 'VL2', 'id': 'VL2BBS2', 'node': 1},
+    ])
+    network.create_busbar_sections(busbar_sections)
+    network.create_switches(id='VL1.COUPLER', voltage_level_id='VL1', kind='BREAKER', node1=2, node2=3)
+    network.create_switches(id='VL2.COUPLER', voltage_level_id='VL2', kind='BREAKER', node1=2, node2=3)
+
+    # create internal connections - dataframe
+    internal_connections = pd.DataFrame.from_records(index='voltage_level_id', data=[
+        {'voltage_level_id': 'VL1', 'node1': 0, 'node2': 2},
+        {'voltage_level_id': 'VL1', 'node1': 1, 'node2': 3},
+        {'voltage_level_id': 'VL2', 'node1': 0, 'node2': 2},
+        {'voltage_level_id': 'VL2', 'node1': 1, 'node2': 3},
+    ])
+    network.create_internal_connections(internal_connections)
+    expected_icn_initial = pd.DataFrame(
+        index=pd.Series(name='id', data=[0, 1]),
+        columns=['node1', 'node2'],
+        data=[[0, 2],
+              [1, 3]])
+    pd.testing.assert_frame_equal(expected_icn_initial,
+                                  network.get_node_breaker_topology('VL1').internal_connections,
+                                  check_dtype=False, check_index_type=False)
+    pd.testing.assert_frame_equal(expected_icn_initial,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False, check_index_type=False)
+
+    # remove internal connections - dataframe
+    vl1_remove = pd.DataFrame.from_records(index='voltage_level_id', data=[
+        {'voltage_level_id': 'VL1', 'node1': 3, 'node2': 1},  # removal is not oriented
+    ])
+    network.remove_internal_connections(vl1_remove)
+    expected_icn_vl1_after_removal = pd.DataFrame(
+        index=pd.Series(name='id', data=[0]),
+        columns=['node1', 'node2'],
+        data=[[0, 2]])
+    pd.testing.assert_frame_equal(expected_icn_vl1_after_removal,
+                                  network.get_node_breaker_topology('VL1').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+    # VL2 unaffected
+    pd.testing.assert_frame_equal(expected_icn_initial,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+    # create internal connections - kwargs
+    network.create_internal_connections(voltage_level_id='VL2', node1=5, node2=6)
+    expected_icn_vl2 = pd.DataFrame(
+        index=pd.Series(name='id', data=[0, 1, 2]),
+        columns=['node1', 'node2'],
+        data=[[0, 2],
+              [1, 3],
+              [5, 6]])
+    pd.testing.assert_frame_equal(expected_icn_vl2,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+    # remove internal connections - kwargs
+    network.remove_internal_connections(voltage_level_id=['VL2', 'VL2'], node1=[0, 5], node2=[2, 6])
+    expected_icn_vl2_after_removal = pd.DataFrame(
+        index=pd.Series(name='id', data=[0]),
+        columns=['node1', 'node2'],
+        data=[[1, 3]])
+    pd.testing.assert_frame_equal(expected_icn_vl1_after_removal,
+                                  network.get_node_breaker_topology('VL1').internal_connections,  # unchanged
+                                  check_dtype=False,
+                                  check_index_type=False)
+    pd.testing.assert_frame_equal(expected_icn_vl2_after_removal,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+
+def test_internal_connections_errors():
+    network = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_internal_connections(voltage_level_id='wrongVL', node1=0, node2=1)
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.remove_internal_connections(voltage_level_id='wrongVL', node1=0, node2=1)
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
+    assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.remove_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
+    assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)
