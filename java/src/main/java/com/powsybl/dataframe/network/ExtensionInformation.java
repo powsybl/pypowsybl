@@ -8,7 +8,7 @@
 package com.powsybl.dataframe.network;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.com>}
  */
 public class ExtensionInformation {
     private final String id;

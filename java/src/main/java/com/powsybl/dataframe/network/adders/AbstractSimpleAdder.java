@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public abstract class AbstractSimpleAdder implements NetworkElementAdder {
 

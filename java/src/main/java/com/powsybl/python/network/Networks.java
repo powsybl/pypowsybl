@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Networks factories, for "classic" networks or test network.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class Networks {
 

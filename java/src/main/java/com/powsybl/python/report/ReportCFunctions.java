@@ -27,7 +27,7 @@ import java.io.UncheckedIOException;
 import static com.powsybl.python.commons.Util.doCatch;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 @CContext(Directives.class)
 public final class ReportCFunctions {

@@ -78,7 +78,7 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
 /**
  * Defines the basic C functions for a network.
  *
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class NetworkCFunctions {

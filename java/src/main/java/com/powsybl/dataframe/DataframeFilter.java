@@ -17,8 +17,8 @@ import java.util.Optional;
 /**
  * Define filters to apply to a dataframe.
  *
- * @author Massimo Ferraro <massimo.ferraro@soft.it>
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Massimo Ferraro {@literal <massimo.ferraro@soft.it>}
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class DataframeFilter {
 
