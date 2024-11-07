@@ -37,7 +37,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * Defines C interface for loadflow validation.
  *
- * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class LoadFlowValidationCFunctions {

@@ -8,7 +8,7 @@
 package com.powsybl.dataframe;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public class DataframeMapperBuilder<T, U, C> extends BaseDataframeMapperBuilder<T, U, C, DataframeMapperBuilder<T, U, C>> {
 

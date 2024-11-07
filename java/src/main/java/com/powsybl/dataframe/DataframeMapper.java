@@ -19,7 +19,7 @@ import java.util.List;
  * The dataframe data can be read by a {@link DataframeHandler},
  * and provided by variants of "indexed series".
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public interface DataframeMapper<T, C> {
 

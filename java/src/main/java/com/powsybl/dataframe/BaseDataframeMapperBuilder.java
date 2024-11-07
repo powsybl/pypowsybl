@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  * Base class for builders of mappers. It uses recursive generic pattern to return the actual
  * builder class.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBuilder<T, U, C, B>> {
 
