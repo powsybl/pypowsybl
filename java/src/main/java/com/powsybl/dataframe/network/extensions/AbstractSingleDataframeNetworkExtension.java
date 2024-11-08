@@ -12,7 +12,7 @@ import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import java.util.*;
 
 /**
- * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
+ * @author Hugo Kulesza {@literal <hugo.kulesza@rte-france.com>}
  */
 public abstract class AbstractSingleDataframeNetworkExtension implements NetworkExtensionDataframeProvider {
 

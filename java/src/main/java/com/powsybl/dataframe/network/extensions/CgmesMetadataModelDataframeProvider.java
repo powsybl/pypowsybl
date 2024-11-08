@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * @author Naledi El Cheikh <naledi.elcheikh@rte-france.com>
+ * @author Naledi El Cheikh {@literal <naledi.elcheikh@rte-france.com>}
  */
 
 @AutoService(NetworkExtensionDataframeProvider.class)

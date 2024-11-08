@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Damien Jeandemange <damien.jeandemange at rte-france.com>
+ * @author Damien Jeandemange {@literal <damien.jeandemange at rte-france.com>}
  */
 public class InternalConnectionDataframeAdder extends AbstractSimpleAdder {
 

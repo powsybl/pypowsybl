@@ -14,7 +14,7 @@ import com.powsybl.python.shortcircuit.ShortCircuitAnalysisContext;
 import java.util.List;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public interface ShortCircuitContextFaultAdder {
 
