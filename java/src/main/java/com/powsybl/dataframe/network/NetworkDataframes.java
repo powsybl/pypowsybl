@@ -71,6 +71,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
+        mappers.put(DataframeElementType.DANGLING_LINE_GENERATION, danglingLinesGeneration());
         mappers.put(DataframeElementType.TIE_LINE, tieLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
@@ -647,19 +648,26 @@ public final class NetworkDataframes {
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .strings("selected_limits_group", dl -> dl.getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         DanglingLine::setSelectedOperationalLimitsGroup, false)
-                .doubles("min_p", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getMinP).orElse(NaN)),
-                        (dl, minP, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setMinP(unPerUnitPQ(context, minP))), false)
-                .doubles("max_p", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getMaxP).orElse(NaN)),
-                        (dl, maxP, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setMaxP(unPerUnitPQ(context, maxP))), false)
-                .doubles("target_p", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getTargetP).orElse(NaN)),
-                        (dl, targetP, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setTargetP(unPerUnitPQ(context, targetP))), false)
-                .doubles("target_q", (dl, context) -> perUnitPQ(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getTargetQ).orElse(NaN)),
-                        (dl, targetQ, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setTargetQ(unPerUnitPQ(context, targetQ))), false)
-                .doubles("target_v", (dl, context) -> perUnitV(context, Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::getTargetV).orElse(NaN), dl.getTerminal()),
-                        (dl, targetV, context) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setTargetV(unPerUnitV(context, targetV, dl.getTerminal()))), false)
-                .booleans("voltage_regulator_on", dl -> Optional.ofNullable(dl.getGeneration()).map(DanglingLine.Generation::isVoltageRegulationOn).orElse(false),
-                        (dl, voltageRegulatorOn) -> Optional.ofNullable(dl.getGeneration()).ifPresent(gen -> gen.setVoltageRegulationOn(voltageRegulatorOn)), false)
                 .addProperties()
+                .build();
+    }
+
+    static NetworkDataframeMapper danglingLinesGeneration() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream().filter(dl -> Optional.ofNullable(dl.getGeneration()).isPresent()),
+                        getOrThrow(Network::getDanglingLine, "Dangling line with generation"))
+                .stringsIndex("id", DanglingLine::getId)
+                .doubles("min_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getMinP()),
+                        (dl, minP, context) -> dl.getGeneration().setMinP(unPerUnitPQ(context, minP)))
+                .doubles("max_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getMaxP()),
+                        (dl, maxP, context) -> dl.getGeneration().setMaxP(unPerUnitPQ(context, maxP)))
+                .doubles("target_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetP()),
+                        (dl, targetP, context) -> dl.getGeneration().setTargetP(unPerUnitPQ(context, targetP)))
+                .doubles("target_q", (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetQ()),
+                        (dl, targetQ, context) -> dl.getGeneration().setTargetQ(unPerUnitPQ(context, targetQ)))
+                .doubles("target_v", (dl, context) -> perUnitV(context, dl.getGeneration().getTargetV(), dl.getTerminal()),
+                        (dl, targetV, context) -> dl.getGeneration().setTargetV(unPerUnitV(context, targetV, dl.getTerminal())))
+                .booleans("voltage_regulator_on", dl -> dl.getGeneration().isVoltageRegulationOn(),
+                        (dl, voltageRegulatorOn) -> dl.getGeneration().setVoltageRegulationOn(voltageRegulatorOn))
                 .build();
     }
 
