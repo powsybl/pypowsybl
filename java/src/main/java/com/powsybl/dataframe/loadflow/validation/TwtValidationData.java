@@ -5,7 +5,7 @@ import com.powsybl.iidm.network.TwoSides;
 import java.util.Optional;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
 class TwtValidationData {
     String id;

@@ -1205,6 +1205,10 @@ void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe) {
     pypowsybl::PowsyblCaller::get()->callJava(::removeAliases, network, dataframe);
 }
 
+void removeInternalConnections(pypowsybl::JavaHandle network, dataframe* dataframe) {
+    pypowsybl::PowsyblCaller::get()->callJava(::removeInternalConnections, network, dataframe);
+}
+
 void closePypowsybl() {
     pypowsybl::PowsyblCaller::get()->callJava(::closePypowsybl);
 }

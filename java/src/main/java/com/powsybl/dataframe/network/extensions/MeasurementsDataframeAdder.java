@@ -26,7 +26,7 @@ import java.util.*;
 import static com.powsybl.dataframe.network.extensions.MeasurementsDataframeProvider.*;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.com>}
  */
 public class MeasurementsDataframeAdder extends AbstractSimpleAdder {
 

@@ -53,7 +53,7 @@ import java.util.function.Supplier;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public final class Util {
 
@@ -223,6 +223,7 @@ public final class Util {
             case AREA -> PyPowsyblApiHeader.ElementType.AREA;
             case AREA_VOLTAGE_LEVELS -> PyPowsyblApiHeader.ElementType.AREA_VOLTAGE_LEVELS;
             case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_BOUNDARIES;
+            case INTERNAL_CONNECTION -> PyPowsyblApiHeader.ElementType.INTERNAL_CONNECTION;
         };
     }
 
@@ -266,6 +267,7 @@ public final class Util {
             case AREA -> DataframeElementType.AREA;
             case AREA_VOLTAGE_LEVELS -> DataframeElementType.AREA_VOLTAGE_LEVELS;
             case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
+            case INTERNAL_CONNECTION -> DataframeElementType.INTERNAL_CONNECTION;
         };
     }
 

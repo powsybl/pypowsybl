@@ -14,7 +14,7 @@ import com.powsybl.iidm.network.*;
 import java.util.Optional;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class NetworkUtils {
 
@@ -29,6 +29,14 @@ public final class NetworkUtils {
             throw new PowsyblException("Voltage level '" + id + DOES_NOT_EXIST);
         }
         return voltageLevel;
+    }
+
+    public static VoltageLevel.NodeBreakerView getVoltageLevelNodeBreakerViewOrThrow(Network network, String id) {
+        VoltageLevel voltageLevel = getVoltageLevelOrThrow(network, id);
+        if (voltageLevel.getTopologyKind() != TopologyKind.NODE_BREAKER) {
+            throw new PowsyblException("Voltage level '" + id + "' is not of Node/Breaker topology kind.");
+        }
+        return voltageLevel.getNodeBreakerView();
     }
 
     public static Optional<VoltageLevel> getVoltageLevelOrThrowWithBusOrBusbarSectionId(Network network, int row, StringSeries voltageLevels, StringSeries busOrBusbarSections, boolean throwException) {

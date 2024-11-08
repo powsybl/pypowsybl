@@ -12,7 +12,7 @@ import com.powsybl.iidm.network.VoltageLevel;
 import java.util.Objects;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public record InternalConnectionContext(VoltageLevel.NodeBreakerView.InternalConnection internalConnection, int index) {
 

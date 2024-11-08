@@ -19,7 +19,7 @@ import java.util.*;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.*;
 
 /**
- * @author Damien Jeandemange <damien.jeandemange@artelys.com>
+ * @author Damien Jeandemange {@literal <damien.jeandemange@artelys.com>}
  */
 public class AreaVoltageLevelsDataframeAdder implements NetworkElementAdder {
 

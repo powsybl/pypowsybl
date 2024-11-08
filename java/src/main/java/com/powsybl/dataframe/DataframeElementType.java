@@ -8,7 +8,7 @@
 package com.powsybl.dataframe;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public enum DataframeElementType {
     BUS,
@@ -48,5 +48,6 @@ public enum DataframeElementType {
     SUB_NETWORK,
     AREA,
     AREA_VOLTAGE_LEVELS,
-    AREA_BOUNDARIES
+    AREA_BOUNDARIES,
+    INTERNAL_CONNECTION
 }

@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Networks factories, for "classic" networks or test network.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class Networks {
 
@@ -95,6 +95,11 @@ public final class Networks {
 
     public static Network createEurostagTutorialExample1() {
         Network network = EurostagTutorialExample1Factory.create();
+        return fix(network);
+    }
+
+    public static Network createEurostagTutorialExampleWithMoreGenerators() {
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
         return fix(network);
     }
 

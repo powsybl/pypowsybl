@@ -29,9 +29,9 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 class NetworkElementAddersTest {
 

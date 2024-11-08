@@ -11,7 +11,7 @@ package com.powsybl.dataframe;
  * Receives series data, is in charge of doing something with it,
  * typically writing to a data structure.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public interface DataframeHandler {
 

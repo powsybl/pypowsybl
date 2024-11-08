@@ -21,6 +21,7 @@ import com.powsybl.dataframe.network.NetworkDataframeContext;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
+import com.powsybl.dataframe.network.adders.InternalConnectionDataframeAdder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.adders.NetworkUtils;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
@@ -78,7 +79,7 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
 /**
  * Defines the basic C functions for a network.
  *
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class NetworkCFunctions {
@@ -516,6 +517,17 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe dataframe = createDataframe(cDataframe);
             AliasDataframeAdder.deleteElements(network, dataframe);
+        });
+    }
+
+    @CEntryPoint(name = "removeInternalConnections")
+    public static void removeInternalConnections(IsolateThread thread, ObjectHandle networkHandle,
+                                     DataframePointer cDataframe,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            UpdatingDataframe dataframe = createDataframe(cDataframe);
+            InternalConnectionDataframeAdder.deleteElements(network, dataframe);
         });
     }
 

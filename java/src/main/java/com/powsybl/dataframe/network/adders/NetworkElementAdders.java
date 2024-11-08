@@ -20,7 +20,7 @@ import java.util.Map;
 import static com.powsybl.dataframe.DataframeElementType.*;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class NetworkElementAdders {
 
@@ -51,7 +51,8 @@ public final class NetworkElementAdders {
             Map.entry(TIE_LINE, new TieLineDataframeAdder()),
             Map.entry(AREA, new AreaDataframeAdder()),
             Map.entry(AREA_VOLTAGE_LEVELS, new AreaVoltageLevelsDataframeAdder()),
-            Map.entry(AREA_BOUNDARIES, new AreaBoundariesDataframeAdder())
+            Map.entry(AREA_BOUNDARIES, new AreaBoundariesDataframeAdder()),
+            Map.entry(INTERNAL_CONNECTION, new InternalConnectionDataframeAdder())
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();
