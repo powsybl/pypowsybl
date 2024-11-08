@@ -1723,6 +1723,36 @@ def test_bus_breaker_view_draw_graph():
     plt.show()
 
 
+def test_bus_breaker_topology_no_connected_terminal():
+    n = pp.network.create_empty()
+    n.create_substations(id='S')
+
+    n.create_voltage_levels(id='VL1', substation_id='S', nominal_v=380, topology_kind='BUS_BREAKER')
+    n.create_buses(id='B1', voltage_level_id='VL1')
+    n.create_buses(id='B2', voltage_level_id='VL1')
+    n.create_buses(id='B3', voltage_level_id='VL1')
+    n.create_loads(id='L1', voltage_level_id='VL1', p0=0, q0=0, bus_id='B1', connectable_bus_id='B1')
+    n.create_switches(id='CB1.1', kind='BREAKER', voltage_level_id='VL1', bus1_id='B1', bus2_id='B2', open=False)
+    n.create_switches(id='CB1.2', kind='BREAKER', voltage_level_id='VL1', bus1_id='B2', bus2_id='B3', open=True)
+
+    n.create_voltage_levels(id='VL2', substation_id='S', nominal_v=380, topology_kind='NODE_BREAKER')
+    n.create_busbar_sections(id='BB', voltage_level_id='VL2', node=0)
+    n.create_switches(id='CB2.1', kind='BREAKER', voltage_level_id='VL2', node1=0, node2=1, open=False, retained=True)
+    n.create_switches(id='CB2.2', kind='BREAKER', voltage_level_id='VL2', node1=1, node2=2, open=True, retained=True)
+    n.create_switches(id='SW', kind='DISCONNECTOR', voltage_level_id='VL2', node1=0, node2=3, open=False)
+    n.create_loads(id='L2', voltage_level_id='VL2', p0=0, q0=0, node=3)
+
+    topo_vl1 = n.get_bus_breaker_topology('VL1').buses
+    assert 'VL1_0' == topo_vl1.loc['B1']['bus_id']
+    assert 'VL1_0' == topo_vl1.loc['B2']['bus_id']
+    assert '' == topo_vl1.loc['B3']['bus_id']
+
+    topo_vl2 = n.get_bus_breaker_topology('VL2').buses
+    assert 'VL2_0' == topo_vl2.loc['VL2_0']['bus_id']
+    assert 'VL2_0' == topo_vl2.loc['VL2_1']['bus_id']
+    assert '' == topo_vl2.loc['VL2_2']['bus_id']
+
+
 def test_dataframe_attributes_filtering():
     n = pp.network.create_eurostag_tutorial_example1_network()
     buses_selected_attributes = n.get_buses(attributes=['v_mag', 'voltage_level_id'])

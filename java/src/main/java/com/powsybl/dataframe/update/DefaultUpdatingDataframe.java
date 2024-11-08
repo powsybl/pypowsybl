@@ -16,7 +16,7 @@ import java.util.*;
  * Default implementation for the dataframe, the behaviour will rely on the provided series implementations.
  *
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public class DefaultUpdatingDataframe implements UpdatingDataframe {
     private final int rowCount;

@@ -51,7 +51,7 @@ import static com.powsybl.python.commons.Util.*;
 /**
  * C functions related to security analysis.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 @CContext(Directives.class)
 public final class SecurityAnalysisCFunctions {

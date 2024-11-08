@@ -20,7 +20,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * Common series for all branches.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 abstract class AbstractBranchSeries extends IdentifiableSeries {
 

@@ -34,8 +34,8 @@ import static com.powsybl.dataframe.network.PerUnitUtil.*;
  * defines the mappings for all elements of the network.
  *
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
- * @author Yichen TANG <yichen.tang at rte-france.com>
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class NetworkDataframes {
 

@@ -3,7 +3,7 @@ package com.powsybl.dataframe.loadflow.validation;
 import com.powsybl.iidm.network.StaticVarCompensator;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
 class SvcValidationData {
     String svcId;
