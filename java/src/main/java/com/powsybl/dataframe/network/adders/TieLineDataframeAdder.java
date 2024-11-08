@@ -20,7 +20,7 @@ import java.util.List;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Coline Piloquet <coline.piloquet@rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet@rte-france.com>}
  */
 public class TieLineDataframeAdder extends AbstractSimpleAdder {
 

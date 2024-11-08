@@ -24,7 +24,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * @author Damien Jeandemange <damien.jeandemange@artelys.com>
+ * @author Damien Jeandemange {@literal <damien.jeandemange@artelys.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class ReferencePrioritiesDataframeProvider extends AbstractSingleDataframeNetworkExtension {

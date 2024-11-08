@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class EntsoeAreaDataframeAdder extends AbstractSimpleAdder {
 

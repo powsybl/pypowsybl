@@ -8,7 +8,7 @@
 package com.powsybl.dataframe.network.modifications;
 
 /**
- * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet at rte-france.com>}
  */
 public enum DataframeNetworkModificationType {
     VOLTAGE_LEVEL_TOPOLOGY_CREATION,
