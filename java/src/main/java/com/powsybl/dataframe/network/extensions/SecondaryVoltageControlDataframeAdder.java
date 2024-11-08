@@ -20,7 +20,7 @@ import com.powsybl.iidm.network.extensions.*;
 import java.util.List;
 
 /**
- * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
+ * @author Hugo Kulesza {@literal <hugo.kulesza@rte-france.com>}
  */
 public class SecondaryVoltageControlDataframeAdder extends AbstractSimpleAdder {
 

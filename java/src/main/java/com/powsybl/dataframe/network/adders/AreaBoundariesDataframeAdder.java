@@ -21,7 +21,7 @@ import java.util.*;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredStrings;
 
 /**
- * @author Damien Jeandemange <damien.jeandemange@artelys.com>
+ * @author Damien Jeandemange {@literal <damien.jeandemange@artelys.com>}
  */
 public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
 

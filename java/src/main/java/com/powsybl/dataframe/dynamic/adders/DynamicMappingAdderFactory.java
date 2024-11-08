@@ -12,7 +12,7 @@ import java.util.Map;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public final class DynamicMappingAdderFactory {
 

@@ -13,7 +13,7 @@ import com.powsybl.iidm.network.*;
 import java.util.*;
 
 /**
- * @author Naledi El Cheikh <naledi.elcheikh@rte-france.com>
+ * @author Naledi El Cheikh {@literal <naledi.elcheikh@rte-france.com>}
  */
 
 public class CgmesMetadataModelDataframeAdder extends AbstractSimpleAdder {

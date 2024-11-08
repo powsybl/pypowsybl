@@ -12,7 +12,7 @@ import com.powsybl.shortcircuit.MagnitudeFeederResult;
 import java.util.Objects;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class MagnitudeFeederResultContext extends MagnitudeFeederResult {
     private final String faultId;
