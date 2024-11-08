@@ -19,7 +19,7 @@ import java.util.Optional;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet at rte-france.com>}
  */
 public class RevertConnectVoltageLevelOnLine implements NetworkModification {
 

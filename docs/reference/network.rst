@@ -187,6 +187,7 @@ Network elements can be created or removed using the following methods:
    Network.create_dangling_lines
    Network.create_generators
    Network.create_hvdc_lines
+   Network.create_internal_connections
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
@@ -202,6 +203,7 @@ Network elements can be created or removed using the following methods:
    Network.create_vsc_converter_stations
    Network.create_tie_lines
    Network.remove_elements
+   Network.remove_internal_connections
 
 
 Network variants management

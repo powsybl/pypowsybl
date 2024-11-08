@@ -4977,6 +4977,39 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.AREA_BOUNDARIES, [df], **kwargs)
 
+    def create_internal_connections(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates internal connections.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        See Also:
+            - :meth:`get_node_breaker_topology`
+            - :meth:`remove_internal_connections`
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **voltage_level_id**: voltage level identifier. The voltage level must be in Node/Breaker topology kind.
+            - **node1**: node 1 of the internal connection
+            - **node2**: node 2 of the internal connection
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_internal_connections(voltage_level_id='VL1', node1=3, node2=6)
+
+        """
+        return self._create_elements(ElementType.INTERNAL_CONNECTION, [df], **kwargs)
+
     def add_aliases(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Adds aliases to network elements.
@@ -5099,6 +5132,42 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(elements_ids, str):
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
+
+    def remove_internal_connections(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Removes internal connections.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        See Also:
+            - :meth:`get_node_breaker_topology`
+            - :meth:`create_internal_connections`
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **voltage_level_id**: voltage level identifier. The voltage level must be in Node/Breaker topology kind.
+            - **node1**: node 1 of the internal connection
+            - **node2**: node 2 of the internal connection
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.remove_internal_connections(voltage_level_id='VL1', node1=3, node2=6)
+
+        """
+        metadata = _pp.get_network_elements_creation_dataframes_metadata(ElementType.INTERNAL_CONNECTION)[0]
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.remove_internal_connections(self._handle, c_df)
 
     def get_extensions(self, extension_name: str, table_name: str = "") -> DataFrame:
         """

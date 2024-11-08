@@ -21,7 +21,7 @@ import java.util.function.Function;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class GeneratorSynchronousAdder implements DynamicMappingAdder {

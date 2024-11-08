@@ -331,7 +331,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SUB_NETWORK", element_type::SUB_NETWORK)
             .value("AREA", element_type::AREA)
             .value("AREA_VOLTAGE_LEVELS", element_type::AREA_VOLTAGE_LEVELS)
-            .value("AREA_BOUNDARIES", element_type::AREA_BOUNDARIES);
+            .value("AREA_BOUNDARIES", element_type::AREA_BOUNDARIES)
+            .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -996,6 +997,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_unused_order_positions", &pypowsybl::getUnusedConnectableOrderPositions, "Get unused order positions before or after", py::arg("network"), py::arg("busbar_section_id"), py::arg("before_or_after"));
 
     m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
+
+    m.def("remove_internal_connections", &pypowsybl::removeInternalConnections, "remove specified internal connections", py::arg("network"), py::arg("dataframe"));
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 

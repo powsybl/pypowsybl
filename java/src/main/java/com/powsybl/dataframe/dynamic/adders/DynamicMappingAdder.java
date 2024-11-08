@@ -14,7 +14,7 @@ import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 import java.util.List;
 
 /**
- * @author Nicolas PIERRE <nicolas.pierre@artelys.com>
+ * @author Nicolas PIERRE {@literal <nicolas.pierre@artelys.com>}
  */
 public interface DynamicMappingAdder {
 

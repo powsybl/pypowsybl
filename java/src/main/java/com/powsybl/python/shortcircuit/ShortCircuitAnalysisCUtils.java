@@ -20,7 +20,7 @@ import com.powsybl.shortcircuit.StudyType;
 import java.util.Map;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public final class ShortCircuitAnalysisCUtils {
 

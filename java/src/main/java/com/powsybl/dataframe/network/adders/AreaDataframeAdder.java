@@ -21,7 +21,7 @@ import java.util.List;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Damien Jeandemange <damien.jeandemange@artelys.com>
+ * @author Damien Jeandemange {@literal <damien.jeandemange@artelys.com>}
  */
 public class AreaDataframeAdder extends AbstractSimpleAdder {
 
