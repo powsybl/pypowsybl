@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.ToIntFunction;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public class IntSeriesMapper<T, C> implements SeriesMapper<T, C> {
 

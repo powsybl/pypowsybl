@@ -10,10 +10,10 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.DynamicModel;
 import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynawaltz.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
-import com.powsybl.dynawaltz.models.generators.SynchronizedGeneratorBuilder;
-import com.powsybl.dynawaltz.models.loads.BaseLoadBuilder;
-import com.powsybl.dynawaltz.models.loads.LoadOneTransformerBuilder;
+import com.powsybl.dynawo.models.automationsystems.overloadmanagments.DynamicOverloadManagementSystemBuilder;
+import com.powsybl.dynawo.models.generators.SynchronizedGeneratorBuilder;
+import com.powsybl.dynawo.models.loads.BaseLoadBuilder;
+import com.powsybl.dynawo.models.loads.LoadOneTransformerBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {

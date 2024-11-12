@@ -26,7 +26,9 @@ from .impl.network_creation_util import (
     create_ieee118,
     create_ieee300,
     create_eurostag_tutorial_example1_network,
+    create_eurostag_tutorial_example1_with_more_generators_network,
     create_eurostag_tutorial_example1_with_power_limits_network,
+    create_eurostag_tutorial_example1_with_tie_lines_and_areas,
     create_four_substations_node_breaker_network_with_extensions,
     create_four_substations_node_breaker_network,
     create_micro_grid_be_network,
@@ -73,3 +75,4 @@ from .impl.network_element_modification_util import (
     remove_feeder_bays
 )
 from .impl.perunit import (PerUnitView, per_unit_view)
+from .impl.pandapower_converter import convert_from_pandapower

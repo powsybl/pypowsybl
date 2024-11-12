@@ -13,7 +13,7 @@ import com.powsybl.iidm.network.LimitType;
 import java.util.Objects;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class TemporaryLimitData {
 
@@ -25,6 +25,8 @@ public class TemporaryLimitData {
     private final double value;
     private final int acceptableDuration;
     private final boolean isFictitious;
+    private final String groupId;
+    private final boolean selected;
 
     public enum Side {
         NONE,
@@ -34,7 +36,7 @@ public class TemporaryLimitData {
     }
 
     public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
-                              int acceptableDuration, boolean isFictitious) {
+                              int acceptableDuration, boolean isFictitious, String groupId, boolean selected) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
         this.side = side;
@@ -43,10 +45,13 @@ public class TemporaryLimitData {
         this.value = value;
         this.acceptableDuration = acceptableDuration;
         this.isFictitious = isFictitious;
+        this.groupId = Objects.requireNonNull(groupId);
+        this.selected = selected;
     }
 
-    public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType) {
-        this(id, name, side, value, type, elementType, -1, false);
+    public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
+                              String groupId, boolean isSelected) {
+        this(id, name, side, value, type, elementType, -1, false, groupId, isSelected);
     }
 
     public String getId() {
@@ -79,5 +84,13 @@ public class TemporaryLimitData {
 
     public boolean isFictitious() {
         return isFictitious;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public boolean isSelected() {
+        return selected;
     }
 }

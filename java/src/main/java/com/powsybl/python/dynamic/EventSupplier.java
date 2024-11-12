@@ -10,7 +10,7 @@ package com.powsybl.python.dynamic;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dynamicsimulation.EventModel;
 import com.powsybl.dynamicsimulation.EventModelsSupplier;
-import com.powsybl.dynawaltz.models.events.EventDisconnectionBuilder;
+import com.powsybl.dynawo.models.events.EventDisconnectionBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class EventSupplier implements EventModelsSupplier {
@@ -28,7 +28,7 @@ public class EventSupplier implements EventModelsSupplier {
     private final List<Function<Network, EventModel>> eventSupplierList = new ArrayList<>();
 
     /**
-     * According to Dynawaltz staticId must refer to an injection, branch or hvdc line
+     * According to Dynawo staticId must refer to an injection, branch or hvdc line
      * <p>
      * The event represent the disconnection the given equipment
      */

@@ -9,21 +9,15 @@ package com.powsybl.python.dynamic;
 
 import java.util.ServiceLoader;
 
+import com.powsybl.dynamicsimulation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.dynamicsimulation.CurvesSupplier;
-import com.powsybl.dynamicsimulation.DynamicModelsSupplier;
-import com.powsybl.dynamicsimulation.DynamicSimulation;
-import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
-import com.powsybl.dynamicsimulation.DynamicSimulationProvider;
-import com.powsybl.dynamicsimulation.DynamicSimulationResult;
-import com.powsybl.dynamicsimulation.EventModelsSupplier;
 import com.powsybl.iidm.network.Network;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public class DynamicSimulationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamicSimulationContext.class);
@@ -31,7 +25,7 @@ public class DynamicSimulationContext {
     public DynamicSimulationResult run(Network network,
             DynamicModelsSupplier dynamicModelsSupplier,
             EventModelsSupplier eventModelsSupplier,
-            CurvesSupplier curvesSupplier,
+            OutputVariablesSupplier curvesSupplier,
             DynamicSimulationParameters parameters) {
         DynamicSimulationProvider provider = getDynamicProvider("");
         LOGGER.info(String.format("Running dynamic simulation with %s", provider.getName()));
@@ -51,7 +45,7 @@ public class DynamicSimulationContext {
      * @return DynamicSimulationProvider
      */
     public static DynamicSimulationProvider getDynamicProvider(String name) {
-        String actualName = (name == null || name.isEmpty()) ? "DynaWaltz" : name;
+        String actualName = (name == null || name.isEmpty()) ? "Dynawo" : name;
         return ServiceLoader.load(DynamicSimulationProvider.class).stream()
                 .map(ServiceLoader.Provider::get)
                 .filter(provider -> provider.getName().equals(actualName))

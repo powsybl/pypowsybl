@@ -617,13 +617,18 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
+        SELECTED_OPERATIONAL_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
         IDENTIFIABLE,
         INJECTION,
         BRANCH,
         TERMINAL,
-        SUB_NETWORK;
+        SUB_NETWORK,
+        AREA,
+        AREA_VOLTAGE_LEVELS,
+        AREA_BOUNDARIES,
+        INTERNAL_CONNECTION;
 
         @CEnumValue
         public native int getCValue();
@@ -1046,10 +1051,10 @@ public final class PyPowsyblApiHeader {
         void setDiagonalLabel(boolean diagonalLabel);
 
         @CField("nodes_infos")
-        boolean isAddNodesInfos();
+        boolean isBusesLegendAdded();
 
         @CField("nodes_infos")
-        void setAddNodesInfos(boolean addNodeInfos);
+        void setBusesLegendAdded(boolean addNodeInfos);
 
         @CField("tooltip_enabled")
         void setTooltipEnabled(boolean tooltipEnabled);

@@ -25,7 +25,7 @@ import java.util.List;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class HvdcAngleDroopActivePowerControlDataframeAdder extends AbstractSimpleAdder {
 

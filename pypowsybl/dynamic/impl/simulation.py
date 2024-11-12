@@ -24,7 +24,7 @@ class Simulation:  # pylint: disable=too-few-public-methods
             start: int,
             stop: int,
             ) -> SimulationResult:
-        """Run the dynawaltz simulation"""
+        """Run the dynawo simulation"""
         return SimulationResult(
             _pp.run_dynamic_model(
                 self._handle,

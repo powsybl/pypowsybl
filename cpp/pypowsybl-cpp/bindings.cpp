@@ -321,13 +321,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
+            .value("SELECTED_OPERATIONAL_LIMITS", element_type::SELECTED_OPERATIONAL_LIMITS)
             .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
             .value("ALIAS", element_type::ALIAS)
             .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
             .value("INJECTION", element_type::INJECTION)
             .value("BRANCH", element_type::BRANCH)
             .value("TERMINAL", element_type::TERMINAL)
-            .value("SUB_NETWORK", element_type::SUB_NETWORK);
+            .value("SUB_NETWORK", element_type::SUB_NETWORK)
+            .value("AREA", element_type::AREA)
+            .value("AREA_VOLTAGE_LEVELS", element_type::AREA_VOLTAGE_LEVELS)
+            .value("AREA_BOUNDARIES", element_type::AREA_BOUNDARIES)
+            .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -596,9 +601,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
-          py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
+          py::arg("network"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("voltage_level_ids"),
+          py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
+          py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
+          
+    m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
@@ -988,6 +997,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_unused_order_positions", &pypowsybl::getUnusedConnectableOrderPositions, "Get unused order positions before or after", py::arg("network"), py::arg("busbar_section_id"), py::arg("before_or_after"));
 
     m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
+
+    m.def("remove_internal_connections", &pypowsybl::removeInternalConnections, "remove specified internal connections", py::arg("network"), py::arg("dataframe"));
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 

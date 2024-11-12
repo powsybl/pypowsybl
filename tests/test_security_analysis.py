@@ -78,13 +78,13 @@ def test_variant():
 
 
 def test_monitored_elements():
-    n = pp.network.create_eurostag_tutorial_example1_network()
+    n = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'NHV1_NHV2_1')
-    sa.add_single_element_contingency('NGEN_NHV1', 'NGEN_NHV1')
+    sa.add_single_element_contingency('GEN', 'GEN')
     sa.add_monitored_elements(voltage_level_ids=['VLHV2'])
-    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
-    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
+    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'GEN'])
+    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='GEN')
     sa.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
 
     sa_result = sa.run_ac(n)
@@ -100,8 +100,8 @@ def test_monitored_elements():
     assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']
     assert len(branch_results) == 4
     assert branch_results.loc['', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', '', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.05, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.05, abs=1e-2)
+    assert branch_results.loc['GEN', '', 'NHV1_NHV2_1']['p1'] == pytest.approx(302.44, abs=1e-2)
+    assert branch_results.loc['GEN', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
     assert branch_results.loc['NHV1_NHV2_1', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
 
 
@@ -239,8 +239,8 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
 

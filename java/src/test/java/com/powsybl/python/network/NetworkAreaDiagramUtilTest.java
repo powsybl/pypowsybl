@@ -21,6 +21,7 @@ import java.util.*;
 
 import static com.powsybl.python.network.NetworkAreaDiagramUtil.createNadParameters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -33,6 +34,15 @@ class NetworkAreaDiagramUtilTest {
         String svg = NetworkAreaDiagramUtil.getSvg(network, Collections.emptyList(), createNadParameters());
         assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.svg"))), StandardCharsets.UTF_8)),
                      TestUtil.normalizeLineSeparator(svg));
+    }
+
+    @Test
+    void testSvgAndMetadata() throws IOException {
+        Network network = IeeeCdfNetworkFactory.create14();
+        List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, Collections.emptyList(), createNadParameters());
+        assertEquals(TestUtil.normalizeLineSeparator(new String(ByteStreams.toByteArray(Objects.requireNonNull(NetworkAreaDiagramUtil.class.getResourceAsStream("/nad.svg"))), StandardCharsets.UTF_8)),
+                TestUtil.normalizeLineSeparator(svgAndMeta.get(0)));
+        assertFalse(svgAndMeta.get(1).isEmpty());
     }
 
     @Test

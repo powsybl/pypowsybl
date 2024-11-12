@@ -53,7 +53,7 @@ import java.util.function.Supplier;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public final class Util {
 
@@ -212,6 +212,7 @@ public final class Util {
                     PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
             case OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
+            case SELECTED_OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_OPERATIONAL_LIMITS;
             case MINMAX_REACTIVE_LIMITS -> PyPowsyblApiHeader.ElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS -> PyPowsyblApiHeader.ElementType.ALIAS;
             case TERMINAL -> PyPowsyblApiHeader.ElementType.TERMINAL;
@@ -219,6 +220,10 @@ public final class Util {
             case BRANCH -> PyPowsyblApiHeader.ElementType.BRANCH;
             case IDENTIFIABLE -> PyPowsyblApiHeader.ElementType.IDENTIFIABLE;
             case SUB_NETWORK -> PyPowsyblApiHeader.ElementType.SUB_NETWORK;
+            case AREA -> PyPowsyblApiHeader.ElementType.AREA;
+            case AREA_VOLTAGE_LEVELS -> PyPowsyblApiHeader.ElementType.AREA_VOLTAGE_LEVELS;
+            case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_BOUNDARIES;
+            case INTERNAL_CONNECTION -> PyPowsyblApiHeader.ElementType.INTERNAL_CONNECTION;
         };
     }
 
@@ -251,6 +256,7 @@ public final class Util {
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
             case OPERATIONAL_LIMITS -> DataframeElementType.OPERATIONAL_LIMITS;
+            case SELECTED_OPERATIONAL_LIMITS -> DataframeElementType.SELECTED_OPERATIONAL_LIMITS;
             case MINMAX_REACTIVE_LIMITS -> DataframeElementType.MINMAX_REACTIVE_LIMITS;
             case ALIAS -> DataframeElementType.ALIAS;
             case TERMINAL -> DataframeElementType.TERMINAL;
@@ -258,6 +264,10 @@ public final class Util {
             case BRANCH -> DataframeElementType.BRANCH;
             case IDENTIFIABLE -> DataframeElementType.IDENTIFIABLE;
             case SUB_NETWORK -> DataframeElementType.SUB_NETWORK;
+            case AREA -> DataframeElementType.AREA;
+            case AREA_VOLTAGE_LEVELS -> DataframeElementType.AREA_VOLTAGE_LEVELS;
+            case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
+            case INTERNAL_CONNECTION -> DataframeElementType.INTERNAL_CONNECTION;
         };
     }
 

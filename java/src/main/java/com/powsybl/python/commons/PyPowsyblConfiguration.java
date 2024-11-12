@@ -3,7 +3,7 @@ package com.powsybl.python.commons;
 /**
  * Library level configurations.
  *
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class PyPowsyblConfiguration {
 

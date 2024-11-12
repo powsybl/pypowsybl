@@ -42,7 +42,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * C functions related to short-circuit analysis.
  *
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 @CContext(Directives.class)
 public final class ShortCircuitAnalysisCFunctions {

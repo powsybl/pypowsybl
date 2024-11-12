@@ -577,9 +577,11 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -744,6 +746,8 @@ std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle networ
 
 void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
+void removeInternalConnections(pypowsybl::JavaHandle network, dataframe* dataframe);
+
 void closePypowsybl();
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reportNode);
@@ -752,7 +756,7 @@ SldParameters* createSldParameters();
 
 NadParameters* createNadParameters();
 
-//=======dynamic modeling for dynawaltz package==========
+//=======dynamic modeling for dynawo package==========
 
 //handle creation
 JavaHandle createDynamicSimulationContext();
@@ -777,7 +781,7 @@ std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResult
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
-//=======END OF dynamic modeling for dynawaltz package==========
+//=======END OF dynamic modeling for dynawo package==========
 
 //=======Voltage initializer mapping========
 

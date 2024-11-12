@@ -8,7 +8,7 @@
 package com.powsybl.dataframe;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public enum DataframeElementType {
     BUS,
@@ -38,11 +38,16 @@ public enum DataframeElementType {
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
     OPERATIONAL_LIMITS,
+    SELECTED_OPERATIONAL_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
     IDENTIFIABLE,
     INJECTION,
     BRANCH,
     TERMINAL,
-    SUB_NETWORK
+    SUB_NETWORK,
+    AREA,
+    AREA_VOLTAGE_LEVELS,
+    AREA_BOUNDARIES,
+    INTERNAL_CONNECTION
 }

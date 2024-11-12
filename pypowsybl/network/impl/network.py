@@ -349,7 +349,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                        edge_name_displayed: bool = False) -> None:
         """
         .. deprecated:: 1.1.0
-          Use :class:`write_network_area_diagram_svg` with  `NadParameters` instead.
+          Use :class:`write_network_area_diagram` with  `NadParameters` instead.
 
         Create a network area diagram in SVG format and write it to a file.
         Args:
@@ -367,12 +367,14 @@ class Network:  # pylint: disable=too-many-public-methods
     def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: Union[str, List[str]] = None,
                                    depth: int = 0, high_nominal_voltage_bound: float = -1,
                                    low_nominal_voltage_bound: float = -1,
-                                   nad_parameters: NadParameters = None) -> None:
+                                   nad_parameters: NadParameters = None,
+                                   metadata_file: PathOrStr = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
         Args:
             svg_file: a svg file path
+            metadata_file: a json metadata file path (optional)
             voltage_level_ids: the voltage level ID, center of the diagram (None for the full diagram)
             depth: the diagram depth around the voltage level
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
@@ -385,8 +387,8 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
-        _pp.write_network_area_diagram_svg(self._handle, svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
-                                           low_nominal_voltage_bound, nad_p)
+        _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
+                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
@@ -409,9 +411,11 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(voltage_level_ids, str):
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
-        return Svg(_pp.get_network_area_diagram_svg(self._handle, voltage_level_ids, depth,
+        svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    nad_p))
+                                                    nad_p)
+        return Svg(svg_and_metadata[0], svg_and_metadata[1])
+
 
     def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: Union[str, List[str]],
                                                           depth: int = 0) -> List[str]:
@@ -903,7 +907,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node2** (optional): node where this line is connected on side 2, in node-breaker voltage levels
             - **connected1**: ``True`` if the side "1" of the line is connected to a bus
             - **connected2**: ``True`` if the side "2" of the line is connected to a bus
-              - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
+            - **fictitious** (optional): ``True`` if the line is part of the model and not of the actual network
+            - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+            - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed by the id of the lines.
 
@@ -997,6 +1003,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **connected1**: ``True`` if the side "1" of the transformer is connected to a bus
             - **connected2**: ``True`` if the side "2" of the transformer is connected to a bus
             - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
+            - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+            - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -2195,7 +2203,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
               - **target_deadband**: the regulation deadband around the target value
-              - **regulationg_bus_id**: the bus where the phase shifter regulates
+              - **regulating_bus_id**: the bus where the phase shifter regulates
               - **regulated_side** (optional): the side bus where the phase shifter regulates current or active power
               - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
@@ -2369,8 +2377,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **p2**: the active flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
               - **q2**: the reactive flow on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in MVAr)
               - **i2**: the current on the branch at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+              - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
+              - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
 
-            This dataframe is indexed on the branche ID.
+            This dataframe is indexed on the branch ID.
         """
         return self.get_elements(ElementType.BRANCH, all_attributes, attributes, **kwargs)
 
@@ -2396,6 +2406,159 @@ class Network:  # pylint: disable=too-many-public-methods
             This dataframe is indexed on the element ID of the terminal.
         """
         return self.get_elements(ElementType.TERMINAL, all_attributes, attributes)
+
+    def get_areas(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of areas.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the areas dataframe
+
+        See Also:
+            - :meth:`get_areas_voltage_levels` to retrieve the voltage levels of the areas
+            - :meth:`get_areas_boundaries` to retrieve the voltage levels of the areas boundaries
+            - :meth:`create_areas` to create areas
+            - :meth:`update_areas` to update areas
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **area_type**: the type of area (e.g. ControlArea, BiddingZone, ...)
+              - **interchange_target**: target active power interchange (MW)
+              - **interchange**: total (AC + DC) active power interchange, in load sign convention (negative is export, positive is import) (MW)
+              - **ac_interchange**: AC active power interchange, in load sign convention (negative is export, positive is import) (MW)
+              - **dc_interchange**: DC active power interchange, in load sign convention (negative is export, positive is import) (MW)
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            This dataframe is indexed on the area ID.
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+                net.get_areas()
+
+            will output something like:
+
+            ============= ============== =========== ================== =========== ============== ==============
+            \                       name   area_type interchange_target interchange ac_interchange dc_interchange
+            ============= ============== =========== ================== =========== ============== ==============
+            id
+            ControlArea_A Control Area A ControlArea             -602.6 -602.948693    -602.948693            0.0
+            ControlArea_B Control Area B ControlArea              602.6  602.944639     602.944639            0.0
+            Region_AB          Region AB      Region                NaN    0.000000       0.000000            0.0
+            ============= ============== =========== ================== =========== ============== ==============
+        """
+        return self.get_elements(ElementType.AREA, all_attributes, attributes, **kwargs)
+
+    def get_areas_voltage_levels(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of areas voltage levels.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the areas voltage levels dataframe
+
+        See Also:
+            :meth:`create_areas_voltage_levels`
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **id**: area identifier
+              - **voltage_level_id**: voltage level identifier
+
+            This dataframe is indexed on the area ID.
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+                net.get_areas_voltage_levels()
+
+            will output something like:
+
+            ============= ================
+            \             voltage_level_id
+            ============= ================
+            id
+            ControlArea_A VLGEN
+            ControlArea_A VLHV1
+            ControlArea_B VLHV2
+            ControlArea_B VLLOAD
+            Region_AB     VLGEN
+            Region_AB     VLHV1
+            Region_AB     VLHV2
+            Region_AB     VLLOAD
+            ============= ================
+        """
+        return self.get_elements(ElementType.AREA_VOLTAGE_LEVELS, all_attributes, attributes, **kwargs)
+
+    def get_areas_boundaries(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of areas boundaries.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the areas boundaries dataframe
+
+        See Also:
+            :meth:`create_areas_boundaries`
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **id**: area identifier
+              - **boundary_type** (optional): either `DANGLING_LINE` or `TERMINAL`
+              - **element**: either identifier of the Dangling Line or the equipment terminal
+              - **side** (optional): equipment side
+              - **ac**: True if the boundary is considered as AC and not DC
+              - **p**: Active power at boundary (MW)
+              - **q**: Reactive power at boundary (MW)
+
+            This dataframe is indexed on the area ID.
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+                net.get_areas_boundaries()
+
+            will output something like:
+
+            ============= ================ ===== =========== ===========
+            \                      element    ac           p           q
+            ============= ================ ===== =========== ===========
+            id
+            ControlArea_A      NHV1_XNODE1  True -301.474347 -116.518644
+            ControlArea_A      NVH1_XNODE2  True -301.474347 -116.518644
+            ControlArea_B      XNODE1_NHV2  True  301.472320  116.434157
+            ControlArea_B      XNODE2_NHV2  True  301.472320  116.434157
+            ============= ================ ===== =========== ===========
+        """
+        return self.get_elements(ElementType.AREA_BOUNDARIES, all_attributes, attributes, **kwargs)
 
     def _update_elements(self, element_type: ElementType, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
@@ -2605,6 +2768,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `fictitious`
             - `pairing_key`
             - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
+            - `selected_limits_group`
 
         See Also:
             :meth:`get_dangling_lines`
@@ -2786,6 +2950,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `connected2`
             - `fictitious`
+            - `selected_limits_group_1`
+            - `selected_limits_group_2`
 
         See Also:
             :meth:`get_lines`
@@ -2827,6 +2993,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `connected2`
             - `fictitious`
+            - `selected_limits_group_1`
+            - `selected_limits_group_2`
 
         See Also:
             :meth:`get_2_windings_transformers`
@@ -2865,6 +3033,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected1`
             - `ratio_tap_position1`
             - `phase_tap_position1`
+            - `selected_limits_group_1`
             - `r2`
             - `x2`
             - `g2`
@@ -2876,6 +3045,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected2`
             - `ratio_tap_position2`
             - `phase_tap_position2`
+            - `selected_limits_group_2`
             - `r3`
             - `x3`
             - `g3`
@@ -2887,6 +3057,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected3`
             - `ratio_tap_position3`
             - `phase_tap_position3`
+            - `selected_limits_group_3`
             - `fictitious`
 
         See Also:
@@ -3308,6 +3479,35 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.TIE_LINE, df, **kwargs)
 
+    def update_areas(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update areas with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `interchange_target`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_areas`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_areas(id='ControlArea_A', interchange_target=-500)
+                network.update_areas(id=['ControlArea_A', 'ControlArea_B'], interchange_target=[-500, 500])
+        """
+        return self._update_elements(ElementType.AREA, df, **kwargs)
+
     def update_extensions(self, extension_name: str, df: DataFrame = None, table_name: str = "",
                           **kwargs: ArrayLike) -> None:
         """
@@ -3422,7 +3622,7 @@ class Network:  # pylint: disable=too-many-public-methods
             columns.append('fictitious')
         return current_limits[columns]
 
-    def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
+    def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
 
@@ -3438,17 +3638,23 @@ class Network:  # pylint: disable=too-many-public-methods
           - **value**:      The value of the limit
           - **acceptable_duration**: The duration, in seconds, for which the element can securely be
             operated under the limit value. By convention, the value -1 represents an infinite duration.
-          - **is_fictitious**: true if this limit is fictitious
+          - **fictitious** (optional): `True` if this limit is fictitious
+          - **group_name** (optional): The name of the operational limit group this limit is in
+          - **selected** (optional): `True` if this limit's operational group is the selected one
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
+            only_selected_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
             All limits on the network
         """
-        return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        if show_inactive_sets:
+            return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
+        else:
+            return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
@@ -4584,6 +4790,156 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
+    def create_areas(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Create areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        See Also:
+            :meth:`get_areas`
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new area
+            - **name**: an optional human-readable name
+            - **area_type**: the type of Area (e.g. ControlArea, BiddingZone …)
+            - **interchange_target**: Target active power interchange (MW)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_areas(id='Area1', area_type='ControlArea', interchange_target=120.5)
+        """
+        return self._create_elements(ElementType.AREA, [df], **kwargs)
+
+    def create_areas_voltage_levels(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Associate voltage levels to (existing) areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Important: The provided voltage levels for an area replace all existing voltage levels of that area,
+            i.e. the entire list of voltage levels must be provided for the areas being edited.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the area
+            - **voltage_level_id**: the identifier of the voltage level to be associated with the area
+
+        See Also:
+            :meth:`get_areas_voltage_levels`
+
+        Examples:
+            To associate voltage levels VL1 and VL2 to Area1.
+
+            .. code-block:: python
+
+                network.create_areas_voltage_levels(id=['Area1', 'Area1'], voltage_level_id=['VL1', 'VL2'])
+
+            To dissociate all VoltageLevels of a given area, provide an empty string in voltage_level_id.
+
+            .. code-block:: python
+
+                network.create_areas_voltage_levels(id=['Area1'], voltage_level_id=[''])
+        """
+        return self._create_elements(ElementType.AREA_VOLTAGE_LEVELS, [df], **kwargs)
+
+    def create_areas_boundaries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Define boundaries of (existing) areas.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Important: The provided boundaries for an area replace all existing boundaries of that area,
+            i.e. the entire list of boundaries must be provided for the areas being edited.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the area
+            - **boundary_type**: either `DANGLING_LINE` or `TERMINAL`, defaults to `DANGLING_LINE`.
+            - **element**: dangling line identifier, or any connectable
+            - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
+            - **ac**: True is boundary is to be considered as AC
+
+        See Also:
+            :meth:`get_areas_boundaries`
+
+        Examples:
+
+            .. code-block:: python
+
+                # define dangling lines NHV1_XNODE1 and NVH1_XNODE2 as boundaries of AreaA, and
+                # define dangling lines XNODE1_NHV2 and XNODE2_NHV2 as boundaries of AreaB
+                network.create_areas_boundaries(id=['AreaA', 'AreaA', 'AreaB', 'AreaB'],
+                                                boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
+                                                element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
+                                                ac=[True, True, True, True])
+
+            To dissociate all Boundaries of a given area, provide an empty string in element.
+
+            .. code-block:: python
+
+                network.create_areas_boundaries(id=['Area1'], element=[''])
+        """
+        return self._create_elements(ElementType.AREA_BOUNDARIES, [df], **kwargs)
+
+    def create_internal_connections(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates internal connections.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        See Also:
+            - :meth:`get_node_breaker_topology`
+            - :meth:`remove_internal_connections`
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **voltage_level_id**: voltage level identifier. The voltage level must be in Node/Breaker topology kind.
+            - **node1**: node 1 of the internal connection
+            - **node2**: node 2 of the internal connection
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_internal_connections(voltage_level_id='VL1', node1=3, node2=6)
+
+        """
+        return self._create_elements(ElementType.INTERNAL_CONNECTION, [df], **kwargs)
+
     def add_aliases(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Adds aliases to network elements.
@@ -4701,11 +5057,47 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 network.remove_elements('GENERATOR-1')  # Removes only 1 element
-                network.remove_elements(['GENERATOR-1', 'BUS])
+                network.remove_elements(['GENERATOR-1', 'BUS'])
         """
         if isinstance(elements_ids, str):
             elements_ids = [elements_ids]
         _pp.remove_elements(self._handle, elements_ids)
+
+    def remove_internal_connections(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Removes internal connections.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        See Also:
+            - :meth:`get_node_breaker_topology`
+            - :meth:`create_internal_connections`
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **voltage_level_id**: voltage level identifier. The voltage level must be in Node/Breaker topology kind.
+            - **node1**: node 1 of the internal connection
+            - **node2**: node 2 of the internal connection
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.remove_internal_connections(voltage_level_id='VL1', node1=3, node2=6)
+
+        """
+        metadata = _pp.get_network_elements_creation_dataframes_metadata(ElementType.INTERNAL_CONNECTION)[0]
+        df = _adapt_df_or_kwargs(metadata, df, **kwargs)
+        c_df = _create_c_dataframe(df, metadata)
+        _pp.remove_internal_connections(self._handle, c_df)
 
     def get_extensions(self, extension_name: str, table_name: str = "") -> DataFrame:
         """

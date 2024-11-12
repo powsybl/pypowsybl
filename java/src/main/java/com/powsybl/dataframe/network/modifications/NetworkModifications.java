@@ -18,7 +18,7 @@ import java.util.Map;
 import static com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType.*;
 
 /**
- * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet at rte-france.com>}
  */
 public final class NetworkModifications {
 

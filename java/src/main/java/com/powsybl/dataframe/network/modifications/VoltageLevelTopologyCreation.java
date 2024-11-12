@@ -22,7 +22,7 @@ import java.util.OptionalInt;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet at rte-france.com>}
  */
 public class VoltageLevelTopologyCreation implements NetworkModification {
 
