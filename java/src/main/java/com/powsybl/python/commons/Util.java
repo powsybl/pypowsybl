@@ -68,6 +68,7 @@ public final class Util {
         // correctly handle the exception on C++ side
         String message = t.getMessage();
         String nonNullMessage = message == null || message.isEmpty() ? t.toString() : message;
+        t.printStackTrace();
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
     }
 
