@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 /**
- * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
+ * @author Hugo Kulesza {@literal <hugo.kulesza@rte-france.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class SecondaryVoltageControlDataframeProvider implements NetworkExtensionDataframeProvider {

@@ -23,7 +23,7 @@ import static java.lang.Double.NaN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 class ShortCircuitAnalysisTest {
 

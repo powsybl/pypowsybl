@@ -19,7 +19,7 @@ import com.powsybl.python.commons.Util;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public class CurrentLimitAutomatonAdder implements DynamicMappingAdder {
     private static final List<SeriesMetadata> METADATA = List.of(

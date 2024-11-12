@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Damien Jeandemange <damien.jeandemange@artelys.com>
+ * @author Damien Jeandemange {@literal <damien.jeandemange@artelys.com>}
  */
 public class ReferencePrioritiesDataframeAdder extends AbstractSimpleAdder {
 
