@@ -3,6 +3,8 @@
   "includes":[
     {"pattern":"conformity/cas-1.1.3-data-4.0.3/MicroGrid/BaseCase/CGMES_v2.4.15_MicroGridTestConfiguration_BC_BE_v2/MicroGridTestConfiguration_BC_BE_.*_V2.xml"},
     {"pattern":"conformity/cas-1.1.3-data-4.0.3/MicroGrid/BaseCase/CGMES_v2.4.15_MicroGridTestConfiguration_BC_NL_v2/MicroGridTestConfiguration_BC_NL_.*_V2.xml"},
-    {"pattern":"conformity/cas-1.1.3-data-4.0.3/MicroGrid/BaseCase/CGMES_v2.4.15_MicroGridTestConfiguration_BD_v2/MicroGridTestConfiguration_.*_BD.xml"}
+    {"pattern":"conformity/cas-1.1.3-data-4.0.3/MicroGrid/BaseCase/CGMES_v2.4.15_MicroGridTestConfiguration_BD_v2/MicroGridTestConfiguration_.*_BD.xml"},
+    {"pattern":"conformity/cas-1.1.3-data-4.0.3/MiniGrid/NodeBreaker/CGMES_v2.4.15_MiniGridTestConfiguration_BaseCase_Complete_v3/MiniGridTestConfiguration_BC_.*_v3.0.0.xml"},
+    {"pattern":"conformity/cas-1.1.3-data-4.0.3/MiniGrid/NodeBreaker/CGMES_v2.4.15_MiniGridTestConfiguration_Boundary_v3/MiniGridTestConfiguration_.*_BD_v3.0.0.xml"}
   ]}
 }

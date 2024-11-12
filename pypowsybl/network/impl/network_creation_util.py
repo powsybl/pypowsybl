@@ -175,6 +175,16 @@ def create_micro_grid_nl_network() -> Network:
     return _create_network('micro_grid_nl')
 
 
+def create_mini_grid_node_breaker_network() -> Network:
+    """
+    Create an instance of mini grid node/breaker CGMES test case
+
+    Returns:
+        a new instance of mini grid node/breaker CGMES test case
+    """
+    return _create_network('mini_grid_node_breaker')
+
+
 def create_metrix_tutorial_six_buses_network() -> Network:
     """
     Create an instance of metrix tutorial six buses test case
