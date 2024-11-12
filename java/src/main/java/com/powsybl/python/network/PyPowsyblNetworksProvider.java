@@ -34,6 +34,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("ieee300", (Supplier<Network>) IeeeCdfNetworkFactory::create300),
             factory("micro_grid_be", () -> importCgmes(CgmesConformity1Catalog.microGridBaseCaseBE())),
             factory("micro_grid_nl", () -> importCgmes(CgmesConformity1Catalog.microGridBaseCaseNL())),
+            factory("mini_grid_node_breaker", () -> importCgmes(CgmesConformity1Catalog.miniNodeBreaker())),
             factory("four_substations_node_breaker", (Supplier<Network>) FourSubstationsNodeBreakerFactory::create),
             factory("four_substations_node_breaker_with_extensions", (Supplier<Network>) FourSubstationsNodeBreakerWithExtensionsFactory::create),
             factory("eurostag_tutorial_example1", Networks::createEurostagTutorialExample1WithFixedCurrentLimits),
