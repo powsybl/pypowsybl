@@ -208,5 +208,5 @@ jobs:
           -Dsonar.organization=powsybl-ci-github
           -Dsonar.projectKey=powsybl_pypowsybl-java
         env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}          
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
