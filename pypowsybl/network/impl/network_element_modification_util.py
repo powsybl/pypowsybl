@@ -297,7 +297,7 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: DataFrame = None, generation_df = pd.DataFrame(),
+def create_dangling_line_bay(network: Network, df: DataFrame = None, generation_df: DataFrame = pd.DataFrame(),
                              raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None,
                              **kwargs: ArrayLike) -> None:
     """
