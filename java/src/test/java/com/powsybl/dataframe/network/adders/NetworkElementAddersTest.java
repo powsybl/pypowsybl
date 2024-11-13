@@ -140,7 +140,8 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
         addDoubleColumn(dataframe, "p0", 102d);
         addDoubleColumn(dataframe, "q0", 151d);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, singletonList(dataframe));
+        var emptyGenerationDataframe = new DefaultUpdatingDataframe(0);
+        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, emptyGenerationDataframe));
         assertEquals(2, network.getDanglingLineCount());
     }
 
@@ -159,14 +160,21 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
         addDoubleColumn(dataframe, "p0", 102d);
         addDoubleColumn(dataframe, "q0", 151d);
-        addDoubleColumn(dataframe, "min_p", 0);
-        addDoubleColumn(dataframe, "max_p", 200d);
-        addDoubleColumn(dataframe, "target_p", 102d);
-        addDoubleColumn(dataframe, "target_q", 151d);
-        addDoubleColumn(dataframe, "target_v", 100d);
-        addIntColumn(dataframe, "voltage_regulator_on", 1);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, singletonList(dataframe));
+
+        var generationDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(generationDataframe, "id", "dl2");
+        addDoubleColumn(generationDataframe, "min_p", 0);
+        addDoubleColumn(generationDataframe, "max_p", 200d);
+        addDoubleColumn(generationDataframe, "target_p", 102d);
+        addDoubleColumn(generationDataframe, "target_q", 151d);
+        addDoubleColumn(generationDataframe, "target_v", 100d);
+        addIntColumn(generationDataframe, "voltage_regulator_on", 1);
+        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, generationDataframe));
+
         assertEquals(2, network.getDanglingLineCount());
+        DanglingLine dl = network.getDanglingLine("dl2");
+        assertTrue(Optional.ofNullable(dl.getGeneration()).isPresent());
+        assertTrue(dl.getGeneration().isVoltageRegulationOn());
     }
 
     @Test

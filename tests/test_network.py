@@ -1220,15 +1220,18 @@ def test_dangling_line_generation():
     df = n.get_dangling_lines_generation()
     assert df.empty
 
+    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2_wrong']), columns=["target_v", "voltage_regulator_on"],
+                                 data=[[225, True]])
     with pytest.raises(PyPowsyblError) as context:
-        n.create_dangling_lines(id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
-                                p0=100, q0=100, r=0, x=0, g=0, b=0,
-                                target_v=100, voltage_regulator_on=True)
+        n.create_dangling_lines(generation_df=wrong_generation_df, id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0)
     assert "invalid value (NaN) for active power setpoint" in str(context)
 
-    n.create_dangling_lines(id='DL2', voltage_level_id='VL', bus_id='BUS',
-                            p0=100, q0=100, r=0, x=0, g=0, b=0,
-                            min_p=0, max_p=100, target_p=100, target_v=100, voltage_regulator_on=True)
+    generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2']),
+                                 columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
+                                 data= [[0, 100, 100, 225, True]])
+    n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0)
     df2 = n.get_dangling_lines_generation()
     assert df2['voltage_regulator_on']['DL2']
     assert math.isnan(df2['target_q']['DL2'])
