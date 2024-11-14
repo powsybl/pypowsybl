@@ -4161,7 +4161,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 network.create_lines(id='LINE-1', voltage_level1_id='VL1', bus1_id='B1',
                                      voltage_level2_id='VL2', bus2_id='B2',
-                                     b1=1e-6, b2=1e-6, g1=0, , g2=0, r=0.5, x=10)
+                                     b1=1e-6, b2=1e-6, g1=0, g2=0, r=0.5, x=10)
         """
         return self._create_elements(ElementType.LINE, [df], **kwargs)
 
