@@ -28,6 +28,8 @@ MIN_TARGET_P_TO_NOT_BE_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
 DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
 
+# Setup logging configuration
+logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 
 def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     if util.find_spec("pandapower") is None:
@@ -213,8 +215,6 @@ def extract_tap_info(trafo_and_bus):
     then augmented to the tap_step_percent already present, this means powsybl can just use
     tap_step_percent for the calculations and then calculates the n_tap value
     """
-    # Setup logging configuration
-    logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 
     # Create a copy of 'tap_step_percent' to modify
     tap_step_percent_new = np.zeros_like(trafo_and_bus['tap_step_percent'])
@@ -231,7 +231,8 @@ def extract_tap_info(trafo_and_bus):
     if np.any(both_parameterized_mask):
         for idx in trafo_and_bus.index[both_parameterized_mask]:
             logging.error(
-                f"Transformer at index {idx} has both 'tap_step_degree' and 'tap_step_percent' parameterized.")
+                f"Transformer at index {idx} has both 'tap_step_degree' and 'tap_step_percent' parameterized, This is"
+                "not allowed in pandapower.")
 
     # For transformers where 'tap_step_degree' is present, calculate tap_step_percent_new
     tap_step_percent_new[degree_mask] = (
