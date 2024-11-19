@@ -13,26 +13,23 @@ jobs:
   build_pypowsybl:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
+    outputs:
+      matrix_result: ${{ steps.set_result.outputs.result }}
+      build_status: ${{ steps.build_status.outputs.BUILD_STATUS_CONTENT }}
     strategy:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-latest}
           - { name: darwin, os: macos-12, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
-          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64"}
-          - { name: windows, os: windows-2022}
         python:
           - { name: cp38, version: '3.8' }
           - { name: cp39, version: '3.9' }
-          - { name: cp310, version: '3.10' }
-          - { name: cp311, version: '3.11' }
-          - { name: cp312, version: '3.12' }
       fail-fast: false
     defaults:
       run:
         shell: bash
 
     steps:
-
 
       #SETUP PYTHON
       - name: Set up Python ${{ matrix.python.version }}
@@ -273,32 +270,46 @@ jobs:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
 
+      - name: Record Job Name
+        if: failure()
+        run: |
+          echo "Job en échec : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
+
       - name: Show Build Status Report
         if: always()
         run: |
+          echo "BUILD_STATUS_CONTENT=$(cat $BUILD_STATUS)" >> $GITHUB_OUTPUT
           echo "=== BUILD STATUS REPORT ==="
           cat $BUILD_STATUS
           echo "=========================="
 
-    #SLACK NOTIFICATION ON FAILURE
-      - name: Slack Notification
-        uses: 8398a7/action-slack@v3
-        if: failure()
-        with:
-          status: ${{ job.status }}
-          fields: repo,message,action,eventName,ref,workflow
-          text: |
-            :x: *Échec du workflow ${{ github.workflow }}
-            
-            *Workflow:* ${{ github.workflow }}
-            *Job:* ${{ github.job }}
-            *Étape:* ${{ github.action }}
-            
-            *Détails:*
-            • Repo: ${{ github.repository }}
-            • Branche: ${{ github.ref_name }}
-            • Événement déclencheur: ${{ github.event_name }}
-            
-            [Voir les logs](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Read Build Status
+        if: always()
+        id: build_status
+        run: |
+          echo "BUILD_STATUS_CONTENT<<EOF" >> $GITHUB_OUTPUT
+          cat $BUILD_STATUS >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+
+  #SLACK NOTIFICATION ON FAILURE
+  notify_slack:
+      needs: build_pypowsybl
+      runs-on: ubuntu-latest
+      if: failure()
+      steps:
+        - name: Send Slack Notification
+          uses: 8398a7/action-slack@v3
+          with:
+            status: ${{ job.status }}
+            text: |
+              :x: *Échec du workflow ${{ github.workflow }}*
+                
+              *Détails des échecs:*
+              ```
+              ${{ needs.build_pypowsybl.outputs.build_status }}
+              ```
+  
+              Voir les logs : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          env:
+            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
