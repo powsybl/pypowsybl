@@ -299,22 +299,20 @@ jobs:
 
   #SLACK NOTIFICATION ON FAILURE
   notify_slack:
-      needs: build_pypowsybl
-      runs-on: ubuntu-latest
-      if: failure()
-      steps:
-        - name: Send Slack Notification
-          uses: 8398a7/action-slack@v3
-          with:
-            status: ${{ job.status }}
-            text: |
-              :x: *Échec du workflow ${{ github.workflow }}*
-                
-              *Détails des échecs:*
-              ```
-              ${{ needs.build_pypowsybl.outputs.build_status }}
-              ```
-  
-              Voir les logs : https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          env:
-            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+   needs: build_pypowsybl
+   runs-on: ubuntu-latest
+   if: failure()
+   steps:
+     - name: Send Slack Notification
+       uses: 8398a7/action-slack@v3
+       with:
+         status: ${{ job.status }}
+         text: |
+           :x: *Failed workflow ${{ github.workflow }}*
+           *Failure details:*
+           ```
+           ${{ needs.build_pypowsybl.outputs.build_status }}
+           ```
+           See logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+       env:
+         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
