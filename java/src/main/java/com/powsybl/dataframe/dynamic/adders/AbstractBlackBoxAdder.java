@@ -16,7 +16,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public abstract class AbstractBlackBoxAdder implements DynamicMappingAdder {
     private static final List<SeriesMetadata> METADATA = List.of(

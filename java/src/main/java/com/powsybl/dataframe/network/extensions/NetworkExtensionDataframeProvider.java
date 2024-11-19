@@ -21,7 +21,7 @@ import java.util.Map;
 /**
  * SPI for defining dataframes of network extensions.
  *
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public interface NetworkExtensionDataframeProvider {
 

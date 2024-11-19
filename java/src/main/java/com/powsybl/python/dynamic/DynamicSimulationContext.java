@@ -17,7 +17,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.Network;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public class DynamicSimulationContext {
     private static final Logger LOGGER = LoggerFactory.getLogger(DynamicSimulationContext.class);

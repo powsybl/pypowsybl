@@ -10,7 +10,7 @@ package com.powsybl.dataframe.network.extensions;
 import java.util.Objects;
 
 /**
- * @author Hugo Kulesza <hugo.kulesza@rte-france.com>
+ * @author Hugo Kulesza {@literal <hugo.kulesza@rte-france.com>}
  */
 public class ExtensionDataframeKey {
     private final String extensionName;

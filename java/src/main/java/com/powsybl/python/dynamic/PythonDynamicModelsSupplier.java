@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {

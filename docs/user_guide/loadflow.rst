@@ -91,11 +91,11 @@ possible values if applicable, using:
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> lf.get_provider_parameters().iloc[:2]
-                                        description    type      default                                possible_values
+    >>> lf.get_provider_parameters().query('name == "slackBusSelectionMode" or name == "slackBusesIds"')
+                                category_key               description         type      default                                possible_values
     name
-    slackBusSelectionMode  Slack bus selection mode  STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
-    slackBusesIds                     Slack bus IDs  STRING_LIST
+    slackBusSelectionMode  SlackDistribution  Slack bus selection mode       STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
+    slackBusesIds          SlackDistribution             Slack bus IDs  STRING_LIST
 
 For instance, OLF supports configuration of slack bus from its ID like this:
 

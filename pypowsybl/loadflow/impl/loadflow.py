@@ -135,12 +135,16 @@ def get_provider_parameters(provider: str = None) -> DataFrame:
        .. doctest::
 
            >>> parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
+           >>> parameters['category_key']['slackBusSelectionMode']
+           'SlackDistribution'
            >>> parameters['description']['slackBusSelectionMode']
            'Slack bus selection mode'
            >>> parameters['type']['slackBusSelectionMode']
            'STRING'
            >>> parameters['default']['slackBusSelectionMode']
            'MOST_MESHED'
+           >>> parameters['possible_values']['slackBusSelectionMode']
+           '[FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]'
     """
     series_array = _pypowsybl.create_loadflow_provider_parameters_series_array('' if provider is None else provider)
     return create_data_frame_from_series_array(series_array)

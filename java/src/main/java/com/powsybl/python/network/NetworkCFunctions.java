@@ -21,6 +21,7 @@ import com.powsybl.dataframe.network.NetworkDataframeContext;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframes;
 import com.powsybl.dataframe.network.adders.AliasDataframeAdder;
+import com.powsybl.dataframe.network.adders.InternalConnectionDataframeAdder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.network.adders.NetworkUtils;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
@@ -521,6 +522,17 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             UpdatingDataframe dataframe = createDataframe(cDataframe);
             AliasDataframeAdder.deleteElements(network, dataframe);
+        });
+    }
+
+    @CEntryPoint(name = "removeInternalConnections")
+    public static void removeInternalConnections(IsolateThread thread, ObjectHandle networkHandle,
+                                     DataframePointer cDataframe,
+                                     ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            UpdatingDataframe dataframe = createDataframe(cDataframe);
+            InternalConnectionDataframeAdder.deleteElements(network, dataframe);
         });
     }
 
