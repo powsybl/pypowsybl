@@ -157,6 +157,11 @@ def test_get_import_format():
     assert ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM'] == formats
 
 
+def test_get_import_supported_extensions():
+    extensions = pp.network.get_import_supported_extensions()
+    assert ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml'] == extensions
+
+
 def test_get_import_parameters():
     parameters = pp.network.get_import_parameters('PSS/E')
     assert 1 == len(parameters)

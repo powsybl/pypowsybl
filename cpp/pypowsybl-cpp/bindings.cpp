@@ -371,6 +371,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("not_connected_to_same_bus_at_both_sides"));
 
     m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
+    m.def("get_network_import_supported_extensions", &pypowsybl::getNetworkImportSupportedExtensions, "Get supported import extensions");
     m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
     m.def("get_network_import_post_processors", &pypowsybl::getNetworkImportPostProcessors, "Get supported import post processors");
 
