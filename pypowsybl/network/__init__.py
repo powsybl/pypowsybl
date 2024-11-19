@@ -43,6 +43,7 @@ from .impl.util import (
     get_extensions_names,
     get_single_line_diagram_component_library_names,
     get_import_formats,
+    get_import_supported_extensions,
     get_export_formats,
     get_import_post_processors,
     get_import_parameters,
