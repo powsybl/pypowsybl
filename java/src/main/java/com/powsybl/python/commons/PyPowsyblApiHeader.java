@@ -597,6 +597,7 @@ public final class PyPowsyblApiHeader {
         THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
         LOAD,
+        GROUND,
         BATTERY,
         SHUNT_COMPENSATOR,
         NON_LINEAR_SHUNT_COMPENSATOR_SECTION,

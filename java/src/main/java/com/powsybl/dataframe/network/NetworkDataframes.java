@@ -66,6 +66,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.GENERATOR, generators());
         mappers.put(DataframeElementType.LOAD, loads());
         mappers.put(DataframeElementType.BATTERY, batteries());
+        mappers.put(DataframeElementType.GROUND, grounds());
         mappers.put(DataframeElementType.SHUNT_COMPENSATOR, shunts());
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
@@ -381,6 +382,19 @@ public final class NetworkDataframes {
                 .ints("node", b -> getNode(b.getTerminal()), false)
                 .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
+                .build();
+    }
+
+    static NetworkDataframeMapper grounds() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getGroundStream, getOrThrow(Network::getGround, "Ground"))
+                .stringsIndex("id", Ground::getId)
+                .strings("name", b -> b.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("voltage_level_id", getVoltageLevelId())
+                .strings("bus_id", b -> getBusId(b.getTerminal()))
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
+                .ints("node", b -> getNode(b.getTerminal()), false)
+                .booleans("connected", b -> b.getTerminal().isConnected(), connectInjection())
                 .addProperties()
                 .build();
     }
