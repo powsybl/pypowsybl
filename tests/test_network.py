@@ -158,8 +158,8 @@ def test_get_import_format():
 
 
 def test_get_import_supported_extensions():
-    extenssions = pp.network.get_import_supported_extensions()
-    assert ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml'] == extenssions
+    extensions = pp.network.get_import_supported_extensions()
+    assert ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml'] == extensions
 
 
 def test_get_import_parameters():
