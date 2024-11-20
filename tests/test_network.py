@@ -1413,24 +1413,24 @@ def test_busbar_sections():
 def test_non_linear_shunt():
     n = util.create_non_linear_shunt_network()
     non_linear_shunt_sections = n.get_non_linear_shunt_compensator_sections()
-    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 0)],
-                                   pd.Series(data={'g': 0.0, 'b': 0.00001},
-                                             name=('SHUNT', 0)), check_dtype=False)
     pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 1)],
-                                   pd.Series(data={'g': 0.3, 'b': 0.0200},
+                                   pd.Series(data={'g': 0.0, 'b': 0.00001},
                                              name=('SHUNT', 1)), check_dtype=False)
-    update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)], names=['id', 'section']),
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 2)],
+                                   pd.Series(data={'g': 0.3, 'b': 0.0200},
+                                             name=('SHUNT', 2)), check_dtype=False)
+    update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 1), ('SHUNT', 2)], names=['id', 'section']),
                           columns=['g', 'b'],
                           data=[[0.1, 0.00002],
                                 [0.4, 0.03]])
     n.update_non_linear_shunt_compensator_sections(update)
     non_linear_shunt_sections = n.get_non_linear_shunt_compensator_sections()
-    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 0)],
-                                   pd.Series(data={'g': 0.1, 'b': 0.00002},
-                                             name=('SHUNT', 0)), check_dtype=False)
     pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 1)],
-                                   pd.Series(data={'g': 0.4, 'b': 0.03},
+                                   pd.Series(data={'g': 0.1, 'b': 0.00002},
                                              name=('SHUNT', 1)), check_dtype=False)
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 2)],
+                                   pd.Series(data={'g': 0.4, 'b': 0.03},
+                                             name=('SHUNT', 2)), check_dtype=False)
 
 
 def test_voltage_levels():
@@ -1461,9 +1461,9 @@ def test_voltage_levels():
 
 def test_update_with_keywords():
     n = util.create_non_linear_shunt_network()
-    n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
-    assert 0.2 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g']
-    assert 0.000001 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b']
+    n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=1, g=0.2, b=0.000001)
+    assert 0.2 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 1]['g']
+    assert 0.000001 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 1]['b']
 
 
 def test_update_generators_with_keywords():

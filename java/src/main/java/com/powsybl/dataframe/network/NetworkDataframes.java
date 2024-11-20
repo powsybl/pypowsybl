@@ -423,7 +423,8 @@ public final class NetworkDataframes {
                         .filter(sc -> sc.getModelType() == ShuntCompensatorModelType.NON_LINEAR)
                         .flatMap(shuntCompensator -> {
                             ShuntCompensatorNonLinearModel model = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
-                            return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator, section, model.getAllSections().indexOf(section)));
+                            // careful: shunt section number starts at 1, but position in array starts at 0
+                            return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator, section, model.getAllSections().indexOf(section) + 1));
                         });
         return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts, NetworkDataframes::getShuntSectionNonlinear)
                 .stringsIndex("id", triple -> triple.getLeft().getId())
@@ -443,7 +444,8 @@ public final class NetworkDataframes {
         } else {
             int section = dataframe.getIntValue("section", index)
                     .orElseThrow(() -> new PowsyblException("section is missing"));
-            return Triple.of(shuntCompensator, shuntNonLinear.getAllSections().get(section), section);
+            // careful: shunt section number starts at 1, but position in array starts at 0
+            return Triple.of(shuntCompensator, shuntNonLinear.getAllSections().get(section - 1), section);
         }
     }
 
