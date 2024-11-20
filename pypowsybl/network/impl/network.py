@@ -538,8 +538,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **v_mag**: Get the voltage magnitude of the bus (in kV)
               - **v_angle**: the voltage angle of the bus (in degree)
-              - **connected_component**: the number of terminals connected to this bus
-              - **synchronous_component**: the number of synchronous components that the bus is part of
+              - **connected_component**: The connected component to which the bus belongs
+              - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
 
             This dataframe is indexed on the bus ID in the bus view.
@@ -624,8 +624,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **v_mag**: Get the voltage magnitude of the bus (in kV)
               - **v_angle**: the voltage angle of the bus (in degree)
-              - **connected_component**: the number of terminals connected to this bus
-              - **synchronous_component**: the number of synchronous components that the bus is part of
+              - **connected_component**: The connected component to which the bus belongs
+              - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
               - **bus_id**: the bus ID in the bus view
 
