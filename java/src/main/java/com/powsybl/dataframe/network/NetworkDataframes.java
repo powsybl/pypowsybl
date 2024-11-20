@@ -28,7 +28,6 @@ import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.*;
 import static com.powsybl.dataframe.network.PerUnitUtil.*;
-import static java.lang.Double.NaN;
 
 /**
  * Main user entry point of the package :
@@ -160,14 +159,14 @@ public final class NetworkDataframes {
     static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
-            return (reactiveLimits == null) ? NaN : perUnitPQ(context, reactiveLimits.getMinQ(pGetter.applyAsDouble(g)));
+            return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMinQ(pGetter.applyAsDouble(g)));
         };
     }
 
     static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMaxQ(ToDoubleFunction<U> pGetter) {
         return (g, context) -> {
             ReactiveLimits reactiveLimits = g.getReactiveLimits();
-            return (reactiveLimits == null) ? NaN : perUnitPQ(context, reactiveLimits.getMaxQ(pGetter.applyAsDouble(g)));
+            return (reactiveLimits == null) ? Double.NaN : perUnitPQ(context, reactiveLimits.getMaxQ(pGetter.applyAsDouble(g)));
         };
     }
 
@@ -255,14 +254,14 @@ public final class NetworkDataframes {
     public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitPQ(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return (item, context) -> {
             U object = objectGetter.apply(item);
-            return object != null ? PerUnitUtil.perUnitPQ(context, valueGetter.applyAsDouble(object)) : NaN;
+            return object != null ? PerUnitUtil.perUnitPQ(context, valueGetter.applyAsDouble(object)) : Double.NaN;
         };
     }
 
     public static <T, U> ToDoubleBiFunction<T, NetworkDataframeContext> ifExistsDoublePerUnitAngle(Function<T, U> objectGetter, ToDoubleFunction<U> valueGetter) {
         return (item, context) -> {
             U object = objectGetter.apply(item);
-            return object != null ? PerUnitUtil.perUnitAngle(context, valueGetter.applyAsDouble(object)) : NaN;
+            return object != null ? PerUnitUtil.perUnitAngle(context, valueGetter.applyAsDouble(object)) : Double.NaN;
         };
     }
 
