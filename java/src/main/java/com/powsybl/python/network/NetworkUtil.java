@@ -247,7 +247,7 @@ public final class NetworkUtil {
 
     /**
      * @param b bus in Bus/Breaker view
-     * @return bus in bus view containing b if there is one, or null if none.
+     * @return bus in bus view containing b if there is one.
      */
     public static Optional<Bus> getBusViewBus(Bus b) {
         VoltageLevel voltageLevel = b.getVoltageLevel();
