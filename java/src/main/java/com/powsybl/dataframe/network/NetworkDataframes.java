@@ -325,7 +325,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper buses(boolean busBreakerView) {
-        return NetworkDataframeMapperBuilder.ofStream(n -> busBreakerView ? n.getBusBreakerView().getBusStream() : n.getBusView().getBusStream(),
+        var builder = NetworkDataframeMapperBuilder.ofStream(n -> busBreakerView ? n.getBusBreakerView().getBusStream() : n.getBusView().getBusStream(),
                         getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""), Identifiable::setName)
@@ -334,8 +334,11 @@ public final class NetworkDataframes {
                 .doubles("v_angle", (b, context) -> perUnitAngle(context, b.getAngle()), (b, vAngle, context) -> b.setAngle(unPerUnitAngle(context, vAngle)))
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
                 .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
-                .strings("voltage_level_id", b -> b.getVoltageLevel().getId())
-                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("voltage_level_id", b -> b.getVoltageLevel().getId());
+        if (busBreakerView) {
+            builder.strings("bus_id", b -> NetworkUtil.getBusViewBus(b).map(Bus::getId).orElse(""));
+        }
+        return builder.booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }

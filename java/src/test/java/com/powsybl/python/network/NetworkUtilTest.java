@@ -15,13 +15,14 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class NetworkUtilTest {
+public class NetworkUtilTest {
 
     @Test
     void test() {
@@ -41,17 +42,17 @@ class NetworkUtilTest {
             "VL2_1", "VL2_0",
             "VL2_2", "");
         expected.forEach((busBreakerBusId, busIdExpected) -> {
-            Bus bus = NetworkUtil.getBusViewBus(network.getBusBreakerView().getBus(busBreakerBusId));
+            Optional<Bus> bus = NetworkUtil.getBusViewBus(network.getBusBreakerView().getBus(busBreakerBusId));
             if (!busIdExpected.isEmpty()) {
-                assertNotNull(bus);
-                assertEquals(busIdExpected, bus.getId());
+                assertTrue(bus.isPresent());
+                assertEquals(busIdExpected, bus.orElseThrow().getId());
             } else {
-                assertNull(bus);
+                assertTrue(bus.isEmpty());
             }
         });
     }
 
-    private static Network createTopologyTestNetwork() {
+    public static Network createTopologyTestNetwork() {
         Network network = NetworkFactory.findDefault().createNetwork("test", "code");
 
         var vl1 = network.newVoltageLevel().setTopologyKind(TopologyKind.BUS_BREAKER).setId("VL1").setNominalV(400.).add();
