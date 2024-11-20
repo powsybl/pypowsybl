@@ -6,6 +6,7 @@
 #
 import copy
 import datetime
+import math
 import os
 import pathlib
 import re
@@ -13,7 +14,6 @@ import tempfile
 import unittest
 import io
 import zipfile
-from netrc import netrc
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -1225,6 +1225,34 @@ def test_dangling_lines():
               [-23.83,   1.27, 26.80,   -1.48,  224.81, -5.52],
               [-36.85,  80.68, 43.68,  -84.87,  412.60, -6.74]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+
+
+def test_dangling_line_generation():
+    n = util.create_dangling_lines_network()
+    df = n.get_dangling_lines_generation()
+    assert df.empty
+
+    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2_wrong']), columns=["target_v", "voltage_regulator_on"],
+                                 data=[[225, True]])
+    with pytest.raises(PyPowsyblError) as context:
+        n.create_dangling_lines(generation_df=wrong_generation_df, id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0)
+    assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2']),
+                                 columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
+                                 data= [[0, 100, 100, 225, True]])
+    n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0)
+    df2 = n.get_dangling_lines_generation()
+    assert df2['voltage_regulator_on']['DL2']
+    assert math.isnan(df2['target_q']['DL2'])
+
+    n.update_dangling_lines_generation(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_dangling_lines_generation()
+    assert not df3['voltage_regulator_on']['DL2']
+    assert df3['target_q']['DL2']==100
 
 
 def test_batteries():

@@ -1321,7 +1321,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                net = pp.network._create_dangling_lines_network()
+                net = pp.network.create_dangling_lines_network()
                 net.get_dangling_lines()
 
             will output something like:
@@ -1335,7 +1335,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                net = pp.network._create_dangling_lines_network()
+                net = pp.network.create_dangling_lines_network()
                 net.get_dangling_lines(all_attributes=True)
 
             will output something like:
@@ -1349,7 +1349,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                net = pp.network._create_dangling_lines_network()
+                net = pp.network.create_dangling_lines_network()
                 net.get_dangling_lines(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
 
             will output something like:
@@ -1362,6 +1362,35 @@ class Network:  # pylint: disable=too-many-public-methods
             == === === === ================ ====== =========
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
+
+    def get_dangling_lines_generation(self, all_attributes: bool = False, attributes: List[str] = None,
+                                      **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dangling lines generation part.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of dangling lines generation part.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **min_p**: Minimum active power output of the dangling line's generation part
+              - **max_p**: Maximum active power output of the dangling line's generation part
+              - **target_p**: Active power target of the generation part
+              - **target_q**: Reactive power target of the generation part
+              - **target_v**: Voltage target of the generation part
+              - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
+
+            This dataframe is indexed by the id of the dangling lines
+
+        """
+        return self.get_elements(ElementType.DANGLING_LINE_GENERATION, all_attributes, attributes, **kwargs)
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: List[str] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -2853,6 +2882,39 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.DANGLING_LINE, df, **kwargs)
 
+    def update_dangling_lines_generation(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dangling lines generation part with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `min_p`
+            - `max_p`
+            - `target_p`
+            - `target_q`
+            - `target_v`
+            - `voltage_regulator_on`
+
+        See Also:
+            :meth:`get_dangling_lines_generation`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dangling_lines_generation(id='DL', voltage_regulator_on=True, target_v=225)
+                network.update_dangling_lines_generation(id=['DL', 'DL2'],  voltage_regulator_on=[True, True], target_v=[225, 400])
+        """
+        return self._update_elements(ElementType.DANGLING_LINE_GENERATION, df, **kwargs)
+
     def update_vsc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update VSC converter stations with data provided as a :class:`~pandas.DataFrame` or as named arguments.
@@ -4008,17 +4070,18 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.BATTERY, [df], **kwargs)
 
-    def create_dangling_lines(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def create_dangling_lines(self, df: DataFrame = None, generation_df: DataFrame = pd.DataFrame(), **kwargs: ArrayLike) -> None:
         """
         Creates dangling lines.
 
         Args:
             df: Attributes as a dataframe.
+            generation_df: Attributes of the dangling lines optional generation part, only as a dataframe
             kwargs: Attributes as keyword arguments.
 
         Notes:
 
-            Data may be provided as a dataframe or as keyword arguments.
+            General dangling line data may be provided as a dataframe or as keyword arguments.
             In the latter case, all arguments must have the same length.
 
             Valid attributes are:
@@ -4042,6 +4105,17 @@ class Network:  # pylint: disable=too-many-public-methods
             - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
             - **ucte-x-node-code**: deprecated, use pairing-key instead.
 
+            Dangling line generation information must be provided as a dataframe.
+            Valid attributes are:
+
+            - **id**: Identifier of the dangling line that contains this generation part
+            - **min_p**: Minimum active power output of the dangling line's generation part
+            - **max_p**: Maximum active power output of the dangling line's generation part
+            - **target_p**: Active power target of the generation part
+            - **target_q**: Reactive power target of the generation part
+            - **target_v**: Voltage target of the generation part
+            - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
+
         Examples:
             Using keyword arguments:
 
@@ -4060,7 +4134,7 @@ class Network:  # pylint: disable=too-many-public-methods
             warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
             kwargs['pairing_key'] = ucte_x_node_code
             kwargs.pop(ucte_xnode_code_str)
-        return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
+        return self._create_elements(ElementType.DANGLING_LINE, [df, generation_df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
