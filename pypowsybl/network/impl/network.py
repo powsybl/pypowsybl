@@ -3723,8 +3723,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if show_inactive_sets:
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        else:
-            return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+        return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
