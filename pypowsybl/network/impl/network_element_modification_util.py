@@ -659,8 +659,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
 def transform_list_to_str(entry: Union[str, List[str]]) -> str:
     if isinstance(entry, list):
         return ','.join(str(e.replace(' ', '')) for e in entry)
-    if isinstance(entry, str):
-        return entry.replace(' ', '')
+    return entry.replace(' ', '')
 
 
 def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = True,
