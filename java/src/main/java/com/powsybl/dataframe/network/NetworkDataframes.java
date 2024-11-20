@@ -335,13 +335,7 @@ public final class NetworkDataframes {
                 .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
                 .strings("voltage_level_id", b -> b.getVoltageLevel().getId());
         if (busBreakerView) {
-            builder.strings("bus_id", b -> {
-                Bus bus = NetworkUtil.getBusViewBus(b);
-                if (bus != null) {
-                    return bus.getId();
-                }
-                return "";
-            });
+            builder.strings("bus_id", b -> NetworkUtil.getBusViewBus(b).map(Bus::getId).orElse(""));
         }
         return builder.booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()

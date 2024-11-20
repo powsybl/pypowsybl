@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -41,12 +42,12 @@ public class NetworkUtilTest {
             "VL2_1", "VL2_0",
             "VL2_2", "");
         expected.forEach((busBreakerBusId, busIdExpected) -> {
-            Bus bus = NetworkUtil.getBusViewBus(network.getBusBreakerView().getBus(busBreakerBusId));
+            Optional<Bus> bus = NetworkUtil.getBusViewBus(network.getBusBreakerView().getBus(busBreakerBusId));
             if (!busIdExpected.isEmpty()) {
-                assertNotNull(bus);
-                assertEquals(busIdExpected, bus.getId());
+                assertTrue(bus.isPresent());
+                assertEquals(busIdExpected, bus.orElseThrow().getId());
             } else {
-                assertNull(bus);
+                assertTrue(bus.isEmpty());
             }
         });
     }
