@@ -23,19 +23,12 @@ import java.util.function.Consumer;
  */
 public class PythonCurveSupplier implements OutputVariablesSupplier {
 
-    private final List<BiConsumer<Consumer<OutputVariable>, ReportNode>> curvesSupplierListRR = new ArrayList<>();
+    private final List<BiConsumer<Consumer<OutputVariable>, ReportNode>> curvesSupplierList = new ArrayList<>();
 
     public void addCurve(String dynamicId, String variable) {
-        curvesSupplierListRR.add((c, r) -> new DynawoOutputVariablesBuilder(r)
+        curvesSupplierList.add((c, r) -> new DynawoOutputVariablesBuilder(r)
                 .dynamicModelId(dynamicId)
                 .variable(variable)
-                .add(c));
-    }
-
-    public void addCurves(String dynamicId, List<String> variables) {
-        curvesSupplierListRR.add((c, r) -> new DynawoOutputVariablesBuilder(r)
-                .dynamicModelId(dynamicId)
-                .variables(variables)
                 .add(c));
     }
 
@@ -45,7 +38,7 @@ public class PythonCurveSupplier implements OutputVariablesSupplier {
         ReportNode supplierReportNode = SupplierReport.createSupplierReportNode(reportNode,
                 "pypowsyblOutputVariables",
                 "PyPowsybl Output Variables Supplier");
-        curvesSupplierListRR.forEach(c -> c.accept(curves::add, supplierReportNode));
+        curvesSupplierList.forEach(c -> c.accept(curves::add, supplierReportNode));
         return curves;
     }
 }

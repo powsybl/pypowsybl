@@ -61,7 +61,6 @@ public final class DynamicMappingHandler {
     }
 
     public static Collection<String> getSupportedModels(DynamicMappingType type) {
-        // TODO return ModelInfo directly
         return ADDERS.get(type).getSupportedModels().stream().map(ModelInfo::name).toList();
     }
 

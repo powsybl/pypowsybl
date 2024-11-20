@@ -53,7 +53,7 @@ import com.powsybl.timeseries.TimeSeries;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 @CContext(Directives.class)
 public final class DynamicSimulationCFunctions {

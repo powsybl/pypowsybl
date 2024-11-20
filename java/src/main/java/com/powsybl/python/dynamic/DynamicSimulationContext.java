@@ -13,7 +13,7 @@ import com.powsybl.dynamicsimulation.*;
 import com.powsybl.iidm.network.Network;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public class DynamicSimulationContext {
 
