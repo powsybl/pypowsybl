@@ -191,6 +191,7 @@ public final class Util {
             case THREE_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER;
             case GENERATOR -> PyPowsyblApiHeader.ElementType.GENERATOR;
             case LOAD -> PyPowsyblApiHeader.ElementType.LOAD;
+            case GROUND -> PyPowsyblApiHeader.ElementType.GROUND;
             case BATTERY -> PyPowsyblApiHeader.ElementType.BATTERY;
             case SHUNT_COMPENSATOR -> PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE -> PyPowsyblApiHeader.ElementType.DANGLING_LINE;
@@ -237,6 +238,7 @@ public final class Util {
             case THREE_WINDINGS_TRANSFORMER -> DataframeElementType.THREE_WINDINGS_TRANSFORMER;
             case GENERATOR -> DataframeElementType.GENERATOR;
             case LOAD -> DataframeElementType.LOAD;
+            case GROUND -> DataframeElementType.GROUND;
             case BATTERY -> DataframeElementType.BATTERY;
             case SHUNT_COMPENSATOR -> DataframeElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE -> DataframeElementType.DANGLING_LINE;

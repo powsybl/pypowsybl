@@ -901,6 +901,34 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
 
+    def get_grounds(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of grounds.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the grounds dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **voltage_level_id**: at which substation this ground is connected
+              - **bus_id**: bus where this ground is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this ground is connected
+              - **node**  (optional): node where this ground is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the ground is connected to a bus
+
+            This dataframe is indexed on the ground ID.
+
+        """
+        return self.get_elements(ElementType.GROUND, all_attributes, attributes, **kwargs)
+
     def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None,
                       **kwargs: ArrayLike) -> DataFrame:
         r"""
@@ -2809,6 +2837,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.LOAD, df, **kwargs)
 
+    def update_grounds(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update grounds with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `connected`
+
+        See Also:
+            :meth:`get_grounds`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_grounds(id='L-1', connected=False)
+        """
+        return self._update_elements(ElementType.GROUND, df, **kwargs)
+
     def update_batteries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
@@ -4029,6 +4084,41 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_loads(id='LOAD-1', voltage_level_id='VL1', bus_id='B1', p0=10, q0=3)
         """
         return self._create_elements(ElementType.LOAD, [df], **kwargs)
+
+    def create_grounds(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Create grounds.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new ground
+            - **voltage_level_id**: the voltage level where the new ground will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new ground will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new ground will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new ground will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_loads(id='GROUND-1', voltage_level_id='VL1', bus_id='B1')
+        """
+        return self._create_elements(ElementType.GROUND, [df], **kwargs)
 
     def create_batteries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
