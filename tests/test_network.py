@@ -284,6 +284,16 @@ def test_loads_data_frame():
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
     pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
+def test_grounds():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    grounds = n.get_grounds(all_attributes=True)
+    assert grounds.empty
+
+    n.create_grounds(id='GROUND', voltage_level_id='VLHV1', bus_id='NHV1')
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['GROUND']),
+                            columns=['name', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 'VLHV1', 'VLHV1_0', True]])
+    pd.testing.assert_frame_equal(expected, n.get_grounds(), check_dtype=False, atol=1e-2)
 
 def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))

@@ -63,6 +63,8 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
             lccConverterStationAdder.add();
         } else if (injectionAdder instanceof VscConverterStationAdder vscConverterStationAdder) {
             vscConverterStationAdder.add();
+        } else if (injectionAdder instanceof GroundAdder groundAdder) {
+            groundAdder.add();
         } else {
             throw new AssertionError("Given InjectionAdder not supported: " + injectionAdder.getClass().getName());
         }
