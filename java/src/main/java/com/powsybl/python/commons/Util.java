@@ -195,6 +195,7 @@ public final class Util {
             case BATTERY -> PyPowsyblApiHeader.ElementType.BATTERY;
             case SHUNT_COMPENSATOR -> PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE -> PyPowsyblApiHeader.ElementType.DANGLING_LINE;
+            case DANGLING_LINE_GENERATION -> PyPowsyblApiHeader.ElementType.DANGLING_LINE_GENERATION;
             case TIE_LINE -> PyPowsyblApiHeader.ElementType.TIE_LINE;
             case LCC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.VSC_CONVERTER_STATION;
@@ -241,6 +242,7 @@ public final class Util {
             case BATTERY -> DataframeElementType.BATTERY;
             case SHUNT_COMPENSATOR -> DataframeElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE -> DataframeElementType.DANGLING_LINE;
+            case DANGLING_LINE_GENERATION -> DataframeElementType.DANGLING_LINE_GENERATION;
             case TIE_LINE -> DataframeElementType.TIE_LINE;
             case LCC_CONVERTER_STATION -> DataframeElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION -> DataframeElementType.VSC_CONVERTER_STATION;

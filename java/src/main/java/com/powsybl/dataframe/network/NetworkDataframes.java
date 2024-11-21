@@ -71,6 +71,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
         mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
+        mappers.put(DataframeElementType.DANGLING_LINE_GENERATION, danglingLinesGeneration());
         mappers.put(DataframeElementType.TIE_LINE, tieLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
@@ -325,7 +326,7 @@ public final class NetworkDataframes {
     }
 
     static NetworkDataframeMapper buses(boolean busBreakerView) {
-        return NetworkDataframeMapperBuilder.ofStream(n -> busBreakerView ? n.getBusBreakerView().getBusStream() : n.getBusView().getBusStream(),
+        var builder = NetworkDataframeMapperBuilder.ofStream(n -> busBreakerView ? n.getBusBreakerView().getBusStream() : n.getBusView().getBusStream(),
                         getOrThrow((b, id) -> b.getBusView().getBus(id), "Bus"))
                 .stringsIndex("id", Bus::getId)
                 .strings("name", b -> b.getOptionalName().orElse(""), Identifiable::setName)
@@ -334,8 +335,11 @@ public final class NetworkDataframes {
                 .doubles("v_angle", (b, context) -> perUnitAngle(context, b.getAngle()), (b, vAngle, context) -> b.setAngle(unPerUnitAngle(context, vAngle)))
                 .ints("connected_component", ifExistsInt(Bus::getConnectedComponent, Component::getNum))
                 .ints("synchronous_component", ifExistsInt(Bus::getSynchronousComponent, Component::getNum))
-                .strings("voltage_level_id", b -> b.getVoltageLevel().getId())
-                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("voltage_level_id", b -> b.getVoltageLevel().getId());
+        if (busBreakerView) {
+            builder.strings("bus_id", b -> NetworkUtil.getBusViewBus(b).map(Bus::getId).orElse(""));
+        }
+        return builder.booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
     }
@@ -661,6 +665,25 @@ public final class NetworkDataframes {
                 .strings("selected_limits_group", dl -> dl.getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         DanglingLine::setSelectedOperationalLimitsGroup, false)
                 .addProperties()
+                .build();
+    }
+
+    static NetworkDataframeMapper danglingLinesGeneration() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream().filter(dl -> Optional.ofNullable(dl.getGeneration()).isPresent()),
+                        getOrThrow(Network::getDanglingLine, "Dangling line with generation"))
+                .stringsIndex("id", DanglingLine::getId)
+                .doubles("min_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getMinP()),
+                        (dl, minP, context) -> dl.getGeneration().setMinP(unPerUnitPQ(context, minP)))
+                .doubles("max_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getMaxP()),
+                        (dl, maxP, context) -> dl.getGeneration().setMaxP(unPerUnitPQ(context, maxP)))
+                .doubles("target_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetP()),
+                        (dl, targetP, context) -> dl.getGeneration().setTargetP(unPerUnitPQ(context, targetP)))
+                .doubles("target_q", (dl, context) -> perUnitPQ(context, dl.getGeneration().getTargetQ()),
+                        (dl, targetQ, context) -> dl.getGeneration().setTargetQ(unPerUnitPQ(context, targetQ)))
+                .doubles("target_v", (dl, context) -> perUnitV(context, dl.getGeneration().getTargetV(), dl.getTerminal()),
+                        (dl, targetV, context) -> dl.getGeneration().setTargetV(unPerUnitV(context, targetV, dl.getTerminal())))
+                .booleans("voltage_regulator_on", dl -> dl.getGeneration().isVoltageRegulationOn(),
+                        (dl, voltageRegulatorOn) -> dl.getGeneration().setVoltageRegulationOn(voltageRegulatorOn))
                 .build();
     }
 
@@ -1361,6 +1384,5 @@ public final class NetworkDataframes {
                 .flatMap(area -> area.getAreaBoundaryStream()
                         .map(areaBoundary -> Pair.of(area, areaBoundary)));
     }
-
 }
 
