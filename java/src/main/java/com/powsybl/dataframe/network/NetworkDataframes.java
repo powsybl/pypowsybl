@@ -445,7 +445,11 @@ public final class NetworkDataframes {
             int section = dataframe.getIntValue("section", index)
                     .orElseThrow(() -> new PowsyblException("section is missing"));
             // careful: shunt section number starts at 1, but position in array starts at 0
-            return Triple.of(shuntCompensator, shuntNonLinear.getAllSections().get(section - 1), section);
+            List<ShuntCompensatorNonLinearModel.Section> allSections = shuntNonLinear.getAllSections();
+            if (section < 1 || section > allSections.size()) {
+                throw new PowsyblException(String.format("Section number must be between 1 and %d, inclusive", allSections.size()));
+            }
+            return Triple.of(shuntCompensator, allSections.get(section - 1), section);
         }
     }
 

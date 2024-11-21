@@ -1459,11 +1459,25 @@ def test_voltage_levels():
     pd.testing.assert_frame_equal(expected, n.get_voltage_levels(), check_dtype=False)
 
 
-def test_update_with_keywords():
+def test_update_non_linear_shunt_with_keywords():
     n = util.create_non_linear_shunt_network()
     n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=1, g=0.2, b=0.000001)
-    assert 0.2 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 1]['g']
-    assert 0.000001 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 1]['b']
+    n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=2, g=0.3, b=0.000002)
+    sections = n.get_non_linear_shunt_compensator_sections()
+    assert 0.2 == sections.loc['SHUNT', 1]['g']
+    assert 0.000001 == sections.loc['SHUNT', 1]['b']
+    assert 0.3 == sections.loc['SHUNT', 2]['g']
+    assert 0.000002 == sections.loc['SHUNT', 2]['b']
+
+
+def test_update_non_linear_shunt_wrong_section():
+    n = util.create_non_linear_shunt_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
+    assert exc.match('Section number must be between 1 and 2, inclusive')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=3, g=0.2, b=0.000001)
+    assert exc.match('Section number must be between 1 and 2, inclusive')
 
 
 def test_update_generators_with_keywords():
