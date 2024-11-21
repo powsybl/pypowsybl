@@ -16,26 +16,6 @@ jobs:
             abi: cp38,
             version: '3.8',
           }
-          - {
-            name: cp39,
-            abi: cp39,
-            version: '3.9'
-          }
-          - {
-            name: cp310,
-            abi: cp310,
-            version: '3.10'
-          }
-          - {
-            name: cp311,
-            abi: cp311,
-            version: '3.11'
-          }
-          - {
-            name: cp312,
-            abi: cp312,
-            version: '3.12'
-          }
 
     steps:
       - name: Install Linux Packages
@@ -208,10 +188,10 @@ jobs:
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4 # v4.1.1
+        uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4 # v4.0.0
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
