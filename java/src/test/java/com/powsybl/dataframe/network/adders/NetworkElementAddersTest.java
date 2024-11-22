@@ -140,8 +140,41 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
         addDoubleColumn(dataframe, "p0", 102d);
         addDoubleColumn(dataframe, "q0", 151d);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, singletonList(dataframe));
+        var emptyGenerationDataframe = new DefaultUpdatingDataframe(0);
+        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, emptyGenerationDataframe));
         assertEquals(2, network.getDanglingLineCount());
+    }
+
+    @Test
+    void danglingLineWithGeneration() {
+        var network = DanglingLineNetworkFactory.create();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "dl2");
+        addStringColumn(dataframe, "name", "name-dl2");
+        addStringColumn(dataframe, "connectable_bus_id", "BUS");
+        addStringColumn(dataframe, "bus_id", "BUS");
+        addStringColumn(dataframe, "voltage_level_id", "VL");
+        addDoubleColumn(dataframe, "r", 0.6d);
+        addDoubleColumn(dataframe, "x", 1d);
+        addDoubleColumn(dataframe, "g", Math.pow(10, -6));
+        addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
+        addDoubleColumn(dataframe, "p0", 102d);
+        addDoubleColumn(dataframe, "q0", 151d);
+
+        var generationDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(generationDataframe, "id", "dl2");
+        addDoubleColumn(generationDataframe, "min_p", 0);
+        addDoubleColumn(generationDataframe, "max_p", 200d);
+        addDoubleColumn(generationDataframe, "target_p", 102d);
+        addDoubleColumn(generationDataframe, "target_q", 151d);
+        addDoubleColumn(generationDataframe, "target_v", 100d);
+        addIntColumn(generationDataframe, "voltage_regulator_on", 1);
+        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, generationDataframe));
+
+        assertEquals(2, network.getDanglingLineCount());
+        DanglingLine dl = network.getDanglingLine("dl2");
+        assertTrue(Optional.ofNullable(dl.getGeneration()).isPresent());
+        assertTrue(dl.getGeneration().isVoltageRegulationOn());
     }
 
     @Test

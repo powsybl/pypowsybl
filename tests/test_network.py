@@ -6,6 +6,7 @@
 #
 import copy
 import datetime
+import math
 import os
 import pathlib
 import re
@@ -13,7 +14,6 @@ import tempfile
 import unittest
 import io
 import zipfile
-from netrc import netrc
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -284,6 +284,16 @@ def test_loads_data_frame():
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
     pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
+def test_grounds():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    grounds = n.get_grounds(all_attributes=True)
+    assert grounds.empty
+
+    n.create_grounds(id='GROUND', voltage_level_id='VLHV1', bus_id='NHV1')
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['GROUND']),
+                            columns=['name', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 'VLHV1', 'VLHV1_0', True]])
+    pd.testing.assert_frame_equal(expected, n.get_grounds(), check_dtype=False, atol=1e-2)
 
 def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
@@ -1227,6 +1237,34 @@ def test_dangling_lines():
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
 
 
+def test_dangling_line_generation():
+    n = util.create_dangling_lines_network()
+    df = n.get_dangling_lines_generation()
+    assert df.empty
+
+    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2_wrong']), columns=["target_v", "voltage_regulator_on"],
+                                 data=[[225, True]])
+    with pytest.raises(PyPowsyblError) as context:
+        n.create_dangling_lines(generation_df=wrong_generation_df, id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0)
+    assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2']),
+                                 columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
+                                 data= [[0, 100, 100, 225, True]])
+    n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0)
+    df2 = n.get_dangling_lines_generation()
+    assert df2['voltage_regulator_on']['DL2']
+    assert math.isnan(df2['target_q']['DL2'])
+
+    n.update_dangling_lines_generation(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_dangling_lines_generation()
+    assert not df3['voltage_regulator_on']['DL2']
+    assert df3['target_q']['DL2']==100
+
+
 def test_batteries():
     n = util.create_battery_network()
     df = n.get_batteries(all_attributes=True)
@@ -1636,11 +1674,11 @@ def test_bus_breaker_view_buses():
     expected_buses = pd.DataFrame(
         index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
-                 'voltage_level_id'],
-        data=[['', nan, nan, 0, 0, 'VLGEN'],
-              ['', 380, nan, 0, 0, 'VLHV1'],
-              ['', 380, nan, 0, 0, 'VLHV2'],
-              ['', nan, nan, 0, 0, 'VLLOAD']])
+                 'voltage_level_id', 'bus_id'],
+        data=[['', nan, nan, 0, 0, 'VLGEN', 'VLGEN_0'],
+              ['', 380, nan, 0, 0, 'VLHV1', 'VLHV1_0'],
+              ['', 380, nan, 0, 0, 'VLHV2', 'VLHV2_0'],
+              ['', nan, nan, 0, 0, 'VLLOAD', 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
 
 

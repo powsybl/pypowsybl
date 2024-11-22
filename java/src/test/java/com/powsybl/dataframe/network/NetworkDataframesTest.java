@@ -21,6 +21,8 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
+import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
+import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Test;
 
@@ -100,14 +102,62 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
                         "voltage_level_id");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("VLGEN_0", "VLHV1_0", "VLHV2_0", "VLLOAD_0");
         assertThat(series.get(2).getDoubles())
                 .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
                 .containsExactly(0, 0, 0, 0);
-        assertThat(series.get(4).getInts())
+        assertThat(series.get(5).getInts())
                 .containsExactly(0, 0, 0, 0);
         assertThat(series.get(6).getStrings())
                 .containsExactly("VLGEN", "VLHV1", "VLHV2", "VLLOAD");
+    }
+
+    @Test
+    void busBreakerViewBuses() {
+        // VL1 is Node/Breaker, VL2 is Bus/Breaker
+        Network network = TwoVoltageLevelNetworkFactory.create();
+        List<Series> series = createDataFrame(BUS_FROM_BUS_BREAKER_VIEW, network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
+                        "voltage_level_id", "bus_id");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("BUS1", "BUS2", "VL1_0", "VL1_3");
+        assertThat(series.get(2).getDoubles())
+                .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        assertThat(series.get(4).getInts())
+                .containsExactly(0, 0, 1, -99999);
+        assertThat(series.get(5).getInts())
+                .containsExactly(0, 0, 1, -99999);
+        assertThat(series.get(6).getStrings())
+                .containsExactly("VL2", "VL2", "VL1", "VL1");
+        assertThat(series.get(7).getStrings())
+                .containsExactly("VL2_0", "VL2_0", "VL1_0", "");
+    }
+
+    @Test
+    void busBreakerViewBusesNoConnectedTerminalOnBus() {
+        Network network = NetworkUtilTest.createTopologyTestNetwork();
+
+        List<Series> series = createDataFrame(BUS_FROM_BUS_BREAKER_VIEW, network);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
+                        "voltage_level_id", "bus_id");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("B1", "B2", "B3", "VL2_0", "VL2_1", "VL2_2");
+        assertThat(series.get(2).getDoubles())
+                .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN);
+        assertThat(series.get(4).getInts())
+                .containsExactly(0, 0, -99999, 1, 1, -99999);
+        assertThat(series.get(5).getInts())
+                .containsExactly(0, 0, -99999, 1, 1, -99999);
+        assertThat(series.get(6).getStrings())
+                .containsExactly("VL1", "VL1", "VL1", "VL2", "VL2", "VL2");
+        assertThat(series.get(7).getStrings())
+                .containsExactly("VL1_0", "VL1_0", "", "VL2_0", "VL2_0", "");
     }
 
     @Test
@@ -283,9 +333,19 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
                         "boundary_p", "boundary_q", "boundary_v_mag", "boundary_v_angle",
-                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected",
-                        "pairing_key", "ucte_xnode_code", "paired", "fictitious", "tie_line_id",
-                        "selected_limits_group");
+                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "pairing_key",
+                        "ucte_xnode_code", "paired", "fictitious", "tie_line_id", "selected_limits_group");
+    }
+
+    @Test
+    void danglingLinesGeneration() {
+        Network network = EurostagTutorialExample1Factory.create();
+        List<Series> series = createDataFrame(DANGLING_LINE_GENERATION, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "min_p", "max_p", "target_p", "target_q",
+                        "target_v", "voltage_regulator_on");
     }
 
     @Test
