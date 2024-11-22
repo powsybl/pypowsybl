@@ -438,7 +438,8 @@ public final class NetworkDataframes {
                         .flatMap(shuntCompensator -> {
                             ShuntCompensatorNonLinearModel model = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
                             // careful: shunt section number starts at 1, but position in array starts at 0
-                            return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator, section, model.getAllSections().indexOf(section) + 1));
+                            var allSections = model.getAllSections();
+                            return IntStream.range(0, allSections.size()).mapToObj(i -> Triple.of(shuntCompensator, allSections.get(i), i + 1));
                         });
         return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts, NetworkDataframes::getShuntSectionNonlinear)
                 .stringsIndex("id", triple -> triple.getLeft().getId())
