@@ -52,24 +52,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     extract_and_install_native_lib(${ortools-jar} ortools-win32-${ARCH_ID} jniortools.dll)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     extract_and_install_native_lib(${math-native-jar} natives/linux_${OS_BITS} libmath.so)
-    # FIXME libraries retrieved from ortool distributed jar are not ABI compatible with manylinux2014_x86_64
-    # Thus making the audit on the wheel fail. To remove and replace by the following line when image is update
     extract_and_install_native_lib(${ortools-jar} ortools-linux-${ARCH_ID} libjniortools.so)
     extract_and_install_native_lib(${ortools-jar} ortools-linux-${ARCH_ID} libortools.so.9)
-    # Thus download and package compatible libraries
-    #set(compatible-jar-path ${PYPOWSYBL_JAVA_SRC_DIR}/or-tools-centos-7)
-    #ExternalProject_Add(or-tools-centos-7
-    #    URL "https://github.com/google/or-tools/releases/download/v9.10/or-tools_amd64_centos-7_java_v9.10.4067.tar.gz"
-    #    URL_HASH SHA256=0bc48cab508f13d15c7245a47b598e6b31eca209ef2f4d45e5f15d21643e0d86
-    #    SOURCE_DIR ${compatible-jar-path}
-    #    CONFIGURE_COMMAND ""
-    #    BUILD_COMMAND ""
-    #    INSTALL_COMMAND ""
-    #)
-    #extract_and_install_native_lib(${compatible-jar-path}/ortools-linux-x86-64-9.10.4067.jar ortools-linux-x86-64 libjniortools.so)
-    #extract_and_install_native_lib(${compatible-jar-path}/ortools-linux-x86-64-9.10.4067.jar ortools-linux-x86-64 libortools.so.9)
-    #add_dependencies(native-install-libjniortools.so or-tools-centos-7)
-    #add_dependencies(native-install-libortools.so.9 or-tools-centos-7)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     extract_and_install_native_lib(${math-native-jar} natives/osx_${OS_BITS} libmath.dylib)
     extract_and_install_native_lib(${ortools-jar} ortools-darwin-${ARCH_ID} libjniortools.dylib)
