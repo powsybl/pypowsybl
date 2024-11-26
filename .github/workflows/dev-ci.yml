@@ -12,9 +12,9 @@ jobs:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp313,
+            abi: cp313,
+            version: '3.13',
           }
 
     steps:
