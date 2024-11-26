@@ -1,5 +1,5 @@
 # actual dependencies
-pandas==2.2.2; python_version >= "3.9"
+pandas==2.2.3; python_version >= "3.9"
 pandas==2.0.3; python_version <= "3.8"
 prettytable==3.11.0 # last version supporting python 3.8
 networkx
