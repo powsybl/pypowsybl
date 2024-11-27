@@ -31,6 +31,16 @@ def get_import_formats() -> List[str]:
     return _pp.get_network_import_formats()
 
 
+def get_import_supported_extensions() -> List[str]:
+    """
+    Get list of supported import extensions
+
+    Returns:
+         the list of supported import extensions
+    """
+    return _pp.get_network_import_supported_extensions()
+
+
 def get_export_formats() -> List[str]:
     """
     Get list of supported export formats
