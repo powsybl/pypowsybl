@@ -364,7 +364,7 @@ public final class Dataframes {
 
     private static List<BusBreakerViewBusData> getBusBreakerViewBuses(VoltageLevel voltageLevel) {
         return voltageLevel.getBusBreakerView().getBusStream()
-                .map(bus -> new BusBreakerViewBusData(bus, NetworkUtil.getBusViewBus(bus)))
+                .map(bus -> new BusBreakerViewBusData(bus, NetworkUtil.getBusViewBus(bus).orElse(null)))
                 .toList();
     }
 
