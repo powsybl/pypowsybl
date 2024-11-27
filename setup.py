@@ -12,13 +12,14 @@ import subprocess
 import zipfile
 import glob
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup
 from packaging.version import parse
 
-class PyPowsyblExtension(Extension):
+class PyPowsyblExtension(Pybind11Extension):
     def __init__(self):
-        Extension.__init__(self, 'pypowsybl._pypowsybl', sources=[])
+        Pybind11Extension.__init__(self, 'pypowsybl._pypowsybl',
+                                   ["cpp/*"])
 
 
 class PyPowsyblBuild(build_ext):
