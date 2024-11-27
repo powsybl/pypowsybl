@@ -66,7 +66,6 @@ public final class Util {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        t.printStackTrace();
         String message = t.getMessage();
         String nonNullMessage = message == null || message.isEmpty() ? t.toString() : message;
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
