@@ -9,6 +9,7 @@ import io
 import numpy as np
 import pandas as pd
 import pytest
+import re
 
 import pypowsybl
 import pypowsybl.network
@@ -851,10 +852,11 @@ def test_tie_line_creation():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
-                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
-                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
-                                  ucte_xnode_code=['XNODE', 'XNODE'])
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
+        network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                      bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                      p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
+                                      ucte_xnode_code=['XNODE', 'XNODE'])
     df = pd.DataFrame.from_records(
         columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
         data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
@@ -913,7 +915,7 @@ def test_deprecated_ucte_xnode_code_kwargs():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
         network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
                                       bus_id=['BUS_TEST', 'BUS_TEST2'],
                                       p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
@@ -931,7 +933,7 @@ def test_deprecated_ucte_xnode_code_dataframe():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
         network.create_dangling_lines(pd.DataFrame.from_records(
             columns=['id', 'voltage_level_id', 'bus_id', 'p0', 'q0', 'r', 'x', 'g', 'b', 'ucte_xnode_code'],
             data=[('DL_TEST', 'VLTEST', 'BUS_TEST', 100, 101, 2, 2, 1, 1, 'XNODE1'),

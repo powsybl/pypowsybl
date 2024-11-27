@@ -13,10 +13,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -250,21 +247,20 @@ public final class NetworkUtil {
 
     /**
      * @param b bus in Bus/Breaker view
-     * @return bus in bus view containing b if there is one, or null if none.
+     * @return bus in bus view containing b if there is one.
      */
-    public static Bus getBusViewBus(Bus b) {
+    public static Optional<Bus> getBusViewBus(Bus b) {
         VoltageLevel voltageLevel = b.getVoltageLevel();
         if (voltageLevel.getTopologyKind() == TopologyKind.BUS_BREAKER) {
             // Bus/Breaker. There is an easy method directly available.
-            return voltageLevel.getBusView().getMergedBus(b.getId());
+            return Optional.ofNullable(voltageLevel.getBusView().getMergedBus(b.getId()));
         } else {
             // Node/Breaker.
             // First we try the fast and easy way using connected terminals. Works for the vast majority of buses.
-            Bus busInBusView = b.getConnectedTerminalStream().map(t -> t.getBusView().getBus())
+            Optional<Bus> busInBusView = b.getConnectedTerminalStream().map(t -> t.getBusView().getBus())
                     .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-            if (busInBusView != null) {
+                    .findFirst();
+            if (busInBusView.isPresent()) {
                 return busInBusView;
             }
             // Didn't find using connected terminals. There is the possibility that the bus has zero connected terminal
@@ -274,8 +270,7 @@ public final class NetworkUtil {
             return voltageLevel.getBusView().getBusStream()
                     .filter(busViewBus -> voltageLevel.getBusBreakerView().getBusStreamFromBusViewBusId(busViewBus.getId())
                             .anyMatch(b2 -> b.getId().equals(b2.getId())))
-                    .findFirst()
-                    .orElse(null);
+                    .findFirst();
         }
     }
 }

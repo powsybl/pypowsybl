@@ -6,6 +6,7 @@
 #
 import copy
 import datetime
+import math
 import os
 import pathlib
 import re
@@ -13,7 +14,6 @@ import tempfile
 import unittest
 import io
 import zipfile
-from netrc import netrc
 from os.path import exists
 
 import matplotlib.pyplot as plt
@@ -157,6 +157,11 @@ def test_get_import_format():
     assert ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM'] == formats
 
 
+def test_get_import_supported_extensions():
+    extensions = pp.network.get_import_supported_extensions()
+    assert ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml'] == extensions
+
+
 def test_get_import_parameters():
     parameters = pp.network.get_import_parameters('PSS/E')
     assert 1 == len(parameters)
@@ -279,6 +284,16 @@ def test_loads_data_frame():
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
     pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
+def test_grounds():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    grounds = n.get_grounds(all_attributes=True)
+    assert grounds.empty
+
+    n.create_grounds(id='GROUND', voltage_level_id='VLHV1', bus_id='NHV1')
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['GROUND']),
+                            columns=['name', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 'VLHV1', 'VLHV1_0', True]])
+    pd.testing.assert_frame_equal(expected, n.get_grounds(), check_dtype=False, atol=1e-2)
 
 def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
@@ -978,19 +993,21 @@ def test_sld_parameters():
 
 
 def test_layout_parameters():
-    parameters = LayoutParameters()
-    assert not parameters.use_name
-    assert not parameters.center_name
-    assert not parameters.diagonal_label
-    assert parameters.topological_coloring
-    assert not parameters.nodes_infos
-    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
-                                  nodes_infos=True)
-    assert parameters.use_name
-    assert parameters.center_name
-    assert parameters.diagonal_label
-    assert not parameters.topological_coloring
-    assert parameters.nodes_infos
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        parameters = LayoutParameters()
+        assert not parameters.use_name
+        assert not parameters.center_name
+        assert not parameters.diagonal_label
+        assert parameters.topological_coloring
+        assert not parameters.nodes_infos
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
+                                      nodes_infos=True)
+        assert parameters.use_name
+        assert parameters.center_name
+        assert parameters.diagonal_label
+        assert not parameters.topological_coloring
+        assert parameters.nodes_infos
 
 
 def test_sld_svg():
@@ -1040,14 +1057,16 @@ def test_sld_svg():
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
-    sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                              topological_coloring=False))
-    assert re.search('.*<svg.*', sld.svg)
-    assert len(sld.metadata) > 0
-    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                               topological_coloring=True, nodes_infos=True))
-    assert re.search('.*<svg.*', sld1.svg)
-    assert len(sld1.metadata) > 0
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                                  topological_coloring=False))
+        assert re.search('.*<svg.*', sld.svg)
+        assert len(sld.metadata) > 0
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                                   topological_coloring=True, nodes_infos=True))
+        assert re.search('.*<svg.*', sld1.svg)
+        assert len(sld1.metadata) > 0
 
 
 def test_nad():
@@ -1111,14 +1130,17 @@ def test_nad_displayed_voltage_levels():
 
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    assert 9 == len(network.get_current_limits())
-    assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
-    current_limit = network.get_current_limits().loc['NHV1_NHV2_1', '10\'']
-    expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
-                                                            tuples=[('NHV1_NHV2_1', '10\'')]),
-                            columns=['side', 'value', 'acceptable_duration'],
-                            data=[['TWO', 1200.0, 600]])
-    pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
+        assert 9 == len(network.get_current_limits())
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
+        assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
+        current_limit = network.get_current_limits().sort_index().loc['NHV1_NHV2_1', '10\'']
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
+                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
+                                columns=['side', 'value', 'acceptable_duration'],
+                                data=[['TWO', 1200.0, 600]])
+        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
 
 def test_deep_copy():
@@ -1213,6 +1235,34 @@ def test_dangling_lines():
               [-23.83,   1.27, 26.80,   -1.48,  224.81, -5.52],
               [-36.85,  80.68, 43.68,  -84.87,  412.60, -6.74]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+
+
+def test_dangling_line_generation():
+    n = util.create_dangling_lines_network()
+    df = n.get_dangling_lines_generation()
+    assert df.empty
+
+    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2_wrong']), columns=["target_v", "voltage_regulator_on"],
+                                 data=[[225, True]])
+    with pytest.raises(PyPowsyblError) as context:
+        n.create_dangling_lines(generation_df=wrong_generation_df, id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0)
+    assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2']),
+                                 columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
+                                 data= [[0, 100, 100, 225, True]])
+    n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0)
+    df2 = n.get_dangling_lines_generation()
+    assert df2['voltage_regulator_on']['DL2']
+    assert math.isnan(df2['target_q']['DL2'])
+
+    n.update_dangling_lines_generation(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_dangling_lines_generation()
+    assert not df3['voltage_regulator_on']['DL2']
+    assert df3['target_q']['DL2']==100
 
 
 def test_batteries():
@@ -1624,11 +1674,11 @@ def test_bus_breaker_view_buses():
     expected_buses = pd.DataFrame(
         index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
-                 'voltage_level_id'],
-        data=[['', nan, nan, 0, 0, 'VLGEN'],
-              ['', 380, nan, 0, 0, 'VLHV1'],
-              ['', 380, nan, 0, 0, 'VLHV2'],
-              ['', nan, nan, 0, 0, 'VLLOAD']])
+                 'voltage_level_id', 'bus_id'],
+        data=[['', nan, nan, 0, 0, 'VLGEN', 'VLGEN_0'],
+              ['', 380, nan, 0, 0, 'VLHV1', 'VLHV1_0'],
+              ['', 380, nan, 0, 0, 'VLHV2', 'VLHV2_0'],
+              ['', nan, nan, 0, 0, 'VLLOAD', 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
 
 
@@ -2141,11 +2191,11 @@ def test_attributes_order():
 
 
 def test_load_network_with_report():
-    reporter = rp.ReportNode()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
-    pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter=reporter)
-    report2 = str(reporter)
+    pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 
@@ -2156,22 +2206,22 @@ def test_load_network_from_string_with_report():
 ##ZBE
 BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
     """
-    reporter = rp.ReportNode()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
-    pp.network.load_from_string('simple-eu.uct', file_content, reporter=reporter)
-    report2 = str(reporter)
+    pp.network.load_from_string('simple-eu.uct', file_content, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) > len(report1)
 
 
 def test_save_to_string_with_report():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
-    reporter = rp.ReportNode()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     bat_path.read_text()
-    pp.network.load(str(bat_path), reporter=reporter)
-    report2 = str(reporter)
+    pp.network.load(str(bat_path), report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 
@@ -2380,32 +2430,34 @@ def test_update_name():
 
 def test_deprecated_operational_limits_is_fictitious():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1',
-         'name': '',
-         'side': 'ONE',
-         'type': 'CURRENT',
-         'value': 400.0,
-         'acceptable_duration': -1,
-         'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1',
-         'name': '60s',
-         'side': 'ONE',
-         'type': 'CURRENT',
-         'value': 500.0,
-         'acceptable_duration': 60,
-         'is_fictitious': True},
-    ]))
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+        network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+            {'element_id': 'NHV1_NHV2_1',
+             'name': '',
+             'side': 'ONE',
+             'type': 'CURRENT',
+             'value': 400.0,
+             'acceptable_duration': -1,
+             'is_fictitious': False},
+            {'element_id': 'NHV1_NHV2_1',
+             'name': '60s',
+             'side': 'ONE',
+             'type': 'CURRENT',
+             'value': 500.0,
+             'acceptable_duration': 60,
+             'is_fictitious': True},
+        ]))
     limits = network.get_operational_limits(all_attributes=True)
     assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
 
 
 def test_deprecated_operational_limits_is_fictitious_kwargs():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'],
-                                      name=['', ''],
-                                      side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
-                                      acceptable_duration=[-1, 60], is_fictitious=[False, True])
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
+                                          name=['', ''],
+                                          side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
+                                          acceptable_duration=[-1, 60], is_fictitious=[False, True])
     limits = network.get_operational_limits(all_attributes=True)
     assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
 
@@ -2413,24 +2465,26 @@ def test_deprecated_operational_limits_is_fictitious_kwargs():
 def test_deprecated_operational_limits_element_type():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1',
-         'element_type': 'LINE',
-         'name': '',
-         'side': 'ONE',
-         'type': 'CURRENT',
-         'value': 400.0,
-         'acceptable_duration': -1,
-         'is_fictitious': False},
-    ]))
+    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
+        network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+            {'element_id': 'NHV1_NHV2_1',
+             'element_type': 'LINE',
+             'name': '',
+             'side': 'ONE',
+             'type': 'CURRENT',
+             'value': 400.0,
+             'acceptable_duration': -1,
+             'fictitious': False},
+        ]))
 
 
 def test_deprecated_operational_limits_element_type_kwargs():
     # element type should just be ignored and not throw an exception
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
-                                      side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
-                                      acceptable_duration=[-1, 60], fictitious=[False, True])
+    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
+        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
+                                          side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
+                                          acceptable_duration=[-1, 60], fictitious=[False, True])
 
 
 def test_connect_disconnect_with_empty_bus():

@@ -32,6 +32,7 @@ public final class NetworkElementAdders {
             Map.entry(TWO_WINDINGS_TRANSFORMER, new TwtDataframeAdder()),
             Map.entry(THREE_WINDINGS_TRANSFORMER, new ThreeWindingsTransformerDataframeAdder()),
             Map.entry(LOAD, new LoadDataframeAdder()),
+            Map.entry(GROUND, new GroundDataframeAdder()),
             Map.entry(VSC_CONVERTER_STATION, new VscStationDataframeAdder()),
             Map.entry(LCC_CONVERTER_STATION, new LccStationDataframeAdder()),
             Map.entry(BUSBAR_SECTION, new BusBarDataframeAdder()),

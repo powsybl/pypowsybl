@@ -297,14 +297,16 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                             reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_dangling_line_bay(network: Network, df: DataFrame = None, generation_df: DataFrame = pd.DataFrame(),
+                             raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None,
+                             **kwargs: ArrayLike) -> None:
     """
     Creates a dangling line, connects it to the network on a given bus or busbar section and creates the associated topology.
 
     Args:
         network: the network to which we want to add the dangling line
         df: Attributes as a dataframe.
+        generation_df: Optional dangling lines' generation part, only as a dataframe
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is True.
         reporter: deprecated, use report_node instead
@@ -318,7 +320,7 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         busbar section with an open disconnector. If the voltage level is bus/breaker, the dangling line is just
         connected to the bus.
 
-        Valid attributes are:
+        Valid attributes for dangling line dataframe or named arguments are:
 
         - **id**: the identifier of the new line
         - **name**: an optional human-readable name
@@ -332,8 +334,18 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         - **position_order**: in node/breaker, the order of the dangling line, will fill the ConnectablePosition extension
         - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
+        Dangling line generation information must be provided as a dataframe.
+        Valid attributes are:
+
+        - **id**: Identifier of the dangling line that contains this generation part
+        - **min_p**: Minimum active power output of the dangling line's generation part
+        - **max_p**: Maximum active power output of the dangling line's generation part
+        - **target_p**: Active power target of the generation part
+        - **target_q**: Reactive power target of the generation part
+        - **target_v**: Voltage target of the generation part
+        - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
     """
-    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
+    return _create_feeder_bay(network, [df, generation_df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
                               **kwargs)
 
 
@@ -647,8 +659,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
 def transform_list_to_str(entry: Union[str, List[str]]) -> str:
     if isinstance(entry, list):
         return ','.join(str(e.replace(' ', '')) for e in entry)
-    if isinstance(entry, str):
-        return entry.replace(' ', '')
+    return entry.replace(' ', '')
 
 
 def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = True,
