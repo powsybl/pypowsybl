@@ -102,7 +102,11 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         series = df[series_name]
         series_type = metadata_by_name[series_name].type
         columns_types.append(series_type)
-        columns_values.append(series.values)
+        if series.values.size and isinstance(series.values[0], np.bool_):
+            # to avoid DeprecationWarning: In future, it will be an error for 'np.bool_' scalars to be interpreted as an index
+            columns_values.append(series.values.astype(int))
+        else:
+            columns_values.append(series.values)
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 

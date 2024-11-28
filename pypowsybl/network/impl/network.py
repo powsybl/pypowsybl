@@ -538,11 +538,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **v_mag**: Get the voltage magnitude of the bus (in kV)
               - **v_angle**: the voltage angle of the bus (in degree)
-              - **connected_component**: the number of terminals connected to this bus
-              - **synchronous_component**: the number of synchronous components that the bus is part of
+              - **connected_component**: The connected component to which the bus belongs
+              - **synchronous_component**: The synchronous component to which the bus belongs
               - **voltage_level_id**: at which substation the bus is connected
 
-            This dataframe is indexed on the bus ID.
+            This dataframe is indexed on the bus ID in the bus view.
+
+        See Also:
+            :meth:`get_bus_breaker_view_buses`
 
         Examples:
 
@@ -605,8 +608,75 @@ class Network:  # pylint: disable=too-many-public-methods
     def get_bus_breaker_view_buses(self, all_attributes: bool = False, attributes: List[str] = None,
                                    **kwargs: ArrayLike) -> DataFrame:
         r"""
-              Get a dataframe of buses from the bus/breaker view.
-              See :meth:`get_buses` for documentation as attributes are the same.
+        Get a dataframe of buses from the bus/breaker view.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of buses from the bus/breaker view
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **v_mag**: Get the voltage magnitude of the bus (in kV)
+              - **v_angle**: the voltage angle of the bus (in degree)
+              - **connected_component**: The connected component to which the bus belongs
+              - **synchronous_component**: The synchronous component to which the bus belongs
+              - **voltage_level_id**: at which substation the bus is connected
+              - **bus_id**: the bus ID in the bus view
+
+            This dataframe is indexed on the bus ID in the bus/breaker view.
+
+        See Also:
+            :meth:`get_buses`
+
+        Examples:
+
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                net.get_bus_breaker_view_buses()
+
+            It outputs something like:
+
+            ======== ==== ========= ======== ==================== ====================== ================ ========
+            \        name     v_mag  v_angle  connected_component  synchronous_component voltage_level_id   bus_id
+            ======== ==== ========= ======== ==================== ====================== ================ ========
+            id
+            S1VL1_0        224.6139   2.2822                    0                      1            S1VL1  S1VL1_0
+            S1VL1_2        224.6139   2.2822                    0                      1            S1VL1  S1VL1_0
+            S1VL1_4        224.6139   2.2822                    0                      1            S1VL1  S1VL1_0
+            S1VL2_0        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_1        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_3        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_5        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_7        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_9        400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_11       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_13       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_15       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_17       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_19       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S1VL2_21       400.0000   0.0000                    0                      1            S1VL2  S1VL2_0
+            S2VL1_0        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S2VL1_2        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S2VL1_4        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S2VL1_6        408.8470   0.7347                    0                      0            S2VL1  S2VL1_0
+            S3VL1_0        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_2        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_4        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_6        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_8        400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S3VL1_10       400.0000   0.0000                    0                      0            S3VL1  S3VL1_0
+            S4VL1_0        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            S4VL1_6        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            S4VL1_2        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            S4VL1_4        400.0000  -1.1259                    0                      0            S4VL1  S4VL1_0
+            ======== ==== ========= ======== ==================== ====================== ================ ========
         """
         return self.get_elements(ElementType.BUS_FROM_BUS_BREAKER_VIEW, all_attributes, attributes, **kwargs)
 
@@ -830,6 +900,34 @@ class Network:  # pylint: disable=too-many-public-methods
             ===== ========== === === ================ ======= =========
         """
         return self.get_elements(ElementType.LOAD, all_attributes, attributes, **kwargs)
+
+    def get_grounds(self, all_attributes: bool = False, attributes: List[str] = None,
+                  **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of grounds.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the grounds dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **voltage_level_id**: at which substation this ground is connected
+              - **bus_id**: bus where this ground is connected
+              - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this ground is connected
+              - **node**  (optional): node where this ground is connected, in node-breaker voltage levels
+              - **connected**: ``True`` if the ground is connected to a bus
+
+            This dataframe is indexed on the ground ID.
+
+        """
+        return self.get_elements(ElementType.GROUND, all_attributes, attributes, **kwargs)
 
     def get_batteries(self, all_attributes: bool = False, attributes: List[str] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -1251,7 +1349,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                net = pp.network._create_dangling_lines_network()
+                net = pp.network.create_dangling_lines_network()
                 net.get_dangling_lines()
 
             will output something like:
@@ -1265,7 +1363,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                net = pp.network._create_dangling_lines_network()
+                net = pp.network.create_dangling_lines_network()
                 net.get_dangling_lines(all_attributes=True)
 
             will output something like:
@@ -1279,7 +1377,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                net = pp.network._create_dangling_lines_network()
+                net = pp.network.create_dangling_lines_network()
                 net.get_dangling_lines(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
 
             will output something like:
@@ -1292,6 +1390,35 @@ class Network:  # pylint: disable=too-many-public-methods
             == === === === ================ ====== =========
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
+
+    def get_dangling_lines_generation(self, all_attributes: bool = False, attributes: List[str] = None,
+                                      **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dangling lines generation part.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            A dataframe of dangling lines generation part.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **min_p**: Minimum active power output of the dangling line's generation part
+              - **max_p**: Maximum active power output of the dangling line's generation part
+              - **target_p**: Active power target of the generation part
+              - **target_q**: Reactive power target of the generation part
+              - **target_v**: Voltage target of the generation part
+              - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
+
+            This dataframe is indexed by the id of the dangling lines
+
+        """
+        return self.get_elements(ElementType.DANGLING_LINE_GENERATION, all_attributes, attributes, **kwargs)
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: List[str] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -2710,6 +2837,33 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.LOAD, df, **kwargs)
 
+    def update_grounds(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update grounds with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `connected`
+
+        See Also:
+            :meth:`get_grounds`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_grounds(id='L-1', connected=False)
+        """
+        return self._update_elements(ElementType.GROUND, df, **kwargs)
+
     def update_batteries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update batteries with data provided as a :class:`~pandas.DataFrame` or as named arguments.
@@ -2782,6 +2936,39 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dangling_lines(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
         return self._update_elements(ElementType.DANGLING_LINE, df, **kwargs)
+
+    def update_dangling_lines_generation(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dangling lines generation part with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `min_p`
+            - `max_p`
+            - `target_p`
+            - `target_q`
+            - `target_v`
+            - `voltage_regulator_on`
+
+        See Also:
+            :meth:`get_dangling_lines_generation`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dangling_lines_generation(id='DL', voltage_regulator_on=True, target_v=225)
+                network.update_dangling_lines_generation(id=['DL', 'DL2'],  voltage_regulator_on=[True, True], target_v=[225, 400])
+        """
+        return self._update_elements(ElementType.DANGLING_LINE_GENERATION, df, **kwargs)
 
     def update_vsc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
@@ -3653,8 +3840,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         if show_inactive_sets:
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
-        else:
-            return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+        return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
@@ -3899,6 +4085,41 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.LOAD, [df], **kwargs)
 
+    def create_grounds(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+        """
+        Create grounds.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new ground
+            - **voltage_level_id**: the voltage level where the new ground will be created.
+              The voltage level must already exist.
+            - **bus_id**: the bus where the new ground will be connected,
+              if the voltage level has a bus-breaker topology kind.
+            - **connectable_bus_id**: the bus where the new ground will be connectable,
+              if the voltage level has a bus-breaker topology kind.
+            - **node**: the node where the new ground will be connected,
+              if the voltage level has a node-breaker topology kind.
+            - **name**: an optional human-readable name
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_loads(id='GROUND-1', voltage_level_id='VL1', bus_id='B1')
+        """
+        return self._create_elements(ElementType.GROUND, [df], **kwargs)
+
     def create_batteries(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Creates batteries.
@@ -3939,17 +4160,18 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.BATTERY, [df], **kwargs)
 
-    def create_dangling_lines(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def create_dangling_lines(self, df: DataFrame = None, generation_df: DataFrame = pd.DataFrame(), **kwargs: ArrayLike) -> None:
         """
         Creates dangling lines.
 
         Args:
             df: Attributes as a dataframe.
+            generation_df: Attributes of the dangling lines optional generation part, only as a dataframe
             kwargs: Attributes as keyword arguments.
 
         Notes:
 
-            Data may be provided as a dataframe or as keyword arguments.
+            General dangling line data may be provided as a dataframe or as keyword arguments.
             In the latter case, all arguments must have the same length.
 
             Valid attributes are:
@@ -3973,6 +4195,17 @@ class Network:  # pylint: disable=too-many-public-methods
             - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
             - **ucte-x-node-code**: deprecated, use pairing-key instead.
 
+            Dangling line generation information must be provided as a dataframe.
+            Valid attributes are:
+
+            - **id**: Identifier of the dangling line that contains this generation part
+            - **min_p**: Minimum active power output of the dangling line's generation part
+            - **max_p**: Maximum active power output of the dangling line's generation part
+            - **target_p**: Active power target of the generation part
+            - **target_q**: Reactive power target of the generation part
+            - **target_v**: Voltage target of the generation part
+            - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
+
         Examples:
             Using keyword arguments:
 
@@ -3991,7 +4224,7 @@ class Network:  # pylint: disable=too-many-public-methods
             warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
             kwargs['pairing_key'] = ucte_x_node_code
             kwargs.pop(ucte_xnode_code_str)
-        return self._create_elements(ElementType.DANGLING_LINE, [df], **kwargs)
+        return self._create_elements(ElementType.DANGLING_LINE, [df, generation_df], **kwargs)
 
     def create_lcc_converter_stations(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
