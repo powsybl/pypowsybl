@@ -15,6 +15,9 @@ import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.c.CContext;
+import org.graalvm.nativeimage.c.constant.CEnum;
+import org.graalvm.nativeimage.c.constant.CEnumLookup;
+import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
@@ -28,6 +31,19 @@ import static com.powsybl.python.commons.Util.doCatch;
 public final class Grid2opCFunctions {
 
     private Grid2opCFunctions() {
+    }
+
+    @CEnum("Grid2opDoubleValueType")
+    public enum Grid2opDoubleValueType {
+        GENERATOR_P,
+        GENERATOR_Q,
+        GENERATOR_V;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Grid2opDoubleValueType fromCValue(int value);
     }
 
     @CEntryPoint(name = "createGrid2opBackend")
@@ -56,11 +72,11 @@ public final class Grid2opCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getGrid2opGeneratorP")
-    public static ArrayPointer<CDoublePointer> getGeneratorP(IsolateThread thread, ObjectHandle backendHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getGrid2opDoubleValue")
+    public static ArrayPointer<CDoublePointer> getDoubleValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opDoubleValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.getGeneratorP();
+            return backend.getDoubleValues(valueType);
         });
     }
 }

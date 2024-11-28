@@ -140,8 +140,8 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
-py::memoryview pyGetGrid2opGeneratorP(const pypowsybl::JavaHandle& backendHandle) {
-    ::array* array = pypowsybl::getGrid2opGeneratorP(backendHandle);
+py::memoryview pyGetGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
+    ::array* array = pypowsybl::getGrid2opDoubleValue(backendHandle, valueType);
     return py::memoryview::from_buffer(
             static_cast<double *>(array->ptr),
             { array->length },
@@ -1069,10 +1069,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
+    py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
+            .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
+            .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
+            .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V);
+
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
     m.def("get_grid2op_generator_name", &pypowsybl::getGrid2opGeneratorName, "From a Grid2op backend get generator name vector", py::arg("backend"));
-    m.def("get_grid2op_generator_p", &::pyGetGrid2opGeneratorP, "From a Grid2op backend get generator active power vector", py::arg("backend"));
+    m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {

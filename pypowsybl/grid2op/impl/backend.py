@@ -7,6 +7,7 @@ from typing import List
 
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
+from pypowsybl._pypowsybl import Grid2opDoubleValueType
 
 import numpy as np
 
@@ -25,5 +26,5 @@ class Backend:
     def get_generator_name(self) -> List[str]:
         return _pypowsybl.get_grid2op_generator_name(self._handle)
 
-    def get_generator_p(self) -> np.ndarray:
-        return _pypowsybl.get_grid2op_generator_p(self._handle)
+    def get_double_value(self, value_type: Grid2opDoubleValueType) -> np.ndarray:
+        return _pypowsybl.get_grid2op_double_value(self._handle, value_type)

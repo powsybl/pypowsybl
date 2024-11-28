@@ -431,3 +431,9 @@ typedef enum {
     NO_GENERATION,
     ALL_BUSES,
 } VoltageInitializerReactiveSlackBusesMode;
+
+typedef enum {
+    GENERATOR_P = 0,
+    GENERATOR_Q,
+    GENERATOR_V,
+} Grid2opDoubleValueType;

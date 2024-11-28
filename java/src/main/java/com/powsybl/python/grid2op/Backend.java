@@ -86,16 +86,12 @@ public class Backend implements Closeable {
         return generatorName;
     }
 
-    public ArrayPointer<CDoublePointer> getGeneratorP() {
-        return generatorP;
-    }
-
-    public ArrayPointer<CDoublePointer> getGeneratorQ() {
-        return generatorQ;
-    }
-
-    public ArrayPointer<CDoublePointer> getGeneratorV() {
-        return generatorV;
+    public ArrayPointer<CDoublePointer> getDoubleValues(Grid2opCFunctions.Grid2opDoubleValueType valueType) {
+        return switch (Objects.requireNonNull(valueType)) {
+            case GENERATOR_P -> generatorP;
+            case GENERATOR_Q -> generatorQ;
+            case GENERATOR_V -> generatorV;
+        };
     }
 
     public CIntPointer getGeneratorBusLocalNum() {
