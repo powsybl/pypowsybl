@@ -7,10 +7,7 @@
  */
 package com.powsybl.python.grid2op;
 
-import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Identifiable;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.iidm.network.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.Util;
@@ -21,7 +18,9 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.io.Closeable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
@@ -32,14 +31,18 @@ import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 public class Backend implements Closeable {
 
     private final Network network;
+    private final List<Bus> buses;
     private final List<Generator> generators;
 
     private final ArrayPointer<CCharPointerPointer> voltageLevelName;
+
+    private final double[] busV;
 
     private final ArrayPointer<CCharPointerPointer> generatorName;
     private final ArrayPointer<CDoublePointer> generatorP;
     private final ArrayPointer<CDoublePointer> generatorQ;
     private final ArrayPointer<CDoublePointer> generatorV;
+    private final int[] generatorBusGlobalNum;
     private final CIntPointer generatorBusLocalNum;
 
     public Backend(Network network) {
@@ -48,14 +51,29 @@ public class Backend implements Closeable {
         List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().toList();
         voltageLevelName = Util.createCharPtrArray(voltageLevels.stream().map(Identifiable::getId).toList());
 
+        buses = network.getBusBreakerView().getBusStream().toList();
+        busV = new double[buses.size()];
+        Map<String, Integer> busIdToNum = new HashMap<>(buses.size());
+        for (int i = 0; i < buses.size(); i++) {
+            Bus bus = buses.get(i);
+            busIdToNum.put(bus.getId(), i);
+        }
+
         generators = network.getGeneratorStream().toList();
         generatorName = Util.createCharPtrArray(generators.stream().map(Identifiable::getId).toList());
         generatorP = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
         generatorQ = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
         generatorV = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
+        generatorBusGlobalNum = new int[generators.size()];
+        for (int i = 0; i < generators.size(); i++) {
+            Generator generator = generators.get(i);
+            Bus bus = generator.getTerminal().getBusBreakerView().getBus();
+            generatorBusGlobalNum[i] = bus == null ? -1 : busIdToNum.get(bus.getId());
+        }
         generatorBusLocalNum = UnmanagedMemory.calloc(generators.size() * SizeOf.get(CIntPointer.class));
         fillIntBuffer(generatorBusLocalNum, generators.size(), -1);
 
+        updateBuses();
         updateGenerators();
     }
 
@@ -69,12 +87,20 @@ public class Backend implements Closeable {
         return Double.isNaN(f) ? 0 : f;
     }
 
+    public void updateBuses() {
+        for (int i = 0; i < buses.size(); i++) {
+            Bus bus = buses.get(i);
+            busV[i] = fixNan(bus.getV());
+        }
+    }
+
     public void updateGenerators() {
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
-            generatorP.getPtr().write(generator.getTargetP());
-            generatorQ.getPtr().write(fixNan(generator.getTargetQ()));
-            generatorV.getPtr().write(fixNan(generator.getTargetV()));
+            Terminal terminal = generator.getTerminal();
+            generatorP.getPtr().write(fixNan(terminal.getP()));
+            generatorQ.getPtr().write(fixNan(terminal.getQ()));
+            generatorV.getPtr().write(busV[generatorBusGlobalNum[i]]);
         }
     }
 

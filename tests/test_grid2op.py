@@ -11,7 +11,7 @@ import pytest
 import pypowsybl as pp
 from pypowsybl import grid2op
 
-TOLERANCE = 1e-6
+TOLERANCE = 1e-3
 
 @pytest.fixture(autouse=True)
 def no_config():
@@ -19,8 +19,9 @@ def no_config():
 
 def test_backend():
     n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
     with grid2op.Backend(n) as backend:
         assert ['GEN', 'GEN2'] == backend.get_generator_name()
-        npt.assert_allclose(np.array([607.0, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_P), rtol=TOLERANCE, atol=TOLERANCE)
-        npt.assert_allclose(np.array([301.0, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_Q), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([-302.78, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_P), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([-112.641, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_Q), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([24.5, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_V), rtol=TOLERANCE, atol=TOLERANCE)
