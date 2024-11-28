@@ -1632,4 +1632,21 @@ JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, co
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle);
+}
+
+void freeGrid2opBackend(const JavaHandle& backendHandle) {
+    pypowsybl::PowsyblCaller::get()->callJava(::freeGrid2opBackend, backendHandle);
+}
+
+std::vector<std::string> getGrid2opGeneratorName(const JavaHandle& backendHandle) {
+    auto generatorNameArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opGeneratorName, backendHandle);
+    return toVector<std::string>(generatorNameArrayPtr); // do not release, will be done when freeing backend
+}
+
+array* getGrid2opGeneratorP(const JavaHandle& backendHandle) {
+    return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opGeneratorP, backendHandle); // do not release, will be done when freeing backend
+}
+
 }

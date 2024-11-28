@@ -843,5 +843,10 @@ SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle);
+void freeGrid2opBackend(const JavaHandle& backendHandle);
+std::vector<std::string> getGrid2opGeneratorName(const JavaHandle& backendHandle);
+array* getGrid2opGeneratorP(const JavaHandle& backendHandle);
+
 }
 #endif //PYPOWSYBL_H
