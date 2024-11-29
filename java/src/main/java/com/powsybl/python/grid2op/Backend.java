@@ -18,10 +18,7 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.io.Closeable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 
@@ -32,6 +29,7 @@ public class Backend implements Closeable {
 
     private final Network network;
 
+    private final List<VoltageLevel> voltageLevels;
     private final ArrayPointer<CCharPointerPointer> voltageLevelName;
 
     private final List<Bus> buses;
@@ -40,35 +38,37 @@ public class Backend implements Closeable {
 
     private final List<Load> loads;
     private final ArrayPointer<CCharPointerPointer> loadName;
-    private final ArrayPointer<CIntPointer> loadVoltageLevelNum;
+    private final ArrayPointer<CIntPointer> loadToVoltageLevelNum;
     private final ArrayPointer<CDoublePointer> loadP;
     private final ArrayPointer<CDoublePointer> loadQ;
     private final ArrayPointer<CDoublePointer> loadV;
     private final int[] loadBusGlobalNum;
-    private final CIntPointer loadBusLocalNum;
+    private final ArrayPointer<CIntPointer> loadBusLocalNum;
 
     private final List<Generator> generators;
     private final ArrayPointer<CCharPointerPointer> generatorName;
-    private final ArrayPointer<CIntPointer> generatorVoltageLevelNum;
+    private final ArrayPointer<CIntPointer> generatorToVoltageLevelNum;
     private final ArrayPointer<CDoublePointer> generatorP;
     private final ArrayPointer<CDoublePointer> generatorQ;
     private final ArrayPointer<CDoublePointer> generatorV;
     private final int[] generatorBusGlobalNum;
-    private final CIntPointer generatorBusLocalNum;
+    private final ArrayPointer<CIntPointer> generatorBusLocalNum;
 
     private final List<ShuntCompensator> shunts;
     private final ArrayPointer<CCharPointerPointer> shuntName;
-    private final ArrayPointer<CIntPointer> shuntVoltageLevelNum;
+    private final ArrayPointer<CIntPointer> shuntToVoltageLevelNum;
     private final ArrayPointer<CDoublePointer> shuntP;
     private final ArrayPointer<CDoublePointer> shuntQ;
     private final ArrayPointer<CDoublePointer> shuntV;
     private final int[] shuntBusGlobalNum;
-    private final CIntPointer shuntBusLocalNum;
+    private final ArrayPointer<CIntPointer> shuntBusLocalNum;
+
+    private final List<Battery> batteries = Collections.emptyList();
 
     private final List<Branch> branches;
     private final ArrayPointer<CCharPointerPointer> branchName;
-    private final ArrayPointer<CIntPointer> branchVoltageLevelNum1;
-    private final ArrayPointer<CIntPointer> branchVoltageLevelNum2;
+    private final ArrayPointer<CIntPointer> branchToVoltageLevelNum1;
+    private final ArrayPointer<CIntPointer> branchToVoltageLevelNum2;
     private final ArrayPointer<CDoublePointer> branchP1;
     private final ArrayPointer<CDoublePointer> branchP2;
     private final ArrayPointer<CDoublePointer> branchQ1;
@@ -79,14 +79,20 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> branchI2;
     private final int[] branchBusGlobalNum1;
     private final int[] branchBusGlobalNum2;
-    private final CIntPointer branchBusLocalNum1;
-    private final CIntPointer branchBusLocalNum2;
+    private final ArrayPointer<CIntPointer> branchBusLocalNum1;
+    private final ArrayPointer<CIntPointer> branchBusLocalNum2;
+
+    private int[] loadTopoVectPosition;
+    private int[] generatorTopoVectPosition;
+    private int[] branchTopoVectPosition1;
+    private int[] branchTopoVectPosition2;
+    private ArrayPointer<CIntPointer> topoVect;
 
     public Backend(Network network) {
         this.network = Objects.requireNonNull(network);
 
         // voltage levels
-        List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().toList();
+        voltageLevels = network.getVoltageLevelStream().toList();
         voltageLevelName = Util.createCharPtrArray(voltageLevels.stream().map(Identifiable::getId).toList());
         Map<String, Integer> voltageLevelNum = new HashMap<>(voltageLevels.size());
         for (int i = 0; i < voltageLevels.size(); i++) {
@@ -113,88 +119,160 @@ public class Backend implements Closeable {
         // loads
         loads = network.getLoadStream().toList();
         loadName = Util.createCharPtrArray(loads.stream().map(Identifiable::getId).toList());
-        loadVoltageLevelNum = allocArrayPointer(UnmanagedMemory.calloc(loads.size() * SizeOf.get(CIntPointer.class)), loads.size());
-        loadP = allocArrayPointer(UnmanagedMemory.calloc(loads.size() * SizeOf.get(CDoublePointer.class)), loads.size());
-        loadQ = allocArrayPointer(UnmanagedMemory.calloc(loads.size() * SizeOf.get(CDoublePointer.class)), loads.size());
-        loadV = allocArrayPointer(UnmanagedMemory.calloc(loads.size() * SizeOf.get(CDoublePointer.class)), loads.size());
+        loadToVoltageLevelNum = createIntArrayPointer(loads.size());
+        loadP = createDoubleArrayPointer(loads.size());
+        loadQ = createDoubleArrayPointer(loads.size());
+        loadV = createDoubleArrayPointer(loads.size());
         loadBusGlobalNum = new int[loads.size()];
-        loadBusLocalNum = UnmanagedMemory.calloc(loads.size() * SizeOf.get(CIntPointer.class));
+        loadBusLocalNum = createIntArrayPointer(loads.size());
         for (int i = 0; i < loads.size(); i++) {
             Load load = loads.get(i);
-            loadVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(load.getTerminal().getVoltageLevel().getId()));
+            loadToVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(load.getTerminal().getVoltageLevel().getId()));
             Bus bus = load.getTerminal().getBusBreakerView().getBus();
             loadBusGlobalNum[i] = bus == null ? -1 : busIdToGlobalNum.get(bus.getId());
-            loadBusLocalNum.write(i, globalToLocalBusNum[loadBusGlobalNum[i]]);
+            loadBusLocalNum.getPtr().write(i, globalToLocalBusNum[loadBusGlobalNum[i]]);
         }
 
         // generators
         generators = network.getGeneratorStream().toList();
         generatorName = Util.createCharPtrArray(generators.stream().map(Identifiable::getId).toList());
-        generatorVoltageLevelNum = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CIntPointer.class)), generators.size());
-        generatorP = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
-        generatorQ = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
-        generatorV = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
+        generatorToVoltageLevelNum = createIntArrayPointer(generators.size());
+        generatorP = createDoubleArrayPointer(generators.size());
+        generatorQ = createDoubleArrayPointer(generators.size());
+        generatorV = createDoubleArrayPointer(generators.size());
         generatorBusGlobalNum = new int[generators.size()];
-        generatorBusLocalNum = UnmanagedMemory.calloc(generators.size() * SizeOf.get(CIntPointer.class));
+        generatorBusLocalNum = createIntArrayPointer(generators.size());
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
-            generatorVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(generator.getTerminal().getVoltageLevel().getId()));
+            generatorToVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(generator.getTerminal().getVoltageLevel().getId()));
             Bus bus = generator.getTerminal().getBusBreakerView().getBus();
             generatorBusGlobalNum[i] = bus == null ? -1 : busIdToGlobalNum.get(bus.getId());
-            generatorBusLocalNum.write(i, globalToLocalBusNum[generatorBusGlobalNum[i]]);
+            generatorBusLocalNum.getPtr().write(i, globalToLocalBusNum[generatorBusGlobalNum[i]]);
         }
 
         // shunts
         shunts = network.getShuntCompensatorStream().toList();
         shuntName = Util.createCharPtrArray(shunts.stream().map(Identifiable::getId).toList());
-        shuntVoltageLevelNum = allocArrayPointer(UnmanagedMemory.calloc(shunts.size() * SizeOf.get(CIntPointer.class)), shunts.size());
-        shuntP = allocArrayPointer(UnmanagedMemory.calloc(shunts.size() * SizeOf.get(CDoublePointer.class)), shunts.size());
-        shuntQ = allocArrayPointer(UnmanagedMemory.calloc(shunts.size() * SizeOf.get(CDoublePointer.class)), shunts.size());
-        shuntV = allocArrayPointer(UnmanagedMemory.calloc(shunts.size() * SizeOf.get(CDoublePointer.class)), shunts.size());
+        shuntToVoltageLevelNum = createIntArrayPointer(shunts.size());
+        shuntP = createDoubleArrayPointer(shunts.size());
+        shuntQ = createDoubleArrayPointer(shunts.size());
+        shuntV = createDoubleArrayPointer(shunts.size());
         shuntBusGlobalNum = new int[shunts.size()];
-        shuntBusLocalNum = UnmanagedMemory.calloc(shunts.size() * SizeOf.get(CIntPointer.class));
+        shuntBusLocalNum = createIntArrayPointer(shunts.size());
         for (int i = 0; i < shunts.size(); i++) {
             ShuntCompensator shunt = shunts.get(i);
-            shuntVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(shunt.getTerminal().getVoltageLevel().getId()));
+            shuntToVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(shunt.getTerminal().getVoltageLevel().getId()));
             Bus bus = shunt.getTerminal().getBusBreakerView().getBus();
             shuntBusGlobalNum[i] = bus == null ? -1 : busIdToGlobalNum.get(bus.getId());
-            shuntBusLocalNum.write(i, globalToLocalBusNum[shuntBusGlobalNum[i]]);
+            shuntBusLocalNum.getPtr().write(i, globalToLocalBusNum[shuntBusGlobalNum[i]]);
         }
 
         // branches
         branches = network.getBranchStream().toList();
         branchName = Util.createCharPtrArray(branches.stream().map(Identifiable::getId).toList());
-        branchVoltageLevelNum1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class)), branches.size());
-        branchVoltageLevelNum2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class)), branches.size());
-        branchP1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchP2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchQ1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchQ2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchV1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchV2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchI1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
-        branchI2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchToVoltageLevelNum1 = createIntArrayPointer(branches.size());
+        branchToVoltageLevelNum2 = createIntArrayPointer(branches.size());
+        branchP1 = createDoubleArrayPointer(branches.size());
+        branchP2 = createDoubleArrayPointer(branches.size());
+        branchQ1 = createDoubleArrayPointer(branches.size());
+        branchQ2 = createDoubleArrayPointer(branches.size());
+        branchV1 = createDoubleArrayPointer(branches.size());
+        branchV2 = createDoubleArrayPointer(branches.size());
+        branchI1 = createDoubleArrayPointer(branches.size());
+        branchI2 = createDoubleArrayPointer(branches.size());
         branchBusGlobalNum1 = new int[branches.size()];
         branchBusGlobalNum2 = new int[branches.size()];
-        branchBusLocalNum1 = UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class));
-        branchBusLocalNum2 = UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class));
+        branchBusLocalNum1 = createIntArrayPointer(branches.size());
+        branchBusLocalNum2 = createIntArrayPointer(branches.size());
         for (int i = 0; i < branches.size(); i++) {
             Branch<?> branch = branches.get(i);
-            branchVoltageLevelNum1.getPtr().write(i, voltageLevelNum.get(branch.getTerminal1().getVoltageLevel().getId()));
-            branchVoltageLevelNum2.getPtr().write(i, voltageLevelNum.get(branch.getTerminal2().getVoltageLevel().getId()));
+            branchToVoltageLevelNum1.getPtr().write(i, voltageLevelNum.get(branch.getTerminal1().getVoltageLevel().getId()));
+            branchToVoltageLevelNum2.getPtr().write(i, voltageLevelNum.get(branch.getTerminal2().getVoltageLevel().getId()));
             Bus bus1 = branch.getTerminal1().getBusBreakerView().getBus();
             Bus bus2 = branch.getTerminal2().getBusBreakerView().getBus();
             branchBusGlobalNum1[i] = bus1 == null ? -1 : busIdToGlobalNum.get(bus1.getId());
             branchBusGlobalNum2[i] = bus2 == null ? -1 : busIdToGlobalNum.get(bus2.getId());
-            branchBusLocalNum1.write(i, globalToLocalBusNum[branchBusGlobalNum1[i]]);
-            branchBusLocalNum2.write(i, globalToLocalBusNum[branchBusGlobalNum2[i]]);
+            branchBusLocalNum1.getPtr().write(i, globalToLocalBusNum[branchBusGlobalNum1[i]]);
+            branchBusLocalNum2.getPtr().write(i, globalToLocalBusNum[branchBusGlobalNum2[i]]);
         }
+
+        computeBigTopo();
 
         updateBuses();
         updateLoads();
         updateGenerators();
         updateShunts();
         updateBranches();
+        updateTopoVect();
+    }
+
+    private void computeBigTopo() {
+        // find a position inside a voltage level for each of the element
+        int[] nextVoltageLevelPosition = new int[voltageLevels.size()]; // next position inside a voltage level
+        int[] loadToVoltageLevelPosition = new int[loads.size()];
+        for (int i = 0; i < loads.size(); i++) {
+            loadToVoltageLevelPosition[i] = nextVoltageLevelPosition[loadToVoltageLevelNum.getPtr().read(i)]++;
+        }
+        int[] generatorToVoltageLevelPosition = new int[generators.size()];
+        for (int i = 0; i < generators.size(); i++) {
+            generatorToVoltageLevelPosition[i] = nextVoltageLevelPosition[generatorToVoltageLevelNum.getPtr().read(i)]++;
+        }
+        int[] lineToVoltageLevelPosition1 = new int[branches.size()];
+        for (int i = 0; i < branches.size(); i++) {
+            lineToVoltageLevelPosition1[i] = nextVoltageLevelPosition[branchToVoltageLevelNum1.getPtr().read(i)]++;
+        }
+        int[] lineToVoltageLevelPosition2 = new int[branches.size()];
+        for (int i = 0; i < branches.size(); i++) {
+            lineToVoltageLevelPosition2[i] = nextVoltageLevelPosition[branchToVoltageLevelNum2.getPtr().read(i)]++;
+        }
+        int[] batteryToVoltageLevelPosition = new int[batteries.size()];
+        for (int i = 0; i < batteries.size(); i++) {
+//            batteryToVoltageLevelPosition[i] = nextVoltageLevelPosition[batteryToVoltageLevelNum.getPtr().read(i)]++;
+        }
+
+        loadTopoVectPosition = computeTopoVectPosition(loadToVoltageLevelNum, loadToVoltageLevelPosition, nextVoltageLevelPosition);
+        generatorTopoVectPosition = computeTopoVectPosition(generatorToVoltageLevelNum, generatorToVoltageLevelPosition, nextVoltageLevelPosition);
+        branchTopoVectPosition1 = computeTopoVectPosition(branchToVoltageLevelNum1, lineToVoltageLevelPosition1, nextVoltageLevelPosition);
+        branchTopoVectPosition2 = computeTopoVectPosition(branchToVoltageLevelNum2, lineToVoltageLevelPosition2, nextVoltageLevelPosition);
+//        int[] batteryTopoVectPosition = computeBigTopoVectorPosition(batteryToVoltageLevelNum, batteryToVoltageLevelPosition, nextVoltageLevelPosition);
+
+        int topoVectSize = 2 * branches.size() + loads.size() + generators.size() + batteries.size();
+        topoVect = createIntArrayPointer(topoVectSize);
+    }
+
+    private static int[] computeTopoVectPosition(ArrayPointer<CIntPointer> toVoltageLevelNum,
+                                                 int[] toVoltageLevelPosition,
+                                                 int[] maxVoltageLevelPosition) {
+        int[] res = new int[toVoltageLevelNum.getLength()];
+        for (int i = 0; i < toVoltageLevelNum.getLength(); i++) {
+            int voltageLevelNum = toVoltageLevelNum.getPtr().read(i);
+            int objBefore = Arrays.stream(maxVoltageLevelPosition, 0, voltageLevelNum).sum();
+            res[i] = objBefore + toVoltageLevelPosition[i];
+        }
+        return res;
+    }
+
+    public void updateTopoVect() {
+        for (int i = 0; i < loads.size(); i++) {
+            topoVect.getPtr().write(loadTopoVectPosition[i], loadBusLocalNum.getPtr().read(i));
+        }
+        for (int i = 0; i < generators.size(); i++) {
+            topoVect.getPtr().write(generatorTopoVectPosition[i], generatorBusLocalNum.getPtr().read(i));
+        }
+        for (int i = 0; i < branches.size(); i++) {
+            topoVect.getPtr().write(branchTopoVectPosition1[i], branchBusLocalNum1.getPtr().read(i));
+        }
+        for (int i = 0; i < branches.size(); i++) {
+            topoVect.getPtr().write(branchTopoVectPosition2[i], branchBusLocalNum2.getPtr().read(i));
+        }
+    }
+
+    private static ArrayPointer<CDoublePointer> createDoubleArrayPointer(int length) {
+        return allocArrayPointer(UnmanagedMemory.calloc(length * SizeOf.get(CDoublePointer.class)), length);
+    }
+
+    private static ArrayPointer<CIntPointer> createIntArrayPointer(int length) {
+        return allocArrayPointer(UnmanagedMemory.calloc(length * SizeOf.get(CIntPointer.class)), length);
     }
 
     private static void fillIntBuffer(CIntPointer ptr, int length, int value) {
@@ -272,11 +350,12 @@ public class Backend implements Closeable {
 
     public ArrayPointer<CIntPointer> getIntegerValue(Grid2opCFunctions.Grid2opIntegerValueType valueType) {
         return switch (Objects.requireNonNull(valueType)) {
-            case LOAD_VOLTAGE_LEVEL_NUM -> loadVoltageLevelNum;
-            case GENERATOR_VOLTAGE_LEVEL_NUM -> generatorVoltageLevelNum;
-            case SHUNT_VOLTAGE_LEVEL_NUM -> shuntVoltageLevelNum;
-            case BRANCH_VOLTAGE_LEVEL_NUM_1 -> branchVoltageLevelNum1;
-            case BRANCH_VOLTAGE_LEVEL_NUM_2 -> branchVoltageLevelNum2;
+            case LOAD_VOLTAGE_LEVEL_NUM -> loadToVoltageLevelNum;
+            case GENERATOR_VOLTAGE_LEVEL_NUM -> generatorToVoltageLevelNum;
+            case SHUNT_VOLTAGE_LEVEL_NUM -> shuntToVoltageLevelNum;
+            case BRANCH_VOLTAGE_LEVEL_NUM_1 -> branchToVoltageLevelNum1;
+            case BRANCH_VOLTAGE_LEVEL_NUM_2 -> branchToVoltageLevelNum2;
+            case TOPO_VECT -> topoVect;
         };
     }
 
@@ -307,29 +386,29 @@ public class Backend implements Closeable {
         Util.freeCharPtrArray(voltageLevelName);
 
         Util.freeCharPtrArray(loadName);
-        PyPowsyblApiHeader.freeArrayPointer(loadVoltageLevelNum);
+        PyPowsyblApiHeader.freeArrayPointer(loadToVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(loadP);
         PyPowsyblApiHeader.freeArrayPointer(loadQ);
         PyPowsyblApiHeader.freeArrayPointer(loadV);
-        UnmanagedMemory.free(loadBusLocalNum);
+        PyPowsyblApiHeader.freeArrayPointer(loadBusLocalNum);
 
         Util.freeCharPtrArray(generatorName);
-        PyPowsyblApiHeader.freeArrayPointer(generatorVoltageLevelNum);
+        PyPowsyblApiHeader.freeArrayPointer(generatorToVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(generatorP);
         PyPowsyblApiHeader.freeArrayPointer(generatorQ);
         PyPowsyblApiHeader.freeArrayPointer(generatorV);
-        UnmanagedMemory.free(generatorBusLocalNum);
+        PyPowsyblApiHeader.freeArrayPointer(generatorBusLocalNum);
 
         Util.freeCharPtrArray(shuntName);
-        PyPowsyblApiHeader.freeArrayPointer(shuntVoltageLevelNum);
+        PyPowsyblApiHeader.freeArrayPointer(shuntToVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(shuntP);
         PyPowsyblApiHeader.freeArrayPointer(shuntQ);
         PyPowsyblApiHeader.freeArrayPointer(shuntV);
-        UnmanagedMemory.free(shuntBusLocalNum);
+        PyPowsyblApiHeader.freeArrayPointer(shuntBusLocalNum);
 
         Util.freeCharPtrArray(branchName);
-        PyPowsyblApiHeader.freeArrayPointer(branchVoltageLevelNum1);
-        PyPowsyblApiHeader.freeArrayPointer(branchVoltageLevelNum2);
+        PyPowsyblApiHeader.freeArrayPointer(branchToVoltageLevelNum1);
+        PyPowsyblApiHeader.freeArrayPointer(branchToVoltageLevelNum2);
         PyPowsyblApiHeader.freeArrayPointer(branchP1);
         PyPowsyblApiHeader.freeArrayPointer(branchP2);
         PyPowsyblApiHeader.freeArrayPointer(branchQ1);
@@ -338,7 +417,9 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(branchV2);
         PyPowsyblApiHeader.freeArrayPointer(branchI1);
         PyPowsyblApiHeader.freeArrayPointer(branchI2);
-        UnmanagedMemory.free(branchBusLocalNum1);
-        UnmanagedMemory.free(branchBusLocalNum2);
+        PyPowsyblApiHeader.freeArrayPointer(branchBusLocalNum1);
+        PyPowsyblApiHeader.freeArrayPointer(branchBusLocalNum2);
+
+        PyPowsyblApiHeader.freeArrayPointer(topoVect);
     }
 }

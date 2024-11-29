@@ -55,7 +55,8 @@ public final class Grid2opCFunctions {
         GENERATOR_VOLTAGE_LEVEL_NUM,
         SHUNT_VOLTAGE_LEVEL_NUM,
         BRANCH_VOLTAGE_LEVEL_NUM_1,
-        BRANCH_VOLTAGE_LEVEL_NUM_2;
+        BRANCH_VOLTAGE_LEVEL_NUM_2,
+        TOPO_VECT;
 
         @CEnumValue
         public native int getCValue();

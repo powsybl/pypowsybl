@@ -1090,7 +1090,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM)
             .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM)
             .value("BRANCH_VOLTAGE_LEVEL_NUM_1", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_1)
-            .value("BRANCH_VOLTAGE_LEVEL_NUM_2", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_2);
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_2", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_2)
+            .value("TOPO_VECT", Grid2opIntegerValueType::TOPO_VECT);
 
     py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
             .value("LOAD_P", Grid2opDoubleValueType::LOAD_P)
