@@ -16,6 +16,7 @@ class SimulationResult:
         self._handle = handle
         self._status = _pp.get_dynamic_simulation_results_status(self._handle)
         self._curves = self._get_all_curves()
+        self._fsv = _pp.get_dynamic_simulation_results_status(self._handle)
 
     def status(self) -> str:
         """
@@ -37,4 +38,8 @@ class SimulationResult:
         curve_name_lst = _pp.get_all_dynamic_curves_ids(self._handle)
         df_curves = [self._get_curve(curve_name)
                      for curve_name in curve_name_lst]
-        return pd.concat(df_curves, axis=1) if df_curves else pd.DataFrame()
+        return pd.concat(df_curves, axis=1).ffill() if df_curves else pd.DataFrame()
+
+    def final_state_values(self) -> pd.DataFrame:
+        """Dataframe of the final state values results, columns are the fsv names and rows are timestep"""
+        return self._fsv

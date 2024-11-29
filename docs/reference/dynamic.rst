@@ -53,8 +53,10 @@ CurveMapping
     :toctree: api/
 
     CurveMapping
-    CurveMapping.add_curve
-    CurveMapping.add_curves
+    CurveMapping.add_dynamic_model_curves
+    CurveMapping.add_standard_model_curves
+    CurveMapping.add_dynamic_model_final_state_values
+    CurveMapping.add_standard_model_final_state_values
 
 Simulation
 ----------

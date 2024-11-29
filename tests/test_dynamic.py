@@ -125,7 +125,9 @@ def test_add_event_dataframe():
     event_mapping.add_active_power_variation(event_mapping_df)
 
 
-def test_add_curve():
-    timeseries = dyn.CurveMapping()
-    timeseries.add_curves('test_load_id_1', ['load_PPu', 'load_QPu'])
-    timeseries.add_curve('test_load_id_2', 'load_PPu')
+def test_add_output_variables():
+    timeseries = dyn.OutputVariableMapping()
+    timeseries.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
+    timeseries.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    timeseries.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    timeseries.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')

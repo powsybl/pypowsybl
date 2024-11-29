@@ -81,15 +81,16 @@ To run a Dynawo simulation:
     event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
-    curve_mapping = dyn.CurveMapping()
-    curve_mapping.add_curves("LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping = dyn.OutputVariableMapping()
+    variables_mapping.add_dynamic_model_curves("DM_LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value', False) # and so on
 
     # simulations parameters
     start_time = 0
     end_time = 50
     sim = dyn.Simulation()
     # running the simulation
-    results = sim.run(network, model_mapping, event_mapping, curve_mapping, start_time, end_time)
+    results = sim.run(network, model_mapping, event_mapping, variables_mapping, start_time, end_time)
     # getting the results
     results.status()
     results.curves() # dataframe containing the mapped curves
