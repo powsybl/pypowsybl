@@ -180,6 +180,10 @@ void dynamicSimulationBindings(py::module_& m) {
             .value("NODE_FAULT", EventMappingType::NODE_FAULT)
             .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION);
 
+   py::enum_<OutputVariableType>(m, "OutputVariableType")
+               .value("CURVE", OutputVariableType::CURVE)
+               .value("FINAL_STATE", OutputVariableType::FINAL_STATE);
+
     //entrypoints for constructors
     m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
     m.def("create_dynamic_model_mapping", &pypowsybl::createDynamicModelMapping);
@@ -195,8 +199,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
     m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("mapping_type"));
 
-    // timeseries/curves mapping
-    m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
+    // timeseries mapping
+    m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("is_dynamic"), py::arg("output_variable_type"));
 
     // events mapping
     m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));

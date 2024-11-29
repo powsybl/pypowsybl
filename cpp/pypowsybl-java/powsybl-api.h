@@ -406,6 +406,11 @@ typedef enum {
 } EventMappingType;
 
 typedef enum {
+    CURVE = 0,
+    FINAL_STATE,
+} OutputVariableType;
+
+typedef enum {
     UNDEFINED = -1,
     ONE,
     TWO,

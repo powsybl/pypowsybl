@@ -12,6 +12,7 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
+import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
@@ -440,6 +441,14 @@ public final class Util {
             case 0 -> ThreeSides.ONE;
             case 1 -> ThreeSides.TWO;
             case 2 -> ThreeSides.THREE;
+            default -> null;
+        };
+    }
+
+    public static OutputVariable.OutputType convert(PyPowsyblApiHeader.OutputVariableType type) {
+        return switch (type.getCValue()) {
+            case 0 -> OutputVariable.OutputType.CURVE;
+            case 1 -> OutputVariable.OutputType.FINAL_STATE;
             default -> null;
         };
     }
