@@ -1082,12 +1082,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
             .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)
             .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME)
-            .value("SHUNT_NAME", Grid2opStringValueType::SHUNT_NAME);
+            .value("SHUNT_NAME", Grid2opStringValueType::SHUNT_NAME)
+            .value("BRANCH_NAME", Grid2opStringValueType::BRANCH_NAME);
 
     py::enum_<Grid2opIntegerValueType>(m, "Grid2opIntegerValueType")
             .value("LOAD_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::LOAD_VOLTAGE_LEVEL_NUM)
             .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM)
-            .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM);
+            .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM)
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_1", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_1)
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_2", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_2);
 
     py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
             .value("LOAD_P", Grid2opDoubleValueType::LOAD_P)
@@ -1098,7 +1101,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V)
             .value("SHUNT_P", Grid2opDoubleValueType::SHUNT_P)
             .value("SHUNT_Q", Grid2opDoubleValueType::SHUNT_Q)
-            .value("SHUNT_V", Grid2opDoubleValueType::SHUNT_V);
+            .value("SHUNT_V", Grid2opDoubleValueType::SHUNT_V)
+            .value("BRANCH_P1", Grid2opDoubleValueType::BRANCH_P1)
+            .value("BRANCH_P2", Grid2opDoubleValueType::BRANCH_P2)
+            .value("BRANCH_Q1", Grid2opDoubleValueType::BRANCH_Q1)
+            .value("BRANCH_Q2", Grid2opDoubleValueType::BRANCH_Q2)
+            .value("BRANCH_V1", Grid2opDoubleValueType::BRANCH_V1)
+            .value("BRANCH_V2", Grid2opDoubleValueType::BRANCH_V2)
+            .value("BRANCH_I1", Grid2opDoubleValueType::BRANCH_I1)
+            .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2);
 
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));

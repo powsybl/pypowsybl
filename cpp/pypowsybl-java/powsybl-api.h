@@ -437,12 +437,15 @@ typedef enum {
     LOAD_NAME,
     GENERATOR_NAME,
     SHUNT_NAME,
+    BRANCH_NAME,
 } Grid2opStringValueType;
 
 typedef enum {
     LOAD_VOLTAGE_LEVEL_NUM = 0,
     GENERATOR_VOLTAGE_LEVEL_NUM,
     SHUNT_VOLTAGE_LEVEL_NUM,
+    BRANCH_VOLTAGE_LEVEL_NUM_1,
+    BRANCH_VOLTAGE_LEVEL_NUM_2,
 } Grid2opIntegerValueType;
 
 typedef enum {
@@ -455,4 +458,12 @@ typedef enum {
     SHUNT_P,
     SHUNT_Q,
     SHUNT_V,
+    BRANCH_P1,
+    BRANCH_P2,
+    BRANCH_Q1,
+    BRANCH_Q2,
+    BRANCH_V1,
+    BRANCH_V2,
+    BRANCH_I1,
+    BRANCH_I2,
 } Grid2opDoubleValueType;

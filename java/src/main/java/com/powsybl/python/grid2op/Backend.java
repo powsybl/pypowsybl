@@ -65,6 +65,23 @@ public class Backend implements Closeable {
     private final int[] shuntBusGlobalNum;
     private final CIntPointer shuntBusLocalNum;
 
+    private final List<Branch> branches;
+    private final ArrayPointer<CCharPointerPointer> branchName;
+    private final ArrayPointer<CIntPointer> branchVoltageLevelNum1;
+    private final ArrayPointer<CIntPointer> branchVoltageLevelNum2;
+    private final ArrayPointer<CDoublePointer> branchP1;
+    private final ArrayPointer<CDoublePointer> branchP2;
+    private final ArrayPointer<CDoublePointer> branchQ1;
+    private final ArrayPointer<CDoublePointer> branchQ2;
+    private final ArrayPointer<CDoublePointer> branchV1;
+    private final ArrayPointer<CDoublePointer> branchV2;
+    private final ArrayPointer<CDoublePointer> branchI1;
+    private final ArrayPointer<CDoublePointer> branchI2;
+    private final int[] branchBusGlobalNum1;
+    private final int[] branchBusGlobalNum2;
+    private final CIntPointer branchBusLocalNum1;
+    private final CIntPointer branchBusLocalNum2;
+
     public Backend(Network network) {
         this.network = Objects.requireNonNull(network);
 
@@ -144,10 +161,40 @@ public class Backend implements Closeable {
             shuntBusLocalNum.write(i, globalToLocalBusNum[shuntBusGlobalNum[i]]);
         }
 
+        // branches
+        branches = network.getBranchStream().toList();
+        branchName = Util.createCharPtrArray(branches.stream().map(Identifiable::getId).toList());
+        branchVoltageLevelNum1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class)), branches.size());
+        branchVoltageLevelNum2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class)), branches.size());
+        branchP1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchP2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchQ1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchQ2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchV1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchV2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchI1 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchI2 = allocArrayPointer(UnmanagedMemory.calloc(branches.size() * SizeOf.get(CDoublePointer.class)), branches.size());
+        branchBusGlobalNum1 = new int[branches.size()];
+        branchBusGlobalNum2 = new int[branches.size()];
+        branchBusLocalNum1 = UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class));
+        branchBusLocalNum2 = UnmanagedMemory.calloc(branches.size() * SizeOf.get(CIntPointer.class));
+        for (int i = 0; i < branches.size(); i++) {
+            Branch<?> branch = branches.get(i);
+            branchVoltageLevelNum1.getPtr().write(i, voltageLevelNum.get(branch.getTerminal1().getVoltageLevel().getId()));
+            branchVoltageLevelNum2.getPtr().write(i, voltageLevelNum.get(branch.getTerminal2().getVoltageLevel().getId()));
+            Bus bus1 = branch.getTerminal1().getBusBreakerView().getBus();
+            Bus bus2 = branch.getTerminal2().getBusBreakerView().getBus();
+            branchBusGlobalNum1[i] = bus1 == null ? -1 : busIdToGlobalNum.get(bus1.getId());
+            branchBusGlobalNum2[i] = bus2 == null ? -1 : busIdToGlobalNum.get(bus2.getId());
+            branchBusLocalNum1.write(i, globalToLocalBusNum[branchBusGlobalNum1[i]]);
+            branchBusLocalNum2.write(i, globalToLocalBusNum[branchBusGlobalNum2[i]]);
+        }
+
         updateBuses();
         updateLoads();
         updateGenerators();
         updateShunts();
+        updateBranches();
     }
 
     private static void fillIntBuffer(CIntPointer ptr, int length, int value) {
@@ -197,12 +244,29 @@ public class Backend implements Closeable {
         }
     }
 
+    public void updateBranches() {
+        for (int i = 0; i < branches.size(); i++) {
+            Branch<?> branch = branches.get(i);
+            Terminal terminal1 = branch.getTerminal1();
+            Terminal terminal2 = branch.getTerminal2();
+            branchP1.getPtr().write(i, fixNan(terminal1.getP()));
+            branchP2.getPtr().write(i, fixNan(terminal2.getP()));
+            branchQ1.getPtr().write(i, fixNan(terminal1.getQ()));
+            branchQ2.getPtr().write(i, fixNan(terminal2.getQ()));
+            branchV1.getPtr().write(i, busV[branchBusGlobalNum1[i]]);
+            branchV2.getPtr().write(i, busV[branchBusGlobalNum2[i]]);
+            branchI1.getPtr().write(i, fixNan(terminal1.getI()));
+            branchI2.getPtr().write(i, fixNan(terminal2.getI()));
+        }
+    }
+
     public ArrayPointer<CCharPointerPointer> getStringValue(Grid2opCFunctions.Grid2opStringValueType valueType) {
         return switch (Objects.requireNonNull(valueType)) {
             case VOLTAGE_LEVEL_NAME -> voltageLevelName;
             case LOAD_NAME -> loadName;
             case GENERATOR_NAME -> generatorName;
             case SHUNT_NAME -> shuntName;
+            case BRANCH_NAME -> branchName;
         };
     }
 
@@ -211,6 +275,8 @@ public class Backend implements Closeable {
             case LOAD_VOLTAGE_LEVEL_NUM -> loadVoltageLevelNum;
             case GENERATOR_VOLTAGE_LEVEL_NUM -> generatorVoltageLevelNum;
             case SHUNT_VOLTAGE_LEVEL_NUM -> shuntVoltageLevelNum;
+            case BRANCH_VOLTAGE_LEVEL_NUM_1 -> branchVoltageLevelNum1;
+            case BRANCH_VOLTAGE_LEVEL_NUM_2 -> branchVoltageLevelNum2;
         };
     }
 
@@ -225,6 +291,14 @@ public class Backend implements Closeable {
             case SHUNT_P -> shuntP;
             case SHUNT_Q -> shuntQ;
             case SHUNT_V -> shuntV;
+            case BRANCH_P1 -> branchP1;
+            case BRANCH_P2 -> branchP2;
+            case BRANCH_Q1 -> branchQ1;
+            case BRANCH_Q2 -> branchQ2;
+            case BRANCH_V1 -> branchV1;
+            case BRANCH_V2 -> branchV2;
+            case BRANCH_I1 -> branchI1;
+            case BRANCH_I2 -> branchI2;
         };
     }
 
@@ -252,5 +326,19 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(shuntQ);
         PyPowsyblApiHeader.freeArrayPointer(shuntV);
         UnmanagedMemory.free(shuntBusLocalNum);
+
+        Util.freeCharPtrArray(branchName);
+        PyPowsyblApiHeader.freeArrayPointer(branchVoltageLevelNum1);
+        PyPowsyblApiHeader.freeArrayPointer(branchVoltageLevelNum2);
+        PyPowsyblApiHeader.freeArrayPointer(branchP1);
+        PyPowsyblApiHeader.freeArrayPointer(branchP2);
+        PyPowsyblApiHeader.freeArrayPointer(branchQ1);
+        PyPowsyblApiHeader.freeArrayPointer(branchQ2);
+        PyPowsyblApiHeader.freeArrayPointer(branchV1);
+        PyPowsyblApiHeader.freeArrayPointer(branchV2);
+        PyPowsyblApiHeader.freeArrayPointer(branchI1);
+        PyPowsyblApiHeader.freeArrayPointer(branchI2);
+        UnmanagedMemory.free(branchBusLocalNum1);
+        UnmanagedMemory.free(branchBusLocalNum2);
     }
 }
