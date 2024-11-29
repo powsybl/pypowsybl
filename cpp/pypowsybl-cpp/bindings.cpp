@@ -1080,15 +1080,25 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
-            .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME);
+            .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)
+            .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME)
+            .value("SHUNT_NAME", Grid2opStringValueType::SHUNT_NAME);
 
     py::enum_<Grid2opIntegerValueType>(m, "Grid2opIntegerValueType")
-            .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM);
+            .value("LOAD_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::LOAD_VOLTAGE_LEVEL_NUM)
+            .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM)
+            .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM);
 
     py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
+            .value("LOAD_P", Grid2opDoubleValueType::LOAD_P)
+            .value("LOAD_Q", Grid2opDoubleValueType::LOAD_Q)
+            .value("LOAD_V", Grid2opDoubleValueType::LOAD_V)
             .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
             .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
-            .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V);
+            .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V)
+            .value("SHUNT_P", Grid2opDoubleValueType::SHUNT_P)
+            .value("SHUNT_Q", Grid2opDoubleValueType::SHUNT_Q)
+            .value("SHUNT_V", Grid2opDoubleValueType::SHUNT_V);
 
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));

@@ -37,7 +37,9 @@ public final class Grid2opCFunctions {
     @CEnum("Grid2opStringValueType")
     public enum Grid2opStringValueType {
         VOLTAGE_LEVEL_NAME,
-        GENERATOR_NAME;
+        LOAD_NAME,
+        GENERATOR_NAME,
+        SHUNT_NAME;
 
         @CEnumValue
         public native int getCValue();
@@ -48,7 +50,9 @@ public final class Grid2opCFunctions {
 
     @CEnum("Grid2opIntegerValueType")
     public enum Grid2opIntegerValueType {
-        GENERATOR_VOLTAGE_LEVEL_NUM;
+        LOAD_VOLTAGE_LEVEL_NUM,
+        GENERATOR_VOLTAGE_LEVEL_NUM,
+        SHUNT_VOLTAGE_LEVEL_NUM;
 
         @CEnumValue
         public native int getCValue();
@@ -59,9 +63,15 @@ public final class Grid2opCFunctions {
 
     @CEnum("Grid2opDoubleValueType")
     public enum Grid2opDoubleValueType {
+        LOAD_P,
+        LOAD_Q,
+        LOAD_V,
         GENERATOR_P,
         GENERATOR_Q,
-        GENERATOR_V;
+        GENERATOR_V,
+        SHUNT_P,
+        SHUNT_Q,
+        SHUNT_V;
 
         @CEnumValue
         public native int getCValue();
