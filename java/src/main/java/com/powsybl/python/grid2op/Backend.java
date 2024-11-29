@@ -39,6 +39,7 @@ public class Backend implements Closeable {
     private final double[] busV;
 
     private final ArrayPointer<CCharPointerPointer> generatorName;
+    private final ArrayPointer<CIntPointer> generatorVoltageLevelNum;
     private final ArrayPointer<CDoublePointer> generatorP;
     private final ArrayPointer<CDoublePointer> generatorQ;
     private final ArrayPointer<CDoublePointer> generatorV;
@@ -50,6 +51,11 @@ public class Backend implements Closeable {
 
         List<VoltageLevel> voltageLevels = network.getVoltageLevelStream().toList();
         voltageLevelName = Util.createCharPtrArray(voltageLevels.stream().map(Identifiable::getId).toList());
+        Map<String, Integer> voltageLevelNum = new HashMap<>(voltageLevels.size());
+        for (int i = 0; i < voltageLevels.size(); i++) {
+            VoltageLevel voltageLevel = voltageLevels.get(i);
+            voltageLevelNum.put(voltageLevel.getId(), i);
+        }
 
         buses = network.getBusBreakerView().getBusStream().toList();
         busV = new double[buses.size()];
@@ -61,12 +67,14 @@ public class Backend implements Closeable {
 
         generators = network.getGeneratorStream().toList();
         generatorName = Util.createCharPtrArray(generators.stream().map(Identifiable::getId).toList());
+        generatorVoltageLevelNum = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CIntPointer.class)), generators.size());
         generatorP = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
         generatorQ = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
         generatorV = allocArrayPointer(UnmanagedMemory.calloc(generators.size() * SizeOf.get(CDoublePointer.class)), generators.size());
         generatorBusGlobalNum = new int[generators.size()];
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
+            generatorVoltageLevelNum.getPtr().write(voltageLevelNum.get(generator.getTerminal().getVoltageLevel().getId()));
             Bus bus = generator.getTerminal().getBusBreakerView().getBus();
             generatorBusGlobalNum[i] = bus == null ? -1 : busIdToNum.get(bus.getId());
         }
@@ -111,6 +119,12 @@ public class Backend implements Closeable {
         };
     }
 
+    public ArrayPointer<CIntPointer> getIntegerValue(Grid2opCFunctions.Grid2opIntegerValueType valueType) {
+        return switch (Objects.requireNonNull(valueType)) {
+            case GENERATOR_VOLTAGE_LEVEL_NUM -> generatorVoltageLevelNum;
+        };
+    }
+
     public ArrayPointer<CDoublePointer> getDoubleValue(Grid2opCFunctions.Grid2opDoubleValueType valueType) {
         return switch (Objects.requireNonNull(valueType)) {
             case GENERATOR_P -> generatorP;
@@ -124,6 +138,7 @@ public class Backend implements Closeable {
         Util.freeCharPtrArray(voltageLevelName);
 
         Util.freeCharPtrArray(generatorName);
+        PyPowsyblApiHeader.freeArrayPointer(generatorVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(generatorP);
         PyPowsyblApiHeader.freeArrayPointer(generatorQ);
         PyPowsyblApiHeader.freeArrayPointer(generatorV);

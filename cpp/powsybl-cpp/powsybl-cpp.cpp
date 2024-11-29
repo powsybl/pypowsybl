@@ -1645,6 +1645,10 @@ std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, 
     return toVector<std::string>(stringValueArrayPtr); // do not release, will be done when freeing backend
 }
 
+array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType) {
+    return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opIntegerValue, backendHandle, valueType); // do not release, will be done when freeing backend
+}
+
 array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
     return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opDoubleValue, backendHandle, valueType); // do not release, will be done when freeing backend
 }

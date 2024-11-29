@@ -21,6 +21,7 @@ import org.graalvm.nativeimage.c.constant.CEnumValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import static com.powsybl.python.commons.Util.doCatch;
 
@@ -43,6 +44,17 @@ public final class Grid2opCFunctions {
 
         @CEnumLookup
         public static native Grid2opStringValueType fromCValue(int value);
+    }
+
+    @CEnum("Grid2opIntegerValueType")
+    public enum Grid2opIntegerValueType {
+        GENERATOR_VOLTAGE_LEVEL_NUM;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Grid2opIntegerValueType fromCValue(int value);
     }
 
     @CEnum("Grid2opDoubleValueType")
@@ -81,6 +93,14 @@ public final class Grid2opCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
             return backend.getStringValue(valueType);
+        });
+    }
+
+    @CEntryPoint(name = "getGrid2opIntegerValue")
+    public static ArrayPointer<CIntPointer> getIntegerValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opIntegerValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+            return backend.getIntegerValue(valueType);
         });
     }
 

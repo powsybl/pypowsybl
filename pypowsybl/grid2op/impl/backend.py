@@ -9,8 +9,9 @@ from typing import List, Optional, Type, Literal
 
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
-from pypowsybl._pypowsybl import Grid2opDoubleValueType
 from pypowsybl._pypowsybl import Grid2opStringValueType
+from pypowsybl._pypowsybl import Grid2opIntegerValueType
+from pypowsybl._pypowsybl import Grid2opDoubleValueType
 
 import numpy as np
 
@@ -30,6 +31,9 @@ class Backend:
 
     def get_string_value(self, value_type: Grid2opStringValueType) -> List[str]:
         return _pypowsybl.get_grid2op_string_value(self._handle, value_type)
+
+    def get_integer_value(self, value_type: Grid2opIntegerValueType) -> np.ndarray:
+        return _pypowsybl.get_grid2op_integer_value(self._handle, value_type)
 
     def get_double_value(self, value_type: Grid2opDoubleValueType) -> np.ndarray:
         return _pypowsybl.get_grid2op_double_value(self._handle, value_type)

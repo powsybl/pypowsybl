@@ -23,6 +23,7 @@ def test_backend():
     with grid2op.Backend(n) as backend:
         assert ['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD'] == backend.get_string_value(grid2op.StringValueType.VOLTAGE_LEVEL_NAME)
         assert ['GEN', 'GEN2'] == backend.get_string_value(grid2op.StringValueType.GENERATOR_NAME)
+        npt.assert_array_equal(np.array([0, 0]), backend.get_integer_value(grid2op.IntegerValueType.GENERATOR_VOLTAGE_LEVEL_NUM))
         npt.assert_allclose(np.array([-302.78, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_P), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([-112.641, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_Q), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([24.5, 0.0]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_V), rtol=TOLERANCE, atol=TOLERANCE)

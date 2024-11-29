@@ -438,6 +438,10 @@ typedef enum {
 } Grid2opStringValueType;
 
 typedef enum {
+    GENERATOR_VOLTAGE_LEVEL_NUM = 0,
+} Grid2opIntegerValueType;
+
+typedef enum {
     GENERATOR_P = 0,
     GENERATOR_Q,
     GENERATOR_V,

@@ -140,10 +140,19 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+py::memoryview pyGetGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Grid2opIntegerValueType valueType) {
+    ::array* array = pypowsybl::getGrid2opIntegerValue(backendHandle, valueType);
+    return py::memoryview::from_buffer(
+            static_cast<int*>(array->ptr),
+            { array->length },
+            { sizeof(int) }
+    );
+}
+
 py::memoryview pyGetGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
     ::array* array = pypowsybl::getGrid2opDoubleValue(backendHandle, valueType);
     return py::memoryview::from_buffer(
-            static_cast<double *>(array->ptr),
+            static_cast<double*>(array->ptr),
             { array->length },
             { sizeof(double) }
     );
@@ -1073,6 +1082,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
             .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME);
 
+    py::enum_<Grid2opIntegerValueType>(m, "Grid2opIntegerValueType")
+            .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM);
+
     py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
             .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
             .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
@@ -1081,6 +1093,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
     m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("get_grid2op_integer_value", &::pyGetGrid2opIntegerValue, "From a Grid2op backend get a integer value vector", py::arg("backend"), py::arg("value_type"));
     m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
 }
 
