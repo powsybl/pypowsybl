@@ -1069,6 +1069,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
+    py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
+            .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
+            .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME);
+
     py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
             .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
             .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
@@ -1076,7 +1080,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
-    m.def("get_grid2op_generator_name", &pypowsybl::getGrid2opGeneratorName, "From a Grid2op backend get generator name vector", py::arg("backend"));
+    m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
     m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
 }
 

@@ -33,6 +33,18 @@ public final class Grid2opCFunctions {
     private Grid2opCFunctions() {
     }
 
+    @CEnum("Grid2opStringValueType")
+    public enum Grid2opStringValueType {
+        VOLTAGE_LEVEL_NAME,
+        GENERATOR_NAME;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Grid2opStringValueType fromCValue(int value);
+    }
+
     @CEnum("Grid2opDoubleValueType")
     public enum Grid2opDoubleValueType {
         GENERATOR_P,
@@ -64,11 +76,11 @@ public final class Grid2opCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getGrid2opGeneratorName")
-    public static ArrayPointer<CCharPointerPointer> getGeneratorName(IsolateThread thread, ObjectHandle backendHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getGrid2opStringValue")
+    public static ArrayPointer<CCharPointerPointer> getStringValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opStringValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.getGeneratorName();
+            return backend.getStringValue(valueType);
         });
     }
 
@@ -76,7 +88,7 @@ public final class Grid2opCFunctions {
     public static ArrayPointer<CDoublePointer> getDoubleValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opDoubleValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.getDoubleValues(valueType);
+            return backend.getDoubleValue(valueType);
         });
     }
 }

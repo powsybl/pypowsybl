@@ -845,7 +845,7 @@ SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisRes
 
 JavaHandle createGrid2opBackend(const JavaHandle& networkHandle);
 void freeGrid2opBackend(const JavaHandle& backendHandle);
-std::vector<std::string> getGrid2opGeneratorName(const JavaHandle& backendHandle);
+std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
 array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
 
 }

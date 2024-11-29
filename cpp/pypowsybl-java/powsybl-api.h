@@ -433,6 +433,11 @@ typedef enum {
 } VoltageInitializerReactiveSlackBusesMode;
 
 typedef enum {
+    VOLTAGE_LEVEL_NAME = 0,
+    GENERATOR_NAME,
+} Grid2opStringValueType;
+
+typedef enum {
     GENERATOR_P = 0,
     GENERATOR_Q,
     GENERATOR_V,

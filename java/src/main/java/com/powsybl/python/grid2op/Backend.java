@@ -104,24 +104,19 @@ public class Backend implements Closeable {
         }
     }
 
-    public ArrayPointer<CCharPointerPointer> getVoltageLevelName() {
-        return voltageLevelName;
+    public ArrayPointer<CCharPointerPointer> getStringValue(Grid2opCFunctions.Grid2opStringValueType valueType) {
+        return switch (Objects.requireNonNull(valueType)) {
+            case VOLTAGE_LEVEL_NAME -> voltageLevelName;
+            case GENERATOR_NAME -> generatorName;
+        };
     }
 
-    public ArrayPointer<CCharPointerPointer> getGeneratorName() {
-        return generatorName;
-    }
-
-    public ArrayPointer<CDoublePointer> getDoubleValues(Grid2opCFunctions.Grid2opDoubleValueType valueType) {
+    public ArrayPointer<CDoublePointer> getDoubleValue(Grid2opCFunctions.Grid2opDoubleValueType valueType) {
         return switch (Objects.requireNonNull(valueType)) {
             case GENERATOR_P -> generatorP;
             case GENERATOR_Q -> generatorQ;
             case GENERATOR_V -> generatorV;
         };
-    }
-
-    public CIntPointer getGeneratorBusLocalNum() {
-        return generatorBusLocalNum;
     }
 
     @Override

@@ -1640,9 +1640,9 @@ void freeGrid2opBackend(const JavaHandle& backendHandle) {
     pypowsybl::PowsyblCaller::get()->callJava(::freeGrid2opBackend, backendHandle);
 }
 
-std::vector<std::string> getGrid2opGeneratorName(const JavaHandle& backendHandle) {
-    auto generatorNameArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opGeneratorName, backendHandle);
-    return toVector<std::string>(generatorNameArrayPtr); // do not release, will be done when freeing backend
+std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType) {
+    auto stringValueArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opStringValue, backendHandle, valueType);
+    return toVector<std::string>(stringValueArrayPtr); // do not release, will be done when freeing backend
 }
 
 array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
