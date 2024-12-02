@@ -8,13 +8,11 @@ on:
 env:
   BUILD_STATUS: ${{ github.workspace }}/build_status.txt
 
-
 jobs:
   build_pypowsybl:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     outputs:
-      matrix_result: ${{ steps.set_result.outputs.result }}
       build_status: ${{ steps.build_status.outputs.BUILD_STATUS_CONTENT }}
     strategy:
       matrix:
@@ -51,14 +49,6 @@ jobs:
           java-version: '17'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      #INITIALISE REPORT
-      - name: Initialize test summary
-        run: |
-          if [[ "${{ matrix.config.name }}" == "windows" ]]; then
-            mkdir -p $(dirname "$BUILD_STATUS")
-          fi
-          touch "$BUILD_STATUS"
 
       #DEFINE SCRIPTS PATH
       - name: Set up script path
@@ -144,19 +134,19 @@ jobs:
         with:
           repository: powsybl/powsybl-entsoe
           ref: ${{ env.SNAPSHOT_BRANCH }}
-          path: powsybl-enstoe
+          path: powsybl-entsoe
       - name: Change core/loadflow version
         run: |
-          mvn versions:set-property -Dproperty=powsybl.core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsyblcore.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=${{ env.LOADFLOW_VERSION}} -DgenerateBackupPoms=false
-        working-directory: ./powsybl-enstoe
+        working-directory: ./powsybl-entsoe
       - name: Build ENTSOE
         continue-on-error: true
         run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install"
-        working-directory: ./powsybl-enstoe
+        working-directory: ./powsybl-entsoe
       - name: Get ENTSOE_VERSION
         run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-        working-directory: ./powsybl-enstoe
+        working-directory: ./powsybl-entsoe
 
       #BUILD OPENRAO
       - name: Checking for openrao snapshot branch
@@ -272,18 +262,13 @@ jobs:
         run: |
           echo "Failed job : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
 
-      - name: Show Build Status Report
-        if: always()
-        run: |
-          echo "BUILD_STATUS_CONTENT=$(cat $BUILD_STATUS)" >> $GITHUB_OUTPUT
-          echo "=== BUILD STATUS REPORT ==="
-          cat $BUILD_STATUS
-          echo "=========================="
-
       - name: Read Build Status
         if: always()
         id: build_status
         run: |
+          echo "=== BUILD STATUS REPORT ==="
+          cat $BUILD_STATUS
+          echo "=========================="
           echo "BUILD_STATUS_CONTENT<<EOF" >> $GITHUB_OUTPUT
           cat $BUILD_STATUS >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
