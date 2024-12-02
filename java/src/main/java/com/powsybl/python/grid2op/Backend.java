@@ -43,7 +43,7 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> loadQ;
     private final ArrayPointer<CDoublePointer> loadV;
     private final int[] loadBusGlobalNum;
-    private final ArrayPointer<CIntPointer> loadBusLocalNum;
+    private final int[] loadBusLocalNum;
 
     private final List<Generator> generators;
     private final ArrayPointer<CCharPointerPointer> generatorName;
@@ -52,7 +52,7 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> generatorQ;
     private final ArrayPointer<CDoublePointer> generatorV;
     private final int[] generatorBusGlobalNum;
-    private final ArrayPointer<CIntPointer> generatorBusLocalNum;
+    private final int[] generatorBusLocalNum;
 
     private final List<ShuntCompensator> shunts;
     private final ArrayPointer<CCharPointerPointer> shuntName;
@@ -79,8 +79,8 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> branchI2;
     private final int[] branchBusGlobalNum1;
     private final int[] branchBusGlobalNum2;
-    private final ArrayPointer<CIntPointer> branchBusLocalNum1;
-    private final ArrayPointer<CIntPointer> branchBusLocalNum2;
+    private final int[] branchBusLocalNum1;
+    private final int[] branchBusLocalNum2;
 
     private int[] loadTopoVectPosition;
     private int[] generatorTopoVectPosition;
@@ -124,13 +124,13 @@ public class Backend implements Closeable {
         loadQ = createDoubleArrayPointer(loads.size());
         loadV = createDoubleArrayPointer(loads.size());
         loadBusGlobalNum = new int[loads.size()];
-        loadBusLocalNum = createIntArrayPointer(loads.size());
+        loadBusLocalNum = new int[loads.size()];
         for (int i = 0; i < loads.size(); i++) {
             Load load = loads.get(i);
             loadToVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(load.getTerminal().getVoltageLevel().getId()));
             Bus bus = load.getTerminal().getBusBreakerView().getBus();
             loadBusGlobalNum[i] = bus == null ? -1 : busIdToGlobalNum.get(bus.getId());
-            loadBusLocalNum.getPtr().write(i, globalToLocalBusNum[loadBusGlobalNum[i]]);
+            loadBusLocalNum[i] = globalToLocalBusNum[loadBusGlobalNum[i]];
         }
 
         // generators
@@ -141,13 +141,13 @@ public class Backend implements Closeable {
         generatorQ = createDoubleArrayPointer(generators.size());
         generatorV = createDoubleArrayPointer(generators.size());
         generatorBusGlobalNum = new int[generators.size()];
-        generatorBusLocalNum = createIntArrayPointer(generators.size());
+        generatorBusLocalNum = new int[generators.size()];
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
             generatorToVoltageLevelNum.getPtr().write(i, voltageLevelNum.get(generator.getTerminal().getVoltageLevel().getId()));
             Bus bus = generator.getTerminal().getBusBreakerView().getBus();
             generatorBusGlobalNum[i] = bus == null ? -1 : busIdToGlobalNum.get(bus.getId());
-            generatorBusLocalNum.getPtr().write(i, globalToLocalBusNum[generatorBusGlobalNum[i]]);
+            generatorBusLocalNum[i] = globalToLocalBusNum[generatorBusGlobalNum[i]];
         }
 
         // shunts
@@ -182,8 +182,8 @@ public class Backend implements Closeable {
         branchI2 = createDoubleArrayPointer(branches.size());
         branchBusGlobalNum1 = new int[branches.size()];
         branchBusGlobalNum2 = new int[branches.size()];
-        branchBusLocalNum1 = createIntArrayPointer(branches.size());
-        branchBusLocalNum2 = createIntArrayPointer(branches.size());
+        branchBusLocalNum1 = new int[branches.size()];
+        branchBusLocalNum2 = new int[branches.size()];
         for (int i = 0; i < branches.size(); i++) {
             Branch<?> branch = branches.get(i);
             branchToVoltageLevelNum1.getPtr().write(i, voltageLevelNum.get(branch.getTerminal1().getVoltageLevel().getId()));
@@ -192,8 +192,8 @@ public class Backend implements Closeable {
             Bus bus2 = branch.getTerminal2().getBusBreakerView().getBus();
             branchBusGlobalNum1[i] = bus1 == null ? -1 : busIdToGlobalNum.get(bus1.getId());
             branchBusGlobalNum2[i] = bus2 == null ? -1 : busIdToGlobalNum.get(bus2.getId());
-            branchBusLocalNum1.getPtr().write(i, globalToLocalBusNum[branchBusGlobalNum1[i]]);
-            branchBusLocalNum2.getPtr().write(i, globalToLocalBusNum[branchBusGlobalNum2[i]]);
+            branchBusLocalNum1[i] = globalToLocalBusNum[branchBusGlobalNum1[i]];
+            branchBusLocalNum2[i] = globalToLocalBusNum[branchBusGlobalNum2[i]];
         }
 
         computeBigTopo();
@@ -206,30 +206,24 @@ public class Backend implements Closeable {
         updateTopoVect();
     }
 
+    private int[] computeVoltageLevelPosition(int[] nextVoltageLevelPosition, ArrayPointer<CIntPointer> voltageLevelNum) {
+        int[] voltageLevelPosition = new int[voltageLevelNum.getLength()];
+        for (int i = 0; i < voltageLevelNum.getLength(); i++) {
+            voltageLevelPosition[i] = nextVoltageLevelPosition[voltageLevelNum.getPtr().read(i)]++;
+        }
+        return voltageLevelPosition;
+    }
+
     private void computeBigTopo() {
         // find a position inside a voltage level for each of the element
         int[] nextVoltageLevelPosition = new int[voltageLevels.size()]; // next position inside a voltage level
-        int[] loadToVoltageLevelPosition = new int[loads.size()];
-        for (int i = 0; i < loads.size(); i++) {
-            loadToVoltageLevelPosition[i] = nextVoltageLevelPosition[loadToVoltageLevelNum.getPtr().read(i)]++;
-        }
-        int[] generatorToVoltageLevelPosition = new int[generators.size()];
-        for (int i = 0; i < generators.size(); i++) {
-            generatorToVoltageLevelPosition[i] = nextVoltageLevelPosition[generatorToVoltageLevelNum.getPtr().read(i)]++;
-        }
-        int[] lineToVoltageLevelPosition1 = new int[branches.size()];
-        for (int i = 0; i < branches.size(); i++) {
-            lineToVoltageLevelPosition1[i] = nextVoltageLevelPosition[branchToVoltageLevelNum1.getPtr().read(i)]++;
-        }
-        int[] lineToVoltageLevelPosition2 = new int[branches.size()];
-        for (int i = 0; i < branches.size(); i++) {
-            lineToVoltageLevelPosition2[i] = nextVoltageLevelPosition[branchToVoltageLevelNum2.getPtr().read(i)]++;
-        }
-        int[] batteryToVoltageLevelPosition = new int[batteries.size()];
-        for (int i = 0; i < batteries.size(); i++) {
-//            batteryToVoltageLevelPosition[i] = nextVoltageLevelPosition[batteryToVoltageLevelNum.getPtr().read(i)]++;
-        }
+        int[] loadToVoltageLevelPosition = computeVoltageLevelPosition(nextVoltageLevelPosition, loadToVoltageLevelNum);
+        int[] generatorToVoltageLevelPosition = computeVoltageLevelPosition(nextVoltageLevelPosition, generatorToVoltageLevelNum);
+        int[] lineToVoltageLevelPosition1 = computeVoltageLevelPosition(nextVoltageLevelPosition, branchToVoltageLevelNum1);
+        int[] lineToVoltageLevelPosition2 = computeVoltageLevelPosition(nextVoltageLevelPosition, branchToVoltageLevelNum2);
+//        int[] batteryToVoltageLevelPosition = computeVoltageLevelPosition(nextVoltageLevelPosition, batteryToVoltageLevelNum);
 
+        // now find a position inside the topo vect for each of the element
         loadTopoVectPosition = computeTopoVectPosition(loadToVoltageLevelNum, loadToVoltageLevelPosition, nextVoltageLevelPosition);
         generatorTopoVectPosition = computeTopoVectPosition(generatorToVoltageLevelNum, generatorToVoltageLevelPosition, nextVoltageLevelPosition);
         branchTopoVectPosition1 = computeTopoVectPosition(branchToVoltageLevelNum1, lineToVoltageLevelPosition1, nextVoltageLevelPosition);
@@ -252,19 +246,17 @@ public class Backend implements Closeable {
         return res;
     }
 
+    private void updateTopoVect(int[] topoVectPosition, int[] busLocalNum) {
+        for (int i = 0; i < topoVectPosition.length; i++) {
+            topoVect.getPtr().write(topoVectPosition[i], busLocalNum[i]);
+        }
+    }
+
     public void updateTopoVect() {
-        for (int i = 0; i < loads.size(); i++) {
-            topoVect.getPtr().write(loadTopoVectPosition[i], loadBusLocalNum.getPtr().read(i));
-        }
-        for (int i = 0; i < generators.size(); i++) {
-            topoVect.getPtr().write(generatorTopoVectPosition[i], generatorBusLocalNum.getPtr().read(i));
-        }
-        for (int i = 0; i < branches.size(); i++) {
-            topoVect.getPtr().write(branchTopoVectPosition1[i], branchBusLocalNum1.getPtr().read(i));
-        }
-        for (int i = 0; i < branches.size(); i++) {
-            topoVect.getPtr().write(branchTopoVectPosition2[i], branchBusLocalNum2.getPtr().read(i));
-        }
+        updateTopoVect(loadTopoVectPosition, loadBusLocalNum);
+        updateTopoVect(generatorTopoVectPosition, generatorBusLocalNum);
+        updateTopoVect(branchTopoVectPosition1, branchBusLocalNum1);
+        updateTopoVect(branchTopoVectPosition2, branchBusLocalNum2);
     }
 
     private static ArrayPointer<CDoublePointer> createDoubleArrayPointer(int length) {
@@ -390,14 +382,12 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(loadP);
         PyPowsyblApiHeader.freeArrayPointer(loadQ);
         PyPowsyblApiHeader.freeArrayPointer(loadV);
-        PyPowsyblApiHeader.freeArrayPointer(loadBusLocalNum);
 
         Util.freeCharPtrArray(generatorName);
         PyPowsyblApiHeader.freeArrayPointer(generatorToVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(generatorP);
         PyPowsyblApiHeader.freeArrayPointer(generatorQ);
         PyPowsyblApiHeader.freeArrayPointer(generatorV);
-        PyPowsyblApiHeader.freeArrayPointer(generatorBusLocalNum);
 
         Util.freeCharPtrArray(shuntName);
         PyPowsyblApiHeader.freeArrayPointer(shuntToVoltageLevelNum);
@@ -417,8 +407,6 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(branchV2);
         PyPowsyblApiHeader.freeArrayPointer(branchI1);
         PyPowsyblApiHeader.freeArrayPointer(branchI2);
-        PyPowsyblApiHeader.freeArrayPointer(branchBusLocalNum1);
-        PyPowsyblApiHeader.freeArrayPointer(branchBusLocalNum2);
 
         PyPowsyblApiHeader.freeArrayPointer(topoVect);
     }
