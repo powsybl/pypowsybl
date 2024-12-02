@@ -130,9 +130,7 @@ jobs:
         working-directory: ./powsybl-diagram
       - name: Build DIAGRAM
         continue-on-error: true
-        run: |
-          chmod +x ${{ env.SCRIPTS_PATH }}/build_module.sh
-          ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install -Dmaven.test.failure.ignore=true"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-diagram
       - name: Get DIAGRAM_VERSION version
         run: echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -154,9 +152,7 @@ jobs:
         working-directory: ./powsybl-enstoe
       - name: Build ENTSOE
         continue-on-error: true
-        run: |
-          chmod +x ${{ env.SCRIPTS_PATH }}/build_module.sh
-          ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install -Dmaven.test.failure.ignore=true"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-enstoe
       - name: Get ENTSOE_VERSION
         run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -179,9 +175,7 @@ jobs:
         working-directory: ./powsybl-openrao
       - name: Build OPENRAO
         continue-on-error: true
-        run: |
-          chmod +x ${{ env.SCRIPTS_PATH }}/build_module.sh
-          ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install -Dmaven.test.failure.ignore=true"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-openrao
       - name: Get OPENRAO_VERSION
         run: echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -201,9 +195,7 @@ jobs:
         working-directory: ./powsybl-dynawo
       - name: Build DYNAWO
         continue-on-error: true
-        run: |
-          chmod +x ${{ env.SCRIPTS_PATH }}/build_module.sh
-          ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install -Dmaven.test.failure.ignore=true"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-dynawo
       - name: Get DYNAWO_VERSION
         run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -278,7 +270,7 @@ jobs:
       - name: Record Job Name
         if: failure()
         run: |
-          echo "Job en échec : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
+          echo "Failed job : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
 
       - name: Show Build Status Report
         if: always()
