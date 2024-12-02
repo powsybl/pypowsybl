@@ -228,7 +228,7 @@ public class Backend implements Closeable {
         generatorTopoVectPosition = computeTopoVectPosition(generatorToVoltageLevelNum, generatorToVoltageLevelPosition, nextVoltageLevelPosition);
         branchTopoVectPosition1 = computeTopoVectPosition(branchToVoltageLevelNum1, lineToVoltageLevelPosition1, nextVoltageLevelPosition);
         branchTopoVectPosition2 = computeTopoVectPosition(branchToVoltageLevelNum2, lineToVoltageLevelPosition2, nextVoltageLevelPosition);
-//        int[] batteryTopoVectPosition = computeBigTopoVectorPosition(batteryToVoltageLevelNum, batteryToVoltageLevelPosition, nextVoltageLevelPosition);
+//        int[] batteryTopoVectPosition = computeTopoVectPosition(batteryToVoltageLevelNum, nextVoltageLevelPosition);
 
         int topoVectSize = 2 * branches.size() + loads.size() + generators.size() + batteries.size();
         topoVect = createIntArrayPointer(topoVectSize);
