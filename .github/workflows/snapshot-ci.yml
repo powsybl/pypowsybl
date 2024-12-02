@@ -110,7 +110,7 @@ jobs:
         continue-on-error: true
         run: |
           chmod +x ${{ env.SCRIPTS_PATH }}/build_module.sh
-          ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install -Dmaven.test.failure.ignore=true"
+          ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-open-loadflow
       - name: Get LOADFLOW_VERSION
         run: echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
