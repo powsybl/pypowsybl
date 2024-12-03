@@ -134,6 +134,11 @@ void createExtensionsBind(pypowsybl::JavaHandle network, const std::vector<dataf
     pypowsybl::createExtensions(network, dataframeArray.get(), name);
 }
 
+void addDynamicMappingsBind(pypowsybl::JavaHandle dynamic_mapping_handle, DynamicMappingType mapping_type, const std::vector<dataframe*>& dataframes) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::addDynamicMappings(dynamic_mapping_handle, mapping_type, dataframeArray.get());
+}
+
 template<typename T>
 py::array seriesAsNumpyArray(const series& series) {
 	//Last argument is to bind lifetime of series to the returned array
@@ -173,14 +178,37 @@ void pyUpdateGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Gri
 void dynamicSimulationBindings(py::module_& m) {
 
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
-        .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
-        .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
-        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
-        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
-        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
-        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
-        .value("GENERATOR_SYNCHRONOUS", DynamicMappingType::GENERATOR_SYNCHRONOUS)
-        .value("CURRENT_LIMIT_AUTOMATON", DynamicMappingType::CURRENT_LIMIT_AUTOMATON);
+        .value("BASE_LOAD", DynamicMappingType::BASE_LOAD)
+        .value("LOAD_ONE_TRANSFORMER", DynamicMappingType::LOAD_ONE_TRANSFORMER)
+        .value("LOAD_ONE_TRANSFORMER_TAP_CHANGER", DynamicMappingType::LOAD_ONE_TRANSFORMER_TAP_CHANGER)
+        .value("LOAD_TWO_TRANSFORMERS", DynamicMappingType::LOAD_TWO_TRANSFORMERS)
+        .value("LOAD_TWO_TRANSFORMERS_TAP_CHANGERS", DynamicMappingType::LOAD_TWO_TRANSFORMERS_TAP_CHANGERS)
+        .value("BASE_GENERATOR", DynamicMappingType::BASE_GENERATOR)
+        .value("SYNCHRONIZED_GENERATOR", DynamicMappingType::SYNCHRONIZED_GENERATOR)
+        .value("SYNCHRONOUS_GENERATOR", DynamicMappingType::SYNCHRONOUS_GENERATOR)
+        .value("WECC", DynamicMappingType::WECC)
+        .value("GRID_FORMING_CONVERTER", DynamicMappingType::GRID_FORMING_CONVERTER)
+        .value("SIGNAL_N_GENERATOR", DynamicMappingType::SIGNAL_N_GENERATOR)
+        .value("HVDC_P", DynamicMappingType::HVDC_P)
+        .value("HVDC_VSC", DynamicMappingType::HVDC_VSC)
+        .value("BASE_TRANSFORMER", DynamicMappingType::BASE_TRANSFORMER)
+        .value("BASE_STATIC_VAR_COMPENSATOR", DynamicMappingType::BASE_STATIC_VAR_COMPENSATOR)
+        .value("BASE_LINE", DynamicMappingType::BASE_LINE)
+        .value("BASE_BUS", DynamicMappingType::BASE_BUS)
+        .value("INFINITE_BUS", DynamicMappingType::INFINITE_BUS)
+        .value("OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("UNDER_VOLTAGE", DynamicMappingType::UNDER_VOLTAGE)
+        .value("PHASE_SHIFTER_I", DynamicMappingType::PHASE_SHIFTER_I)
+        .value("PHASE_SHIFTER_P", DynamicMappingType::PHASE_SHIFTER_P)
+        .value("PHASE_SHIFTER_BLOCKING_I", DynamicMappingType::PHASE_SHIFTER_BLOCKING_I)
+        .value("TAP_CHANGER", DynamicMappingType::TAP_CHANGER)
+        .value("TAP_CHANGER_BLOCKING", DynamicMappingType::TAP_CHANGER_BLOCKING);
+
+    py::enum_<EventMappingType>(m, "EventMappingType")
+            .value("DISCONNECT", EventMappingType::DISCONNECT)
+            .value("NODE_FAULT", EventMappingType::NODE_FAULT)
+            .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION);
 
     //entrypoints for constructors
     m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
@@ -190,17 +218,19 @@ void dynamicSimulationBindings(py::module_& m) {
 
     //running simulations
     m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
-        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
 
     //model mapping
-    m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("dataframes"));
     m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
+    m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("mapping_type"));
 
     // timeseries/curves mapping
     m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
 
     // events mapping
-    m.def("add_event_disconnection", &pypowsybl::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
+    m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("get_event_mappings_meta_data", &pypowsybl::getEventMappingsMetaData, py::arg("mapping_type"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));

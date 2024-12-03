@@ -838,7 +838,10 @@ public final class NetworkDataframes {
                 .doubles("low_voltage_limit", (vl, context) -> perUnitV(context, vl.getLowVoltageLimit(), vl.getNominalV()),
                     (vl, lvl, context) -> vl.setLowVoltageLimit(unPerUnitV(context, lvl, vl.getNominalV())))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
-                .strings("topology_kind", vl -> vl.getTopologyKind().toString(), false)
+                .strings("topology_kind", vl -> vl.getTopologyKind().name(), (voltageLevel, topologyKindStr) -> {
+                    TopologyKind topologyKind = TopologyKind.valueOf(topologyKindStr);
+                    voltageLevel.convertToTopology(topologyKind);
+                }, false)
                 .addProperties()
                 .build();
     }
