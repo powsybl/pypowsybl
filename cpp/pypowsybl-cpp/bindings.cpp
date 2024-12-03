@@ -158,6 +158,18 @@ py::memoryview pyGetGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandl
     );
 }
 
+void pyUpdateGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType,
+                                py::array_t<double, py::array::c_style | py::array::forcecast> value_array,
+                                py::array_t<int, py::array::c_style | py::array::forcecast> changed_array) {
+    pypowsybl::updateGrid2opDoubleValue(backendHandle, valueType, value_array.mutable_data(), changed_array.mutable_data());
+}
+
+void pyUpdateGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType,
+                                 py::array_t<int, py::array::c_style | py::array::forcecast> value_array,
+                                 py::array_t<int, py::array::c_style | py::array::forcecast> changed_array) {
+    pypowsybl::updateGrid2opIntegerValue(backendHandle, valueType, value_array.mutable_data(), changed_array.mutable_data());
+}
+
 void dynamicSimulationBindings(py::module_& m) {
 
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
@@ -1112,11 +1124,22 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("BRANCH_I1", Grid2opDoubleValueType::BRANCH_I1)
             .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2);
 
+    py::enum_<Grid2opUpdateDoubleValueType>(m, "Grid2opUpdateDoubleValueType")
+            .value("UPDATE_LOAD_P", Grid2opUpdateDoubleValueType::UPDATE_LOAD_P)
+            .value("UPDATE_LOAD_Q", Grid2opUpdateDoubleValueType::UPDATE_LOAD_Q)
+            .value("UPDATE_GENERATOR_P", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_P)
+            .value("UPDATE_GENERATOR_V", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_V);
+
+    py::enum_<Grid2opUpdateIntegerValueType>(m, "Grid2opUpdateIntegerValueType")
+            .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS);
+
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
     m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
     m.def("get_grid2op_integer_value", &::pyGetGrid2opIntegerValue, "From a Grid2op backend get a integer value vector", py::arg("backend"), py::arg("value_type"));
     m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {

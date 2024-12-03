@@ -92,6 +92,31 @@ public final class Grid2opCFunctions {
         public static native Grid2opDoubleValueType fromCValue(int value);
     }
 
+    @CEnum("Grid2opUpdateDoubleValueType")
+    public enum Grid2opUpdateDoubleValueType {
+        UPDATE_LOAD_P,
+        UPDATE_LOAD_Q,
+        UPDATE_GENERATOR_P,
+        UPDATE_GENERATOR_V;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Grid2opUpdateDoubleValueType fromCValue(int value);
+    }
+
+    @CEnum("Grid2opUpdateIntegerValueType")
+    public enum Grid2opUpdateIntegerValueType {
+        UPDATE_LOAD_BUS;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Grid2opUpdateIntegerValueType fromCValue(int value);
+    }
+
     @CEntryPoint(name = "createGrid2opBackend")
     public static ObjectHandle createBackend(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -131,6 +156,24 @@ public final class Grid2opCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
             return backend.getDoubleValue(valueType);
+        });
+    }
+
+    @CEntryPoint(name = "updateGrid2opDoubleValue")
+    public static void updateDoubleValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opUpdateDoubleValueType valueType,
+                                         CDoublePointer valuePtr, CIntPointer changedPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+            backend.updateDoubleValue(valueType, valuePtr, changedPtr);
+        });
+    }
+
+    @CEntryPoint(name = "updateGrid2opIntegerValue")
+    public static void updateIntegerValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opUpdateIntegerValueType valueType,
+                                          CIntPointer valuePtr, CIntPointer changedPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+            backend.updateIntegerValue(valueType, valuePtr, changedPtr);
         });
     }
 }

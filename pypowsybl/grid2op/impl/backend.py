@@ -12,6 +12,8 @@ from pypowsybl.network import Network
 from pypowsybl._pypowsybl import Grid2opStringValueType
 from pypowsybl._pypowsybl import Grid2opIntegerValueType
 from pypowsybl._pypowsybl import Grid2opDoubleValueType
+from pypowsybl._pypowsybl import Grid2opUpdateDoubleValueType
+from pypowsybl._pypowsybl import Grid2opUpdateIntegerValueType
 
 import numpy as np
 
@@ -37,3 +39,9 @@ class Backend:
 
     def get_double_value(self, value_type: Grid2opDoubleValueType) -> np.ndarray:
         return _pypowsybl.get_grid2op_double_value(self._handle, value_type)
+
+    def update_double_value(self, value_type: Grid2opUpdateDoubleValueType, value: np.ndarray, changed: np.ndarray):
+        _pypowsybl.update_grid2op_double_value(self._handle, value_type, value, changed)
+
+    def update_integer_value(self, value_type: Grid2opUpdateIntegerValueType, value: np.ndarray, changed: np.ndarray):
+        _pypowsybl.update_grid2op_integer_value(self._handle, value_type, value, changed)

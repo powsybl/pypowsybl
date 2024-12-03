@@ -848,6 +848,8 @@ void freeGrid2opBackend(const JavaHandle& backendHandle);
 std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
 array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);
 array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
+void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
+void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
 
 }
 #endif //PYPOWSYBL_H

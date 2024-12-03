@@ -1653,4 +1653,12 @@ array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValue
     return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opDoubleValue, backendHandle, valueType); // do not release, will be done when freeing backend
 }
 
+void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr) {
+    pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opDoubleValue, backendHandle, valueType, valuePtr, changedPtr);
+}
+
+void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr) {
+    pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opIntegerValue, backendHandle, valueType, valuePtr, changedPtr);
+}
+
 }

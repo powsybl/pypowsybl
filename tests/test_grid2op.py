@@ -55,3 +55,9 @@ def test_backend():
         npt.assert_allclose(np.array([488.992, 488.992, 913.545, 2474.263]), backend.get_double_value(grid2op.DoubleValueType.BRANCH_I2), rtol=TOLERANCE, atol=TOLERANCE)
 
         npt.assert_array_equal(np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]), backend.get_integer_value(grid2op.IntegerValueType.TOPO_VECT))
+
+        backend.update_double_value(grid2op.UpdateDoubleValueType.UPDATE_LOAD_P, np.array([630]), np.array([True]))
+        npt.assert_allclose(np.array([630.0]), backend.get_double_value(grid2op.DoubleValueType.LOAD_P), rtol=TOLERANCE, atol=TOLERANCE)
+
+        backend.update_double_value(grid2op.UpdateDoubleValueType.UPDATE_LOAD_P, np.array([640]), np.array([False]))
+        npt.assert_allclose(np.array([630.0]), backend.get_double_value(grid2op.DoubleValueType.LOAD_P), rtol=TOLERANCE, atol=TOLERANCE)

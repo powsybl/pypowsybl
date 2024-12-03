@@ -468,3 +468,15 @@ typedef enum {
     BRANCH_I1,
     BRANCH_I2,
 } Grid2opDoubleValueType;
+
+typedef enum {
+    UPDATE_LOAD_P = 0,
+    UPDATE_LOAD_Q,
+    UPDATE_GENERATOR_P,
+    UPDATE_GENERATOR_V,
+} Grid2opUpdateDoubleValueType;
+
+
+typedef enum {
+    UPDATE_LOAD_BUS = 0,
+} Grid2opUpdateIntegerValueType;
