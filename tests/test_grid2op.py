@@ -61,3 +61,6 @@ def test_backend():
 
         backend.update_double_value(grid2op.UpdateDoubleValueType.UPDATE_LOAD_P, np.array([640]), np.array([False]))
         npt.assert_allclose(np.array([630.0]), backend.get_double_value(grid2op.DoubleValueType.LOAD_P), rtol=TOLERANCE, atol=TOLERANCE)
+
+        backend.update_integer_value(grid2op.UpdateIntegerValueType.UPDATE_LOAD_BUS, np.array([-1]), np.array([True]))
+        npt.assert_array_equal(np.array([1, 1, 1, 1, 1, 1, 1, 1, 1, -1, 1]), backend.get_integer_value(grid2op.IntegerValueType.TOPO_VECT))

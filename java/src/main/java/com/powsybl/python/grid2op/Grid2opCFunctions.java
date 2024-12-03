@@ -108,7 +108,10 @@ public final class Grid2opCFunctions {
 
     @CEnum("Grid2opUpdateIntegerValueType")
     public enum Grid2opUpdateIntegerValueType {
-        UPDATE_LOAD_BUS;
+        UPDATE_LOAD_BUS,
+        UPDATE_GENERATOR_BUS,
+        UPDATE_BRANCH_BUS1,
+        UPDATE_BRANCH_BUS2;
 
         @CEnumValue
         public native int getCValue();

@@ -1131,7 +1131,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("UPDATE_GENERATOR_V", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_V);
 
     py::enum_<Grid2opUpdateIntegerValueType>(m, "Grid2opUpdateIntegerValueType")
-            .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS);
+            .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS)
+            .value("UPDATE_GENERATOR_BUS", Grid2opUpdateIntegerValueType::UPDATE_GENERATOR_BUS)
+            .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
+            .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1);
 
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
