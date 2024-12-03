@@ -1647,8 +1647,8 @@ JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, co
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle);
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, busesPerVoltageLevel, connectAllElementsToFirstBus);
 }
 
 void freeGrid2opBackend(const JavaHandle& backendHandle) {

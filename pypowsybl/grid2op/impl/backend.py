@@ -18,11 +18,13 @@ from pypowsybl._pypowsybl import Grid2opUpdateIntegerValueType
 import numpy as np
 
 class Backend:
-    def __init__(self, network: Network):
+    def __init__(self, network: Network, buses_per_voltage_level: int = 2, connect_all_elements_to_first_bus: bool = True):
         self._network = network
+        self._buses_per_voltage_level = buses_per_voltage_level
+        self._connect_all_elements_to_first_bus = connect_all_elements_to_first_bus
 
     def __enter__(self) -> Backend:
-        self._handle = _pypowsybl.create_grid2op_backend(self._network._handle)
+        self._handle = _pypowsybl.create_grid2op_backend(self._network._handle, self._buses_per_voltage_level, self._connect_all_elements_to_first_bus)
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]],

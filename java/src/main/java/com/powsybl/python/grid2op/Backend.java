@@ -82,8 +82,47 @@ public class Backend implements Closeable {
     private int[] branchTopoVectPosition2;
     private ArrayPointer<CIntPointer> topoVect;
 
-    public Backend(Network network) {
+    public Backend(Network network, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
         this.network = Objects.requireNonNull(network);
+
+        // waiting for switch action, we convert all voltage levels to bus/breaker topo
+        for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
+            voltageLevel.convertToTopology(TopologyKind.BUS_BREAKER);
+        }
+
+        // create missing buses to get a constant number of buses per voltage level
+        int maxBusCount = network.getVoltageLevelStream()
+                .map(vl -> vl.getBusBreakerView().getBusCount())
+                .max(Integer::compareTo)
+                .orElseThrow();
+        if (busesPerVoltageLevel > maxBusCount) {
+            maxBusCount = busesPerVoltageLevel;
+        }
+        for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
+            int localBusCount = voltageLevel.getBusBreakerView().getBusCount();
+            if (localBusCount < maxBusCount) {
+                for (int i = 0; i < maxBusCount - localBusCount; i++) {
+                    voltageLevel.getBusBreakerView().newBus()
+                            .setId(voltageLevel.getId() + "_extra_busbar_" + i)
+                            .add();
+                }
+            }
+        }
+
+        if (connectAllElementsToFirstBus) {
+            for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
+                voltageLevel.getBusBreakerView().getBusStream().findFirst().ifPresent(firstBus -> {
+                    for (Connectable<?> connectable : voltageLevel.getConnectables()) {
+                        for (Terminal terminal : connectable.getTerminals()) {
+                            if (terminal.getVoltageLevel() == voltageLevel) {
+                                terminal.getBusBreakerView().setConnectableBus(firstBus.getId());
+                                terminal.connect();
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         // voltage levels
         voltageLevels = network.getVoltageLevelStream().toList();
