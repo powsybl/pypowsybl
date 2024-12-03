@@ -6,6 +6,7 @@
 #
 from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
+from pypowsybl.report import ReportNode
 from .event_mapping import EventMapping
 from .model_mapping import ModelMapping
 from .simulation_result import SimulationResult
@@ -23,8 +24,9 @@ class Simulation:  # pylint: disable=too-few-public-methods
             timeseries_mapping: CurveMapping,
             start: int,
             stop: int,
+            report_node: ReportNode = None
             ) -> SimulationResult:
-        """Run the dynawaltz simulation"""
+        """Run the dynawo simulation"""
         return SimulationResult(
             _pp.run_dynamic_model(
                 self._handle,
@@ -32,5 +34,7 @@ class Simulation:  # pylint: disable=too-few-public-methods
                 model_mapping._handle, # pylint: disable=protected-access
                 event_mapping._handle, # pylint: disable=protected-access
                 timeseries_mapping._handle, # pylint: disable=protected-access
-                start, stop)
+                start,
+                stop,
+                None if report_node is None else report_node._report_node) # pylint: disable=protected-access
         )

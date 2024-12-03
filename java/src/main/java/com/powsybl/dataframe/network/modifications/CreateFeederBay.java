@@ -21,7 +21,7 @@ import java.util.List;
 import static com.powsybl.python.commons.Util.convert;
 
 /**
- * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet at rte-france.com>}
  */
 public class CreateFeederBay implements NetworkModification {
 

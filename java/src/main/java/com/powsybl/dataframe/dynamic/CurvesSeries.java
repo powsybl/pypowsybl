@@ -13,7 +13,7 @@ import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.TimeSeries;
 
 /**
- * @author Nicolas Pierre <nicolas.pierre@artelys.com>
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public final class CurvesSeries {
 

@@ -23,14 +23,17 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.doubles("droop"),
-            SeriesMetadata.booleans("participate")
+            SeriesMetadata.booleans("participate"),
+            SeriesMetadata.doubles("participation_factor"),
+            SeriesMetadata.doubles("max_target_p"),
+            SeriesMetadata.doubles("min_target_p")
             );
 
     @Override
@@ -43,11 +46,17 @@ public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
         private final StringSeries id;
         private final DoubleSeries droop;
         private final IntSeries participate;
+        private final DoubleSeries participationFactor;
+        private final DoubleSeries maxTargetP;
+        private final DoubleSeries minTargetP;
 
         ActivePowerControlSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
             this.droop = dataframe.getDoubles("droop");
             this.participate = dataframe.getInts("participate");
+            this.participationFactor = dataframe.getDoubles("participation_factor");
+            this.maxTargetP = dataframe.getDoubles("max_target_p");
+            this.minTargetP = dataframe.getDoubles("min_target_p");
         }
 
         void create(Network network, int row) {
@@ -57,8 +66,11 @@ public class ActivePowerControlDataframeAdder extends AbstractSimpleAdder {
                 throw new PowsyblException("Invalid generator id : could not find " + generatorId);
             }
             var adder = g.newExtension(ActivePowerControlAdder.class);
-            SeriesUtils.applyIfPresent(droop, row, x -> adder.withDroop((float) x));
+            SeriesUtils.applyIfPresent(droop, row, adder::withDroop);
             SeriesUtils.applyBooleanIfPresent(participate, row, adder::withParticipate);
+            SeriesUtils.applyIfPresent(participationFactor, row, adder::withParticipationFactor);
+            SeriesUtils.applyIfPresent(maxTargetP, row, adder::withMaxTargetP);
+            SeriesUtils.applyIfPresent(minTargetP, row, adder::withMinTargetP);
             adder.add();
         }
     }

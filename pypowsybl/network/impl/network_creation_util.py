@@ -102,6 +102,15 @@ def create_eurostag_tutorial_example1_network() -> Network:
     """
     return _create_network('eurostag_tutorial_example1')
 
+def create_eurostag_tutorial_example1_with_more_generators_network() -> Network:
+    """
+    Create an instance of example 1 network of Eurostag tutorial, with a second generator
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial with a second generator
+    """
+    return _create_network('eurostag_tutorial_example1_with_more_generators')
+
 
 def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
     """
@@ -111,6 +120,16 @@ def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
         a new instance of example 1 network of Eurostag tutorial with Power limits
     """
     return _create_network('eurostag_tutorial_example1_with_power_limits')
+
+
+def create_eurostag_tutorial_example1_with_tie_lines_and_areas() -> Network:
+    """
+    Create an instance of example 1 network of Eurostag tutorial with tie lines and areas
+
+    Returns:
+        a new instance of example 1 network of Eurostag tutorial with tie lines and areas
+    """
+    return _create_network('eurostag_tutorial_example1_with_tie_lines_and_areas')
 
 
 def create_four_substations_node_breaker_network() -> Network:
@@ -166,7 +185,7 @@ def create_metrix_tutorial_six_buses_network() -> Network:
     return _create_network('metrix_tutorial_six_buses')
 
 
-def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter: ReportNode = None,
+def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_processors: List[str] = None, reporter: ReportNode = None,
          report_node: ReportNode = None) -> Network:
     """
     Load a network from a file. File should be in a supported format.
@@ -176,6 +195,7 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
     Args:
        file:       path to the network file
        parameters: a dictionary of import parameters
+       post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
 
@@ -198,13 +218,13 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, reporter
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
     file = path_to_str(file)
-    if parameters is None:
-        parameters = {}
-    return Network(_pp.load_network(file, parameters,
+    return Network(_pp.load_network(file,
+                                    {} if parameters is None else parameters,
+                                    [] if post_processors is None else post_processors,
                                     None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
 
-def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = None,
+def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = None, post_processors: List[str] = None,
                             reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a binary buffer.
@@ -212,6 +232,7 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
     Args:
        buffer:    The BytesIO data buffer
        parameters:  A dictionary of import parameters
+       post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
 
@@ -221,10 +242,13 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-    return load_from_binary_buffers([buffer], parameters, report_node)
+    return load_from_binary_buffers([buffer],
+                                    {} if parameters is None else parameters,
+                                    [] if post_processors is None else post_processors,
+                                    report_node)
 
 
-def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, str] = None,
+def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, str] = None, post_processors: List[str] = None,
                              reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
@@ -232,6 +256,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
     Args:
        buffers:  The list of BytesIO data buffer
        parameters:  A dictionary of import parameters
+       post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
 
@@ -241,16 +266,16 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-    if parameters is None:
-        parameters = {}
     buffer_list = []
     for buff in buffers:
         buffer_list.append(buff.getbuffer())
-    return Network(_pp.load_network_from_binary_buffers(buffer_list, parameters,
+    return Network(_pp.load_network_from_binary_buffers(buffer_list,
+                                                        {} if parameters is None else parameters,
+                                                        [] if post_processors is None else post_processors,
                                                         None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
 
-def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None,
+def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None, post_processors: List[str] = None,
                      reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
@@ -259,6 +284,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
        file_name:    file name
        file_content: file content
        parameters:   a dictionary of import parameters
+       post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
 
@@ -268,7 +294,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-    if parameters is None:
-        parameters = {}
-    return Network(_pp.load_network_from_string(file_name, file_content, parameters,
+    return Network(_pp.load_network_from_string(file_name, file_content,
+                                                {} if parameters is None else parameters,
+                                                [] if post_processors is None else post_processors,
                                                 None if report_node is None else report_node._report_node))  # pylint: disable=protected-access

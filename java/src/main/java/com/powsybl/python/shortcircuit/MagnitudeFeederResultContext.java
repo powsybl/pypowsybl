@@ -12,13 +12,13 @@ import com.powsybl.shortcircuit.MagnitudeFeederResult;
 import java.util.Objects;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class MagnitudeFeederResultContext extends MagnitudeFeederResult {
     private final String faultId;
 
     public MagnitudeFeederResultContext(String faultId, MagnitudeFeederResult result) {
-        super(result.getConnectableId(), result.getCurrent());
+        super(result.getConnectableId(), result.getCurrent(), result.getSide());
         this.faultId = Objects.requireNonNull(faultId);
     }
 

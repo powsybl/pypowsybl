@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.network.adders;
 
+import com.powsybl.cgmes.extensions.CgmesMetadataModels;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.LINEAR;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.NON_LINEAR;
@@ -27,9 +29,9 @@ import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 class NetworkElementAddersTest {
 
@@ -138,8 +140,41 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
         addDoubleColumn(dataframe, "p0", 102d);
         addDoubleColumn(dataframe, "q0", 151d);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, singletonList(dataframe));
+        var emptyGenerationDataframe = new DefaultUpdatingDataframe(0);
+        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, emptyGenerationDataframe));
         assertEquals(2, network.getDanglingLineCount());
+    }
+
+    @Test
+    void danglingLineWithGeneration() {
+        var network = DanglingLineNetworkFactory.create();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "dl2");
+        addStringColumn(dataframe, "name", "name-dl2");
+        addStringColumn(dataframe, "connectable_bus_id", "BUS");
+        addStringColumn(dataframe, "bus_id", "BUS");
+        addStringColumn(dataframe, "voltage_level_id", "VL");
+        addDoubleColumn(dataframe, "r", 0.6d);
+        addDoubleColumn(dataframe, "x", 1d);
+        addDoubleColumn(dataframe, "g", Math.pow(10, -6));
+        addDoubleColumn(dataframe, "b", Math.pow(10, -6) * 4);
+        addDoubleColumn(dataframe, "p0", 102d);
+        addDoubleColumn(dataframe, "q0", 151d);
+
+        var generationDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(generationDataframe, "id", "dl2");
+        addDoubleColumn(generationDataframe, "min_p", 0);
+        addDoubleColumn(generationDataframe, "max_p", 200d);
+        addDoubleColumn(generationDataframe, "target_p", 102d);
+        addDoubleColumn(generationDataframe, "target_q", 151d);
+        addDoubleColumn(generationDataframe, "target_v", 100d);
+        addIntColumn(generationDataframe, "voltage_regulator_on", 1);
+        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, generationDataframe));
+
+        assertEquals(2, network.getDanglingLineCount());
+        DanglingLine dl = network.getDanglingLine("dl2");
+        assertTrue(Optional.ofNullable(dl.getGeneration()).isPresent());
+        assertTrue(dl.getGeneration().isVoltageRegulationOn());
     }
 
     @Test
@@ -340,7 +375,6 @@ class NetworkElementAddersTest {
         HvdcLine l = network.getHvdcLine(lId);
         HvdcAngleDroopActivePowerControl extension = l.getExtension(HvdcAngleDroopActivePowerControl.class);
         assertNull(extension);
-
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", lId);
         addDoubleColumn(dataframe, "droop", droop);
@@ -444,6 +478,37 @@ class NetworkElementAddersTest {
     }
 
     @Test
+    void cgmesMetadataModelExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String id = "id";
+        String subset = "EQUIPMENT";
+        String description = "description";
+        int version = 1;
+        String modelingAuthoritySet = "modelingAuthoritySet";
+        String profiles = "profiles";
+        String dependentOn = "true";
+        String supersedes = "true";
+
+        CgmesMetadataModels extension = network.getExtension(CgmesMetadataModels.class);
+        assertNull(extension);
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", id);
+        addStringColumn(dataframe, "cgmes_subset", subset);
+        addStringColumn(dataframe, "description", description);
+        addIntColumn(dataframe, "version", version);
+        addStringColumn(dataframe, "modeling_authority_set", modelingAuthoritySet);
+        addStringColumn(dataframe, "profiles", profiles);
+        addStringColumn(dataframe, "dependent_on", dependentOn);
+        addStringColumn(dataframe, "supersedes", supersedes);
+
+        NetworkElementAdders.addExtensions("cgmesMetadataModels", network, singletonList(dataframe));
+        extension = network.getExtension(CgmesMetadataModels.class);
+
+        assertNotNull(extension);
+    }
+
+    @Test
     void threeWindingTransformer() {
         var network = EurostagTutorialExample1Factory.create();
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
@@ -480,5 +545,141 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "rated_u0", 4.0);
         NetworkElementAdders.addElements(DataframeElementType.THREE_WINDINGS_TRANSFORMER, network, singletonList(dataframe));
         assertEquals(1, network.getThreeWindingsTransformerCount());
+    }
+
+    @Test
+    void operationalLimits() {
+        var network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "element_id", "NHV1_NHV2_1", "NHV1_NHV2_1");
+        addStringColumn(dataframe, "name", "permanent_limit", "1'");
+        addStringColumn(dataframe, "side", "ONE", "ONE");
+        addStringColumn(dataframe, "type", "APPARENT_POWER", "APPARENT_POWER");
+        addDoubleColumn(dataframe, "value", 600, 1000);
+        addIntColumn(dataframe, "acceptable_duration", -1, 60);
+        NetworkElementAdders.addElements(DataframeElementType.OPERATIONAL_LIMITS, network, singletonList(dataframe));
+        Optional<ApparentPowerLimits> optionalLimits = network.getLine("NHV1_NHV2_1").getApparentPowerLimits(TwoSides.ONE);
+        assertTrue(optionalLimits.isPresent());
+        ApparentPowerLimits limits = optionalLimits.get();
+        assertEquals(600, limits.getPermanentLimit());
+        assertEquals(1, limits.getTemporaryLimits().size());
+    }
+
+    @Test
+    void multipleOperationalLimitsGroups() {
+        var network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "element_id", "NHV1_NHV2_1", "NHV1_NHV2_1");
+        addStringColumn(dataframe, "name", "permanent_limit", "1'");
+        addStringColumn(dataframe, "side", "ONE", "ONE");
+        addStringColumn(dataframe, "type", "APPARENT_POWER", "APPARENT_POWER");
+        addDoubleColumn(dataframe, "value", 600, 1000);
+        addIntColumn(dataframe, "acceptable_duration", -1, 60);
+        addStringColumn(dataframe, "group_name", "SUMMER", "SUMMER");
+        NetworkElementAdders.addElements(DataframeElementType.OPERATIONAL_LIMITS, network, singletonList(dataframe));
+        Optional<ApparentPowerLimits> optionalLimits = network.getLine("NHV1_NHV2_1").getApparentPowerLimits(TwoSides.ONE);
+        assertTrue(optionalLimits.isEmpty());
+        Optional<OperationalLimitsGroup> group = network.getLine("NHV1_NHV2_1").getOperationalLimitsGroup1("SUMMER");
+        assertTrue(group.isPresent());
+        optionalLimits = group.get().getApparentPowerLimits();
+        assertTrue(optionalLimits.isPresent());
+        assertEquals(600, optionalLimits.get().getPermanentLimit());
+        assertEquals(1, optionalLimits.get().getTemporaryLimits().size());
+    }
+
+    @Test
+    void area() {
+        var network = EurostagTutorialExample1Factory.create();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "myArea");
+        addStringColumn(dataframe, "name", "my area name");
+        addStringColumn(dataframe, "area_type", "ControlArea");
+        addDoubleColumn(dataframe, "interchange_target", 42.0);
+        NetworkElementAdders.addElements(DataframeElementType.AREA, network, singletonList(dataframe));
+        assertEquals(1, network.getAreaCount());
+    }
+
+    @Test
+    void areaVoltageLevels() {
+        var network = EurostagTutorialExample1Factory.create();
+        final String areaType = "ControlArea";
+        var area1 = network.newArea()
+                .setId("area1")
+                .setAreaType(areaType)
+                .add();
+        var area2 = network.newArea()
+                .setId("area2")
+                .setAreaType(areaType)
+                .add();
+        var dataframe = new DefaultUpdatingDataframe(3);
+        addStringColumn(dataframe, "id", "area1", "area1", "area2");
+        addStringColumn(dataframe, "voltage_level_id", "VLGEN", "VLHV1", "VLHV2");
+        assertEquals(0, area1.getVoltageLevelStream().count());
+        assertEquals(0, area2.getVoltageLevelStream().count());
+        NetworkElementAdders.addElements(DataframeElementType.AREA_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        assertEquals(2, area1.getVoltageLevelStream().count());
+        assertEquals(1, area2.getVoltageLevelStream().count());
+        assertEquals(area1, network.getVoltageLevel("VLGEN").getArea(areaType).orElseThrow());
+        assertEquals(area1, network.getVoltageLevel("VLHV1").getArea(areaType).orElseThrow());
+        assertEquals(area2, network.getVoltageLevel("VLHV2").getArea(areaType).orElseThrow());
+
+        dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "area1");
+        addStringColumn(dataframe, "voltage_level_id", "");
+        NetworkElementAdders.addElements(DataframeElementType.AREA_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        assertEquals(0, area1.getVoltageLevelStream().count()); // cleared
+        assertEquals(1, area2.getVoltageLevelStream().count()); // unchanged because area2 is not in updating df
+
+        dataframe = new DefaultUpdatingDataframe(2);
+        addStringColumn(dataframe, "id", "area1", "area1");
+        addStringColumn(dataframe, "voltage_level_id", "", "VLGEN");
+        NetworkElementAdders.addElements(DataframeElementType.AREA_VOLTAGE_LEVELS, network, singletonList(dataframe));
+        assertEquals(1, area1.getVoltageLevelStream().count()); // empty ("") voltage level is ignored because not alone
+        assertEquals(1, area2.getVoltageLevelStream().count()); // unchanged because area2 is not in updating df
+        assertEquals(area1, network.getVoltageLevel("VLGEN").getArea(areaType).orElseThrow());
+        assertFalse(network.getVoltageLevel("VLHV1").getArea(areaType).isPresent());
+        assertEquals(area2, network.getVoltageLevel("VLHV2").getArea(areaType).orElseThrow());
+    }
+
+    @Test
+    void areaBoundaries() {
+        var network = EurostagTutorialExample1Factory.createWithTieLine();
+        final String areaType = "ControlArea";
+        var area1 = network.newArea()
+                .setId("area1")
+                .setAreaType(areaType)
+                .add();
+        var area2 = network.newArea()
+                .setId("area2")
+                .setAreaType(areaType)
+                .add();
+        var dataframe = new DefaultUpdatingDataframe(4);
+        addStringColumn(dataframe, "id", "area1", "area1", "area2", "area2");
+        addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE");
+        addStringColumn(dataframe, "element", "NHV1_XNODE1", "NHV1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
+        addIntColumn(dataframe, "ac", 1, 1, 1, 1);
+        assertEquals(0, area1.getAreaBoundaryStream().count());
+        assertEquals(0, area2.getAreaBoundaryStream().count());
+        NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
+        assertEquals(2, area1.getAreaBoundaryStream().count());
+        assertEquals(2, area2.getAreaBoundaryStream().count());
+
+        dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "area1");
+        addStringColumn(dataframe, "element", "");
+        addIntColumn(dataframe, "ac", 1);
+        NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
+        assertEquals(0, area1.getAreaBoundaryStream().count()); // cleared
+        assertEquals(2, area2.getAreaBoundaryStream().count()); // unchanged because area2 is not in updating df
+
+        dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "area1");
+        addStringColumn(dataframe, "boundary_type", "TERMINAL");
+        addStringColumn(dataframe, "element", "NGEN_NHV1");
+        addStringColumn(dataframe, "side", "TWO");
+        addIntColumn(dataframe, "ac", 1);
+        NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
+        assertEquals(1, area1.getAreaBoundaryStream().count());
+        assertEquals(2, area2.getAreaBoundaryStream().count()); // unchanged because area2 is not in updating df
     }
 }

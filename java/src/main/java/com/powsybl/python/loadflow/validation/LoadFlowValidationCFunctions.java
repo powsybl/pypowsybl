@@ -29,13 +29,15 @@ import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 
+import java.util.Optional;
+
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.doCatch;
 
 /**
  * Defines C interface for loadflow validation.
  *
- * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
 @CContext(Directives.class)
 public final class LoadFlowValidationCFunctions {
@@ -116,8 +118,9 @@ public final class LoadFlowValidationCFunctions {
     public static void copyToCLoadFlowValidationParameters(ValidationConfig parameters, LoadFlowValidationParametersPointer cParameters) {
         cParameters.setThreshold(parameters.getThreshold());
         cParameters.setVerbose(parameters.isVerbose());
-        if (parameters.getLoadFlowName().isPresent()) {
-            cParameters.setLoadFlowName(CTypeUtil.toCharPtr(parameters.getLoadFlowName().get()));
+        Optional<String> optionalName = parameters.getLoadFlowName();
+        if (optionalName.isPresent()) {
+            cParameters.setLoadFlowName(CTypeUtil.toCharPtr(optionalName.get()));
         } else {
             cParameters.setLoadFlowName(CTypeUtil.toCharPtr(""));
         }

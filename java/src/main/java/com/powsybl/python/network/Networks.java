@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 /**
  * Networks factories, for "classic" networks or test network.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class Networks {
 
@@ -98,6 +98,11 @@ public final class Networks {
         return fix(network);
     }
 
+    public static Network createEurostagTutorialExampleWithMoreGenerators() {
+        Network network = EurostagTutorialExample1Factory.createWithMoreGenerators();
+        return fix(network);
+    }
+
     public static Network createEurostagTutorialExample1WithFixedCurrentLimits() {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         return fix(network);
@@ -125,7 +130,7 @@ public final class Networks {
         network.getGenerator("GEN")
                 .newExtension(ActivePowerControlAdder.class)
                 .withParticipate(true)
-                .withDroop(1.1f)
+                .withDroop(1.1)
                 .add();
         return network;
     }
@@ -142,6 +147,10 @@ public final class Networks {
     public static Network eurostagWithTieLine() {
         Network network = EurostagTutorialExample1Factory.createWithTieLine();
         return fix(network);
+    }
 
+    public static Network eurostagWithTieLinesAndAreas() {
+        Network network = EurostagTutorialExample1Factory.createWithTieLinesAndAreas();
+        return fix(network);
     }
 }

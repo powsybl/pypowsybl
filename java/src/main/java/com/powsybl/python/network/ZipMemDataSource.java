@@ -7,8 +7,8 @@
  */
 package com.powsybl.python.network;
 
-import com.powsybl.commons.datasource.DataSource;
 import com.powsybl.commons.datasource.DataSourceUtil;
+import com.powsybl.commons.datasource.MemDataSource;
 import com.powsybl.commons.io.ForwardingOutputStream;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ import java.util.zip.ZipOutputStream;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-public class ZipMemDataSource implements DataSource {
+public class ZipMemDataSource extends MemDataSource {
 
     private final String baseName;
 

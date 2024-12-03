@@ -11,7 +11,7 @@ import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.network.SideEnum;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.fr>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.fr>}
  */
 public class ConnectablePositionFeederData {
 

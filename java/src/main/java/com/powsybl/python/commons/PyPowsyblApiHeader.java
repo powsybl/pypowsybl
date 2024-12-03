@@ -597,11 +597,13 @@ public final class PyPowsyblApiHeader {
         THREE_WINDINGS_TRANSFORMER,
         GENERATOR,
         LOAD,
+        GROUND,
         BATTERY,
         SHUNT_COMPENSATOR,
         NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
         LINEAR_SHUNT_COMPENSATOR_SECTION,
         DANGLING_LINE,
+        DANGLING_LINE_GENERATION,
         TIE_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
@@ -617,13 +619,18 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
+        SELECTED_OPERATIONAL_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
         IDENTIFIABLE,
         INJECTION,
         BRANCH,
         TERMINAL,
-        SUB_NETWORK;
+        SUB_NETWORK,
+        AREA,
+        AREA_VOLTAGE_LEVELS,
+        AREA_BOUNDARIES,
+        INTERNAL_CONNECTION;
 
         @CEnumValue
         public native int getCValue();
@@ -1046,10 +1053,10 @@ public final class PyPowsyblApiHeader {
         void setDiagonalLabel(boolean diagonalLabel);
 
         @CField("nodes_infos")
-        boolean isAddNodesInfos();
+        boolean isBusesLegendAdded();
 
         @CField("nodes_infos")
-        void setAddNodesInfos(boolean addNodeInfos);
+        void setBusesLegendAdded(boolean addNodeInfos);
 
         @CField("tooltip_enabled")
         void setTooltipEnabled(boolean tooltipEnabled);
@@ -1178,20 +1185,51 @@ public final class PyPowsyblApiHeader {
 
     @CEnum("DynamicMappingType")
     public enum DynamicMappingType {
-        ALPHA_BETA_LOAD,
-        ONE_TRANSFORMER_LOAD,
-        GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
-        GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
-        GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
-        GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
-        CURRENT_LIMIT_AUTOMATON,
-        GENERATOR_SYNCHRONOUS;
+        BASE_LOAD,
+        LOAD_ONE_TRANSFORMER,
+        LOAD_ONE_TRANSFORMER_TAP_CHANGER,
+        LOAD_TWO_TRANSFORMERS,
+        LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
+        BASE_GENERATOR,
+        SYNCHRONIZED_GENERATOR,
+        SYNCHRONOUS_GENERATOR,
+        WECC,
+        GRID_FORMING_CONVERTER,
+        SIGNAL_N_GENERATOR,
+        HVDC_P,
+        HVDC_VSC,
+        BASE_TRANSFORMER,
+        BASE_STATIC_VAR_COMPENSATOR,
+        BASE_LINE,
+        BASE_BUS,
+        INFINITE_BUS,
+        OVERLOAD_MANAGEMENT_SYSTEM,
+        TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM,
+        UNDER_VOLTAGE,
+        PHASE_SHIFTER_I,
+        PHASE_SHIFTER_P,
+        PHASE_SHIFTER_BLOCKING_I,
+        TAP_CHANGER,
+        TAP_CHANGER_BLOCKING;
 
         @CEnumValue
         public native int getCValue();
 
         @CEnumLookup
         public static native DynamicMappingType fromCValue(int value);
+    }
+
+    @CEnum("EventMappingType")
+    public enum EventMappingType {
+        DISCONNECT,
+        NODE_FAULT,
+        ACTIVE_POWER_VARIATION;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native EventMappingType fromCValue(int value);
     }
 
     @CEnum("ThreeSide")

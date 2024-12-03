@@ -6,6 +6,7 @@
 #
 import copy
 import datetime
+import math
 import os
 import pathlib
 import re
@@ -59,6 +60,11 @@ def test_load_cgmes_two_zip():
         with open(DATA_DIR.joinpath('Boundary.zip'), "rb") as boundary:
             n = pp.network.load_from_binary_buffers([io.BytesIO(cgmesPartial.read()), io.BytesIO(boundary.read())])
     assert 3 == len(n.get_substations())
+
+
+def test_load_post_processor():
+    assert ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
 
 
 def test_save_cgmes_zip():
@@ -149,6 +155,11 @@ def test_save_ucte():
 def test_get_import_format():
     formats = pp.network.get_import_formats()
     assert ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM'] == formats
+
+
+def test_get_import_supported_extensions():
+    extensions = pp.network.get_import_supported_extensions()
+    assert ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml'] == extensions
 
 
 def test_get_import_parameters():
@@ -273,6 +284,16 @@ def test_loads_data_frame():
         data=[['S1VL1_2', 2], ['S1VL2_13', 13], ['S1VL2_15', 15], ['S1VL2_17', 17], ['S3VL1_4', 4], ['S4VL1_2', 2]])
     pd.testing.assert_frame_equal(expected, loads, check_dtype=False, atol=1e-2)
 
+def test_grounds():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    grounds = n.get_grounds(all_attributes=True)
+    assert grounds.empty
+
+    n.create_grounds(id='GROUND', voltage_level_id='VLHV1', bus_id='NHV1')
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['GROUND']),
+                            columns=['name', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 'VLHV1', 'VLHV1_0', True]])
+    pd.testing.assert_frame_equal(expected, n.get_grounds(), check_dtype=False, atol=1e-2)
 
 def test_batteries_data_frame():
     n = pp.network.load(str(TEST_DIR.joinpath('battery.xiidm')))
@@ -595,6 +616,171 @@ def test_regulated_terminal_bus_breaker():
     assert 'LOAD' == generators['regulated_element_id']['GEN']
 
 
+def test_areas_data_frame():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    areas = n.get_areas(all_attributes=True)
+    assert 3 == len(areas)
+    assert not areas['fictitious']['ControlArea_A']
+    areas = n.get_areas()
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['ControlArea_A', 'ControlArea_B', 'Region_AB']),
+        columns=['name', 'area_type', 'interchange_target', 'interchange', 'ac_interchange', 'dc_interchange'],
+        data=[['Control Area A', 'ControlArea', -602.6, -602.88, -602.88, 0.0],
+              ['Control Area B', 'ControlArea', +602.6, +602.88, +602.88, 0.0],
+              ['Region AB', 'Region', nan, 0.0, 0.0, 0.0]])
+    pd.testing.assert_frame_equal(expected, areas, check_dtype=False, atol=1e-2)
+
+    n.update_areas(id='ControlArea_A', name='Awesome Control Area A', interchange_target=-400)
+    areas = n.get_areas()
+    assert -400 == areas.loc['ControlArea_A']['interchange_target']
+    assert 'Awesome Control Area A' == areas.loc['ControlArea_A']['name']
+    n.update_areas(id=['ControlArea_A', 'ControlArea_B'], interchange_target=[-500, 500])
+    areas = n.get_areas()
+    assert -500 == areas.loc['ControlArea_A']['interchange_target']
+    assert +500 == areas.loc['ControlArea_B']['interchange_target']
+
+    n.create_areas(id='testArea', area_type='testAreaType')
+    areas = n.get_areas()
+    assert 4 == len(areas)
+    assert 'testAreaType' == areas.loc['testArea']['area_type']
+    assert np.isnan(areas.loc['testArea']['interchange_target'])
+
+    n.create_areas(id=['testAreaA', 'testAreaB'],
+                   area_type=['testAreaType', 'testAreaType'],
+                   interchange_target=[10., nan])
+    areas = n.get_areas()
+    assert 6 == len(areas)
+    assert 10. == areas.loc['testAreaA']['interchange_target']
+    assert np.isnan(areas.loc['testAreaB']['interchange_target'])
+
+    n.remove_elements(['testArea', 'testAreaA', 'testAreaB'])
+    areas = n.get_areas()
+    assert 3 == len(areas)
+
+
+def test_areas_voltage_levels_data_frame():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'ControlArea_A', 'ControlArea_A',
+            'ControlArea_B', 'ControlArea_B',
+            'Region_AB', 'Region_AB', 'Region_AB', 'Region_AB']),
+        columns=['voltage_level_id'],
+        data=[['VLGEN'], ['VLHV1'],
+              ['VLHV2'], ['VLLOAD'],
+              ['VLGEN'], ['VLHV1'], ['VLHV2'], ['VLLOAD']])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
+
+    # test adding boundaries to areas
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_areas(id=['testAreaA', 'testAreaB'],
+                   area_type=['testAreaType', 'testAreaType'],
+                   interchange_target=[10., nan])
+    n.create_areas_voltage_levels(id=['testAreaA', 'testAreaA', 'testAreaB'],
+                               voltage_level_id=['VLGEN', 'VLHV1', 'VLLOAD'])
+    areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'testAreaA', 'testAreaA',
+            'testAreaB']),
+        columns=['voltage_level_id'],
+        data=[['VLGEN'], ['VLHV1'],
+              ['VLLOAD']])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
+
+    # test removal
+    n.create_areas_voltage_levels(id=['testAreaA'], voltage_level_id=[''])
+    areas_voltage_levels = n.get_areas_voltage_levels().sort_values(by=['id', 'voltage_level_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['testAreaB']),
+        columns=['voltage_level_id'],
+        data=[['VLLOAD']])
+    pd.testing.assert_frame_equal(expected, areas_voltage_levels, check_dtype=False)
+
+
+def test_areas_boundaries_data_frame():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'ControlArea_A', 'ControlArea_A',
+            'ControlArea_B', 'ControlArea_B']),
+        columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
+        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+    # test adding boundaries to area
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    n.remove_elements(elements_ids=['ControlArea_A', 'ControlArea_B'])
+    n.create_areas(id=['testAreaA', 'testAreaB'],
+                   area_type=['testAreaType', 'testAreaType'],
+                   interchange_target=[10., nan])
+    n.create_areas_boundaries(id=['testAreaA', 'testAreaA', 'testAreaB', 'testAreaB'],
+                              boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
+                              element=['NHV1_XNODE1', 'NHV1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
+                              ac=[True, True, True, True])
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'testAreaA', 'testAreaA',
+            'testAreaB', 'testAreaB']),
+        columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
+        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
+              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+    # test removal
+    n.create_areas_boundaries(id=['testAreaA'],
+                              boundary_type=[''],
+                              element=[''])
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=[
+            'testAreaB', 'testAreaB']),
+        columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
+        data=[['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+    # test using terminals instead of dangling lines, e.g. boundary located at NGEN_NHV1 HV side
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.create_areas(id=['testAreaA', 'testAreaB'],
+                   area_type=['testAreaType', 'testAreaType'],
+                   interchange_target=[10., nan])
+    n.update_2_windings_transformers(id='NGEN_NHV1', p2=-600, q2=-50)
+    n.update_lines(id=['NHV1_NHV2_1', 'NHV1_NHV2_2'], p1=[300, 300], q1=[25, 25])
+    n.create_areas_boundaries(id=['testAreaA', 'testAreaB', 'testAreaB'],
+                              boundary_type=['TERMINAL', 'TERMINAL', 'TERMINAL'],
+                              element=['NGEN_NHV1', 'NHV1_NHV2_1', 'NHV1_NHV2_2'],
+                              side=['TWO', 'ONE', 'ONE'],
+                              ac=[True, True, True])
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['testAreaA', 'testAreaB', 'testAreaB']),
+        columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
+        data=[['TERMINAL', 'NGEN_NHV1', 'TWO', True, -600, -50],
+              ['TERMINAL', 'NHV1_NHV2_1', 'ONE', True, 300, 25],
+              ['TERMINAL', 'NHV1_NHV2_2', 'ONE', True, 300, 25]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+    # test removal
+    n.create_areas_boundaries(id=['testAreaA'],
+                              element=[''])
+    areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['testAreaB', 'testAreaB']),
+        columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
+        data=[['TERMINAL', 'NHV1_NHV2_1', 'ONE', True, 300, 25],
+              ['TERMINAL', 'NHV1_NHV2_2', 'ONE', True, 300, 25]])
+    pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
+
+
 def test_update_unknown_data():
     n = pp.network.create_eurostag_tutorial_example1_network()
     update = pd.DataFrame(data=[['blob']], columns=['unknown'], index=['GEN'])
@@ -807,19 +993,21 @@ def test_sld_parameters():
 
 
 def test_layout_parameters():
-    parameters = LayoutParameters()
-    assert not parameters.use_name
-    assert not parameters.center_name
-    assert not parameters.diagonal_label
-    assert parameters.topological_coloring
-    assert not parameters.nodes_infos
-    parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
-                                  nodes_infos=True)
-    assert parameters.use_name
-    assert parameters.center_name
-    assert parameters.diagonal_label
-    assert not parameters.topological_coloring
-    assert parameters.nodes_infos
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        parameters = LayoutParameters()
+        assert not parameters.use_name
+        assert not parameters.center_name
+        assert not parameters.diagonal_label
+        assert parameters.topological_coloring
+        assert not parameters.nodes_infos
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        parameters = LayoutParameters(use_name=True, center_name=True, diagonal_label=True, topological_coloring=False,
+                                      nodes_infos=True)
+        assert parameters.use_name
+        assert parameters.center_name
+        assert parameters.diagonal_label
+        assert not parameters.topological_coloring
+        assert parameters.nodes_infos
 
 
 def test_sld_svg():
@@ -869,20 +1057,23 @@ def test_sld_svg():
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
-    sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                              topological_coloring=False))
-    assert re.search('.*<svg.*', sld.svg)
-    assert len(sld.metadata) > 0
-    sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
-                                                               topological_coloring=True, nodes_infos=True))
-    assert re.search('.*<svg.*', sld1.svg)
-    assert len(sld1.metadata) > 0
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        sld = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                                  topological_coloring=False))
+        assert re.search('.*<svg.*', sld.svg)
+        assert len(sld.metadata) > 0
+    with pytest.warns(DeprecationWarning, match=re.escape("LayoutParameters is deprecated, use SldParameters instead")):
+        sld1 = n.get_single_line_diagram('S1VL1', LayoutParameters(use_name=True, center_name=True, diagonal_label=True,
+                                                                   topological_coloring=True, nodes_infos=True))
+        assert re.search('.*<svg.*', sld1.svg)
+        assert len(sld1.metadata) > 0
 
 
 def test_nad():
     n = pp.network.create_ieee14()
     nad = n.get_network_area_diagram()
     assert re.search('.*<svg.*', nad.svg)
+    assert len(nad.metadata) > 0
     nad = n.get_network_area_diagram(voltage_level_ids=None)
     assert re.search('.*<svg.*', nad.svg)
     nad = n.get_network_area_diagram('VL1')
@@ -939,14 +1130,17 @@ def test_nad_displayed_voltage_levels():
 
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    assert 9 == len(network.get_current_limits())
-    assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
-    current_limit = network.get_current_limits().loc['NHV1_NHV2_1', '10\'']
-    expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
-                                                            tuples=[('NHV1_NHV2_1', '10\'')]),
-                            columns=['side', 'value', 'acceptable_duration'],
-                            data=[['TWO', 1200.0, 600]])
-    pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
+        assert 9 == len(network.get_current_limits())
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
+        assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
+    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
+        current_limit = network.get_current_limits().sort_index().loc['NHV1_NHV2_1', '10\'']
+        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
+                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
+                                columns=['side', 'value', 'acceptable_duration'],
+                                data=[['TWO', 1200.0, 600]])
+        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
 
 def test_deep_copy():
@@ -1027,23 +1221,48 @@ def test_dangling_lines():
     # test boundary point columns
     n = pp.network.create_micro_grid_be_network()
     dangling_lines = n.get_dangling_lines(attributes=['p', 'q',
-                                                      'boundary_p', 'boundary_q'])
+                                                      'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['17086487-56ba-4979-b8de-064025a6b4da',
                                          '78736387-5f60-4832-b3fe-d50daf81b0a6',
                                          'b18cd1aa-7808-49b9-a7cf-605eaf07b006',
                                          'a16b4a6c-70b1-4abf-9a9d-bd0fa47f9fe4',
                                          'ed0c5d75-4a54-43c8-b782-b20d7431630b']),
-        columns=['p', 'q', 'boundary_p', 'boundary_q'],
-        data=[[-25.77,  -2.82, 27.36,   -0.42],
-              [-36.59,  54.18, 46.81,  -79.19],
-              [-82.84, 138.45, 90.03, -148.60],
-              [-23.83,   1.27, 26.80,   -1.48],
-              [-36.85,  80.68, 43.68,  -84.87]])
-
-
-    print(dangling_lines)
+        columns=['p', 'q', 'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'],
+        data=[[-25.77,  -2.82, 27.36,   -0.42,  224.86, -5.51],
+              [-36.59,  54.18, 46.81,  -79.19,  410.79, -6.56],
+              [-82.84, 138.45, 90.03, -148.60,  410.80, -6.57],
+              [-23.83,   1.27, 26.80,   -1.48,  224.81, -5.52],
+              [-36.85,  80.68, 43.68,  -84.87,  412.60, -6.74]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+
+
+def test_dangling_line_generation():
+    n = util.create_dangling_lines_network()
+    df = n.get_dangling_lines_generation()
+    assert df.empty
+
+    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2_wrong']), columns=["target_v", "voltage_regulator_on"],
+                                 data=[[225, True]])
+    with pytest.raises(PyPowsyblError) as context:
+        n.create_dangling_lines(generation_df=wrong_generation_df, id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+                                p0=100, q0=100, r=0, x=0, g=0, b=0)
+    assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2']),
+                                 columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
+                                 data= [[0, 100, 100, 225, True]])
+    n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0)
+    df2 = n.get_dangling_lines_generation()
+    assert df2['voltage_regulator_on']['DL2']
+    assert math.isnan(df2['target_q']['DL2'])
+
+    n.update_dangling_lines_generation(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_dangling_lines_generation()
+    assert not df3['voltage_regulator_on']['DL2']
+    assert df3['target_q']['DL2']==100
 
 
 def test_batteries():
@@ -1106,7 +1325,7 @@ def test_shunt():
         index=pd.Series(name='id', data=['SHUNT']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['S1VL2_19', 19]])
-    #pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=1e-2)
+    pd.testing.assert_frame_equal(expected, shunts, check_dtype=False, atol=1e-2)
 
 
 def test_3_windings_transformers():
@@ -1455,11 +1674,11 @@ def test_bus_breaker_view_buses():
     expected_buses = pd.DataFrame(
         index=pd.Series(name='id', data=['NGEN', 'NHV1', 'NHV2', 'NLOAD']),
         columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
-                 'voltage_level_id'],
-        data=[['', nan, nan, 0, 0, 'VLGEN'],
-              ['', 380, nan, 0, 0, 'VLHV1'],
-              ['', 380, nan, 0, 0, 'VLHV2'],
-              ['', nan, nan, 0, 0, 'VLLOAD']])
+                 'voltage_level_id', 'bus_id'],
+        data=[['', nan, nan, 0, 0, 'VLGEN', 'VLGEN_0'],
+              ['', 380, nan, 0, 0, 'VLHV1', 'VLHV1_0'],
+              ['', 380, nan, 0, 0, 'VLHV2', 'VLHV2_0'],
+              ['', nan, nan, 0, 0, 'VLLOAD', 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected_buses, buses, check_dtype=False)
 
 
@@ -1552,6 +1771,36 @@ def test_bus_breaker_view_draw_graph():
     graph = network_topology.create_graph()
     nx.draw_shell(graph, with_labels=True)
     plt.show()
+
+
+def test_bus_breaker_topology_no_connected_terminal():
+    n = pp.network.create_empty()
+    n.create_substations(id='S')
+
+    n.create_voltage_levels(id='VL1', substation_id='S', nominal_v=380, topology_kind='BUS_BREAKER')
+    n.create_buses(id='B1', voltage_level_id='VL1')
+    n.create_buses(id='B2', voltage_level_id='VL1')
+    n.create_buses(id='B3', voltage_level_id='VL1')
+    n.create_loads(id='L1', voltage_level_id='VL1', p0=0, q0=0, bus_id='B1', connectable_bus_id='B1')
+    n.create_switches(id='CB1.1', kind='BREAKER', voltage_level_id='VL1', bus1_id='B1', bus2_id='B2', open=False)
+    n.create_switches(id='CB1.2', kind='BREAKER', voltage_level_id='VL1', bus1_id='B2', bus2_id='B3', open=True)
+
+    n.create_voltage_levels(id='VL2', substation_id='S', nominal_v=380, topology_kind='NODE_BREAKER')
+    n.create_busbar_sections(id='BB', voltage_level_id='VL2', node=0)
+    n.create_switches(id='CB2.1', kind='BREAKER', voltage_level_id='VL2', node1=0, node2=1, open=False, retained=True)
+    n.create_switches(id='CB2.2', kind='BREAKER', voltage_level_id='VL2', node1=1, node2=2, open=True, retained=True)
+    n.create_switches(id='SW', kind='DISCONNECTOR', voltage_level_id='VL2', node1=0, node2=3, open=False)
+    n.create_loads(id='L2', voltage_level_id='VL2', p0=0, q0=0, node=3)
+
+    topo_vl1 = n.get_bus_breaker_topology('VL1').buses
+    assert 'VL1_0' == topo_vl1.loc['B1']['bus_id']
+    assert 'VL1_0' == topo_vl1.loc['B2']['bus_id']
+    assert '' == topo_vl1.loc['B3']['bus_id']
+
+    topo_vl2 = n.get_bus_breaker_topology('VL2').buses
+    assert 'VL2_0' == topo_vl2.loc['VL2_0']['bus_id']
+    assert 'VL2_0' == topo_vl2.loc['VL2_1']['bus_id']
+    assert '' == topo_vl2.loc['VL2_2']['bus_id']
 
 
 def test_dataframe_attributes_filtering():
@@ -1716,10 +1965,10 @@ def test_limits():
     expected = pd.DataFrame.from_records(
         index='element_id',
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
-                 'fictitious'],
-        data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False),
-              ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False),
-              ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False)]
+                 'fictitious', 'group_name', 'selected'],
+        data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False, 'DEFAULT', True),
+              ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False, 'DEFAULT', True),
+              ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False, 'DEFAULT', True)]
     )
     pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False)
 
@@ -1727,20 +1976,20 @@ def test_limits():
     expected = pd.DataFrame.from_records(
         index='element_id',
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
-                 'fictitious'],
-        data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False),
-              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False),
-              ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False),
-              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False)])
+                 'fictitious', 'group_name', 'selected'],
+        data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False, 'DEFAULT', True),
+              ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False, 'DEFAULT', True),
+              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False, 'DEFAULT', True),
+              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False, 'DEFAULT', True)])
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
     expected = pd.DataFrame.from_records(
         index='element_id',
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
-                 'fictitious'],
-        data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False],
-              ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False]])
+                 'fictitious', 'group_name', 'selected'],
+        data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False, 'DEFAULT', True],
+              ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False, 'DEFAULT', True]])
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_2']
     limits = limits[limits['name'] == '20\'']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
@@ -1748,14 +1997,39 @@ def test_limits():
     expected = pd.DataFrame.from_records(
         index='element_id',
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
-                 'fictitious'],
-        data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False],
-              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False],
-              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False]])
+                 'fictitious', 'group_name', 'selected'],
+        data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False, 'DEFAULT', True],
+              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False, 'DEFAULT', True],
+              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False, 'DEFAULT', True]])
     limits = network.get_operational_limits(all_attributes=True).loc['3WT']
     limits = limits[limits['name'] == '10\'']
     pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
 
+def test_multiple_limit_groups():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 600,
+         'acceptable_duration': np.inf, 'fictitious': False, 'group_name': 'SUMMER'},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
+         'type': 'APPARENT_POWER', 'value': 1000,
+         'acceptable_duration': 60, 'fictitious': False, 'group_name': 'SUMMER'},
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 400,
+         'acceptable_duration': np.inf, 'fictitious': False, 'group_name': 'SUMMER'},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
+         'type': 'ACTIVE_POWER', 'value': 700,
+         'acceptable_duration': 60, 'fictitious': False, 'group_name': 'SUMMER'}
+    ]))
+
+    limits = network.get_operational_limits(all_attributes=True)
+    assert('APPARENT_POWER' not in limits['type'].values)
+    all_limits = network.get_operational_limits(all_attributes=True, show_inactive_sets=True)
+    assert('APPARENT_POWER' in all_limits['type'].values)
+
+    assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "DEFAULT")
+    network.update_lines(id="NHV1_NHV2_1", selected_limits_group_1="SUMMER")
+    assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "SUMMER")
 
 def test_validation_level():
     n = pp.network.create_ieee14()
@@ -1917,11 +2191,11 @@ def test_attributes_order():
 
 
 def test_load_network_with_report():
-    reporter = rp.ReportNode()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
-    pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), reporter=reporter)
-    report2 = str(reporter)
+    pp.network.load(str(DATA_DIR.joinpath('ieee14.dgs')), report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 
@@ -1932,22 +2206,22 @@ def test_load_network_from_string_with_report():
 ##ZBE
 BBE1AA1               0 2 400.00 3000.00 0.00000 -1500.0 0.00000 0.00000 -9000.0 9000.00 -9000.0                               F
     """
-    reporter = rp.ReportNode()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
-    pp.network.load_from_string('simple-eu.uct', file_content, reporter=reporter)
-    report2 = str(reporter)
+    pp.network.load_from_string('simple-eu.uct', file_content, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) > len(report1)
 
 
 def test_save_to_string_with_report():
     bat_path = TEST_DIR.joinpath('battery.xiidm')
-    reporter = rp.ReportNode()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     bat_path.read_text()
-    pp.network.load(str(bat_path), reporter=reporter)
-    report2 = str(reporter)
+    pp.network.load(str(bat_path), report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 
@@ -2137,11 +2411,91 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
 
+
 def test_update_dangling_line():
     network = pp.network.create_eurostag_tutorial_example1_network()
     network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
     network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
     assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
+
+
+def test_update_name():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    generators = n.get_generators(attributes=['name'])
+    assert '' == generators.loc['GEN', 'name']
+    n.update_generators(id='GEN', name='GEN_NAME')
+    generators = n.get_generators(attributes=['name'])
+    assert 'GEN_NAME' == generators.loc['GEN', 'name']
+
+
+def test_deprecated_operational_limits_is_fictitious():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+        network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+            {'element_id': 'NHV1_NHV2_1',
+             'name': '',
+             'side': 'ONE',
+             'type': 'CURRENT',
+             'value': 400.0,
+             'acceptable_duration': -1,
+             'is_fictitious': False},
+            {'element_id': 'NHV1_NHV2_1',
+             'name': '60s',
+             'side': 'ONE',
+             'type': 'CURRENT',
+             'value': 500.0,
+             'acceptable_duration': 60,
+             'is_fictitious': True},
+        ]))
+    limits = network.get_operational_limits(all_attributes=True)
+    assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
+
+
+def test_deprecated_operational_limits_is_fictitious_kwargs():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'],
+                                          name=['', ''],
+                                          side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
+                                          acceptable_duration=[-1, 60], is_fictitious=[False, True])
+    limits = network.get_operational_limits(all_attributes=True)
+    assert limits.query("element_id == 'NHV1_NHV2_1' and side == 'ONE' and acceptable_duration == 60")['fictitious'].all()
+
+
+def test_deprecated_operational_limits_element_type():
+    # element type should just be ignored and not throw an exception
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
+        network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+            {'element_id': 'NHV1_NHV2_1',
+             'element_type': 'LINE',
+             'name': '',
+             'side': 'ONE',
+             'type': 'CURRENT',
+             'value': 400.0,
+             'acceptable_duration': -1,
+             'fictitious': False},
+        ]))
+
+
+def test_deprecated_operational_limits_element_type_kwargs():
+    # element type should just be ignored and not throw an exception
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    with pytest.warns(DeprecationWarning, match=re.escape("useless operation limits element_type attribute has been removed")):
+        network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
+                                          side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
+                                          acceptable_duration=[-1, 60], fictitious=[False, True])
+
+
+def test_connect_disconnect_with_empty_bus():
+    network = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
+    network.update_generators(id=['GEN', 'GEN2'], connected=[False, True], bus_breaker_bus_id=['', 'NGEN'])
+    generators = network.get_generators(attributes=['connected', 'bus_breaker_bus_id'])
+    expected_generators = pd.DataFrame(index=pd.Series(name='id', data=['GEN', 'GEN2']),
+                            columns=['connected', 'bus_breaker_bus_id'],
+                            data=[[False, 'NGEN'],
+                                  [True, 'NGEN']])
+    pd.testing.assert_frame_equal(expected_generators, generators, check_dtype=False)
 
 
 if __name__ == '__main__':

@@ -42,7 +42,7 @@ import static java.lang.Integer.MIN_VALUE;
 /**
  * Mappers to dataframes.
  *
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public final class Dataframes {
 
@@ -363,15 +363,9 @@ public final class Dataframes {
     }
 
     private static List<BusBreakerViewBusData> getBusBreakerViewBuses(VoltageLevel voltageLevel) {
-        return voltageLevel.getBusBreakerView().getBusStream().map(bus -> {
-            Bus busViewBus = bus.getConnectedTerminalStream()
-                    .map(t -> t.getBusView().getBus())
-                    .filter(Objects::nonNull)
-                    .findFirst()
-                    .orElse(null);
-            return new BusBreakerViewBusData(bus, busViewBus);
-        }).collect(Collectors.toList());
-
+        return voltageLevel.getBusBreakerView().getBusStream()
+                .map(bus -> new BusBreakerViewBusData(bus, NetworkUtil.getBusViewBus(bus).orElse(null)))
+                .toList();
     }
 
     private static DataframeMapper<VoltageLevel, Void> createBusBreakerViewBuses() {
@@ -589,6 +583,7 @@ public final class Dataframes {
                 .stringsIndex("id", MagnitudeFeederResultContext::getFaultId)
                 .stringsIndex("connectable_id", MagnitudeFeederResultContext::getConnectableId)
                 .doubles("current", MagnitudeFeederResultContext::getCurrent)
+                .enums("side", ThreeSides.class, MagnitudeFeederResultContext::getSide)
                 .build();
     }
 
@@ -609,6 +604,7 @@ public final class Dataframes {
                         fortescueFeederResultContext.getCurrent().getZeroMagnitude(), false)
                 .doubles("current_zero_angle", fortescueFeederResultContext ->
                         fortescueFeederResultContext.getCurrent().getZeroAngle(), false)
+                .enums("side", ThreeSides.class, FortescueFeederResultContext::getSide)
                 .build();
     }
 

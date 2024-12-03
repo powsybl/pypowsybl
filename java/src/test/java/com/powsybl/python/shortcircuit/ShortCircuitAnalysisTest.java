@@ -23,7 +23,7 @@ import static java.lang.Double.NaN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 class ShortCircuitAnalysisTest {
 
@@ -91,7 +91,7 @@ class ShortCircuitAnalysisTest {
         List<Series> feederResultsSeries = Dataframes.createSeries(Dataframes.shortCircuitAnalysisMagnitudeFeederResultsMapper(false), fakeResults);
         Assertions.assertThat(feederResultsSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "connectable_id", "current");
+                .containsExactly("id", "connectable_id", "current", "side");
         Assertions.assertThat(feederResultsSeries.get(0).getStrings())
                 .containsExactly("f1", "f1");
         Assertions.assertThat(feederResultsSeries.get(1).getStrings())
