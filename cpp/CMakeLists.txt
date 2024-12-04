@@ -38,6 +38,7 @@ endif()
 if(BUILD_PYTHON_BINDINGS)
   #Build pythin bindings
   set(PYBIND11_FINDPYTHON ON)
+  set(PYBIND_PYTHON_VERSION ${PYTHON_VERSION})
   find_package(pybind11 CONFIG REQUIRED)
   add_subdirectory(pypowsybl-cpp)
 endif()
