@@ -2148,6 +2148,18 @@ def test_properties():
     assert "Network element \'notHere\' does not exist." in str(exc)
 
 
+def test_get_properties():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    assert network.get_elements_properties().empty
+    network.add_elements_properties(id=network.id, key1='value1', key2='value2')
+    network.add_elements_properties(id='GEN', key3='value3')
+    expected = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': 'sim1', 'key': 'key1', 'value': 'value1'},
+                                               {'id': 'sim1', 'key': 'key2', 'value': 'value2'},
+                                               {'id': 'GEN', 'key': 'key3', 'value': 'value3'}])
+    pd.testing.assert_frame_equal(network.get_elements_properties(), expected, check_dtype=False)
+
+
 def test_pathlib_load_save(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     n_path = pp.network.load(bat_path)
