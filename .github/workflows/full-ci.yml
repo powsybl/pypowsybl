@@ -139,6 +139,12 @@ jobs:
       matrix:
         config:
           - {
+            name: darwin,
+            os: macos-13,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+          }
+          - {
             name: darwin-arm64,
             os: macos-14,
             macosx_deployment_target: "11", # first arm64 version of macosx
