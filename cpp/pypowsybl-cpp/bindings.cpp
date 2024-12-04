@@ -1167,7 +1167,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
             .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1);
 
-    m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
+    m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"), py::arg("check_isolated_and_disconnected_injections"),
+          py::arg("consider_open_branch_reactive_flow"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
     m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
     m.def("get_grid2op_integer_value", &::pyGetGrid2opIntegerValue, "From a Grid2op backend get a integer value vector", py::arg("backend"), py::arg("value_type"));

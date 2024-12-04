@@ -845,7 +845,8 @@ SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool checkIsolatedAndDisconnectedInjections,
+                                bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);
 std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
 array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);

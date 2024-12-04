@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.grid2op;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -32,6 +33,8 @@ import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 public class Backend implements Closeable {
 
     private final Network network;
+    private final boolean checkIsolatedAndDisconnectedInjections;
+    private final boolean considerOpenBranchReactiveFlow;
 
     private final List<VoltageLevel> voltageLevels;
     private final ArrayPointer<CCharPointerPointer> voltageLevelName;
@@ -93,8 +96,11 @@ public class Backend implements Closeable {
             .orElseThrow();
     private LoadFlow.Runner loadFlowRunner = new LoadFlow.Runner(loadFlowProvider);
 
-    public Backend(Network network, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
+    public Backend(Network network, boolean checkIsolatedAndDisconnectedInjections, boolean considerOpenBranchReactiveFlow,
+                   int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
         this.network = Objects.requireNonNull(network);
+        this.checkIsolatedAndDisconnectedInjections = checkIsolatedAndDisconnectedInjections;
+        this.considerOpenBranchReactiveFlow = considerOpenBranchReactiveFlow;
 
         // waiting for switch action, we convert all voltage levels to bus/breaker topo
         for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
@@ -339,13 +345,69 @@ public class Backend implements Closeable {
         }
     }
 
+    private double getV(int i, int[] xBusGlobalNum) {
+        int globalNum = xBusGlobalNum[i];
+        if (globalNum == -1) {
+            return 0.0;
+        }
+        return busV[globalNum];
+    }
+
+    private double getP(Terminal t, int i, int[] xBusGlobalNum) {
+        int globalNum = xBusGlobalNum[i];
+        if (globalNum == -1) {
+            return 0;
+        }
+        return fixNan(t.getP());
+    }
+
+    private double getP(Terminal t, int i, ArrayPointer<CIntPointer> xBusGlobalNum) {
+        int globalNum = xBusGlobalNum.getPtr().read(i);
+        if (globalNum == -1) {
+            return 0;
+        }
+        return fixNan(t.getP());
+    }
+
+    private double getQ(Terminal t, int i, int[] xBusGlobalNum) {
+        int globalNum = xBusGlobalNum[i];
+        if (!considerOpenBranchReactiveFlow && globalNum == -1) {
+            return 0;
+        }
+        return fixNan(t.getQ());
+    }
+
+    private double getQ(Terminal t, int i, ArrayPointer<CIntPointer> xBusGlobalNum) {
+        int globalNum = xBusGlobalNum.getPtr().read(i);
+        if (!considerOpenBranchReactiveFlow && globalNum == -1) {
+            return 0;
+        }
+        return fixNan(t.getQ());
+    }
+
+    private double getI(Terminal t, int i, int[] xBusGlobalNum) {
+        int globalNum = xBusGlobalNum[i];
+        if (!considerOpenBranchReactiveFlow && globalNum == -1) {
+            return 0;
+        }
+        return fixNan(t.getI());
+    }
+
+    private double getV(int i, ArrayPointer<CIntPointer> xBusGlobalNum) {
+        int globalNum = xBusGlobalNum.getPtr().read(i);
+        if (globalNum == -1) {
+            return 0.0;
+        }
+        return busV[globalNum];
+    }
+
     private void updateLoads() {
         for (int i = 0; i < loads.size(); i++) {
             Load load = loads.get(i);
             Terminal terminal = load.getTerminal();
-            loadP.getPtr().write(i, fixNan(terminal.getP()));
-            loadQ.getPtr().write(i, fixNan(terminal.getQ()));
-            loadV.getPtr().write(i, busV[loadBusGlobalNum[i]]);
+            loadP.getPtr().write(i, getP(terminal, i, loadBusGlobalNum));
+            loadQ.getPtr().write(i, getQ(terminal, i, loadBusGlobalNum));
+            loadV.getPtr().write(i, getV(i, loadBusGlobalNum));
         }
     }
 
@@ -353,9 +415,9 @@ public class Backend implements Closeable {
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
             Terminal terminal = generator.getTerminal();
-            generatorP.getPtr().write(i, fixNan(terminal.getP()));
-            generatorQ.getPtr().write(i, fixNan(terminal.getQ()));
-            generatorV.getPtr().write(i, busV[generatorBusGlobalNum[i]]);
+            generatorP.getPtr().write(i, getP(terminal, i, generatorBusGlobalNum));
+            generatorQ.getPtr().write(i, getQ(terminal, i, generatorBusGlobalNum));
+            generatorV.getPtr().write(i, getV(i, generatorBusGlobalNum));
         }
     }
 
@@ -363,9 +425,9 @@ public class Backend implements Closeable {
         for (int i = 0; i < shunts.size(); i++) {
             ShuntCompensator shunt = shunts.get(i);
             Terminal terminal = shunt.getTerminal();
-            shuntP.getPtr().write(i, fixNan(terminal.getP()));
-            shuntQ.getPtr().write(i, fixNan(terminal.getQ()));
-            shuntV.getPtr().write(i, busV[shuntBusGlobalNum.getPtr().read(i)]);
+            shuntP.getPtr().write(i, getP(terminal, i, shuntBusGlobalNum));
+            shuntQ.getPtr().write(i, getQ(terminal, i, shuntBusGlobalNum));
+            shuntV.getPtr().write(i, getV(i, shuntBusGlobalNum));
         }
     }
 
@@ -374,14 +436,14 @@ public class Backend implements Closeable {
             Branch<?> branch = branches.get(i);
             Terminal terminal1 = branch.getTerminal1();
             Terminal terminal2 = branch.getTerminal2();
-            branchP1.getPtr().write(i, fixNan(terminal1.getP()));
-            branchP2.getPtr().write(i, fixNan(terminal2.getP()));
-            branchQ1.getPtr().write(i, fixNan(terminal1.getQ()));
-            branchQ2.getPtr().write(i, fixNan(terminal2.getQ()));
-            branchV1.getPtr().write(i, busV[branchBusGlobalNum1[i]]);
-            branchV2.getPtr().write(i, busV[branchBusGlobalNum2[i]]);
-            branchI1.getPtr().write(i, fixNan(terminal1.getI()));
-            branchI2.getPtr().write(i, fixNan(terminal2.getI()));
+            branchP1.getPtr().write(i, getP(terminal1, i, branchBusGlobalNum1));
+            branchP2.getPtr().write(i, getP(terminal2, i, branchBusGlobalNum2));
+            branchQ1.getPtr().write(i, getQ(terminal1, i, branchBusGlobalNum1));
+            branchQ2.getPtr().write(i, getQ(terminal2, i, branchBusGlobalNum2));
+            branchV1.getPtr().write(i, getV(i, branchBusGlobalNum1));
+            branchV2.getPtr().write(i, getV(i, branchBusGlobalNum2));
+            branchI1.getPtr().write(i, getI(terminal1, i, branchBusGlobalNum1));
+            branchI2.getPtr().write(i, getI(terminal2, i, branchBusGlobalNum2));
         }
     }
 
@@ -530,7 +592,25 @@ public class Backend implements Closeable {
         return loadFlowProvider;
     }
 
+    private static <T extends Injection<T>> void checkIsolatedAndDisconnectedInjections(List<T> injections) {
+        for (T injection : injections) {
+            Bus bus = injection.getTerminal().getBusView().getBus();
+            if (bus == null || !bus.isInMainSynchronousComponent()) {
+                throw new PowsyblException("Isolated injection '" + injection.getId() + "'");
+            }
+        }
+    }
+
+    private void checkIsolatedAndDisconnectedInjections() {
+        if (checkIsolatedAndDisconnectedInjections) {
+            checkIsolatedAndDisconnectedInjections(loads);
+            checkIsolatedAndDisconnectedInjections(generators);
+            checkIsolatedAndDisconnectedInjections(shunts);
+        }
+    }
+
     public LoadFlowResult runLoadFlow(LoadFlowParameters parameters) {
+        checkIsolatedAndDisconnectedInjections();
         LoadFlowResult result = loadFlowRunner.run(network, parameters);
         updateState();
         return result;

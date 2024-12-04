@@ -128,11 +128,12 @@ public final class Grid2opCFunctions {
     }
 
     @CEntryPoint(name = "createGrid2opBackend")
-    public static ObjectHandle createBackend(IsolateThread thread, ObjectHandle networkHandle, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus,
+    public static ObjectHandle createBackend(IsolateThread thread, ObjectHandle networkHandle, boolean checkIsolatedAndDisconnectedInjections,
+                                             boolean considerOpenBranchReactiveFlow, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus,
                                              ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Backend backend = new Backend(network, busesPerVoltageLevel, connectAllElementsToFirstBus);
+            Backend backend = new Backend(network, checkIsolatedAndDisconnectedInjections, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
             return ObjectHandles.getGlobal().create(backend);
         });
     }
