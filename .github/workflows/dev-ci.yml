@@ -48,10 +48,9 @@ jobs:
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
 
       - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
+        run: pip3 install dist/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
