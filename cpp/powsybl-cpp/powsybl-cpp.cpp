@@ -1676,4 +1676,9 @@ void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateInt
     pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opIntegerValue, backendHandle, valueType, valuePtr, changedPtr);
 }
 
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
+}
+
 }

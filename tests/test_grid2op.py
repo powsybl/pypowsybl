@@ -58,6 +58,8 @@ def test_backend():
 
         backend.update_double_value(grid2op.UpdateDoubleValueType.UPDATE_LOAD_P, np.array([630]), np.array([True]))
         npt.assert_allclose(np.array([630.0]), backend.get_double_value(grid2op.DoubleValueType.LOAD_P), rtol=TOLERANCE, atol=TOLERANCE)
+        backend.run_pf()
+        npt.assert_allclose(np.array([317.697, 317.697, 636.14, 630.954]), backend.get_double_value(grid2op.DoubleValueType.BRANCH_P1), rtol=TOLERANCE, atol=TOLERANCE)
 
         backend.update_double_value(grid2op.UpdateDoubleValueType.UPDATE_LOAD_P, np.array([640]), np.array([False]))
         npt.assert_allclose(np.array([630.0]), backend.get_double_value(grid2op.DoubleValueType.LOAD_P), rtol=TOLERANCE, atol=TOLERANCE)
@@ -67,3 +69,6 @@ def test_backend():
 
         backend.update_integer_value(grid2op.UpdateIntegerValueType.UPDATE_GENERATOR_BUS, np.array([2, -1]), np.array([True, True]))
         npt.assert_array_equal(np.array([2, -1, 1, 1, 1, 1, 1, 1, 1, -1, 1]), backend.get_integer_value(grid2op.IntegerValueType.TOPO_VECT))
+
+        npt.assert_allclose(np.array([500.0, 1100.0, 999999.0, 999999.0]),
+                            backend.get_double_value(grid2op.DoubleValueType.BRANCH_PERMANENT_LIMIT_A), rtol=TOLERANCE, atol=TOLERANCE)

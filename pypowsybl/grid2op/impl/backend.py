@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import List, Optional, Type, Literal
 
 from pypowsybl import _pypowsybl
+from pypowsybl.loadflow import Parameters, ComponentResult
 from pypowsybl.network import Network
 from pypowsybl._pypowsybl import Grid2opStringValueType
 from pypowsybl._pypowsybl import Grid2opIntegerValueType
@@ -47,3 +48,7 @@ class Backend:
 
     def update_integer_value(self, value_type: Grid2opUpdateIntegerValueType, value: np.ndarray, changed: np.ndarray) -> None:
         _pypowsybl.update_grid2op_integer_value(self._handle, value_type, value, changed)
+
+    def run_pf(self, dc: bool = False, parameters: Parameters = None) -> List[ComponentResult]:
+        p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+        return [ComponentResult(res) for res in _pypowsybl.run_grid2op_loadflow(self._handle, dc, p)]

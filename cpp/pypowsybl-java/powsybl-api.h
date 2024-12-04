@@ -491,6 +491,7 @@ typedef enum {
     BRANCH_V2,
     BRANCH_I1,
     BRANCH_I2,
+    BRANCH_PERMANENT_LIMIT_A,
 } Grid2opDoubleValueType;
 
 typedef enum {

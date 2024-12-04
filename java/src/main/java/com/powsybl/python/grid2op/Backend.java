@@ -8,6 +8,10 @@
 package com.powsybl.python.grid2op;
 
 import com.powsybl.iidm.network.*;
+import com.powsybl.loadflow.LoadFlow;
+import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.loadflow.LoadFlowProvider;
+import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.Util;
@@ -73,6 +77,7 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> branchV2;
     private final ArrayPointer<CDoublePointer> branchI1;
     private final ArrayPointer<CDoublePointer> branchI2;
+    private final ArrayPointer<CDoublePointer> branchPermanentLimitA;
     private final int[] branchBusGlobalNum1;
     private final int[] branchBusGlobalNum2;
 
@@ -81,6 +86,12 @@ public class Backend implements Closeable {
     private int[] branchTopoVectPosition1;
     private int[] branchTopoVectPosition2;
     private ArrayPointer<CIntPointer> topoVect;
+
+    private LoadFlowProvider loadFlowProvider = LoadFlowProvider.findAll().stream()
+            .filter(p -> p.getName().equals("OpenLoadFlow"))
+            .findFirst()
+            .orElseThrow();
+    private LoadFlow.Runner loadFlowRunner = new LoadFlow.Runner(loadFlowProvider);
 
     public Backend(Network network, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
         this.network = Objects.requireNonNull(network);
@@ -208,6 +219,7 @@ public class Backend implements Closeable {
         branchV2 = createDoubleArrayPointer(branches.size());
         branchI1 = createDoubleArrayPointer(branches.size());
         branchI2 = createDoubleArrayPointer(branches.size());
+        branchPermanentLimitA = createDoubleArrayPointer(branches.size());
         branchBusGlobalNum1 = new int[branches.size()];
         branchBusGlobalNum2 = new int[branches.size()];
         for (int i = 0; i < branches.size(); i++) {
@@ -218,15 +230,14 @@ public class Backend implements Closeable {
             Bus bus2 = branch.getTerminal2().getBusBreakerView().getBus();
             branchBusGlobalNum1[i] = bus1 == null ? -1 : busIdToGlobalNum.get(bus1.getId());
             branchBusGlobalNum2[i] = bus2 == null ? -1 : busIdToGlobalNum.get(bus2.getId());
+            branchPermanentLimitA.getPtr().write(i, branch.getCurrentLimits1().map(LoadingLimits::getPermanentLimit)
+                    .or(() -> branch.getCurrentLimits2().map(LoadingLimits::getPermanentLimit))
+                    .orElse(999999.0));
         }
 
         computeBigTopo();
 
-        updateBuses();
-        updateLoads();
-        updateGenerators();
-        updateShunts();
-        updateBranches();
+        updateState();
         updateTopoVect();
     }
 
@@ -311,7 +322,15 @@ public class Backend implements Closeable {
         return Double.isNaN(f) ? 0 : f;
     }
 
-    public void updateBuses() {
+    public void updateState() {
+        updateBuses();
+        updateLoads();
+        updateGenerators();
+        updateShunts();
+        updateBranches();
+    }
+
+    private void updateBuses() {
         for (int i = 0; i < buses.length; i++) {
             Bus bus = buses[i];
             if (bus != null) {
@@ -320,7 +339,7 @@ public class Backend implements Closeable {
         }
     }
 
-    public void updateLoads() {
+    private void updateLoads() {
         for (int i = 0; i < loads.size(); i++) {
             Load load = loads.get(i);
             Terminal terminal = load.getTerminal();
@@ -330,7 +349,7 @@ public class Backend implements Closeable {
         }
     }
 
-    public void updateGenerators() {
+    private void updateGenerators() {
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
             Terminal terminal = generator.getTerminal();
@@ -340,7 +359,7 @@ public class Backend implements Closeable {
         }
     }
 
-    public void updateShunts() {
+    private void updateShunts() {
         for (int i = 0; i < shunts.size(); i++) {
             ShuntCompensator shunt = shunts.get(i);
             Terminal terminal = shunt.getTerminal();
@@ -350,7 +369,7 @@ public class Backend implements Closeable {
         }
     }
 
-    public void updateBranches() {
+    private void updateBranches() {
         for (int i = 0; i < branches.size(); i++) {
             Branch<?> branch = branches.get(i);
             Terminal terminal1 = branch.getTerminal1();
@@ -406,6 +425,7 @@ public class Backend implements Closeable {
             case BRANCH_V2 -> branchV2;
             case BRANCH_I1 -> branchI1;
             case BRANCH_I2 -> branchI2;
+            case BRANCH_PERMANENT_LIMIT_A -> branchPermanentLimitA;
         };
     }
 
@@ -504,6 +524,16 @@ public class Backend implements Closeable {
                 }
             }
         }
+    }
+
+    public LoadFlowProvider getLoadFlowProvider() {
+        return loadFlowProvider;
+    }
+
+    public LoadFlowResult runLoadFlow(LoadFlowParameters parameters) {
+        LoadFlowResult result = loadFlowRunner.run(network, parameters);
+        updateState();
+        return result;
     }
 
     @Override

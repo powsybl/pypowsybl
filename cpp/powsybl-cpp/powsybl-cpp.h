@@ -852,6 +852,7 @@ array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerVal
 array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
 void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
 void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
 
 }
 #endif //PYPOWSYBL_H

@@ -1152,7 +1152,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("BRANCH_V1", Grid2opDoubleValueType::BRANCH_V1)
             .value("BRANCH_V2", Grid2opDoubleValueType::BRANCH_V2)
             .value("BRANCH_I1", Grid2opDoubleValueType::BRANCH_I1)
-            .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2);
+            .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2)
+            .value("BRANCH_PERMANENT_LIMIT_A", Grid2opDoubleValueType::BRANCH_PERMANENT_LIMIT_A);
 
     py::enum_<Grid2opUpdateDoubleValueType>(m, "Grid2opUpdateDoubleValueType")
             .value("UPDATE_LOAD_P", Grid2opUpdateDoubleValueType::UPDATE_LOAD_P)
@@ -1173,6 +1174,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
     m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {

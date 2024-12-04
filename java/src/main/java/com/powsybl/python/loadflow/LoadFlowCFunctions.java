@@ -122,7 +122,7 @@ public final class LoadFlowCFunctions {
         UnmanagedMemory.free(loadFlowParametersPtr);
     }
 
-    private static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> createLoadFlowComponentResultArrayPointer(LoadFlowResult result) {
         List<LoadFlowResult.ComponentResult> componentResults = result.getComponentResults();
         PyPowsyblApiHeader.LoadFlowComponentResultPointer componentResultPtr = UnmanagedMemory.calloc(componentResults.size() * SizeOf.get(PyPowsyblApiHeader.LoadFlowComponentResultPointer.class));
         for (int index = 0; index < componentResults.size(); index++) {

@@ -8,9 +8,14 @@
 package com.powsybl.python.grid2op;
 
 import com.powsybl.iidm.network.Network;
+import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.loadflow.LoadFlowResult;
 import com.powsybl.python.commons.Directives;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
+import com.powsybl.python.commons.Util;
+import com.powsybl.python.loadflow.LoadFlowCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -24,6 +29,7 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.loadflow.LoadFlowCFunctions.createLoadFlowComponentResultArrayPointer;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -83,7 +89,8 @@ public final class Grid2opCFunctions {
         BRANCH_V1,
         BRANCH_V2,
         BRANCH_I1,
-        BRANCH_I2;
+        BRANCH_I2,
+        BRANCH_PERMANENT_LIMIT_A;
 
         @CEnumValue
         public native int getCValue();
@@ -178,6 +185,18 @@ public final class Grid2opCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
             backend.updateIntegerValue(valueType, valuePtr, changedPtr);
+        });
+    }
+
+    @CEntryPoint(name = "runGrid2opLoadFlow")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle backendHandle, boolean dc,
+                                                                                                                 PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
+                                                                                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return Util.doCatch(exceptionHandlerPtr, () -> {
+            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, backend.getLoadFlowProvider());
+            LoadFlowResult result = backend.runLoadFlow(parameters);
+            return createLoadFlowComponentResultArrayPointer(result);
         });
     }
 }
