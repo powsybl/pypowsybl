@@ -28,21 +28,23 @@ class Backend:
         self._check_isolated_and_disconnected_injections = check_isolated_and_disconnected_injections
         self._consider_open_branch_reactive_flow = consider_open_branch_reactive_flow
         self._buses_per_voltage_level = buses_per_voltage_level
-        self._buses_per_voltage_level = buses_per_voltage_level
         self._connect_all_elements_to_first_bus = connect_all_elements_to_first_bus
-
-    def __enter__(self) -> Backend:
         self._handle = _pypowsybl.create_grid2op_backend(self._network._handle,
                                                          self._check_isolated_and_disconnected_injections,
                                                          self._connect_all_elements_to_first_bus,
                                                          self._buses_per_voltage_level,
                                                          self._connect_all_elements_to_first_bus)
+
+    def close(self) -> None:
+        _pypowsybl.free_grid2op_backend(self._handle)
+
+    def __enter__(self) -> Backend:
         return self
 
     def __exit__(self, exc_type: Optional[Type[BaseException]],
                        exc_value: Optional[BaseException],
                        traceback: Optional[object]) -> Literal[False]:
-        _pypowsybl.free_grid2op_backend(self._handle)
+        self.close()
         return False
 
     def get_string_value(self, value_type: Grid2opStringValueType) -> List[str]:
