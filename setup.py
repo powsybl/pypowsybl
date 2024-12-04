@@ -45,8 +45,7 @@ class PyPowsyblBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable,
-                      '-DPYTHON_VERSION=' + sys.version[:3]]
+                      '-DPython_EXECUTABLE=' + sys.executable]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
