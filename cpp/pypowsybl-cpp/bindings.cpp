@@ -1165,7 +1165,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS)
             .value("UPDATE_GENERATOR_BUS", Grid2opUpdateIntegerValueType::UPDATE_GENERATOR_BUS)
             .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
-            .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1);
+            .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS2);
 
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"), py::arg("check_isolated_and_disconnected_injections"),
           py::arg("consider_open_branch_reactive_flow"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
