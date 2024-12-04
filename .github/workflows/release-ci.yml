@@ -79,10 +79,6 @@ jobs:
       matrix:
         config:
           - {
-            name: darwin,
-            os: macos-12,
-          }
-          - {
             name: windows,
             os: windows-2022,
           }
