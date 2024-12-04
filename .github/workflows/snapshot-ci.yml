@@ -125,18 +125,18 @@ jobs:
         with:
           repository: powsybl/powsybl-entsoe
           ref: ${{ env.SNAPSHOT_BRANCH }}
-          path: powsybl-enstoe
+          path: powsybl-entsoe
       - name: Change core/loadflow version
         run: |
-          mvn versions:set-property -Dproperty=powsybl.core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsyblcore.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=${{ env.LOADFLOW_VERSION}} -DgenerateBackupPoms=false
-        working-directory: ./powsybl-enstoe
+        working-directory: ./powsybl-entsoe
       - name: Build ENTSOE
         run: mvn -batch-mode --no-transfer-progress clean install
-        working-directory: ./powsybl-enstoe
+        working-directory: ./powsybl-entsoe
       - name: Get ENTSOE_VERSION
         run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-        working-directory: ./powsybl-enstoe
+        working-directory: ./powsybl-entsoe
 
       #BUILD OPENRAO
       - name: Checking for openrao snapshot branch
