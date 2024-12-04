@@ -48,9 +48,16 @@ jobs:
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
+          auditwheel repair dist/*.whl
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
+          path: wheelhouse/*.whl
 
       - name: Install wheel
-        run: pip3 install dist/*.whl --user
+        run: pip3 install wheelhouse/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
