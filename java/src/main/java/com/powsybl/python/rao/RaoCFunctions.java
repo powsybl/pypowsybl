@@ -1,3 +1,10 @@
+/**
+ * Copyright (c) 2024, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
+ */
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
@@ -29,6 +36,9 @@ import java.util.Set;
 import static com.powsybl.python.commons.Util.binaryBufferToBytes;
 import static com.powsybl.python.commons.Util.doCatch;
 
+/**
+ * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
+ */
 @CContext(Directives.class)
 public final class RaoCFunctions {
 

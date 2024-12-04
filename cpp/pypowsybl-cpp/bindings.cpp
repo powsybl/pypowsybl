@@ -16,7 +16,6 @@ class PYBIND11_EXPORT PyPowsyblError;
 }
 #include "powsybl-cpp.h"
 #include "pylogging.h"
-#include <iostream>
 
 namespace py = pybind11;
 
