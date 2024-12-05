@@ -527,16 +527,16 @@ def test_add_non_linear_shunt_bay():
     assert shunt.b == 2
 
     model1 = n.get_non_linear_shunt_compensator_sections().loc['shunt1']
-    section1 = model1.loc[0]
-    section2 = model1.loc[1]
+    section1 = model1.loc[1]
+    section2 = model1.loc[2]
     assert section1.g == 1
     assert section1.b == 2
     assert section2.g == 3
     assert section2.b == 4
 
     model2 = n.get_non_linear_shunt_compensator_sections().loc['shunt2']
-    section1 = model2.loc[0]
-    section2 = model2.loc[1]
+    section1 = model2.loc[1]
+    section2 = model2.loc[2]
     assert section1.g == 5
     assert section1.b == 6
     assert section2.g == 7
@@ -581,16 +581,16 @@ def test_add_non_linear_shunt_bay_bus_breaker():
     assert shunt.b == 2
 
     model1 = n.get_non_linear_shunt_compensator_sections().loc['shunt1']
-    section1 = model1.loc[0]
-    section2 = model1.loc[1]
+    section1 = model1.loc[1]
+    section2 = model1.loc[2]
     assert section1.g == 1
     assert section1.b == 2
     assert section2.g == 3
     assert section2.b == 4
 
     model2 = n.get_non_linear_shunt_compensator_sections().loc['shunt2']
-    section1 = model2.loc[0]
-    section2 = model2.loc[1]
+    section1 = model2.loc[1]
+    section2 = model2.loc[2]
     assert section1.g == 5
     assert section1.b == 6
     assert section2.g == 7
