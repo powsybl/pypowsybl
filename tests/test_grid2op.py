@@ -21,11 +21,11 @@ def test_backend():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     with grid2op.Backend(n) as backend:
-        assert ['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD'] == backend.get_string_value(grid2op.StringValueType.VOLTAGE_LEVEL_NAME)
-        assert ['LOAD'] == backend.get_string_value(grid2op.StringValueType.LOAD_NAME)
-        assert ['GEN', 'GEN2'] == backend.get_string_value(grid2op.StringValueType.GENERATOR_NAME)
-        assert [] == backend.get_string_value(grid2op.StringValueType.SHUNT_NAME)
-        assert ['NHV1_NHV2_1', 'NHV1_NHV2_2', 'NGEN_NHV1', 'NHV2_NLOAD'] == backend.get_string_value(grid2op.StringValueType.BRANCH_NAME)
+        npt.assert_array_equal(np.array(['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']), backend.get_string_value(grid2op.StringValueType.VOLTAGE_LEVEL_NAME))
+        npt.assert_array_equal(np.array(['LOAD']), backend.get_string_value(grid2op.StringValueType.LOAD_NAME))
+        npt.assert_array_equal(np.array(['GEN', 'GEN2']), backend.get_string_value(grid2op.StringValueType.GENERATOR_NAME))
+        npt.assert_array_equal(np.array([]), backend.get_string_value(grid2op.StringValueType.SHUNT_NAME))
+        npt.assert_array_equal(np.array(['NHV1_NHV2_1', 'NHV1_NHV2_2', 'NGEN_NHV1', 'NHV2_NLOAD']), backend.get_string_value(grid2op.StringValueType.BRANCH_NAME))
 
         npt.assert_array_equal(np.array([3]), backend.get_integer_value(grid2op.IntegerValueType.LOAD_VOLTAGE_LEVEL_NUM))
         npt.assert_array_equal(np.array([0, 0]), backend.get_integer_value(grid2op.IntegerValueType.GENERATOR_VOLTAGE_LEVEL_NUM))
