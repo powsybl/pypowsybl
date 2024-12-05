@@ -71,6 +71,8 @@
         <powsybl-dependencies.version>2024.3.1</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
+        <powsybl-open-rao.version>6.0.1</powsybl-open-rao.version>
+        <google.ortools.version>9.10.4067</google.ortools.version>
     </properties>
 
     <build>
@@ -121,6 +123,36 @@
                         </goals>
                         <configuration>
                             <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.google.ortools</groupId>
+                                    <artifactId>ortools-win32-x86-64</artifactId>
+                                    <destFileName>ortools-Windows-x86-64.jar</destFileName>
+                                    <version>${google.ortools.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.ortools</groupId>
+                                    <artifactId>ortools-darwin-aarch64</artifactId>
+                                    <destFileName>ortools-Darwin-aarch64.jar</destFileName>
+                                    <version>${google.ortools.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.ortools</groupId>
+                                    <artifactId>ortools-darwin-x86-64</artifactId>
+                                    <destFileName>ortools-Darwin-x86-64.jar</destFileName>
+                                    <version>${google.ortools.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.ortools</groupId>
+                                    <artifactId>ortools-linux-aarch64</artifactId>
+                                    <destFileName>ortools-Linux-aarch64.jar</destFileName>
+                                    <version>${google.ortools.version}</version>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>com.google.ortools</groupId>
+                                    <artifactId>ortools-linux-x86-64</artifactId>
+                                    <destFileName>ortools-Linux-x86-64.jar</destFileName>
+                                    <version>${google.ortools.version}</version>
+                                </artifactItem>
                                 <artifactItem>
                                     <groupId>com.powsybl</groupId>
                                     <artifactId>powsybl-math-native</artifactId>
@@ -400,6 +432,36 @@
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
             <version>${zstdjni.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-rao-api</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-api</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-impl</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-json</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-search-tree-rao</artifactId>
+            <version>${powsybl-open-rao.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-rao-result-json</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
     </dependencies>
 </project>
