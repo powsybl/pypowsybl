@@ -5,7 +5,7 @@ prettytable==3.11.0 # last version supporting python 3.8
 networkx
 matplotlib==3.9.2; python_version >= "3.9"
 matplotlib==3.7.5; python_version <= "3.8"
-pybind11[global]==2.12.0
+pybind11[global]==2.13.6
 
 # optional dependencies
 pandapower==2.14.11
