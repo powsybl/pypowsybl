@@ -17,6 +17,7 @@ TOLERANCE = 1e-3
 def no_config():
     pp.set_config_read(False)
 
+
 def test_backend():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
@@ -72,3 +73,21 @@ def test_backend():
 
         npt.assert_allclose(np.array([500.0, 1100.0, 999999.0, 999999.0]),
                             backend.get_double_value(grid2op.DoubleValueType.BRANCH_PERMANENT_LIMIT_A), rtol=TOLERANCE, atol=TOLERANCE)
+
+
+def test_backend_ieee14():
+    n = pp.network.create_ieee14()
+    pp.loadflow.run_ac(n)
+    with grid2op.Backend(n) as backend:
+        npt.assert_array_equal(np.array(['B9-SH']), backend.get_string_value(grid2op.StringValueType.SHUNT_NAME))
+        npt.assert_allclose(np.array([0.0]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_P), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([-21.184]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_Q), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([12.671]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_V), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([141.075, 136.35, 137.385, 137.634, 12.84, 12.671,  12.611,  12.682,  12.662, 12.604, 12.426]), backend.get_double_value(grid2op.DoubleValueType.LOAD_V), rtol=TOLERANCE, atol=TOLERANCE)
+
+        backend.update_integer_value(grid2op.UpdateIntegerValueType.UPDATE_SHUNT_BUS, np.array([-1]), np.array([True]))
+        npt.assert_allclose(np.array([-1]), backend.get_integer_value(grid2op.IntegerValueType.SHUNT_LOCAL_BUS))
+        backend.run_pf()
+        npt.assert_allclose(np.array([0.0]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_Q), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([0.0]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_V), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([141.075, 136.35, 136.9, 137.313, 12.84, 12.398, 12.385, 12.567, 12.641, 12.564, 12.252]), backend.get_double_value(grid2op.DoubleValueType.LOAD_V), rtol=TOLERANCE, atol=TOLERANCE)

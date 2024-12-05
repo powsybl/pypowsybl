@@ -560,7 +560,8 @@ public class Backend implements Closeable {
                 for (int i = 0; i < shunts.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         ShuntCompensator shunt = shunts.get(i);
-                        changeTopo(i, shunt.getTerminal(), valuePtr, shuntBusGlobalNum, shuntToVoltageLevelNum);
+                        int localBusNum = changeTopo(i, shunt.getTerminal(), valuePtr, shuntBusGlobalNum, shuntToVoltageLevelNum);
+                        shuntBusLocalNum.getPtr().write(i, localBusNum);
                     }
                 }
             }
