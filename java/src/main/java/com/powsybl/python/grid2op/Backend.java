@@ -588,10 +588,13 @@ public class Backend implements Closeable {
         return loadFlowProvider;
     }
 
-    private static <T extends Injection<T>> boolean checkIsolatedAndDisconnectedInjections(List<T> injections) {
+    private static <T extends Injection<T>> boolean checkIsolatedAndDisconnectedInjections(List<T> injections, boolean checkConnection) {
         for (T injection : injections) {
             Bus bus = injection.getTerminal().getBusView().getBus();
-            if (bus == null || !bus.isInMainSynchronousComponent()) {
+            if (checkConnection && bus == null) {
+                return true;
+            }
+            if (bus != null && !bus.isInMainSynchronousComponent()) {
                 return true;
             }
         }
@@ -599,13 +602,13 @@ public class Backend implements Closeable {
     }
 
     public boolean checkIsolatedAndDisconnectedInjections() {
-        if (checkIsolatedAndDisconnectedInjections(loads)) {
+        if (checkIsolatedAndDisconnectedInjections(loads, true)) {
             return true;
         }
-        if (checkIsolatedAndDisconnectedInjections(generators)) {
+        if (checkIsolatedAndDisconnectedInjections(generators, true)) {
             return true;
         }
-        if (checkIsolatedAndDisconnectedInjections(shunts)) {
+        if (checkIsolatedAndDisconnectedInjections(shunts, false)) {
             return true;
         }
         return false;
