@@ -89,15 +89,20 @@ public class Backend implements Closeable {
     private int[] branchTopoVectPosition2;
     private ArrayPointer<CIntPointer> topoVect;
 
-    private LoadFlowProvider loadFlowProvider = LoadFlowProvider.findAll().stream()
+    private final LoadFlowProvider loadFlowProvider = LoadFlowProvider.findAll().stream()
             .filter(p -> p.getName().equals("OpenLoadFlow"))
             .findFirst()
             .orElseThrow();
-    private LoadFlow.Runner loadFlowRunner = new LoadFlow.Runner(loadFlowProvider);
+    private final LoadFlow.Runner loadFlowRunner = new LoadFlow.Runner(loadFlowProvider);
 
     public Backend(Network network, boolean considerOpenBranchReactiveFlow, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
         this.network = Objects.requireNonNull(network);
         this.considerOpenBranchReactiveFlow = considerOpenBranchReactiveFlow;
+
+        // reset switch retain
+        for (Switch s : network.getSwitches()) {
+            s.setRetained(false);
+        }
 
         // waiting for switch action, we convert all voltage levels to bus/breaker topo
         for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
