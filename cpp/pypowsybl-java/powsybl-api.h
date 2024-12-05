@@ -506,6 +506,7 @@ typedef enum {
 typedef enum {
     UPDATE_LOAD_BUS = 0,
     UPDATE_GENERATOR_BUS,
+    UPDATE_SHUNT_BUS,
     UPDATE_BRANCH_BUS1,
     UPDATE_BRANCH_BUS2,
 } Grid2opUpdateIntegerValueType;

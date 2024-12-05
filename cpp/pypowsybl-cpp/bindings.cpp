@@ -1165,6 +1165,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<Grid2opUpdateIntegerValueType>(m, "Grid2opUpdateIntegerValueType")
             .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS)
             .value("UPDATE_GENERATOR_BUS", Grid2opUpdateIntegerValueType::UPDATE_GENERATOR_BUS)
+            .value("UPDATE_SHUNT_BUS", Grid2opUpdateIntegerValueType::UPDATE_SHUNT_BUS)
             .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
             .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS2);
 
