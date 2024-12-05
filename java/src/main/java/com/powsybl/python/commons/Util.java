@@ -7,7 +7,6 @@
  */
 package com.powsybl.python.commons;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
@@ -191,9 +190,11 @@ public final class Util {
             case THREE_WINDINGS_TRANSFORMER -> PyPowsyblApiHeader.ElementType.THREE_WINDINGS_TRANSFORMER;
             case GENERATOR -> PyPowsyblApiHeader.ElementType.GENERATOR;
             case LOAD -> PyPowsyblApiHeader.ElementType.LOAD;
+            case GROUND -> PyPowsyblApiHeader.ElementType.GROUND;
             case BATTERY -> PyPowsyblApiHeader.ElementType.BATTERY;
             case SHUNT_COMPENSATOR -> PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE -> PyPowsyblApiHeader.ElementType.DANGLING_LINE;
+            case DANGLING_LINE_GENERATION -> PyPowsyblApiHeader.ElementType.DANGLING_LINE_GENERATION;
             case TIE_LINE -> PyPowsyblApiHeader.ElementType.TIE_LINE;
             case LCC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.VSC_CONVERTER_STATION;
@@ -236,9 +237,11 @@ public final class Util {
             case THREE_WINDINGS_TRANSFORMER -> DataframeElementType.THREE_WINDINGS_TRANSFORMER;
             case GENERATOR -> DataframeElementType.GENERATOR;
             case LOAD -> DataframeElementType.LOAD;
+            case GROUND -> DataframeElementType.GROUND;
             case BATTERY -> DataframeElementType.BATTERY;
             case SHUNT_COMPENSATOR -> DataframeElementType.SHUNT_COMPENSATOR;
             case DANGLING_LINE -> DataframeElementType.DANGLING_LINE;
+            case DANGLING_LINE_GENERATION -> DataframeElementType.DANGLING_LINE_GENERATION;
             case TIE_LINE -> DataframeElementType.TIE_LINE;
             case LCC_CONVERTER_STATION -> DataframeElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION -> DataframeElementType.VSC_CONVERTER_STATION;
@@ -429,7 +432,6 @@ public final class Util {
             case LOW_SHORT_CIRCUIT_CURRENT -> LimitViolationType.LOW_SHORT_CIRCUIT_CURRENT;
             case HIGH_SHORT_CIRCUIT_CURRENT -> LimitViolationType.HIGH_SHORT_CIRCUIT_CURRENT;
             case OTHER -> LimitViolationType.OTHER;
-            default -> throw new PowsyblException("Unknown limit violation type: " + violationType);
         };
     }
 

@@ -519,6 +519,8 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 
 std::vector<std::string> getNetworkImportFormats();
 
+std::vector<std::string> getNetworkImportSupportedExtensions();
+
 std::vector<std::string> getNetworkExportFormats();
 
 std::vector<std::string> getNetworkImportPostProcessors();
@@ -764,17 +766,19 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode);
 
 // timeseries/curves mapping
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
 // events mapping
-void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
+void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
 
 // dynamic model mapping
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes);
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 
 // results
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);

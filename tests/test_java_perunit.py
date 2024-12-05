@@ -73,7 +73,7 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
                -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
@@ -89,7 +89,7 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.08, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
+        data=[['GEN', '', 'OTHER', 6.08, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
                -1.12641, nan, 'VLGEN', '', False],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
