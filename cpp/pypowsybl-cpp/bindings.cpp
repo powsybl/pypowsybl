@@ -1176,7 +1176,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
     m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
-    m.def("check_grid2op_isolate_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
+    m.def("check_grid2op_isolated_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
     m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 

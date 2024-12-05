@@ -538,8 +538,7 @@ public class Backend implements Closeable {
         }
     }
 
-    private void changeTopo(int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
-                            int[] xTopoVectPosition) {
+    private int changeTopo(int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
         int localBusNum = valuePtr.read(i);
         if (localBusNum == -1) {
             t.disconnect();
@@ -553,6 +552,12 @@ public class Backend implements Closeable {
                 xBusGlobalNum[i] = globalBusNum;
             }
         }
+        return localBusNum;
+    }
+
+    private void changeTopo(int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
+                            int[] xTopoVectPosition) {
+        int localBusNum = changeTopo(i, t, valuePtr, xBusGlobalNum, xToVoltageLevelNum);
         // update topo vect
         topoVect.getPtr().write(xTopoVectPosition[i], localBusNum);
     }
@@ -572,6 +577,14 @@ public class Backend implements Closeable {
                     if (changedPtr.read(i) == 1) {
                         Generator generator = generators.get(i);
                         changeTopo(i, generator.getTerminal(), valuePtr, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
+                    }
+                }
+            }
+            case UPDATE_SHUNT_BUS -> {
+                for (int i = 0; i < shunts.size(); i++) {
+                    if (changedPtr.read(i) == 1) {
+                        ShuntCompensator shunt = shunts.get(i);
+                        changeTopo(i, shunt.getTerminal(), valuePtr, shuntBusGlobalNum, shuntToVoltageLevelNum);
                     }
                 }
             }
