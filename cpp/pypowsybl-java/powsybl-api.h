@@ -470,6 +470,7 @@ typedef enum {
     SHUNT_VOLTAGE_LEVEL_NUM,
     BRANCH_VOLTAGE_LEVEL_NUM_1,
     BRANCH_VOLTAGE_LEVEL_NUM_2,
+    SHUNT_LOCAL_BUS,
     TOPO_VECT,
 } Grid2opIntegerValueType;
 

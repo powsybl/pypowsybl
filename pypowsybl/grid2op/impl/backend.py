@@ -20,17 +20,14 @@ import numpy as np
 
 class Backend:
     def __init__(self, network: Network,
-                 check_isolated_and_disconnected_injections: bool = True,
                  consider_open_branch_reactive_flow: bool = False,
                  buses_per_voltage_level: int = 2,
                  connect_all_elements_to_first_bus: bool = True):
         self._network = network
-        self._check_isolated_and_disconnected_injections = check_isolated_and_disconnected_injections
         self._consider_open_branch_reactive_flow = consider_open_branch_reactive_flow
         self._buses_per_voltage_level = buses_per_voltage_level
         self._connect_all_elements_to_first_bus = connect_all_elements_to_first_bus
         self._handle = _pypowsybl.create_grid2op_backend(self._network._handle,
-                                                         self._check_isolated_and_disconnected_injections,
                                                          self._connect_all_elements_to_first_bus,
                                                          self._buses_per_voltage_level,
                                                          self._connect_all_elements_to_first_bus)
@@ -61,6 +58,9 @@ class Backend:
 
     def update_integer_value(self, value_type: Grid2opUpdateIntegerValueType, value: np.ndarray, changed: np.ndarray) -> None:
         _pypowsybl.update_grid2op_integer_value(self._handle, value_type, value, changed)
+
+    def check_grid2op_isolate_and_disconnected_injections(self) -> bool:
+        return _pypowsybl.check_grid2op_isolate_and_disconnected_injections(self._handle)
 
     def run_pf(self, dc: bool = False, parameters: Parameters = None) -> List[ComponentResult]:
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access

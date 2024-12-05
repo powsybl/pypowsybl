@@ -7,7 +7,6 @@
  */
 package com.powsybl.python.grid2op;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -33,7 +32,6 @@ import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 public class Backend implements Closeable {
 
     private final Network network;
-    private final boolean checkIsolatedAndDisconnectedInjections;
     private final boolean considerOpenBranchReactiveFlow;
 
     private final List<VoltageLevel> voltageLevels;
@@ -64,7 +62,8 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> shuntP;
     private final ArrayPointer<CDoublePointer> shuntQ;
     private final ArrayPointer<CDoublePointer> shuntV;
-    private final ArrayPointer<CIntPointer> shuntBusGlobalNum;
+    private final int[] shuntBusGlobalNum;
+    private final ArrayPointer<CIntPointer> shuntBusLocalNum;
 
     private final List<Battery> batteries = Collections.emptyList();
 
@@ -96,10 +95,8 @@ public class Backend implements Closeable {
             .orElseThrow();
     private LoadFlow.Runner loadFlowRunner = new LoadFlow.Runner(loadFlowProvider);
 
-    public Backend(Network network, boolean checkIsolatedAndDisconnectedInjections, boolean considerOpenBranchReactiveFlow,
-                   int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
+    public Backend(Network network, boolean considerOpenBranchReactiveFlow, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus) {
         this.network = Objects.requireNonNull(network);
-        this.checkIsolatedAndDisconnectedInjections = checkIsolatedAndDisconnectedInjections;
         this.considerOpenBranchReactiveFlow = considerOpenBranchReactiveFlow;
 
         // waiting for switch action, we convert all voltage levels to bus/breaker topo
@@ -204,12 +201,14 @@ public class Backend implements Closeable {
         shuntP = createDoubleArrayPointer(shunts.size());
         shuntQ = createDoubleArrayPointer(shunts.size());
         shuntV = createDoubleArrayPointer(shunts.size());
-        shuntBusGlobalNum = createIntArrayPointer(shunts.size());
+        shuntBusGlobalNum = new int[shunts.size()];
+        shuntBusLocalNum = createIntArrayPointer(shunts.size());
         for (int i = 0; i < shunts.size(); i++) {
             ShuntCompensator shunt = shunts.get(i);
             shuntToVoltageLevelNum.getPtr().write(i, voltageLevelIdToNum.get(shunt.getTerminal().getVoltageLevel().getId()));
             Bus bus = shunt.getTerminal().getBusBreakerView().getBus();
-            shuntBusGlobalNum.getPtr().write(i, bus == null ? -1 : busIdToGlobalNum.get(bus.getId()));
+            shuntBusGlobalNum[i] = bus == null ? -1 : busIdToGlobalNum.get(bus.getId());
+            shuntBusLocalNum.getPtr().write(i, globalToLocalBusNum(shuntBusGlobalNum[i]));
         }
 
         // branches
@@ -248,6 +247,9 @@ public class Backend implements Closeable {
     }
 
     static int localToGlobalBusNum(int voltageLevelCount, int voltageLevelNum, int localNum) {
+        if (localNum == -1) {
+            return -1;
+        }
         return voltageLevelNum + voltageLevelCount * (localNum - 1);
     }
 
@@ -256,6 +258,9 @@ public class Backend implements Closeable {
     }
 
     static int globalToLocalBusNum(int voltageLevelCount, int globalNum) {
+        if (globalNum == -1) {
+            return -1;
+        }
         return globalNum / voltageLevelCount + 1;
     }
 
@@ -464,6 +469,7 @@ public class Backend implements Closeable {
             case SHUNT_VOLTAGE_LEVEL_NUM -> shuntToVoltageLevelNum;
             case BRANCH_VOLTAGE_LEVEL_NUM_1 -> branchToVoltageLevelNum1;
             case BRANCH_VOLTAGE_LEVEL_NUM_2 -> branchToVoltageLevelNum2;
+            case SHUNT_LOCAL_BUS -> shuntBusLocalNum;
             case TOPO_VECT -> topoVect;
         };
     }
@@ -592,21 +598,27 @@ public class Backend implements Closeable {
         return loadFlowProvider;
     }
 
-    private static <T extends Injection<T>> void checkIsolatedAndDisconnectedInjections(List<T> injections) {
+    private static <T extends Injection<T>> boolean checkIsolatedAndDisconnectedInjections(List<T> injections) {
         for (T injection : injections) {
             Bus bus = injection.getTerminal().getBusView().getBus();
             if (bus == null || !bus.isInMainSynchronousComponent()) {
-                throw new PowsyblException("Isolated injection '" + injection.getId() + "'");
+                return true;
             }
         }
+        return false;
     }
 
-    private void checkIsolatedAndDisconnectedInjections() {
-        if (checkIsolatedAndDisconnectedInjections) {
-            checkIsolatedAndDisconnectedInjections(loads);
-            checkIsolatedAndDisconnectedInjections(generators);
-            checkIsolatedAndDisconnectedInjections(shunts);
+    public boolean checkIsolatedAndDisconnectedInjections() {
+        if (checkIsolatedAndDisconnectedInjections(loads)) {
+            return true;
         }
+        if (checkIsolatedAndDisconnectedInjections(generators)) {
+            return true;
+        }
+        if (checkIsolatedAndDisconnectedInjections(shunts)) {
+            return true;
+        }
+        return false;
     }
 
     public LoadFlowResult runLoadFlow(LoadFlowParameters parameters) {
@@ -637,7 +649,7 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(shuntP);
         PyPowsyblApiHeader.freeArrayPointer(shuntQ);
         PyPowsyblApiHeader.freeArrayPointer(shuntV);
-        PyPowsyblApiHeader.freeArrayPointer(shuntBusGlobalNum);
+        PyPowsyblApiHeader.freeArrayPointer(shuntBusLocalNum);
 
         Util.freeCharPtrArray(branchName);
         PyPowsyblApiHeader.freeArrayPointer(branchToVoltageLevelNum1);

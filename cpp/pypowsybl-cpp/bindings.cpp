@@ -1133,6 +1133,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM)
             .value("BRANCH_VOLTAGE_LEVEL_NUM_1", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_1)
             .value("BRANCH_VOLTAGE_LEVEL_NUM_2", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_2)
+            .value("SHUNT_LOCAL_BUS", Grid2opIntegerValueType::SHUNT_LOCAL_BUS)
             .value("TOPO_VECT", Grid2opIntegerValueType::TOPO_VECT);
 
     py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
@@ -1167,7 +1168,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
             .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS2);
 
-    m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"), py::arg("check_isolated_and_disconnected_injections"),
+    m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"),
           py::arg("consider_open_branch_reactive_flow"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
     m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
@@ -1175,6 +1176,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
     m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("check_grid2op_isolate_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
     m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 

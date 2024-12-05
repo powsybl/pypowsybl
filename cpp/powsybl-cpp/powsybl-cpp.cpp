@@ -1647,9 +1647,8 @@ JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, co
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool checkIsolatedAndDisconnectedInjections,
-                                bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, checkIsolatedAndDisconnectedInjections, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
 }
 
 void freeGrid2opBackend(const JavaHandle& backendHandle) {
@@ -1675,6 +1674,10 @@ void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoub
 
 void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr) {
     pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opIntegerValue, backendHandle, valueType, valuePtr, changedPtr);
+}
+
+bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle) {
+    return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
 }
 
 LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {

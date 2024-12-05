@@ -62,6 +62,7 @@ public final class Grid2opCFunctions {
         SHUNT_VOLTAGE_LEVEL_NUM,
         BRANCH_VOLTAGE_LEVEL_NUM_1,
         BRANCH_VOLTAGE_LEVEL_NUM_2,
+        SHUNT_LOCAL_BUS,
         TOPO_VECT;
 
         @CEnumValue
@@ -128,12 +129,12 @@ public final class Grid2opCFunctions {
     }
 
     @CEntryPoint(name = "createGrid2opBackend")
-    public static ObjectHandle createBackend(IsolateThread thread, ObjectHandle networkHandle, boolean checkIsolatedAndDisconnectedInjections,
-                                             boolean considerOpenBranchReactiveFlow, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus,
+    public static ObjectHandle createBackend(IsolateThread thread, ObjectHandle networkHandle, boolean considerOpenBranchReactiveFlow,
+                                             int busesPerVoltageLevel, boolean connectAllElementsToFirstBus,
                                              ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Backend backend = new Backend(network, checkIsolatedAndDisconnectedInjections, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
+            Backend backend = new Backend(network, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
             return ObjectHandles.getGlobal().create(backend);
         });
     }
@@ -186,6 +187,14 @@ public final class Grid2opCFunctions {
         doCatch(exceptionHandlerPtr, () -> {
             Backend backend = ObjectHandles.getGlobal().get(backendHandle);
             backend.updateIntegerValue(valueType, valuePtr, changedPtr);
+        });
+    }
+
+    @CEntryPoint(name = "checkGrid2opIsolatedAndDisconnectedInjections")
+    public static boolean checkIsolatedAndDisconnectedInjections(IsolateThread thread, ObjectHandle backendHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+            return backend.checkIsolatedAndDisconnectedInjections();
         });
     }
 

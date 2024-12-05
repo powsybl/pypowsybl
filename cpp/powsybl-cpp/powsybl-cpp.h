@@ -845,14 +845,14 @@ SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool checkIsolatedAndDisconnectedInjections,
-                                bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);
 std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
 array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);
 array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
 void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
 void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
+bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
 LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
 
 }
