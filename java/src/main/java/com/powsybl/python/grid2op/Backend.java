@@ -366,24 +366,8 @@ public class Backend implements Closeable {
         return fixNan(t.getP());
     }
 
-    private double getP(Terminal t, int i, ArrayPointer<CIntPointer> xBusGlobalNum) {
-        int globalNum = xBusGlobalNum.getPtr().read(i);
-        if (globalNum == -1) {
-            return 0;
-        }
-        return fixNan(t.getP());
-    }
-
     private double getQ(Terminal t, int i, int[] xBusGlobalNum) {
         int globalNum = xBusGlobalNum[i];
-        if (!considerOpenBranchReactiveFlow && globalNum == -1) {
-            return 0;
-        }
-        return fixNan(t.getQ());
-    }
-
-    private double getQ(Terminal t, int i, ArrayPointer<CIntPointer> xBusGlobalNum) {
-        int globalNum = xBusGlobalNum.getPtr().read(i);
         if (!considerOpenBranchReactiveFlow && globalNum == -1) {
             return 0;
         }
@@ -396,14 +380,6 @@ public class Backend implements Closeable {
             return 0;
         }
         return fixNan(t.getI());
-    }
-
-    private double getV(int i, ArrayPointer<CIntPointer> xBusGlobalNum) {
-        int globalNum = xBusGlobalNum.getPtr().read(i);
-        if (globalNum == -1) {
-            return 0.0;
-        }
-        return busV[globalNum];
     }
 
     private void updateLoads() {
@@ -420,8 +396,8 @@ public class Backend implements Closeable {
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
             Terminal terminal = generator.getTerminal();
-            generatorP.getPtr().write(i, getP(terminal, i, generatorBusGlobalNum));
-            generatorQ.getPtr().write(i, getQ(terminal, i, generatorBusGlobalNum));
+            generatorP.getPtr().write(i, -getP(terminal, i, generatorBusGlobalNum));
+            generatorQ.getPtr().write(i, -getQ(terminal, i, generatorBusGlobalNum));
             generatorV.getPtr().write(i, getV(i, generatorBusGlobalNum));
         }
     }

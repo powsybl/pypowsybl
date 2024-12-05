@@ -37,8 +37,8 @@ def test_backend():
         npt.assert_allclose(np.array([200.0]), backend.get_double_value(grid2op.DoubleValueType.LOAD_Q), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([147.578618]), backend.get_double_value(grid2op.DoubleValueType.LOAD_V), rtol=TOLERANCE, atol=TOLERANCE)
 
-        npt.assert_allclose(np.array([-302.78, -302.78]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_P), rtol=TOLERANCE, atol=TOLERANCE)
-        npt.assert_allclose(np.array([-112.641, -112.641]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_Q), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([302.78, 302.78]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_P), rtol=TOLERANCE, atol=TOLERANCE)
+        npt.assert_allclose(np.array([112.641, 112.641]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_Q), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([24.5, 24.5]), backend.get_double_value(grid2op.DoubleValueType.GENERATOR_V), rtol=TOLERANCE, atol=TOLERANCE)
 
         npt.assert_allclose(np.array([]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_P), rtol=TOLERANCE, atol=TOLERANCE)
