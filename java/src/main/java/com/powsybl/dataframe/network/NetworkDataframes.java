@@ -1277,7 +1277,9 @@ public final class NetworkDataframes {
     }
 
     private static void setBusBreakerViewBusId(Terminal t, String busId) {
-        Objects.requireNonNull(t).getBusBreakerView().setConnectableBus(busId);
+        if (!busId.isEmpty()) {
+            Objects.requireNonNull(t).getBusBreakerView().setConnectableBus(busId);
+        }
     }
 
     private static <T extends Injection<T>> void setBusBreakerViewBusId(T i, String busId) {
