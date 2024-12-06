@@ -5,18 +5,19 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-from typing import List, Optional, Type, Literal
+from typing import List, Optional, Type, Literal, Dict, Any
+
+import numpy as np
+from pypowsybl._pypowsybl import Grid2opDoubleValueType
+from pypowsybl._pypowsybl import Grid2opIntegerValueType
+from pypowsybl._pypowsybl import Grid2opStringValueType
+from pypowsybl._pypowsybl import Grid2opUpdateDoubleValueType
+from pypowsybl._pypowsybl import Grid2opUpdateIntegerValueType
 
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters, ComponentResult
 from pypowsybl.network import Network
-from pypowsybl._pypowsybl import Grid2opStringValueType
-from pypowsybl._pypowsybl import Grid2opIntegerValueType
-from pypowsybl._pypowsybl import Grid2opDoubleValueType
-from pypowsybl._pypowsybl import Grid2opUpdateDoubleValueType
-from pypowsybl._pypowsybl import Grid2opUpdateIntegerValueType
 
-import numpy as np
 
 class Backend:
     def __init__(self, network: Network,
@@ -43,6 +44,22 @@ class Backend:
                        traceback: Optional[object]) -> Literal[False]:
         self.close()
         return False
+
+    def __getstate__(self) -> Dict[str, Any]:
+        return {'biidm': self._network.save_to_binary_buffer('BIIDM', {}),
+                'consider_open_branch_reactive_flow': self._consider_open_branch_reactive_flow,
+                'buses_per_voltage_level': self._buses_per_voltage_level,
+                'connect_all_elements_to_first_bus': self._connect_all_elements_to_first_bus}
+
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        self._network = Network(_pypowsybl.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, [], None))
+        self._consider_open_branch_reactive_flow = state['consider_open_branch_reactive_flow']
+        self._buses_per_voltage_level = state['buses_per_voltage_level']
+        self._connect_all_elements_to_first_bus = state['connect_all_elements_to_first_bus']
+        self._handle = _pypowsybl.create_grid2op_backend(self._network._handle,
+                                                         self._connect_all_elements_to_first_bus,
+                                                         self._buses_per_voltage_level,
+                                                         self._connect_all_elements_to_first_bus)
 
     def get_string_value(self, value_type: Grid2opStringValueType) -> np.ndarray:
         return np.array(_pypowsybl.get_grid2op_string_value(self._handle, value_type))

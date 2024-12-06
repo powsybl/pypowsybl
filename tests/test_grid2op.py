@@ -3,6 +3,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
+import pathlib
+import pickle
+import tempfile
 
 import numpy as np
 import numpy.testing as npt
@@ -91,3 +94,20 @@ def test_backend_ieee14():
         npt.assert_allclose(np.array([0.0]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_Q), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([0.0]), backend.get_double_value(grid2op.DoubleValueType.SHUNT_V), rtol=TOLERANCE, atol=TOLERANCE)
         npt.assert_allclose(np.array([141.075, 136.35, 136.9, 137.313, 12.84, 12.398, 12.385, 12.567, 12.641, 12.564, 12.252]), backend.get_double_value(grid2op.DoubleValueType.LOAD_V), rtol=TOLERANCE, atol=TOLERANCE)
+
+
+def test_backend_copy():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    with grid2op.Backend(n) as backend:
+        backend.update_double_value(grid2op.UpdateDoubleValueType.UPDATE_LOAD_P, np.array([630]), np.array([True]))
+        pp.loadflow.run_ac(n)
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            tmp_dir_path = pathlib.Path(tmp_dir_name)
+            data_file = tmp_dir_path.joinpath('data.pkl')
+            with open(data_file, 'wb') as f:
+                pickle.dump(backend, f)
+            with open(data_file, 'rb') as f:
+                with pickle.load(f) as backend2:
+                    npt.assert_allclose(np.array([630.0]), backend2.get_double_value(grid2op.DoubleValueType.LOAD_P), rtol=TOLERANCE, atol=TOLERANCE)
