@@ -20,6 +20,8 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.*;
@@ -30,6 +32,8 @@ import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public class Backend implements Closeable {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Backend.class);
 
     private final Network network;
     private final boolean considerOpenBranchReactiveFlow;
@@ -120,7 +124,7 @@ public class Backend implements Closeable {
         for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
             int localBusCount = voltageLevel.getBusBreakerView().getBusCount();
             if (localBusCount < maxBusCount) {
-                for (int i = 0; i < maxBusCount - localBusCount; i++) {
+                for (int i = localBusCount; i < maxBusCount; i++) {
                     voltageLevel.getBusBreakerView().newBus()
                             .setId(voltageLevel.getId() + "_extra_busbar_" + i)
                             .add();
@@ -129,6 +133,7 @@ public class Backend implements Closeable {
         }
 
         if (connectAllElementsToFirstBus) {
+            LOGGER.debug("Connect all elements to first bus of voltage level");
             for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
                 voltageLevel.getBusBreakerView().getBusStream().findFirst().ifPresent(firstBus -> {
                     for (Connectable<?> connectable : voltageLevel.getConnectables()) {
