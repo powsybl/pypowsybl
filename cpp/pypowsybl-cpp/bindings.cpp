@@ -210,6 +210,7 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
     m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
     m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
+    m.def("get_final_state_values", &pypowsybl::getFinalStateValues, py::arg("result_handle"));
 }
 
 void voltageInitializerBinding(py::module_& m) {

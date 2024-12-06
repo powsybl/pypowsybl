@@ -7,14 +7,18 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.python.dynamic.PythonOutputVariablesSupplier;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 
+import static com.powsybl.dataframe.dynamic.OutputVariablesSeries.fsvDataFrameMapper;
 import static com.powsybl.dynamicsimulation.OutputVariable.OutputType.*;
+import static com.powsybl.python.network.Dataframes.createSeries;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -39,5 +43,17 @@ public class OutputVariablesSupplierTest {
                         .hasFieldOrPropertyWithValue("variable", "NGEN_Upu_value")
                         .hasFieldOrPropertyWithValue("outputType", FINAL_STATE)
         );
+    }
+
+    @Test
+    void testFsvDataframesMapper() {
+        Map<String, Double> fsv = Map.of("LOAD_load_PPu", 22.1, "GEN_Upu_value", 45.8);
+        List<Series> series = createSeries(fsvDataFrameMapper(), fsv);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("variables", "values");
+        assertThat(series).satisfiesExactly(
+                col1 -> assertThat(col1.getStrings()).containsExactly("LOAD_load_PPu", "GEN_Upu_value"),
+                col2 -> assertThat(col2.getDoubles()).containsExactly(22.1, 45.8));
     }
 }
