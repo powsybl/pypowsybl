@@ -12,19 +12,29 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.TimeSeries;
 
+import java.util.Map;
+
 /**
  * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
-public final class CurvesSeries {
+public final class OutputVariablesSeries {
 
-    private CurvesSeries() {
+    private OutputVariablesSeries() {
     }
 
     public static DataframeMapper<TimeSeries<DoublePoint, ?>, Void> curvesDataFrameMapper(String colName) {
-        DataframeMapperBuilder<TimeSeries<DoublePoint, ?>, DoublePoint, Void> df = new DataframeMapperBuilder<>();
-        df.itemsStreamProvider(TimeSeries::stream)
+        return new DataframeMapperBuilder<TimeSeries<DoublePoint, ?>, DoublePoint, Void>()
+                .itemsStreamProvider(TimeSeries::stream)
                 .intsIndex("timestamp", pt -> (int) (pt.getTime() % Integer.MAX_VALUE))
-                .doubles(colName, DoublePoint::getValue);
-        return df.build();
+                .doubles(colName, DoublePoint::getValue)
+                .build();
+    }
+
+    public static DataframeMapper<Map<String, Double>, Void> fsvDataFrameMapper() {
+        return new DataframeMapperBuilder<Map<String, Double>, Map.Entry<String, Double>, Void>()
+                .itemsStreamProvider(m -> m.entrySet().stream())
+                .stringsIndex("variables", Map.Entry::getKey)
+                .doubles("values", Map.Entry::getValue)
+                .build();
     }
 }

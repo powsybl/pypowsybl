@@ -784,6 +784,7 @@ std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getFinalStateValues(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawo package==========
 

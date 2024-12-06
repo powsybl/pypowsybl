@@ -46,12 +46,9 @@ def test_simulation():
     sim = dyn.Simulation()
     res = sim.run(network, model_mapping, event_mapping, variables_mapping, 0, 100, report_node)
 
-    print(report_node)
-    print(res.curves())
     assert report_node
     assert 'Ok' == res.status()
     assert 'BBM_GEN6_generator_PGen' in res.curves()
     assert 'BBM_GEN6_generator_QGen' in res.curves()
     assert 'BBM_GEN6_generator_UStatorPu' in res.curves()
-
-test_simulation()
+    assert res.final_state_values().loc['NETWORK_B3_Upu_value'].empty == False

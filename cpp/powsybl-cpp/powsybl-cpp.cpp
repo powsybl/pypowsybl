@@ -1367,6 +1367,10 @@ std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
     return vector.get();
 }
 
+SeriesArray* getFinalStateValues(JavaHandle resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFinalStateValues, resultHandle));
+}
+
 std::vector<std::string> getSupportedModels(DynamicMappingType mappingType) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, mappingType));
     return vector.get();

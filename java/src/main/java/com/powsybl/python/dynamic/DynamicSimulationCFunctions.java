@@ -16,7 +16,7 @@ import java.util.List;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.dynamic.CurvesSeries;
+import com.powsybl.dataframe.dynamic.OutputVariablesSeries;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.timeseries.DoublePoint;
@@ -217,7 +217,7 @@ public final class DynamicSimulationCFunctions {
             DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
             String curveName = CTypeUtil.toString(curveNamePtr);
             TimeSeries<DoublePoint, ?> curve = result.getCurve(curveName);
-            return Dataframes.createCDataframe(CurvesSeries.curvesDataFrameMapper(curveName), curve);
+            return Dataframes.createCDataframe(OutputVariablesSeries.curvesDataFrameMapper(curveName), curve);
         });
     }
 
@@ -229,5 +229,12 @@ public final class DynamicSimulationCFunctions {
             DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
             return Util.createCharPtrArray(new ArrayList<>(result.getCurves().keySet()));
         });
+    }
+
+    @CEntryPoint(name = "getFinalStateValues")
+    public static ArrayPointer<SeriesPointer> getFinalStateValues(IsolateThread thread, ObjectHandle resultHandle,
+                                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+        DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
+        return Dataframes.createCDataframe(OutputVariablesSeries.fsvDataFrameMapper(), result.getFinalStateValues());
     }
 }
