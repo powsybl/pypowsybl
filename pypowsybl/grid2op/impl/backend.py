@@ -46,13 +46,13 @@ class Backend:
         return False
 
     def __getstate__(self) -> Dict[str, Any]:
-        return {'biidm': self._network.save_to_binary_buffer('BIIDM', {}),
+        return {'xiidm': self._network.save_to_binary_buffer('XIIDM', {}),
                 'consider_open_branch_reactive_flow': self._consider_open_branch_reactive_flow,
                 'buses_per_voltage_level': self._buses_per_voltage_level,
                 'connect_all_elements_to_first_bus': self._connect_all_elements_to_first_bus}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        self._network = Network(_pypowsybl.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, [], None))
+        self._network = Network(_pypowsybl.load_network_from_binary_buffers([state['xiidm'].getbuffer()], {}, [], None))
         self._consider_open_branch_reactive_flow = state['consider_open_branch_reactive_flow']
         self._buses_per_voltage_level = state['buses_per_voltage_level']
         self._connect_all_elements_to_first_bus = state['connect_all_elements_to_first_bus']
