@@ -55,7 +55,7 @@ public final class CommonCFunctions {
     @CEntryPoint(name = "freeStringArray")
     public static void freeStringArray(IsolateThread thread, ArrayPointer<CCharPointerPointer> arrayPtr,
                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeArrayContent(arrayPtr));
+        doCatch(exceptionHandlerPtr, () -> Util.freeCharPtrArray(arrayPtr));
     }
 
     @CEntryPoint(name = "freeArray")
@@ -78,21 +78,11 @@ public final class CommonCFunctions {
 
     private static void freeSeries(SeriesPointer seriesPointer) {
         if (seriesPointer.getType() == CDataframeHandler.STRING_SERIES_TYPE) {
-            freeArrayContent(seriesPointer.data());
+            Util.freeCharPtrArray(seriesPointer.data());
+        } else {
+            UnmanagedMemory.free(seriesPointer.data().getPtr());
         }
-        UnmanagedMemory.free(seriesPointer.data().getPtr());
         UnmanagedMemory.free(seriesPointer.getName());
-    }
-
-    /**
-     * Frees C strings memory
-     *
-     * @param array
-     */
-    private static void freeArrayContent(ArrayPointer<CCharPointerPointer> array) {
-        for (int i = 0; i < array.getLength(); i++) {
-            UnmanagedMemory.free(array.getPtr().read(i));
-        }
     }
 
     @CEntryPoint(name = "destroyObjectHandle")
