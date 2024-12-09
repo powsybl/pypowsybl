@@ -548,17 +548,19 @@ public class Backend implements Closeable {
     }
 
     private void changeTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
+        int oldGlobalBusNum = xBusGlobalNum[i];
         if (localBusNum == -1) {
-            if (xBusGlobalNum[i] != -1) {
+            if (oldGlobalBusNum != -1) {
                 if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Disconnect {} from bus {}", label, xBusGlobalNum[i]);
+                    int oldLocalBusNum = globalToLocalBusNum(oldGlobalBusNum);
+                    LOGGER.trace("Disconnect {} from bus {}", label, oldLocalBusNum);
                 }
                 t.disconnect();
                 xBusGlobalNum[i] = -1;
             }
         } else {
             int globalBusNum = localToGlobalBusNum(xToVoltageLevelNum.getPtr().read(i), localBusNum);
-            int oldGlobalBusNum = xBusGlobalNum[i];
+
             if (globalBusNum != oldGlobalBusNum) {
                 if (LOGGER.isTraceEnabled()) {
                     if (oldGlobalBusNum != -1) {
