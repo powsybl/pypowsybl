@@ -1550,8 +1550,16 @@ def test_graph():
     n = pp.network.create_four_substations_node_breaker_network()
     network_topology = n.get_node_breaker_topology('S4VL1')
     graph = network_topology.create_graph()
+    print(graph.nodes[0])
     assert 7 == len(graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6] == list(graph.nodes)
+    assert {'connectable_id': 'S4VL1_BBS', 'connectable_type': 'BUSBAR_SECTION'} == graph.nodes[0]
     assert [(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)] == list(graph.edges)
+    assert {'id': 'S4VL1_BBS_LINES3S4_DISCONNECTOR',
+            'kind': 'DISCONNECTOR',
+            'name': 'S4VL1_BBS_LINES3S4_DISCONNECTOR',
+            'open': False,
+            'retained': False} == graph.edges[0, 5]
 
 
 @unittest.skip("plot graph skipping")
