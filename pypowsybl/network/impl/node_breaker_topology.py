@@ -53,7 +53,8 @@ class NodeBreakerTopology:
 
         The dataframe includes the following columns:
 
-        - **connectable_id**: Connected element, if any.
+        - **connectable_id**: Connected element ID, if any.
+        - **connectable_type**: Connected element type, if any.
 
         This dataframe is indexed by the id of the nodes.
         """
