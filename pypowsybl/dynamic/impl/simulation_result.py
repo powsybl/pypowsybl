@@ -6,6 +6,7 @@
 #
 import pandas as pd
 from pypowsybl import _pypowsybl as _pp
+from pypowsybl._pypowsybl import DynamicSimulationStatus
 from pypowsybl.utils import create_data_frame_from_series_array
 
 
@@ -15,16 +16,18 @@ class SimulationResult:
     def __init__(self, handle: _pp.JavaHandle) -> None:
         self._handle = handle
         self._status = _pp.get_dynamic_simulation_results_status(self._handle)
+        self._status_text = _pp.get_dynamic_simulation_results_status_text(self._handle)
         self._curves = self._get_all_curves()
         self._fsv = create_data_frame_from_series_array(_pp.get_final_state_values(self._handle))
+        self._timeline = create_data_frame_from_series_array(_pp.get_timeline(self._handle))
 
-    def status(self) -> str:
-        """
-        status of the simulation
-
-        :returns 'Ok' or 'Not OK'
-        """
+    def status(self) -> DynamicSimulationStatus:
+        """Status of the simulation"""
         return self._status
+
+    def status_text(self) -> str:
+        """Status text of the simulation"""
+        return self._status_text
 
     def curves(self) -> pd.DataFrame:
         """Dataframe of the curves results, columns are the curves names and rows are timestep"""
@@ -43,3 +46,7 @@ class SimulationResult:
     def final_state_values(self) -> pd.DataFrame:
         """Dataframe of the final state values results, first column is the fsv names, second one the final state values"""
         return self._fsv
+
+    def timeline(self) -> pd.DataFrame:
+        """Dataframe of the simulation timeline, first column is the event time, second one the model name and the third one the event message"""
+        return self._timeline
