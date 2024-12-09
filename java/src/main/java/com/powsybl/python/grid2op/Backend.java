@@ -562,7 +562,7 @@ public class Backend implements Closeable {
                 t.connect();
                 xBusGlobalNum[i] = globalBusNum;
                 if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Connect {}", label);
+                    LOGGER.trace("Connect {} to bus {}", label, localBusNum);
                 }
             }
         }
