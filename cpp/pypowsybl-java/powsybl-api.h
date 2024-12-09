@@ -411,6 +411,11 @@ typedef enum {
 } OutputVariableType;
 
 typedef enum {
+    SUCCESS = 0,
+    FAILURE,
+} DynamicSimulationStatus;
+
+typedef enum {
     UNDEFINED = -1,
     ONE,
     TWO,

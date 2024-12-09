@@ -12,6 +12,7 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
+import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
@@ -21,6 +22,7 @@ import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicSimulationStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
@@ -380,6 +382,13 @@ public final class Util {
             case CONFIGURED -> ReactiveSlackBusesMode.CONFIGURED;
             case NO_GENERATION -> ReactiveSlackBusesMode.NO_GENERATION;
             case ALL_BUSES -> ReactiveSlackBusesMode.ALL;
+        };
+    }
+
+    public static DynamicSimulationStatus convert(DynamicSimulationResult.Status obj) {
+        return switch (obj) {
+            case SUCCESS -> DynamicSimulationStatus.SUCCESS;
+            case FAILURE -> DynamicSimulationStatus.FAILURE;
         };
     }
 
