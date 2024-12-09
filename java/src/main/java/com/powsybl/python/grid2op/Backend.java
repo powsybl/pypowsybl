@@ -549,21 +549,29 @@ public class Backend implements Closeable {
 
     private void changeTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
         if (localBusNum == -1) {
-            t.disconnect();
-            xBusGlobalNum[i] = -1;
-            if (LOGGER.isTraceEnabled()) {
-                LOGGER.trace("Disconnect {}", label);
+            if (xBusGlobalNum[i] != -1) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("Disconnect {} from bus {}", label, xBusGlobalNum[i]);
+                }
+                t.disconnect();
+                xBusGlobalNum[i] = -1;
             }
         } else {
             int globalBusNum = localToGlobalBusNum(xToVoltageLevelNum.getPtr().read(i), localBusNum);
-            if (globalBusNum != xBusGlobalNum[i]) {
+            int oldGlobalBusNum = xBusGlobalNum[i];
+            if (globalBusNum != oldGlobalBusNum) {
+                if (LOGGER.isTraceEnabled()) {
+                    if (oldGlobalBusNum != -1) {
+                        int oldLocalBusNum = globalToLocalBusNum(oldGlobalBusNum);
+                        LOGGER.trace("Connect {} from bus {} to bus {}", label, oldLocalBusNum, localBusNum);
+                    } else {
+                        LOGGER.trace("Connect {} to bus {}", label, localBusNum);
+                    }
+                }
                 String newBusId = buses[globalBusNum].getId();
                 t.getBusBreakerView().setConnectableBus(newBusId);
                 t.connect();
                 xBusGlobalNum[i] = globalBusNum;
-                if (LOGGER.isTraceEnabled()) {
-                    LOGGER.trace("Connect {} to bus {}", label, localBusNum);
-                }
             }
         }
     }
