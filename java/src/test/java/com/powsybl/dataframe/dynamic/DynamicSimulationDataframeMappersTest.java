@@ -45,7 +45,7 @@ public class DynamicSimulationDataframeMappersTest {
         List<Series> series = createSeries(timelineEventDataFrameMapper(), timelineEvents);
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "time", "model", "message");
+                .containsExactly("index", "time", "model", "message");
         assertThat(series).satisfiesExactly(
                 index -> assertThat(index.getInts()).containsExactly(0, 1, 2),
                 col1 -> assertThat(col1.getDoubles()).containsExactly(0.0, 0.0, 2.2),
