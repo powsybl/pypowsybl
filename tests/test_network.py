@@ -1539,6 +1539,8 @@ def test_node_breaker_view():
     assert 0 == switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1']
     assert 5 == switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node2']
     assert 7 == len(nodes)
+    assert 'S4VL1_BBS' == nodes.iloc[0]['connectable_id']
+    assert 'BUSBAR_SECTION' == nodes.iloc[0]['connectable_type']
     assert topology.internal_connections.empty
 
     with pytest.raises(PyPowsyblError) as exc:
@@ -2485,6 +2487,17 @@ def test_deprecated_operational_limits_element_type_kwargs():
         network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
                                           side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
                                           acceptable_duration=[-1, 60], fictitious=[False, True])
+
+
+def test_connect_disconnect_with_empty_bus():
+    network = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
+    network.update_generators(id=['GEN', 'GEN2'], connected=[False, True], bus_breaker_bus_id=['', 'NGEN'])
+    generators = network.get_generators(attributes=['connected', 'bus_breaker_bus_id'])
+    expected_generators = pd.DataFrame(index=pd.Series(name='id', data=['GEN', 'GEN2']),
+                            columns=['connected', 'bus_breaker_bus_id'],
+                            data=[[False, 'NGEN'],
+                                  [True, 'NGEN']])
+    pd.testing.assert_frame_equal(expected_generators, generators, check_dtype=False)
 
 
 def test_topology_kind_update():
