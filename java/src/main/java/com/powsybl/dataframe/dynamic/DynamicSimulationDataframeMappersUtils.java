@@ -47,7 +47,7 @@ public final class DynamicSimulationDataframeMappersUtils {
         AtomicInteger index = new AtomicInteger();
         return new DataframeMapperBuilder<List<TimelineEvent>, TimelineEvent, Void>()
                 .itemsProvider(Function.identity())
-                .intsIndex("id", e -> index.getAndIncrement())
+                .intsIndex("index", e -> index.getAndIncrement())
                 .doubles("time", TimelineEvent::time)
                 .strings("model", TimelineEvent::modelName)
                 .strings("message", TimelineEvent::message)
