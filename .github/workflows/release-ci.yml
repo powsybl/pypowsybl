@@ -81,7 +81,7 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-12,
+            os: macos-13,
           }
           - {
             name: darwin-arm64,

@@ -1539,6 +1539,8 @@ def test_node_breaker_view():
     assert 0 == switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1']
     assert 5 == switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node2']
     assert 7 == len(nodes)
+    assert 'S4VL1_BBS' == nodes.iloc[0]['connectable_id']
+    assert 'BUSBAR_SECTION' == nodes.iloc[0]['connectable_type']
     assert topology.internal_connections.empty
 
     with pytest.raises(PyPowsyblError) as exc:
