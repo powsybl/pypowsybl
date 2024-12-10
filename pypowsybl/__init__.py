@@ -18,13 +18,14 @@ from pypowsybl import (
     sensitivity,
     glsk,
     flowdecomposition,
-    shortcircuit
+    shortcircuit,
+    rao
 )
 from pypowsybl.network import per_unit_view
 
 __version__ = '1.9.0.dev1'
 
-# set JVM java.library.path to pypowsybl module installation directory to be able to load math library
+# set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
 
 # make this modules importable with pythonic syntax "from pypowsybl.XXX import YYY
