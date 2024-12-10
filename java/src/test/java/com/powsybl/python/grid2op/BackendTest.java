@@ -19,6 +19,14 @@ class BackendTest {
     @Test
     void busNumTest() {
         // 3 voltage levels with 2 buses
+        //
+        // voltage level | bus | local | global
+        // vl1             b1    1       0
+        // vl1             b2    2       3
+        // vl2             b1    1       1
+        // vl2             b2    2       4
+        // vl3             b1    1       2
+        // vl3             b2    2       5
         assertEquals(0, Backend.localToGlobalBusNum(3, 0, 1));
         assertEquals(1, Backend.localToGlobalBusNum(3, 1, 1));
         assertEquals(3, Backend.localToGlobalBusNum(3, 0, 2));
@@ -28,5 +36,6 @@ class BackendTest {
         assertEquals(1, Backend.globalToLocalBusNum(3, 1));
         assertEquals(2, Backend.globalToLocalBusNum(3, 3));
         assertEquals(2, Backend.globalToLocalBusNum(3, 4));
+        assertEquals(2, Backend.globalToLocalBusNum(3, 5));
     }
 }
