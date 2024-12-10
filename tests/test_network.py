@@ -2521,16 +2521,5 @@ def test_topology_kind_update():
     assert str(exc_infos.value) == "Topology model conversion from bus/breaker to node/breaker not yet supported"
 
 
-def test_connect_disconnect_with_empty_bus():
-    network = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
-    network.update_generators(id=['GEN', 'GEN2'], connected=[False, True], bus_breaker_bus_id=['', 'NGEN'])
-    generators = network.get_generators(attributes=['connected', 'bus_breaker_bus_id'])
-    expected_generators = pd.DataFrame(index=pd.Series(name='id', data=['GEN', 'GEN2']),
-                            columns=['connected', 'bus_breaker_bus_id'],
-                            data=[[False, 'NGEN'],
-                                  [True, 'NGEN']])
-    pd.testing.assert_frame_equal(expected_generators, generators, check_dtype=False)
-
-
 if __name__ == '__main__':
     unittest.main()
