@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.grid2op;
 
+import com.powsybl.iidm.modification.SetGeneratorToLocalRegulation;
 import com.powsybl.iidm.network.*;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
@@ -106,6 +107,13 @@ public class Backend implements Closeable {
         // reset switch retain
         for (Switch s : network.getSwitches()) {
             s.setRetained(false);
+        }
+
+        // FIXME conversion to bus/breaker topo in case of generators that regulate remotely to a busbar section
+        // FIXME are discarded from voltage control. So instead we prefer to set them to local regulation.
+        for (Generator generator : network.getGenerators()) {
+            new SetGeneratorToLocalRegulation(generator.getId())
+                    .apply(network);
         }
 
         // waiting for switch action, we convert all voltage levels to bus/breaker topo
