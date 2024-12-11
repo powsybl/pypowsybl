@@ -222,11 +222,11 @@ public class Backend implements Closeable {
         LOGGER.debug("Connecting all elements to first bus of their voltage level...");
         for (int i = 0; i < loads.size(); i++) {
             Load load = loads.get(i);
-            updateTopo(getLoadTopoLabel(load), i, load.getTerminal(), 1, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
+            updateTopoAndTopoVect(getLoadTopoLabel(load), i, load.getTerminal(), 1, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
         }
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
-            updateTopo(getGeneratorTopoLabel(generator), i, generator.getTerminal(), 1, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
+            updateTopoAndTopoVect(getGeneratorTopoLabel(generator), i, generator.getTerminal(), 1, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
         }
         for (int i = 0; i < shunts.size(); i++) {
             ShuntCompensator shunt = shunts.get(i);
@@ -234,8 +234,8 @@ public class Backend implements Closeable {
         }
         for (int i = 0; i < branches.size(); i++) {
             Branch<?> branch = branches.get(i);
-            updateTopo(getBranch1TopoLabel(branch), i, branch.getTerminal1(), 1, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
-            updateTopo(getBranch2TopoLabel(branch), i, branch.getTerminal2(), 1, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
+            updateTopoAndTopoVect(getBranch1TopoLabel(branch), i, branch.getTerminal1(), 1, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
+            updateTopoAndTopoVect(getBranch2TopoLabel(branch), i, branch.getTerminal2(), 1, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
         }
         LOGGER.debug("All elements have been connected to first bus of their voltage level");
     }
@@ -509,6 +509,7 @@ public class Backend implements Closeable {
     public void updateDoubleValue(Grid2opCFunctions.Grid2opUpdateDoubleValueType valueType, CDoublePointer valuePtr, CIntPointer changedPtr) {
         switch (Objects.requireNonNull(valueType)) {
             case UPDATE_LOAD_P -> {
+                int updatedLoadP0Count = 0;
                 for (int i = 0; i < loads.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Load load = loads.get(i);
@@ -517,10 +518,15 @@ public class Backend implements Closeable {
                         if (LOGGER.isTraceEnabled()) {
                             LOGGER.trace("Update load '{}' p0 {}", load.getId(), load.getP0());
                         }
+                        updatedLoadP0Count++;
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated p0 of {} loads", updatedLoadP0Count);
                 }
             }
             case UPDATE_LOAD_Q -> {
+                int updatedLoadQ0Count = 0;
                 for (int i = 0; i < loads.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Load load = loads.get(i);
@@ -529,10 +535,15 @@ public class Backend implements Closeable {
                         if (LOGGER.isTraceEnabled()) {
                             LOGGER.trace("Update load '{}' q0 {}", load.getId(), load.getP0());
                         }
+                        updatedLoadQ0Count++;
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated q0 of {} loads", updatedLoadQ0Count);
                 }
             }
             case UPDATE_GENERATOR_P -> {
+                int updatedLoadTargetPCount = 0;
                 for (int i = 0; i < generators.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Generator generator = generators.get(i);
@@ -541,10 +552,15 @@ public class Backend implements Closeable {
                         if (LOGGER.isTraceEnabled()) {
                             LOGGER.trace("Update generator '{}' target p {}", generator.getId(), generator.getTargetP());
                         }
+                        updatedLoadTargetPCount++;
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated target p of {} generators", updatedLoadTargetPCount);
                 }
             }
             case UPDATE_GENERATOR_V -> {
+                int updatedLoadTargetVCount = 0;
                 for (int i = 0; i < generators.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Generator generator = generators.get(i);
@@ -553,19 +569,18 @@ public class Backend implements Closeable {
                         if (LOGGER.isTraceEnabled()) {
                             LOGGER.trace("Update generator '{}' target v {}", generator.getId(), generator.getTargetV());
                         }
+                        updatedLoadTargetVCount++;
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated target v of {} generators", updatedLoadTargetVCount);
                 }
             }
         }
     }
 
-    private int updateTopo(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
-        int localBusNum = valuePtr.read(i);
-        updateTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum);
-        return localBusNum;
-    }
-
-    private void updateTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
+    private boolean updateTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum,
+                               ArrayPointer<CIntPointer> xToVoltageLevelNum) {
         int oldGlobalBusNum = xBusGlobalNum[i];
         if (localBusNum == -1) {
             if (oldGlobalBusNum != -1) {
@@ -575,6 +590,7 @@ public class Backend implements Closeable {
                 }
                 t.disconnect();
                 xBusGlobalNum[i] = -1;
+                return true;
             }
         } else {
             int globalBusNum = localToGlobalBusNum(xToVoltageLevelNum.getPtr().read(i), localBusNum);
@@ -592,22 +608,26 @@ public class Backend implements Closeable {
                 t.getBusBreakerView().setConnectableBus(newBusId);
                 t.connect();
                 xBusGlobalNum[i] = globalBusNum;
+                return true;
             }
         }
+        return false;
     }
 
-    private void updateTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
-                            int[] xTopoVectPosition) {
-        updateTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum);
-        // update topo vect
-        topoVect.getPtr().write(xTopoVectPosition[i], localBusNum);
+    private boolean updateTopoAndTopoVect(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum,
+                                          ArrayPointer<CIntPointer> xToVoltageLevelNum, int[] xTopoVectPosition) {
+        if (updateTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum)) {
+            // update topo vect
+            topoVect.getPtr().write(xTopoVectPosition[i], localBusNum);
+            return true;
+        }
+        return false;
     }
 
-    private void updateTopo(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
-                            int[] xTopoVectPosition) {
-        int localBusNum = updateTopo(label, i, t, valuePtr, xBusGlobalNum, xToVoltageLevelNum);
-        // update topo vect
-        topoVect.getPtr().write(xTopoVectPosition[i], localBusNum);
+    private boolean updateTopoAndTopoVect(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum,
+                                          ArrayPointer<CIntPointer> xToVoltageLevelNum, int[] xTopoVectPosition) {
+        int localBusNum = valuePtr.read(i);
+        return updateTopoAndTopoVect(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum, xTopoVectPosition);
     }
 
     private static String getLoadTopoLabel(Load load) {
@@ -633,44 +653,75 @@ public class Backend implements Closeable {
     public void updateIntegerValue(Grid2opCFunctions.Grid2opUpdateIntegerValueType valueType, CIntPointer valuePtr, CIntPointer changedPtr) {
         switch (Objects.requireNonNull(valueType)) {
             case UPDATE_LOAD_BUS -> {
+                int updatedLoadTopoCount = 0;
                 for (int i = 0; i < loads.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Load load = loads.get(i);
-                        updateTopo(getLoadTopoLabel(load), i, load.getTerminal(), valuePtr, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
+                        if (updateTopoAndTopoVect(getLoadTopoLabel(load), i, load.getTerminal(), valuePtr, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition)) {
+                            updatedLoadTopoCount++;
+                        }
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated topo of {} loads", updatedLoadTopoCount);
                 }
             }
             case UPDATE_GENERATOR_BUS -> {
+                int updatedGeneratorTopoCount = 0;
                 for (int i = 0; i < generators.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Generator generator = generators.get(i);
-                        updateTopo(getGeneratorTopoLabel(generator), i, generator.getTerminal(), valuePtr, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
+                        if (updateTopoAndTopoVect(getGeneratorTopoLabel(generator), i, generator.getTerminal(), valuePtr, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition)) {
+                            updatedGeneratorTopoCount++;
+                        }
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated topo of {} generators", updatedGeneratorTopoCount);
                 }
             }
             case UPDATE_SHUNT_BUS -> {
+                int updatedShuntTopoCount = 0;
                 for (int i = 0; i < shunts.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         ShuntCompensator shunt = shunts.get(i);
-                        int localBusNum = updateTopo(getShuntTopoLabel(shunt), i, shunt.getTerminal(), valuePtr, shuntBusGlobalNum, shuntToVoltageLevelNum);
-                        shuntBusLocalNum.getPtr().write(i, localBusNum);
+                        int localBusNum = valuePtr.read(i);
+                        if (updateTopo(getShuntTopoLabel(shunt), i, shunt.getTerminal(), localBusNum, shuntBusGlobalNum, shuntToVoltageLevelNum)) {
+                            shuntBusLocalNum.getPtr().write(i, localBusNum);
+                            updatedShuntTopoCount++;
+                        }
+                    }
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Updated topo of {} shunts", updatedShuntTopoCount);
                     }
                 }
             }
             case UPDATE_BRANCH_BUS1 -> {
+                int updatedBranch1TopoCount = 0;
                 for (int i = 0; i < branches.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Branch<?> branch = branches.get(i);
-                        updateTopo(getBranch1TopoLabel(branch), i, branch.getTerminal1(), valuePtr, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
+                        if (updateTopoAndTopoVect(getBranch1TopoLabel(branch), i, branch.getTerminal1(), valuePtr, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1)) {
+                            updatedBranch1TopoCount++;
+                        }
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated topo side 1 of {} branches", updatedBranch1TopoCount);
                 }
             }
             case UPDATE_BRANCH_BUS2 -> {
+                int updatedBranch2TopoCount = 0;
                 for (int i = 0; i < branches.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Branch<?> branch = branches.get(i);
-                        updateTopo(getBranch2TopoLabel(branch), i, branch.getTerminal2(), valuePtr, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
+                        if (updateTopoAndTopoVect(getBranch2TopoLabel(branch), i, branch.getTerminal2(), valuePtr, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2)) {
+                            updatedBranch2TopoCount++;
+                        }
                     }
+                }
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Updated topo side 2 of {} branches", updatedBranch2TopoCount);
                 }
             }
         }
