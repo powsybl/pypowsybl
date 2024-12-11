@@ -104,41 +104,7 @@ public class Backend implements Closeable {
         this.network = Objects.requireNonNull(network);
         this.considerOpenBranchReactiveFlow = considerOpenBranchReactiveFlow;
 
-        // reset switch retain
-        for (Switch s : network.getSwitches()) {
-            s.setRetained(false);
-        }
-
-        // FIXME conversion to bus/breaker topo in case of generators that regulate remotely to a busbar section
-        // FIXME are discarded from voltage control. So instead we prefer to set them to local regulation.
-        for (Generator generator : network.getGenerators()) {
-            new SetGeneratorToLocalRegulation(generator.getId())
-                    .apply(network);
-        }
-
-        // waiting for switch action, we convert all voltage levels to bus/breaker topo
-        for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
-            voltageLevel.convertToTopology(TopologyKind.BUS_BREAKER);
-        }
-
-        // create missing buses to get a constant number of buses per voltage level
-        int maxBusCount = network.getVoltageLevelStream()
-                .map(vl -> vl.getBusBreakerView().getBusCount())
-                .max(Integer::compareTo)
-                .orElseThrow();
-        if (busesPerVoltageLevel > maxBusCount) {
-            maxBusCount = busesPerVoltageLevel;
-        }
-        for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
-            int localBusCount = voltageLevel.getBusBreakerView().getBusCount();
-            if (localBusCount < maxBusCount) {
-                for (int i = localBusCount; i < maxBusCount; i++) {
-                    voltageLevel.getBusBreakerView().newBus()
-                            .setId(voltageLevel.getId() + "_extra_busbar_" + i)
-                            .add();
-                }
-            }
-        }
+        prepareNetwork(network, busesPerVoltageLevel);
 
         // voltage levels
         voltageLevels = network.getVoltageLevelStream().toList();
@@ -248,23 +214,67 @@ public class Backend implements Closeable {
         updateTopoVect();
 
         if (connectAllElementsToFirstBus) {
-            LOGGER.debug("Connect all elements to first bus of voltage level");
-            for (int i = 0; i < loads.size(); i++) {
-                Load load = loads.get(i);
-                changeTopo(getLoadTopoLabel(load), i, load.getTerminal(), 1, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
-            }
-            for (int i = 0; i < generators.size(); i++) {
-                Generator generator = generators.get(i);
-                changeTopo(getGeneratorTopoLabel(generator), i, generator.getTerminal(), 1, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
-            }
-            for (int i = 0; i < shunts.size(); i++) {
-                ShuntCompensator shunt = shunts.get(i);
-                changeTopo(getShuntTopoLabel(shunt), i, shunt.getTerminal(), 1, shuntBusGlobalNum, shuntToVoltageLevelNum);
-            }
-            for (int i = 0; i < branches.size(); i++) {
-                Branch<?> branch = branches.get(i);
-                changeTopo(getBranch1TopoLabel(branch), i, branch.getTerminal1(), 1, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
-                changeTopo(getBranch2TopoLabel(branch), i, branch.getTerminal2(), 1, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
+            connectAllElementsToFirstBus();
+        }
+    }
+
+    private void connectAllElementsToFirstBus() {
+        LOGGER.debug("Connecting all elements to first bus of their voltage level...");
+        for (int i = 0; i < loads.size(); i++) {
+            Load load = loads.get(i);
+            updateTopo(getLoadTopoLabel(load), i, load.getTerminal(), 1, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
+        }
+        for (int i = 0; i < generators.size(); i++) {
+            Generator generator = generators.get(i);
+            updateTopo(getGeneratorTopoLabel(generator), i, generator.getTerminal(), 1, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
+        }
+        for (int i = 0; i < shunts.size(); i++) {
+            ShuntCompensator shunt = shunts.get(i);
+            updateTopo(getShuntTopoLabel(shunt), i, shunt.getTerminal(), 1, shuntBusGlobalNum, shuntToVoltageLevelNum);
+        }
+        for (int i = 0; i < branches.size(); i++) {
+            Branch<?> branch = branches.get(i);
+            updateTopo(getBranch1TopoLabel(branch), i, branch.getTerminal1(), 1, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
+            updateTopo(getBranch2TopoLabel(branch), i, branch.getTerminal2(), 1, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
+        }
+        LOGGER.debug("All elements have been connected to first bus of their voltage level");
+    }
+
+    private static void prepareNetwork(Network network, int busesPerVoltageLevel) {
+        // reset switch retain
+        for (Switch s : network.getSwitches()) {
+            s.setRetained(false);
+        }
+
+        // FIXME: conversion to bus/breaker topo in case of generators that regulate remotely to a busbar section is buggy
+        // FIXME: Generators are discarded from voltage control. So instead we prefer to set them to local regulation before
+        // FIXME: will be fixed in a future releade of powsybl core
+        for (Generator generator : network.getGenerators()) {
+            new SetGeneratorToLocalRegulation(generator.getId())
+                    .apply(network);
+        }
+
+        // waiting for switch action, we convert all voltage levels to bus/breaker topo
+        for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
+            voltageLevel.convertToTopology(TopologyKind.BUS_BREAKER);
+        }
+
+        // create missing buses to get a constant number of buses per voltage level
+        int maxBusCount = network.getVoltageLevelStream()
+                .map(vl -> vl.getBusBreakerView().getBusCount())
+                .max(Integer::compareTo)
+                .orElseThrow();
+        if (busesPerVoltageLevel > maxBusCount) {
+            maxBusCount = busesPerVoltageLevel;
+        }
+        for (VoltageLevel voltageLevel : network.getVoltageLevels()) {
+            int localBusCount = voltageLevel.getBusBreakerView().getBusCount();
+            if (localBusCount < maxBusCount) {
+                for (int i = localBusCount; i < maxBusCount; i++) {
+                    voltageLevel.getBusBreakerView().newBus()
+                            .setId(voltageLevel.getId() + "_extra_busbar_" + i)
+                            .add();
+                }
             }
         }
     }
@@ -419,8 +429,8 @@ public class Backend implements Closeable {
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
             Terminal terminal = generator.getTerminal();
-            generatorP.getPtr().write(i, -getP(terminal, i, generatorBusGlobalNum));
-            generatorQ.getPtr().write(i, -getQ(terminal, i, generatorBusGlobalNum));
+            generatorP.getPtr().write(i, -getP(terminal, i, generatorBusGlobalNum)); // grid2op convention
+            generatorQ.getPtr().write(i, -getQ(terminal, i, generatorBusGlobalNum)); // grid2op convention
             generatorV.getPtr().write(i, getV(i, generatorBusGlobalNum));
         }
     }
@@ -549,13 +559,13 @@ public class Backend implements Closeable {
         }
     }
 
-    private int changeTopo(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
+    private int updateTopo(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
         int localBusNum = valuePtr.read(i);
-        changeTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum);
+        updateTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum);
         return localBusNum;
     }
 
-    private void changeTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
+    private void updateTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum) {
         int oldGlobalBusNum = xBusGlobalNum[i];
         if (localBusNum == -1) {
             if (oldGlobalBusNum != -1) {
@@ -586,16 +596,16 @@ public class Backend implements Closeable {
         }
     }
 
-    private void changeTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
+    private void updateTopo(String label, int i, Terminal t, int localBusNum, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
                             int[] xTopoVectPosition) {
-        changeTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum);
+        updateTopo(label, i, t, localBusNum, xBusGlobalNum, xToVoltageLevelNum);
         // update topo vect
         topoVect.getPtr().write(xTopoVectPosition[i], localBusNum);
     }
 
-    private void changeTopo(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
+    private void updateTopo(String label, int i, Terminal t, CIntPointer valuePtr, int[] xBusGlobalNum, ArrayPointer<CIntPointer> xToVoltageLevelNum,
                             int[] xTopoVectPosition) {
-        int localBusNum = changeTopo(label, i, t, valuePtr, xBusGlobalNum, xToVoltageLevelNum);
+        int localBusNum = updateTopo(label, i, t, valuePtr, xBusGlobalNum, xToVoltageLevelNum);
         // update topo vect
         topoVect.getPtr().write(xTopoVectPosition[i], localBusNum);
     }
@@ -626,7 +636,7 @@ public class Backend implements Closeable {
                 for (int i = 0; i < loads.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Load load = loads.get(i);
-                        changeTopo(getLoadTopoLabel(load), i, load.getTerminal(), valuePtr, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
+                        updateTopo(getLoadTopoLabel(load), i, load.getTerminal(), valuePtr, loadBusGlobalNum, loadToVoltageLevelNum, loadTopoVectPosition);
                     }
                 }
             }
@@ -634,7 +644,7 @@ public class Backend implements Closeable {
                 for (int i = 0; i < generators.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Generator generator = generators.get(i);
-                        changeTopo(getGeneratorTopoLabel(generator), i, generator.getTerminal(), valuePtr, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
+                        updateTopo(getGeneratorTopoLabel(generator), i, generator.getTerminal(), valuePtr, generatorBusGlobalNum, generatorToVoltageLevelNum, generatorTopoVectPosition);
                     }
                 }
             }
@@ -642,7 +652,7 @@ public class Backend implements Closeable {
                 for (int i = 0; i < shunts.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         ShuntCompensator shunt = shunts.get(i);
-                        int localBusNum = changeTopo(getShuntTopoLabel(shunt), i, shunt.getTerminal(), valuePtr, shuntBusGlobalNum, shuntToVoltageLevelNum);
+                        int localBusNum = updateTopo(getShuntTopoLabel(shunt), i, shunt.getTerminal(), valuePtr, shuntBusGlobalNum, shuntToVoltageLevelNum);
                         shuntBusLocalNum.getPtr().write(i, localBusNum);
                     }
                 }
@@ -651,7 +661,7 @@ public class Backend implements Closeable {
                 for (int i = 0; i < branches.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Branch<?> branch = branches.get(i);
-                        changeTopo(getBranch1TopoLabel(branch), i, branch.getTerminal1(), valuePtr, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
+                        updateTopo(getBranch1TopoLabel(branch), i, branch.getTerminal1(), valuePtr, branchBusGlobalNum1, branchToVoltageLevelNum1, branchTopoVectPosition1);
                     }
                 }
             }
@@ -659,7 +669,7 @@ public class Backend implements Closeable {
                 for (int i = 0; i < branches.size(); i++) {
                     if (changedPtr.read(i) == 1) {
                         Branch<?> branch = branches.get(i);
-                        changeTopo(getBranch2TopoLabel(branch), i, branch.getTerminal2(), valuePtr, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
+                        updateTopo(getBranch2TopoLabel(branch), i, branch.getTerminal2(), valuePtr, branchBusGlobalNum2, branchToVoltageLevelNum2, branchTopoVectPosition2);
                     }
                 }
             }
@@ -690,10 +700,7 @@ public class Backend implements Closeable {
         if (checkIsolatedAndDisconnectedInjections(generators, true)) {
             return true;
         }
-        if (checkIsolatedAndDisconnectedInjections(shunts, false)) {
-            return true;
-        }
-        return false;
+        return checkIsolatedAndDisconnectedInjections(shunts, false);
     }
 
     public LoadFlowResult runLoadFlow(LoadFlowParameters parameters) {
