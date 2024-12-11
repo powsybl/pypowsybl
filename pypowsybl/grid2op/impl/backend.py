@@ -33,6 +33,10 @@ class Backend:
                                                          self._buses_per_voltage_level,
                                                          self._connect_all_elements_to_first_bus)
 
+    @property
+    def network(self):
+        return self._network
+
     def close(self) -> None:
         _pypowsybl.free_grid2op_backend(self._handle)
 

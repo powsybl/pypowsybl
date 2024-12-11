@@ -25,6 +25,8 @@ def test_backend():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     with grid2op.Backend(n) as backend:
+        assert backend.network is n
+
         npt.assert_array_equal(np.array(['VLGEN', 'VLHV1', 'VLHV2', 'VLLOAD']), backend.get_string_value(grid2op.StringValueType.VOLTAGE_LEVEL_NAME))
         npt.assert_array_equal(np.array(['LOAD']), backend.get_string_value(grid2op.StringValueType.LOAD_NAME))
         npt.assert_array_equal(np.array(['GEN', 'GEN2']), backend.get_string_value(grid2op.StringValueType.GENERATOR_NAME))
