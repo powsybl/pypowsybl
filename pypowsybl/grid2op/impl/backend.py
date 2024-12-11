@@ -34,7 +34,7 @@ class Backend:
                                                          self._connect_all_elements_to_first_bus)
 
     @property
-    def network(self):
+    def network(self) -> Network:
         return self._network
 
     def close(self) -> None:
