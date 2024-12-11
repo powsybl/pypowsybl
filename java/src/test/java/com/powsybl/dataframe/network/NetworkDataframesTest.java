@@ -124,17 +124,17 @@ class NetworkDataframesTest {
                 .containsExactly("id", "name", "v_mag", "v_angle", "connected_component", "synchronous_component",
                         "voltage_level_id", "bus_id");
         assertThat(series.get(0).getStrings())
-                .containsExactly("BUS1", "BUS2", "VL1_0", "VL1_3");
+                .containsExactly("VL1_0", "VL1_3", "BUS1", "BUS2");
         assertThat(series.get(2).getDoubles())
                 .containsExactly(Double.NaN, Double.NaN, Double.NaN, Double.NaN);
         assertThat(series.get(4).getInts())
-                .containsExactly(0, 0, 1, -99999);
+                .containsExactly(0, -99999, 1, 1);
         assertThat(series.get(5).getInts())
-                .containsExactly(0, 0, 1, -99999);
+                .containsExactly(0, -99999, 1, 1);
         assertThat(series.get(6).getStrings())
-                .containsExactly("VL2", "VL2", "VL1", "VL1");
+                .containsExactly("VL1", "VL1", "VL2", "VL2");
         assertThat(series.get(7).getStrings())
-                .containsExactly("VL2_0", "VL2_0", "VL1_0", "");
+                .containsExactly("VL1_0", "", "VL2_0", "VL2_0");
     }
 
     @Test
