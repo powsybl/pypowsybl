@@ -222,7 +222,7 @@ jobs:
         run: pip3 install -r requirements.txt
         working-directory: ./pypowsybl
       - name: Build wheel
-        run: python3 setup.py bdist_wheel
+        run: python3 -m build --wheel
         working-directory: ./pypowsybl
       - name: Install wheel
         run: python -m pip install dist/*.whl --user
