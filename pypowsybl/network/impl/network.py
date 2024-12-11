@@ -5358,6 +5358,26 @@ class Network:  # pylint: disable=too-many-public-methods
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
         return self.get_extensions(extension_name)
 
+    def get_elements_properties(self, all_attributes: bool = False, attributes: List[str] = None,
+                                **kwargs: ArrayLike) -> DataFrame:
+        """
+        Get a dataframe of properties of all network elements.
+
+        Args:
+
+        Returns:
+            A dataframe of properties
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **key**: property key
+              - **value**: property value
+
+            This dataframe is indexed on the network element ID.
+        """
+        return self.get_elements(ElementType.PROPERTIES, all_attributes, attributes, **kwargs)
+
     def add_elements_properties(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Add properties to network elements, provided as a :class:`~pandas.DataFrame` or as named arguments.

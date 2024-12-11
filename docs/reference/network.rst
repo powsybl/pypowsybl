@@ -160,6 +160,7 @@ Network elements can be modified using dataframes:
    Network.update_switches
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.get_elements_properties
    Network.add_elements_properties
    Network.remove_elements_properties
    Network.add_aliases
