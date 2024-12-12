@@ -22,11 +22,11 @@ class SimulationResult:
         self._timeline = create_data_frame_from_series_array(_pp.get_timeline(self._handle))
 
     def status(self) -> DynamicSimulationStatus:
-        """Status of the simulation"""
+        """Status of the simulation (SUCCESS or FAILURE)"""
         return self._status
 
     def status_text(self) -> str:
-        """Status text of the simulation"""
+        """Status text of the simulation (failure description or empty if success)"""
         return self._status_text
 
     def curves(self) -> pd.DataFrame:
