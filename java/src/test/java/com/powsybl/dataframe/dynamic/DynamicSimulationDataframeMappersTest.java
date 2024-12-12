@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class DynamicSimulationDataframeMappersTest {
+class DynamicSimulationDataframeMappersTest {
 
     @Test
     void testFsvDataframesMapper() {
