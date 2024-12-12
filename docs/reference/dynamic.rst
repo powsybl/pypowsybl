@@ -48,7 +48,7 @@ EventMapping
     EventMapping.add_node_fault
 
 OutputVariableMapping
-------------
+---------------------
 .. autosummary::
     :toctree: api/
 

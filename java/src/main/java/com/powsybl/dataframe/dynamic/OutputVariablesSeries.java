@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.timeseries.DoublePoint;
+import com.powsybl.timeseries.DoubleTimeSeries;
 import com.powsybl.timeseries.TimeSeries;
 
 import java.util.Map;
@@ -22,8 +23,8 @@ public final class OutputVariablesSeries {
     private OutputVariablesSeries() {
     }
 
-    public static DataframeMapper<TimeSeries<DoublePoint, ?>, Void> curvesDataFrameMapper(String colName) {
-        return new DataframeMapperBuilder<TimeSeries<DoublePoint, ?>, DoublePoint, Void>()
+    public static DataframeMapper<DoubleTimeSeries, Void> curvesDataFrameMapper(String colName) {
+        return new DataframeMapperBuilder<DoubleTimeSeries, DoublePoint, Void>()
                 .itemsStreamProvider(TimeSeries::stream)
                 .intsIndex("timestamp", pt -> (int) (pt.getTime() % Integer.MAX_VALUE))
                 .doubles(colName, DoublePoint::getValue)

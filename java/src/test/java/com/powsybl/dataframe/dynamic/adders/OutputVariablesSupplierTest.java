@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class OutputVariablesSupplierTest {
+class OutputVariablesSupplierTest {
 
     @Test
     void testPythonSupplier() {
@@ -48,7 +48,9 @@ public class OutputVariablesSupplierTest {
 
     @Test
     void testFsvDataframesMapper() {
-        Map<String, Double> fsv = new LinkedHashMap<>(Map.of("LOAD_load_PPu", 22.1, "GEN_Upu_value", 45.8));
+        Map<String, Double> fsv = new LinkedHashMap<>();
+        fsv.put("GEN_Upu_value", 45.8);
+        fsv.put("LOAD_load_PPu", 22.1);
         List<Series> series = createSeries(fsvDataFrameMapper(), fsv);
         assertThat(series)
                 .extracting(Series::getName)

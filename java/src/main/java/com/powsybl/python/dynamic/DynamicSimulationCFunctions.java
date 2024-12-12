@@ -19,8 +19,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.OutputVariablesSeries;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
-import com.powsybl.timeseries.DoublePoint;
-import com.powsybl.timeseries.TimeSeries;
+import com.powsybl.timeseries.DoubleTimeSeries;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -216,7 +215,7 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
             String curveName = CTypeUtil.toString(curveNamePtr);
-            TimeSeries<DoublePoint, ?> curve = result.getCurve(curveName);
+            DoubleTimeSeries curve = result.getCurve(curveName);
             return Dataframes.createCDataframe(OutputVariablesSeries.curvesDataFrameMapper(curveName), curve);
         });
     }
