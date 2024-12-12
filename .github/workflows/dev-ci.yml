@@ -39,7 +39,7 @@ jobs:
         with:
           submodules: true
 
-      # FIXME to remove when updating to next core release
+      # FIXME >>> to remove when updating to next core release
       - name: Checkout PowSyBl core snapshot sources
         uses: actions/checkout@v4
         with:
@@ -48,7 +48,7 @@ jobs:
 
       - name: Build and install PowSyBl core snapshot
         run: mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
-      # FIXME
+      # FIXME <<<
 
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
@@ -150,6 +150,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+
+      # FIXME >>> to remove when updating to next core release
+      - name: Checkout PowSyBl core snapshot sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-core
+          path: powsybl-core
+
+      - name: Build and install PowSyBl core snapshot
+        run: mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
+      # FIXME <<<
 
       - name: Setup Python
         uses: actions/setup-python@v5
