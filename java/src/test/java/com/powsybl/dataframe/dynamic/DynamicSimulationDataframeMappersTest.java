@@ -11,6 +11,7 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dynamicsimulation.TimelineEvent;
 import org.junit.jupiter.api.Test;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,14 +27,16 @@ public class DynamicSimulationDataframeMappersTest {
 
     @Test
     void testFsvDataframesMapper() {
-        Map<String, Double> fsv = Map.of("LOAD_load_PPu", 22.1, "GEN_Upu_value", 45.8);
+        Map<String, Double> fsv = new LinkedHashMap<>();
+        fsv.put("GEN_Upu_value", 45.8);
+        fsv.put("LOAD_load_PPu", 22.1);
         List<Series> series = createSeries(fsvDataFrameMapper(), fsv);
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("variables", "values");
         assertThat(series).satisfiesExactly(
-                col1 -> assertThat(col1.getStrings()).containsExactlyInAnyOrder("LOAD_load_PPu", "GEN_Upu_value"),
-                col2 -> assertThat(col2.getDoubles()).containsExactlyInAnyOrder(22.1, 45.8));
+                col1 -> assertThat(col1.getStrings()).containsExactly("GEN_Upu_value", "LOAD_load_PPu"),
+                col2 -> assertThat(col2.getDoubles()).containsExactly(45.8, 22.1));
     }
 
     @Test
