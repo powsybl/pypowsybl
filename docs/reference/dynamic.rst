@@ -47,16 +47,16 @@ EventMapping
     EventMapping.add_active_power_variation
     EventMapping.add_node_fault
 
-CurveMapping
+OutputVariableMapping
 ------------
 .. autosummary::
     :toctree: api/
 
-    CurveMapping
-    CurveMapping.add_dynamic_model_curves
-    CurveMapping.add_standard_model_curves
-    CurveMapping.add_dynamic_model_final_state_values
-    CurveMapping.add_standard_model_final_state_values
+    OutputVariableMapping
+    OutputVariableMapping.add_dynamic_model_curves
+    OutputVariableMapping.add_standard_model_curves
+    OutputVariableMapping.add_dynamic_model_final_state_values
+    OutputVariableMapping.add_standard_model_final_state_values
 
 Simulation
 ----------
@@ -74,3 +74,4 @@ Results
     SimulationResult
     SimulationResult.status
     SimulationResult.curves
+    SimulationResult.final_state_values
