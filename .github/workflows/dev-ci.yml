@@ -39,6 +39,17 @@ jobs:
         with:
           submodules: true
 
+      # --> to remove when we will be able to a pypowsybl official release
+      - name: Checkout PowSyBl core snapshot sources
+        uses: actions/checkout@v4
+        with:
+          repository: powsybl/powsybl-core
+          path: powsybl-core
+
+      - name: Build and install PowSyBl core snapshot
+        run: mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
+      # <--
+
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
