@@ -368,6 +368,7 @@ typedef struct nad_parameters_struct {
     int scaling_factor;
     double radius_factor;
     int edge_info_displayed;
+    char* metadata;
 } nad_parameters;
 
 typedef enum {

@@ -408,7 +408,8 @@ public:
 
 enum class NadLayoutType {
     FORCE_LAYOUT = 0,
-    GEOGRAPHICAL
+    GEOGRAPHICAL,
+    FIXED
 };
 
 enum class EdgeInfoType {
@@ -436,6 +437,7 @@ public:
     int scaling_factor;
     double radius_factor;
     EdgeInfoType edge_info_displayed;
+    std::string metadata;
 };
 
 //=======short-circuit analysis==========

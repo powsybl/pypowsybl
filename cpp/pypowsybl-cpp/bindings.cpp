@@ -593,7 +593,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<pypowsybl::NadLayoutType>(m, "NadLayoutType")
             .value("FORCE_LAYOUT", pypowsybl::NadLayoutType::FORCE_LAYOUT)
-            .value("GEOGRAPHICAL", pypowsybl::NadLayoutType::GEOGRAPHICAL);
+            .value("GEOGRAPHICAL", pypowsybl::NadLayoutType::GEOGRAPHICAL)
+            .value("FIXED", pypowsybl::NadLayoutType::FIXED);
 
     py::enum_<pypowsybl::EdgeInfoType>(m, "EdgeInfoType")
             .value("ACTIVE_POWER", pypowsybl::EdgeInfoType::ACTIVE_POWER)
@@ -614,7 +615,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
-        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed);
+        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
+        .def_readwrite("metadata",&pypowsybl::NadParameters::metadata);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));

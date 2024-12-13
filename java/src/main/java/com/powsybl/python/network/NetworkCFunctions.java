@@ -34,6 +34,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.BasicForceLayoutFactory;
+import com.powsybl.nad.layout.FixedLayoutFactoryUtils;
 import com.powsybl.nad.layout.GeographicalLayoutFactory;
 import com.powsybl.nad.layout.LayoutFactory;
 import com.powsybl.nad.svg.SvgParameters;
@@ -965,6 +966,7 @@ public final class NetworkCFunctions {
         cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
         cParameters.setEdgeInfoDisplayed(edgeInfo);
+        cParameters.setMetadata(CTypeUtil.toCharPtr(""));
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1016,6 +1018,7 @@ public final class NetworkCFunctions {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
         LayoutFactory layoutFactory = switch (nadParametersPointer.getLayoutType()) {
             case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
+            case 2: yield FixedLayoutFactoryUtils.create(new StringReader(CTypeUtil.toString(nadParametersPointer.getMetadata())), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
         };
         SvgParameters.EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {

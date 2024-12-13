@@ -1128,6 +1128,15 @@ def test_nad_displayed_voltage_levels():
     assert ['VL1', 'VL2', 'VL5'] == list_vl
 
 
+def test_nad_fixed_layout():
+    n = pp.network.create_ieee14()
+    nad1=n.get_network_area_diagram(voltage_level_ids='VL8', depth=1)
+    np1=NadParameters(layout_type=NadLayoutType.FIXED, metadata=nad1.metadata)
+    nad2=n.get_network_area_diagram(voltage_level_ids=['VL8', 'VL7'], nad_parameters=np1)
+    assert re.search('.*<svg.*', nad2.svg)
+    assert len(nad2.metadata) > 0
+
+
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
@@ -2433,6 +2442,22 @@ def test_nad_parameters():
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
+
+    nad_parameters = NadParameters(layout_type=NadLayoutType.FIXED)
+    assert not nad_parameters.edge_name_displayed
+    assert nad_parameters.edge_info_along_edge
+    assert not nad_parameters.id_displayed
+    assert nad_parameters.power_value_precision == 0
+    assert nad_parameters.angle_value_precision == 1
+    assert nad_parameters.current_value_precision == 0
+    assert nad_parameters.voltage_value_precision == 1
+    assert nad_parameters.bus_legend
+    assert not nad_parameters.substation_description_displayed
+    assert nad_parameters.layout_type == NadLayoutType.FIXED
+    assert nad_parameters.scaling_factor == 150000
+    assert nad_parameters.radius_factor == 150.0
+    assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
+    assert nad_parameters.metadata == ''
 
 
 def test_update_dangling_line():
