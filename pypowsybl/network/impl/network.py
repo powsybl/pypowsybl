@@ -2419,6 +2419,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of aliases
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the network element (network, line, generator, load, ...)
+              - **alias**: alias value
+              - **alias_type**: alias type
+
+            This dataframe is indexed on the network element ID.
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
@@ -5371,6 +5380,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **type**: the type of the network element (network, line, generator, load, ...)
               - **key**: property key
               - **value**: property value
 

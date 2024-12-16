@@ -1331,6 +1331,7 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper aliases() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getAliasesData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("type", pair -> pair.getLeft().getType().toString())
                 .strings("alias", Pair::getRight)
                 .strings("alias_type", pair -> pair.getLeft().getAliasType(pair.getRight()).orElse(""))
                 .build();
@@ -1345,6 +1346,7 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper properties() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getPropertiesData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("type", pair -> pair.getLeft().getType().toString())
                 .strings("key", Pair::getRight)
                 .strings("value", pair -> pair.getLeft().getProperty(pair.getRight()))
                 .build();

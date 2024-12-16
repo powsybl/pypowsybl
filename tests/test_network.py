@@ -2177,9 +2177,9 @@ def test_get_properties():
     network.add_elements_properties(id=network.id, key1='value1', key2='value2')
     network.add_elements_properties(id='GEN', key3='value3')
     expected = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': 'sim1', 'key': 'key1', 'value': 'value1'},
-                                               {'id': 'sim1', 'key': 'key2', 'value': 'value2'},
-                                               {'id': 'GEN', 'key': 'key3', 'value': 'value3'}])
+                                         data=[{'id': 'sim1', 'type': 'NETWORK', 'key': 'key1', 'value': 'value1'},
+                                               {'id': 'sim1', 'type': 'NETWORK', 'key': 'key2', 'value': 'value2'},
+                                               {'id': 'GEN', 'type': 'GENERATOR', 'key': 'key3', 'value': 'value3'}])
     pd.testing.assert_frame_equal(network.get_elements_properties(), expected, check_dtype=False)
 
 
@@ -2303,6 +2303,7 @@ def test_aliases():
     assert n.get_aliases().empty
     n.add_aliases(id='TWT', alias='test', alias_type='type')
     alias = n.get_aliases().loc['TWT']
+    assert alias['type'] == 'TWO_WINDINGS_TRANSFORMER'
     assert alias['alias'] == 'test'
     assert alias['alias_type'] == 'type'
     twt = n.get_2_windings_transformers(id='test')
@@ -2310,6 +2311,7 @@ def test_aliases():
     assert twt.loc['TWT']['r'] == 2.0
     n.add_aliases(id='GH1', alias='no_type_test')
     alias2 = n.get_aliases().loc['GH1']
+    assert alias2['type'] == 'GENERATOR'
     assert alias2['alias'] == 'no_type_test'
     assert alias2['alias_type'] == ''
     n.remove_aliases(id=['TWT', 'GH1'], alias=['test', 'no_type_test'])
