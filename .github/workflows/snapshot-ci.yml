@@ -98,9 +98,7 @@ jobs:
         working-directory: ./powsybl-open-loadflow
       - name: Build LOADFLOW
         continue-on-error: true
-        run: |
-          chmod +x ${{ env.SCRIPTS_PATH }}/build_module.sh
-          ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-open-loadflow
       - name: Get LOADFLOW_VERSION
         run: echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -247,13 +245,7 @@ jobs:
         working-directory: ./pypowsybl/tests
         run: pytest
       - name: Upload wheel
-        uses: actions/upload-artifact@v3
         uses: actions/upload-artifact@v4
-        with:
-          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
-      - name: Upload wheel
-        uses: actions/upload-artifact@v3
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
