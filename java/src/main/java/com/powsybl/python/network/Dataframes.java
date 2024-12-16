@@ -310,18 +310,19 @@ public final class Dataframes {
         return nodes.stream().map(node -> {
             Terminal terminal = nodeBreakerView.getTerminal(node);
             if (terminal == null) {
-                return new NodeContext(node, null);
+                return new NodeContext(node, null, null);
             } else {
-                return new NodeContext(node, terminal.getConnectable().getId());
+                return new NodeContext(node, terminal.getConnectable().getId(), terminal.getConnectable().getType());
             }
-        }).collect(Collectors.toList());
+        }).toList();
     }
 
     private static DataframeMapper<VoltageLevel.NodeBreakerView, Void> createNodeBreakerViewNodes() {
         return new DataframeMapperBuilder<VoltageLevel.NodeBreakerView, NodeContext, Void>()
                 .itemsProvider(Dataframes::getNodeBreakerViewNodes)
-                .intsIndex("node", NodeContext::getNode)
-                .strings("connectable_id", node -> Objects.toString(node.getConnectableId(), ""))
+                .intsIndex("node", NodeContext::node)
+                .strings("connectable_id", node -> Objects.toString(node.connectableId(), ""))
+                .strings("connectable_type", node -> Objects.toString(node.connectableType(), ""))
                 .build();
     }
 

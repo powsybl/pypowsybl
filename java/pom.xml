@@ -63,6 +63,8 @@
     <properties>
         <java.version>17</java.version>
         <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-csv.version>1.11.0</commons-csv.version>
+
         <graalvm.version>23.0.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
@@ -210,6 +212,11 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-core</artifactId>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${commons-csv.version}</version>
         </dependency>
         <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
         <dependency>
