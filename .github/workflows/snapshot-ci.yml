@@ -13,7 +13,8 @@ jobs:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     outputs:
-      build_status: ${{ steps.build_status.outputs.BUILD_STATUS_CONTENT }}
+      build_status_output: ${{ steps.build_status_step.outputs.build_status_output }} #Output job with build_status.txt content created in Read Build Status step
+
     strategy:
       matrix:
         config:
@@ -257,12 +258,12 @@ jobs:
 
       - name: Read Build Status
         if: always()
-        id: build_status
+        id: build_status_step
         run: |
           echo "=== BUILD STATUS REPORT ==="
           cat $BUILD_STATUS
           echo "=========================="
-          echo "BUILD_STATUS_CONTENT<<EOF" >> $GITHUB_OUTPUT
+          echo "build_status_output<<EOF" >> $GITHUB_OUTPUT
           cat $BUILD_STATUS >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
@@ -281,7 +282,7 @@ jobs:
            :x: *Failed workflow ${{ github.workflow }}*
            *Failure details:*
            ```
-           ${{ needs.build_pypowsybl.outputs.build_status }}
+           ${{ needs.build_pypowsybl.outputs.build_status_output }}
            ```
            See logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
        env:
