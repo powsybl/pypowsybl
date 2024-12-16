@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.OptionalInt;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public abstract class AbstractSimpleAdder implements NetworkElementAdder {
 
@@ -63,6 +63,8 @@ public abstract class AbstractSimpleAdder implements NetworkElementAdder {
             lccConverterStationAdder.add();
         } else if (injectionAdder instanceof VscConverterStationAdder vscConverterStationAdder) {
             vscConverterStationAdder.add();
+        } else if (injectionAdder instanceof GroundAdder groundAdder) {
+            groundAdder.add();
         } else {
             throw new AssertionError("Given InjectionAdder not supported: " + injectionAdder.getClass().getName());
         }

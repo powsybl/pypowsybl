@@ -18,9 +18,9 @@ jobs:
       matrix:
         config:
           - { name: ubuntu, os: ubuntu-latest}
-          - { name: darwin, os: macos-12, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
-          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64" }
-          - { name: windows, os: windows-2022 }
+          - { name: darwin, os: macos-13, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
+          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64"}
+          - { name: windows, os: windows-2022}
         python:
           - { name: cp38, version: '3.8' }
           - { name: cp39, version: '3.9' }
@@ -36,7 +36,7 @@ jobs:
 
       #SETUP PYTHON
       - name: Set up Python ${{ matrix.python.version }}
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python.version }}
       - name: Install Python dependencies
@@ -248,6 +248,7 @@ jobs:
         run: pytest
       - name: Upload wheel
         uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl

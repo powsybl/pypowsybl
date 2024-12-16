@@ -24,7 +24,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredDouble
 import static com.powsybl.dataframe.network.adders.SeriesUtils.getRequiredStrings;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 public class MinMaxReactiveLimitsDataframeAdder implements NetworkElementAdder {
 

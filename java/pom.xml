@@ -58,17 +58,19 @@
     </developers>
 
     <packaging>jar</packaging>
-    <version>1.8.0-SNAPSHOT</version>
+    <version>1.9.0-SNAPSHOT</version>
 
     <properties>
         <java.version>17</java.version>
         <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-csv.version>1.11.0</commons-csv.version>
+
         <graalvm.version>23.0.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2024.2.0</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2024.3.1</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
     </properties>
@@ -179,6 +181,11 @@
             <artifactId>logback-core</artifactId>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${commons-csv.version}</version>
+        </dependency>
         <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
         <dependency>
             <groupId>org.codehaus.janino</groupId>
@@ -220,6 +227,10 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-cgmes-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-cgmes-extensions</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
@@ -297,7 +308,7 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-dynawaltz</artifactId>
+            <artifactId>powsybl-dynawo-simulation</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>

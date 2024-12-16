@@ -23,7 +23,8 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         SeriesMetadata.strings("type"),
         SeriesMetadata.doubles("value"),
         SeriesMetadata.ints("acceptable_duration"),
-        SeriesMetadata.booleans("fictitious")
+        SeriesMetadata.booleans("fictitious"),
+        SeriesMetadata.strings("group_name")
     );
 
     @Override
@@ -40,6 +41,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries values;
         private final IntSeries acceptableDurations;
         private final IntSeries fictitious;
+        private final StringSeries groupNames;
 
         OperationalLimitsSeries(UpdatingDataframe dataframe) {
             this.elementIds = getRequiredStrings(dataframe, "element_id");
@@ -49,6 +51,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             this.values = getRequiredDoubles(dataframe, "value");
             this.acceptableDurations = getRequiredInts(dataframe, "acceptable_duration");
             this.fictitious = dataframe.getInts("fictitious");
+            this.groupNames = dataframe.getStrings("group_name");
         }
 
         public StringSeries getElementIds() {
@@ -78,6 +81,10 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         public IntSeries getFictitious() {
             return fictitious;
         }
+
+        public StringSeries getGroupNames() {
+            return groupNames;
+        }
     }
 
     @Override
@@ -90,7 +97,12 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             String elementId = series.getElementIds().get(i);
             String side = series.getSides().get(i);
             String limitType = series.getTypes().get(i);
-            LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType);
+            StringSeries groupNames = series.getGroupNames();
+            String groupName = null;
+            if (groupNames != null) {
+                groupName = series.getGroupNames().get(i);
+            }
+            LimitsDataframeAdderKey key = new LimitsDataframeAdderKey(elementId, side, limitType, groupName);
             indexMap.computeIfAbsent(key, k -> new TIntArrayList()).add(i);
         }
 
@@ -99,15 +111,15 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
     private static void addElements(Network network, OperationalLimitsSeries series, Map<LimitsDataframeAdderKey, TIntArrayList> indexMap) {
         indexMap.forEach((key, indexList) -> createLimits(network, series, key.getElementId(),
-            key.getSide(), key.getLimitType(), indexList));
+            key.getSide(), key.getLimitType(), key.getGroupId(), indexList));
     }
 
     private static void createLimits(Network network, OperationalLimitsSeries series, String elementId, String side, String type,
-                                     TIntArrayList indexList) {
+                                     String groupId, TIntArrayList indexList) {
         LimitType limitType = LimitType.valueOf(type);
         TemporaryLimitData.Side limitSide = TemporaryLimitData.Side.valueOf(side);
 
-        LoadingLimitsAdder<?, ?> adder = getAdder(network, elementId, limitType, limitSide);
+        LoadingLimitsAdder<?, ?> adder = getAdder(network, elementId, limitType, limitSide, groupId);
         for (int index : indexList.toArray()) {
             createLimits(adder, index, series);
         }
@@ -267,12 +279,24 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         }
     }
 
-    private static LoadingLimitsAdder<?, ?> getAdder(Network network, String elementId, LimitType type, TemporaryLimitData.Side side) {
+    private static LoadingLimitsAdder<?, ?> getAdder(Network network, String elementId, LimitType type,
+                                                     TemporaryLimitData.Side side, String groupId) {
         FlowsLimitsHolder limitsHolder = getLimitsHolder(network, elementId, side);
+        OperationalLimitsGroup group;
+        if (groupId == null) {
+            String selectedGroupId = limitsHolder.getSelectedOperationalLimitsGroupId().orElse("DEFAULT");
+            group = limitsHolder.getSelectedOperationalLimitsGroup()
+                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup("DEFAULT"));
+            limitsHolder.setSelectedOperationalLimitsGroup(selectedGroupId);
+        } else {
+            group = limitsHolder.getOperationalLimitsGroup(groupId)
+                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup(groupId));
+        }
+
         return switch (type) {
-            case CURRENT -> limitsHolder.newCurrentLimits();
-            case ACTIVE_POWER -> limitsHolder.newActivePowerLimits();
-            case APPARENT_POWER -> limitsHolder.newApparentPowerLimits();
+            case CURRENT -> group.newCurrentLimits();
+            case ACTIVE_POWER -> group.newActivePowerLimits();
+            case APPARENT_POWER -> group.newApparentPowerLimits();
             default -> throw new PowsyblException(String.format("Limit type %s does not exist.", type));
         };
     }

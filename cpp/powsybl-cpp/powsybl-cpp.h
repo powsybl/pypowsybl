@@ -519,6 +519,8 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 
 std::vector<std::string> getNetworkImportFormats();
 
+std::vector<std::string> getNetworkImportSupportedExtensions();
+
 std::vector<std::string> getNetworkExportFormats();
 
 std::vector<std::string> getNetworkImportPostProcessors();
@@ -577,9 +579,11 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -744,6 +748,8 @@ std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle networ
 
 void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
+void removeInternalConnections(pypowsybl::JavaHandle network, dataframe* dataframe);
+
 void closePypowsybl();
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reportNode);
@@ -752,7 +758,7 @@ SldParameters* createSldParameters();
 
 NadParameters* createNadParameters();
 
-//=======dynamic modeling for dynawaltz package==========
+//=======dynamic modeling for dynawo package==========
 
 //handle creation
 JavaHandle createDynamicSimulationContext();
@@ -760,24 +766,26 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode);
 
 // timeseries/curves mapping
 void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
 
 // events mapping
-void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
+void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
 
 // dynamic model mapping
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes);
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 
 // results
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
 
-//=======END OF dynamic modeling for dynawaltz package==========
+//=======END OF dynamic modeling for dynawo package==========
 
 //=======Voltage initializer mapping========
 

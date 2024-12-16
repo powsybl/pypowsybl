@@ -21,7 +21,7 @@ import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelO
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Coline Piloquet <coline.piloquet at rte-france.com>
+ * @author Coline Piloquet {@literal <coline.piloquet at rte-france.com>}
  */
 public class ThreeWindingsTransformerSeries extends IdentifiableSeries {
     private static final String COULD_NOT_CREATE_TRANSFORMER = "Could not create transformer ";

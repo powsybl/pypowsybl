@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * @author Christian Biasuzzi <christian.biasuzzi@soft.it>
+ * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class HvdcOperatorActivePowerRangeDataframeProvider extends AbstractSingleDataframeNetworkExtension {

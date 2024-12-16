@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class SlackTerminalDataframeProvider extends AbstractSingleDataframeNetworkExtension {

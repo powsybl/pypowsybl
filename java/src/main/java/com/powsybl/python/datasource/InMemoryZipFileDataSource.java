@@ -8,7 +8,7 @@
 package com.powsybl.python.datasource;
 
 import com.powsybl.commons.datasource.DataSourceUtil;
-import com.powsybl.commons.datasource.ReadOnlyDataSource;
+import com.powsybl.commons.datasource.ReadOnlyMemDataSource;
 import com.powsybl.commons.io.ForwardingInputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
  */
-public class InMemoryZipFileDataSource implements ReadOnlyDataSource {
+public class InMemoryZipFileDataSource extends ReadOnlyMemDataSource {
 
     private final byte[] zipFileBytes;
 

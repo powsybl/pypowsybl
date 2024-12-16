@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc at rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
 public abstract class AbstractDataframeMapper<T, U, C> implements DataframeMapper<T, C> {
 

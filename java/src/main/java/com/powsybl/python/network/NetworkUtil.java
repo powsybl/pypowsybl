@@ -13,8 +13,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -157,39 +156,50 @@ public final class NetworkUtil {
     public static Stream<TemporaryLimitData> getLimits(Network network) {
         Stream.Builder<TemporaryLimitData> limits = Stream.builder();
         network.getBranchStream().forEach(branch -> {
-            addLimit(limits, branch, (LoadingLimits) branch.getCurrentLimits1().orElse(null), ONE);
-            addLimit(limits, branch, (LoadingLimits) branch.getCurrentLimits2().orElse(null), TWO);
-            addLimit(limits, branch, (LoadingLimits) branch.getActivePowerLimits1().orElse(null), ONE);
-            addLimit(limits, branch, (LoadingLimits) branch.getActivePowerLimits2().orElse(null), TWO);
-            addLimit(limits, branch, (LoadingLimits) branch.getApparentPowerLimits1().orElse(null), ONE);
-            addLimit(limits, branch, (LoadingLimits) branch.getApparentPowerLimits2().orElse(null), TWO);
+            addOperationalLimitGroupsLimits(limits, branch.getOperationalLimitsGroups1(), branch, ONE,
+                    (String) branch.getSelectedOperationalLimitsGroupId1().orElse(null));
+            addOperationalLimitGroupsLimits(limits, branch.getOperationalLimitsGroups2(), branch, TWO,
+                    (String) branch.getSelectedOperationalLimitsGroupId2().orElse(null));
         });
-        network.getDanglingLineStream().forEach(danglingLine -> {
-            addLimit(limits, danglingLine, danglingLine.getCurrentLimits().orElse(null), NONE);
-            addLimit(limits, danglingLine, danglingLine.getActivePowerLimits().orElse(null), NONE);
-            addLimit(limits, danglingLine, danglingLine.getApparentPowerLimits().orElse(null), NONE);
-        });
-        network.getThreeWindingsTransformerStream().forEach(threeWindingsTransformer -> {
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getCurrentLimits().orElse(null), ONE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getActivePowerLimits().orElse(null), ONE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg1().getApparentPowerLimits().orElse(null), ONE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getCurrentLimits().orElse(null), TWO);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getActivePowerLimits().orElse(null), TWO);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg2().getApparentPowerLimits().orElse(null), TWO);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getCurrentLimits().orElse(null), THREE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getActivePowerLimits().orElse(null), THREE);
-            addLimit(limits, threeWindingsTransformer, threeWindingsTransformer.getLeg3().getApparentPowerLimits().orElse(null), THREE);
+        network.getDanglingLineStream().forEach(danglingLine ->
+            addOperationalLimitGroupsLimits(limits, danglingLine.getOperationalLimitsGroups(), danglingLine, NONE,
+                    danglingLine.getSelectedOperationalLimitsGroupId().orElse(null))
+        );
+        network.getThreeWindingsTransformerStream().forEach(twt -> {
+            addOperationalLimitGroupsLimits(limits, twt.getLeg1().getOperationalLimitsGroups(), twt, ONE,
+                    twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse(null));
+            addOperationalLimitGroupsLimits(limits, twt.getLeg2().getOperationalLimitsGroups(), twt, TWO,
+                    twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse(null));
+            addOperationalLimitGroupsLimits(limits, twt.getLeg3().getOperationalLimitsGroups(), twt, THREE,
+                    twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse(null));
         });
         return limits.build();
     }
 
+    public static Stream<TemporaryLimitData> getSelectedLimits(Network network) {
+        return getLimits(network).filter(TemporaryLimitData::isSelected);
+    }
+
+    private static void addOperationalLimitGroupsLimits(Stream.Builder<TemporaryLimitData> limits, Collection<OperationalLimitsGroup> groups,
+                                                        Identifiable<?> element, TemporaryLimitData.Side side, String selectedGroupId) {
+        groups.forEach(group -> {
+            String groupId1 = group.getId();
+            boolean isSelected1 = groupId1.equals(selectedGroupId);
+            addLimit(limits, element, group.getCurrentLimits().orElse(null), side, groupId1, isSelected1);
+            addLimit(limits, element, group.getActivePowerLimits().orElse(null), side, groupId1, isSelected1);
+            addLimit(limits, element, group.getApparentPowerLimits().orElse(null), side, groupId1, isSelected1);
+        });
+    }
+
     private static void addLimit(Stream.Builder<TemporaryLimitData> temporaryLimitContexts, Identifiable<?> identifiable,
-                                 LoadingLimits limits, TemporaryLimitData.Side side) {
+                                 LoadingLimits limits, TemporaryLimitData.Side side, String groupId, boolean isSelected) {
         if (limits != null) {
-            temporaryLimitContexts.add(new TemporaryLimitData(identifiable.getId(), "permanent_limit", side, limits.getPermanentLimit(), limits.getLimitType(), identifiable.getType()));
+            temporaryLimitContexts.add(new TemporaryLimitData(identifiable.getId(), "permanent_limit", side, limits.getPermanentLimit(),
+                    limits.getLimitType(), identifiable.getType(), groupId, isSelected));
             limits.getTemporaryLimits().stream()
                     .map(temporaryLimit -> new TemporaryLimitData(identifiable.getId(), temporaryLimit.getName(), side, temporaryLimit.getValue(),
-                            limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious()))
+                            limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious(),
+                            groupId, isSelected))
                     .forEach(temporaryLimitContexts::add);
         }
     }
@@ -233,5 +243,34 @@ public final class NetworkUtil {
     public static String getRegulatedElementId(Supplier<Terminal> regulatingTerminalGetter) {
         Terminal terminal = regulatingTerminalGetter.get();
         return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    /**
+     * @param b bus in Bus/Breaker view
+     * @return bus in bus view containing b if there is one.
+     */
+    public static Optional<Bus> getBusViewBus(Bus b) {
+        VoltageLevel voltageLevel = b.getVoltageLevel();
+        if (voltageLevel.getTopologyKind() == TopologyKind.BUS_BREAKER) {
+            // Bus/Breaker. There is an easy method directly available.
+            return Optional.ofNullable(voltageLevel.getBusView().getMergedBus(b.getId()));
+        } else {
+            // Node/Breaker.
+            // First we try the fast and easy way using connected terminals. Works for the vast majority of buses.
+            Optional<Bus> busInBusView = b.getConnectedTerminalStream().map(t -> t.getBusView().getBus())
+                    .filter(Objects::nonNull)
+                    .findFirst();
+            if (busInBusView.isPresent()) {
+                return busInBusView;
+            }
+            // Didn't find using connected terminals. There is the possibility that the bus has zero connected terminal
+            // on its own but is still part of a Merged Bus via a closed retained switch. We examine this case below.
+            // We should probably build something more efficient on powsybl-core side to avoid having
+            // to loop over all buses in the voltage level.
+            return voltageLevel.getBusView().getBusStream()
+                    .filter(busViewBus -> voltageLevel.getBusBreakerView().getBusStreamFromBusViewBusId(busViewBus.getId())
+                            .anyMatch(b2 -> b.getId().equals(b2.getId())))
+                    .findFirst();
+        }
     }
 }

@@ -7,26 +7,10 @@
  */
 package com.powsybl.python.network;
 
-import javax.annotation.Nullable;
-import java.util.Objects;
+import com.powsybl.iidm.network.IdentifiableType;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
-public class NodeContext {
-    private final int node;
-    private final String connectableId;
-
-    public NodeContext(int node, @Nullable String connectableId) {
-        this.node = Objects.requireNonNull(node);
-        this.connectableId = connectableId;
-    }
-
-    public int getNode() {
-        return node;
-    }
-
-    public String getConnectableId() {
-        return connectableId;
-    }
+public record NodeContext(int node, String connectableId, IdentifiableType connectableType) {
 }
