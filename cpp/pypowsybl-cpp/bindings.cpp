@@ -372,7 +372,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("AREA", element_type::AREA)
             .value("AREA_VOLTAGE_LEVELS", element_type::AREA_VOLTAGE_LEVELS)
             .value("AREA_BOUNDARIES", element_type::AREA_BOUNDARIES)
-            .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION);
+            .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION)
+            .value("PROPERTIES", element_type::PROPERTIES);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
