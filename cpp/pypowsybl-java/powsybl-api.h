@@ -174,7 +174,8 @@ typedef enum {
     AREA,
     AREA_VOLTAGE_LEVELS,
     AREA_BOUNDARIES,
-    INTERNAL_CONNECTION
+    INTERNAL_CONNECTION,
+    PROPERTIES
 } element_type;
 
 typedef enum {
@@ -460,3 +461,8 @@ typedef enum {
     NO_GENERATION,
     ALL_BUSES,
 } VoltageInitializerReactiveSlackBusesMode;
+
+typedef enum {
+    DEFAULT = 0,
+    FAILURE,
+} RaoComputationStatus;

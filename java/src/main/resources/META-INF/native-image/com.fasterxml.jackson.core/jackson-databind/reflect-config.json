@@ -6,5 +6,8 @@
 {
   "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"[Lcom.fasterxml.jackson.databind.deser.Deserializers;"
 }
 ]

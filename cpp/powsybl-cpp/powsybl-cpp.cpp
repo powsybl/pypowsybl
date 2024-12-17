@@ -1652,4 +1652,24 @@ JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, co
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
 }
 
+JavaHandle createRao() {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createRao);
+}
+
+RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult) {
+    return pypowsybl::PowsyblCaller::get()->callJava<RaoComputationStatus>(::getRaoResultStatus, raoResult);
+}
+
+JavaHandle getCrac(const JavaHandle& raoContext) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
+}
+
+JavaHandle getRaoResult(const JavaHandle& raoContext) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getRaoResult, raoContext);
+}
+
+JavaHandle createDefaultRaoParameters() {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createDefaultRaoParameters);
+}
+
 }
