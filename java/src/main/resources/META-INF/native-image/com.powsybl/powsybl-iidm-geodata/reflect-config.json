@@ -1,0 +1,9 @@
+[
+{
+  "name":"com.powsybl.iidm.geodata.odre.OdreGeoDataAdderPostProcessor"
+},
+{
+  "name":"com.powsybl.iidm.geodata.utils.GeoShapeDeserializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]
