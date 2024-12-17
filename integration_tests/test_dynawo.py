@@ -10,12 +10,12 @@ import pypowsybl.dynamic as dyn
 import pypowsybl.report as rp
 import pandas as pd
 
-
 def test_simulation():
     """
     Running that test requires to have installed dynawo,
     and configured its path in your config.yml.
     """
+
     network = pp.network.create_ieee14()
     report_node = rp.Reporter()
 
@@ -36,13 +36,16 @@ def test_simulation():
     event_mapping.add_disconnection(static_id='L1-2-1', start_time=5, disconnect_only='TWO')
     event_mapping.add_active_power_variation(static_id='B3-L', start_time=4, delta_p=0.02)
 
-    curves_mapping = dyn.CurveMapping()
-    curves_mapping.add_curves('BBM_LOAD', ['load_PPu', 'load_QPu'])
+    variables_mapping = dyn.OutputVariableMapping()
+    variables_mapping.add_dynamic_model_curves('BBM_GEN6', ['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
+    variables_mapping.add_standard_model_final_state_values('B3', 'Upu_value')
 
     sim = dyn.Simulation()
-    res = sim.run(network, model_mapping, event_mapping, curves_mapping, 0, 100, report_node)
+    res = sim.run(network, model_mapping, event_mapping, variables_mapping, 0, 100, report_node)
 
     assert report_node
     assert 'Ok' == res.status()
-    assert 'BBM_LOAD_load_PPu' in res.curves()
-    assert 'BBM_LOAD_load_QPu' in res.curves()
+    assert 'BBM_GEN6_generator_PGen' in res.curves()
+    assert 'BBM_GEN6_generator_QGen' in res.curves()
+    assert 'BBM_GEN6_generator_UStatorPu' in res.curves()
+    assert res.final_state_values().loc['NETWORK_B3_Upu_value'].empty == False

@@ -1233,6 +1233,18 @@ public final class PyPowsyblApiHeader {
         public static native EventMappingType fromCValue(int value);
     }
 
+    @CEnum("OutputVariableType")
+    public enum OutputVariableType {
+        CURVE,
+        FINAL_STATE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native OutputVariableType fromCValue(int value);
+    }
+
     @CEnum("ThreeSide")
     public enum ThreeSideType {
         UNDEFINED,

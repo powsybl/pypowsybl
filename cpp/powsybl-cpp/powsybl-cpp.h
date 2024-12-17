@@ -768,8 +768,8 @@ JavaHandle createEventMapping();
 
 JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode);
 
-// timeseries/curves mapping
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// timeseries mapping
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
 
 // events mapping
 void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
@@ -784,6 +784,7 @@ std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getFinalStateValues(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawo package==========
 

@@ -1349,8 +1349,9 @@ void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingTyp
     PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, mappingType, mappingDf);
 }
 
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
-    PowsyblCaller::get()->callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType) {
+    ToCharPtrPtr variablesPtr(variables);
+    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), isDynamic, variableType);
 }
 
 std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
@@ -1364,6 +1365,10 @@ SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getAllDynamicCurvesIds, resultHandle));
     return vector.get();
+}
+
+SeriesArray* getFinalStateValues(JavaHandle resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFinalStateValues, resultHandle));
 }
 
 std::vector<std::string> getSupportedModels(DynamicMappingType mappingType) {

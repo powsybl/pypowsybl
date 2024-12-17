@@ -46,7 +46,7 @@ To make a dynamic simulation, you need multiple things:
 
     1. A dynamic mapping, it links the static elements (generators, loads, lines) to their dynamic behavior (alpha beta load)
     2. A event mapping, it maps the different events. (e.g equipment disconnection)
-    3. A curve mapping, it records the given values to be watch by the simulation tool. Curves are the output of the simulation
+    3. A output variable mapping, it records the given values to be watch by the simulation tool (can be curves or final state values).
 
 There is a class for each of these elements.
 
@@ -81,15 +81,17 @@ To run a Dynawo simulation:
     event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
-    curve_mapping = dyn.CurveMapping()
-    curve_mapping.add_curves("LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping = dyn.OutputVariableMapping()
+    variables_mapping.add_dynamic_model_curves("DM_LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value') # and so on
 
     # simulations parameters
     start_time = 0
     end_time = 50
     sim = dyn.Simulation()
     # running the simulation
-    results = sim.run(network, model_mapping, event_mapping, curve_mapping, start_time, end_time)
+    results = sim.run(network, model_mapping, event_mapping, variables_mapping, start_time, end_time)
     # getting the results
     results.status()
     results.curves() # dataframe containing the mapped curves
+    results.final_state_values() # dataframe containing the mapped final state values
