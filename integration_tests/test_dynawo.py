@@ -9,7 +9,6 @@ import pypowsybl as pp
 import pypowsybl.dynamic as dyn
 import pypowsybl.report as rp
 import pandas as pd
-import logging
 
 def test_simulation():
     """
@@ -17,8 +16,6 @@ def test_simulation():
     and configured its path in your config.yml.
     """
 
-    logging.basicConfig()
-    logging.getLogger('powsybl').setLevel(1)
     network = pp.network.create_ieee14()
     report_node = rp.Reporter()
 
