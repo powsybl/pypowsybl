@@ -630,7 +630,8 @@ public final class PyPowsyblApiHeader {
         AREA,
         AREA_VOLTAGE_LEVELS,
         AREA_BOUNDARIES,
-        INTERNAL_CONNECTION;
+        INTERNAL_CONNECTION,
+        PROPERTIES;
 
         @CEnumValue
         public native int getCValue();
@@ -1417,5 +1418,17 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native VoltageInitializerStatus fromCValue(int value);
+    }
+
+    @CEnum("RaoComputationStatus")
+    public enum RaoComputationStatus {
+        DEFAULT,
+        FAILURE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native RaoComputationStatus fromCValue(int value);
     }
 }

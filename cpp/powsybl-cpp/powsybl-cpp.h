@@ -848,5 +848,12 @@ SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 
+// OpenRao
+JavaHandle createRao();
+JavaHandle getCrac(const JavaHandle& raoContext);
+JavaHandle getRaoResult(const JavaHandle& raoContext);
+RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
+JavaHandle createDefaultRaoParameters();
+
 }
 #endif //PYPOWSYBL_H
