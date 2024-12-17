@@ -5,10 +5,16 @@ on:
   schedule:
     - cron: '0 3 * * *'
 
+env:
+  BUILD_STATUS: ${{ github.workspace }}/build_status.txt
+
 jobs:
   build_pypowsybl:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
+    outputs:
+      build_status_output: ${{ steps.build_status_step.outputs.build_status_output }} #Output job with build_status.txt content created in Read Build Status step
+
     strategy:
       matrix:
         config:
@@ -92,7 +98,8 @@ jobs:
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-open-loadflow
       - name: Build LOADFLOW
-        run: mvn -batch-mode --no-transfer-progress clean install
+        continue-on-error: true
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-open-loadflow
       - name: Get LOADFLOW_VERSION
         run: echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -111,7 +118,8 @@ jobs:
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-diagram
       - name: Build DIAGRAM
-        run: mvn -batch-mode --no-transfer-progress clean install
+        continue-on-error: true
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-diagram
       - name: Get DIAGRAM_VERSION version
         run: echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -132,7 +140,8 @@ jobs:
           mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=${{ env.LOADFLOW_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-entsoe
       - name: Build ENTSOE
-        run: mvn -batch-mode --no-transfer-progress clean install
+        continue-on-error: true
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-entsoe
       - name: Get ENTSOE_VERSION
         run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -154,7 +163,8 @@ jobs:
           mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=${{ env.LOADFLOW_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-openrao
       - name: Build OPENRAO
-        run: mvn -batch-mode --no-transfer-progress clean install
+        continue-on-error: true
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-openrao
       - name: Get OPENRAO_VERSION
         run: echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -173,7 +183,8 @@ jobs:
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-dynawo
       - name: Build DYNAWO
-        run: mvn -batch-mode --no-transfer-progress clean install
+        continue-on-error: true
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install"
         working-directory: ./powsybl-dynawo
       - name: Get DYNAWO_VERSION
         run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
@@ -202,6 +213,7 @@ jobs:
         working-directory: ./powsybl-dependencies
 
       - name: Install powsybl-dependencies
+        continue-on-error: true
         run: mvn -batch-mode --no-transfer-progress clean install
         working-directory: ./powsybl-dependencies
 
@@ -238,3 +250,40 @@ jobs:
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
+
+      - name: Record Job Name
+        if: failure()
+        run: |
+          echo "Failed job : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
+
+      - name: Read Build Status
+        if: always()
+        id: build_status_step
+        run: |
+          echo "=== BUILD STATUS REPORT ==="
+          cat $BUILD_STATUS
+          echo "=========================="
+          echo "build_status_output<<EOF" >> $GITHUB_OUTPUT
+          cat $BUILD_STATUS >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+
+  #SLACK NOTIFICATION ON FAILURE
+  notify_slack:
+   needs: build_pypowsybl
+   runs-on: ubuntu-latest
+   if: failure()
+   steps:
+     - name: Send Slack Notification
+       uses: 8398a7/action-slack@v3
+       with:
+         status: ${{ job.status }}
+         text: |
+           :x: *Failed workflow ${{ github.workflow }}*
+           *Failure details:*
+           ```
+           ${{ needs.build_pypowsybl.outputs.build_status_output }}
+           ```
+           See logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+       env:
+         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

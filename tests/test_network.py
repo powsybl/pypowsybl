@@ -1423,24 +1423,24 @@ def test_busbar_sections():
 def test_non_linear_shunt():
     n = util.create_non_linear_shunt_network()
     non_linear_shunt_sections = n.get_non_linear_shunt_compensator_sections()
-    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 0)],
-                                   pd.Series(data={'g': 0.0, 'b': 0.00001},
-                                             name=('SHUNT', 0)), check_dtype=False)
     pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 1)],
-                                   pd.Series(data={'g': 0.3, 'b': 0.0200},
+                                   pd.Series(data={'g': 0.0, 'b': 0.00001},
                                              name=('SHUNT', 1)), check_dtype=False)
-    update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 0), ('SHUNT', 1)], names=['id', 'section']),
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 2)],
+                                   pd.Series(data={'g': 0.3, 'b': 0.0200},
+                                             name=('SHUNT', 2)), check_dtype=False)
+    update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('SHUNT', 1), ('SHUNT', 2)], names=['id', 'section']),
                           columns=['g', 'b'],
                           data=[[0.1, 0.00002],
                                 [0.4, 0.03]])
     n.update_non_linear_shunt_compensator_sections(update)
     non_linear_shunt_sections = n.get_non_linear_shunt_compensator_sections()
-    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 0)],
-                                   pd.Series(data={'g': 0.1, 'b': 0.00002},
-                                             name=('SHUNT', 0)), check_dtype=False)
     pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 1)],
-                                   pd.Series(data={'g': 0.4, 'b': 0.03},
+                                   pd.Series(data={'g': 0.1, 'b': 0.00002},
                                              name=('SHUNT', 1)), check_dtype=False)
+    pd.testing.assert_series_equal(non_linear_shunt_sections.loc[('SHUNT', 2)],
+                                   pd.Series(data={'g': 0.4, 'b': 0.03},
+                                             name=('SHUNT', 2)), check_dtype=False)
 
 
 def test_voltage_levels():
@@ -1469,11 +1469,25 @@ def test_voltage_levels():
     pd.testing.assert_frame_equal(expected, n.get_voltage_levels(), check_dtype=False)
 
 
-def test_update_with_keywords():
+def test_update_non_linear_shunt_with_keywords():
     n = util.create_non_linear_shunt_network()
-    n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
-    assert 0.2 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['g']
-    assert 0.000001 == n.get_non_linear_shunt_compensator_sections().loc['SHUNT', 0]['b']
+    n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=1, g=0.2, b=0.000001)
+    n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=2, g=0.3, b=0.000002)
+    sections = n.get_non_linear_shunt_compensator_sections()
+    assert 0.2 == sections.loc['SHUNT', 1]['g']
+    assert 0.000001 == sections.loc['SHUNT', 1]['b']
+    assert 0.3 == sections.loc['SHUNT', 2]['g']
+    assert 0.000002 == sections.loc['SHUNT', 2]['b']
+
+
+def test_update_non_linear_shunt_wrong_section():
+    n = util.create_non_linear_shunt_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=0, g=0.2, b=0.000001)
+    assert exc.match('Section number must be between 1 and 2, inclusive')
+    with pytest.raises(PyPowsyblError) as exc:
+        n.update_non_linear_shunt_compensator_sections(id='SHUNT', section=3, g=0.2, b=0.000001)
+    assert exc.match('Section number must be between 1 and 2, inclusive')
 
 
 def test_update_generators_with_keywords():
@@ -1539,6 +1553,8 @@ def test_node_breaker_view():
     assert 0 == switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node1']
     assert 5 == switches.loc['S4VL1_BBS_LINES3S4_DISCONNECTOR']['node2']
     assert 7 == len(nodes)
+    assert 'S4VL1_BBS' == nodes.iloc[0]['connectable_id']
+    assert 'BUSBAR_SECTION' == nodes.iloc[0]['connectable_type']
     assert topology.internal_connections.empty
 
     with pytest.raises(PyPowsyblError) as exc:
@@ -1551,7 +1567,14 @@ def test_graph():
     network_topology = n.get_node_breaker_topology('S4VL1')
     graph = network_topology.create_graph()
     assert 7 == len(graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6] == list(graph.nodes)
+    assert {'connectable_id': 'S4VL1_BBS', 'connectable_type': 'BUSBAR_SECTION'} == graph.nodes[0]
     assert [(0, 5), (0, 1), (0, 3), (1, 2), (3, 4), (5, 6)] == list(graph.edges)
+    assert {'id': 'S4VL1_BBS_LINES3S4_DISCONNECTOR',
+            'kind': 'DISCONNECTOR',
+            'name': 'S4VL1_BBS_LINES3S4_DISCONNECTOR',
+            'open': False,
+            'retained': False} == graph.edges[0, 5]
 
 
 @unittest.skip("plot graph skipping")
@@ -2148,6 +2171,18 @@ def test_properties():
     assert "Network element \'notHere\' does not exist." in str(exc)
 
 
+def test_get_properties():
+    network = pp.network.create_eurostag_tutorial_example1_network()
+    assert network.get_elements_properties().empty
+    network.add_elements_properties(id=network.id, key1='value1', key2='value2')
+    network.add_elements_properties(id='GEN', key3='value3')
+    expected = pd.DataFrame.from_records(index='id',
+                                         data=[{'id': 'sim1', 'type': 'NETWORK', 'key': 'key1', 'value': 'value1'},
+                                               {'id': 'sim1', 'type': 'NETWORK', 'key': 'key2', 'value': 'value2'},
+                                               {'id': 'GEN', 'type': 'GENERATOR', 'key': 'key3', 'value': 'value3'}])
+    pd.testing.assert_frame_equal(network.get_elements_properties(), expected, check_dtype=False)
+
+
 def test_pathlib_load_save(tmpdir):
     bat_path = TEST_DIR.joinpath('battery.xiidm')
     n_path = pp.network.load(bat_path)
@@ -2268,6 +2303,7 @@ def test_aliases():
     assert n.get_aliases().empty
     n.add_aliases(id='TWT', alias='test', alias_type='type')
     alias = n.get_aliases().loc['TWT']
+    assert alias['type'] == 'TWO_WINDINGS_TRANSFORMER'
     assert alias['alias'] == 'test'
     assert alias['alias_type'] == 'type'
     twt = n.get_2_windings_transformers(id='test')
@@ -2275,6 +2311,7 @@ def test_aliases():
     assert twt.loc['TWT']['r'] == 2.0
     n.add_aliases(id='GH1', alias='no_type_test')
     alias2 = n.get_aliases().loc['GH1']
+    assert alias2['type'] == 'GENERATOR'
     assert alias2['alias'] == 'no_type_test'
     assert alias2['alias_type'] == ''
     n.remove_aliases(id=['TWT', 'GH1'], alias=['test', 'no_type_test'])
