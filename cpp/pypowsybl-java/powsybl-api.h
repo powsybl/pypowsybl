@@ -456,3 +456,8 @@ typedef enum {
     NO_GENERATION,
     ALL_BUSES,
 } VoltageInitializerReactiveSlackBusesMode;
+
+typedef enum {
+    DEFAULT = 0,
+    FAILURE,
+} RaoComputationStatus;
