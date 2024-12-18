@@ -389,8 +389,8 @@ public final class Util {
 
     public static DynamicSimulationStatus convert(DynamicSimulationResult.Status obj) {
         return switch (obj) {
-            case SUCCESS -> DynamicSimulationStatus.SUCCESS;
-            case FAILURE -> DynamicSimulationStatus.FAILURE;
+            case SUCCESS -> DynamicSimulationStatus.DYNAMIC_SIMULATION_SUCCESS;
+            case FAILURE -> DynamicSimulationStatus.DYNAMIC_SIMULATION_FAILURE;
         };
     }
 

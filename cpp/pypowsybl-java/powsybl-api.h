@@ -412,8 +412,8 @@ typedef enum {
 } OutputVariableType;
 
 typedef enum {
-    SUCCESS = 0,
-    FAILURE,
+    DYNAMIC_SIMULATION_SUCCESS = 0,
+    DYNAMIC_SIMULATION_FAILURE,
 } DynamicSimulationStatus;
 
 typedef enum {

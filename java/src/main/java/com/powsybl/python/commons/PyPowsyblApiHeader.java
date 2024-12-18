@@ -1247,8 +1247,8 @@ public final class PyPowsyblApiHeader {
 
     @CEnum("DynamicSimulationStatus")
     public enum DynamicSimulationStatus {
-        SUCCESS,
-        FAILURE;
+        DYNAMIC_SIMULATION_SUCCESS,
+        DYNAMIC_SIMULATION_FAILURE;
 
         @CEnumValue
         public native int getCValue();

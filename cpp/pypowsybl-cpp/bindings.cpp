@@ -193,8 +193,8 @@ void dynamicSimulationBindings(py::module_& m) {
              .value("FINAL_STATE", OutputVariableType::FINAL_STATE);
 
     py::enum_<DynamicSimulationStatus>(m, "DynamicSimulationStatus")
-                 .value("SUCCESS", DynamicSimulationStatus::SUCCESS)
-                 .value("FAILURE", DynamicSimulationStatus::FAILURE);
+                 .value("SUCCESS", DynamicSimulationStatus::DYNAMIC_SIMULATION_SUCCESS)
+                 .value("FAILURE", DynamicSimulationStatus::DYNAMIC_SIMULATION_FAILURE);
 
     //entrypoints for constructors
     m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
