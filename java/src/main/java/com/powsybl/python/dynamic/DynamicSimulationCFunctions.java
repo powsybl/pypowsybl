@@ -108,6 +108,9 @@ public final class DynamicSimulationCFunctions {
             EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
             OutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesSupplierHandle);
             ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+            if (reportNode == null) {
+                reportNode = ReportNode.NO_OP;
+            }
             DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
                     stopTime);
             DynamicSimulationResult result = dynamicContext.run(network,
