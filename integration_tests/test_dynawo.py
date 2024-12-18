@@ -8,6 +8,7 @@
 import pypowsybl as pp
 import pypowsybl.dynamic as dyn
 import pypowsybl.report as rp
+from pypowsybl._pypowsybl import DynamicSimulationStatus
 import pandas as pd
 
 def test_simulation():
@@ -44,8 +45,10 @@ def test_simulation():
     res = sim.run(network, model_mapping, event_mapping, variables_mapping, 0, 100, report_node)
 
     assert report_node
-    assert 'Ok' == res.status()
+    assert DynamicSimulationStatus.SUCCESS == res.status()
+    assert "" == res.status_text()
     assert 'BBM_GEN6_generator_PGen' in res.curves()
     assert 'BBM_GEN6_generator_QGen' in res.curves()
     assert 'BBM_GEN6_generator_UStatorPu' in res.curves()
-    assert res.final_state_values().loc['NETWORK_B3_Upu_value'].empty == False
+    assert False == res.final_state_values().loc['NETWORK_B3_Upu_value'].empty
+    assert False == res.timeline().empty

@@ -73,5 +73,7 @@ Results
 
     SimulationResult
     SimulationResult.status
+    SimulationResult.status_text
     SimulationResult.curves
     SimulationResult.final_state_values
+    SimulationResult.timeline

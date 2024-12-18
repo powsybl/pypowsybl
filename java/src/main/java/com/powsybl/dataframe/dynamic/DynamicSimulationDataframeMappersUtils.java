@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, RTE (http://www.rte-france.com)
+ * Copyright (c) 2020-2022, RTE (http://www.rte-france.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -9,18 +9,22 @@ package com.powsybl.dataframe.dynamic;
 
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
+import com.powsybl.dynamicsimulation.TimelineEvent;
 import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.DoubleTimeSeries;
 import com.powsybl.timeseries.TimeSeries;
 
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 /**
- * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
+ * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
-public final class OutputVariablesSeries {
+public final class DynamicSimulationDataframeMappersUtils {
 
-    private OutputVariablesSeries() {
+    private DynamicSimulationDataframeMappersUtils() {
     }
 
     public static DataframeMapper<DoubleTimeSeries, Void> curvesDataFrameMapper(String colName) {
@@ -36,6 +40,17 @@ public final class OutputVariablesSeries {
                 .itemsStreamProvider(m -> m.entrySet().stream())
                 .stringsIndex("variables", Map.Entry::getKey)
                 .doubles("values", Map.Entry::getValue)
+                .build();
+    }
+
+    public static DataframeMapper<List<TimelineEvent>, Void> timelineEventDataFrameMapper() {
+        AtomicInteger index = new AtomicInteger();
+        return new DataframeMapperBuilder<List<TimelineEvent>, TimelineEvent, Void>()
+                .itemsProvider(Function.identity())
+                .intsIndex("index", e -> index.getAndIncrement())
+                .doubles("time", TimelineEvent::time)
+                .strings("model", TimelineEvent::modelName)
+                .strings("message", TimelineEvent::message)
                 .build();
     }
 }

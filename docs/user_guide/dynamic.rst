@@ -93,5 +93,7 @@ To run a Dynawo simulation:
     results = sim.run(network, model_mapping, event_mapping, variables_mapping, start_time, end_time)
     # getting the results
     results.status()
+    results.status_text() # error description if the simulation fails
     results.curves() # dataframe containing the mapped curves
     results.final_state_values() # dataframe containing the mapped final state values
+    results.timeline() # dataframe containing the simulation timeline

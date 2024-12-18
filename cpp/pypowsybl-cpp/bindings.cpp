@@ -188,9 +188,13 @@ void dynamicSimulationBindings(py::module_& m) {
             .value("NODE_FAULT", EventMappingType::NODE_FAULT)
             .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION);
 
-   py::enum_<OutputVariableType>(m, "OutputVariableType")
-               .value("CURVE", OutputVariableType::CURVE)
-               .value("FINAL_STATE", OutputVariableType::FINAL_STATE);
+    py::enum_<OutputVariableType>(m, "OutputVariableType")
+             .value("CURVE", OutputVariableType::CURVE)
+             .value("FINAL_STATE", OutputVariableType::FINAL_STATE);
+
+    py::enum_<DynamicSimulationStatus>(m, "DynamicSimulationStatus")
+                 .value("SUCCESS", DynamicSimulationStatus::DYNAMIC_SIMULATION_SUCCESS)
+                 .value("FAILURE", DynamicSimulationStatus::DYNAMIC_SIMULATION_FAILURE);
 
     //entrypoints for constructors
     m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
@@ -216,9 +220,11 @@ void dynamicSimulationBindings(py::module_& m) {
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
+    m.def("get_dynamic_simulation_results_status_text", &pypowsybl::getDynamicSimulationResultsStatusText, py::arg("result_handle"));
     m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
     m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
     m.def("get_final_state_values", &pypowsybl::getFinalStateValues, py::arg("result_handle"));
+    m.def("get_timeline", &pypowsybl::getTimeline, py::arg("result_handle"));
 }
 
 void voltageInitializerBinding(py::module_& m) {
