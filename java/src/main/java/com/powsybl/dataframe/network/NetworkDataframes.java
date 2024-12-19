@@ -94,6 +94,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.INJECTION, injections());
         mappers.put(DataframeElementType.BRANCH, branches());
         mappers.put(DataframeElementType.TERMINAL, terminals());
+        mappers.put(DataframeElementType.PROPERTIES, properties());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -1330,6 +1331,7 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper aliases() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getAliasesData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("type", pair -> pair.getLeft().getType().toString())
                 .strings("alias", Pair::getRight)
                 .strings("alias_type", pair -> pair.getLeft().getAliasType(pair.getRight()).orElse(""))
                 .build();
@@ -1339,6 +1341,21 @@ public final class NetworkDataframes {
         return network.getIdentifiables().stream()
                 .flatMap(identifiable -> identifiable.getAliases().stream()
                         .map(alias -> Pair.of(identifiable, alias)));
+    }
+
+    private static NetworkDataframeMapper properties() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getPropertiesData)
+                .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("type", pair -> pair.getLeft().getType().toString())
+                .strings("key", Pair::getRight)
+                .strings("value", pair -> pair.getLeft().getProperty(pair.getRight()))
+                .build();
+    }
+
+    private static Stream<Pair<Identifiable<?>, String>> getPropertiesData(Network network) {
+        return network.getIdentifiables().stream()
+                .flatMap(identifiable -> identifiable.getPropertyNames().stream()
+                        .map(prop -> Pair.of(identifiable, prop)));
     }
 
     private static NetworkDataframeMapper areaVoltageLevels() {

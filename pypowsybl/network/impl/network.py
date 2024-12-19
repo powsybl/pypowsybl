@@ -1339,7 +1339,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
               - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
-              - **ucte-xnode-code**: deprecated for pairing key.
+              - **ucte_xnode_code**: deprecated for pairing_key.
               - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
@@ -2419,6 +2419,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of aliases
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the network element (network, line, generator, load, ...)
+              - **alias**: alias value
+              - **alias_type**: alias type
+
+            This dataframe is indexed on the network element ID.
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
@@ -3723,7 +3732,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             extension_name: name of the extension
-            dfs: the data to be created
+            df: the data to be created
                  A single dataframe or a list of dataframes can be given as arguments
             kwargs: the data to be created, as named arguments.
                     Arguments can be single values or any type of sequence.
@@ -3833,7 +3842,7 @@ class Network:  # pylint: disable=too-many-public-methods
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            only_selected_sets: flag to choose whether inactive limit sets should also be included in the dataframe
+            show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
             All limits on the network
@@ -4192,8 +4201,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
-            - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
-            - **ucte-x-node-code**: deprecated, use pairing-key instead.
+            - **pairing_key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
+            - **ucte_xnode_code**: deprecated, use pairing_key instead.
 
             Dangling line generation information must be provided as a dataframe.
             Valid attributes are:
@@ -4394,7 +4403,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 network.create_lines(id='LINE-1', voltage_level1_id='VL1', bus1_id='B1',
                                      voltage_level2_id='VL2', bus2_id='B2',
-                                     b1=1e-6, b2=1e-6, g1=0, , g2=0, r=0.5, x=10)
+                                     b1=1e-6, b2=1e-6, g1=0, g2=0, r=0.5, x=10)
         """
         return self._create_elements(ElementType.LINE, [df], **kwargs)
 
@@ -5357,6 +5366,27 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
         return self.get_extensions(extension_name)
+
+    def get_elements_properties(self, all_attributes: bool = False, attributes: List[str] = None,
+                                **kwargs: ArrayLike) -> DataFrame:
+        """
+        Get a dataframe of properties of all network elements.
+
+        Args:
+
+        Returns:
+            A dataframe of properties
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the network element (network, line, generator, load, ...)
+              - **key**: property key
+              - **value**: property value
+
+            This dataframe is indexed on the network element ID.
+        """
+        return self.get_elements(ElementType.PROPERTIES, all_attributes, attributes, **kwargs)
 
     def add_elements_properties(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

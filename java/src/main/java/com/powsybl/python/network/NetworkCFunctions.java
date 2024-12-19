@@ -328,8 +328,8 @@ public final class NetworkCFunctions {
         });
     }
 
-    @CEntryPoint(name = "freeNetworkBinaryBuffer")
-    public static void freeNetworkBinaryBuffer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<CCharPointer> byteArrayPtr,
+    @CEntryPoint(name = "freeBinaryBuffer")
+    public static void freeBinaryBuffer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<CCharPointer> byteArrayPtr,
                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> freeArrayPointer(byteArrayPtr));
     }
