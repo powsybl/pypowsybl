@@ -3732,7 +3732,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             extension_name: name of the extension
-            dfs: the data to be created
+            df: the data to be created
                  A single dataframe or a list of dataframes can be given as arguments
             kwargs: the data to be created, as named arguments.
                     Arguments can be single values or any type of sequence.
@@ -3842,7 +3842,7 @@ class Network:  # pylint: disable=too-many-public-methods
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            only_selected_sets: flag to choose whether inactive limit sets should also be included in the dataframe
+            show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
             All limits on the network

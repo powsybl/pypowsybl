@@ -1233,6 +1233,30 @@ public final class PyPowsyblApiHeader {
         public static native EventMappingType fromCValue(int value);
     }
 
+    @CEnum("OutputVariableType")
+    public enum OutputVariableType {
+        CURVE,
+        FINAL_STATE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native OutputVariableType fromCValue(int value);
+    }
+
+    @CEnum("DynamicSimulationStatus")
+    public enum DynamicSimulationStatus {
+        DYNAMIC_SIMULATION_SUCCESS,
+        DYNAMIC_SIMULATION_FAILURE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native DynamicSimulationStatus fromCValue(int value);
+    }
+
     @CEnum("ThreeSide")
     public enum ThreeSideType {
         UNDEFINED,
@@ -1394,5 +1418,17 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native VoltageInitializerStatus fromCValue(int value);
+    }
+
+    @CEnum("RaoComputationStatus")
+    public enum RaoComputationStatus {
+        DEFAULT,
+        FAILURE;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native RaoComputationStatus fromCValue(int value);
     }
 }

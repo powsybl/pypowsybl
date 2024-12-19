@@ -12,6 +12,8 @@ import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
+import com.powsybl.dynamicsimulation.DynamicSimulationResult;
+import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
@@ -20,6 +22,7 @@ import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicSimulationStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
 import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
@@ -384,6 +387,13 @@ public final class Util {
         };
     }
 
+    public static DynamicSimulationStatus convert(DynamicSimulationResult.Status obj) {
+        return switch (obj) {
+            case SUCCESS -> DynamicSimulationStatus.DYNAMIC_SIMULATION_SUCCESS;
+            case FAILURE -> DynamicSimulationStatus.DYNAMIC_SIMULATION_FAILURE;
+        };
+    }
+
     public static byte[] binaryBufferToBytes(ByteBuffer buffer) {
         if (buffer.hasArray()) {
             return buffer.array();
@@ -442,6 +452,14 @@ public final class Util {
             case 0 -> ThreeSides.ONE;
             case 1 -> ThreeSides.TWO;
             case 2 -> ThreeSides.THREE;
+            default -> null;
+        };
+    }
+
+    public static OutputVariable.OutputType convert(PyPowsyblApiHeader.OutputVariableType type) {
+        return switch (type.getCValue()) {
+            case 0 -> OutputVariable.OutputType.CURVE;
+            case 1 -> OutputVariable.OutputType.FINAL_STATE;
             default -> null;
         };
     }
