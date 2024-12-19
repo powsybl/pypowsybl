@@ -75,6 +75,7 @@
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <powsybl-open-rao.version>6.0.1</powsybl-open-rao.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
+        <powsybl-diagram-temp.version>4.7.0</powsybl-diagram-temp.version>
     </properties>
 
     <build>
@@ -294,10 +295,12 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-single-line-diagram-core</artifactId>
+            <version>${powsybl-diagram-temp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-network-area-diagram</artifactId>
+            <version>${powsybl-diagram-temp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>

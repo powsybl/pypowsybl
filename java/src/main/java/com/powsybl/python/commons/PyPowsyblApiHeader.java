@@ -1182,6 +1182,13 @@ public final class PyPowsyblApiHeader {
 
         @CField("edge_info_displayed")
         int getEdgeInfoDisplayed();
+
+        @CField("metadata")
+        CCharPointer getMetadata();
+
+        @CField("metadata")
+        void setMetadata(CCharPointer currentUnit);
+
     }
 
     @CEnum("DynamicMappingType")
