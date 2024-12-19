@@ -48,7 +48,7 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         The base power, in MW, used for per-uniting
         """
-        return self._network.nominal_apparent_power()
+        return self._network.nominal_apparent_power
 
     def get_buses(self) -> pd.DataFrame:
         return self._network.get_buses()
