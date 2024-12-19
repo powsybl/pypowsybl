@@ -69,7 +69,7 @@
         <janino.version>3.1.0</janino.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2024.3.1</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2025.0.0-SNAPSHOT</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <powsybl-open-rao.version>6.0.1</powsybl-open-rao.version>

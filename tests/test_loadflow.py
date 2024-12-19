@@ -61,9 +61,9 @@ def test_run_lf_ac_2slacks():
     sbr0 = results[0].slack_bus_results[0]
     sbr1 = results[0].slack_bus_results[1]
     assert 'VL4_0' == sbr0.id
-    assert abs(-0.75 - sbr0.active_power_mismatch) < 0.01
+    assert abs(-0.57 - sbr0.active_power_mismatch) < 0.01
     assert 'VL2_0' == sbr1.id
-    assert abs(-0.75 - sbr1.active_power_mismatch) < 0.01
+    assert abs(-0.57 - sbr1.active_power_mismatch) < 0.01
 
 
 def test_run_lf_dc():
