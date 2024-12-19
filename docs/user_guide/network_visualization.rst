@@ -349,6 +349,37 @@ the geographical layout:
 .. image:: ../_static/images/nad_microgridbe_geo.svg
    :class: forced-white-background
 
+Network area diagram using a fixed layout
+--------------------------------------------
+
+We can generate a network area diagram using a fixed layout, using diagram positions encoded as JSON metadata (result of a previously computed NAD).
+Positions for diagram's elements declared in the metadata will be maintained in the new NAD. 
+Conversely, positions for the diagram elements that are not listed in the input JSON will be computed using the Force Layout.
+
+.. code-block:: python
+
+    >>> network = pn.create_ieee9()
+
+We can display the NAD for some VLs:
+
+.. code-block:: python
+
+    >>> nad1=network.get_network_area_diagram(voltage_level_ids=['VL3', 'VL6', 'VL8'])
+    >>> nad1
+
+.. image:: ../_static/images/ieee9_partial.svg
+   :class: forced-white-background
+
+Then, we can change the displayed VL list, and display the resulting NAD. By using the fixed layout, passing the previous NAD metadata as a parameter will keep the existing VL6 and VL8 nodes' positions.
+
+.. code-block:: python
+
+    >>> np1=pn.NadParameters(layout_type=pn.NadLayoutType.FIXED, metadata=nad1.metadata)
+    >>> network.get_network_area_diagram(voltage_level_ids=['VL6', 'VL8', 'VL1'], nad_parameters=np1)
+
+.. image:: ../_static/images/ieee9_partial_fixed_layout.svg
+   :class: forced-white-background
+
 Display diagrams using Jupyter widgets
 --------------------------------------------
 You can also display diagrams through `Jupyter widgets <https://github.com/powsybl/pypowsybl-jupyter>`_.
