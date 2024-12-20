@@ -1131,7 +1131,8 @@ def test_nad_displayed_voltage_levels():
 def test_nad_fixed_layout():
     n = pp.network.create_ieee14()
     nad1=n.get_network_area_diagram(voltage_level_ids='VL8', depth=1)
-    np1=NadParameters(layout_type=NadLayoutType.FIXED, metadata=nad1.metadata)
+    np1=NadParameters(layout_type=NadLayoutType.FIXED)
+    np1.metadata=nad1.metadata
     nad2=n.get_network_area_diagram(voltage_level_ids=['VL8', 'VL7'], nad_parameters=np1)
     assert re.search('.*<svg.*', nad2.svg)
     assert len(nad2.metadata) > 0

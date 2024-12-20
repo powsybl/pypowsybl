@@ -374,7 +374,8 @@ Then, we can change the displayed VL list, and display the resulting NAD. By usi
 
 .. code-block:: python
 
-    >>> np1=pn.NadParameters(layout_type=pn.NadLayoutType.FIXED, metadata=nad1.metadata)
+    >>> np1=pn.NadParameters(layout_type=pn.NadLayoutType.FIXED)
+    >>> np1.metadata=nad1.metadata
     >>> network.get_network_area_diagram(voltage_level_ids=['VL6', 'VL8', 'VL1'], nad_parameters=np1)
 
 .. image:: ../_static/images/ieee9_partial_fixed_layout.svg

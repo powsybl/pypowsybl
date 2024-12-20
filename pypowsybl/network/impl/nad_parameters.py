@@ -17,8 +17,7 @@ class NadParameters:
                  current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
                  substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
                  scaling_factor: int = 150000, radius_factor: float = 150.0,
-                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER,
-                 metadata: str = ""):
+                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -32,7 +31,7 @@ class NadParameters:
         self._scaling_factor = scaling_factor
         self._radius_factor = radius_factor
         self._edge_info_displayed = edge_info_displayed
-        self._metadata = metadata
+        self._metadata = ""
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -103,6 +102,10 @@ class NadParameters:
     def metadata(self) -> str:
         """metadata"""
         return self._metadata
+
+    @metadata.setter
+    def metadata(self, value: str) -> None:
+        self._metadata = value
 
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
