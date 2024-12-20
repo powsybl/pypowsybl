@@ -31,6 +31,7 @@ class NadParameters:
         self._scaling_factor = scaling_factor
         self._radius_factor = radius_factor
         self._edge_info_displayed = edge_info_displayed
+        self._metadata = ""
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -97,6 +98,15 @@ class NadParameters:
         """edge_info_displayed"""
         return self._edge_info_displayed
 
+    @property
+    def metadata(self) -> str:
+        """metadata"""
+        return self._metadata
+
+    @metadata.setter
+    def metadata(self, value: str) -> None:
+        self._metadata = value
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_name_displayed = self._edge_name_displayed
@@ -112,6 +122,7 @@ class NadParameters:
         c_parameters.scaling_factor = self._scaling_factor
         c_parameters.radius_factor = self._radius_factor
         c_parameters.edge_info_displayed = self._edge_info_displayed
+        c_parameters.metadata = self._metadata
         return c_parameters
 
     def __repr__(self) -> str:
