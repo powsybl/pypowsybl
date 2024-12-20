@@ -21,15 +21,22 @@ import java.util.function.Consumer;
  * @author Nicolas Pierre <nicolas.pierre@artelys.com>
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class PythonCurveSupplier implements OutputVariablesSupplier {
+public class PythonOutputVariablesSupplier implements OutputVariablesSupplier {
 
-    private final List<BiConsumer<Consumer<OutputVariable>, ReportNode>> curvesSupplierList = new ArrayList<>();
+    private final List<BiConsumer<Consumer<OutputVariable>, ReportNode>> outputVariablesSupplierList = new ArrayList<>();
 
-    public void addCurve(String dynamicId, String variable) {
-        curvesSupplierList.add((c, r) -> new DynawoOutputVariablesBuilder(r)
-                .dynamicModelId(dynamicId)
-                .variable(variable)
-                .add(c));
+    public void addOutputVariables(String elementId, List<String> variables, boolean isDynamic, OutputVariable.OutputType type) {
+        outputVariablesSupplierList.add((c, r) -> {
+            DynawoOutputVariablesBuilder builder = new DynawoOutputVariablesBuilder(r)
+                .variables(variables)
+                .outputType(type);
+            if (isDynamic) {
+                builder.dynamicModelId(elementId);
+            } else {
+                builder.staticId(elementId);
+            }
+            builder.add(c);
+        });
     }
 
     @Override
@@ -38,7 +45,7 @@ public class PythonCurveSupplier implements OutputVariablesSupplier {
         ReportNode supplierReportNode = SupplierReport.createSupplierReportNode(reportNode,
                 "pypowsyblOutputVariables",
                 "PyPowsybl Output Variables Supplier");
-        curvesSupplierList.forEach(c -> c.accept(curves::add, supplierReportNode));
+        outputVariablesSupplierList.forEach(c -> c.accept(curves::add, supplierReportNode));
         return curves;
     }
 }

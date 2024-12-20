@@ -174,7 +174,8 @@ typedef enum {
     AREA,
     AREA_VOLTAGE_LEVELS,
     AREA_BOUNDARIES,
-    INTERNAL_CONNECTION
+    INTERNAL_CONNECTION,
+    PROPERTIES
 } element_type;
 
 typedef enum {
@@ -406,6 +407,16 @@ typedef enum {
 } EventMappingType;
 
 typedef enum {
+    CURVE = 0,
+    FINAL_STATE,
+} OutputVariableType;
+
+typedef enum {
+    DYNAMIC_SIMULATION_SUCCESS = 0,
+    DYNAMIC_SIMULATION_FAILURE,
+} DynamicSimulationStatus;
+
+typedef enum {
     UNDEFINED = -1,
     ONE,
     TWO,
@@ -455,6 +466,11 @@ typedef enum {
     NO_GENERATION,
     ALL_BUSES,
 } VoltageInitializerReactiveSlackBusesMode;
+
+typedef enum {
+    DEFAULT = 0,
+    FAILURE,
+} RaoComputationStatus;
 
 typedef enum {
     VOLTAGE_LEVEL_NAME = 0,

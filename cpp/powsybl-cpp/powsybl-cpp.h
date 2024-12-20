@@ -766,10 +766,10 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle* reportNode);
 
-// timeseries/curves mapping
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// timeseries mapping
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
 
 // events mapping
 void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
@@ -781,9 +781,12 @@ std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappi
 std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 
 // results
-std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
+std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getFinalStateValues(JavaHandle resultHandle);
+SeriesArray* getTimeline(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawo package==========
 
@@ -844,6 +847,13 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
+
+// OpenRao
+JavaHandle createRao();
+JavaHandle getCrac(const JavaHandle& raoContext);
+JavaHandle getRaoResult(const JavaHandle& raoContext);
+RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
+JavaHandle createDefaultRaoParameters();
 
 JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);
