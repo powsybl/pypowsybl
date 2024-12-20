@@ -659,6 +659,7 @@ public final class NetworkDataframes {
                 .doubles("i", (dl, context) -> perUnitI(context, dl.getTerminal()))
                 .doubles("boundary_p", (dl, context) -> perUnitPQ(context, dl.getBoundary().getP()), false)
                 .doubles("boundary_q", (dl, context) -> perUnitPQ(context, dl.getBoundary().getQ()), false)
+                .doubles("boundary_i", (dl, context) -> perUnitI(context, dl.getBoundary().getI(), dl.getTerminal().getVoltageLevel().getNominalV()), false)
                 .doubles("boundary_v_mag", (dl, context) -> perUnitV(context, dl.getBoundary().getV(), dl.getTerminal()), false)
                 .doubles("boundary_v_angle", (dl, context) -> perUnitAngle(context, dl.getBoundary().getAngle()), false)
                 .strings("voltage_level_id", getVoltageLevelId())
