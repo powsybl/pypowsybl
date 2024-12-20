@@ -332,7 +332,7 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
-                        "boundary_p", "boundary_q", "boundary_v_mag", "boundary_v_angle",
+                        "boundary_p", "boundary_q", "boundary_i", "boundary_v_mag", "boundary_v_angle",
                         "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "pairing_key",
                         "ucte_xnode_code", "paired", "fictitious", "tie_line_id", "selected_limits_group");
     }

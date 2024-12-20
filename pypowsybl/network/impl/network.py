@@ -1330,6 +1330,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **boundary_p** (optional): active flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
               - **boundary_q** (optional): reactive flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_i** (optional): current on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in A)
               - **boundary_v_mag** (optional): voltage magnitude of the boundary bus, ``NaN`` if no loadflow has been computed (in kV)
               - **boundary_v_angle** (optional): voltage angle of the boundary bus, ``NaN`` if no loadflow has been computed (in degree)
               - **voltage_level_id**: at which substation the dangling line is connected
@@ -1388,6 +1389,18 @@ class Network:  # pylint: disable=too-many-public-methods
             id
             DL NaN NaN NaN               VL   VL_0      True
             == === === === ================ ====== =========
+
+        .. note::
+
+            This note applies only if you are using the per-unit mode in your network (i.e., network.per_unit=True).
+
+            If two dangling lines are paired in a tie-line and have different nominal voltages, the per-unit values
+            for `boundary_i` and `boundary_v_mag` will differ between the two dangling lines.
+
+            Currently, PowSyBl network model does not support the concept of nominal voltage for the boundary
+            fictitious bus. Therefore, the nominal voltage at the dangling line network side is used for
+            per-unit calculations. While this is generally not an issue, this produces counterintuitive results
+            in the case of dangling lines of different nominal voltages.
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
