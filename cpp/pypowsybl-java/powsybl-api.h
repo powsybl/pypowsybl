@@ -471,3 +471,58 @@ typedef enum {
     DEFAULT = 0,
     FAILURE,
 } RaoComputationStatus;
+
+typedef enum {
+    VOLTAGE_LEVEL_NAME = 0,
+    LOAD_NAME,
+    GENERATOR_NAME,
+    SHUNT_NAME,
+    BRANCH_NAME,
+} Grid2opStringValueType;
+
+typedef enum {
+    LOAD_VOLTAGE_LEVEL_NUM = 0,
+    GENERATOR_VOLTAGE_LEVEL_NUM,
+    SHUNT_VOLTAGE_LEVEL_NUM,
+    BRANCH_VOLTAGE_LEVEL_NUM_1,
+    BRANCH_VOLTAGE_LEVEL_NUM_2,
+    SHUNT_LOCAL_BUS,
+    TOPO_VECT,
+} Grid2opIntegerValueType;
+
+typedef enum {
+    LOAD_P = 0,
+    LOAD_Q,
+    LOAD_V,
+    GENERATOR_P,
+    GENERATOR_Q,
+    GENERATOR_V,
+    SHUNT_P,
+    SHUNT_Q,
+    SHUNT_V,
+    BRANCH_P1,
+    BRANCH_P2,
+    BRANCH_Q1,
+    BRANCH_Q2,
+    BRANCH_V1,
+    BRANCH_V2,
+    BRANCH_I1,
+    BRANCH_I2,
+    BRANCH_PERMANENT_LIMIT_A,
+} Grid2opDoubleValueType;
+
+typedef enum {
+    UPDATE_LOAD_P = 0,
+    UPDATE_LOAD_Q,
+    UPDATE_GENERATOR_P,
+    UPDATE_GENERATOR_V,
+} Grid2opUpdateDoubleValueType;
+
+
+typedef enum {
+    UPDATE_LOAD_BUS = 0,
+    UPDATE_GENERATOR_BUS,
+    UPDATE_SHUNT_BUS,
+    UPDATE_BRANCH_BUS1,
+    UPDATE_BRANCH_BUS2,
+} Grid2opUpdateIntegerValueType;

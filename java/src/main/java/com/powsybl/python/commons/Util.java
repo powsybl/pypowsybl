@@ -16,18 +16,12 @@ import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
-import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
+import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
-import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicSimulationStatus;
-import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerObjective;
-import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerStatus;
-import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelAmpl;
-import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerLogLevelSolver;
-import com.powsybl.python.commons.PyPowsyblApiHeader.VoltageInitializerReactiveSlackBusesMode;
+import com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.sensitivity.SensitivityFunctionType;
@@ -52,7 +46,7 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
+import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
@@ -140,6 +134,13 @@ public final class Util {
 
     public static ArrayPointer<CCharPointerPointer> createCharPtrArray(List<String> stringList) {
         return allocArrayPointer(getStringListAsPtr(stringList), stringList.size());
+    }
+
+    public static void freeCharPtrArray(ArrayPointer<CCharPointerPointer> array) {
+        for (int i = 0; i < array.getLength(); i++) {
+            UnmanagedMemory.free(array.getPtr().read(i));
+        }
+        UnmanagedMemory.free(array.getPtr());
     }
 
     /**

@@ -40,7 +40,8 @@ __all__ = [
     "glsk",
     "flowdecomposition",
     "shortcircuit",
-    "voltage_initializer"
+    "voltage_initializer",
+    "grid2op"
 ]
 
 
