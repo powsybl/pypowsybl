@@ -18,6 +18,7 @@ def test_bus_per_unit():
     pp.loadflow.run_ac(n)
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
+    assert n.sn == 100.0
     buses = n.get_buses()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                             columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
