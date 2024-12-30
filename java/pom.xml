@@ -67,10 +67,9 @@
 
         <graalvm.version>23.0.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
-        <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-dependencies.version>2024.3.1</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2024.4.0</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <powsybl-open-rao.version>6.0.1</powsybl-open-rao.version>
@@ -422,12 +421,6 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-commons-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
