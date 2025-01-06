@@ -164,11 +164,14 @@ def test_get_import_supported_extensions():
 
 def test_get_import_parameters():
     parameters = pp.network.get_import_parameters('PSS/E')
-    assert 1 == len(parameters)
-    assert ['psse.import.ignore-base-voltage'] == parameters.index.tolist()
+    assert 2 == len(parameters)
+    assert ['psse.import.ignore-base-voltage', 'psse.import.ignore-node-breaker-topology'] == parameters.index.tolist()
     assert 'Ignore base voltage specified in the file' == parameters['description']['psse.import.ignore-base-voltage']
     assert 'BOOLEAN' == parameters['type']['psse.import.ignore-base-voltage']
     assert 'false' == parameters['default']['psse.import.ignore-base-voltage']
+    assert 'Ignore the node breaker topology specified in the substation data of the file' == parameters['description']['psse.import.ignore-node-breaker-topology']
+    assert 'BOOLEAN' == parameters['type']['psse.import.ignore-node-breaker-topology']
+    assert 'false' == parameters['default']['psse.import.ignore-node-breaker-topology']
     parameters = pp.network.get_import_parameters('CGMES')
     assert '[mRID, rdfID]' == parameters['possible_values']['iidm.import.cgmes.source-for-iidm-id']
 
