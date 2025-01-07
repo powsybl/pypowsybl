@@ -9,8 +9,10 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -19,15 +21,19 @@ import java.util.List;
 public interface DynamicMappingAdder {
 
     /**
-     * Get the list of metadata
+     * Get the list of metadata: one list of columns metadata for each input dataframe.
      */
-    List<SeriesMetadata> getMetadata();
+    List<List<SeriesMetadata>> getMetadata();
 
     /**
      * Adds elements to the dynamic model mapping, based on a list of dataframes.
      * The first dataframe is considered the "primary" dataframe, other dataframes
-     * can provide additional data.
+     * can provide additional data (e.g. list of transformers id for a Tap Changer Blocking Automation System).
      */
-    void addElements(PythonDynamicModelsSupplier modelMapping, UpdatingDataframe dataframe);
+    void addElements(PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframe);
 
+    /**
+     * Returns supported model names for the given adder
+     */
+    Collection<ModelInfo> getSupportedModels();
 }

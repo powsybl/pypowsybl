@@ -24,6 +24,7 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.MappingUtils.*;
@@ -93,6 +94,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.INJECTION, injections());
         mappers.put(DataframeElementType.BRANCH, branches());
         mappers.put(DataframeElementType.TERMINAL, terminals());
+        mappers.put(DataframeElementType.PROPERTIES, properties());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -437,7 +439,9 @@ public final class NetworkDataframes {
                         .filter(sc -> sc.getModelType() == ShuntCompensatorModelType.NON_LINEAR)
                         .flatMap(shuntCompensator -> {
                             ShuntCompensatorNonLinearModel model = (ShuntCompensatorNonLinearModel) shuntCompensator.getModel();
-                            return model.getAllSections().stream().map(section -> Triple.of(shuntCompensator, section, model.getAllSections().indexOf(section)));
+                            // careful: shunt section number starts at 1, but position in array starts at 0
+                            var allSections = model.getAllSections();
+                            return IntStream.range(0, allSections.size()).mapToObj(i -> Triple.of(shuntCompensator, allSections.get(i), i + 1));
                         });
         return NetworkDataframeMapperBuilder.ofStream(nonLinearShunts, NetworkDataframes::getShuntSectionNonlinear)
                 .stringsIndex("id", triple -> triple.getLeft().getId())
@@ -457,7 +461,12 @@ public final class NetworkDataframes {
         } else {
             int section = dataframe.getIntValue("section", index)
                     .orElseThrow(() -> new PowsyblException("section is missing"));
-            return Triple.of(shuntCompensator, shuntNonLinear.getAllSections().get(section), section);
+            // careful: shunt section number starts at 1, but position in array starts at 0
+            List<ShuntCompensatorNonLinearModel.Section> allSections = shuntNonLinear.getAllSections();
+            if (section < 1 || section > allSections.size()) {
+                throw new PowsyblException(String.format("Section number must be between 1 and %d, inclusive", allSections.size()));
+            }
+            return Triple.of(shuntCompensator, allSections.get(section - 1), section);
         }
     }
 
@@ -1272,7 +1281,9 @@ public final class NetworkDataframes {
     }
 
     private static void setBusBreakerViewBusId(Terminal t, String busId) {
-        Objects.requireNonNull(t).getBusBreakerView().setConnectableBus(busId);
+        if (!busId.isEmpty()) {
+            Objects.requireNonNull(t).getBusBreakerView().setConnectableBus(busId);
+        }
     }
 
     private static <T extends Injection<T>> void setBusBreakerViewBusId(T i, String busId) {
@@ -1323,6 +1334,7 @@ public final class NetworkDataframes {
     private static NetworkDataframeMapper aliases() {
         return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getAliasesData)
                 .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("type", pair -> pair.getLeft().getType().toString())
                 .strings("alias", Pair::getRight)
                 .strings("alias_type", pair -> pair.getLeft().getAliasType(pair.getRight()).orElse(""))
                 .build();
@@ -1332,6 +1344,21 @@ public final class NetworkDataframes {
         return network.getIdentifiables().stream()
                 .flatMap(identifiable -> identifiable.getAliases().stream()
                         .map(alias -> Pair.of(identifiable, alias)));
+    }
+
+    private static NetworkDataframeMapper properties() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getPropertiesData)
+                .stringsIndex("id", pair -> pair.getLeft().getId())
+                .strings("type", pair -> pair.getLeft().getType().toString())
+                .strings("key", Pair::getRight)
+                .strings("value", pair -> pair.getLeft().getProperty(pair.getRight()))
+                .build();
+    }
+
+    private static Stream<Pair<Identifiable<?>, String>> getPropertiesData(Network network) {
+        return network.getIdentifiables().stream()
+                .flatMap(identifiable -> identifiable.getPropertyNames().stream()
+                        .map(prop -> Pair.of(identifiable, prop)));
     }
 
     private static NetworkDataframeMapper areaVoltageLevels() {
