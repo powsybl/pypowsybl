@@ -36,6 +36,7 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.BasicForceLayoutFactory;
 import com.powsybl.nad.layout.GeographicalLayoutFactory;
 import com.powsybl.nad.layout.LayoutFactory;
+import com.powsybl.nad.layout.LayoutFactoryUtils;
 import com.powsybl.nad.svg.SvgParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
@@ -1141,11 +1142,16 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
-                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
+                                                        CCharPointer fixedPositionsPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+            String fixedPositions = CTypeUtil.toStringOrNull(fixedPositionsPointer);
+            if (fixedPositions != null) {
+                nadParameters.setLayoutFactory(LayoutFactoryUtils.create(new StringReader(fixedPositions), nadParameters.getLayoutFactory()));
+            }
             List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return createCharPtrArray(svgAndMeta);
         });

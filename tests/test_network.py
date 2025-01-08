@@ -1127,6 +1127,12 @@ def test_nad_displayed_voltage_levels():
     list_vl = n.get_network_area_diagram_displayed_voltage_levels('VL1', 1)
     assert ['VL1', 'VL2', 'VL5'] == list_vl
 
+def test_nad_fixed_positions():
+    n = pp.network.create_ieee14()
+    nad1=n.get_network_area_diagram(voltage_level_ids='VL8', depth=1)
+    nad2=n.get_network_area_diagram(voltage_level_ids=['VL8', 'VL7'], fixed_positions=nad1.metadata)
+    assert re.search('.*<svg.*', nad2.svg)
+    assert len(nad2.metadata) > 0
 
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()

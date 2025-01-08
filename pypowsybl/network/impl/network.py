@@ -392,7 +392,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
-                                 nad_parameters: NadParameters = None) -> Svg:
+                                 nad_parameters: NadParameters = None, fixed_positions: str = None) -> Svg:
         """
         Create a network area diagram.
 
@@ -402,6 +402,7 @@ class Network:  # pylint: disable=too-many-public-methods
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
+            fixed_positions: optional JSON metadata used to set fixed coordinates for diagram elements. Positions for elements not specified in the JSON will be computed using the current layout.
 
         Returns:
             the network area diagram
@@ -413,7 +414,7 @@ class Network:  # pylint: disable=too-many-public-methods
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
         svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    nad_p)
+                                                    nad_p, '' if fixed_positions is None else fixed_positions)
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
