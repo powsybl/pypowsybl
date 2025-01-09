@@ -70,7 +70,7 @@
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <powsybl-dependencies.version>2024.4.0</powsybl-dependencies.version>
-        <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
+        <powsybl-open-reac.version>0.10.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <powsybl-open-rao.version>6.0.1</powsybl-open-rao.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
