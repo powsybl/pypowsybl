@@ -720,6 +720,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_id**: bus where this generator is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
               - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
+              - **condenser** (optional): ``True`` if the generator is a condenser
               - **connected**: ``True`` if the generator is connected to a bus
               - **fictitious** (optional): ``True`` if the generator is part of the model and not of the actual network
 
@@ -3969,6 +3970,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node**: the node where the new generator will be connected,
               if the voltage level has a node-breaker topology kind.
             - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
+            - **condenser**: define if the generator is a condenser (boolean)
             - **max_p**: maximum active power in MW
             - **min_p**: minimum active power in MW
             - **target_p**: target active power in MW
