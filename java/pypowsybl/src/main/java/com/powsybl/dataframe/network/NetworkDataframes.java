@@ -299,6 +299,7 @@ public final class NetworkDataframes {
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
                 .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", g -> getNode(g.getTerminal()), false)
+                .booleans("condenser", Generator::isCondenser, false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()

@@ -228,6 +228,7 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "connectable_bus_id", "NGEN");
         addStringColumn(dataframe, "bus_id", "NGEN");
         addIntColumn(dataframe, "voltage_regulator_on", 1);
+        addIntColumn(dataframe, "condenser", 1);
         NetworkElementAdders.addElements(DataframeElementType.GENERATOR, network, singletonList(dataframe));
         assertEquals(2, network.getGeneratorCount());
     }
