@@ -299,6 +299,7 @@ public final class NetworkDataframes {
                 .strings("bus_id", g -> getBusId(g.getTerminal()))
                 .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", g -> getNode(g.getTerminal()), false)
+                .booleans("condenser", Generator::isCondenser, false)
                 .booleans("connected", g -> g.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
@@ -848,7 +849,10 @@ public final class NetworkDataframes {
                 .doubles("low_voltage_limit", (vl, context) -> perUnitV(context, vl.getLowVoltageLimit(), vl.getNominalV()),
                     (vl, lvl, context) -> vl.setLowVoltageLimit(unPerUnitV(context, lvl, vl.getNominalV())))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
-                .strings("topology_kind", vl -> vl.getTopologyKind().toString(), false)
+                .strings("topology_kind", vl -> vl.getTopologyKind().name(), (voltageLevel, topologyKindStr) -> {
+                    TopologyKind topologyKind = TopologyKind.valueOf(topologyKindStr);
+                    voltageLevel.convertToTopology(topologyKind);
+                }, false)
                 .addProperties()
                 .build();
     }
