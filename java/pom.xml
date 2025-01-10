@@ -19,8 +19,11 @@
         <relativePath/>
     </parent>
 
-    <artifactId>pypowsybl</artifactId>
-    <description>A C interface to powsybl, for pypowsybl implementation</description>
+    <artifactId>pypowsybl-parent</artifactId>
+
+    <packaging>pom</packaging>
+    <version>1.9.0-SNAPSHOT</version>
+    <description>PyPowSyBl Java part parent project</description>
     <url>https://www.powsybl.org</url>
 
     <licenses>
@@ -44,6 +47,12 @@
             <organizationUrl>http://www.rte-france.com</organizationUrl>
         </developer>
         <developer>
+            <name>Hugo Kulesza</name>
+            <email>hugo.kulesza@rte-france.com</email>
+            <organization>RTE</organization>
+            <organizationUrl>http://www.rte-france.com</organizationUrl>
+        </developer>
+        <developer>
             <name>Sylvain LECLERC</name>
             <email>sylvain.leclerc@rte-france.com</email>
             <organization>RTE</organization>
@@ -57,136 +66,12 @@
         </developer>
     </developers>
 
-    <packaging>jar</packaging>
-    <version>1.9.0-SNAPSHOT</version>
-
     <properties>
         <java.version>17</java.version>
-        <commons-collections4.version>4.4</commons-collections4.version>
-        <commons-csv.version>1.11.0</commons-csv.version>
-
-        <graalvm.version>23.0.0</graalvm.version>
-        <janino.version>3.1.0</janino.version>
-        <mapdb.version>3.0.8</mapdb.version>
-        <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <powsybl-dependencies.version>2024.4.0</powsybl-dependencies.version>
-        <powsybl-open-reac.version>0.10.0</powsybl-open-reac.version>
-        <zstdjni.version>1.5.5-3</zstdjni.version>
         <powsybl-open-rao.version>6.0.1</powsybl-open-rao.version>
-        <google.ortools.version>9.10.4067</google.ortools.version>
+        <powsybl-open-reac.version>0.10.0</powsybl-open-reac.version>
     </properties>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-shade-plugin</artifactId>
-                <executions>
-                    <!-- Run shade goal on package phase -->
-                    <execution>
-                        <id>shade</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>shade</goal>
-                        </goals>
-                        <configuration>
-                            <filters>
-                                <filter>
-                                    <artifact>*</artifact>
-                                    <excludes>
-                                        <exclude>META-INF/*.SF</exclude>
-                                        <exclude>META-INF/*.DSA</exclude>
-                                        <exclude>META-INF/*.RSA</exclude>
-                                    </excludes>
-                                </filter>
-                            </filters>
-                            <finalName>pypowsybl-java</finalName>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>standalone</shadedClassifierName>
-                            <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                            </transformers>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>${maven-dependency-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>copy</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.google.ortools</groupId>
-                                    <artifactId>ortools-win32-x86-64</artifactId>
-                                    <destFileName>ortools-Windows-x86-64.jar</destFileName>
-                                    <version>${google.ortools.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.google.ortools</groupId>
-                                    <artifactId>ortools-darwin-aarch64</artifactId>
-                                    <destFileName>ortools-Darwin-aarch64.jar</destFileName>
-                                    <version>${google.ortools.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.google.ortools</groupId>
-                                    <artifactId>ortools-darwin-x86-64</artifactId>
-                                    <destFileName>ortools-Darwin-x86-64.jar</destFileName>
-                                    <version>${google.ortools.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.google.ortools</groupId>
-                                    <artifactId>ortools-linux-aarch64</artifactId>
-                                    <destFileName>ortools-Linux-aarch64.jar</destFileName>
-                                    <version>${google.ortools.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.google.ortools</groupId>
-                                    <artifactId>ortools-linux-x86-64</artifactId>
-                                    <destFileName>ortools-Linux-x86-64.jar</destFileName>
-                                    <version>${google.ortools.version}</version>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>com.powsybl</groupId>
-                                    <artifactId>powsybl-math-native</artifactId>
-                                    <destFileName>powsybl-math-native.jar</destFileName>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-
-    <profiles>
-        <profile>
-            <id>release</id>
-            <!-- Do not release fat jar (remove shade plugin execution) -->
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-shade-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>shade</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <dependencyManagement>
         <dependencies>
@@ -200,268 +85,7 @@
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-        <!-- compile -->
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>${commons-csv.version}</version>
-        </dependency>
-        <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
-        <dependency>
-            <groupId>org.codehaus.janino</groupId>
-            <artifactId>janino</artifactId>
-            <version>${janino.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.sdk</groupId>
-            <artifactId>graal-sdk</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.graalvm.nativeimage</groupId>
-            <artifactId>svm</artifactId>
-            <version>${graalvm.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <!--
-             rdf4j depends on a very old version of mapdb. It is using ObjectStream which is not yet supported
-             by GraalVM native image (https://github.com/oracle/graal/issues/2192). New version of mapdb seems to not
-             rely on ObjectStream anymore
-        -->
-        <dependency>
-            <groupId>org.mapdb</groupId>
-            <artifactId>mapdb</artifactId>
-            <version>${mapdb.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>${commons-collections4.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-cgmes-conformity</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-cgmes-model</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-cgmes-extensions</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-ieee-cdf-converter</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-api</artifactId>
-            <!--
-            We exclude PowSyBl math native jar from maven build because native library will be installed by the wheel
-            for the current platform
-            -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.powsybl</groupId>
-                    <artifactId>powsybl-math-native</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-loadflow-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-single-line-diagram-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-network-area-diagram</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-tools</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-flow-decomposition</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-shortcircuit-api</artifactId>
-        </dependency>
-
-        <!-- runtime -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>log4j-over-slf4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-cgmes-conversion</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-cgmes-gl</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-config-classic</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-dynaflow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-dynawo-simulation</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-entsoe-commons</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-geodata</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-modification</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-reducer</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-iidm-serde</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-math-native</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-matpower-converter</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-open-loadflow</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-powerfactory-converter</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-powerfactory-dgs</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-psse-converter</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-triple-store-impl-rdf4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-ucte-converter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-glsk-document-ucte</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-ampl-converter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-open-reac</artifactId>
-            <version>${powsybl-open-reac.version}</version>
-        </dependency>
-
-        <!-- test -->
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>powsybl-commons-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.assertj</groupId>
-            <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.luben</groupId>
-            <artifactId>zstd-jni</artifactId>
-            <version>${zstdjni.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-rao-api</artifactId>
-            <version>${powsybl-open-rao.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-crac-api</artifactId>
-            <version>${powsybl-open-rao.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-crac-impl</artifactId>
-            <version>${powsybl-open-rao.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-crac-io-json</artifactId>
-            <version>${powsybl-open-rao.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-search-tree-rao</artifactId>
-            <version>${powsybl-open-rao.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.powsybl</groupId>
-            <artifactId>open-rao-rao-result-json</artifactId>
-            <version>${powsybl-open-rao.version}</version>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>pypowsybl</module>
+    </modules>
 </project>
