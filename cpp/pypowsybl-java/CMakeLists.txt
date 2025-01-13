@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD 17)
 include(ExternalProject)
 
 if(NOT DEFINED PYPOWSYBL_JAVA_SRC_DIR)
-    set(PYPOWSYBL_JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../java)
+    set(PYPOWSYBL_JAVA_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../java/pypowsybl)
 endif()
 set(PYPOWSYBL_JAVA_BIN_DIR ${CMAKE_CURRENT_BINARY_DIR}/../java)
 set(PYPOWSYBL_JAVA_BIN_DIR ${PYPOWSYBL_JAVA_BIN_DIR}/../java PARENT_SCOPE)
@@ -44,8 +44,8 @@ macro(extract_and_install_native_lib jar_file jar_entry library_file)
   endif()
 endmacro()
 
-set(math-native-jar ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl/target/dependency/powsybl-math-native.jar)
-set(ortools-jar ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl/target/dependency/ortools-${CMAKE_SYSTEM_NAME}-${ARCH_ID}.jar)
+set(math-native-jar ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar)
+set(ortools-jar ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/ortools-${CMAKE_SYSTEM_NAME}-${ARCH_ID}.jar)
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     extract_and_install_native_lib(${math-native-jar} natives/windows_${OS_BITS} math.dll)
@@ -93,7 +93,7 @@ ExternalProject_Add(native-image
     DEPENDS mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/pypowsybl/target/pypowsybl-java.jar${EXTRA_JARS} -march=compatibility --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} -march=compatibility --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -H:Name=pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${NATIVE_IMAGE_INSTALL_EXTRA_COMMAND}
