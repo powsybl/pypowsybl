@@ -23,7 +23,7 @@ from pypowsybl import (
 )
 from pypowsybl.network import per_unit_view
 
-__version__ = '1.9.0.dev1'
+__version__ = '1.9.0'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
