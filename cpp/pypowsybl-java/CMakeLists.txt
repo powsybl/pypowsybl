@@ -44,8 +44,8 @@ macro(extract_and_install_native_lib jar_file jar_entry library_file)
   endif()
 endmacro()
 
-set(math-native-jar ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar)
-set(ortools-jar ${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/ortools-${CMAKE_SYSTEM_NAME}-${ARCH_ID}.jar)
+cmake_path(SET math-native-jar "${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar")
+cmake_path(SET ortools-jar "${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/ortools-${CMAKE_SYSTEM_NAME}-${ARCH_ID}.jar")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     extract_and_install_native_lib(${math-native-jar} natives/windows_${OS_BITS} math.dll)
