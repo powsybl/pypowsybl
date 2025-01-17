@@ -1337,8 +1337,8 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, reportNode);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle *reportNode) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
@@ -1349,12 +1349,17 @@ void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingTyp
     PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, mappingType, mappingDf);
 }
 
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable) {
-    PowsyblCaller::get()->callJava<>(::addCurve, curveMappingHandle, (char*) dynamicId.c_str(), (char*) variable.c_str());
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType) {
+    ToCharPtrPtr variablesPtr(variables);
+    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), isDynamic, variableType);
 }
 
-std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle) {
-    return PowsyblCaller::get()->callJava<std::string>(::getDynamicSimulationResultsStatus, dynamicSimulationResultsHandle);
+DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle) {
+    return PowsyblCaller::get()->callJava<DynamicSimulationStatus>(::getDynamicSimulationResultsStatus, resultsHandle);
+}
+
+std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle) {
+    return PowsyblCaller::get()->callJava<std::string>(::getDynamicSimulationResultsStatusText, resultsHandle);
 }
 
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
@@ -1364,6 +1369,14 @@ SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getAllDynamicCurvesIds, resultHandle));
     return vector.get();
+}
+
+SeriesArray* getFinalStateValues(JavaHandle resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFinalStateValues, resultHandle));
+}
+
+SeriesArray* getTimeline(JavaHandle resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getTimeline, resultHandle));
 }
 
 std::vector<std::string> getSupportedModels(DynamicMappingType mappingType) {
@@ -1665,6 +1678,44 @@ JavaHandle getRaoResult(const JavaHandle& raoContext) {
 
 JavaHandle createDefaultRaoParameters() {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createDefaultRaoParameters);
+}
+
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
+}
+
+void freeGrid2opBackend(const JavaHandle& backendHandle) {
+    pypowsybl::PowsyblCaller::get()->callJava(::freeGrid2opBackend, backendHandle);
+}
+
+std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType) {
+    auto stringValueArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opStringValue, backendHandle, valueType);
+    return toVector<std::string>(stringValueArrayPtr); // do not release, will be done when freeing backend
+}
+
+array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType) {
+    return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opIntegerValue, backendHandle, valueType); // do not release, will be done when freeing backend
+}
+
+array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
+    return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opDoubleValue, backendHandle, valueType); // do not release, will be done when freeing backend
+}
+
+void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr) {
+    pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opDoubleValue, backendHandle, valueType, valuePtr, changedPtr);
+}
+
+void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr) {
+    pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opIntegerValue, backendHandle, valueType, valuePtr, changedPtr);
+}
+
+bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle) {
+    return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
+}
+
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
 }
 
 }

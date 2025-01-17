@@ -1224,19 +1224,19 @@ def test_dangling_lines():
     # test boundary point columns
     n = pp.network.create_micro_grid_be_network()
     dangling_lines = n.get_dangling_lines(attributes=['p', 'q',
-                                                      'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'])
+                                                      'boundary_p', 'boundary_q', 'boundary_i', 'boundary_v_mag', 'boundary_v_angle'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['17086487-56ba-4979-b8de-064025a6b4da',
                                          '78736387-5f60-4832-b3fe-d50daf81b0a6',
                                          'b18cd1aa-7808-49b9-a7cf-605eaf07b006',
                                          'a16b4a6c-70b1-4abf-9a9d-bd0fa47f9fe4',
                                          'ed0c5d75-4a54-43c8-b782-b20d7431630b']),
-        columns=['p', 'q', 'boundary_p', 'boundary_q', 'boundary_v_mag', 'boundary_v_angle'],
-        data=[[-25.77,  -2.82, 27.36,   -0.42,  224.86, -5.51],
-              [-36.59,  54.18, 46.81,  -79.19,  410.79, -6.56],
-              [-82.84, 138.45, 90.03, -148.60,  410.80, -6.57],
-              [-23.83,   1.27, 26.80,   -1.48,  224.81, -5.52],
-              [-36.85,  80.68, 43.68,  -84.87,  412.60, -6.74]])
+        columns=['p', 'q', 'boundary_p', 'boundary_q', 'boundary_i', 'boundary_v_mag', 'boundary_v_angle'],
+        data=[[-25.77,  -2.82, 27.36,   -0.42,   70.27,  224.86, -5.51],
+              [-36.59,  54.18, 46.81,  -79.19,  129.30,  410.79, -6.56],
+              [-82.84, 138.45, 90.03, -148.60,  244.20,  410.80, -6.57],
+              [-23.83,   1.27, 26.80,   -1.48,   68.95,  224.81, -5.52],
+              [-36.85,  80.68, 43.68,  -84.87,  133.58,  412.60, -6.74]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
 
 
@@ -2525,6 +2525,27 @@ def test_deprecated_operational_limits_element_type_kwargs():
         network.create_operational_limits(element_id=['NHV1_NHV2_1', 'NHV1_NHV2_1'], element_type=['LINE', 'LINE'], name=['', ''],
                                           side=['ONE', 'ONE'], type=['CURRENT', 'CURRENT'], value=[400.0, 500.0],
                                           acceptable_duration=[-1, 60], fictitious=[False, True])
+
+
+def test_topology_kind_update():
+    network = pp.network.create_four_substations_node_breaker_network()
+    switches = network.get_switches(attributes=['voltage_level_id', 'retained'])
+    switches_s1vl2 = switches[switches['voltage_level_id'] == 'S1VL2']
+    switches_s1vl2['retained'] = False
+    switches_s1vl2.loc['S1VL2_COUPLER', 'retained'] = True
+    network.update_switches(switches_s1vl2[['retained']])
+    network.update_voltage_levels(id='S1VL2', topology_kind='BUS_BREAKER')
+    voltage_levels = network.get_voltage_levels(all_attributes=True)
+    assert voltage_levels.loc['S1VL2'].topology_kind == 'BUS_BREAKER'
+    topo = network.get_bus_breaker_topology('S1VL2')
+    assert ['S1VL2_COUPLER'] == list(topo.switches.index)
+    assert ['S1VL2_0', 'S1VL2_1'] == list(topo.buses.index)
+
+    # not yet implemented to go to node/breaker topo
+    with pytest.raises(PyPowsyblError) as exc_infos:
+        network.update_voltage_levels(id='S1VL2', topology_kind='NODE_BREAKER')
+
+    assert str(exc_infos.value) == "Topology model conversion from bus/breaker to node/breaker not yet supported"
 
 
 def test_connect_disconnect_with_empty_bus():
