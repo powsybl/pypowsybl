@@ -153,6 +153,36 @@ py::array seriesAsNumpyArray(const series& series) {
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+py::memoryview pyGetGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Grid2opIntegerValueType valueType) {
+    ::array* array = pypowsybl::getGrid2opIntegerValue(backendHandle, valueType);
+    return py::memoryview::from_buffer(
+            static_cast<int*>(array->ptr),
+            { array->length },
+            { sizeof(int) }
+    );
+}
+
+py::memoryview pyGetGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
+    ::array* array = pypowsybl::getGrid2opDoubleValue(backendHandle, valueType);
+    return py::memoryview::from_buffer(
+            static_cast<double*>(array->ptr),
+            { array->length },
+            { sizeof(double) }
+    );
+}
+
+void pyUpdateGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType,
+                                py::array_t<double, py::array::c_style | py::array::forcecast> value_array,
+                                py::array_t<int, py::array::c_style | py::array::forcecast> changed_array) {
+    pypowsybl::updateGrid2opDoubleValue(backendHandle, valueType, value_array.mutable_data(), changed_array.mutable_data());
+}
+
+void pyUpdateGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType,
+                                 py::array_t<int, py::array::c_style | py::array::forcecast> value_array,
+                                 py::array_t<int, py::array::c_style | py::array::forcecast> changed_array) {
+    pypowsybl::updateGrid2opIntegerValue(backendHandle, valueType, value_array.mutable_data(), changed_array.mutable_data());
+}
+
 void dynamicSimulationBindings(py::module_& m) {
 
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
@@ -1129,6 +1159,65 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_result"), py::arg("crac"));
     m.def("get_rao_result_status", &pypowsybl::getRaoResultStatus, "Get the status of a rao result", py::arg("rao_result"));
 
+    py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
+            .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
+            .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)
+            .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME)
+            .value("SHUNT_NAME", Grid2opStringValueType::SHUNT_NAME)
+            .value("BRANCH_NAME", Grid2opStringValueType::BRANCH_NAME);
+
+    py::enum_<Grid2opIntegerValueType>(m, "Grid2opIntegerValueType")
+            .value("LOAD_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::LOAD_VOLTAGE_LEVEL_NUM)
+            .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM)
+            .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM)
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_1", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_1)
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_2", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_2)
+            .value("SHUNT_LOCAL_BUS", Grid2opIntegerValueType::SHUNT_LOCAL_BUS)
+            .value("TOPO_VECT", Grid2opIntegerValueType::TOPO_VECT);
+
+    py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
+            .value("LOAD_P", Grid2opDoubleValueType::LOAD_P)
+            .value("LOAD_Q", Grid2opDoubleValueType::LOAD_Q)
+            .value("LOAD_V", Grid2opDoubleValueType::LOAD_V)
+            .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
+            .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
+            .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V)
+            .value("SHUNT_P", Grid2opDoubleValueType::SHUNT_P)
+            .value("SHUNT_Q", Grid2opDoubleValueType::SHUNT_Q)
+            .value("SHUNT_V", Grid2opDoubleValueType::SHUNT_V)
+            .value("BRANCH_P1", Grid2opDoubleValueType::BRANCH_P1)
+            .value("BRANCH_P2", Grid2opDoubleValueType::BRANCH_P2)
+            .value("BRANCH_Q1", Grid2opDoubleValueType::BRANCH_Q1)
+            .value("BRANCH_Q2", Grid2opDoubleValueType::BRANCH_Q2)
+            .value("BRANCH_V1", Grid2opDoubleValueType::BRANCH_V1)
+            .value("BRANCH_V2", Grid2opDoubleValueType::BRANCH_V2)
+            .value("BRANCH_I1", Grid2opDoubleValueType::BRANCH_I1)
+            .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2)
+            .value("BRANCH_PERMANENT_LIMIT_A", Grid2opDoubleValueType::BRANCH_PERMANENT_LIMIT_A);
+
+    py::enum_<Grid2opUpdateDoubleValueType>(m, "Grid2opUpdateDoubleValueType")
+            .value("UPDATE_LOAD_P", Grid2opUpdateDoubleValueType::UPDATE_LOAD_P)
+            .value("UPDATE_LOAD_Q", Grid2opUpdateDoubleValueType::UPDATE_LOAD_Q)
+            .value("UPDATE_GENERATOR_P", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_P)
+            .value("UPDATE_GENERATOR_V", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_V);
+
+    py::enum_<Grid2opUpdateIntegerValueType>(m, "Grid2opUpdateIntegerValueType")
+            .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS)
+            .value("UPDATE_GENERATOR_BUS", Grid2opUpdateIntegerValueType::UPDATE_GENERATOR_BUS)
+            .value("UPDATE_SHUNT_BUS", Grid2opUpdateIntegerValueType::UPDATE_SHUNT_BUS)
+            .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
+            .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS2);
+
+    m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"),
+          py::arg("consider_open_branch_reactive_flow"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
+    m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
+    m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("get_grid2op_integer_value", &::pyGetGrid2opIntegerValue, "From a Grid2op backend get a integer value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("check_grid2op_isolated_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
+    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {
