@@ -1138,6 +1138,35 @@ public final class NetworkCFunctions {
         });
     }
 
+    private static Map<String, Point> getNadFixedPositionsMap(int rowCount, StringSeries idSeries, DoubleSeries xSeries, DoubleSeries ySeries) {
+        Map<String, Point> fixedPositions = new HashMap<>();
+        if (xSeries != null && ySeries != null) {
+            for (int i = 0; i < rowCount; i++) {
+                String id = idSeries.get(i);
+                fixedPositions.put(id, new Point(xSeries.get(i), ySeries.get(i)));
+            }
+        }
+        return fixedPositions;
+    }
+
+    private static Map<String, TextPosition> getNadFixedTextPositionsMap(int rowCount, StringSeries idSeries, DoubleSeries shiftXSeries, DoubleSeries shiftYSeries,
+                                                                         DoubleSeries connectionShiftXSeries, DoubleSeries connectionShiftYSeries) {
+        Map<String, TextPosition> fixedTextPositions = new HashMap<>();
+        if (shiftXSeries != null && shiftYSeries != null && connectionShiftXSeries != null && connectionShiftYSeries != null) {
+            for (int i = 0; i < rowCount; i++) {
+                String id = idSeries.get(i);
+                double shiftX = shiftXSeries.get(i);
+                double shiftY = shiftYSeries.get(i);
+                double connectionShiftX = connectionShiftXSeries.get(i);
+                double connectionShiftY = connectionShiftYSeries.get(i);
+                if (!Double.isNaN(shiftX) && !Double.isNaN(shiftY) && !Double.isNaN(connectionShiftX) && !Double.isNaN(connectionShiftY)) {
+                    fixedTextPositions.put(id, new TextPosition(new Point(shiftX, shiftY), new Point(connectionShiftX, connectionShiftY)));
+                }
+            }
+        }
+        return fixedTextPositions;
+    }
+
     @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
@@ -1150,39 +1179,17 @@ public final class NetworkCFunctions {
 
             UpdatingDataframe fixedPositionsDataframe = createDataframe(fixedPositions);
             if (fixedPositionsDataframe != null) {
-                StringSeries idSerie = fixedPositionsDataframe.getStrings("id");
-                if (idSerie == null) {
+                StringSeries idSeries = fixedPositionsDataframe.getStrings("id");
+                if (idSeries == null) {
                     throw new PowsyblException("id is missing");
                 }
-                Map<String, Point> fpMap = new HashMap<>();
-                Map<String, TextPosition> tfpMap = new HashMap<>();
-
-                DoubleSeries xSeries = fixedPositionsDataframe.getDoubles("x");
-                DoubleSeries ySeries = fixedPositionsDataframe.getDoubles("y");
-                DoubleSeries shiftXSeries = fixedPositionsDataframe.getDoubles("shiftX");
-                DoubleSeries shiftYSeries = fixedPositionsDataframe.getDoubles("shiftY");
-                DoubleSeries connectionShiftXSeries = fixedPositionsDataframe.getDoubles("connectionShiftX");
-                DoubleSeries connectionShiftYSeries = fixedPositionsDataframe.getDoubles("connectionShiftY");
                 int rowCount = fixedPositionsDataframe.getRowCount();
-                if (xSeries != null && ySeries != null) {
-                    for (int i = 0; i < rowCount; i++) {
-                        String id = idSerie.get(i);
-                        fpMap.put(id, new Point(xSeries.get(i), ySeries.get(i)));
-                    }
-                }
-                if (shiftXSeries != null && shiftYSeries != null && connectionShiftXSeries != null && connectionShiftYSeries != null) {
-                    for (int i = 0; i < rowCount; i++) {
-                        String id = idSerie.get(i);
-                        double shiftX = shiftXSeries.get(i);
-                        double shiftY = shiftYSeries.get(i);
-                        double connectionShiftX = connectionShiftXSeries.get(i);
-                        double connectionShiftY = connectionShiftYSeries.get(i);
-                        if (!Double.isNaN(shiftX) && !Double.isNaN(shiftY) && !Double.isNaN(connectionShiftX) && !Double.isNaN(connectionShiftY)) {
-                            tfpMap.put(id, new TextPosition(new Point(shiftX, shiftY), new Point(connectionShiftX, connectionShiftY)));
-                        }
-                    }
-                }
-                nadParameters.setLayoutFactory(new FixedLayoutFactory(fpMap, tfpMap, nadParameters.getLayoutFactory()));
+                Map<String, Point> fixedPositionsMap = getNadFixedPositionsMap(rowCount, idSeries,
+                        fixedPositionsDataframe.getDoubles("x"), fixedPositionsDataframe.getDoubles("y"));
+                Map<String, TextPosition> fixedTextPositionsMap = getNadFixedTextPositionsMap(rowCount, idSeries,
+                        fixedPositionsDataframe.getDoubles("shiftX"), fixedPositionsDataframe.getDoubles("shiftY"),
+                        fixedPositionsDataframe.getDoubles("connectionShiftX"), fixedPositionsDataframe.getDoubles("connectionShiftY"));
+                nadParameters.setLayoutFactory(new FixedLayoutFactory(fixedPositionsMap, fixedTextPositionsMap, nadParameters.getLayoutFactory()));
             }
 
             List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
