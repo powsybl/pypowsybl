@@ -391,14 +391,14 @@ class Network:  # pylint: disable=too-many-public-methods
                                            voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p)
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
-        nadPositionsMeta=[_pp.SeriesMetadata('id',0,True,False,False),
+        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('x',1,False,False,False),
                   _pp.SeriesMetadata('y',1,False,False,False),
                   _pp.SeriesMetadata('shiftX',1,False,False,False),
                   _pp.SeriesMetadata('shiftY',1,False,False,False),
                   _pp.SeriesMetadata('connectionShiftX',1,False,False,False),
                   _pp.SeriesMetadata('connectionShiftY',1,False,False,False)]
-        return _create_c_dataframe(df, nadPositionsMeta) 
+        return _create_c_dataframe(df, nad_positions_metadata) 
     
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
