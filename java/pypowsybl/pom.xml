@@ -29,10 +29,8 @@
         <commons-csv.version>1.11.0</commons-csv.version>
         <graalvm.version>23.0.0</graalvm.version>
         <janino.version>3.1.0</janino.version>
-        <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
-        <powsybl-open-reac.version>0.7.0</powsybl-open-reac.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
     </properties>
