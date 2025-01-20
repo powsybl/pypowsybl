@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Etienne Lesot <etienne.lesot@rte-france.fr>
+ * @author Etienne Lesot {@literal <etienne.lesot@rte-france.fr>}
  */
 public class ConnectablePositionDataframeAdder extends AbstractSimpleAdder {
 

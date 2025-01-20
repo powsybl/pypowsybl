@@ -12,7 +12,7 @@ import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class ReportCUtils {
 
@@ -21,6 +21,7 @@ public final class ReportCUtils {
 
     public static ReportNode getReportNode(ObjectHandle reportNodeHandle) {
         ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+
         return reportNode != null ? reportNode : ReportNode.NO_OP;
     }
 }

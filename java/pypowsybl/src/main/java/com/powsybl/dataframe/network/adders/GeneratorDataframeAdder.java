@@ -28,9 +28,9 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPre
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public class GeneratorDataframeAdder extends AbstractSimpleAdder {
 
@@ -42,6 +42,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("connectable_bus_id"),
             SeriesMetadata.ints("node"),
             SeriesMetadata.strings("energy_source"),
+            SeriesMetadata.booleans("condenser"),
             SeriesMetadata.doubles("max_p"),
             SeriesMetadata.doubles("min_p"),
             SeriesMetadata.doubles("target_p"),
@@ -70,6 +71,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final StringSeries energySource;
         private final StringSeries busOrBusbarSections;
         private final StringSeries regulatingElements;
+        private final IntSeries condenser;
 
         GeneratorSeries(UpdatingDataframe dataframe) {
             super(dataframe);
@@ -84,6 +86,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.energySource = dataframe.getStrings("energy_source");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
+            this.condenser = dataframe.getInts("condenser");
         }
 
         Optional<GeneratorAdder> createAdder(Network network, int row, boolean throwException) {
@@ -101,6 +104,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);
                 applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
                         .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
+                applyBooleanIfPresent(condenser, row, adder::setCondenser);
                 return Optional.of(adder);
             }
             return Optional.empty();

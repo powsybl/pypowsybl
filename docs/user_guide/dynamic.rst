@@ -1,4 +1,4 @@
-Running a dynamic simulation with dynawaltz
+Running a dynamic simulation with dynawo
 ===========================================
 
 .. currentmodule:: pypowsybl.dynamic
@@ -14,23 +14,23 @@ Start by importing the module:
 
 Providers
 ---------
-For now we only support the Dynawaltz integration, provided by the `Dynawo <https://dynawo.github.io>`_ project.
+For now we only support the Dynawo simulator integration, provided by the `Dynawo <https://dynawo.github.io>`_ project.
 
 
 Prerequisites
 -------------
-The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the dynawaltz section to find your dynawaltz installation and defaults parameters
-Here is an example of a simple config.yaml file. It uses the same configurations as in powsybl-dynawatlz.
+The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the dynawo section to find your dynawo installation and defaults parameters
+Here is an example of a simple config.yaml file. It uses the same configurations as in powsybl-dynawo.
 
 .. code-block:: yaml+jinja
 
     dynamic-simulation-default-parameters:
         startTime: 0
         stopTime: 30
-    dynawaltz:
+    dynawo:
         homeDir: PATH_TO_DYNAWO
         debug: true
-    dynawaltz-default-parameters:
+    dynawo-simulation-default-parameters:
         parametersFile: ./models.par
         network.parametersFile: ./network.par
         network.parametersId: "1"
@@ -45,20 +45,20 @@ Parameters
 To make a dynamic simulation, you need multiple things:
 
     1. A dynamic mapping, it links the static elements (generators, loads, lines) to their dynamic behavior (alpha beta load)
-    2. A curve mapping, it records the given values to be watch by the simulation tool. Curves are the output of the simulation
-    3. A event mapping, it maps the different events. (their time event is done in configurations file for now)
+    2. A event mapping, it maps the different events. (e.g equipment disconnection)
+    3. A output variable mapping, it records the given values to be watch by the simulation tool (can be curves or final state values).
 
 There is a class for each of these elements.
 
-You will see a lot of arguments called parameterSetId. Dynawaltz use a lot of parameters that will be stored in files.
+You will see a lot of arguments called parameterSetId. Dynawo simulator use a lot of parameters that will be stored in files.
 
-Pypowsybl will find the path to this file in the powsybl config.yaml in dynawaltz-default-parameters.parametersFile value.
+Pypowsybl will find the path to this file in the powsybl config.yaml in dynawo-simulation-default-parameters.parametersFile value.
 
 The parameterSetId argument must match an id in this file (generally called models.par).
 
 Simple example
 --------------
-To run a Dynawaltz simulation:
+To run a Dynawo simulation:
 
 .. code-block:: python
 
@@ -70,22 +70,30 @@ To run a Dynawaltz simulation:
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_alpha_beta_load("LOAD", "LAB") # and so on
+    model_mapping.add_base_load(static_id='LOAD',
+                                parameter_set_id='LAB',
+                                dynamic_model_id='DM_LOAD',
+                                model_name='LoadAlphaBeta') # and so on
 
     # events mapping
-    events = dyn.EventMapping()
-    events.add_event("GEN_DISCONNECTION", dyn.EventType.DISCONNECTION, "GEN")
-    events.add_event("LINE_DISCONNECTION", dyn.EventType.DISCONNECTION, "NHV1_NHV2_1", BranchSide.ONE)
+    event_mapping = dyn.EventMapping()
+    event_mapping.add.add_disconnection(static_id='GEN', start_time=10)
+    event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
-    curves = dyn.CurveMapping()
-    curves.add_curves("LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping = dyn.OutputVariableMapping()
+    variables_mapping.add_dynamic_model_curves("DM_LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value') # and so on
 
     # simulations parameters
     start_time = 0
     end_time = 50
     sim = dyn.Simulation()
     # running the simulation
-    results = sim.run(network, model_mapping, events, curves, start_time, end_time)
+    results = sim.run(network, model_mapping, event_mapping, variables_mapping, start_time, end_time)
     # getting the results
-    results.curves() # dataframe containing the curves mapped
+    results.status()
+    results.status_text() # error description if the simulation fails
+    results.curves() # dataframe containing the mapped curves
+    results.final_state_values() # dataframe containing the mapped final state values
+    results.timeline() # dataframe containing the simulation timeline

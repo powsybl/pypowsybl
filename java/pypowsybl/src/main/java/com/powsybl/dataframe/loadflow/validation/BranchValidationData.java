@@ -1,7 +1,7 @@
 package com.powsybl.dataframe.loadflow.validation;
 
 /**
- * @author Yichen TANG <yichen.tang at rte-france.com>
+ * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
 class BranchValidationData {
     String branchId;

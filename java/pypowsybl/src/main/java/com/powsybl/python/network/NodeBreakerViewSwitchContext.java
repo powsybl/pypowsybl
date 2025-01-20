@@ -12,7 +12,7 @@ import com.powsybl.iidm.network.Switch;
 import java.util.Objects;
 
 /**
- * @author Etienne Lesot <etienne.lesot at rte-france.com>
+ * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 public class NodeBreakerViewSwitchContext {
     private final Switch switchContext;

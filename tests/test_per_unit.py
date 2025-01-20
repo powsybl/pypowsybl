@@ -8,6 +8,7 @@ from pypowsybl import per_unit_view
 import pypowsybl as pp
 import pandas as pd
 from numpy import nan
+import re
 import util
 import pytest
 
@@ -15,7 +16,9 @@ import pytest
 def test_bus_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
+    assert n.sn == 100.0
     buses = n.get_buses()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VLGEN_0', 'VLHV1_0', 'VLHV2_0', 'VLLOAD_0']),
                             columns=['name', 'v_mag', 'v_angle', 'connected_component', 'synchronous_component',
@@ -40,14 +43,15 @@ def test_bus_per_unit():
 def test_generator_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'energy_source', 'target_p', 'min_p', 'max_p', 'min_q', 'max_q', 'rated_s', 'reactive_limits_kind',
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.02, 3.01, True, 'GEN', -3.03,
                -1.12641, 3.16461, 'VLGEN', 'VLGEN_0', True],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
@@ -62,7 +66,7 @@ def test_generator_per_unit():
                  'target_v',
                  'target_q', 'voltage_regulator_on', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                  'bus_id', 'connected'],
-        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, None, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
+        data=[['GEN', '', 'OTHER', 6.07, -100, 49.99, -100, 100, nan, 'MIN_MAX', 1.1, 3.02, False, 'GEN', -3.03,
                -1.12641, nan, 'VLGEN', '', False],
               ['GEN2', '', 'OTHER', 6.07, -100, 49.99, -1.79769e+306, 1.79769e+306, None, 'MIN_MAX', 1.02, 3.01, True,
                'GEN2', -3.03, -1.13, 3.16, 'VLGEN', 'VLGEN_0', True]])
@@ -72,7 +76,8 @@ def test_generator_per_unit():
 def test_loads_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LOAD']),
                             columns=['name', 'type', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                      'connected'],
@@ -89,7 +94,8 @@ def test_loads_per_unit():
 def test_busbar_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS']),
@@ -105,7 +111,8 @@ def test_busbar_per_unit():
 
 def test_hvdc_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'converters_mode', 'target_p', 'max_p', 'nominal_v', 'r',
@@ -126,7 +133,8 @@ def test_hvdc_per_unit():
 
 def test_lines_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     lines = n.get_lines()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LINE_S2S3', 'LINE_S3S4']),
                             columns=['name', 'r', 'x', 'g1', 'b1', 'g2', 'b2', 'p1', 'q1', 'i1', 'p2', 'q2', 'i2',
@@ -153,7 +161,8 @@ def test_lines_per_unit():
 
 def test_two_windings_transformers_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['TWT']),
                             columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1',
                                      'p2',
@@ -181,7 +190,8 @@ def test_two_windings_transformers_per_unit():
 
 def test_shunt_compensators_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
                                      'voltage_regulation_on', 'target_v', 'target_deadband', 'regulating_bus_id',
@@ -195,7 +205,8 @@ def test_shunt_compensators_per_unit():
 def test_dangling_lines_per_unit():
     n = util.create_dangling_lines_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
 
     expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
@@ -217,7 +228,8 @@ def test_dangling_lines_per_unit():
 def test_lcc_converter_stations_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
                                      'connected'],
@@ -237,7 +249,8 @@ def test_lcc_converter_stations_per_unit():
 
 def test_vsc_converter_stations_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q', 'voltage_regulator_on',
@@ -262,7 +275,8 @@ def test_vsc_converter_stations_per_unit():
 def test_get_static_var_compensators_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
     pp.loadflow.run_ac(n)
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
         columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
@@ -284,7 +298,8 @@ def test_get_static_var_compensators_per_unit():
 
 def test_voltage_level_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['S1VL1', 'S1VL2', 'S2VL1', 'S3VL1', 'S4VL1']),
                             columns=['name', 'substation_id', 'nominal_v', 'high_voltage_limit', 'low_voltage_limit'],
                             data=[['', 'S1', 225, 1.07, 0.98], ['', 'S1', 400, 1.1, 0.98], ['', 'S2', 400, 1.1, 0.98],
@@ -294,7 +309,8 @@ def test_voltage_level_per_unit():
 
 def test_reactive_capability_curve_points_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     reactive_capability_curve_points = n.get_reactive_capability_curve_points()
     pd.testing.assert_series_equal(reactive_capability_curve_points.loc[('GH1', 0)],
                                    pd.Series(data={'p': 0, 'min_q': -7.69, 'max_q': 8.6},
@@ -338,7 +354,8 @@ def test_reactive_capability_curve_points_per_unit():
 
 def test_three_windings_transformer_per_unit():
     n = util.create_three_windings_transformer_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['3WT']),
         columns=['name', 'rated_u0', 'r1', 'x1', 'g1', 'b1', 'rated_u1', 'rated_s1', 'ratio_tap_position1',
@@ -384,7 +401,8 @@ def test_three_windings_transformer_per_unit():
 
 def test_batteries():
     n = util.create_battery_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BAT', 'BAT2']),
                             columns=['name', 'max_p', 'min_p', 'min_q', 'max_q', 'reactive_limits_kind', 'target_p', 'target_q',
                                      'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
@@ -404,18 +422,20 @@ def test_batteries():
 
 def test_ratio_tap_changers_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
                             columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
                                      'alpha'],
-                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 1.00, nan]])
+                            data=[[1, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0', 1.00, nan]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
 def test_lines_not_same_nominal_voltage_per_unit():
     n = pp.network.create_ieee14()
-    n = per_unit_view(n, 100)
+    with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
+        n = per_unit_view(n, 100)
     lines = n.get_lines()
     assert lines.loc['L7-8-1']['r'] == 0
     assert lines.loc['L7-8-1']['x'] == pytest.approx(0.17615, rel=1e-5)
@@ -429,12 +449,12 @@ def test_ratio_tap_changer_steps_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.per_unit = True
     steps = n.get_ratio_tap_changer_steps()
-    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
-    assert steps.loc['NHV2_NLOAD', 1]['rho'] == pytest.approx(2.54, rel=1e-1)
-    assert steps.loc['NHV2_NLOAD', 2]['rho'] == pytest.approx(2.92, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(0.850566, rel=1e-6)
+    assert steps.loc['NHV2_NLOAD', 1]['rho'] == pytest.approx(1.000666, rel=1e-6)
+    assert steps.loc['NHV2_NLOAD', 2]['rho'] == pytest.approx(1.150766, rel=1e-6)
     n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, r=1, x=3, g=4, b=2)
     steps = n.get_ratio_tap_changer_steps()
-    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(2.15, rel=1e-1)
+    assert steps.loc['NHV2_NLOAD', 0]['rho'] == pytest.approx(0.850566, rel=1e-6)
     assert steps.loc['NHV2_NLOAD', 0]['r'] == pytest.approx(1, rel=1e-1)
     assert steps.loc['NHV2_NLOAD', 0]['x'] == pytest.approx(3, rel=1e-1)
     assert steps.loc['NHV2_NLOAD', 0]['g'] == pytest.approx(4, rel=1e-1)

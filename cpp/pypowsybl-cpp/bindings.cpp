@@ -26,6 +26,14 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
 
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
+void setCracSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& crac);
+void setGlskSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& glsk);
+void runRaoWithParameters(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const pypowsybl::JavaHandle& parametersHandle);
+pypowsybl::JavaHandle loadRaoParametersFromBuffer(const py::buffer& parameters);
+
+py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::JavaHandle& rao_parameters);
+py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
+
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
     py::class_<T>(m, className.c_str())
@@ -134,23 +142,89 @@ void createExtensionsBind(pypowsybl::JavaHandle network, const std::vector<dataf
     pypowsybl::createExtensions(network, dataframeArray.get(), name);
 }
 
+void addDynamicMappingsBind(pypowsybl::JavaHandle dynamic_mapping_handle, DynamicMappingType mapping_type, const std::vector<dataframe*>& dataframes) {
+    std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
+    pypowsybl::addDynamicMappings(dynamic_mapping_handle, mapping_type, dataframeArray.get());
+}
+
 template<typename T>
 py::array seriesAsNumpyArray(const series& series) {
 	//Last argument is to bind lifetime of series to the returned array
     return py::array(py::dtype::of<T>(), series.data.length, series.data.ptr, py::cast(series));
 }
 
+py::memoryview pyGetGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Grid2opIntegerValueType valueType) {
+    ::array* array = pypowsybl::getGrid2opIntegerValue(backendHandle, valueType);
+    return py::memoryview::from_buffer(
+            static_cast<int*>(array->ptr),
+            { array->length },
+            { sizeof(int) }
+    );
+}
+
+py::memoryview pyGetGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
+    ::array* array = pypowsybl::getGrid2opDoubleValue(backendHandle, valueType);
+    return py::memoryview::from_buffer(
+            static_cast<double*>(array->ptr),
+            { array->length },
+            { sizeof(double) }
+    );
+}
+
+void pyUpdateGrid2opDoubleValue(const pypowsybl::JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType,
+                                py::array_t<double, py::array::c_style | py::array::forcecast> value_array,
+                                py::array_t<int, py::array::c_style | py::array::forcecast> changed_array) {
+    pypowsybl::updateGrid2opDoubleValue(backendHandle, valueType, value_array.mutable_data(), changed_array.mutable_data());
+}
+
+void pyUpdateGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType,
+                                 py::array_t<int, py::array::c_style | py::array::forcecast> value_array,
+                                 py::array_t<int, py::array::c_style | py::array::forcecast> changed_array) {
+    pypowsybl::updateGrid2opIntegerValue(backendHandle, valueType, value_array.mutable_data(), changed_array.mutable_data());
+}
+
 void dynamicSimulationBindings(py::module_& m) {
 
     py::enum_<DynamicMappingType>(m, "DynamicMappingType")
-        .value("ALPHA_BETA_LOAD", DynamicMappingType::ALPHA_BETA_LOAD)
-        .value("ONE_TRANSFORMER_LOAD", DynamicMappingType::ONE_TRANSFORMER_LOAD)
-        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS)
-        .value("GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS)
-        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS)
-        .value("GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS", DynamicMappingType::GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS)
-        .value("GENERATOR_SYNCHRONOUS", DynamicMappingType::GENERATOR_SYNCHRONOUS)
-        .value("CURRENT_LIMIT_AUTOMATON", DynamicMappingType::CURRENT_LIMIT_AUTOMATON);
+        .value("BASE_LOAD", DynamicMappingType::BASE_LOAD)
+        .value("LOAD_ONE_TRANSFORMER", DynamicMappingType::LOAD_ONE_TRANSFORMER)
+        .value("LOAD_ONE_TRANSFORMER_TAP_CHANGER", DynamicMappingType::LOAD_ONE_TRANSFORMER_TAP_CHANGER)
+        .value("LOAD_TWO_TRANSFORMERS", DynamicMappingType::LOAD_TWO_TRANSFORMERS)
+        .value("LOAD_TWO_TRANSFORMERS_TAP_CHANGERS", DynamicMappingType::LOAD_TWO_TRANSFORMERS_TAP_CHANGERS)
+        .value("BASE_GENERATOR", DynamicMappingType::BASE_GENERATOR)
+        .value("SYNCHRONIZED_GENERATOR", DynamicMappingType::SYNCHRONIZED_GENERATOR)
+        .value("SYNCHRONOUS_GENERATOR", DynamicMappingType::SYNCHRONOUS_GENERATOR)
+        .value("WECC", DynamicMappingType::WECC)
+        .value("GRID_FORMING_CONVERTER", DynamicMappingType::GRID_FORMING_CONVERTER)
+        .value("SIGNAL_N_GENERATOR", DynamicMappingType::SIGNAL_N_GENERATOR)
+        .value("HVDC_P", DynamicMappingType::HVDC_P)
+        .value("HVDC_VSC", DynamicMappingType::HVDC_VSC)
+        .value("BASE_TRANSFORMER", DynamicMappingType::BASE_TRANSFORMER)
+        .value("BASE_STATIC_VAR_COMPENSATOR", DynamicMappingType::BASE_STATIC_VAR_COMPENSATOR)
+        .value("BASE_LINE", DynamicMappingType::BASE_LINE)
+        .value("BASE_BUS", DynamicMappingType::BASE_BUS)
+        .value("INFINITE_BUS", DynamicMappingType::INFINITE_BUS)
+        .value("OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("UNDER_VOLTAGE", DynamicMappingType::UNDER_VOLTAGE)
+        .value("PHASE_SHIFTER_I", DynamicMappingType::PHASE_SHIFTER_I)
+        .value("PHASE_SHIFTER_P", DynamicMappingType::PHASE_SHIFTER_P)
+        .value("PHASE_SHIFTER_BLOCKING_I", DynamicMappingType::PHASE_SHIFTER_BLOCKING_I)
+        .value("TAP_CHANGER", DynamicMappingType::TAP_CHANGER)
+        .value("TAP_CHANGER_BLOCKING", DynamicMappingType::TAP_CHANGER_BLOCKING);
+
+    py::enum_<EventMappingType>(m, "EventMappingType")
+            .value("DISCONNECT", EventMappingType::DISCONNECT)
+            .value("NODE_FAULT", EventMappingType::NODE_FAULT)
+            .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION);
+
+    py::enum_<OutputVariableType>(m, "OutputVariableType")
+             .value("CURVE", OutputVariableType::CURVE)
+             .value("FINAL_STATE", OutputVariableType::FINAL_STATE);
+
+    py::enum_<DynamicSimulationStatus>(m, "DynamicSimulationStatus")
+                 .value("SUCCESS", DynamicSimulationStatus::DYNAMIC_SIMULATION_SUCCESS)
+                 .value("FAILURE", DynamicSimulationStatus::DYNAMIC_SIMULATION_FAILURE);
 
     //entrypoints for constructors
     m.def("create_dynamic_simulation_context", &pypowsybl::createDynamicSimulationContext);
@@ -160,22 +234,27 @@ void dynamicSimulationBindings(py::module_& m) {
 
     //running simulations
     m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
-        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"));
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
 
     //model mapping
-    m.def("add_all_dynamic_mappings", &pypowsybl::addDynamicMappings, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("dataframes"));
     m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("mapping_type"));
+    m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("mapping_type"));
 
-    // timeseries/curves mapping
-    m.def("add_curve", &pypowsybl::addCurve, py::arg("curve_mapping_handle"), py::arg("dynamic_id"), py::arg("variable"));
+    // timeseries mapping
+    m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("is_dynamic"), py::arg("output_variable_type"));
 
     // events mapping
-    m.def("add_event_disconnection", &pypowsybl::addEventDisconnection, py::arg("event_mapping_handle"), py::arg("static_id"), py::arg("eventTime"), py::arg("disconnectOnly"));
+    m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
+    m.def("get_event_mappings_meta_data", &pypowsybl::getEventMappingsMetaData, py::arg("mapping_type"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
+    m.def("get_dynamic_simulation_results_status_text", &pypowsybl::getDynamicSimulationResultsStatusText, py::arg("result_handle"));
     m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
     m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
+    m.def("get_final_state_values", &pypowsybl::getFinalStateValues, py::arg("result_handle"));
+    m.def("get_timeline", &pypowsybl::getTimeline, py::arg("result_handle"));
 }
 
 void voltageInitializerBinding(py::module_& m) {
@@ -238,7 +317,7 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_low_active_power_default_limit", &pypowsybl::voltageInitializerSetLowActivePowerDefaultLimit, py::arg("params_handle"), py::arg("low_active_power_default_limit"));
     m.def("voltage_initializer_set_default_minimal_qp_range", &pypowsybl::voltageInitializerSetDefaultMinimalQPRange, py::arg("params_handle"), py::arg("default_minimal_qp_range"));
     m.def("voltage_initializer_set_default_qmax_pmax_ratio", &pypowsybl::voltageInitializerSetDefaultQmaxPmaxRatio, py::arg("params_handle"), py::arg("default_qmax_pmax_ratio"));
-    
+
     m.def("voltage_initializer_apply_all_modifications", &pypowsybl::voltageInitializerApplyAllModifications, py::arg("result_handle"), py::arg("network_handle"));
     m.def("voltage_initializer_get_status", &pypowsybl::voltageInitializerGetStatus, py::arg("result_handle"));
     m.def("voltage_initializer_get_indicators", &pypowsybl::voltageInitializerGetIndicators, py::arg("result_handle"));
@@ -301,11 +380,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("THREE_WINDINGS_TRANSFORMER", element_type::THREE_WINDINGS_TRANSFORMER)
             .value("GENERATOR", element_type::GENERATOR)
             .value("LOAD", element_type::LOAD)
+            .value("GROUND", element_type::GROUND)
             .value("BATTERY", element_type::BATTERY)
             .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
             .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("DANGLING_LINE", element_type::DANGLING_LINE)
+            .value("DANGLING_LINE_GENERATION", element_type::DANGLING_LINE_GENERATION)
             .value("TIE_LINE", element_type::TIE_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
@@ -321,13 +402,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PHASE_TAP_CHANGER", element_type::PHASE_TAP_CHANGER)
             .value("REACTIVE_CAPABILITY_CURVE_POINT", element_type::REACTIVE_CAPABILITY_CURVE_POINT)
             .value("OPERATIONAL_LIMITS", element_type::OPERATIONAL_LIMITS)
+            .value("SELECTED_OPERATIONAL_LIMITS", element_type::SELECTED_OPERATIONAL_LIMITS)
             .value("MINMAX_REACTIVE_LIMITS", element_type::MINMAX_REACTIVE_LIMITS)
             .value("ALIAS", element_type::ALIAS)
             .value("IDENTIFIABLE", element_type::IDENTIFIABLE)
             .value("INJECTION", element_type::INJECTION)
             .value("BRANCH", element_type::BRANCH)
             .value("TERMINAL", element_type::TERMINAL)
-            .value("SUB_NETWORK", element_type::SUB_NETWORK);
+            .value("SUB_NETWORK", element_type::SUB_NETWORK)
+            .value("AREA", element_type::AREA)
+            .value("AREA_VOLTAGE_LEVELS", element_type::AREA_VOLTAGE_LEVELS)
+            .value("AREA_BOUNDARIES", element_type::AREA_BOUNDARIES)
+            .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION)
+            .value("PROPERTIES", element_type::PROPERTIES);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
@@ -366,6 +453,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("not_connected_to_same_bus_at_both_sides"));
 
     m.def("get_network_import_formats", &pypowsybl::getNetworkImportFormats, "Get supported import formats");
+    m.def("get_network_import_supported_extensions", &pypowsybl::getNetworkImportSupportedExtensions, "Get supported import extensions");
     m.def("get_network_export_formats", &pypowsybl::getNetworkExportFormats, "Get supported export formats");
     m.def("get_network_import_post_processors", &pypowsybl::getNetworkImportPostProcessors, "Get supported import post processors");
 
@@ -596,9 +684,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
-          py::arg("network"), py::arg("svg_file"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
+          py::arg("network"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("voltage_level_ids"),
+          py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
+          py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
+          
+    m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
 
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
@@ -667,6 +759,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL_VIOLATION_CONDITION", condition_type::ALL_VIOLATION_CONDITION)
             .value("ANY_VIOLATION_CONDITION", condition_type::ANY_VIOLATION_CONDITION)
             .value("AT_LEAST_ONE_VIOLATION_CONDITION", condition_type::AT_LEAST_ONE_VIOLATION_CONDITION);
+
+    py::enum_<RaoComputationStatus>(m, "RaoComputationStatus")
+            .value("DEFAULT", RaoComputationStatus::DEFAULT)
+            .value("FAILURE", RaoComputationStatus::FAILURE);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {
@@ -966,7 +1062,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::RescaleMode>(m, "RescaleMode")
             .value("NONE", pypowsybl::RescaleMode::NONE)
             .value("ACER_METHODOLOGY", pypowsybl::RescaleMode::ACER_METHODOLOGY)
-            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL);
+            .value("PROPORTIONAL", pypowsybl::RescaleMode::PROPORTIONAL)
+            .value("MAX_CURRENT_OVERLOAD", pypowsybl::RescaleMode::MAX_CURRENT_OVERLOAD);
 
     py::class_<pypowsybl::FlowDecompositionParameters>(m, "FlowDecompositionParameters")
                 .def(py::init(&pypowsybl::createFlowDecompositionParameters))
@@ -987,6 +1084,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_unused_order_positions", &pypowsybl::getUnusedConnectableOrderPositions, "Get unused order positions before or after", py::arg("network"), py::arg("busbar_section_id"), py::arg("before_or_after"));
 
     m.def("remove_aliases", &pypowsybl::removeAliases, "remove specified aliases on a network", py::arg("network"), py::arg("dataframe"));
+
+    m.def("remove_internal_connections", &pypowsybl::removeInternalConnections, "remove specified internal connections", py::arg("network"), py::arg("dataframe"));
 
     m.def("close", &pypowsybl::closePypowsybl, "Closes pypowsybl module.");
 
@@ -1045,6 +1144,80 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_short_circuit_limit_violations", &pypowsybl::getShortCircuitLimitViolations, "gets the limit violations of a short-circuit analysis", py::arg("result"));
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
+    m.def("create_rao", &pypowsybl::createRao, "Create rao context");
+    m.def("run_rao", ::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
+        py::arg("network"), py::arg("rao_context"), py::arg("parameters"));
+    m.def("set_crac_source", ::setCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
+            py::arg("network"), py::arg("rao_context"), py::arg("crac_source"));
+    m.def("set_glsk_source", ::setGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source",
+            py::arg("network"), py::arg("rao_context"), py::arg("glsk_source"));
+    m.def("get_crac", &pypowsybl::getCrac, "Get crac associated to the rao context", py::arg("rao_context"));
+    m.def("get_rao_result", &pypowsybl::getRaoResult, "Get rao result associated to the rao context", py::arg("rao_context"));
+    m.def("create_default_rao_parameters", &pypowsybl::createDefaultRaoParameters, "Create a default rao parameter");
+    m.def("load_rao_parameters", ::loadRaoParametersFromBuffer, "Load rao parameters from a buffer", py::arg("parameters_buffer"));
+    m.def("serialize_rao_parameters", ::saveRaoParametersToBinaryBuffer, "Serialize rao parameters to a buffer", py::arg("rao_parameters"));
+    m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_result"), py::arg("crac"));
+    m.def("get_rao_result_status", &pypowsybl::getRaoResultStatus, "Get the status of a rao result", py::arg("rao_result"));
+
+    py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
+            .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
+            .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)
+            .value("GENERATOR_NAME", Grid2opStringValueType::GENERATOR_NAME)
+            .value("SHUNT_NAME", Grid2opStringValueType::SHUNT_NAME)
+            .value("BRANCH_NAME", Grid2opStringValueType::BRANCH_NAME);
+
+    py::enum_<Grid2opIntegerValueType>(m, "Grid2opIntegerValueType")
+            .value("LOAD_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::LOAD_VOLTAGE_LEVEL_NUM)
+            .value("GENERATOR_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::GENERATOR_VOLTAGE_LEVEL_NUM)
+            .value("SHUNT_VOLTAGE_LEVEL_NUM", Grid2opIntegerValueType::SHUNT_VOLTAGE_LEVEL_NUM)
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_1", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_1)
+            .value("BRANCH_VOLTAGE_LEVEL_NUM_2", Grid2opIntegerValueType::BRANCH_VOLTAGE_LEVEL_NUM_2)
+            .value("SHUNT_LOCAL_BUS", Grid2opIntegerValueType::SHUNT_LOCAL_BUS)
+            .value("TOPO_VECT", Grid2opIntegerValueType::TOPO_VECT);
+
+    py::enum_<Grid2opDoubleValueType>(m, "Grid2opDoubleValueType")
+            .value("LOAD_P", Grid2opDoubleValueType::LOAD_P)
+            .value("LOAD_Q", Grid2opDoubleValueType::LOAD_Q)
+            .value("LOAD_V", Grid2opDoubleValueType::LOAD_V)
+            .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
+            .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
+            .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V)
+            .value("SHUNT_P", Grid2opDoubleValueType::SHUNT_P)
+            .value("SHUNT_Q", Grid2opDoubleValueType::SHUNT_Q)
+            .value("SHUNT_V", Grid2opDoubleValueType::SHUNT_V)
+            .value("BRANCH_P1", Grid2opDoubleValueType::BRANCH_P1)
+            .value("BRANCH_P2", Grid2opDoubleValueType::BRANCH_P2)
+            .value("BRANCH_Q1", Grid2opDoubleValueType::BRANCH_Q1)
+            .value("BRANCH_Q2", Grid2opDoubleValueType::BRANCH_Q2)
+            .value("BRANCH_V1", Grid2opDoubleValueType::BRANCH_V1)
+            .value("BRANCH_V2", Grid2opDoubleValueType::BRANCH_V2)
+            .value("BRANCH_I1", Grid2opDoubleValueType::BRANCH_I1)
+            .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2)
+            .value("BRANCH_PERMANENT_LIMIT_A", Grid2opDoubleValueType::BRANCH_PERMANENT_LIMIT_A);
+
+    py::enum_<Grid2opUpdateDoubleValueType>(m, "Grid2opUpdateDoubleValueType")
+            .value("UPDATE_LOAD_P", Grid2opUpdateDoubleValueType::UPDATE_LOAD_P)
+            .value("UPDATE_LOAD_Q", Grid2opUpdateDoubleValueType::UPDATE_LOAD_Q)
+            .value("UPDATE_GENERATOR_P", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_P)
+            .value("UPDATE_GENERATOR_V", Grid2opUpdateDoubleValueType::UPDATE_GENERATOR_V);
+
+    py::enum_<Grid2opUpdateIntegerValueType>(m, "Grid2opUpdateIntegerValueType")
+            .value("UPDATE_LOAD_BUS", Grid2opUpdateIntegerValueType::UPDATE_LOAD_BUS)
+            .value("UPDATE_GENERATOR_BUS", Grid2opUpdateIntegerValueType::UPDATE_GENERATOR_BUS)
+            .value("UPDATE_SHUNT_BUS", Grid2opUpdateIntegerValueType::UPDATE_SHUNT_BUS)
+            .value("UPDATE_BRANCH_BUS1", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS1)
+            .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS2);
+
+    m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"),
+          py::arg("consider_open_branch_reactive_flow"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
+    m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
+    m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("get_grid2op_integer_value", &::pyGetGrid2opIntegerValue, "From a Grid2op backend get a integer value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("get_grid2op_double_value", &::pyGetGrid2opDoubleValue, "From a Grid2op backend get a double value vector", py::arg("backend"), py::arg("value_type"));
+    m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
+    m.def("check_grid2op_isolated_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
+    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {
@@ -1100,6 +1273,47 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
                      parameterValuesPtr.get(), parameterValues.size(), reportNode == nullptr ? nullptr : *reportNode);
     py::gil_scoped_acquire acquire;
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
-    pypowsybl::PowsyblCaller::get()->callJava<>(::freeNetworkBinaryBuffer, byteArray);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
     return bytes;
 }
+
+void setCracSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& crac) {
+    py::buffer_info cracInfo = crac.request();
+    pypowsybl::PowsyblCaller::get()->callJava<>(::setCracBufferedSource,
+     networkHandle, raoHandle, static_cast<char*>(cracInfo.ptr), cracInfo.size);
+}
+
+void setGlskSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& glsk) {
+    py::buffer_info glskInfo = glsk.request();
+    pypowsybl::PowsyblCaller::get()->callJava<>(::setGlskBufferedSource,
+     networkHandle, raoHandle,
+     static_cast<char*>(glskInfo.ptr), glskInfo.size);
+}
+
+void runRaoWithParameters(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const pypowsybl::JavaHandle& parametersHandle) {
+    pypowsybl::PowsyblCaller::get()->callJava<>(::runRao,
+     networkHandle, raoHandle, parametersHandle);
+}
+
+py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoResult, const pypowsybl::JavaHandle& crac) {
+    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::serializeRaoResultsToBuffer, raoResult, crac);
+    py::gil_scoped_acquire acquire;
+    py::bytes bytes((char*) byteArray->ptr, byteArray->length);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
+    return bytes;
+}
+
+pypowsybl::JavaHandle loadRaoParametersFromBuffer(const py::buffer& parameters) {
+    py::buffer_info parametersInfo = parameters.request();
+    return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadRaoParameters,
+     static_cast<char*>(parametersInfo.ptr), parametersInfo.size);
+}
+
+py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::JavaHandle& rao_parameters) {
+    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::serializeRaoParameters, rao_parameters);
+    py::gil_scoped_acquire acquire;
+    py::bytes bytes((char*) byteArray->ptr, byteArray->length);
+    pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
+    return bytes;
+}
+

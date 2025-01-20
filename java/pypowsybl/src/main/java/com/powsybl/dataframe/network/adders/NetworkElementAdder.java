@@ -15,7 +15,7 @@ import com.powsybl.iidm.network.Network;
 import java.util.List;
 
 /**
- * @author Sylvain Leclerc <sylvain.leclerc@rte-france.com>
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public interface NetworkElementAdder {
 

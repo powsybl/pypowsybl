@@ -46,7 +46,7 @@ Several matrix of sensitivity factors can be specified, in that case you must na
     LOAD         -0.5         -0.5
     >>> result.get_sensitivity_matrix('m2')
          NHV1_NHV2_1
-    GEN         -0.0
+    GEN          0.0
 
 Zone to slack sensitivity
 ^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -72,11 +72,14 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_2_windings_transformers
    Network.get_3_windings_transformers
    Network.get_aliases
+   Network.get_areas
+   Network.get_areas_boundaries
+   Network.get_areas_voltage_levels
    Network.get_batteries
    Network.get_branches
-   Network.get_bus_breaker_topology
    Network.get_busbar_sections
    Network.get_buses
+   Network.get_bus_breaker_view_buses
    Network.get_current_limits
    Network.get_dangling_lines
    Network.get_generators
@@ -87,7 +90,6 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_lines
    Network.get_loads
    Network.get_linear_shunt_compensator_sections
-   Network.get_node_breaker_topology
    Network.get_non_linear_shunt_compensator_sections
    Network.get_operational_limits
    Network.get_phase_tap_changer_steps
@@ -104,6 +106,29 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_vsc_converter_stations
    Network.get_tie_lines
 
+Bus/Breaker or Node/Breaker topology description of a given voltage level can be retrieved using the following getters:
+
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
+
+   Network.get_bus_breaker_topology
+   Network.get_node_breaker_topology
+
+These getters return an object of the following classes:
+
+.. autosummary::
+   :nosignatures:
+
+    BusBreakerTopology
+    NodeBreakerTopology
+
+.. include it in the toctree
+.. toctree::
+   :hidden:
+
+   network/bus_breaker_topology
+   network/node_breaker_topology
 
 Network elements update
 ------------------------
@@ -116,6 +141,7 @@ Network elements can be modified using dataframes:
 
    Network.update_2_windings_transformers
    Network.update_3_windings_transformers
+   Network.update_areas
    Network.update_batteries
    Network.update_buses
    Network.update_dangling_lines
@@ -134,6 +160,7 @@ Network elements can be modified using dataframes:
    Network.update_switches
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.get_elements_properties
    Network.add_elements_properties
    Network.remove_elements_properties
    Network.add_aliases
@@ -151,6 +178,9 @@ Network elements can be created or removed using the following methods:
 
    Network.create_2_windings_transformers
    Network.create_3_windings_transformers
+   Network.create_areas
+   Network.create_areas_voltage_levels
+   Network.create_areas_boundaries
    Network.create_batteries
    Network.create_busbar_sections
    Network.create_buses
@@ -158,6 +188,7 @@ Network elements can be created or removed using the following methods:
    Network.create_dangling_lines
    Network.create_generators
    Network.create_hvdc_lines
+   Network.create_internal_connections
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
@@ -173,6 +204,7 @@ Network elements can be created or removed using the following methods:
    Network.create_vsc_converter_stations
    Network.create_tie_lines
    Network.remove_elements
+   Network.remove_internal_connections
 
 
 Network variants management

@@ -370,7 +370,8 @@ public:
 enum class RescaleMode {
     NONE = 0,
     ACER_METHODOLOGY,
-    PROPORTIONAL
+    PROPORTIONAL,
+    MAX_CURRENT_OVERLOAD
 };
 
 class FlowDecompositionParameters {
@@ -446,7 +447,9 @@ enum ShortCircuitStudyType {
 
 enum InitialVoltageProfileMode {
     NOMINAL = 0,
-    PREVIOUS_VALUE
+    // The enum is incomplete, the last case (CONFIGURED) will be done later.
+    // For now the value of PREVIOUS_VALUE must be specified.
+    PREVIOUS_VALUE = 2
 };
 
 class ShortCircuitAnalysisParameters {
@@ -516,6 +519,8 @@ std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, elemen
 
 std::vector<std::string> getNetworkImportFormats();
 
+std::vector<std::string> getNetworkImportSupportedExtensions();
+
 std::vector<std::string> getNetworkExportFormats();
 
 std::vector<std::string> getNetworkImportPostProcessors();
@@ -574,9 +579,11 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
@@ -741,6 +748,8 @@ std::vector<int> getUnusedConnectableOrderPositions(pypowsybl::JavaHandle networ
 
 void removeAliases(pypowsybl::JavaHandle network, dataframe* dataframe);
 
+void removeInternalConnections(pypowsybl::JavaHandle network, dataframe* dataframe);
+
 void closePypowsybl();
 
 void removeElementsModification(pypowsybl::JavaHandle network, const std::vector<std::string>& connectableIds, dataframe* dataframe, remove_modification_type removeModificationType, bool throwException, JavaHandle* reportNode);
@@ -749,7 +758,7 @@ SldParameters* createSldParameters();
 
 NadParameters* createNadParameters();
 
-//=======dynamic modeling for dynawaltz package==========
+//=======dynamic modeling for dynawo package==========
 
 //handle creation
 JavaHandle createDynamicSimulationContext();
@@ -757,24 +766,29 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle* reportNode);
 
-// timeseries/curves mapping
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// timeseries mapping
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
 
 // events mapping
-void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
+void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
 
 // dynamic model mapping
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes);
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 
 // results
-std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
+std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getFinalStateValues(JavaHandle resultHandle);
+SeriesArray* getTimeline(JavaHandle resultHandle);
 
-//=======END OF dynamic modeling for dynawaltz package==========
+//=======END OF dynamic modeling for dynawo package==========
 
 //=======Voltage initializer mapping========
 
@@ -833,6 +847,23 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
+
+// OpenRao
+JavaHandle createRao();
+JavaHandle getCrac(const JavaHandle& raoContext);
+JavaHandle getRaoResult(const JavaHandle& raoContext);
+RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
+JavaHandle createDefaultRaoParameters();
+
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
+void freeGrid2opBackend(const JavaHandle& backendHandle);
+std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
+array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);
+array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
+void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
+void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
+bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
 
 }
 #endif //PYPOWSYBL_H
