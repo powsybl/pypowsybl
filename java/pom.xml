@@ -87,5 +87,6 @@
 
     <modules>
         <module>pypowsybl</module>
+        <module>pypowsybl-pgo</module>
     </modules>
 </project>
