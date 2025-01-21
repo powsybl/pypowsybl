@@ -64,5 +64,9 @@
             <artifactId>pypowsybl</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-math-native</artifactId>
+        </dependency>
     </dependencies>
 </project>
