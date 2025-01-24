@@ -938,6 +938,8 @@ def test_ratio_tap_changers_3_windings():
                                   ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0', 1.913875]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
+    assert len(n.get_ratio_tap_changer_steps()) == 91
+
 
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
