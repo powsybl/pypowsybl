@@ -270,8 +270,8 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? v / nominalV : v;
     }
 
-    public static double perUnitRho(NetworkDataframeContext context, TwoWindingsTransformer twt, double rho) {
-        return context.isPerUnit() ? rho * twt.getTerminal1().getVoltageLevel().getNominalV() / twt.getTerminal2().getVoltageLevel().getNominalV() : rho;
+    public static double perUnitRho(boolean perUnit, TwoWindingsTransformer twt, double rho) {
+        return perUnit ? rho * twt.getTerminal1().getVoltageLevel().getNominalV() / twt.getTerminal2().getVoltageLevel().getNominalV() : rho;
     }
 
     public static double perUnitAngle(NetworkDataframeContext context, double angle) {

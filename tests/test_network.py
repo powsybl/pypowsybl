@@ -894,23 +894,48 @@ def test_exception():
 
 def test_ratio_tap_changers():
     n = pp.network.create_eurostag_tutorial_example1_network()
-    df = n.get_ratio_tap_changers(all_attributes=True)
-    assert not df['fictitious']['NHV2_NLOAD']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
-                                     'alpha'],
-                            data=[[1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4, nan]])
+                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho'],
+                            data=[['', 1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0', 0.4]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
                           data=[[0, False, 180]])
     n.update_ratio_tap_changers(update)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho',
-                                     'alpha'],
-                            data=[[0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34, nan]])
+                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho'],
+                            data=[['', 0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0', 0.34]])
+    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
+
+
+def test_ratio_tap_changers_3_windings():
+    n = pp.network.create_micro_grid_be_network()
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['e482b89a-fa84-4ea9-8e70-a83d44790957',
+                                                             'b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                             '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
+                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho'],
+                            data=[['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0', 0.092873],
+                                  ['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0', 0.519481],
+                                  ['TWO', 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0', 1.818182]])
+    pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
+
+    update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('84ed55f4-61f5-4d9d-8755-bba7b877a246', 'TWO')],
+                                                          names=['id', 'side']),
+                                                          columns=['tap', 'target_v', 'regulating'],
+                                                          data=[[9, 16.7, True]])
+    n.update_ratio_tap_changers(update)
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['e482b89a-fa84-4ea9-8e70-a83d44790957',
+                                                             'b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                             '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
+                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho'],
+                            data=[['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0', 0.092873],
+                                  ['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0', 0.519481],
+                                  ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0', 1.913875]])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
