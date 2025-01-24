@@ -958,23 +958,6 @@ public final class NetworkDataframes {
         }
     }
 
-    private static NetworkDataframeMapper rtcSteps() {
-        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getRatioTapChangerStepRows, NetworkDataframes::getRatioTapChangerStepRow)
-                .stringsIndex("id", RatioTapChangerStepRow::getId)
-                .intsIndex("position", RatioTapChangerStepRow::getPosition)
-                .doubles("rho", (p, context) -> p.getStep().getRho(),
-                    (p, rho, context) -> p.getStep().setRho(rho))
-                .doubles("r", (p, context) -> p.getStep().getR(),
-                    (p, r, context) -> p.getStep().setR(r))
-                .doubles("x", (p, context) -> p.getStep().getX(),
-                    (p, x, context) -> p.getStep().setX(x))
-                .doubles("g", (p, context) -> p.getStep().getG(),
-                    (p, g, context) -> p.getStep().setG(g))
-                .doubles("b", (p, context) -> p.getStep().getB(),
-                    (p, b, context) -> p.getStep().setB(b))
-                .build();
-    }
-
     private static Stream<RatioTapChangerStepRow> getRatioTapChangerStepRows(Network network) {
         List<RatioTapChangerStepRow> rows = new ArrayList<>();
         for (TwoWindingsTransformer twt : network.getTwoWindingsTransformers()) {
@@ -1011,6 +994,23 @@ public final class NetworkDataframes {
         }
         ThreeWindingsTransformer twt = network.getThreeWindingsTransformer(id);
         return new RatioTapChangerStepRow3(twt, side, position);
+    }
+
+    private static NetworkDataframeMapper rtcSteps() {
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getRatioTapChangerStepRows, NetworkDataframes::getRatioTapChangerStepRow)
+                .stringsIndex("id", RatioTapChangerStepRow::getId)
+                .intsIndex("position", RatioTapChangerStepRow::getPosition)
+                .doubles("rho", (p, context) -> p.getStep().getRho(),
+                    (p, rho, context) -> p.getStep().setRho(rho))
+                .doubles("r", (p, context) -> p.getStep().getR(),
+                    (p, r, context) -> p.getStep().setR(r))
+                .doubles("x", (p, context) -> p.getStep().getX(),
+                    (p, x, context) -> p.getStep().setX(x))
+                .doubles("g", (p, context) -> p.getStep().getG(),
+                    (p, g, context) -> p.getStep().setG(g))
+                .doubles("b", (p, context) -> p.getStep().getB(),
+                    (p, b, context) -> p.getStep().setB(b))
+                .build();
     }
 
     private static NetworkDataframeMapper ptcSteps() {
@@ -1141,8 +1141,25 @@ public final class NetworkDataframes {
         return rows.stream();
     }
 
+    static RatioTapChangerRow getRatioTapChangerRow(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        ThreeSides side = dataframe.getStringValue("side", index).stream()
+                .map(ThreeSides::valueOf)
+                .findFirst()
+                .orElse(null);
+        if (side == null) {
+            TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
+            if (twt.getRatioTapChanger() != null) {
+                return new RatioTapChangerRow2(twt);
+            }
+        }
+        ThreeWindingsTransformer twt = network.getThreeWindingsTransformer(id);
+        return new RatioTapChangerRow3(twt, side);
+    }
+
     private static NetworkDataframeMapper rtcs() {
-        return NetworkDataframeMapperBuilder.ofStream(network -> getRatioTapChangerRows(network), NetworkDataframes::getRatioTapChangerRow)
+        return NetworkDataframeMapperBuilder.ofStream(NetworkDataframes::getRatioTapChangerRows, NetworkDataframes::getRatioTapChangerRow)
                 .stringsIndex("id", RatioTapChangerRow::getId)
                 .strings("side", RatioTapChangerRow::getSide)
                 .ints("tap", row -> row.getRtc().getTapPosition(), (row, p) -> row.getRtc().setTapPosition(p))
@@ -1159,23 +1176,6 @@ public final class NetworkDataframes {
                 .doubles("rho", RatioTapChangerRow::computeRho)
                 .strings("regulated_side", RatioTapChangerRow::getRegulatedSide, RatioTapChangerRow::setRegulatedSide, false)
                 .build();
-    }
-
-    static RatioTapChangerRow getRatioTapChangerRow(Network network, UpdatingDataframe dataframe, int index) {
-        String id = dataframe.getStringValue("id", index)
-                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
-        ThreeSides side = dataframe.getStringValue("side", index).stream()
-                .map(ThreeSides::valueOf)
-                .findFirst()
-                .orElse(null);
-        if (side == null) {
-            TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
-            if (twt.getRatioTapChanger() != null) {
-                return new RatioTapChangerRow2(twt);
-            }
-        }
-        ThreeWindingsTransformer twt = network.getThreeWindingsTransformer(id);
-        return new RatioTapChangerRow3(twt, side);
     }
 
     private static void setTransformerTargetV(RatioTapChanger rtc, double targetV, NetworkDataframeContext context) {
