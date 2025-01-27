@@ -1137,8 +1137,8 @@ def test_nad_fixed_positions():
 
     fixed_positions_df2 = pd.DataFrame.from_records(index='id', 
                                                    data=[{'id': 'VL8', 'x': 10.0, 'y': 20.0,
-                                                          'shiftX': 50.0, 'shiftY': 51.0,
-                                                          'connectionShiftX': 52.0, 'connectionShiftY': 53.0}])
+                                                          'legend_shift_x': 50.0, 'legend_shift_y': 51.0,
+                                                          'legend_connection_shift_x': 52.0, 'legend_connection_shift_y': 53.0}])
     nad2=n.get_network_area_diagram(voltage_level_ids=['VL8', 'VL7'], fixed_positions=fixed_positions_df2)
     assert re.search('.*<svg.*', nad2.svg)
     assert len(nad2.metadata) > 0

@@ -1143,7 +1143,11 @@ public final class NetworkCFunctions {
         if (xSeries != null && ySeries != null) {
             for (int i = 0; i < rowCount; i++) {
                 String id = idSeries.get(i);
-                fixedPositions.put(id, new Point(xSeries.get(i), ySeries.get(i)));
+                double x = xSeries.get(i);
+                double y = ySeries.get(i);
+                if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                    fixedPositions.put(id, new Point(x, y));
+                }
             }
         }
         return fixedPositions;
@@ -1187,8 +1191,8 @@ public final class NetworkCFunctions {
                 Map<String, Point> fixedPositionsMap = getNadFixedPositionsMap(rowCount, idSeries,
                         fixedPositionsDataframe.getDoubles("x"), fixedPositionsDataframe.getDoubles("y"));
                 Map<String, TextPosition> fixedTextPositionsMap = getNadFixedTextPositionsMap(rowCount, idSeries,
-                        fixedPositionsDataframe.getDoubles("shiftX"), fixedPositionsDataframe.getDoubles("shiftY"),
-                        fixedPositionsDataframe.getDoubles("connectionShiftX"), fixedPositionsDataframe.getDoubles("connectionShiftY"));
+                        fixedPositionsDataframe.getDoubles("legend_shift_x"), fixedPositionsDataframe.getDoubles("legend_shift_y"),
+                        fixedPositionsDataframe.getDoubles("legend_connection_shift_x"), fixedPositionsDataframe.getDoubles("legend_connection_shift_y"));
                 nadParameters.setLayoutFactory(new FixedLayoutFactory(fixedPositionsMap, fixedTextPositionsMap, nadParameters.getLayoutFactory()));
             }
 
