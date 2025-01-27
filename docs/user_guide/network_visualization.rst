@@ -289,6 +289,31 @@ In order to get a list of the displayed voltage levels from an input voltage lev
     >>> network = pp.network.create_ieee300()
     >>> list_vl = network.get_network_area_diagram_displayed_voltage_levels('VL1', 1)
 
+
+We can generate a network area diagram using fixed positions, defined in a dataframe:
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee9()
+    >>> pos_df = pd.DataFrame.from_records(index='id',
+                                           columns=['id', 'x', 'y', 
+                                                    'legend_shift_x', 'legend_shift_y', 'legend_connection_shift_x', 'legend_connection_shift_y'], 
+                                           data=[
+                                               ('VL5',  10.0, 20.0, 80.0, -30, 80.0, 0),
+                                               ('VL6', 400.0, 20.0, 80.0, -30, 80.0, 0),
+                                               ('VL8', 800.0, 20.0, 80.0, -30, 80.0, 0)
+                                           ])
+    >>> nad = network.get_network_area_diagram(fixed_positions=pos_df)   
+
+    In the dataframe:
+    - id is the equipment id for the node
+    - x, y define the position for the node
+    - legend_shift_x, legend_shift_y define the legend box top-left position (relative to the node position)
+    - legend_connection_shift_x, legend_connection_shift_y define the legend box side endpoint position (relative to the node position) for the segment connecting a node and its legend box
+
+    Positions for elements not included in the dataframe are computed using the current layout algorithm.
+    
+
 Network area diagram using geographical data
 --------------------------------------------
 
