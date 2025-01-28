@@ -15,5 +15,8 @@ if [ $BUILD_EXIT -ne 0 ]; then
 else
     printf '%s;%s;%s;success\n' "$CURRENT_OS" "$CURRENT_PYTHON" "$MODULE_NAME" >> "$RESULT_FILE"
 fi
+echo "============================================="
+cat "$RESULT_FILE"
+echo "============================================="
 
 exit $BUILD_EXIT
