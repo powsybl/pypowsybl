@@ -125,7 +125,6 @@ public final class RaoCFunctions {
             RaoResult raoResult = ObjectHandles.getGlobal().get(raoResultHandle);
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                 Properties properties = new Properties();
                 properties.setProperty("rao-result.export.json.flows-in-amperes", "true");
                 properties.setProperty("rao-result.export.json.flows-in-megawatts", "true");
