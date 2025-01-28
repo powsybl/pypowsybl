@@ -118,7 +118,13 @@ jobs:
         run: echo "OLF_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-open-loadflow
 
-      # Build powsybl-diagram
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
+
+# Build powsybl-diagram
       - name: Checking for diagram snapshot branch
         run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
 
@@ -141,6 +147,12 @@ jobs:
       - name: Get DIAGRAM_VERSION version
         run: echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-diagram
+
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
 
       # Build powsybl-entsoe
       - name: Checking for powsybl-entsoe snapshot branch
@@ -167,6 +179,12 @@ jobs:
       - name: Get ENTSOE_VERSION
         run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-entsoe
+
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
 
       # Build powsybl-open-rao
       - name: Checking for powsybl-open-rao snapshot branch
@@ -195,6 +213,12 @@ jobs:
         run: echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-openrao
 
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
+
       # Build powsybl-dynawo
       - name: Checking for powsybl-dynawo snapshot branch
         run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
@@ -218,6 +242,12 @@ jobs:
       - name: Get DYNAWO_VERSION
         run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-dynawo
+
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
 
       # Checkout powsybl-dependencies
       - name: Checkout powsybl-dependencies sources
@@ -294,29 +324,18 @@ jobs:
         run: |
           echo "${{ matrix.config.name }};pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }};${{ job.status }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
 
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
+
       - name: Upload job result
         if: always()
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # 4.3.3
         with:
           name: job-results_${{ matrix.config.name }}-${{ matrix.python.name }}
           path: job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
-
-#      - name: Record Job Name
-#        if: failure()
-#        run: |
-#          echo "Failed job : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
-#
-#      - name: Read Build Status
-#        if: always()
-#        id: build_status_step
-#        run: |
-#          echo "=== BUILD STATUS REPORT ==="
-#          cat $BUILD_STATUS
-#          echo "=========================="
-#          echo "build_status_output<<EOF" >> $GITHUB_OUTPUT
-#          cat $BUILD_STATUS >> $GITHUB_OUTPUT
-#          echo "EOF" >> $GITHUB_OUTPUT
-
 
   # Slack notification
   notify_slack:
