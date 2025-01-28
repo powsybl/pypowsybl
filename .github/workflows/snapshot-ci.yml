@@ -14,6 +14,13 @@ jobs:
     runs-on: ${{ matrix.config.os }}
     outputs:
       build_status_output: ${{ steps.build_status_step.outputs.build_status_output }} #Output job with build_status.txt content created in Read Build Status step
+      core-version: ${{ env.CORE_VERSION }}
+      afs-branch: ${{ env.INTEGRATION_BRANCH }}
+      olf-version: ${{ env.OLF_VERSION }}
+      diagram-version: ${{ env.DIAGRAM_VERSION }}
+      entsoe-version: ${{ env.ENTSOE_VERSION }}
+      openrao-version: ${{ env.OPENRAO_VERSION }}
+      dependencies-version: ${{ env.DEPENDENCIES_VERSION }}
 
     strategy:
       matrix:
@@ -35,7 +42,7 @@ jobs:
 
     steps:
 
-      #SETUP PYTHON
+      # Setup Python
       - name: Set up Python ${{ matrix.python.version }}
         uses: actions/setup-python@v5
         with:
@@ -43,7 +50,7 @@ jobs:
       - name: Install Python dependencies
         run: python -m pip install --upgrade pip
 
-      #SETUP GRAALVM
+      # Setup GraalVM
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
@@ -51,7 +58,7 @@ jobs:
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      #DEFINE SCRIPTS PATH
+      # Define scripts path
       - name: Set up script path
         run: |
           SCRIPTS_PATH="${GITHUB_WORKSPACE}/scripts/.github/workflows/scripts"
@@ -60,151 +67,174 @@ jobs:
           fi
           echo "SCRIPTS_PATH=$SCRIPTS_PATH" >> $GITHUB_ENV  
 
-      #BUILD CORE
+      # Build powsybl-core on main branch
       - name: Checkout core sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-core
           ref: main
           path: powsybl-core
-      - name: Build CORE
+
+      - name: Build powsybl-core
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
         working-directory: ./powsybl-core
-      - name: get CORE_VERSION
+
+      - name: Get powsybl-core version
         run: echo "CORE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-core
 
-      #CHECKOUT SCRIPT
-      #The script check_snapshot_branch.sh is located in the workflow folder of the pypowsybl repository
-      #It is necessary for checking out the integration branch if it exists (pypowsybl include)
+      # Checkout script
+      # The script check_integration_branch.sh is located in the workflow folder of the repository
+      # It is necessary for checking out the integration branch if it exists
       - name: Checkout script
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           sparse-checkout: |
             .github
           sparse-checkout-cone-mode: false
           path: scripts
 
-      #BUILD OPENLOADFLOW
-      - name: Checking for openloadflow snapshot branch
-        run : ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
-      - name: Checkout openloadflow sources
-        uses: actions/checkout@v4
+      # Build Open-Loadflow
+      - name: Checking for powsybl-open-loadflow snapshot branch
+        run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
+        
+      - name: Checkout powsybl-open-loadflow sources
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.INTEGRATION_BRANCH }}
           path: powsybl-open-loadflow
-      - name: Change core version
+          
+      - name: Change core version in pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-open-loadflow
-      - name: Build LOADFLOW
+        
+      - name: Build powsybl-open-loadflow
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install"
-        working-directory: ./powsybl-open-loadflow
-      - name: Get LOADFLOW_VERSION
-        run: echo "LOADFLOW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-open-loadflow
 
-      #BUILD DIAGRAM
+      - name: Get OLF_VERSION
+        run: echo "OLF_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        working-directory: ./powsybl-open-loadflow
+
+      # Build powsybl-diagram
       - name: Checking for diagram snapshot branch
-        run : ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+        run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+
       - name: Checkout diagram sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-diagram
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.INTEGRATION_BRANCH }}
           path: powsybl-diagram
-      - name: Change core version
+
+      - name: Change core version in pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-diagram
-      - name: Build DIAGRAM
+
+      - name: Build powsybl-diagram
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-diagram
+
       - name: Get DIAGRAM_VERSION version
         run: echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-diagram
 
-      #BUILD ENTSOE
-      - name: Checking for entsoe snapshot branch
-        run : ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
-      - name: Checkout entsoe sources
-        uses: actions/checkout@v4
+      # Build powsybl-entsoe
+      - name: Checking for powsybl-entsoe snapshot branch
+        run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
+
+      - name: Checkout powsybl-entsoe sources
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-entsoe
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.INTEGRATION_BRANCH }}
           path: powsybl-entsoe
-      - name: Change core/loadflow version
+
+      - name: Change core/loadflow version in pom.xml
         run: |
           mvn versions:set-property -Dproperty=powsyblcore.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=${{ env.LOADFLOW_VERSION}} -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsyblopenloadflow.version -DnewVersion=${{ env.OLF_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-entsoe
-      - name: Build ENTSOE
+
+      - name: Build powsybl-entsoe
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-entsoe
+
       - name: Get ENTSOE_VERSION
         run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-entsoe
 
-      #BUILD OPENRAO
-      - name: Checking for openrao snapshot branch
-        run :  ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
-      - name: Checkout openrao sources
-        uses: actions/checkout@v4
+      # Build powsybl-open-rao
+      - name: Checking for powsybl-open-rao snapshot branch
+        run :  ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
+
+      - name: Checkout powsybl-open-rao sources
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-open-rao
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.INTEGRATION_BRANCH }}
           path: powsybl-openrao
-      - name: Change core/entsoe/loadflow version
+
+      - name: Change core/entsoe/loadflow version in pom.xml
         run: |
           mvn versions:set-property -Dproperty=powsybl.core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl.entsoe.version -DnewVersion=${{ env.ENTSOE_VERSION}} -DgenerateBackupPoms=false
-          mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=${{ env.LOADFLOW_VERSION}} -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl.openloadflow.version -DnewVersion=${{ env.OLF_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-openrao
-      - name: Build OPENRAO
+
+      - name: Build powsybl-open-rao
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }} ${{ matrix.python.name }}
         working-directory: ./powsybl-openrao
+
       - name: Get OPENRAO_VERSION
         run: echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-openrao
 
-      #BUILD DYNAWO
-      - name: Checking for dynawo snapshot branch
-        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
-      - name: Checkout dynawo sources
-        uses: actions/checkout@v4
+      # Build powsybl-dynawo
+      - name: Checking for powsybl-dynawo snapshot branch
+        run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
+
+      - name: Checkout powsybl-dynawo sources
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-dynawo
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.INTEGRATION_BRANCH }}
           path: powsybl-dynawo
-      - name: Change core version
+
+      - name: Change core version in pom.xml in pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-dynawo
-      - name: Build DYNAWO
+
+      - name: Build powsybl-dynawo
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install"
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-dynawo
+
       - name: Get DYNAWO_VERSION
         run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-dynawo
 
-      #CHECKOUT_PYPOWSYBL_DEPENCIES
+      # Checkout powsybl-dependencies
       - name: Checkout powsybl-dependencies sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/powsybl-dependencies
           ref: main
           path: powsybl-dependencies
+
       - name: Get DEPENDENCIES_VERSION
         run: echo "DEPENDENCIES_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-dependencies
 
-      #UPDATE/INSTALL_PYPOWSYBL_DEPENCIES
-      - name: Update dependencies versions
+      # Update or install powsybl-dependencies
+      - name: Update powsybl-dependencies versions
         run: |
-          mvn versions:set-property -Dproperty=powsybl-open-loadflow.version -DnewVersion=$LOADFLOW_VERSION -DgenerateBackupPoms=false
+          mvn versions:set-property -Dproperty=powsybl-open-loadflow.version -DnewVersion=$OLF_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=$CORE_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-diagram.version -DnewVersion=$DIAGRAM_VERSION -DgenerateBackupPoms=false
           mvn versions:set-property -Dproperty=powsybl-dynawo.version -DnewVersion=$DYNAWO_VERSION -DgenerateBackupPoms=false
@@ -217,73 +247,130 @@ jobs:
         run: mvn -batch-mode --no-transfer-progress clean install
         working-directory: ./powsybl-dependencies
 
-      #BUILD PYPOWSYBL
-      - name: Checking dor pypowsybl snapshot branch
-        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
+      # Build pypowsybl
+      - name: Checking for pypowsybl snapshot branch
+        run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
+
       - name: Checkout pypowsybl
-        uses: actions/checkout@v4
+        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
         with:
           repository: powsybl/pypowsybl
-          ref: ${{ env.SNAPSHOT_BRANCH }}
+          ref: ${{ env.INTEGRATION_BRANCH }}
           path: pypowsybl
           submodules: true
-      - name: update java/pom.xml
+
+      - name: Update java/pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-dependencies.version -DnewVersion=$DEPENDENCIES_VERSION -DgenerateBackupPoms=false
         working-directory: ./pypowsybl/java
+
       - name: Install requirement.txt
         run: pip3 install -r requirements.txt
         working-directory: ./pypowsybl
+
       - name: Build wheel
         run: python3 setup.py bdist_wheel
         working-directory: ./pypowsybl
+
       - name: Install wheel
         run: python -m pip install dist/*.whl --user
         working-directory: ./pypowsybl
-      - name: check pypowsybl versions
+
+      - name: Check pypowsybl versions
         working-directory: ./pypowsybl/tests
         run: python3 basic_import_test.py
+
       - name: Run tests
         working-directory: ./pypowsybl/tests
         run: pytest
+
       - name: Upload wheel
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # 4.3.3
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
 
-      - name: Record Job Name
-        if: failure()
-        run: |
-          echo "Failed job : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
-
-      - name: Read Build Status
+      - name: Store job result
         if: always()
-        id: build_status_step
         run: |
-          echo "=== BUILD STATUS REPORT ==="
-          cat $BUILD_STATUS
-          echo "=========================="
-          echo "build_status_output<<EOF" >> $GITHUB_OUTPUT
-          cat $BUILD_STATUS >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${{ matrix.config.name }};pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }};${{ job.status }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+
+      - name: Upload job result
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # 4.3.3
+        with:
+          name: job-results_${{ matrix.config.name }}-${{ matrix.python.name }}
+          path: job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+
+#      - name: Record Job Name
+#        if: failure()
+#        run: |
+#          echo "Failed job : Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel" >> $BUILD_STATUS
+#
+#      - name: Read Build Status
+#        if: always()
+#        id: build_status_step
+#        run: |
+#          echo "=== BUILD STATUS REPORT ==="
+#          cat $BUILD_STATUS
+#          echo "=========================="
+#          echo "build_status_output<<EOF" >> $GITHUB_OUTPUT
+#          cat $BUILD_STATUS >> $GITHUB_OUTPUT
+#          echo "EOF" >> $GITHUB_OUTPUT
 
 
-  #SLACK NOTIFICATION ON FAILURE
+  # Slack notification
   notify_slack:
    needs: build_pypowsybl
    runs-on: ubuntu-latest
-   if: failure()
+   if: always()
    steps:
-     - name: Send Slack Notification
-       uses: 8398a7/action-slack@v3
-       with:
-         status: ${{ job.status }}
-         text: |
-           :x: *Failed workflow ${{ github.workflow }}*
-           *Failure details:*
-           ```
-           ${{ needs.build_pypowsybl.outputs.build_status_output }}
-           ```
-           See logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-       env:
-         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+     - name: Download job results
+       uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+
+     - name: Combine job results
+       run: |
+         for dir in job-results_*; do
+           cat "$dir"/* >> combined_job_results.txt
+         done
+         echo "===== Step Result ====="
+         cat combined_job_results.txt
+         echo "======================="
+
+     - name: Determine workflow status
+       id: workflow_status
+       run: |
+         if grep -q "failure" combined_job_results.txt; then
+           echo "icon=❌" >> $GITHUB_OUTPUT
+           echo "status=Failed" >> $GITHUB_OUTPUT
+         else
+           echo "icon=✅" >> $GITHUB_OUTPUT
+           echo "status=Successful" >> $GITHUB_OUTPUT
+         fi
+
+     - name: Format job results
+       id: format_results
+       run: |
+         formatted=""
+         while IFS=';' read -r os python module status; do
+           icon=$([ "$status" == "success" ] && echo ":white_check_mark:" || echo ":x:")
+           formatted+="${icon} Build *${module}* on *${os}* - *${python}*\\n"
+         done < combined_job_results.txt
+         formatted="${formatted%\\n}"  # Remove the last newline
+         echo "formatted_results=${formatted}" >> $GITHUB_OUTPUT
+         echo "===== Formatted Result ====="
+         echo -e ${formatted}
+         echo "======================="
+
+#     - name: Send Slack Notification
+#       uses: 8398a7/action-slack@v3
+#       with:
+#         status: ${{ job.status }}
+#         text: |
+#           :x: *Failed workflow ${{ github.workflow }}*
+#           *Failure details:*
+#           ```
+#           ${{ needs.build_pypowsybl.outputs.build_status_output }}
+#           ```
+#           See logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+#       env:
+#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
