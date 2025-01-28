@@ -118,11 +118,11 @@ jobs:
         run: echo "OLF_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-open-loadflow
 
-      - name: Print file
-        run: |
-          echo "============================================="
-          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
-          echo "============================================="
+#      - name: Print file
+#        run: |
+#          echo "============================================="
+#          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+#          echo "============================================="
 
 # Build powsybl-diagram
       - name: Checking for diagram snapshot branch
@@ -148,11 +148,11 @@ jobs:
         run: echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-diagram
 
-      - name: Print file
-        run: |
-          echo "============================================="
-          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
-          echo "============================================="
+#      - name: Print file
+#        run: |
+#          echo "============================================="
+#          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+#          echo "============================================="
 
       # Build powsybl-entsoe
       - name: Checking for powsybl-entsoe snapshot branch
