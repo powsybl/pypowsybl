@@ -1143,6 +1143,14 @@ def test_nad_fixed_positions():
     assert re.search('.*<svg.*', nad2.svg)
     assert len(nad2.metadata) > 0
 
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        fixed_positions_svg_file = tmp_dir_path.joinpath('test_fixed_positions.svg')
+        n.write_network_area_diagram(fixed_positions_svg_file, voltage_level_ids=['VL8', 'VL7'], fixed_positions=fixed_positions_df2)
+        with open(fixed_positions_svg_file, 'r') as test_file:
+            fixed_positions_svg_str = test_file.read()
+            assert fixed_positions_svg_str == nad2.svg
+
 
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()

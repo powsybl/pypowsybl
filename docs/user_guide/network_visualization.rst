@@ -294,6 +294,7 @@ We can generate a network area diagram using fixed positions, defined in a dataf
 
 .. code-block:: python
 
+    >>> import pandas as pd
     >>> network = pp.network.create_ieee9()
     >>> pos_df = pd.DataFrame.from_records(index='id',
                                            columns=['id', 'x', 'y', 
@@ -303,7 +304,7 @@ We can generate a network area diagram using fixed positions, defined in a dataf
                                                ('VL6', 400.0, 20.0, 80.0, -30, 80.0, 0),
                                                ('VL8', 800.0, 20.0, 80.0, -30, 80.0, 0)
                                            ])
-    >>> nad = network.get_network_area_diagram(fixed_positions=pos_df)   
+    >>> nad = network.get_network_area_diagram(fixed_positions=pos_df)
 
     In the dataframe:
     - id is the equipment id for the node
@@ -311,7 +312,8 @@ We can generate a network area diagram using fixed positions, defined in a dataf
     - legend_shift_x, legend_shift_y define the legend box top-left position (relative to the node position)
     - legend_connection_shift_x, legend_connection_shift_y define the legend box side endpoint position (relative to the node position) for the segment connecting a node and its legend box
 
-    Positions for elements not included in the dataframe are computed using the current layout algorithm.
+    The optional parameter fixed_positions can also be set in the write_network_area_diagram function.
+    Note that positions for elements not included in the dataframe are computed using the current layout algorithm.
     
 
 Network area diagram using geographical data

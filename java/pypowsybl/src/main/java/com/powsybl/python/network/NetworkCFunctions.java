@@ -1114,13 +1114,14 @@ public final class NetworkCFunctions {
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile, CCharPointer metadataFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
                                                   double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
-                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  DataframePointer fixedPositions, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+            applyFixedPositions(fixedPositions, nadParameters);
             NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
@@ -1171,6 +1172,23 @@ public final class NetworkCFunctions {
         return fixedTextPositions;
     }
 
+    private static void applyFixedPositions(DataframePointer fixedPositions, NadParameters nadParameters) {
+        UpdatingDataframe fixedPositionsDataframe = createDataframe(fixedPositions);
+        if (fixedPositionsDataframe != null) {
+            StringSeries idSeries = fixedPositionsDataframe.getStrings("id");
+            if (idSeries == null) {
+                throw new PowsyblException("id is missing");
+            }
+            int rowCount = fixedPositionsDataframe.getRowCount();
+            Map<String, Point> fixedPositionsMap = getNadFixedPositionsMap(rowCount, idSeries,
+                    fixedPositionsDataframe.getDoubles("x"), fixedPositionsDataframe.getDoubles("y"));
+            Map<String, TextPosition> fixedTextPositionsMap = getNadFixedTextPositionsMap(rowCount, idSeries,
+                    fixedPositionsDataframe.getDoubles("legend_shift_x"), fixedPositionsDataframe.getDoubles("legend_shift_y"),
+                    fixedPositionsDataframe.getDoubles("legend_connection_shift_x"), fixedPositionsDataframe.getDoubles("legend_connection_shift_y"));
+            nadParameters.setLayoutFactory(new FixedLayoutFactory(fixedPositionsMap, fixedTextPositionsMap, nadParameters.getLayoutFactory()));
+        }
+    }
+
     @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
@@ -1180,22 +1198,7 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
-
-            UpdatingDataframe fixedPositionsDataframe = createDataframe(fixedPositions);
-            if (fixedPositionsDataframe != null) {
-                StringSeries idSeries = fixedPositionsDataframe.getStrings("id");
-                if (idSeries == null) {
-                    throw new PowsyblException("id is missing");
-                }
-                int rowCount = fixedPositionsDataframe.getRowCount();
-                Map<String, Point> fixedPositionsMap = getNadFixedPositionsMap(rowCount, idSeries,
-                        fixedPositionsDataframe.getDoubles("x"), fixedPositionsDataframe.getDoubles("y"));
-                Map<String, TextPosition> fixedTextPositionsMap = getNadFixedTextPositionsMap(rowCount, idSeries,
-                        fixedPositionsDataframe.getDoubles("legend_shift_x"), fixedPositionsDataframe.getDoubles("legend_shift_y"),
-                        fixedPositionsDataframe.getDoubles("legend_connection_shift_x"), fixedPositionsDataframe.getDoubles("legend_connection_shift_y"));
-                nadParameters.setLayoutFactory(new FixedLayoutFactory(fixedPositionsMap, fixedTextPositionsMap, nadParameters.getLayoutFactory()));
-            }
-
+            applyFixedPositions(fixedPositions, nadParameters);
             List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return createCharPtrArray(svgAndMeta);
         });

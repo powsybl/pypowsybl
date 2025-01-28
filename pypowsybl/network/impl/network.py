@@ -368,7 +368,8 @@ class Network:  # pylint: disable=too-many-public-methods
                                    depth: int = 0, high_nominal_voltage_bound: float = -1,
                                    low_nominal_voltage_bound: float = -1,
                                    nad_parameters: NadParameters = None,
-                                   metadata_file: PathOrStr = None) -> None:
+                                   metadata_file: PathOrStr = None,
+                                   fixed_positions: Optional[DataFrame] = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -380,6 +381,7 @@ class Network:  # pylint: disable=too-many-public-methods
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
+            fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
         """
         svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
@@ -388,7 +390,8 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
         _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
-                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p)
+                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p,
+                                           None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions))
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
         nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
