@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import logging
 import math
 import typing
 from enum import Enum
@@ -28,8 +29,6 @@ MIN_TARGET_P_TO_NOT_BE_DISCADED_FROM_ACTIVE_POWER_CONTROL = 0.0001
 DEFAULT_MIN_P = -4999.0
 DEFAULT_MAX_P = 4999.0
 
-# Setup logging configuration
-logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 
 def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     if util.find_spec("pandapower") is None:
