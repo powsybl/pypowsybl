@@ -516,13 +516,13 @@ def test_ratio_tap_changer_steps_data_frame():
     assert 0.8505666905244191 == steps.loc['NHV2_NLOAD']['rho'][0]
     assert 0.8505666905244191 == steps.loc[('NHV2_NLOAD', 0), 'rho']
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
-                                   pd.Series(data={'rho': 0.850567, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                   pd.Series(data={'side': '', 'rho': 0.850567, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
                                              name=('NHV2_NLOAD', 0)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
-                                   pd.Series(data={'rho': 1.00067, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                   pd.Series(data={'side': '', 'rho': 1.00067, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
                                              name=('NHV2_NLOAD', 1)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
-                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                   pd.Series(data={'side': '', 'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
                                              name=('NHV2_NLOAD', 2)), check_dtype=False)
     n.update_ratio_tap_changer_steps(pd.DataFrame(
         index=pd.MultiIndex.from_tuples([('NHV2_NLOAD', 0), ('NHV2_NLOAD', 1)],
@@ -531,24 +531,24 @@ def test_ratio_tap_changer_steps_data_frame():
               [1, 1, 1, 1, 1]]))
     steps = n.get_ratio_tap_changer_steps()
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
-                                   pd.Series(data={'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                   pd.Series(data={'side': '', 'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
                                              name=('NHV2_NLOAD', 0)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
-                                   pd.Series(data={'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                   pd.Series(data={'side': '', 'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
                                              name=('NHV2_NLOAD', 1)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
-                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                   pd.Series(data={'side': '', 'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
                                              name=('NHV2_NLOAD', 2)), check_dtype=False)
     n.update_ratio_tap_changer_steps(id='NHV2_NLOAD', position=0, rho=2, r=3, x=4, g=5, b=6)
     steps = n.get_ratio_tap_changer_steps()
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 0)],
-                                   pd.Series(data={'rho': 2, 'r': 3, 'x': 4, 'g': 5, 'b': 6},
+                                   pd.Series(data={'side': '', 'rho': 2, 'r': 3, 'x': 4, 'g': 5, 'b': 6},
                                              name=('NHV2_NLOAD', 0)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 1)],
-                                   pd.Series(data={'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                   pd.Series(data={'side': '', 'rho': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
                                              name=('NHV2_NLOAD', 1)), check_dtype=False)
     pd.testing.assert_series_equal(steps.loc[('NHV2_NLOAD', 2)],
-                                   pd.Series(data={'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                   pd.Series(data={'side': '', 'rho': 1.15077, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
                                              name=('NHV2_NLOAD', 2)), check_dtype=False)
 
 
@@ -557,7 +557,7 @@ def test_phase_tap_changer_steps_data_frame():
     steps = n.get_phase_tap_changer_steps()
     assert 11.4 == steps.loc[('T196-2040-1', 0), 'alpha']
     pd.testing.assert_series_equal(steps.loc[('T196-2040-1', 0)],
-                                   pd.Series(data={'rho': 1, 'alpha': 11.4, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
+                                   pd.Series(data={'side': '', 'rho': 1, 'alpha': 11.4, 'r': 0, 'x': 0, 'g': 0, 'b': 0},
                                              name=('T196-2040-1', 0)), check_dtype=False)
     # pd.testing.assert_frame_equal(expected, n.get_phase_tap_changer_steps(), check_dtype=False)
     n.update_phase_tap_changer_steps(pd.DataFrame(
@@ -566,13 +566,13 @@ def test_phase_tap_changer_steps_data_frame():
         data=[[1, 1, 1, 1, 1, 1]]))
     steps = n.get_phase_tap_changer_steps()
     pd.testing.assert_series_equal(steps.loc[('T196-2040-1', 0)],
-                                   pd.Series(data={'rho': 1, 'alpha': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
+                                   pd.Series(data={'side': '', 'rho': 1, 'alpha': 1, 'r': 1, 'x': 1, 'g': 1, 'b': 1},
                                              name=('T196-2040-1', 0)), check_dtype=False)
     n.update_phase_tap_changer_steps(id=['T196-2040-1'], position=[0], rho=[2], alpha=[7], r=[3], x=[4], g=[5],
                                      b=[6])
     steps = n.get_phase_tap_changer_steps()
     pd.testing.assert_series_equal(steps.loc[('T196-2040-1', 0)],
-                                   pd.Series(data={'rho': 2, 'alpha': 7, 'r': 3, 'x': 4, 'g': 5, 'b': 6},
+                                   pd.Series(data={'side': '', 'rho': 2, 'alpha': 7, 'r': 3, 'x': 4, 'g': 5, 'b': 6},
                                              name=('T196-2040-1', 0)), check_dtype=False)
 
 
@@ -943,10 +943,8 @@ def test_ratio_tap_changers_3_windings():
 
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
-    df = n.get_phase_tap_changers(all_attributes=True)
-    assert not df['fictitious']['TWT']
     tap_changers = n.get_phase_tap_changers()
-    assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
+    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
             'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
@@ -963,7 +961,7 @@ def test_phase_tap_changers():
     n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
-    assert ['tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
+    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
             'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
