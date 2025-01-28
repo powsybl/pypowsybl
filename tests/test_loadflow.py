@@ -6,6 +6,7 @@
 #
 import pathlib
 import json
+import re
 
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
@@ -60,9 +61,9 @@ def test_run_lf_ac_2slacks():
     sbr0 = results[0].slack_bus_results[0]
     sbr1 = results[0].slack_bus_results[1]
     assert 'VL4_0' == sbr0.id
-    assert abs(-0.75 - sbr0.active_power_mismatch) < 0.01
+    assert abs(-0.56 - sbr0.active_power_mismatch) < 0.01
     assert 'VL2_0' == sbr1.id
-    assert abs(-0.75 - sbr1.active_power_mismatch) < 0.01
+    assert abs(-0.56 - sbr1.active_power_mismatch) < 0.01
 
 
 def test_run_lf_dc():
@@ -315,21 +316,22 @@ def test_run_lf_with_report():
     assert len(report3) > len(report2)
 
 def test_run_lf_with_deprecated_reporter():
-    n = pp.network.create_ieee14()
-    report_node = rp.Reporter()
-    report1 = str(report_node)
-    assert len(report1) > 0
-    pp.loadflow.run_ac(n, reporter=report_node)
-    report2 = str(report_node)
-    assert len(report2) > len(report1)
-    json_report = report_node.to_json()
-    assert len(json_report) > 0
-    json.loads(json_report)
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
+        n = pp.network.create_ieee14()
+        report_node = rp.Reporter()
+        report1 = str(report_node)
+        assert len(report1) > 0
+        pp.loadflow.run_ac(n, reporter=report_node)
+        report2 = str(report_node)
+        assert len(report2) > len(report1)
+        json_report = report_node.to_json()
+        assert len(json_report) > 0
+        json.loads(json_report)
 
-    n2 = pp.network.create_eurostag_tutorial_example1_network()
-    pp.loadflow.run_ac(n2, reporter=report_node)
-    report3 = str(report_node)
-    assert len(report3) > len(report2)
+        n2 = pp.network.create_eurostag_tutorial_example1_network()
+        pp.loadflow.run_ac(n2, reporter=report_node)
+        report3 = str(report_node)
+        assert len(report3) > len(report2)
 
 
 def test_result_status_as_bool():

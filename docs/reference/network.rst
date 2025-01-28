@@ -79,6 +79,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_branches
    Network.get_busbar_sections
    Network.get_buses
+   Network.get_bus_breaker_view_buses
    Network.get_current_limits
    Network.get_dangling_lines
    Network.get_generators
@@ -159,6 +160,7 @@ Network elements can be modified using dataframes:
    Network.update_switches
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.get_elements_properties
    Network.add_elements_properties
    Network.remove_elements_properties
    Network.add_aliases
@@ -186,6 +188,7 @@ Network elements can be created or removed using the following methods:
    Network.create_dangling_lines
    Network.create_generators
    Network.create_hvdc_lines
+   Network.create_internal_connections
    Network.create_lcc_converter_stations
    Network.create_lines
    Network.create_loads
@@ -201,6 +204,7 @@ Network elements can be created or removed using the following methods:
    Network.create_vsc_converter_stations
    Network.create_tie_lines
    Network.remove_elements
+   Network.remove_internal_connections
 
 
 Network variants management

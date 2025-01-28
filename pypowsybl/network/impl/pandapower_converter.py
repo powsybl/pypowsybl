@@ -12,9 +12,9 @@ from typing import Dict
 
 import numpy as np
 import pandas as pd
-import pypowsybl._pypowsybl as _pp
 from pandas import Series
 from pandas import DataFrame
+import pypowsybl._pypowsybl as _pp
 try:
     from pandapower import pandapowerNet
 except ImportError:
@@ -34,21 +34,21 @@ logging.basicConfig(level=logging.ERROR, format='%(levelname)s: %(message)s')
 def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     if util.find_spec("pandapower") is None:
         raise _pp.PyPowsyblError("pandapower is not installed")
-    else:
-        n = create_empty(n_pdp.name if n_pdp.name else 'network')
 
-        # create one giant substation
-        n.create_substations(id='s')
-        create_buses(n, n_pdp)
-        create_loads(n, n_pdp)
-        slack_weight_by_gen_id: Dict[str, float] = {}
-        create_generators(n, n_pdp, slack_weight_by_gen_id)
-        create_shunts(n, n_pdp)
-        create_lines(n, n_pdp)
-        create_transformers(n, n_pdp)
-        create_extensions(n, slack_weight_by_gen_id)
+    n = create_empty(n_pdp.name if n_pdp.name else 'network')
 
-        return n
+    # create one giant substation
+    n.create_substations(id='s')
+    create_buses(n, n_pdp)
+    create_loads(n, n_pdp)
+    slack_weight_by_gen_id: Dict[str, float] = {}
+    create_generators(n, n_pdp, slack_weight_by_gen_id)
+    create_shunts(n, n_pdp)
+    create_lines(n, n_pdp)
+    create_transformers(n, n_pdp)
+    create_extensions(n, slack_weight_by_gen_id)
+
+    return n
 
 
 def create_extensions(n: Network, slack_weight_by_gen_id: Dict[str, float]) -> None:
@@ -64,7 +64,7 @@ def create_extensions(n: Network, slack_weight_by_gen_id: Dict[str, float]) -> N
 
             # create active power control extension to define the distribution key
             n.create_extensions(extension_name='activePowerControl', id=gen_id,
-                                participate=True if abs(weight) > 0.001 else False, droop=weight)
+                                participate=abs(weight) > 0.001, droop=weight)
 
 
 def get_name(df: pd.DataFrame, name: str) -> pd.Series:
@@ -83,7 +83,7 @@ def build_bus_id(bus: Series) -> pd.Series:
 
 
 def build_injection_id(prefix: str, bus: pd.Series, index: int) -> str:
-    return "{}_{}_{}".format(prefix, bus, index) # because it is required by grid2op to build IDs like this is case of missing name
+    return f'{prefix}_{bus}_{index}'  # because it is required by grid2op to build IDs like this is case of missing name
 
 
 def generate_injection_id(df: pd.DataFrame, prefix: str) -> pd.Series:
@@ -93,7 +93,7 @@ def generate_injection_id(df: pd.DataFrame, prefix: str) -> pd.Series:
 def build_line_id(row: pd.Series, index: int) -> str:
     from_bus = row['from_bus']
     to_bus = row['to_bus']
-    return "{}_{}_{}".format(from_bus, to_bus, index) # because it is required by grid2op to build IDs like this is case of missing name
+    return f'{from_bus}_{to_bus}_{index}'  # because it is required by grid2op to build IDs like this is case of missing name
 
 
 def generate_line_id(df: pd.DataFrame) -> pd.Series:
@@ -103,7 +103,7 @@ def generate_line_id(df: pd.DataFrame) -> pd.Series:
 def build_transformer_id(row: pd.Series, index: int, index_offset: int) -> str:
     hv_bus = row['hv_bus']
     lv_bus = row['lv_bus']
-    return "{}_{}_{}".format(hv_bus, lv_bus, index_offset + index) # because it is required by grid2op to build IDs like this is case of missing name
+    return f'{hv_bus}_{lv_bus}_{index_offset + index}'  # because it is required by grid2op to build IDs like this is case of missing name
 
 
 def generate_transformer_id(df: pd.DataFrame, index_offset: int) -> pd.Series:
@@ -303,7 +303,7 @@ def create_generator_min_p(gen_and_bus: DataFrame, generator_type: PandaPowerGen
 
 def create_generator_target_q(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType) -> pd.Series:
     return gen_and_bus[
-        'q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR in gen_and_bus.columns else pd.Series(
+        'q_mvar'] if generator_type == PandaPowerGeneratorType.STATIC_GENERATOR and 'q_mvar' in gen_and_bus.columns else pd.Series(
         [0.0] * len(gen_and_bus))
 
 
