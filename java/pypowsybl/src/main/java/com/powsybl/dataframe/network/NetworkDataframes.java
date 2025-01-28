@@ -1122,7 +1122,7 @@ public final class NetworkDataframes {
 
         @Override
         public double computeRho(NetworkDataframeContext context) {
-            return perUnitRho(context.isPerUnit(), twt, NetworkDataframes.computeRho(twt));
+            return perUnitRho(context, twt, NetworkDataframes.computeRho(twt));
         }
 
         @Override
