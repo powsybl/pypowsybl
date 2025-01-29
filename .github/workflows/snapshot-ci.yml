@@ -13,9 +13,7 @@ jobs:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     outputs:
-      build_status_output: ${{ steps.build_status_step.outputs.build_status_output }} #Output job with build_status.txt content created in Read Build Status step
       core-version: ${{ env.CORE_VERSION }}
-      afs-branch: ${{ env.INTEGRATION_BRANCH }}
       olf-version: ${{ env.OLF_VERSION }}
       diagram-version: ${{ env.DIAGRAM_VERSION }}
       entsoe-version: ${{ env.ENTSOE_VERSION }}
