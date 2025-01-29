@@ -500,7 +500,21 @@ jobs:
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "Workflow details:\n\n${{ steps.format_results.outputs.formatted_results }}\n\n@channel - See logs on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                      "text": "Workflow details:"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "${{ steps.format_results.outputs.formatted_results }}"
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "@channel - See logs on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
                     }
                   }
                 ]
