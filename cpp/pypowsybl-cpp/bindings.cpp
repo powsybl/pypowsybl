@@ -707,6 +707,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_load_reactive_power_action", &pypowsybl::addLoadReactivePowerAction, "Add a load reactive power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("reactive_power"));
 
+    m.def("add_dangling_line_active_power_action", &pypowsybl::addDanglingLineActivePowerAction, "Add a dangling line active power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("dangling_line_id"), py::arg("is_relative"), py::arg("active_power"));
+
+    m.def("add_dangling_line_reactive_power_action", &pypowsybl::addDanglingLineReactivePowerAction, "Add a dangling line reactive power remedial action",
+          py::arg("analysis_context"), py::arg("action_id"), py::arg("dangling_line_id"), py::arg("is_relative"), py::arg("reactive_power"));
+
     m.def("add_generator_active_power_action", &pypowsybl::addGeneratorActivePowerAction, "Add a generator active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("generator_id"), py::arg("is_relative"), py::arg("active_power"));
 
