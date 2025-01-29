@@ -446,7 +446,6 @@ jobs:
                 fi
               done
             
-              # Construire le message en fonction des échecs complets ou partiels
               if [[ "$module" == "wheels" && "$failed_all_os" == true && "$failed_all_python" == true ]]; then
                 formatted+=":x: Build *$module* on all OS and for all Python versions"$'\\n'
               elif [[ "$failed_all_os" == true ]]; then
