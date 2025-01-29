@@ -112,7 +112,7 @@ jobs:
       - name: Build powsybl-open-loadflow
         id: build_olf
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "powsybl-open-loadflow" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-open-loadflow
 
       - name: Store job result
@@ -148,7 +148,7 @@ jobs:
       - name: Build powsybl-diagram
         id: build_diagram
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "powsybl-diagram" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-diagram
 
       - name: Store job result
@@ -186,7 +186,7 @@ jobs:
       - name: Build powsybl-entsoe
         id: build_entsoe
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "powsybl-entsoe" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-entsoe
 
       - name: Store job result
@@ -225,7 +225,7 @@ jobs:
       - name: Build powsybl-open-rao
         id: build_rao
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }} ${{ matrix.python.name }}
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "powsybl-open-rao" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }} ${{ matrix.python.name }}
         working-directory: ./powsybl-openrao
 
       - name: Store job result
@@ -261,7 +261,7 @@ jobs:
       - name: Build powsybl-dynawo
         id: build_dynawo
         continue-on-error: true
-        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
+        run: ${{ env.SCRIPTS_PATH }}/build_module.sh "powsybl-dynawo" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-dynawo
 
       - name: Store job result
@@ -415,18 +415,18 @@ jobs:
             fi
           done < combined_job_results.txt
           
-          formatted_results=""
+          formatted=""
           for module in "${module_order[@]}"; do
             if [[ -n "${failure_modules[$module]}" ]]; then
-              failures="${failure_modules[$module]}// $//"
-              formatted_results+=":x: Build *$module* on $failures"$'\n'
+              failures=$(echo "${failure_modules[$module]}" | sed 's/ $//')
+              formatted+=":x: Build *$module* on $failures"$'\\n'
             elif [[ -n "${success_modules[$module]}" ]]; then
-              formatted_results+=":white_check_mark: Build *$module*"$'\n'
+              formatted+=":white_check_mark: Build *$module*"$'\\n'
             fi
           done
-          echo "$formatted_results" >> $GITHUB_OUTPUT
+          echo "formatted_results=${formatted}" >> $GITHUB_OUTPUT
           echo "===== Formatted Result ====="
-          echo -e ${formatted_results}
+          echo -e ${formatted}
           echo "======================="
 
 #     - name: Send Slack Notification
