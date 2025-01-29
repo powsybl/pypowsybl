@@ -375,6 +375,42 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addDanglingLineActivePowerAction")
+    public static void addDanglingLineActivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                CCharPointer actionId, CCharPointer danglingLineId, boolean relativeValue,
+                                                double activePowerValue,
+                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String danglingLineIdStr = CTypeUtil.toString(danglingLineId);
+            LoadAction action = new LoadActionBuilder().withId(actionIdStr)
+                    .withLoadId(danglingLineIdStr)
+                    .withRelativeValue(relativeValue)
+                    .withActivePowerValue(activePowerValue)
+                    .build();
+            analysisContext.addAction(action);
+        });
+    }
+
+    @CEntryPoint(name = "addDanglingLineReactivePowerAction")
+    public static void addDanglingLineReactivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                  CCharPointer actionId, CCharPointer danglingLineId, boolean relativeValue,
+                                                  double reactivePowerValue,
+                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String danglingLineIdStr = CTypeUtil.toString(danglingLineId);
+            LoadAction action = new LoadActionBuilder().withId(actionIdStr)
+                    .withLoadId(danglingLineIdStr)
+                    .withRelativeValue(relativeValue)
+                    .withReactivePowerValue(reactivePowerValue)
+                    .build();
+            analysisContext.addAction(action);
+        });
+    }
+
     @CEntryPoint(name = "addGeneratorActivePowerAction")
     public static void addGeneratorActivePowerAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                           CCharPointer actionId, CCharPointer generatorId, boolean relativeValue, double activePower,

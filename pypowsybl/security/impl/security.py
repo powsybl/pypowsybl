@@ -171,6 +171,32 @@ class SecurityAnalysis(ContingencyContainer):
         """
         _pypowsybl.add_load_reactive_power_action(self._handle, action_id, load_id, is_relative, reactive_power)
 
+    def add_dangling_line_active_power_action(self, action_id: str, dangling_line_id: str, is_relative: bool,
+                                              active_power: float) -> None:
+        """ Add a dangling line action, modifying the dangling line active power
+
+        Args:
+            action_id: unique ID for the action
+            dangling_line_id: dangling line identifier
+            is_relative: whether the active power change specified is absolute, or relative to current dangling line active power
+            active_power: the active power change
+
+        """
+        _pypowsybl.add_dangling_line_active_power_action(self._handle, action_id, dangling_line_id, is_relative, active_power)
+
+    def add_dangling_line_reactive_power_action(self, action_id: str, dangling_line_id: str, is_relative: bool,
+                                       reactive_power: float) -> None:
+        """ Add a dangling line action, modifying the dangling line reactive power
+
+        Args:
+            action_id: unique ID for the action
+            dangling_line_id: dangling line identifier
+            is_relative: whether the reactive power change specified is absolute, or relative to current dangling line reactive power
+            reactive_power: the reactive power change
+
+        """
+        _pypowsybl.add_dangling_line_reactive_power_action(self._handle, action_id, dangling_line_id, is_relative, reactive_power)
+
     def add_generator_active_power_action(self, action_id: str, generator_id: str, is_relative: bool, active_power: float) -> None:
         """ Add a generator action, modifying the generator active power
 
@@ -246,3 +272,4 @@ class SecurityAnalysis(ContingencyContainer):
         if violation_subject_ids is None:
             violation_subject_ids = []
         _pypowsybl.add_operator_strategy(self._handle, operator_strategy_id, contingency_id, action_ids, condition_type, violation_subject_ids, violation_types)
+
