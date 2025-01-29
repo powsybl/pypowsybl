@@ -21,6 +21,7 @@ jobs:
       entsoe-version: ${{ env.ENTSOE_VERSION }}
       openrao-version: ${{ env.OPENRAO_VERSION }}
       dependencies-version: ${{ env.DEPENDENCIES_VERSION }}
+      pypowsybl-branch: ${{ env.INTEGRATION_BRANCH }}
 
     strategy:
       matrix:
@@ -462,16 +463,61 @@ jobs:
           echo -e ${formatted}
           echo "======================="
 
-#     - name: Send Slack Notification
-#       uses: 8398a7/action-slack@v3
-#       with:
-#         status: ${{ job.status }}
-#         text: |
-#           :x: *Failed workflow ${{ github.workflow }}*
-#           *Failure details:*
-#           ```
-#           ${{ needs.build_pypowsybl.outputs.build_status_output }}
-#           ```
-#           See logs: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-#       env:
-#         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Prepare Slack payload
+        id: prepare_payload
+        run: |
+          if [ "${{ steps.workflow_status.outputs.status }}" == "Successful" ]; then
+            echo 'payload<<EOF' >> $GITHUB_OUTPUT
+            echo '{
+              "attachments": [{
+                "color": "#319f4b",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "${{ steps.workflow_status.outputs.icon }} *${{ steps.workflow_status.outputs.status }} workflow: Snapshot-CI on <https://github.com/powsybl/pypowsybl|pypowsybl>*\n\nBranch built: ${{ needs.build_pypowsybl.outputs.pypowsybl-branch }}\nPowSyBl-Core version used: ${{ needs.build_pypowsybl.outputs.core-version }}\n\nSee logs on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                    }
+                  }
+                ]
+              }]
+            }' >> $GITHUB_OUTPUT
+            echo 'EOF' >> $GITHUB_OUTPUT
+          else
+            echo 'payload<<EOF' >> $GITHUB_OUTPUT
+            echo '{
+              "attachments": [{
+                "color": "#f64538",
+                "blocks": [
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "${{ steps.workflow_status.outputs.icon }} *${{ steps.workflow_status.outputs.status }} workflow: Snapshot-CI on <https://github.com/powsybl/pypowsybl|pypowsybl>*\n\nBranch built: ${{ needs.build_pypowsybl.outputs.pypowsybl-branch }}\nPowSyBl-Core version used: ${{ needs.build_pypowsybl.outputs.core-version }}"
+                    }
+                  },
+                  {
+                    "type": "divider"
+                  },
+                  {
+                    "type": "section",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "*Workflow details:*\n\n${{ steps.format_results.outputs.formatted_results }}\n\n@channel - See logs on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                    }
+                  }
+                ]
+              }]
+            }' >> $GITHUB_OUTPUT
+            echo 'EOF' >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack Notification
+        uses: 8398a7/action-slack@28ba43ae48961b90635b50953d216767a6bea486 # v3.16.2
+        if: ${{ steps.workflow_status.outputs.status != 'Successful' || github.event_name == 'workflow_dispatch' }}
+        with:
+          author_name: 'pypowsybl on GitHub'
+          status: custom
+          custom_payload: ${{ steps.prepare_payload.outputs.payload }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_POWSYBL_WEBHOOK_URL }}
