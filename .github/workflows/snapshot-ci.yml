@@ -401,11 +401,21 @@ jobs:
         run: |
           declare -A success_modules failure_modules seen_modules
           module_order=()
+          os_set=()
+          python_set=()
           
           while IFS=';' read -r os python module status; do
             if [[ -z "${seen_modules[$module]}" ]]; then
               module_order+=("$module")
               seen_modules["$module"]=1
+            fi
+          
+            if [[ ! " ${os_set[*]} " =~ " ${os} " ]]; then
+              os_set+=("$os")
+            fi
+            
+            if [[ ! " ${python_set[*]} " =~ " ${python} " ]]; then
+            python_set+=("$python")
             fi
             
             if [[ "$status" == "success" ]]; then
@@ -419,7 +429,30 @@ jobs:
           for module in "${module_order[@]}"; do
             if [[ -n "${failure_modules[$module]}" ]]; then
               failures=$(echo "${failure_modules[$module]}" | sed 's/ $//')
-              formatted+=":x: Build *$module* on $failures"$'\\n'
+              failed_all_os=true
+              failed_all_python=true
+              for os in "${os_set[@]}"; do
+                if [[ ! "${failure_modules[$module]}" =~ $os ]]; then
+                  failed_all_os=false
+                  break
+                fi
+              done
+            
+              for python in "${python_set[@]}"; do
+                if [[ ! "${failure_modules[$module]}" =~ $python ]]; then
+                  failed_all_python=false
+                  break
+                fi
+              done
+            
+              # Construire le message en fonction des échecs complets ou partiels
+              if [[ "$module" == "wheels" && "$failed_all_os" == true && "$failed_all_python" == true ]]; then
+                formatted+=":x: Build *$module* on all OS and for all Python versions"$'\\n'
+              elif [[ "$failed_all_os" == true ]]; then
+                formatted+=":x: Build *$module* on all OS"$'\\n'
+              else
+                formatted+=":x: Build *$module* on $failures"$'\\n'
+              fi
             elif [[ -n "${success_modules[$module]}" ]]; then
               formatted+=":white_check_mark: Build *$module*"$'\\n'
             fi
