@@ -56,7 +56,7 @@ def test_rao_from_buffers():
     json_result = result.to_json()
 
     assert json_result["computationStatus"] == "default"
-    assert list(json_result.keys()) == ['type', 'version', 'info', 'computationStatus', 'optimizationStepsExecuted', 'costResults',
+    assert list(json_result.keys()) == ['type', 'version', 'info', 'computationStatus', 'executionDetails', 'costResults',
                                     'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
                                     'networkActionResults', 'rangeActionResults']
 
