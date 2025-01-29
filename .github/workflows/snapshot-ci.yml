@@ -114,15 +114,20 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/build_module.sh "LOADFLOW" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-open-loadflow
 
+      - name: Store job result
+        if: always()
+        run: |
+          echo "${{ steps.build.outputs.BUILD_RESULT }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
+
       - name: Get OLF_VERSION
         run: echo "OLF_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-open-loadflow
-
-#      - name: Print file
-#        run: |
-#          echo "============================================="
-#          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
-#          echo "============================================="
 
 # Build powsybl-diagram
       - name: Checking for diagram snapshot branch
@@ -144,15 +149,20 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DIAGRAM" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-diagram
 
+      - name: Store job result
+        if: always()
+        run: |
+          echo "${{ steps.build.outputs.BUILD_RESULT }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+
+      - name: Print file
+        run: |
+          echo "============================================="
+          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "============================================="
+
       - name: Get DIAGRAM_VERSION version
         run: echo "DIAGRAM_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-diagram
-
-#      - name: Print file
-#        run: |
-#          echo "============================================="
-#          cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
-#          echo "============================================="
 
       # Build powsybl-entsoe
       - name: Checking for powsybl-entsoe snapshot branch
@@ -176,15 +186,20 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/build_module.sh "ENTSOE" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-entsoe
 
-      - name: Get ENTSOE_VERSION
-        run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-        working-directory: ./powsybl-entsoe
+      - name: Store job result
+        if: always()
+        run: |
+          echo "${{ steps.build.outputs.BUILD_RESULT }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
 
       - name: Print file
         run: |
           echo "============================================="
           cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
           echo "============================================="
+
+      - name: Get ENTSOE_VERSION
+        run: echo "ENTSOE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        working-directory: ./powsybl-entsoe
 
       # Build powsybl-open-rao
       - name: Checking for powsybl-open-rao snapshot branch
@@ -209,15 +224,20 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/build_module.sh "OPENRAO" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }} ${{ matrix.python.name }}
         working-directory: ./powsybl-openrao
 
-      - name: Get OPENRAO_VERSION
-        run: echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-        working-directory: ./powsybl-openrao
+      - name: Store job result
+        if: always()
+        run: |
+          echo "${{ steps.build.outputs.BUILD_RESULT }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
 
       - name: Print file
         run: |
           echo "============================================="
           cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
           echo "============================================="
+
+      - name: Get OPENRAO_VERSION
+        run: echo "OPENRAO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        working-directory: ./powsybl-openrao
 
       # Build powsybl-dynawo
       - name: Checking for powsybl-dynawo snapshot branch
@@ -239,15 +259,20 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/build_module.sh "DYNAWO" "mvn -batch-mode --no-transfer-progress clean install" ${{ matrix.config.name }}  ${{ matrix.python.name }}
         working-directory: ./powsybl-dynawo
 
-      - name: Get DYNAWO_VERSION
-        run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-        working-directory: ./powsybl-dynawo
+      - name: Store job result
+        if: always()
+        run: |
+          echo "${{ steps.build.outputs.BUILD_RESULT }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
 
       - name: Print file
         run: |
           echo "============================================="
           cat job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
           echo "============================================="
+
+      - name: Get DYNAWO_VERSION
+        run: echo "DYNAWO_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        working-directory: ./powsybl-dynawo
 
       # Checkout powsybl-dependencies
       - name: Checkout powsybl-dependencies sources
