@@ -490,7 +490,7 @@ jobs:
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "${{ steps.workflow_status.outputs.icon }} *${{ steps.workflow_status.outputs.status }} workflow: Snapshot-CI on <https://github.com/powsybl/pypowsybl|pypowsybl>*\n\nBranch built: ${{ needs.build_pypowsybl.outputs.pypowsybl-branch }}\nPowSyBl-Core version used: ${{ needs.build_pypowsybl.outputs.core-version }}"
+                      "text": "${{ steps.workflow_status.outputs.icon }} *${{ steps.workflow_status.outputs.status }} workflow: Snapshot-CI on <https://github.com/powsybl/pypowsybl|pypowsybl>* (branch built: ${{ needs.build_pypowsybl.outputs.pypowsybl-branch }})"
                     }
                   },
                   {
@@ -500,7 +500,7 @@ jobs:
                     "type": "section",
                     "text": {
                       "type": "mrkdwn",
-                      "text": "*Workflow details:*\n\n${{ steps.format_results.outputs.formatted_results }}\n\n@channel - See logs on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
+                      "text": "Workflow details:\n\n${{ steps.format_results.outputs.formatted_results }}\n\n@channel - See logs on <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|GitHub>"
                     }
                   }
                 ]
