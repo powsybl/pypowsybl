@@ -352,7 +352,7 @@ jobs:
       - name: Store job result
         if: always()
         run: |
-          echo "${{ matrix.config.name }};pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }};${{ job.status }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
+          echo "${{ matrix.config.name }};${{ matrix.python.name }};wheels;${{ job.status }}" >> job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
 
       - name: Print file
         run: |
@@ -369,46 +369,65 @@ jobs:
 
   # Slack notification
   notify_slack:
-   needs: build_pypowsybl
-   runs-on: ubuntu-latest
-   if: always()
-   steps:
-     - name: Download job results
-       uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+    needs: build_pypowsybl
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download job results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
 
-     - name: Combine job results
-       run: |
-         for dir in job-results_*; do
-           cat "$dir"/* >> combined_job_results.txt
-         done
-         echo "===== Step Result ====="
-         cat combined_job_results.txt
-         echo "======================="
+      - name: Combine job results
+        run: |
+          for dir in job-results_*; do
+            cat "$dir"/* >> combined_job_results.txt
+          done
+          echo "===== Step Result ====="
+          cat combined_job_results.txt
+          echo "======================="
 
-     - name: Determine workflow status
-       id: workflow_status
-       run: |
-         if grep -q "failure" combined_job_results.txt; then
-           echo "icon=❌" >> $GITHUB_OUTPUT
-           echo "status=Failed" >> $GITHUB_OUTPUT
-         else
-           echo "icon=✅" >> $GITHUB_OUTPUT
-           echo "status=Successful" >> $GITHUB_OUTPUT
-         fi
+      - name: Determine workflow status
+        id: workflow_status
+        run: |
+          if grep -q "failure" combined_job_results.txt; then
+            echo "icon=❌" >> $GITHUB_OUTPUT
+            echo "status=Failed" >> $GITHUB_OUTPUT
+          else
+            echo "icon=✅" >> $GITHUB_OUTPUT
+            echo "status=Successful" >> $GITHUB_OUTPUT
+          fi
 
-     - name: Format job results
-       id: format_results
-       run: |
-         formatted=""
-         while IFS=';' read -r os python module status; do
-           icon=$([ "$status" == "success" ] && echo ":white_check_mark:" || echo ":x:")
-           formatted+="${icon} Build *${module}* on *${os}* - *${python}*\\n"
-         done < combined_job_results.txt
-         formatted="${formatted%\\n}"  # Remove the last newline
-         echo "formatted_results=${formatted}" >> $GITHUB_OUTPUT
-         echo "===== Formatted Result ====="
-         echo -e ${formatted}
-         echo "======================="
+      - name: Format job results
+        id: format_results
+        run: |
+          declare -A success_modules failure_modules seen_modules
+          module_order=()
+          
+          while IFS=';' read -r os python module status; do
+            if [[ -z "${seen_modules[$module]}" ]]; then
+              module_order+=("$module")
+              seen_modules["$module"]=1
+            fi
+            
+            if [[ "$status" == "success" ]]; then
+              success_modules["$module"]+="$os+$python "
+            else
+              failure_modules["$module"]+="$os+$python "
+            fi
+          done < combined_job_results.txt
+          
+          formatted_results=""
+          for module in "${module_order[@]}"; do
+            if [[ -n "${failure_modules[$module]}" ]]; then
+              failures="${failure_modules[$module]}// $//"
+              formatted_results+=":x: Build *$module* on $failures"$'\n'
+            elif [[ -n "${success_modules[$module]}" ]]; then
+              formatted_results+=":white_check_mark: Build *$module*"$'\n'
+            fi
+          done
+          echo "$formatted_results" >> $GITHUB_OUTPUT
+          echo "===== Formatted Result ====="
+          echo -e ${formatted_results}
+          echo "======================="
 
 #     - name: Send Slack Notification
 #       uses: 8398a7/action-slack@v3
