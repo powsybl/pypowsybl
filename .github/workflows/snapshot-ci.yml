@@ -459,8 +459,15 @@ jobs:
           done
     
           if [ ${#all_success_modules[@]} -gt 0 ]; then
-            success_list=$(IFS=','; echo " ${all_success_modules[*]}")
-            formatted=":white_check_mark: Build*$success_list*"$'\\n'"$formatted"
+            success_list=""
+            for module in "${all_success_modules[@]}"; do
+              if [ -z "$success_list" ]; then
+                success_list="$module"
+              else
+                success_list="$success_list, $module"
+              fi
+            done
+            formatted=":white_check_mark: Build *$success_list*"$'\\n'"$formatted"
           fi
           
           formatted=$(echo -n "$formatted" | sed '$ s/\n$//')
