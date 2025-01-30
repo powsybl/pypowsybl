@@ -460,7 +460,7 @@ jobs:
     
           if [ ${#all_success_modules[@]} -gt 0 ]; then
             success_list=$(IFS=', '; echo "${all_success_modules[*]}")
-            formatted=":white_check_mark: Build *$success_list*"$'\n'"$formatted"
+            formatted=":white_check_mark: Build *$success_list*"$'\\n'"$formatted"
           fi
           
           echo "formatted_results=${formatted}" >> $GITHUB_OUTPUT
