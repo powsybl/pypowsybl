@@ -426,8 +426,8 @@ def test_ratio_tap_changers_per_unit():
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
                             columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id', 'rho'],
-                            data=[['', 1, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0', 1.00]])
+                                     'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 1, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 

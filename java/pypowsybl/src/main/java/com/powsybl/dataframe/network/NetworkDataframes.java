@@ -577,6 +577,7 @@ public final class NetworkDataframes {
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup1, false)
                 .strings("selected_limits_group_2", twt -> twt.getSelectedOperationalLimitsGroupId2().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup2, false)
+                .doubles("rho", (twt, context) -> perUnitRho(context, twt, NetworkDataframes.computeRho(twt)), false)
                 .addProperties()
                 .build();
     }
@@ -604,6 +605,7 @@ public final class NetworkDataframes {
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected(), connectLeg1())
                 .strings("selected_limits_group_1", twt -> twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg1().setSelectedOperationalLimitsGroup(groupId), false)
+                .doubles("rho1", (twt, context) -> perUnitRho(context, twt, ThreeSides.ONE, NetworkDataframes.computeRho(twt, ThreeSides.ONE)), false)
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
                 .doubles("x2", (twt, context) -> perUnitRX(context, twt.getLeg2().getX(), twt), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
                 .doubles("g2", (twt, context) -> perUnitBG(context, twt.getLeg2().getG(), twt), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitBG(context, twt, g2)))
@@ -622,6 +624,7 @@ public final class NetworkDataframes {
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected(), connectLeg2())
                 .strings("selected_limits_group_2", twt -> twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg2().setSelectedOperationalLimitsGroup(groupId), false)
+                .doubles("rho2", (twt, context) -> perUnitRho(context, twt, ThreeSides.TWO, NetworkDataframes.computeRho(twt, ThreeSides.TWO)), false)
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
                 .doubles("x3", (twt, context) -> perUnitRX(context, twt.getLeg3().getX(), twt), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
                 .doubles("g3", (twt, context) -> perUnitBG(context, twt.getLeg3().getG(), twt), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitBG(context, twt, g3)))
@@ -640,6 +643,7 @@ public final class NetworkDataframes {
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected(), connectLeg3())
                 .strings("selected_limits_group_3", twt -> twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg3().setSelectedOperationalLimitsGroup(groupId), false)
+                .doubles("rho3", (twt, context) -> perUnitRho(context, twt, ThreeSides.THREE, NetworkDataframes.computeRho(twt, ThreeSides.THREE)), false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1088,8 +1092,6 @@ public final class NetworkDataframes {
 
         PhaseTapChanger getPtc();
 
-        double computeRho(NetworkDataframeContext context);
-
         String getRtcRegulatedSide();
 
         void setRtcRegulatedSide(String regulatedSide);
@@ -1118,11 +1120,6 @@ public final class NetworkDataframes {
         @Override
         public PhaseTapChanger getPtc() {
             return twt.getPhaseTapChanger();
-        }
-
-        @Override
-        public double computeRho(NetworkDataframeContext context) {
-            return perUnitRho(context, twt, NetworkDataframes.computeRho(twt));
         }
 
         @Override
@@ -1165,11 +1162,6 @@ public final class NetworkDataframes {
         @Override
         public PhaseTapChanger getPtc() {
             return twt.getLeg(side).getPhaseTapChanger();
-        }
-
-        @Override
-        public double computeRho(NetworkDataframeContext context) {
-            return NetworkDataframes.computeRho(twt, side);
         }
 
         @Override
@@ -1272,7 +1264,6 @@ public final class NetworkDataframes {
                 .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
                     (row, v, context) -> row.getRtc().setTargetDeadband(v))
                 .strings("regulating_bus_id", row -> getBusId(row.getRtc().getRegulationTerminal()))
-                .doubles("rho", TapChangerRow::computeRho)
                 .strings("regulated_side", TapChangerRow::getRtcRegulatedSide, TapChangerRow::setRtcRegulatedSide, false)
                 .build();
     }
