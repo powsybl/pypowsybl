@@ -425,6 +425,8 @@ jobs:
           done < combined_job_results.txt
           
           formatted=""
+          all_success_modules=()
+          
           for module in "${module_order[@]}"; do
             if [[ -n "${failure_modules[$module]}" ]]; then
               failures=$(echo "${failure_modules[$module]}" | sed 's/ $//')
@@ -452,9 +454,15 @@ jobs:
                 formatted+=":x: Build *$module* on $failures"$'\\n'
               fi
             elif [[ -n "${success_modules[$module]}" ]]; then
-              formatted+=":white_check_mark: Build *$module*"$'\\n'
+              all_success_modules+=("$module")
             fi
           done
+    
+          if [ ${#all_success_modules[@]} -gt 0 ]; then
+            success_list=$(IFS=', '; echo "${all_success_modules[*]}")
+            formatted=":white_check_mark: Build *$success_list*"$'\n'"$formatted"
+          fi
+          
           echo "formatted_results=${formatted}" >> $GITHUB_OUTPUT
           echo "===== Formatted Result ====="
           echo -e ${formatted}
