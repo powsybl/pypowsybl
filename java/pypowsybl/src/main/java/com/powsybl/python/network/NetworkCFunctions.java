@@ -28,14 +28,14 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.nad.NadParameters;
-import com.powsybl.nad.layout.BasicForceLayoutFactory;
-import com.powsybl.nad.layout.GeographicalLayoutFactory;
-import com.powsybl.nad.layout.LayoutFactory;
+import com.powsybl.nad.layout.*;
+import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.SvgParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
@@ -1114,13 +1114,14 @@ public final class NetworkCFunctions {
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile, CCharPointer metadataFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
                                                   double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
-                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  DataframePointer fixedPositions, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+            applyFixedPositions(fixedPositions, nadParameters);
             NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
@@ -1138,14 +1139,66 @@ public final class NetworkCFunctions {
         });
     }
 
+    private static Map<String, Point> getNadFixedPositionsMap(int rowCount, StringSeries idSeries, DoubleSeries xSeries, DoubleSeries ySeries) {
+        Map<String, Point> fixedPositions = new HashMap<>();
+        if (xSeries != null && ySeries != null) {
+            for (int i = 0; i < rowCount; i++) {
+                String id = idSeries.get(i);
+                double x = xSeries.get(i);
+                double y = ySeries.get(i);
+                if (!Double.isNaN(x) && !Double.isNaN(y)) {
+                    fixedPositions.put(id, new Point(x, y));
+                }
+            }
+        }
+        return fixedPositions;
+    }
+
+    private static Map<String, TextPosition> getNadFixedTextPositionsMap(int rowCount, StringSeries idSeries, DoubleSeries shiftXSeries, DoubleSeries shiftYSeries,
+                                                                         DoubleSeries connectionShiftXSeries, DoubleSeries connectionShiftYSeries) {
+        Map<String, TextPosition> fixedTextPositions = new HashMap<>();
+        if (shiftXSeries != null && shiftYSeries != null && connectionShiftXSeries != null && connectionShiftYSeries != null) {
+            for (int i = 0; i < rowCount; i++) {
+                String id = idSeries.get(i);
+                double shiftX = shiftXSeries.get(i);
+                double shiftY = shiftYSeries.get(i);
+                double connectionShiftX = connectionShiftXSeries.get(i);
+                double connectionShiftY = connectionShiftYSeries.get(i);
+                if (!Double.isNaN(shiftX) && !Double.isNaN(shiftY) && !Double.isNaN(connectionShiftX) && !Double.isNaN(connectionShiftY)) {
+                    fixedTextPositions.put(id, new TextPosition(new Point(shiftX, shiftY), new Point(connectionShiftX, connectionShiftY)));
+                }
+            }
+        }
+        return fixedTextPositions;
+    }
+
+    private static void applyFixedPositions(DataframePointer fixedPositions, NadParameters nadParameters) {
+        UpdatingDataframe fixedPositionsDataframe = createDataframe(fixedPositions);
+        if (fixedPositionsDataframe != null) {
+            StringSeries idSeries = fixedPositionsDataframe.getStrings("id");
+            if (idSeries == null) {
+                throw new PowsyblException("id is missing");
+            }
+            int rowCount = fixedPositionsDataframe.getRowCount();
+            Map<String, Point> fixedPositionsMap = getNadFixedPositionsMap(rowCount, idSeries,
+                    fixedPositionsDataframe.getDoubles("x"), fixedPositionsDataframe.getDoubles("y"));
+            Map<String, TextPosition> fixedTextPositionsMap = getNadFixedTextPositionsMap(rowCount, idSeries,
+                    fixedPositionsDataframe.getDoubles("legend_shift_x"), fixedPositionsDataframe.getDoubles("legend_shift_y"),
+                    fixedPositionsDataframe.getDoubles("legend_connection_shift_x"), fixedPositionsDataframe.getDoubles("legend_connection_shift_y"));
+            nadParameters.setLayoutFactory(new FixedLayoutFactory(fixedPositionsMap, fixedTextPositionsMap, nadParameters.getLayoutFactory()));
+        }
+    }
+
     @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
-                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
+                                                        DataframePointer fixedPositions, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+            applyFixedPositions(fixedPositions, nadParameters);
             List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return createCharPtrArray(svgAndMeta);
         });
