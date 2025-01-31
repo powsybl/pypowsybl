@@ -409,19 +409,21 @@ jobs:
             continue
             fi
           
+            # List the modules seen (to keep the order)
             if [[ -z "${seen_modules[$module]}" ]]; then
               module_order+=("$module")
               seen_modules["$module"]=1
             fi
-          
+            
+            # List the OS and Python versions
             if [[ ! " ${os_set[*]} " =~ " ${os} " ]]; then
               os_set+=("$os")
             fi
-            
             if [[ ! " ${python_set[*]} " =~ " ${python} " ]]; then
             python_set+=("$python")
             fi
             
+            # List the build status
             if [[ "$status" == "success" ]]; then
               success_modules["$module"]+="$os+$python "
             else
@@ -429,9 +431,9 @@ jobs:
             fi
           done < combined_job_results.txt
           
+          # Format the notification message
           formatted=""
           all_success_modules=()
-          
           for module in "${module_order[@]}"; do
             if [[ -n "${failure_modules[$module]}" ]]; then
               failures=$(echo "${failure_modules[$module]}" | sed 's/ $//')
@@ -478,9 +480,6 @@ jobs:
           formatted=$(echo -n "$formatted" | sed '$ s/\n$//')
           
           echo "formatted_results=${formatted}" >> $GITHUB_OUTPUT
-          echo "===== Formatted Result ====="
-          echo -e ${formatted}
-          echo "======================="
 
       - name: Prepare Slack payload
         id: prepare_payload
