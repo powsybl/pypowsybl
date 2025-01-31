@@ -404,6 +404,11 @@ jobs:
           python_set=()
           
           while IFS=';' read -r os python module status; do
+            # Ignore empty or bad formated lines
+            if [[ -z "$os" || -z "$python" || -z "$module" || -z "$status" ]]; then
+            continue
+            fi
+          
             if [[ -z "${seen_modules[$module]}" ]]; then
               module_order+=("$module")
               seen_modules["$module"]=1
