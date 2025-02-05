@@ -68,7 +68,7 @@ jobs:
 
       # Build powsybl-core on main branch
       - name: Checkout core sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-core
           ref: main
@@ -86,7 +86,7 @@ jobs:
       # The script check_integration_branch.sh is located in the workflow folder of the repository
       # It is necessary for checking out the integration branch if it exists
       - name: Checkout script
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           sparse-checkout: |
             .github
@@ -98,7 +98,7 @@ jobs:
         run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
         
       - name: Checkout powsybl-open-loadflow sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-open-loadflow
           ref: ${{ env.INTEGRATION_BRANCH }}
@@ -134,7 +134,7 @@ jobs:
         run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout diagram sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-diagram
           ref: ${{ env.INTEGRATION_BRANCH }}
@@ -170,7 +170,7 @@ jobs:
         run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout powsybl-entsoe sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-entsoe
           ref: ${{ env.INTEGRATION_BRANCH }}
@@ -208,7 +208,7 @@ jobs:
         run :  ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout powsybl-open-rao sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-open-rao
           ref: ${{ env.INTEGRATION_BRANCH }}
@@ -247,7 +247,7 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout powsybl-dynawo sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-dynawo
           ref: ${{ env.INTEGRATION_BRANCH }}
@@ -280,7 +280,7 @@ jobs:
 
       # Checkout powsybl-dependencies
       - name: Checkout powsybl-dependencies sources
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-dependencies
           ref: main
@@ -311,7 +311,7 @@ jobs:
         run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout pypowsybl
-        uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/pypowsybl
           ref: ${{ env.INTEGRATION_BRANCH }}
@@ -343,7 +343,7 @@ jobs:
         run: pytest
 
       - name: Upload wheel
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # 4.3.3
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # 4.6.0
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
@@ -361,7 +361,7 @@ jobs:
 
       - name: Upload job result
         if: always()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # 4.3.3
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # 4.6.0
         with:
           name: job-results_${{ matrix.config.name }}-${{ matrix.python.name }}
           path: job_result_${{ matrix.config.name }}-${{ matrix.python.name }}.txt
