@@ -274,6 +274,10 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? rho * twt.getTerminal1().getVoltageLevel().getNominalV() / twt.getTerminal2().getVoltageLevel().getNominalV() : rho;
     }
 
+    public static double perUnitRho(NetworkDataframeContext context, ThreeWindingsTransformer twt, ThreeSides side, double rho) {
+        return context.isPerUnit() ? rho * twt.getTerminal(side).getVoltageLevel().getNominalV() / twt.getTerminal(ThreeSides.ONE).getVoltageLevel().getNominalV() : rho;
+    }
+
     public static double perUnitAngle(NetworkDataframeContext context, double angle) {
         return context.isPerUnit() ? toRadians(angle) : angle; // this is not per-uniting but a convention to have radian in per unit view
     }
