@@ -20,6 +20,8 @@ GraalVM to compile Java code to a native library.
 
 Latest version of the documentation with API reference and many code samples is [here](https://pypowsybl.readthedocs.io/).  
 
+To contribute to the documentation follow the instructions in the [documentation README](https://github.com/powsybl/pypowsybl/tree/main/docs) page.
+
 ## Notebooks
 
 Notebooks demonstrating PyPowSyBl features can be found in this [repository](https://github.com/powsybl/pypowsybl-notebooks).
@@ -132,26 +134,4 @@ mypy -p pypowsybl
 To run linting inspection with `pylint`:
 ```bash
 pylint pypowsybl
-```
-
-## Contribute to documentation
-
-To run the tests included in the documentation:
-
-```bash
-cd docs/
-make doctest
-```
-
-And then, to build the documentation:
-
-```bash
-make html
-```
-
-Web pages are generated in repository _build/html/ for preview before opening a pull request.
-You can for example open it with firefox browser:
-
-```bash
-firefox _build/html/index.html
 ```
