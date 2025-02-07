@@ -314,7 +314,29 @@ We can generate a network area diagram using fixed positions, defined in a dataf
 
     The optional parameter fixed_positions can also be set in the write_network_area_diagram function.
     Note that positions for elements not included in the dataframe are computed using the current layout algorithm.
-    
+
+
+We can set the labels of the NAD branches, using a dataframe:
+
+.. code-block:: python
+
+    >>> import pandas as pd
+    >>> network = pp.network.create_four_substations_node_breaker_network()
+    >>> labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'side1', 'side2', 'middle'],
+                                              data=[
+                                                  ('LINE_S2S3', 'L1_1', 'L1_2', 'L1'),
+                                                  ('LINE_S3S4', 'L2_1', 'L2_2', 'L2'),
+                                                  ('TWT', 'TWT1_1', 'TWT1_2', 'TWT1')
+                                              ])
+    >>> pars=pp.network.NadParameters(edge_name_displayed=True)
+    >>> network.get_network_area_diagram(voltage_level_ids='S1VL1', depth=2, nad_parameters=pars, branch_labels=labels_df)
+
+    In the dataframe:
+    - id is the branch id
+    - side1 and side2 define the labels along the two branch's edges
+    - middle defines the branch's label
+
+    The optional parameter branch_labels can also be set in the write_network_area_diagram function.
 
 Network area diagram using geographical data
 --------------------------------------------

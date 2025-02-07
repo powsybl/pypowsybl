@@ -1178,6 +1178,23 @@ def test_nad_fixed_positions():
         assert exists(fixed_positions_svg_file)
 
 
+def test_nad_branch_labels():
+    n = pp.network.create_ieee14()
+    branch_labels_df = pd.DataFrame.from_records(index='id', 
+                                             data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'side2': 'S2_1', 'middle': 'MIDDLE_1'},
+                                                   {'id': 'L2-5-1', 'side1': 'S1_2', 'side2': 'S2_2', 'middle': 'MIDDLE_2'}])
+    pars=pp.network.NadParameters(edge_name_displayed=True)
+    nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, branch_labels=branch_labels_df)
+    assert re.search('.*<svg.*', nad1.svg)
+    assert len(nad1.metadata) > 0
+
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        branch_labels_svg_file = tmp_dir_path.joinpath('test_branch_labels.svg')
+        n.write_network_area_diagram(branch_labels_svg_file, voltage_level_ids='VL1', depth=1, nad_parameters=pars, branch_labels=branch_labels_df)
+        assert exists(branch_labels_svg_file)
+
+
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
     with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):

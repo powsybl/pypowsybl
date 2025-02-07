@@ -369,7 +369,8 @@ class Network:  # pylint: disable=too-many-public-methods
                                    low_nominal_voltage_bound: float = -1,
                                    nad_parameters: NadParameters = None,
                                    metadata_file: PathOrStr = None,
-                                   fixed_positions: Optional[DataFrame] = None) -> None:
+                                   fixed_positions: Optional[DataFrame] = None,
+                                   branch_labels: Optional[DataFrame] = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -382,6 +383,7 @@ class Network:  # pylint: disable=too-many-public-methods
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
             fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
+            branch_labels: optional dataframe used to set the labels on a branch
         """
         svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
@@ -391,7 +393,8 @@ class Network:  # pylint: disable=too-many-public-methods
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
         _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
                                            voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p,
-                                           None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions))
+                                           None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
+                                           None if branch_labels is None else self._create_nad_branch_labels_c_dataframe(branch_labels.fillna('')))
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
         nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
@@ -403,9 +406,17 @@ class Network:  # pylint: disable=too-many-public-methods
                   _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False)]
         return _create_c_dataframe(df, nad_positions_metadata)
 
+    def _create_nad_branch_labels_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
+        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('side1',0,False,False,False),
+                  _pp.SeriesMetadata('side2',0,False,False,False),
+                  _pp.SeriesMetadata('middle',0,False,False,False)]
+        return _create_c_dataframe(df, nad_positions_metadata)
+
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
-                                 nad_parameters: NadParameters = None, fixed_positions: Optional[DataFrame] = None) -> Svg:
+                                 nad_parameters: NadParameters = None, fixed_positions: Optional[DataFrame] = None,
+                                 branch_labels: Optional[DataFrame] = None) -> Svg:
         """
         Create a network area diagram.
 
@@ -416,6 +427,7 @@ class Network:  # pylint: disable=too-many-public-methods
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
             fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
+            branch_labels: optional dataframe used to set the labels on a branch
 
         Returns:
             the network area diagram
@@ -427,7 +439,8 @@ class Network:  # pylint: disable=too-many-public-methods
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
         svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    nad_p, None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions))
+                                                    nad_p, None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
+                                                    None if branch_labels is None else self._create_nad_branch_labels_c_dataframe(branch_labels.fillna('')))
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
