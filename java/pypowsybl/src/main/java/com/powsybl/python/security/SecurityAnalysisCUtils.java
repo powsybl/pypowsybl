@@ -69,9 +69,9 @@ public final class SecurityAnalysisCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer) {
-        return CTypeUtil.toStringMap(securityAnalysisParametersPointer.getProviderParametersKeys(),
-                securityAnalysisParametersPointer.getProviderParametersKeysCount(),
-                securityAnalysisParametersPointer.getProviderParametersValues(),
-                securityAnalysisParametersPointer.getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(securityAnalysisParametersPointer.getParameterBase().getProviderParametersKeys(),
+                securityAnalysisParametersPointer.getParameterBase().getProviderParametersKeysCount(),
+                securityAnalysisParametersPointer.getParameterBase().getProviderParametersValues(),
+                securityAnalysisParametersPointer.getParameterBase().getProviderParametersValuesCount());
     }
 }

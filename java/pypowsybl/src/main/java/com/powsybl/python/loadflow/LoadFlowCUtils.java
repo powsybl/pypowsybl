@@ -37,10 +37,10 @@ public final class LoadFlowCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(LoadFlowParametersPointer loadFlowParametersPtr) {
-        return CTypeUtil.toStringMap(loadFlowParametersPtr.getProviderParametersKeys(),
-                loadFlowParametersPtr.getProviderParametersKeysCount(),
-                loadFlowParametersPtr.getProviderParametersValues(),
-                loadFlowParametersPtr.getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(loadFlowParametersPtr.getParameterBase().getProviderParametersKeys(),
+                loadFlowParametersPtr.getParameterBase().getProviderParametersKeysCount(),
+                loadFlowParametersPtr.getParameterBase().getProviderParametersValues(),
+                loadFlowParametersPtr.getParameterBase().getProviderParametersValuesCount());
     }
 
     public static LoadFlowParameters createLoadFlowParameters() {
