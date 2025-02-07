@@ -7,6 +7,13 @@
 from .impl.rao import Rao
 from .impl.rao_result import RaoResult
 from .impl.parameters import Parameters
+from .impl.parameters import ObjectiveFunctionParameters
+from .impl.parameters import RangeActionOptimizationParameters
+from .impl.parameters import TopoOptimizationParameters
+from .impl.parameters import MultithreadingParameters
+from .impl.parameters import SecondPreventiveRaoParameters
+from .impl.parameters import NotOptimizedCnecsParameters
+from .impl.parameters import LoadFlowAndSensitivityParameters
 from .impl.util import (
   create_rao
 )
