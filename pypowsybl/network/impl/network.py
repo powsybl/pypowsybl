@@ -368,7 +368,8 @@ class Network:  # pylint: disable=too-many-public-methods
                                    depth: int = 0, high_nominal_voltage_bound: float = -1,
                                    low_nominal_voltage_bound: float = -1,
                                    nad_parameters: NadParameters = None,
-                                   metadata_file: PathOrStr = None) -> None:
+                                   metadata_file: PathOrStr = None,
+                                   fixed_positions: Optional[DataFrame] = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -380,6 +381,7 @@ class Network:  # pylint: disable=too-many-public-methods
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
+            fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
         """
         svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
@@ -388,11 +390,22 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
         _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
-                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p)
+                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p,
+                                           None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions))
+
+    def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
+        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('x',1,False,False,False),
+                  _pp.SeriesMetadata('y',1,False,False,False),
+                  _pp.SeriesMetadata('legend_shift_x',1,False,False,False),
+                  _pp.SeriesMetadata('legend_shift_y',1,False,False,False),
+                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False,False),
+                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False)]
+        return _create_c_dataframe(df, nad_positions_metadata)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
-                                 nad_parameters: NadParameters = None) -> Svg:
+                                 nad_parameters: NadParameters = None, fixed_positions: Optional[DataFrame] = None) -> Svg:
         """
         Create a network area diagram.
 
@@ -402,6 +415,7 @@ class Network:  # pylint: disable=too-many-public-methods
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
+            fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
 
         Returns:
             the network area diagram
@@ -413,7 +427,7 @@ class Network:  # pylint: disable=too-many-public-methods
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
         svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    nad_p)
+                                                    nad_p, None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions))
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
@@ -2104,6 +2118,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the ratio tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
               - **r**: The resistance deviation in percent of nominal value (%)
               - **x**: The reactance deviation in percent of nominal value (%)
@@ -2120,14 +2135,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ======== ======== === === === ===
-            \                        rho   r   x   g   b
-            ========== ======== ======== === === === ===
+            ========== ======== ===== ======== === === === ===
+            \                    side      rho   r   x   g   b
+            ========== ======== ===== ======== === === === ===
             id         position
-            NHV2_NLOAD        0 0.850567 0.0 0.0 0.0 0.0
-            \                 1 1.000667 0.0 0.0 0.0 0.0
-            \                 2 1.150767 0.0 0.0 0.0 0.0
-            ========== ======== ======== === === === ===
+            NHV2_NLOAD        0       0.850567 0.0 0.0 0.0 0.0
+            \                 1       1.000667 0.0 0.0 0.0 0.0
+            \                 2       1.150767 0.0 0.0 0.0 0.0
+            ========== ======== ===== ======== === === === ===
 
             .. code-block:: python
 
@@ -2136,14 +2151,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ======== ======== === === === ===
-            \                        rho   r   x   g   b
-            ========== ======== ======== === === === ===
+            ========== ======== ===== ======== === === === ===
+            \                    side      rho   r   x   g   b
+            ========== ======== ===== ======== === === === ===
             id         position
-            NHV2_NLOAD        0 0.850567 0.0 0.0 0.0 0.0
-            \                 1 1.000667 0.0 0.0 0.0 0.0
-            \                 2 1.150767 0.0 0.0 0.0 0.0
-            ========== ======== ======== === === === ===
+            NHV2_NLOAD        0       0.850567 0.0 0.0 0.0 0.0
+            \                 1       1.000667 0.0 0.0 0.0 0.0
+            \                 2       1.150767 0.0 0.0 0.0 0.0
+            ========== ======== ===== ======== === === === ===
 
             .. code-block:: python
 
@@ -2152,14 +2167,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ======== ======== === ===
-            \                        rho   r   x
-            ========== ======== ======== === ===
+            ========== ======== ===== ======== === ===
+            \                    side      rho   r   x
+            ========== ======== ===== ======== === ===
             id         position
-            NHV2_NLOAD        0 0.850567 0.0 0.0
-            \                 1 1.000667 0.0 0.0
-            \                 2 1.150767 0.0 0.0
-            ========== ======== ======== === ===
+            NHV2_NLOAD        0       0.850567 0.0 0.0
+            \                 1       1.000667 0.0 0.0
+            \                 2       1.150767 0.0 0.0
+            ========== ======== ===== ======== === ===
         """
         return self.get_elements(ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
@@ -2180,6 +2195,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the phase tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
               - **alpha**: the angle difference (in degree)
               - **r**: The resistance deviation in percent of nominal value (%)
@@ -2197,15 +2213,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ======== ==== ====== ========= ========= === ===
-            \             rho  alpha         r         x   g   b
-            === ======== ==== ====== ========= ========= === ===
+            === ======== ===== ==== ====== ========= ========= === ===
+            \             side  rho  alpha         r         x   g   b
+            === ======== ===== ==== ====== ========= ========= === ===
             id  position
-            TWT        0  1.0 -42.80 39.784730 29.784725 0.0 0.0
-            \          1  1.0 -40.18 31.720245 21.720242 0.0 0.0
-            \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
-            ...      ...  ...    ...       ...       ... ... ...
-            === ======== ==== ====== ========= ========= === ===
+            TWT        0        1.0 -42.80 39.784730 29.784725 0.0 0.0
+            \          1        1.0 -40.18 31.720245 21.720242 0.0 0.0
+            \          2        1.0 -37.54 23.655737 13.655735 0.0 0.0
+            ...      ...   ...  ...    ...       ...       ... ... ...
+            === ======== ===== ==== ====== ========= ========= === ===
 
             .. code-block:: python
 
@@ -2214,15 +2230,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ======== ==== ====== ========= ========= === ===
-            \             rho  alpha         r         x   g   b
-            === ======== ==== ====== ========= ========= === ===
+            === ======== ===== ==== ====== ========= ========= === ===
+            \             side  rho  alpha         r         x   g   b
+            === ======== ===== ==== ====== ========= ========= === ===
             id  position
-            TWT        0  1.0 -42.80 39.784730 29.784725 0.0 0.0
-            \          1  1.0 -40.18 31.720245 21.720242 0.0 0.0
-            \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
-            ...      ...  ...    ...       ...       ... ... ...
-            === ======== ==== ====== ========= ========= === ===
+            TWT        0        1.0 -42.80 39.784730 29.784725 0.0 0.0
+            \          1        1.0 -40.18 31.720245 21.720242 0.0 0.0
+            \          2        1.0 -37.54 23.655737 13.655735 0.0 0.0
+            ...      ...   ...  ...    ...       ...       ... ... ...
+            === ======== ===== ==== ====== ========= ========= === ===
 
             .. code-block:: python
 
@@ -2231,15 +2247,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ======== ==== ========= =========
-            \             rho         r         x
-            === ======== ==== ========= =========
+            === ======== ===== ==== ========= =========
+            \             side  rho         r         x
+            === ======== ===== ==== ========= =========
             id  position
-            TWT        0  1.0 39.784730 29.784725
-            \          1  1.0 31.720245 21.720242
-            \          2  1.0 23.655737 13.655735
-            ...      ...  ...       ...       ...
-            === ======== ==== ========= =========
+            TWT        0        1.0 39.784730 29.784725
+            \          1        1.0 31.720245 21.720242
+            \          2        1.0 23.655737 13.655735
+            ...      ...   ...  ...       ...       ...
+            === ======== ===== ==== ========= =========
         """
         return self.get_elements(ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
@@ -2260,6 +2276,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the ratio tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **tap**: the current tap position
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
@@ -2270,7 +2287,6 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_deadband**: the regulation deadband around the target voltage, in kV
               - **regulating_bus_id**: the bus where the tap changer regulates voltage
               - **regulated_side** (optional): the side where the tap changer regulates voltage (redundant with regulating_bus_id)
-              - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
 
@@ -2282,12 +2298,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
             id
-            NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
 
             .. code-block:: python
 
@@ -2296,12 +2312,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
             id
-            NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
 
             .. code-block:: python
 
@@ -2310,12 +2326,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== === ======= ======== ========== ======== =================
-            \          tap low_tap high_tap step_count target_v regulating_bus_id
-            ========== === ======= ======== ========== ======== =================
+            ========== ==== === ======= ======== ========== ======== =================
+            \          side tap low_tap high_tap step_count target_v regulating_bus_id
+            ========== ==== === ======= ======== ========== ======== =================
             id
-            NHV2_NLOAD   1       0        2          3    158.0          VLLOAD_0
-            ========== === ======= ======== ========== ======== =================
+            NHV2_NLOAD        1       0        2          3    158.0          VLLOAD_0
+            ========== ==== === ======= ======== ========== ======== =================
         """
         return self.get_elements(ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
@@ -2336,6 +2352,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the phase tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **tap**: the current tap position
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
@@ -2346,7 +2363,6 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_deadband**: the regulation deadband around the target value
               - **regulating_bus_id**: the bus where the phase shifter regulates
               - **regulated_side** (optional): the side bus where the phase shifter regulates current or active power
-              - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
 
@@ -2358,12 +2374,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === === ======= ======== ========== ========== =============== ================ =============== =================
-            \   tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
             id
-            TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
 
             .. code-block:: python
 
@@ -2372,12 +2388,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === === ======= ======== ========== ========== =============== ================ =============== =================
-            \   tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
             id
-            TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
 
             .. code-block:: python
 
@@ -2386,12 +2402,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === === ======= ======== ========== =================
-            \   tap low_tap high_tap step_count regulating_bus_id
-            === === ======= ======== ========== =================
+            === ==== === ======= ======== ========== =================
+            \   side tap low_tap high_tap step_count regulating_bus_id
+            === ==== === ======= ======== ========== =================
             id
-            TWT  15       0       32         33           S1VL1_0
-            === === ======= ======== ========== =================
+            TWT       15       0       32         33           S1VL1_0
+            === ==== === ======= ======== ========== =================
         """
         return self.get_elements(ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
@@ -3302,7 +3318,6 @@ class Network:  # pylint: disable=too-many-public-methods
             - `regulated_side`,
             - `target_v`
             - `target_deadband`
-            - `fictitious`
 
         See Also:
             :meth:`get_ratio_tap_changers`

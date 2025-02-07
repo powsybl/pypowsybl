@@ -152,22 +152,22 @@ the step position:
 .. doctest::
 
     >>> network.get_ratio_tap_changer_steps() # doctest: +NORMALIZE_WHITESPACE
-                              rho    r    x    g    b
+                        side       rho    r    x    g    b
     id         position
-    NHV2_NLOAD 0         0.850567  0.0  0.0  0.0  0.0
-               1         1.000667  0.0  0.0  0.0  0.0
-               2         1.150767  0.0  0.0  0.0  0.0
+    NHV2_NLOAD 0              0.850567  0.0  0.0  0.0  0.0
+               1              1.000667  0.0  0.0  0.0  0.0
+               2              1.150767  0.0  0.0  0.0  0.0
 
 This allows to easily get steps related to just one transformer:
 
 .. doctest::
 
     >>> network.get_ratio_tap_changer_steps().loc['NHV2_NLOAD'] # doctest: +NORMALIZE_WHITESPACE
-                   rho    r    x    g    b
+             side       rho    r    x    g    b
     position
-    0         0.850567  0.0  0.0  0.0  0.0
-    1         1.000667  0.0  0.0  0.0  0.0
-    2         1.150767  0.0  0.0  0.0  0.0
+    0              0.850567  0.0  0.0  0.0  0.0
+    1              1.000667  0.0  0.0  0.0  0.0
+    2              1.150767  0.0  0.0  0.0  0.0
 
 For a detailed description of each dataframe, please refer
 to the reference API :doc:`documentation </reference/network>`.
