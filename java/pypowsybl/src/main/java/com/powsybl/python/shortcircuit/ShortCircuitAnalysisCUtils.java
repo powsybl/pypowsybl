@@ -67,9 +67,9 @@ public final class ShortCircuitAnalysisCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(PyPowsyblApiHeader.ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer) {
-        return CTypeUtil.toStringMap(shortCircuitAnalysisParametersPointer.getProviderParametersKeys(),
-                shortCircuitAnalysisParametersPointer.getProviderParametersKeysCount(),
-                shortCircuitAnalysisParametersPointer.getProviderParametersValues(),
-                shortCircuitAnalysisParametersPointer.getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(shortCircuitAnalysisParametersPointer.getParameterBase().getProviderParametersKeys(),
+                shortCircuitAnalysisParametersPointer.getParameterBase().getProviderParametersKeysCount(),
+                shortCircuitAnalysisParametersPointer.getParameterBase().getProviderParametersValues(),
+                shortCircuitAnalysisParametersPointer.getParameterBase().getProviderParametersValuesCount());
     }
 }

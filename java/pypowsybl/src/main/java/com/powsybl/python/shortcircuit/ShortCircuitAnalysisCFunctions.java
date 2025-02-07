@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.powsybl.python.commons.CTypeUtil.createParameterBase;
 import static com.powsybl.python.commons.Util.createCharPtrArray;
 import static com.powsybl.python.commons.Util.doCatch;
 
@@ -125,8 +126,9 @@ public final class ShortCircuitAnalysisCFunctions {
         paramsPtr.setMinVoltageDropProportionalThreshold(parameters.getMinVoltageDropProportionalThreshold());
         paramsPtr.setStudyType(parameters.getStudyType().ordinal());
         paramsPtr.setInitialVoltageProfileMode(parameters.getInitialVoltageProfileMode().ordinal());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.setParameterBase(createParameterBase());
+        paramsPtr.getParameterBase().setProviderParametersValuesCount(0);
+        paramsPtr.getParameterBase().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 
