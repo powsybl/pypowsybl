@@ -8,30 +8,137 @@ import io
 import json
 
 from pypowsybl import _pypowsybl
+from pypowsybl._pypowsybl import (
+    RaoParameters
+)
+from .objective_function_parameters import ObjectiveFunctionParameters
+from .range_action_optimization_parameters import RangeActionOptimizationParameters
+from .topo_optimization_parameters import TopoOptimizationParameters
+from .multithreading_parameters import MultithreadingParameters
+from .second_preventive_rao_parameters import SecondPreventiveRaoParameters
+from .not_optimized_cnecs_parameters import NotOptimizedCnecsParameters
+from .loadflow_and_sensitivity_parameters import LoadFlowAndSensitivityParameters
 from pypowsybl.utils import path_to_str
 from typing import Union, Dict, Any
 from os import PathLike
 
 class Parameters:
-    def __init__(self) -> None:
+    def __init__(self, objective_function_parameters: ObjectiveFunctionParameters = None,
+                 range_action_optimization_parameters: RangeActionOptimizationParameters = None,
+                 topo_optimization_parameters: TopoOptimizationParameters = None,
+                 multithreading_parameters: MultithreadingParameters = None,
+                 second_preventive_rao_parameters: SecondPreventiveRaoParameters = None,
+                 not_optimized_cnecs_parameters: NotOptimizedCnecsParameters = None,
+                 loadflow_and_sensitivity_parameters: LoadFlowAndSensitivityParameters = None,
+                 provider_parameters: Dict[str, str] = None) -> None:
         self._init_with_default_values()
+        if objective_function_parameters is not None:
+            self.objective_function_parameters = objective_function_parameters
+        if range_action_optimization_parameters is not None:
+            self.range_action_optimization_parameters = range_action_optimization_parameters
+        if topo_optimization_parameters is not None:
+            self.topo_optimization_parameters = topo_optimization_parameters
+        if multithreading_parameters is not None:
+            self.multithreading_parameters = multithreading_parameters
+        if second_preventive_rao_parameters is not None:
+            self.second_preventive_rao_parameters = second_preventive_rao_parameters
+        if not_optimized_cnecs_parameters is not None:
+            self.not_optimized_cnecs_parameters = not_optimized_cnecs_parameters
+        if loadflow_and_sensitivity_parameters is not None:
+            self.loadflow_and_sensitivity_parameters = loadflow_and_sensitivity_parameters
+        if provider_parameters is not None:
+            self.provider_parameters = provider_parameters
+
+    def _init_from_c(self, c_parameters: RaoParameters) -> None:
+        self.objective_function_parameters = ObjectiveFunctionParameters(rao_parameters=c_parameters)
+        self.range_action_optimization_parameters = RangeActionOptimizationParameters(rao_parameters=c_parameters)
+        self.topo_optimization_parameters = TopoOptimizationParameters(rao_parameters=c_parameters)
+        self.multithreading_parameters = MultithreadingParameters(rao_parameters=c_parameters)
+        self.second_preventive_rao_parameters = SecondPreventiveRaoParameters(rao_parameters=c_parameters)
+        self.not_optimized_cnecs_parameters = NotOptimizedCnecsParameters(rao_parameters=c_parameters)
+        self.loadflow_and_sensitivity_parameters = LoadFlowAndSensitivityParameters(rao_parameters=c_parameters)
+        self.provider_parameters = dict(
+            zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+
+    def _to_c_parameters(self) -> RaoParameters:
+        c_parameters = RaoParameters()
+        c_parameters.objective_function_type = self.objective_function_parameters.objective_function_type
+        c_parameters.preventive_stop_criterion = self.objective_function_parameters.preventive_stop_criterion
+        c_parameters.curative_stop_criterion = self.objective_function_parameters.curative_stop_criterion
+        c_parameters.curative_min_obj_improvement = self.objective_function_parameters.curative_min_obj_improvement
+        c_parameters.forbid_cost_increase = self.objective_function_parameters.forbid_cost_increase
+        c_parameters.optimize_curative_if_preventive_unsecure = self.objective_function_parameters.optimize_curative_if_preventive_unsecure
+
+        c_parameters.max_mip_iterations = self.range_action_optimization_parameters.max_mip_iterations
+        c_parameters.pst_penalty_cost = self.range_action_optimization_parameters.pst_penalty_cost
+        c_parameters.pst_sensitivity_threshold = self.range_action_optimization_parameters.pst_sensitivity_threshold
+        c_parameters.pst_model = self.range_action_optimization_parameters.pst_model
+        c_parameters.hvdc_penalty_cost = self.range_action_optimization_parameters.hvdc_penalty_cost
+        c_parameters.hvdc_sensitivity_threshold = self.range_action_optimization_parameters.hvdc_sensitivity_threshold
+        c_parameters.injection_ra_penalty_cost = self.range_action_optimization_parameters.injection_ra_penalty_cost
+        c_parameters.injection_ra_sensitivity_threshold = self.range_action_optimization_parameters.injection_ra_sensitivity_threshold
+        c_parameters.ra_range_shrinking = self.range_action_optimization_parameters.ra_range_shrinking
+        c_parameters.solver = self.range_action_optimization_parameters.solver
+        c_parameters.relative_mip_gap = self.range_action_optimization_parameters.relative_mip_gap
+        c_parameters.solver_specific_parameters = self.range_action_optimization_parameters.solver_specific_parameters
+
+        c_parameters.max_preventive_search_tree_depth = self.topo_optimization_parameters.max_preventive_search_tree_depth
+        c_parameters.max_auto_search_tree_depth = self.topo_optimization_parameters.max_auto_search_tree_depth
+        c_parameters.max_curative_search_tree_depth = self.topo_optimization_parameters.max_curative_search_tree_depth
+        c_parameters.predefined_combinations = self.topo_optimization_parameters.predefined_combinations
+        c_parameters.relative_min_impact_threshold = self.topo_optimization_parameters.relative_min_impact_threshold
+        c_parameters.absolute_min_impact_threshold = self.topo_optimization_parameters.absolute_min_impact_threshold
+        c_parameters.skip_actions_far_from_most_limiting_element = self.topo_optimization_parameters.skip_actions_far_from_most_limiting_element
+        c_parameters.max_number_of_boundaries_for_skipping_actions = self.topo_optimization_parameters.max_number_of_boundaries_for_skipping_actions
+
+        c_parameters.contingency_scenarios_in_parallel = self.multithreading_parameters.contingency_scenarios_in_parallel
+        c_parameters.preventive_leaves_in_parallel = self.multithreading_parameters.preventive_leaves_in_parallel
+        c_parameters.auto_leaves_in_parallel = self.multithreading_parameters.auto_leaves_in_parallel
+        c_parameters.curative_leaves_in_parallel = self.multithreading_parameters.curative_leaves_in_parallel
+
+        c_parameters.execution_condition = self.second_preventive_rao_parameters.execution_condition
+        c_parameters.re_optimize_curative_range_actions = self.second_preventive_rao_parameters.re_optimize_curative_range_actions
+        c_parameters.hint_from_first_preventive_rao = self.second_preventive_rao_parameters.hint_from_first_preventive_rao
+
+        c_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras = self.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras
+
+        c_parameters.load_flow_provider = self.loadflow_and_sensitivity_parameters.load_flow_provider
+        c_parameters.sensitivity_provider = self.loadflow_and_sensitivity_parameters.sensitivity_provider
+        c_parameters.sensitivity_parameters = self.loadflow_and_sensitivity_parameters.sensitivity_parameters._to_c_parameters()
+        c_parameters.sensitivity_failure_overcost = self.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost
+
+        c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
+        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        return c_parameters
 
     def _init_with_default_values(self) -> None:
-        self._handle = _pypowsybl.create_default_rao_parameters()
+        self._init_from_c(RaoParameters())
 
     def load_from_file_source(self, parameters_file: Union[str, PathLike]) -> None:
         parameters = io.BytesIO(open(path_to_str(parameters_file), "rb").read())
         self.load_from_buffer_source(parameters)
 
     def load_from_buffer_source(self, parameters_source: io.BytesIO) -> None:
-        self._handle = _pypowsybl.load_rao_parameters(parameters_source.getbuffer())
+        self._init_from_c(_pypowsybl.load_rao_parameters(parameters_source.getbuffer()))
 
     def serialize(self, output_file: str) -> None:
         with open(output_file, "wb") as f:
             f.write(self.serialize_to_binary_buffer().getbuffer())
 
     def serialize_to_binary_buffer(self) -> io.BytesIO:
-        return io.BytesIO(_pypowsybl.serialize_rao_parameters(self._handle))
+        return io.BytesIO(_pypowsybl.serialize_rao_parameters(self._to_c_parameters()))
 
     def to_json(self) -> Dict[str, Any]:
         return json.load(self.serialize_to_binary_buffer())
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" \
+               f"objective_function_parameters={self.objective_function_parameters!r}" \
+               f", range_action_optimization_parameters={self.range_action_optimization_parameters!r}" \
+               f", topo_optimization_parameters={self.topo_optimization_parameters!r}" \
+               f", multithreading_parameters={self.multithreading_parameters!r}" \
+               f", second_preventive_rao_parameters={self.second_preventive_rao_parameters!r}" \
+               f", not_optimized_cnecs_parameters={self.not_optimized_cnecs_parameters!r}" \
+               f", loadflow_and_sensitivity_parameters={self.loadflow_and_sensitivity_parameters!r}" \
+               f", provider_parameters={self.provider_parameters!r}" \
+               f")"

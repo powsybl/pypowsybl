@@ -265,8 +265,57 @@ void copyCharPtrPtrToVector(char** src, int count, std::vector<std::string>& des
 
 void deleteLoadFlowParameters(loadflow_parameters* ptr) {
     pypowsybl::deleteCharPtrPtr(ptr->countries_to_balance, ptr->countries_to_balance_count);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
+}
+
+void providerParametersToCStruct(provider_parameters& providerParams, std::vector<std::string> const& provider_parameters_keys,
+  std::vector<std::string> const& provider_parameters_values) {
+     providerParams.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+     providerParams.provider_parameters_keys_count = provider_parameters_keys.size();
+     providerParams.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
+     providerParams.provider_parameters_values_count = provider_parameters_values.size();
+
+}
+
+void providerParametersFromCStruct(provider_parameters& providerParams, std::vector<std::string>& provider_parameters_keys,
+  std::vector<std::string>& provider_parameters_values) {
+     copyCharPtrPtrToVector(providerParams.provider_parameters_keys, providerParams.provider_parameters_keys_count, provider_parameters_keys);
+     copyCharPtrPtrToVector(providerParams.provider_parameters_values, providerParams.provider_parameters_values_count, provider_parameters_values);
+}
+
+std::vector<std::vector<std::string>> arrayToStringVectorVector(array nestedStringVector) {
+    std::vector<std::vector<std::string>> mainList;
+    for (int i = 0; i < nestedStringVector.length; i++) {
+        std::vector<std::string> subList;
+        array value = *((array*) nestedStringVector.ptr + i);
+        for (int j = 0; j < value.length; j++) {
+            char* subValue = *((char**) value.ptr + j);
+            subList.push_back(std::string(subValue));
+        }
+        mainList.push_back(subList);
+    }
+    return mainList;
+}
+
+array stringVectorVectorToArray(std::vector<std::vector<std::string>> const& nestedStringVector) {
+    array mainArray;
+    array* mainPtr = new array[nestedStringVector.size()];
+    mainArray.length = nestedStringVector.size();
+    for (int i=0; i < nestedStringVector.size(); ++i) {
+        mainPtr[i].ptr = copyVectorStringToCharPtrPtr(nestedStringVector[i]);
+        mainPtr[i].length =  nestedStringVector[i].size();
+    }
+    mainArray.ptr = mainPtr;
+    return mainArray;
+}
+
+void freeStringListListArray(array mainArray) {
+    for (int i=0; i < mainArray.length; ++i) {
+        array* subArray = (array*) mainArray.ptr;
+        deleteCharPtrPtr((char**) subArray[i].ptr, subArray[i].length);
+    }
+    delete[] mainArray.ptr;
 }
 
 LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
@@ -284,8 +333,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
     dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
-    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
@@ -304,10 +352,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
     res.dc_power_factor = dc_power_factor;
-    res.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res.provider_parameters_keys_count = provider_parameters_keys.size();
-    res.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res.provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
@@ -316,6 +361,144 @@ std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<loadflow_parameters>(res, [](loadflow_parameters* ptr){
         deleteLoadFlowParameters(ptr);
+        delete ptr;
+    });
+}
+
+void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
+    deleteLoadFlowParameters(&ptr->loadflow_parameters);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
+}
+
+RaoParameters::RaoParameters(rao_parameters* src):
+   sensitivity_parameters(src->sensitivity_parameters)
+{
+    objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
+    preventive_stop_criterion = static_cast<PreventiveStopCriterion>(src->preventive_stop_criterion);
+    curative_stop_criterion = static_cast<CurativeStopCriterion>(src->curative_stop_criterion);
+    curative_min_obj_improvement = src->curative_min_obj_improvement;
+    forbid_cost_increase = (bool) src->forbid_cost_increase;
+    optimize_curative_if_preventive_unsecure = (bool) src->optimize_curative_if_preventive_unsecure;
+
+    solver = static_cast<Solver>(src->solver);
+    relative_mip_gap = src->relative_mip_gap;
+    if (src->solver_specific_parameters != nullptr) {
+        solver_specific_parameters = toString(src->solver_specific_parameters);
+    }
+
+    // range action optimization parameters
+    max_mip_iterations = src->max_mip_iterations;
+    pst_penalty_cost = src->pst_penalty_cost;
+    pst_sensitivity_threshold = src->pst_sensitivity_threshold;
+    pst_model = static_cast<PstModel>(src->pst_model);
+    hvdc_penalty_cost = src->hvdc_penalty_cost;
+    hvdc_sensitivity_threshold = src->hvdc_sensitivity_threshold;
+    injection_ra_penalty_cost = src->injection_ra_penalty_cost;
+    injection_ra_sensitivity_threshold = src->injection_ra_sensitivity_threshold;
+    ra_range_shrinking = static_cast<RaRangeShrinking>(src->ra_range_shrinking);
+
+    // topo optimization parameters
+    max_preventive_search_tree_depth = src->max_preventive_search_tree_depth;
+    max_auto_search_tree_depth = src->max_auto_search_tree_depth;
+    max_curative_search_tree_depth = src->max_curative_search_tree_depth;
+    // Missing predefinedCombinations (list of list of string..)
+    predefined_combinations = arrayToStringVectorVector(src->predefined_combinations);
+
+    relative_min_impact_threshold = src->relative_min_impact_threshold;
+    absolute_min_impact_threshold = src->absolute_min_impact_threshold;
+    skip_actions_far_from_most_limiting_element = (bool) src->skip_actions_far_from_most_limiting_element;
+    max_number_of_boundaries_for_skipping_actions = src->max_number_of_boundaries_for_skipping_actions;
+
+    // Multithreading parameters
+    contingency_scenarios_in_parallel = src->contingency_scenarios_in_parallel;
+    preventive_leaves_in_parallel = src->preventive_leaves_in_parallel;
+    auto_leaves_in_parallel = src->auto_leaves_in_parallel;
+    curative_leaves_in_parallel = src->curative_leaves_in_parallel;
+
+    // Second preventive rao parameters
+    execution_condition = static_cast<ExecutionCondition>(src->execution_condition);
+    re_optimize_curative_range_actions = (bool) src->re_optimize_curative_range_actions;
+    hint_from_first_preventive_rao = (bool) src->hint_from_first_preventive_rao;
+
+    // Not optimized cnec parameters
+    do_not_optimize_curative_cnecs_for_tsos_without_cras = (bool) src->do_not_optimize_curative_cnecs_for_tsos_without_cras;
+
+    // Load flow and sensitivity parameters
+    load_flow_provider = toString(src->load_flow_provider);
+    sensitivity_provider = toString(src->sensitivity_provider);
+    sensitivity_failure_overcost = src->sensitivity_failure_overcost;
+
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
+}
+
+void RaoParameters::load_to_c_struct(rao_parameters& res) const {
+    res.objective_function_type = objective_function_type;
+    res.preventive_stop_criterion = preventive_stop_criterion;
+    res.curative_stop_criterion = curative_stop_criterion;
+    res.curative_min_obj_improvement = curative_min_obj_improvement;
+    res.forbid_cost_increase = forbid_cost_increase;
+    res.optimize_curative_if_preventive_unsecure = optimize_curative_if_preventive_unsecure;
+
+    res.solver = int(solver);
+    res.relative_mip_gap = relative_mip_gap;
+    res.solver_specific_parameters = copyStringToCharPtr(solver_specific_parameters);
+
+    // range action optimization parameters
+    res.max_mip_iterations = max_mip_iterations;
+    res.pst_penalty_cost = pst_penalty_cost;
+    res.pst_sensitivity_threshold = pst_sensitivity_threshold;
+    res.pst_model = int(pst_model);
+    res.hvdc_penalty_cost = hvdc_penalty_cost;
+    res.hvdc_sensitivity_threshold = hvdc_sensitivity_threshold;
+    res.injection_ra_penalty_cost = injection_ra_penalty_cost;
+    res.injection_ra_sensitivity_threshold = injection_ra_sensitivity_threshold;
+    res.ra_range_shrinking = int(ra_range_shrinking);
+
+    // topo optimization parameters
+    res.max_preventive_search_tree_depth = max_preventive_search_tree_depth;
+    res.max_auto_search_tree_depth = max_auto_search_tree_depth;
+    res.max_curative_search_tree_depth = max_curative_search_tree_depth;
+    // Missing predefinedCombinations (list of list of string..)
+    res.predefined_combinations = stringVectorVectorToArray(predefined_combinations);
+    res.relative_min_impact_threshold = relative_min_impact_threshold;
+    res.absolute_min_impact_threshold = absolute_min_impact_threshold;
+    res.skip_actions_far_from_most_limiting_element = skip_actions_far_from_most_limiting_element;
+    res.max_number_of_boundaries_for_skipping_actions = max_number_of_boundaries_for_skipping_actions;
+
+    // Multithreading parameters
+    res.contingency_scenarios_in_parallel = contingency_scenarios_in_parallel;
+    res.preventive_leaves_in_parallel = preventive_leaves_in_parallel;
+    res.auto_leaves_in_parallel = auto_leaves_in_parallel;
+    res.curative_leaves_in_parallel = curative_leaves_in_parallel;
+
+    // Second preventive rao parameters
+    res.execution_condition = int(execution_condition);
+    res.re_optimize_curative_range_actions = re_optimize_curative_range_actions;
+    res.hint_from_first_preventive_rao = hint_from_first_preventive_rao;
+
+    // Not optimized cnec parameters
+    res.do_not_optimize_curative_cnecs_for_tsos_without_cras = do_not_optimize_curative_cnecs_for_tsos_without_cras;
+
+    // Load flow and sensitivity parameters
+    res.load_flow_provider = copyStringToCharPtr(load_flow_provider);
+    res.sensitivity_provider = copyStringToCharPtr(sensitivity_provider);
+    res.sensitivity_parameters = new sensitivity_analysis_parameters();
+    sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
+    res.sensitivity_failure_overcost = sensitivity_failure_overcost;
+    providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
+}
+
+std::shared_ptr<rao_parameters> RaoParameters::to_c_struct() const {
+    rao_parameters* res = new rao_parameters();
+    load_to_c_struct(*res);
+    return std::shared_ptr<rao_parameters>(res, [](rao_parameters* ptr){
+        deleteSensitivityAnalysisParameters(ptr->sensitivity_parameters);
+        freeStringListListArray(ptr->predefined_combinations);
+        delete ptr->load_flow_provider;
+        delete ptr->sensitivity_provider;
+        pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+        pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
         delete ptr;
     });
 }
@@ -365,8 +548,8 @@ std::shared_ptr<loadflow_validation_parameters> LoadFlowValidationParameters::to
 
 void deleteSecurityAnalysisParameters(security_analysis_parameters* ptr) {
     deleteLoadFlowParameters(&ptr->loadflow_parameters);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
 }
 
 SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_parameters* src):
@@ -377,8 +560,7 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
     low_voltage_absolute_threshold = (double) src->low_voltage_absolute_threshold;
     high_voltage_proportional_threshold = (double) src->high_voltage_proportional_threshold;
     high_voltage_absolute_threshold = (double) src->high_voltage_absolute_threshold;
-    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_struct() const {
@@ -389,10 +571,8 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
     res->low_voltage_absolute_threshold = (double) low_voltage_absolute_threshold;
     res->high_voltage_proportional_threshold = (double) high_voltage_proportional_threshold;
     res->high_voltage_absolute_threshold = (double) high_voltage_absolute_threshold;
-    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->provider_parameters_keys_count = provider_parameters_keys.size();
-    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->provider_parameters_values_count = provider_parameters_values.size();
+
+    providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<security_analysis_parameters>(res, [](security_analysis_parameters* ptr){
         deleteSecurityAnalysisParameters(ptr);
@@ -400,31 +580,25 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
     });
 }
 
-void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->loadflow_parameters);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
-}
-
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
     loadflow_parameters(&src->loadflow_parameters)
 {
-    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::to_c_struct() const {
     sensitivity_analysis_parameters* res = new sensitivity_analysis_parameters();
-    loadflow_parameters.load_to_c_struct(res->loadflow_parameters);
-    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->provider_parameters_keys_count = provider_parameters_keys.size();
-    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->provider_parameters_values_count = provider_parameters_values.size();
+    load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<sensitivity_analysis_parameters>(res, [](sensitivity_analysis_parameters* ptr){
         deleteSensitivityAnalysisParameters(ptr);
         delete ptr;
     });
+}
+
+void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
+    loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
+    providerParametersToCStruct(params.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
@@ -688,6 +862,15 @@ LoadFlowParameters* createLoadFlowParameters() {
     return new LoadFlowParameters(parameters.get());
 }
 
+RaoParameters* createRaoParameters() {
+    rao_parameters* parameters_ptr = PowsyblCaller::get()->callJava<rao_parameters*>(::createRaoParameters);
+    auto parameters = std::shared_ptr<rao_parameters>(parameters_ptr, [](rao_parameters* ptr){
+        //Memory has been allocated on java side, we need to clean it up on java side
+        PowsyblCaller::get()->callJava(::freeRaoParameters, ptr);
+    });
+    return new RaoParameters(parameters.get());
+}
+
 LoadFlowValidationParameters* createValidationConfig() {
     loadflow_validation_parameters* parameters_ptr = PowsyblCaller::get()->callJava<loadflow_validation_parameters*>(::createValidationConfig);
     auto parameters = std::shared_ptr<loadflow_validation_parameters>(parameters_ptr, [](loadflow_validation_parameters* ptr){
@@ -708,7 +891,11 @@ SecurityAnalysisParameters* createSecurityAnalysisParameters() {
 
 SensitivityAnalysisParameters* createSensitivityAnalysisParameters() {
     sensitivity_analysis_parameters* parameters_ptr = PowsyblCaller::get()->callJava<sensitivity_analysis_parameters*>(::createSensitivityAnalysisParameters);
-     auto parameters = std::shared_ptr<sensitivity_analysis_parameters>(parameters_ptr, [](sensitivity_analysis_parameters* ptr){
+    return createSensitivityAnalysisParametersFromCStruct(parameters_ptr);
+}
+
+SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(sensitivity_analysis_parameters* parameters_ptr) {
+    auto parameters = std::shared_ptr<sensitivity_analysis_parameters>(parameters_ptr, [](sensitivity_analysis_parameters* ptr){
         PowsyblCaller::get()->callJava(::freeSensitivityAnalysisParameters, ptr);
     });
     return new SensitivityAnalysisParameters(parameters.get());
@@ -1495,8 +1682,8 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
 
 void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr) {
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
 }
 
 ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* src)
@@ -1509,8 +1696,7 @@ ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_anal
     min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
     initial_voltage_profile_mode = static_cast<InitialVoltageProfileMode>(src->initial_voltage_profile_mode);
 
-    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters::to_c_struct() const {
@@ -1523,10 +1709,7 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold;
     res->initial_voltage_profile_mode = initial_voltage_profile_mode;
 
-    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->provider_parameters_keys_count = provider_parameters_keys.size();
-    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
 
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<shortcircuit_analysis_parameters>(res, [](shortcircuit_analysis_parameters* ptr){
@@ -1742,9 +1925,21 @@ JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
 
-JavaHandle getRaoResult(const JavaHandle& raoContext) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getRaoResult, raoContext);
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters) {
+    auto c_parameters = parameters.to_c_struct();
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get());
 }
+
+JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
+    auto c_loadflow_parameters = parameters.to_c_struct();
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageMonitoring, networkHandle, resultHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+}
+
+JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
+    auto c_loadflow_parameters = parameters.to_c_struct();
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+}
+
 
 JavaHandle createDefaultRaoParameters() {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createDefaultRaoParameters);
