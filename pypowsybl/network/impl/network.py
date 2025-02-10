@@ -410,7 +410,9 @@ class Network:  # pylint: disable=too-many-public-methods
         nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('side1',0,False,False,False),
                   _pp.SeriesMetadata('side2',0,False,False,False),
-                  _pp.SeriesMetadata('middle',0,False,False,False)]
+                  _pp.SeriesMetadata('middle',0,False,False,False),
+                  _pp.SeriesMetadata('arrow1',0,False,False,False),
+                  _pp.SeriesMetadata('arrow2',0,False,False,False)]
         return _create_c_dataframe(df, nad_positions_metadata)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,

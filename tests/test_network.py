@@ -1181,8 +1181,8 @@ def test_nad_fixed_positions():
 def test_nad_branch_labels():
     n = pp.network.create_ieee14()
     branch_labels_df = pd.DataFrame.from_records(index='id', 
-                                             data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'side2': 'S2_1', 'middle': 'MIDDLE_1'},
-                                                   {'id': 'L2-5-1', 'side1': 'S1_2', 'side2': 'S2_2', 'middle': 'MIDDLE_2'}])
+                                             data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'side2': 'S2_1', 'middle': 'MIDDLE_1', 'arrow1': 'IN', 'arrow2': 'IN'},
+                                                   {'id': 'L2-5-1', 'side1': 'S1_2', 'side2': 'S2_2', 'middle': 'MIDDLE_2', 'arrow1': 'OUT', 'arrow2': 'OUT'}])
     pars=pp.network.NadParameters(edge_name_displayed=True)
     nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, branch_labels=branch_labels_df)
     assert re.search('.*<svg.*', nad1.svg)

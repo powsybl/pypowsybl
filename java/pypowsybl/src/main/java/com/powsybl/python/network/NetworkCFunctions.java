@@ -1197,16 +1197,23 @@ public final class NetworkCFunctions {
         }
     }
 
-    record CustomBranchLabels(String side1, String side2, String middle) {
+    record CustomBranchLabels(String side1, String side2, String middle, EdgeInfo.Direction arrow1, EdgeInfo.Direction arrow2) {
+    }
+
+    private static EdgeInfo.Direction getDirectionFromString(String direction) {
+        return (direction != null && !direction.isEmpty())
+                ? EdgeInfo.Direction.valueOf(direction)
+                : null;
     }
 
     private static Map<String, CustomBranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries, StringSeries side1Label, StringSeries side2Label,
-                                                                            StringSeries middleLabel) {
+                                                                            StringSeries middleLabel, StringSeries arrow1, StringSeries arrow2) {
         Map<String, CustomBranchLabels> nadCustomBranchLabels = new HashMap<>();
-        if (side1Label != null && side2Label != null && middleLabel != null) {
+        if (side1Label != null && side2Label != null && middleLabel != null && arrow1 != null && arrow2 != null) {
             for (int i = 0; i < rowCount; i++) {
                 String id = idSeries.get(i);
-                nadCustomBranchLabels.put(id, new CustomBranchLabels(side1Label.get(i), side2Label.get(i), middleLabel.get(i)));
+                nadCustomBranchLabels.put(id, new CustomBranchLabels(side1Label.get(i), side2Label.get(i), middleLabel.get(i),
+                        getDirectionFromString(arrow1.get(i)), getDirectionFromString(arrow2.get(i))));
             }
         }
         return nadCustomBranchLabels;
@@ -1220,17 +1227,19 @@ public final class NetworkCFunctions {
             int rowCount = customLabelsDataframe.getRowCount();
 
             Map<String, CustomBranchLabels> branchLabels = getNadCustomBranchLabels(rowCount, idSeries, customLabelsDataframe.getStrings("side1"),
-                    customLabelsDataframe.getStrings("side2"), customLabelsDataframe.getStrings("middle"));
+                    customLabelsDataframe.getStrings("side2"), customLabelsDataframe.getStrings("middle"),
+                    customLabelsDataframe.getStrings("arrow1"), customLabelsDataframe.getStrings("arrow2"));
 
             LabelProviderFactory labelProviderFactory = (network, svgParameters) -> new DefaultLabelProvider(network, svgParameters) {
                 @Override
                 public Optional<EdgeInfo> getEdgeInfo(Graph graph, BranchEdge edge, BranchEdge.Side side) {
                     CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
                     String label = null;
+                    EdgeInfo.Direction arrowDirection = null;
                     if (bl != null) {
                         label = side == BranchEdge.Side.ONE ? bl.side1 : bl.side2;
+                        arrowDirection = side == BranchEdge.Side.ONE ? bl.arrow1 : bl.arrow2;
                     }
-                    EdgeInfo.Direction arrowDirection = null;
                     return Optional.of(new EdgeInfo("ActivePower", arrowDirection, null, label));
                 }
 
