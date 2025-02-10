@@ -22,7 +22,7 @@
     <artifactId>pypowsybl-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>1.10.0-SNAPSHOT</version>
+    <version>1.10.0</version>
     <description>PyPowSyBl Java part parent project</description>
     <url>https://www.powsybl.org</url>
 
