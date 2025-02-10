@@ -40,7 +40,6 @@ import com.powsybl.nad.model.Edge;
 import com.powsybl.nad.model.Graph;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.EdgeInfo;
-import com.powsybl.nad.svg.LabelProvider;
 import com.powsybl.nad.svg.SvgParameters;
 import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
 import com.powsybl.nad.svg.iidm.LabelProviderFactory;
@@ -1223,24 +1222,22 @@ public final class NetworkCFunctions {
             Map<String, CustomBranchLabels> branchLabels = getNadCustomBranchLabels(rowCount, idSeries, customLabelsDataframe.getStrings("side1"),
                     customLabelsDataframe.getStrings("side2"), customLabelsDataframe.getStrings("middle"));
 
-            LabelProviderFactory labelProviderFactory = new LabelProviderFactory() {
+            LabelProviderFactory labelProviderFactory = (network, svgParameters) -> new DefaultLabelProvider(network, svgParameters) {
                 @Override
-                public LabelProvider create(Network network, SvgParameters svgParameters) {
-                    return new DefaultLabelProvider(network, svgParameters) {
-                        @Override
-                        public Optional<EdgeInfo> getEdgeInfo(Graph graph, BranchEdge edge, BranchEdge.Side side) {
-                            CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
-                            String label = (bl != null) ? (side == BranchEdge.Side.ONE ? bl.side1 : bl.side2) : null;
-                            EdgeInfo.Direction arrowDirection = null;
-                            return Optional.of(new EdgeInfo("ActivePower", arrowDirection, null, label));
-                        }
+                public Optional<EdgeInfo> getEdgeInfo(Graph graph, BranchEdge edge, BranchEdge.Side side) {
+                    CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
+                    String label = null;
+                    if (bl != null) {
+                        label = side == BranchEdge.Side.ONE ? bl.side1 : bl.side2;
+                    }
+                    EdgeInfo.Direction arrowDirection = null;
+                    return Optional.of(new EdgeInfo("ActivePower", arrowDirection, null, label));
+                }
 
-                        @Override
-                        public String getLabel(Edge edge) {
-                            CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
-                            return (bl != null) ? bl.middle : null;
-                        }
-                    };
+                @Override
+                public String getLabel(Edge edge) {
+                    CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
+                    return (bl != null) ? bl.middle : null;
                 }
             };
 
