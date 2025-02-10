@@ -1200,21 +1200,33 @@ public final class NetworkCFunctions {
     record CustomBranchLabels(String side1, String side2, String middle, EdgeInfo.Direction arrow1, EdgeInfo.Direction arrow2) {
     }
 
-    private static EdgeInfo.Direction getDirectionFromString(String direction) {
-        return (direction != null && !direction.isEmpty())
-                ? EdgeInfo.Direction.valueOf(direction)
-                : null;
+    private static String getValueFromSeriesOrNull(StringSeries series, int row) {
+        return (series != null) ? series.get(row) : null;
     }
 
-    private static Map<String, CustomBranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries, StringSeries side1Label, StringSeries side2Label,
-                                                                            StringSeries middleLabel, StringSeries arrow1, StringSeries arrow2) {
+    private static EdgeInfo.Direction getDirectionFromSeriesOrNull(StringSeries series, int row) {
+        if (series == null) {
+            return null;
+        }
+        String dir = series.get(row);
+        return (dir != null && !dir.isEmpty()) ? EdgeInfo.Direction.valueOf(dir) : null;
+    }
+
+    private static Map<String, CustomBranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries,
+                                                                            StringSeries side1Label, StringSeries side2Label,
+                                                                            StringSeries middleLabel, StringSeries arrow1,
+                                                                            StringSeries arrow2) {
         Map<String, CustomBranchLabels> nadCustomBranchLabels = new HashMap<>();
-        if (side1Label != null && side2Label != null && middleLabel != null && arrow1 != null && arrow2 != null) {
-            for (int i = 0; i < rowCount; i++) {
-                String id = idSeries.get(i);
-                nadCustomBranchLabels.put(id, new CustomBranchLabels(side1Label.get(i), side2Label.get(i), middleLabel.get(i),
-                        getDirectionFromString(arrow1.get(i)), getDirectionFromString(arrow2.get(i))));
-            }
+        for (int i = 0; i < rowCount; i++) {
+            String id = idSeries.get(i);
+            CustomBranchLabels labels = new CustomBranchLabels(
+                    getValueFromSeriesOrNull(side1Label, i),
+                    getValueFromSeriesOrNull(side2Label, i),
+                    getValueFromSeriesOrNull(middleLabel, i),
+                    getDirectionFromSeriesOrNull(arrow1, i),
+                    getDirectionFromSeriesOrNull(arrow2, i)
+            );
+            nadCustomBranchLabels.put(id, labels);
         }
         return nadCustomBranchLabels;
     }
