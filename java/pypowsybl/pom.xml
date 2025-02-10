@@ -383,26 +383,32 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-rao-api</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-crac-api</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-crac-impl</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-crac-io-json</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-search-tree-rao</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-rao-result-json</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
     </dependencies>
 </project>
