@@ -346,7 +346,7 @@ jobs:
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # 4.6.0
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
+          path: ./pypowsybl/dist/*.whl
 
       - name: Store job result
         if: always()
