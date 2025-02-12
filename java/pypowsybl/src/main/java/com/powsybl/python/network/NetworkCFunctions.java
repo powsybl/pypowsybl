@@ -291,7 +291,7 @@ public final class NetworkCFunctions {
                 try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
                      ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                     IOUtils.copy(is, os);
-                    return CTypeUtil.toCharPtr(os.toString());
+                    return CTypeUtil.toCharPtr(os.toString(StandardCharsets.UTF_8));
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
