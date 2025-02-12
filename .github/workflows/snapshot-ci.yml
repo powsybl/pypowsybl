@@ -249,7 +249,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
+          path: ./pypowsybl/dist/*.whl
 
       - name: Record Job Name
         if: failure()
