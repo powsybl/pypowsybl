@@ -32,6 +32,9 @@ The supported formats are the following:
 
    >>> pp.network.get_import_formats()
    ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM']
+   >>> pp.network.get_import_supported_extensions()
+   ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml']
+
 
 .. Note::
 
