@@ -409,8 +409,8 @@ class Network:  # pylint: disable=too-many-public-methods
     def _create_nad_branch_labels_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
         nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('side1',0,False,False,False),
-                  _pp.SeriesMetadata('side2',0,False,False,False),
                   _pp.SeriesMetadata('middle',0,False,False,False),
+                  _pp.SeriesMetadata('side2',0,False,False,False),
                   _pp.SeriesMetadata('arrow1',0,False,False,False),
                   _pp.SeriesMetadata('arrow2',0,False,False,False)]
         return _create_c_dataframe(df, nad_positions_metadata)

@@ -1197,7 +1197,7 @@ public final class NetworkCFunctions {
         }
     }
 
-    record CustomBranchLabels(String side1, String side2, String middle, EdgeInfo.Direction arrow1, EdgeInfo.Direction arrow2) {
+    record CustomBranchLabels(String side1, String middle, String side2, EdgeInfo.Direction arrow1, EdgeInfo.Direction arrow2) {
     }
 
     private static String getValueFromSeriesOrNull(StringSeries series, int row) {
@@ -1213,16 +1213,16 @@ public final class NetworkCFunctions {
     }
 
     private static Map<String, CustomBranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries,
-                                                                            StringSeries side1Label, StringSeries side2Label,
-                                                                            StringSeries middleLabel, StringSeries arrow1,
+                                                                            StringSeries side1Label, StringSeries middleLabel,
+                                                                            StringSeries side2Label, StringSeries arrow1,
                                                                             StringSeries arrow2) {
         Map<String, CustomBranchLabels> nadCustomBranchLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idSeries.get(i);
             CustomBranchLabels labels = new CustomBranchLabels(
                     getValueFromSeriesOrNull(side1Label, i),
-                    getValueFromSeriesOrNull(side2Label, i),
                     getValueFromSeriesOrNull(middleLabel, i),
+                    getValueFromSeriesOrNull(side2Label, i),
                     getDirectionFromSeriesOrNull(arrow1, i),
                     getDirectionFromSeriesOrNull(arrow2, i)
             );
@@ -1261,7 +1261,7 @@ public final class NetworkCFunctions {
             int rowCount = customLabelsDataframe.getRowCount();
 
             Map<String, CustomBranchLabels> branchLabels = getNadCustomBranchLabels(rowCount, idSeries, customLabelsDataframe.getStrings("side1"),
-                    customLabelsDataframe.getStrings("side2"), customLabelsDataframe.getStrings("middle"),
+                    customLabelsDataframe.getStrings("middle"), customLabelsDataframe.getStrings("side2"),
                     customLabelsDataframe.getStrings("arrow1"), customLabelsDataframe.getStrings("arrow2"));
 
             nadParameters.setLabelProviderFactory(getCustomLabelProviderFactory(branchLabels));
