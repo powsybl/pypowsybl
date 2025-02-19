@@ -470,13 +470,17 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), NetworkDataframeContext.DEFAULT);
             } else {
-                String message = "No extension named " + name + " available";
-                if (tableName != null) {
-                    message = "No table " + tableName + " for extension " + name + " available";
-                }
-                throw new PowsyblException(message);
+                throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
             }
         });
+    }
+
+    private static String errorMessageForWrongExtensionName(String name, String tableName) {
+        String message = "No extension named " + name + " available";
+        if (tableName != null) {
+            message = "No table " + tableName + " for extension " + name + " available";
+        }
+        return message;
     }
 
     @CEntryPoint(name = "getExtensionsNames")
@@ -800,10 +804,7 @@ public final class NetworkCFunctions {
                 UpdatingDataframe updatingDataframe = createDataframe(dataframe);
                 mapper.updateSeries(network, updatingDataframe, NetworkDataframeContext.DEFAULT);
             } else {
-                if (tableName != null) {
-                    throw new PowsyblException("table " + tableName + " of extension " + name + " not found");
-                }
-                throw new PowsyblException("extension " + name + " not found");
+                throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
             }
         });
     }
@@ -833,7 +834,7 @@ public final class NetworkCFunctions {
                 List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
                 return CTypeUtil.createSeriesMetadata(seriesMetadata);
             } else {
-                throw new PowsyblException("extension " + name + " not found");
+                throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
             }
         });
     }
