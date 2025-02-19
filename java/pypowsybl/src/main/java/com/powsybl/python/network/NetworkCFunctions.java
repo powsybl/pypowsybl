@@ -470,7 +470,11 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), NetworkDataframeContext.DEFAULT);
             } else {
-                throw new PowsyblException("extension " + name + " not found");
+                String message = "No extension named " + name + " available";
+                if (tableName != null) {
+                    message = "No table " + tableName + " for extension " + name + " available";
+                }
+                throw new PowsyblException(message);
             }
         });
     }

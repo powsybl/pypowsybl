@@ -49,14 +49,20 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
     }
 
     private Stream<ControlZone> zonesStream(Network network) {
-        return network.getExtension(SecondaryVoltageControl.class)
-                .getControlZones().stream();
+        SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
+        if (ext == null) {
+            throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
+        }
+        return ext.getControlZones().stream();
     }
 
     private Stream<ControlUnitWithZone> unitsStream(Network network) {
         List<ControlUnitWithZone> units = new ArrayList<>();
-        network.getExtension(SecondaryVoltageControl.class)
-                .getControlZones()
+        SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
+        if (ext == null) {
+            throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
+        }
+        ext.getControlZones()
                 .forEach(zone -> {
                     units.addAll(zone.getControlUnits()
                             .stream()
