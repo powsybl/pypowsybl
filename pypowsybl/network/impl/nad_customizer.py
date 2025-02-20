@@ -19,7 +19,7 @@ class NadCustomizer:
     """
     This class represents parameters to customize a network area diagram (e.g., labels)."""
 
-    _nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+    _nad_branch_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('side1',0,False,False,False),
                   _pp.SeriesMetadata('middle',0,False,False,False),
                   _pp.SeriesMetadata('side2',0,False,False,False),
@@ -37,4 +37,4 @@ class NadCustomizer:
 
     def _create_nad_branch_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._branch_labels is None else _create_c_dataframe(self._branch_labels.fillna(''),
-                                                                           NadCustomizer._nad_positions_metadata)
+                                                                           NadCustomizer._nad_branch_labels_metadata)

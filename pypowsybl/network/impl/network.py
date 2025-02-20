@@ -395,7 +395,7 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
                                            voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p,
                                            None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
-                                           None if nad_customizer is None else nad_customizer._create_nad_branch_labels_c_dataframe())
+                                           None if nad_customizer is None else nad_customizer._create_nad_branch_labels_c_dataframe()) # pylint: disable=protected-access
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
         nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
@@ -434,7 +434,7 @@ class Network:  # pylint: disable=too-many-public-methods
         svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
                                                     nad_p, None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
-                                                    None if nad_customizer is None else nad_customizer._create_nad_branch_labels_c_dataframe())
+                                                    None if nad_customizer is None else nad_customizer._create_nad_branch_labels_c_dataframe()) # pylint: disable=protected-access
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
