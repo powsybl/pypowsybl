@@ -609,6 +609,9 @@ void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const s
 
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
 
+void addTerminalsConnectionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& elementId,
+                                       ThreeSide side, bool opening);
+
 void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
                          condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
 
