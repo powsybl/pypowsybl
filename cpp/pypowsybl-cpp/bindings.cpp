@@ -701,6 +701,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
           py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
 
+    m.def("read_json_contingency", &pypowsybl::readJsonContingency, "Add contingencies from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file");
+
     m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
 

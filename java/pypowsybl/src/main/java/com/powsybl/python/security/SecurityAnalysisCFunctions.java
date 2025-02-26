@@ -35,9 +35,15 @@ import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
+//import org.json.JSONArray;
+//import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//import java.io.IOException;
+//import java.nio.file.Files;
+//import java.nio.file.Paths;
+//import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -135,6 +141,36 @@ public final class SecurityAnalysisCFunctions {
             contingencyContainer.addContingency(contingencyId, elementIds);
         });
     }
+
+    // en cours
+//    @CEntryPoint(name = "readJsonContingency")
+//    public static void readJsonContingency(String jsonFilePath, ObjectHandle contingencyContainerHandle) {
+//        String jsonData;
+//        ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
+//        try {
+//            jsonData = new String(Files.readAllBytes(Paths.get(jsonFilePath)));
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//        JSONObject json = new JSONObject(jsonData);
+//        System.out.println("JSON " + jsonData);
+//
+//        String jsonFileContingencyIds = json.getString("id");
+//        System.out.println("JSON contingencies: " + jsonFileContingencyIds);
+//
+//        JSONArray tempElements = json.getJSONArray("elements");
+//        System.out.println("JSON Data: " + json);
+//        JSONArray tempElementIds = json.getJSONArray("id");
+//        System.out.println("Temp elements ids " + tempElementIds);
+//
+//        List<String> jsonFileElementsIds = new ArrayList<>();
+//        for (int i = 0; i < tempElements.length(); i++) {
+//            jsonFileElementsIds.add(tempElements.getString(i));
+//        }
+//        System.out.println(jsonFileElementsIds);
+//        contingencyContainer.addContingency(jsonFileContingencyIds, jsonFileElementsIds);
+//    }
 
     private static void setPostContingencyResultInSecurityAnalysisResultPointer(PyPowsyblApiHeader.PostContingencyResultPointer contingencyPtr, PostContingencyResult postContingencyResult) {
         contingencyPtr.setContingencyId(CTypeUtil.toCharPtr(postContingencyResult.getContingency().getId()));
