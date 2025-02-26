@@ -5,9 +5,6 @@ on:
   schedule:
     - cron: '0 3 * * *'
 
-env:
-  BUILD_STATUS: ${{ github.workspace }}/build_status.txt
-
 jobs:
   build_pypowsybl:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -19,15 +16,15 @@ jobs:
       entsoe-version: ${{ env.ENTSOE_VERSION }}
       openrao-version: ${{ env.OPENRAO_VERSION }}
       dependencies-version: ${{ env.DEPENDENCIES_VERSION }}
-      pypowsybl-branch: ${{ env.INTEGRATION_BRANCH }}
+      pypowsybl-branch: ${{ env.SNAPSHOT_BRANCH }}
 
     strategy:
       matrix:
         config:
-          - { name: ubuntu, os: ubuntu-latest}
+          - { name: ubuntu, os: ubuntu-latest }
           - { name: darwin, os: macos-13, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
-          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64"}
-          - { name: windows, os: windows-2022}
+          - { name: darwin-arm64, os: macos-14, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64" }
+          - { name: windows, os: windows-2022 }
         python:
           - { name: cp38, version: '3.8' }
           - { name: cp39, version: '3.9' }
@@ -83,7 +80,7 @@ jobs:
         working-directory: ./powsybl-core
 
       # Checkout script
-      # The script check_integration_branch.sh is located in the workflow folder of the repository
+      # The script check_snapshot_branch.sh is located in the workflow folder of the repository
       # It is necessary for checking out the integration branch if it exists
       - name: Checkout script
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -95,19 +92,19 @@ jobs:
 
       # Build Open-Loadflow
       - name: Checking for powsybl-open-loadflow snapshot branch
-        run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
-        
+        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-loadflow.git" ${{ env.CORE_VERSION }}
+
       - name: Checkout powsybl-open-loadflow sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-open-loadflow
-          ref: ${{ env.INTEGRATION_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-open-loadflow
-          
+
       - name: Change core version in pom.xml
         run: mvn versions:set-property -Dproperty=powsybl-core.version -DnewVersion=${{ env.CORE_VERSION}} -DgenerateBackupPoms=false
         working-directory: ./powsybl-open-loadflow
-        
+
       - name: Build powsybl-open-loadflow
         id: build_olf
         continue-on-error: true
@@ -129,15 +126,15 @@ jobs:
         run: echo "OLF_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
         working-directory: ./powsybl-open-loadflow
 
-# Build powsybl-diagram
+      # Build powsybl-diagram
       - name: Checking for diagram snapshot branch
-        run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
+        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh  "https://github.com/powsybl/powsybl-diagram.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout diagram sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-diagram
-          ref: ${{ env.INTEGRATION_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-diagram
 
       - name: Change core version in pom.xml
@@ -167,13 +164,13 @@ jobs:
 
       # Build powsybl-entsoe
       - name: Checking for powsybl-entsoe snapshot branch
-        run : ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
+        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh  "https://github.com/powsybl/powsybl-entsoe.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout powsybl-entsoe sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-entsoe
-          ref: ${{ env.INTEGRATION_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-entsoe
 
       - name: Change core/loadflow version in pom.xml
@@ -205,13 +202,13 @@ jobs:
 
       # Build powsybl-open-rao
       - name: Checking for powsybl-open-rao snapshot branch
-        run :  ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
+        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-open-rao.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout powsybl-open-rao sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-open-rao
-          ref: ${{ env.INTEGRATION_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-openrao
 
       - name: Change core/entsoe/loadflow version in pom.xml
@@ -244,13 +241,13 @@ jobs:
 
       # Build powsybl-dynawo
       - name: Checking for powsybl-dynawo snapshot branch
-        run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
+        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/powsybl-dynawo.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout powsybl-dynawo sources
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/powsybl-dynawo
-          ref: ${{ env.INTEGRATION_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           path: powsybl-dynawo
 
       - name: Change core version in pom.xml
@@ -308,13 +305,13 @@ jobs:
 
       # Build pypowsybl
       - name: Checking for pypowsybl snapshot branch
-        run: ${{ env.SCRIPTS_PATH }}/check_integration_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
+        run: ${{ env.SCRIPTS_PATH }}/check_snapshot_branch.sh "https://github.com/powsybl/pypowsybl.git" ${{ env.CORE_VERSION }}
 
       - name: Checkout pypowsybl
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: powsybl/pypowsybl
-          ref: ${{ env.INTEGRATION_BRANCH }}
+          ref: ${{ env.SNAPSHOT_BRANCH }}
           path: pypowsybl
           submodules: true
 
@@ -414,7 +411,7 @@ jobs:
               module_order+=("$module")
               seen_modules["$module"]=1
             fi
-            
+          
             # List the OS and Python versions
             if [[ ! " ${os_set[*]} " =~ " ${os} " ]]; then
               os_set+=("$os")
@@ -422,7 +419,7 @@ jobs:
             if [[ ! " ${python_set[*]} " =~ " ${python} " ]]; then
             python_set+=("$python")
             fi
-            
+          
             # List the build status
             if [[ "$status" == "success" ]]; then
               success_modules["$module"]+="$os+$python "
@@ -445,14 +442,14 @@ jobs:
                   break
                 fi
               done
-            
+          
               for python in "${python_set[@]}"; do
                 if [[ ! "${failure_modules[$module]}" =~ $python ]]; then
                   failed_all_python=false
                   break
                 fi
               done
-            
+          
               if [[ "$module" == "wheels" && "$failed_all_os" == true && "$failed_all_python" == true ]]; then
                 formatted+=":x: Build *$module* on all OS and for all Python versions"$'\\n'
               elif [[ "$failed_all_os" == true ]]; then
@@ -464,7 +461,7 @@ jobs:
               all_success_modules+=("$module")
             fi
           done
-    
+          
           if [ ${#all_success_modules[@]} -gt 0 ]; then
             success_list=""
             for module in "${all_success_modules[@]}"; do
