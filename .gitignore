@@ -61,3 +61,6 @@ tests/_trial_temp/*
 
 # Documentation generated files (autosummary)
 docs/reference/api/
+
+# Test files
+**/contingencies.json
