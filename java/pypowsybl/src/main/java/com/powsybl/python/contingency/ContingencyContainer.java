@@ -15,4 +15,6 @@ import java.util.List;
 public interface ContingencyContainer {
 
     void addContingency(String contingencyId, List<String> elementIds);
+
+    void readJsonContingency(String pathToJsonFile);
 }

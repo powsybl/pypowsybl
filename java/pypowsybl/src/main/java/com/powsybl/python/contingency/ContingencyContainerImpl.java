@@ -29,6 +29,10 @@ public class ContingencyContainerImpl implements ContingencyContainer {
         elementIdsByContingencyId.put(contingencyId, elementIds);
     }
 
+    @Override
+    public void readJsonContingency(String pathToJsonFile) {
+    }
+
     private static ContingencyElement createContingencyElement(Network network, String elementId) {
         Identifiable<?> identifiable = network.getIdentifiable(elementId);
         if (identifiable == null) {
