@@ -1184,10 +1184,25 @@ def test_nad_customizer():
     diagram_customizer = NadCustomizer(branch_labels=None)
     assert not diagram_customizer.branch_labels
     n = pp.network.create_ieee14()
-    branch_labels_df = pd.DataFrame.from_records(index='id', 
+    branch_labels_df = pd.DataFrame.from_records(index='id',
                                              data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'middle': 'MIDDLE_1', 'side2': 'S2_1', 'arrow1': 'IN', 'arrow2': 'IN'},
                                                    {'id': 'L2-5-1', 'side1': 'S1_2', 'middle': 'MIDDLE_2', 'side2': 'S2_2', 'arrow1': 'OUT', 'arrow2': 'OUT'}])
-    diagram_customizer=NadCustomizer(branch_labels=branch_labels_df)
+    
+    vl_descriptions_df=pd.DataFrame.from_records(index='id',
+                                             data=[
+                                                 {'id': 'VL1', 'type': 'HEADER', 'description': 'VL1 header'},
+                                                 {'id': 'VL1', 'type': 'HEADER', 'description': 'VL1 header2'},
+                                                 {'id': 'VL1', 'type': 'FOOTER', 'description': 'VL1 footer'},
+                                                 {'id': 'VL2', 'type': 'HEADER', 'description': 'VL2 header'},
+                                                 {'id': 'VL5', 'type': 'FOOTER', 'description': 'VL5 footer'}
+                                                 ])
+    bus_descriptions_df = pd.DataFrame.from_records(index='id',
+                                            data=[
+                                                {'id': 'VL1_0', 'description': 'VL1 bus'},
+                                                {'id': 'VL2_0', 'description': 'VL2 bus'},
+                                                {'id': 'VL5_0', 'description': 'VL3 bus'}
+                                                ])
+    diagram_customizer=NadCustomizer(branch_labels=branch_labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
     assert isinstance(diagram_customizer.branch_labels, pd.DataFrame)
     pars=pp.network.NadParameters(edge_name_displayed=True)
     nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_customizer=diagram_customizer)
@@ -1199,6 +1214,31 @@ def test_nad_customizer():
         branch_labels_svg_file = tmp_dir_path.joinpath('test_branch_labels.svg')
         n.write_network_area_diagram(branch_labels_svg_file, voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_customizer=diagram_customizer)
         assert exists(branch_labels_svg_file)
+
+    n_three_wt=pp.network._create_network('three_windings_transformer')
+    three_wt_labels_df = pd.DataFrame.from_records(index='id',
+                                                   data=[
+                                                       {'id': '3WT', 'side1': 'SIDE1',  'side2': 'SIDE2', 'side3': 'SIDE3',
+                                                        'arrow1':'OUT', 'arrow2':'IN', 'arrow3':'OUT'}
+                                                        ])
+    three_wt_vl_descriptions_df=pd.DataFrame.from_records(index='id',
+                                                          data=[
+                                                              {'id': 'VL_132', 'type': 'HEADER', 'description': 'VL A'},
+                                                              {'id': 'VL_33',  'type': 'HEADER','description': 'VL B'},
+                                                              {'id': 'VL_11',  'type': 'HEADER','description': 'VL C'}
+                                                              ])
+    three_wt_bus_descriptions_df = pd.DataFrame.from_records(index='id',
+                                                             data=[
+                                                                 {'id': 'VL_132_0', 'description': 'BUS A'},
+                                                                 {'id': 'VL_33_0', 'description': 'BUS B'},
+                                                                 {'id': 'VL_11_0', 'description': 'BUS C'}
+                                                                 ])
+    diagram_customizer_three_wt=pp.network.NadCustomizer(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df, 
+                                                         bus_descriptions=three_wt_bus_descriptions_df)
+    assert isinstance(diagram_customizer_three_wt.three_wt_labels, pd.DataFrame)
+    nad_three_wt=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_customizer=diagram_customizer_three_wt)
+    assert re.search('.*<svg.*', nad_three_wt.svg)
+    assert len(nad_three_wt.metadata) > 0
 
 
 def test_current_limits():
