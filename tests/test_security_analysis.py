@@ -332,6 +332,14 @@ def test_load_action_with_all_violation_condition():
     assert len(sa_result.find_operator_strategy_results('OperatorStrategy1').limit_violations) == 3
     assert 'OperatorStrategy2' not in sa_result.operator_strategy_results.keys()
 
+def test_dangling_action():
+    n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    sa = pp.security.create_analysis()
+
+    sa.add_dangling_line_active_power_action('id', 'NHV1_XNODE1', False, 5.0 )
+    sa.add_dangling_line_reactive_power_action('id', 'NHV1_XNODE1', True, 2.0 )
+
+
 def test_generator_action():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
