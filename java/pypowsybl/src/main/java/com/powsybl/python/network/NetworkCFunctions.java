@@ -1041,8 +1041,7 @@ public final class NetworkCFunctions {
                 .setIdDisplayed(nadParametersPointer.isIdDisplayed())
                 .setBusLegend(nadParametersPointer.isBusLegend())
                 .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
-                .setEdgeInfoDisplayed(edgeInfo)
-                .setVoltageLevelDetails(true);
+                .setEdgeInfoDisplayed(edgeInfo);
         return nadParameters;
     }
 
