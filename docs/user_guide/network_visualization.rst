@@ -321,7 +321,8 @@ We can further customize the NAD diagram using the NadCustomizer. For example, t
    - the labels of the NAD branches and the arrows direction
    - the labels of the VL labels
    - the BUS labels
-using dataframes:
+
+by using dataframes:
 
 .. code-block:: python
 
