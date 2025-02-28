@@ -9,7 +9,7 @@ import io
 import unittest
 
 import pypowsybl as pp
-from pypowsybl._pypowsybl import RaoComputationStatus
+from pypowsybl._pypowsybl import RaoComputationStatus, ObjectiveFunctionType
 from pypowsybl.rao import Parameters as RaoParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
@@ -17,16 +17,14 @@ DATA_DIR = TEST_DIR.parent / 'data'
 
 def test_default_rao_parameters():
     parameters = RaoParameters()
-    json_param = parameters.to_json()
-    assert json_param['version'] == '2.4'
-    assert json_param['objective-function']['type'] == 'MAX_MIN_MARGIN_IN_MEGAWATT'
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN_IN_MEGAWATT
 
 def test_rao_parameters():
     parameters = RaoParameters()
+    assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
-    json_param = parameters.to_json()
-    assert json_param['range-actions-optimization']['max-mip-iterations'] == 15
-    assert json_param['objective-function']['type'] == 'MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT'
+    assert parameters.range_action_optimization_parameters.max_mip_iterations == 30
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT
 
 def test_rao_from_files():
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
