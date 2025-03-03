@@ -36,7 +36,7 @@ Resistance R
 
 for network elements with only one nominal voltage :
 
-.. math:: \frac{S_n}{V_nominal^2} R
+.. math:: \frac{S_n}{V_{nominal}^2} R
 
 with Sn the nominal apparent power
 For two winding transformers, the nominal voltage is the nominal voltage of the side 2
@@ -49,7 +49,7 @@ Reactance X
 
 for network elements with only one nominal voltage :
 
-.. math:: \frac{S_n}{V_nominal^2} X
+.. math:: \frac{S_n}{V_{nominal}^2} X
 
 with Sn the nominal apparent power
 For two winding transformers, the nominal voltage is the nominal voltage of the side 2
