@@ -1204,6 +1204,8 @@ def test_nad_customizer():
                                                 ])
     diagram_customizer=NadCustomizer(branch_labels=branch_labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
     assert isinstance(diagram_customizer.branch_labels, pd.DataFrame)
+    assert isinstance(diagram_customizer.vl_descriptions, pd.DataFrame)
+    assert isinstance(diagram_customizer.bus_descriptions, pd.DataFrame)    
     pars=pp.network.NadParameters(edge_name_displayed=True)
     nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_customizer=diagram_customizer)
     assert re.search('.*<svg.*', nad1.svg)

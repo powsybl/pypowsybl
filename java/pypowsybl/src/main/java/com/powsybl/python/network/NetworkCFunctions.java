@@ -1235,8 +1235,16 @@ public final class NetworkCFunctions {
         return nadCustomBranchLabels;
     }
 
-    private static Map<String, CustomThreeWtLabels> getNadCustomThreeWtLabels(int rowCount, StringSeries idS, StringSeries side1S, StringSeries side2S, StringSeries side3S,
-                                                                              StringSeries arrow1S, StringSeries arrow2S, StringSeries arrow3S) {
+    private static Map<String, CustomThreeWtLabels> getNadCustomThreeWtLabels(UpdatingDataframe threeWtLabelsDataframe) {
+        int rowCount = threeWtLabelsDataframe.getRowCount();
+        StringSeries idS = threeWtLabelsDataframe.getStrings("id");
+        StringSeries side1S = threeWtLabelsDataframe.getStrings("side1");
+        StringSeries side2S = threeWtLabelsDataframe.getStrings("side2");
+        StringSeries side3S = threeWtLabelsDataframe.getStrings("side3");
+        StringSeries arrow1S = threeWtLabelsDataframe.getStrings("arrow1");
+        StringSeries arrow2S = threeWtLabelsDataframe.getStrings("arrow2");
+        StringSeries arrow3S = threeWtLabelsDataframe.getStrings("arrow3");
+
         Map<String, CustomThreeWtLabels> nadCustomThreeWtLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
@@ -1359,13 +1367,7 @@ public final class NetworkCFunctions {
                         customLabelsDataframe.getStrings("arrow1"), customLabelsDataframe.getStrings("arrow2"));
             }
 
-            Map<String, CustomThreeWtLabels> customThreeWtLabels = Collections.emptyMap();
-            if (threeWtLabelsDataframe != null) {
-                customThreeWtLabels = getNadCustomThreeWtLabels(threeWtLabelsDataframe.getRowCount(), threeWtLabelsDataframe.getStrings("id"),
-                        threeWtLabelsDataframe.getStrings("side1"), threeWtLabelsDataframe.getStrings("side2"),
-                        threeWtLabelsDataframe.getStrings("side3"), threeWtLabelsDataframe.getStrings("arrow1"),
-                        threeWtLabelsDataframe.getStrings("arrow2"), threeWtLabelsDataframe.getStrings("arrow3"));
-            }
+            Map<String, CustomThreeWtLabels> customThreeWtLabels = (threeWtLabelsDataframe != null) ? getNadCustomThreeWtLabels(threeWtLabelsDataframe) : Collections.emptyMap();
 
             Map<String, String> customBusDescriptions = Collections.emptyMap();
             if (busDescriptionsDataframe != null) {
