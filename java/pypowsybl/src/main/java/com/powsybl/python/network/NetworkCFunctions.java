@@ -72,7 +72,6 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.zip.ZipOutputStream;
 
@@ -1271,19 +1270,26 @@ public final class NetworkCFunctions {
         return nadCustomDescriptions;
     }
 
-    public static Map<String, Map<String, List<String>>> getNadCustomVlDescriptions(int rowCount, StringSeries ids,
-                                                                                    StringSeries types, StringSeries descriptions) {
-        return IntStream.range(0, rowCount)
-                .boxed()
-                .collect(Collectors.groupingBy(
-                        ids::get,
-                        LinkedHashMap::new,
-                        Collectors.groupingBy(
-                                types::get,
-                                LinkedHashMap::new,
-                                Collectors.mapping(descriptions::get, Collectors.toList())
-                        )
-                ));
+    public record VlInfo(Map<String, List<String>> headers, Map<String, List<String>> footers) {
+
+    }
+
+    public static VlInfo getNadCustomVlInfos(int rowCount, StringSeries ids,
+                                             StringSeries types, StringSeries descriptions) {
+        Map<String, List<String>> headers = new LinkedHashMap<>();
+        Map<String, List<String>> footers = new LinkedHashMap<>();
+
+        IntStream.range(0, rowCount)
+                .forEach(i -> {
+                    String id = ids.get(i);
+                    String description = descriptions.get(i);
+                    String type = types.get(i);
+
+                    Map<String, List<String>> targetMap = type.equals("HEADER") ? headers : footers;
+                    targetMap.computeIfAbsent(id, k -> new ArrayList<>()).add(description);
+                });
+
+        return new VlInfo(headers, footers);
     }
 
     private static EdgeInfo getThreeWtEdgeInfo(CustomThreeWtLabels threeWtLabels, ThreeWtEdge.Side edgeSide) {
@@ -1309,7 +1315,7 @@ public final class NetworkCFunctions {
     }
 
     private static LabelProviderFactory getCustomLabelProviderFactory(Map<String, CustomBranchLabels> branchLabels, Map<String, CustomThreeWtLabels> threeWtLabels,
-                                                                      Map<String, String> busDescriptions, Map<String, Map<String, List<String>>> vlDescriptions) {
+                                                                      Map<String, String> busDescriptions, Map<String, List<String>> vlDescriptions, Map<String, List<String>> vlDetails) {
         return (network, svgParameters) -> new DefaultLabelProvider(network, svgParameters) {
             @Override
             public Optional<EdgeInfo> getEdgeInfo(Graph graph, BranchEdge edge, BranchEdge.Side side) {
@@ -1341,14 +1347,12 @@ public final class NetworkCFunctions {
 
             @Override
             public List<String> getVoltageLevelDescription(VoltageLevelNode voltageLevelNode) {
-                Map<String, List<String>> vlDescriptionsByType = vlDescriptions.getOrDefault(voltageLevelNode.getEquipmentId(), Collections.emptyMap());
-                return vlDescriptionsByType.getOrDefault("HEADER", Collections.emptyList());
+                return vlDescriptions.getOrDefault(voltageLevelNode.getEquipmentId(), Collections.emptyList());
             }
 
             @Override
             public List<String> getVoltageLevelDetails(VoltageLevelNode vlNode) {
-                Map<String, List<String>> vlDescriptionsByType = vlDescriptions.getOrDefault(vlNode.getEquipmentId(), Collections.emptyMap());
-                return vlDescriptionsByType.getOrDefault("FOOTER", Collections.emptyList());
+                return vlDetails.getOrDefault(vlNode.getEquipmentId(), Collections.emptyList());
             }
         };
     }
@@ -1376,15 +1380,18 @@ public final class NetworkCFunctions {
                         busDescriptionsDataframe.getStrings("description"));
             }
 
-            Map<String, Map<String, List<String>>> customVlDescriptions = Collections.emptyMap();
+            Map<String, List<String>> customVlDescriptions = Collections.emptyMap();
+            Map<String, List<String>> customVlDetails = Collections.emptyMap();
             if (customVlDescriptionsDataframe != null) {
-                customVlDescriptions = getNadCustomVlDescriptions(customVlDescriptionsDataframe.getRowCount(),
+                VlInfo vlInfo = getNadCustomVlInfos(customVlDescriptionsDataframe.getRowCount(),
                         customVlDescriptionsDataframe.getStrings("id"),
                         customVlDescriptionsDataframe.getStrings("type"),
                         customVlDescriptionsDataframe.getStrings("description"));
+                customVlDescriptions = vlInfo.headers();
+                customVlDetails = vlInfo.footers();
             }
 
-            nadParameters.setLabelProviderFactory(getCustomLabelProviderFactory(branchLabels, customThreeWtLabels, customBusDescriptions, customVlDescriptions));
+            nadParameters.setLabelProviderFactory(getCustomLabelProviderFactory(branchLabels, customThreeWtLabels, customBusDescriptions, customVlDescriptions, customVlDetails));
         }
     }
 
