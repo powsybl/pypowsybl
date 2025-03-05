@@ -153,11 +153,9 @@ public final class NetworkCFunctions {
     }
 
     private static ImportConfig createImportConfig(CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount) {
-        // FIXME to clean when a addPostProcessors will be added to core
-        List<String> postProcessors = new ArrayList<>();
-        postProcessors.addAll(ImportConfig.load().getPostProcessors());
-        postProcessors.addAll(toStringList(postProcessorsPtrPtr, postProcessorsCount));
-        return new ImportConfig(postProcessors.stream().distinct().toList());
+        var importConfig = ImportConfig.load();
+        importConfig.addPostProcessors(toStringList(postProcessorsPtrPtr, postProcessorsCount));
+        return importConfig;
     }
 
     @CEntryPoint(name = "loadNetwork")
