@@ -1187,7 +1187,7 @@ public final class PyPowsyblApiHeader {
         void setVoltageLevelDetails(boolean isVoltageLevelDetails);
 
         @CField("voltage_level_details")
-        int isVoltageLevelDetails();
+        boolean isVoltageLevelDetails();
     }
 
     @CEnum("DynamicMappingType")
