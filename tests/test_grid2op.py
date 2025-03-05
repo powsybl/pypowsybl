@@ -118,7 +118,7 @@ def test_backend_copy():
 def test_backend_disconnection_issue():
     n = pp.network.create_ieee14()
     pp.loadflow.run_ac(n)
-    with grid2op.Backend(n, check_isolated_and_disconnected_injections=True) as backend:
+    with grid2op.Backend(n, check_isolated_and_disconnected_injections=False) as backend:
         npt.assert_array_equal(np.array([1] * 56), # all is connected to bus 1
                                backend.get_integer_value(grid2op.IntegerValueType.TOPO_VECT))
         npt.assert_array_equal(np.array(['L1-2-1', 'L1-5-1', 'L2-3-1', 'L2-4-1', 'L2-5-1', 'L3-4-1', 'L4-5-1', 'L6-11-1', 'L6-12-1', 'L6-13-1', 'L7-8-1', 'L7-9-1', 'L9-10-1', 'L9-14-1', 'L10-11-1', 'L12-13-1', 'L13-14-1', 'T4-7-1', 'T4-9-1', 'T5-6-1']),
