@@ -2618,8 +2618,8 @@ def test_load_file_with_dot_issue():
     network = pp.network.create_empty("test")
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
-        file_name = tmp_dir_path.joinpath('a.b.iim')
-        n.save(file_name, format='XIIDM')
+        file_name = tmp_dir_path.joinpath('a.b.xiidm')
+        network.save(file_name)
         pp.network.load(file_name)
 
 
