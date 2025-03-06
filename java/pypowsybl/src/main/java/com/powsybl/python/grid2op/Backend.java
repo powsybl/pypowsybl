@@ -826,6 +826,7 @@ public class Backend implements Closeable {
 
     public LoadFlowResult runLoadFlow(LoadFlowParameters parameters) {
         checkIsolatedAndDisconnectedInjections();
+        ensureTopoVectIsUpToDate();
         LoadFlowResult result = loadFlowRunner.run(network, parameters);
         updateState();
         return result;
