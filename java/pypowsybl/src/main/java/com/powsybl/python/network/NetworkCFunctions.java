@@ -1257,6 +1257,9 @@ public final class NetworkCFunctions {
         UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
         if (customLabelsDataframe != null) {
 
+            //when the custom dataframe is defined, the displaying of the edge name is forced
+            nadParameters.getSvgParameters().setEdgeNameDisplayed(true);
+
             StringSeries idSeries = customLabelsDataframe.getStrings("id");
             int rowCount = customLabelsDataframe.getRowCount();
 

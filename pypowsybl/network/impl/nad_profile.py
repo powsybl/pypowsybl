@@ -4,18 +4,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import (
-    Optional
-)
+from typing import Optional
 
 from pandas import DataFrame
 
 import pypowsybl._pypowsybl as _pp
-from pypowsybl.utils import (
-    _create_c_dataframe
-)
+from pypowsybl.utils import _create_c_dataframe
 
-class NadCustomizer:
+class NadProfile:
     """
     This class represents parameters to customize a network area diagram (e.g., labels)."""
 
@@ -37,4 +33,4 @@ class NadCustomizer:
 
     def _create_nad_branch_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._branch_labels is None else _create_c_dataframe(self._branch_labels.fillna(''),
-                                                                           NadCustomizer._nad_branch_labels_metadata)
+                                                                           NadProfile._nad_branch_labels_metadata)
