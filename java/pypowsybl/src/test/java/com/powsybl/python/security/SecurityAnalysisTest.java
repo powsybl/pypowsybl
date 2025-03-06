@@ -80,16 +80,4 @@ class SecurityAnalysisTest {
         Assertions.assertThat(series.get(1).getStrings())
             .containsExactly("NHV1_NHV2_2", "VLHV1");
     }
-
-    @Test
-    void addContingencyFromJsonFile() {
-        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
-        SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
-        analysisContext.addContingency("First contingency", Collections.singletonList("NHV1_NHV2_1"));
-        SecurityAnalysisResult result = analysisContext.run(network, new SecurityAnalysisParameters(), "OpenLoadFlow", ReportNode.NO_OP);
-
-        System.out.println("List contingency :" + result.getPostContingencyResults().stream().toList().get(0).toString());
-
-        analysisContext.readJsonContingency("/home/elcheikhnal/projects/pypowsybl/contingencies.json");
-    }
 }
