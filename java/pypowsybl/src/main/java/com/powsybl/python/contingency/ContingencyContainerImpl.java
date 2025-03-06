@@ -9,8 +9,10 @@ package com.powsybl.python.contingency;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
+import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.*;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +29,21 @@ public class ContingencyContainerImpl implements ContingencyContainer {
     @Override
     public void addContingency(String contingencyId, List<String> elementIds) {
         elementIdsByContingencyId.put(contingencyId, elementIds);
+    }
+
+    @Override
+    public void readJsonContingency(Path pathToJsonFile, Network network) {
+        ContingencyList list;
+
+        try {
+            list = ContingencyList.load(pathToJsonFile);
+        } catch (Exception e) {
+            throw new PowsyblException(e);
+        }
+
+        for (Contingency contingency : list.getContingencies(network)) {
+            addContingency(contingency.getId(), contingency.getElements().stream().map(ContingencyElement::getId).collect(Collectors.toList()));
+        }
     }
 
     private static ContingencyElement createContingencyElement(Network network, String elementId) {

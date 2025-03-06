@@ -38,6 +38,8 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -133,6 +135,18 @@ public final class SecurityAnalysisCFunctions {
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             List<String> elementIds = toStringList(elementIdPtrPtr, elementCount);
             contingencyContainer.addContingency(contingencyId, elementIds);
+        });
+    }
+
+    @CEntryPoint(name = "readJsonContingency")
+    public static void readJsonContingency(IsolateThread thread, CCharPointer jsonFilePath, ObjectHandle contingencyContainerHandle, ObjectHandle networkHandle,
+                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            contingencyContainer.readJsonContingency(path, network);
         });
     }
 
