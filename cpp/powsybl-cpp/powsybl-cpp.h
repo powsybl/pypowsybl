@@ -367,6 +367,17 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class DynamicSimulationParameters {
+public:
+    DynamicSimulationParameters(dynamic_simulation_parameters* src);
+    std::shared_ptr<dynamic_simulation_parameters> to_c_struct() const;
+
+    double start_time;
+    double stop_time;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
 enum class RescaleMode {
     NONE = 0,
     ACER_METHODOLOGY,
@@ -558,6 +569,8 @@ std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::s
 SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
 
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
+
+DynamicSimulationParameters* createDynamicSimulationParameters();
 
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
@@ -766,7 +779,7 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle* reportNode);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode);
 
 // timeseries mapping
 void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
@@ -847,23 +860,6 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
-
-// OpenRao
-JavaHandle createRao();
-JavaHandle getCrac(const JavaHandle& raoContext);
-JavaHandle getRaoResult(const JavaHandle& raoContext);
-RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
-JavaHandle createDefaultRaoParameters();
-
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
-void freeGrid2opBackend(const JavaHandle& backendHandle);
-std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
-array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);
-array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
-void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
-void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
-bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
 
 }
 #endif //PYPOWSYBL_H

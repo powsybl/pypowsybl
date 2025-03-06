@@ -385,6 +385,33 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
     });
 }
 
+void deleteDynamicSimulationParameters(dynamic_simulation_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
+}
+
+DynamicSimulationParameters::DynamicSimulationParameters(dynamic_simulation_parameters* src) {
+    start_time = (double) src->start_time;
+    stop_time = (double) src->stop_time;
+    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
+    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+}
+
+std::shared_ptr<dynamic_simulation_parameters> DynamicSimulationParameters::to_c_struct() const {
+    dynamic_simulation_parameters* res = new dynamic_simulation_parameters();
+    res->start_time = (double) start_time;
+    res->stop_time = (double) stop_time;
+    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+    res->provider_parameters_keys_count = provider_parameters_keys.size();
+    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
+    res->provider_parameters_values_count = provider_parameters_values.size();
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<dynamic_simulation_parameters>(res, [](dynamic_simulation_parameters* ptr){
+        deleteDynamicSimulationParameters(ptr);
+        delete ptr;
+    });
+}
+
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
     enable_losses_compensation = (bool) src->enable_losses_compensation;
     losses_compensation_epsilon = (float) src->losses_compensation_epsilon;
@@ -662,6 +689,14 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParameters() {
         PowsyblCaller::get()->callJava(::freeSensitivityAnalysisParameters, ptr);
     });
     return new SensitivityAnalysisParameters(parameters.get());
+}
+
+DynamicSimulationParameters* createDynamicSimulationParameters() {
+    dynamic_simulation_parameters* parameters_ptr = PowsyblCaller::get()->callJava<dynamic_simulation_parameters*>(::createDynamicSimulationParameters);
+    auto parameters = std::shared_ptr<dynamic_simulation_parameters>(parameters_ptr, [](dynamic_simulation_parameters* ptr){
+        PowsyblCaller::get()->callJava(::freeDynamicSimulationParameters, ptr);
+    });
+    return new DynamicSimulationParameters(parameters.get());
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
@@ -1337,8 +1372,8 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle *reportNode) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, (reportNode == nullptr) ? nullptr : *reportNode);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle reportNode) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
@@ -1658,64 +1693,6 @@ std::map<std::string, std::string> voltageInitializerGetIndicators(const JavaHan
 
 JavaHandle runVoltageInitializer(bool debug, const JavaHandle& networkHandle, const JavaHandle& paramsHandle) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageInitializer, debug, networkHandle, paramsHandle);
-}
-
-JavaHandle createRao() {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createRao);
-}
-
-RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult) {
-    return pypowsybl::PowsyblCaller::get()->callJava<RaoComputationStatus>(::getRaoResultStatus, raoResult);
-}
-
-JavaHandle getCrac(const JavaHandle& raoContext) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
-}
-
-JavaHandle getRaoResult(const JavaHandle& raoContext) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getRaoResult, raoContext);
-}
-
-JavaHandle createDefaultRaoParameters() {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createDefaultRaoParameters);
-}
-
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
-}
-
-void freeGrid2opBackend(const JavaHandle& backendHandle) {
-    pypowsybl::PowsyblCaller::get()->callJava(::freeGrid2opBackend, backendHandle);
-}
-
-std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType) {
-    auto stringValueArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opStringValue, backendHandle, valueType);
-    return toVector<std::string>(stringValueArrayPtr); // do not release, will be done when freeing backend
-}
-
-array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType) {
-    return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opIntegerValue, backendHandle, valueType); // do not release, will be done when freeing backend
-}
-
-array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType) {
-    return pypowsybl::PowsyblCaller::get()->callJava<array*>(::getGrid2opDoubleValue, backendHandle, valueType); // do not release, will be done when freeing backend
-}
-
-void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr) {
-    pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opDoubleValue, backendHandle, valueType, valuePtr, changedPtr);
-}
-
-void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr) {
-    pypowsybl::PowsyblCaller::get()->callJava(::updateGrid2opIntegerValue, backendHandle, valueType, valuePtr, changedPtr);
-}
-
-bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle) {
-    return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
-}
-
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
-    auto c_parameters = parameters.to_c_struct();
-    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
 }
 
 }

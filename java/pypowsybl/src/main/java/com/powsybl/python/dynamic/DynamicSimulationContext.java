@@ -12,12 +12,12 @@ import com.powsybl.computation.local.LocalComputationManager;
 import com.powsybl.dynamicsimulation.*;
 import com.powsybl.iidm.network.Network;
 
+import static com.powsybl.python.commons.PyPowsyblConfiguration.getDefaultDynamicSimulationProvider;
+
 /**
  * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public class DynamicSimulationContext {
-
-    private static final String DEFAULT_PROVIDER = "Dynawo";
 
     public DynamicSimulationResult run(Network network,
                                        DynamicModelsSupplier dynamicModelsSupplier,
@@ -25,7 +25,7 @@ public class DynamicSimulationContext {
                                        OutputVariablesSupplier outputVariablesSupplier,
                                        DynamicSimulationParameters parameters,
                                        ReportNode reportNode) {
-        return DynamicSimulation.find(DEFAULT_PROVIDER).run(network,
+        return DynamicSimulation.find(getDefaultDynamicSimulationProvider()).run(network,
                 dynamicModelsSupplier,
                 eventModelsSupplier,
                 outputVariablesSupplier,

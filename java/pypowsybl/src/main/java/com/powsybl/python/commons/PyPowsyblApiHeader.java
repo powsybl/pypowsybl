@@ -1184,6 +1184,46 @@ public final class PyPowsyblApiHeader {
         int getEdgeInfoDisplayed();
     }
 
+    @CStruct("dynamic_simulation_parameters")
+    public interface DynamicSimulationParametersPointer extends PointerBase {
+
+        @CField("start_time")
+        double getStartTime();
+
+        @CField("start_time")
+        void setStartTime(double startTime);
+
+        @CField("stop_time")
+        double getStopTime();
+
+        @CField("stop_time")
+        void setStopTime(double stopTime);
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
     @CEnum("DynamicMappingType")
     public enum DynamicMappingType {
         BASE_LOAD,

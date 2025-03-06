@@ -11,6 +11,7 @@ from .event_mapping import EventMapping
 from .model_mapping import ModelMapping
 from .simulation_result import SimulationResult
 from .output_variable_mapping import OutputVariableMapping
+from .parameters import Parameters
 
 
 class Simulation:  # pylint: disable=too-few-public-methods
@@ -22,19 +23,17 @@ class Simulation:  # pylint: disable=too-few-public-methods
             model_mapping: ModelMapping,
             event_mapping: EventMapping,
             timeseries_mapping: OutputVariableMapping,
-            start: int,
-            stop: int,
+            parameters: Parameters,
             report_node: ReportNode = None
             ) -> SimulationResult:
         """Run the dynawo simulation"""
         return SimulationResult(
-            _pp.run_dynamic_model(
+            _pp.run_dynamic_simulation(
                 self._handle,
                 network._handle, # pylint: disable=protected-access
                 model_mapping._handle, # pylint: disable=protected-access
                 event_mapping._handle, # pylint: disable=protected-access
                 timeseries_mapping._handle, # pylint: disable=protected-access
-                start,
-                stop,
+                _pp.DynamicSimulationParameters = parameters._to_c_parameters() if parameters is not None else Parameters()._to_c_parameters(),
                 None if report_node is None else report_node._report_node) # pylint: disable=protected-access
         )

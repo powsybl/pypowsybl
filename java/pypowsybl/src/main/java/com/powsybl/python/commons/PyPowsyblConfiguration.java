@@ -14,6 +14,7 @@ public final class PyPowsyblConfiguration {
     private static String defaultSecurityAnalysisProvider = OPEN_LOAD_FLOW;
     private static String defaultSensitivityAnalysisProvider = OPEN_LOAD_FLOW;
     private static String defaultShortCircuitAnalysisProvider = "";
+    private static final String DEFAULT_DYNAMIC_SIMULATION_PROVIDER = "Dynawo";
 
     private PyPowsyblConfiguration() {
     }
@@ -62,5 +63,9 @@ public final class PyPowsyblConfiguration {
 
     public static void setDefaultShortCircuitAnalysisProvider(String shortCircuitAnalysisProvider) {
         defaultShortCircuitAnalysisProvider = shortCircuitAnalysisProvider;
+    }
+
+    public static String getDefaultDynamicSimulationProvider() {
+        return DEFAULT_DYNAMIC_SIMULATION_PROVIDER;
     }
 }

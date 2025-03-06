@@ -69,6 +69,7 @@
     <properties>
         <java.version>17</java.version>
         <powsybl-dependencies.version>2024.4.1</powsybl-dependencies.version>
+        <powsybl-dynawo.version>2.8.0-SNAPSHOT</powsybl-dynawo.version>
         <powsybl-open-rao.version>6.2.1</powsybl-open-rao.version>
         <powsybl-open-reac.version>0.10.0</powsybl-open-reac.version>
     </properties>

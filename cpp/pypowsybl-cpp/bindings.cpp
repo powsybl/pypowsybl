@@ -233,8 +233,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("create_event_mapping", &pypowsybl::createEventMapping);
 
     //running simulations
-    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
-        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
+    m.def("run_dynamic_simulation", &pypowsybl::runDynamicSimulation, py::call_guard<py::gil_scoped_release>(),
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("parameters"), py::arg("report_node"));
 
     //model mapping
     m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("dataframes"));
@@ -620,6 +620,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("loadflow_parameters", &pypowsybl::SensitivityAnalysisParameters::loadflow_parameters)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
+
+    py::class_<pypowsybl::DynamicSimulationParameters>(m, "DynamicSimulationParameters")
+            .def(py::init(&pypowsybl::createDynamicSimulationParameters))
+            .def_readwrite("start_time", &pypowsybl::DynamicSimulationParameters::start_time)
+            .def_readwrite("stop_time", &pypowsybl::DynamicSimulationParameters::stop_time)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::DynamicSimulationParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::DynamicSimulationParameters::provider_parameters_values);
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
