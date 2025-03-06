@@ -407,3 +407,13 @@ def test_tie_line_contingency():
     sa.add_single_element_contingency('NHV1_NHV2_1', 'tie line contingency')
     sa_result = sa.run_ac(n)
     assert 'tie line contingency' in sa_result.post_contingency_results.keys()
+
+def test_terminal_connection_action():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'Line contingency')
+    sa.add_terminals_connection_action(action_id="Disconnection", element_id='NHV1_NHV2_2', opening=True)
+    sa.add_operator_strategy('OperatorStrategy1', 'Line contingency', ['Disconnection'])
+    sa_result = sa.run_ac(n)
+    assert 'Line contingency' in sa_result.post_contingency_results.keys()
+    assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
