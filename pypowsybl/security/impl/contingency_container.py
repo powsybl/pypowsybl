@@ -7,6 +7,7 @@
 
 from typing import List, Callable
 from pypowsybl import _pypowsybl
+from pypowsybl.network import Network
 
 
 class ContingencyContainer:
@@ -49,12 +50,13 @@ class ContingencyContainer:
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
-    def add_contingencies_from_json_file(self, path_to_json_file: str ) -> None:
+    def add_contingencies_from_json_file(self, path_to_json_file: str, network: Network) -> None:
         """
         Add contingencies from JSON file.
 
         Args:
             path_to_json_file: The path to the JSON file to add to the contingency list.
+            network: The network on which the contingencies will be added.
         """
 
-        _pypowsybl.add_contingency(self._handle, read_json_contingency(path_to_json_file))
+        _pypowsybl.read_json_contingency(self._handle, path_to_json_file, network)
