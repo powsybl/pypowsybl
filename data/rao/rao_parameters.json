@@ -8,7 +8,7 @@
     "curative-stop-criterion" : "MIN_OBJECTIVE"
   },
   "range-actions-optimization" : {
-    "max-mip-iterations" : 15,
+    "max-mip-iterations" : 30,
     "pst-penalty-cost" : 0.01,
     "pst-sensitivity-threshold" : 1.0E-6,
     "pst-model" : "CONTINUOUS",
