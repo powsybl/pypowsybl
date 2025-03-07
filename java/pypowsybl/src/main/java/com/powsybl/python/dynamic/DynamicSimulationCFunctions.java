@@ -11,7 +11,6 @@ import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.convert;
 import static com.powsybl.python.commons.Util.doCatch;
 import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.copyToCDynamicSimulationParameters;
-import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.createDynamicSimulationParameters;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
 import java.util.ArrayList;
@@ -20,8 +19,6 @@ import java.util.List;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.timeseries.DoubleTimeSeries;

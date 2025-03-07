@@ -7,24 +7,13 @@
  */
 package com.powsybl.python.dynamic;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
-import com.powsybl.dynamicsimulation.DynamicSimulationProvider;
 import com.powsybl.dynawo.DynawoSimulationParameters;
-import com.powsybl.iidm.network.Country;
-import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.python.commons.CTypeUtil;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicSimulationParametersPointer;
-import com.powsybl.python.loadflow.LoadFlowCUtils;
-import org.graalvm.nativeimage.UnmanagedMemory;
-import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 
-import java.util.ArrayList;
 import java.util.Map;
 
-import static com.powsybl.python.commons.PyPowsyblConfiguration.getDefaultDynamicSimulationProvider;
 import static com.powsybl.python.commons.PyPowsyblConfiguration.isReadConfig;
 
 /**
@@ -49,7 +38,7 @@ public final class DynamicSimulationParametersCUtils {
     }
 
     public static void copyToCDynamicSimulationParameters(DynamicSimulationParametersPointer cParameters) {
-            copyToCDynamicSimulationParameters(createDynamicSimulationParameters(), cParameters);
+        copyToCDynamicSimulationParameters(createDynamicSimulationParameters(), cParameters);
     }
 
     public static void copyToCDynamicSimulationParameters(DynamicSimulationParameters parameters, DynamicSimulationParametersPointer cParameters) {
