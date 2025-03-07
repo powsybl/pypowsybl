@@ -1123,7 +1123,7 @@ def test_nad():
                                                                          voltage_value_precision=0,
                                                                          bus_legend=False,
                                                                          substation_description_displayed=True,
-                                                                         edge_info_displayed=EdgeInfoType.CURRENT
+                                                                         edge_info_displayed=EdgeInfoType.CURRENT,
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -1146,7 +1146,7 @@ def test_nad():
                                                                             voltage_value_precision=0,
                                                                             bus_legend=False,
                                                                             substation_description_displayed=True,
-                                                                            edge_info_displayed=EdgeInfoType.REACTIVE_POWER
+                                                                            edge_info_displayed=EdgeInfoType.REACTIVE_POWER,
                                                                             ))
 
 
@@ -2467,8 +2467,10 @@ def test_nad_parameters():
     assert nad_parameters.scaling_factor == 150000
     assert nad_parameters.radius_factor == 150.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
+    assert not nad_parameters.voltage_level_details
 
     nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER)
+    nad_parameters.voltage_level_details = True
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2482,6 +2484,7 @@ def test_nad_parameters():
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
+    assert nad_parameters.voltage_level_details
 
     nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT)
     assert nad_parameters.edge_name_displayed
@@ -2497,6 +2500,7 @@ def test_nad_parameters():
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
+    assert not nad_parameters.voltage_level_details
 
 
 def test_update_dangling_line():

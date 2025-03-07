@@ -281,6 +281,9 @@ Network-area diagrams can be customized through NadParameters:
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
     - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
+    NB: after building a NadParameters object, users can further customize it by setting the voltage_level_details parameter. The default value of the parameter is False. If set to True, additional information about voltage levels is displayed in text boxes. The content of the additional information is determined by the label provider that is used.
+
+
 
 In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
 
