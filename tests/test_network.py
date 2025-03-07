@@ -2606,5 +2606,13 @@ def test_connect_disconnect_with_empty_bus():
     pd.testing.assert_frame_equal(expected_generators, generators, check_dtype=False)
 
 
+def test_enconding_issue():
+    network = pp.network.create_empty("test")
+    network.create_substations(id='Bürs')
+    substations = network.get_substations(attributes=[])
+    assert ['Bürs'] == substations.index.tolist()
+    assert '<iidm:substation id="Bürs"/>' in network.save_to_string(parameters={'iidm.export.xml.indent': 'false'})
+
+
 if __name__ == '__main__':
     unittest.main()
