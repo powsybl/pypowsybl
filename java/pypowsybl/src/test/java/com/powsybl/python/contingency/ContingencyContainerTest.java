@@ -9,7 +9,6 @@ package com.powsybl.python.contingency;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.*;
@@ -110,7 +109,6 @@ class ContingencyContainerTest {
         Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/contingencies.json")), fileSystem.getPath("/contingencies.json"));
         container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
-
 
         assertFalse(contingencies.isEmpty());
         assertEquals(2, contingencies.size());
