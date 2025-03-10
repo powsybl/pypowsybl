@@ -16,6 +16,7 @@ from .impl.node_breaker_topology import NodeBreakerTopology
 from .impl.sld_parameters import SldParameters
 from .impl.nad_parameters import NadLayoutType, EdgeInfoType
 from .impl.nad_parameters import NadParameters
+from .impl.nad_profile import NadProfile
 from .impl.layout_parameters import LayoutParameters
 from .impl.network_creation_util import (
     create_empty,
