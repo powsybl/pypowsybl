@@ -138,15 +138,14 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
-    @CEntryPoint(name = "readJsonContingency")
-    public static void readJsonContingency(IsolateThread thread, CCharPointer jsonFilePath, ObjectHandle contingencyContainerHandle, ObjectHandle networkHandle,
+    @CEntryPoint(name = "addContingencyFromJsonFile")
+    public static void addContingencyFromJsonFile(IsolateThread thread, CCharPointer jsonFilePath, ObjectHandle contingencyContainerHandle,
                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
             String stringPath = CTypeUtil.toString(jsonFilePath);
             Path path = Paths.get(stringPath);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            contingencyContainer.readJsonContingency(path, network);
+            contingencyContainer.addContingencyFromJsonFile(path);
         });
     }
 

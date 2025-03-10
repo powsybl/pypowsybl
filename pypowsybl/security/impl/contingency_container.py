@@ -59,4 +59,4 @@ class ContingencyContainer:
             network: The network on which the contingencies will be added.
         """
 
-        _pypowsybl.read_json_contingency(self._handle, path_to_json_file, network)
+        _pypowsybl.add_contingency_from_json_file(self._handle, path_to_json_file, network)

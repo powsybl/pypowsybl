@@ -108,13 +108,17 @@ class ContingencyContainerTest {
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
         Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/contingencies.json")), fileSystem.getPath("/contingencies.json"));
-        container.readJsonContingency(fileSystem.getPath("/contingencies.json"), network);
+        container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
+
 
         assertFalse(contingencies.isEmpty());
         assertEquals(2, contingencies.size());
         assertEquals("contingency", contingencies.get(0).getId());
         assertEquals("contingency2", contingencies.get(1).getId());
-        assertThrows(PowsyblException.class, () -> container.readJsonContingency(fileSystem.getPath("/notExistingContingencies.json"), network));
+        assertThrows(NullPointerException.class, () -> {
+            Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/notExistingContingencies.json")), fileSystem.getPath("/notExistingContingencies.json"));
+            container.addContingencyFromJsonFile(fileSystem.getPath("/notExistingContingencies.json"));
+        });
     }
 }
