@@ -7,8 +7,6 @@
  */
 package com.powsybl.python.contingency;
 
-import com.powsybl.iidm.network.Network;
-
 import java.nio.file.Path;
 import java.util.List;
 
@@ -19,5 +17,5 @@ public interface ContingencyContainer {
 
     void addContingency(String contingencyId, List<String> elementIds);
 
-    void readJsonContingency(Path pathToJsonFile, Network network);
+    void addContingencyFromJsonFile(Path pathToJsonFile);
 }
