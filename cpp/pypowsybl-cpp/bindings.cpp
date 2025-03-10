@@ -1024,6 +1024,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("provider"));
     m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
     m.def("get_sensitivity_analysis_provider_parameters_names", &pypowsybl::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
+    m.def("get_dynamic_simulation_provider_parameters_names", &pypowsybl::getDynamicSimulationProviderParametersNames, "get dynamic simulation provider parameters for Dynawo");
+    m.def("create_dynamic_simulation_provider_parameters_series_array", &pypowsybl::createDynamicSimulationProviderParametersSeriesArray, "Create a parameters series array for Dynawo");
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("table_name"), py::arg("dataframe"));
     m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements",

@@ -8,8 +8,12 @@
 package com.powsybl.python.commons;
 
 import com.powsybl.commons.datasource.CompressionFormat;
+import com.powsybl.commons.parameters.Parameter;
+import com.powsybl.commons.parameters.ParameterType;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.DataframeMapper;
+import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.SeriesDataType;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
@@ -21,7 +25,6 @@ import com.powsybl.openreac.parameters.input.algo.OpenReacOptimisationObjective;
 import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
-import com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.sensitivity.SensitivityFunctionType;
@@ -38,9 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
@@ -53,8 +54,19 @@ import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
  */
 public final class Util {
 
-    private Util() {
+    public static final DataframeMapper<List<Parameter>, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<List<Parameter>, Parameter, Void>()
+            .itemsProvider(parameters -> parameters.stream()
+                    .sorted(Comparator.comparing(Parameter::getCategoryKey).thenComparing(Parameter::getName))
+                    .toList())
+            .stringsIndex("name", Parameter::getName)
+            .strings("category_key", p -> Objects.toString(p.getCategoryKey(), ""))
+            .strings("description", Parameter::getDescription)
+            .enums("type", ParameterType.class, Parameter::getType)
+            .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
+            .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
+            .build();
 
+    private Util() {
     }
 
     public static void setException(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, Throwable t) {

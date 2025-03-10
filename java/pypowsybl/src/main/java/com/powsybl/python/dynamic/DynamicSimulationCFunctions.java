@@ -8,17 +8,20 @@
 package com.powsybl.python.dynamic;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
-import static com.powsybl.python.commons.Util.convert;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.copyToCDynamicSimulationParameters;
+import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.getDynamicSimulationProvider;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.timeseries.DoubleTimeSeries;
@@ -274,5 +277,21 @@ public final class DynamicSimulationCFunctions {
             DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
             return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.timelineEventDataFrameMapper(), simulationResult.getTimeLine());
         });
+    }
+
+    @CEntryPoint(name = "getDynamicSimulationProviderParametersNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getDynamicSimulationProviderParametersNames(IsolateThread thread,
+                                                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(getDynamicSimulationProvider()
+                .getSpecificParameters().stream()
+                .map(Parameter::getName)
+                .collect(Collectors.toList())));
+    }
+
+    @CEntryPoint(name = "createDynamicSimulationProviderParametersSeriesArray")
+    static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createDynamicSimulationProviderParametersSeriesArray(IsolateThread thread,
+                                                                                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () ->
+                Dataframes.createCDataframe(SPECIFIC_PARAMETERS_MAPPER, getDynamicSimulationProvider().getSpecificParameters()));
     }
 }

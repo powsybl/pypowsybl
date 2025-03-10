@@ -7,13 +7,16 @@
  */
 package com.powsybl.python.dynamic;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
+import com.powsybl.dynamicsimulation.DynamicSimulationProvider;
 import com.powsybl.dynawo.DynawoSimulationParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicSimulationParametersPointer;
 
 import java.util.Map;
 
+import static com.powsybl.python.commons.PyPowsyblConfiguration.getDefaultDynamicSimulationProvider;
 import static com.powsybl.python.commons.PyPowsyblConfiguration.isReadConfig;
 
 /**
@@ -22,6 +25,13 @@ import static com.powsybl.python.commons.PyPowsyblConfiguration.isReadConfig;
 public final class DynamicSimulationParametersCUtils {
 
     private DynamicSimulationParametersCUtils() {
+    }
+
+    public static DynamicSimulationProvider getDynamicSimulationProvider() {
+        return DynamicSimulationProvider.findAll().stream()
+                .filter(provider -> provider.getName().equals(getDefaultDynamicSimulationProvider()))
+                .findFirst()
+                .orElseThrow(() -> new PowsyblException("No dynamic simulation provider for name '" + getDefaultDynamicSimulationProvider() + "'"));
     }
 
     public static DynamicSimulationParameters createDynamicSimulationParameters() {
