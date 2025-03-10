@@ -99,9 +99,21 @@ Operator strategies and remedial actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pypowsybl security analysis support operator strategies and remedial actions definition.
+
 You can define several types of actions by calling the add_XXX_action API.
 All actions need a unique id to be referenced later at the operator strategy creation stage.
-The following example define a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
+
+The supported actions in PyPowsybl are listed here:
+
+- `switch`, to open or close a switch
+- `phase_tap_changer_position`, to change the tap position of a phase tap changer
+- `ratio_tap_changer_position`, to change the tap position of a ratio tap changer
+- `load_active_power`, to change the active power of a load
+- `load_reactive_power`, to change the reactive power of a load
+- `shunt_compensator_position`, to change the section of a shunt compensator
+- `generator_active_power`, to modify the generator active power
+
+The following example defines a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
