@@ -94,7 +94,7 @@ That section is intended for developers who wish to build pypowsybl from the sou
 Requirements:
 
 - Maven >= 3.1
-- Cmake >= 3.14
+- Cmake >= 3.20
 - C++11 compiler
 - Python >= 3.8 for Linux, Windows and MacOS (amd64 and arm64)
 - [Oracle GraalVM Java 17](https://www.graalvm.org/downloads/)
