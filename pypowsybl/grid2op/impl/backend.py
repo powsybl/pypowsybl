@@ -22,14 +22,17 @@ from pypowsybl.network import Network
 class Backend:
     def __init__(self, network: Network,
                  consider_open_branch_reactive_flow: bool = False,
+                 check_isolated_and_disconnected_injections: bool = True,
                  buses_per_voltage_level: int = 2,
                  connect_all_elements_to_first_bus: bool = True):
         self._network = network
         self._consider_open_branch_reactive_flow = consider_open_branch_reactive_flow
+        self._check_isolated_and_disconnected_injections = check_isolated_and_disconnected_injections
         self._buses_per_voltage_level = buses_per_voltage_level
         self._connect_all_elements_to_first_bus = connect_all_elements_to_first_bus
         self._handle = _pypowsybl.create_grid2op_backend(self._network._handle,
-                                                         self._connect_all_elements_to_first_bus,
+                                                         self._consider_open_branch_reactive_flow,
+                                                         self._check_isolated_and_disconnected_injections,
                                                          self._buses_per_voltage_level,
                                                          self._connect_all_elements_to_first_bus)
 
@@ -52,16 +55,19 @@ class Backend:
     def __getstate__(self) -> Dict[str, Any]:
         return {'xiidm': self._network.save_to_binary_buffer('XIIDM', {}),
                 'consider_open_branch_reactive_flow': self._consider_open_branch_reactive_flow,
+                'check_isolated_and_disconnected_injections': self._check_isolated_and_disconnected_injections,
                 'buses_per_voltage_level': self._buses_per_voltage_level,
                 'connect_all_elements_to_first_bus': self._connect_all_elements_to_first_bus}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
         self._network = Network(_pypowsybl.load_network_from_binary_buffers([state['xiidm'].getbuffer()], {}, [], None))
         self._consider_open_branch_reactive_flow = state['consider_open_branch_reactive_flow']
+        self._check_isolated_and_disconnected_injections = state['check_isolated_and_disconnected_injections']
         self._buses_per_voltage_level = state['buses_per_voltage_level']
         self._connect_all_elements_to_first_bus = state['connect_all_elements_to_first_bus']
         self._handle = _pypowsybl.create_grid2op_backend(self._network._handle,
                                                          self._connect_all_elements_to_first_bus,
+                                                         self._check_isolated_and_disconnected_injections,
                                                          self._buses_per_voltage_level,
                                                          self._connect_all_elements_to_first_bus)
 
