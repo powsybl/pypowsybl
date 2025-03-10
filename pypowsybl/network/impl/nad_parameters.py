@@ -31,6 +31,7 @@ class NadParameters:
         self._scaling_factor = scaling_factor
         self._radius_factor = radius_factor
         self._edge_info_displayed = edge_info_displayed
+        self._voltage_level_details = False
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -97,6 +98,15 @@ class NadParameters:
         """edge_info_displayed"""
         return self._edge_info_displayed
 
+    @property
+    def voltage_level_details(self) -> bool:
+        """voltage_level_details"""
+        return self._voltage_level_details
+
+    @voltage_level_details.setter
+    def voltage_level_details(self, value: bool) -> None:
+        self._voltage_level_details = value
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_name_displayed = self._edge_name_displayed
@@ -112,6 +122,7 @@ class NadParameters:
         c_parameters.scaling_factor = self._scaling_factor
         c_parameters.radius_factor = self._radius_factor
         c_parameters.edge_info_displayed = self._edge_info_displayed
+        c_parameters.voltage_level_details = self._voltage_level_details
         return c_parameters
 
     def __repr__(self) -> str:
@@ -129,4 +140,5 @@ class NadParameters:
                f", scaling_factor={self._scaling_factor}" \
                f", radius_factor={self._radius_factor}" \
                f", edge_info_displayed={self._edge_info_displayed}" \
+               f", voltage_level_details={self._voltage_level_details}" \
                f")"
