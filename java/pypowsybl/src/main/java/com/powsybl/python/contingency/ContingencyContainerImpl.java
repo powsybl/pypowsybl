@@ -12,7 +12,6 @@ import com.powsybl.contingency.*;
 import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.*;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
