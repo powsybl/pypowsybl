@@ -139,7 +139,7 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "addContingencyFromJsonFile")
-    public static void addContingencyFromJsonFile(IsolateThread thread, CCharPointer jsonFilePath, ObjectHandle contingencyContainerHandle,
+    public static void addContingencyFromJsonFile(IsolateThread thread, ObjectHandle contingencyContainerHandle, CCharPointer jsonFilePath,
                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
