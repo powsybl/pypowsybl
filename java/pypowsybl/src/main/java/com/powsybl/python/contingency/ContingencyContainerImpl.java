@@ -71,7 +71,7 @@ public class ContingencyContainerImpl implements ContingencyContainer {
     }
 
     protected List<Contingency> createContingencies(Network network) {
-        if (pathToContingencyJsonFile != null) {
+        if (pathToContingencyJsonFile == null) {
             ContingencyList contingenciesList;
             List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
 
@@ -81,18 +81,22 @@ public class ContingencyContainerImpl implements ContingencyContainer {
                 contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
             }
             return contingencies;
+        } else if (elementIdsByContingencyId.isEmpty()){
+            List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
+            for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
+                String contingencyId = e.getKey();
+                List<String> elementIds = e.getValue();
+                List<ContingencyElement> elements = elementIds.stream()
+                        .map(elementId -> createContingencyElement(network, elementId))
+                        .collect(Collectors.toList());
+                contingencies.add(new Contingency(contingencyId, elements));
+            }
+
+            return contingencies;
+        } else {
+            throw new PowsyblException("Can't find contingencies");
         }
 
-        List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
-        for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
-            String contingencyId = e.getKey();
-            List<String> elementIds = e.getValue();
-            List<ContingencyElement> elements = elementIds.stream()
-                    .map(elementId -> createContingencyElement(network, elementId))
-                    .collect(Collectors.toList());
-            contingencies.add(new Contingency(contingencyId, elements));
-        }
 
-        return contingencies;
     }
 }
