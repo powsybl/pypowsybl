@@ -9,9 +9,23 @@ import io
 import unittest
 
 import pypowsybl as pp
-from pypowsybl._pypowsybl import RaoComputationStatus, ObjectiveFunctionType, PreventiveStopCriterion, CurativeStopCriterion, PstModel, RaRangeShrinking, Solver
+from pypowsybl._pypowsybl import (
+    RaoComputationStatus,
+    ObjectiveFunctionType,
+    PreventiveStopCriterion,
+    CurativeStopCriterion,
+    PstModel,
+    RaRangeShrinking,
+    Solver,
+    ExecutionCondition)
 from pypowsybl.rao import Parameters as RaoParameters
-from pypowsybl.rao import ObjectiveFunctionParameters, RangeActionOptimizationParameters, TopoOptimizationParameters
+from pypowsybl.rao import (
+    ObjectiveFunctionParameters,
+    RangeActionOptimizationParameters,
+    TopoOptimizationParameters,
+    MultithreadingParameters,
+    SecondPreventiveRaoParameters,
+    NotOptimizedCnecsParameters)
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -21,13 +35,16 @@ def test_default_rao_parameters():
     assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN_IN_MEGAWATT
 
 def test_rao_parameters():
+    # Default
     parameters = RaoParameters()
     assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
 
+    # From file
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
     assert parameters.range_action_optimization_parameters.max_mip_iterations == 30
     assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT
 
+    # Full setup
     objective_function_param = ObjectiveFunctionParameters(
         objective_function_type=ObjectiveFunctionType.MIN_COST_IN_MEGAWATT,
         preventive_stop_criterion=PreventiveStopCriterion.MIN_OBJECTIVE,
@@ -61,10 +78,30 @@ def test_rao_parameters():
         max_number_of_boundaries_for_skipping_actions=6
     )
 
+    multithreading_param = MultithreadingParameters(
+        contingency_scenarios_in_parallel=8,
+        preventive_leaves_in_parallel=9,
+        auto_leaves_in_parallel=11,
+        curative_leaves_in_parallel=12
+    )
+
+    second_preventive_params = SecondPreventiveRaoParameters(
+        execution_condition=ExecutionCondition.COST_INCREASE,
+        re_optimize_curative_range_actions=False,
+        hint_from_first_preventive_rao=False
+    )
+
+    not_optimized_cnecs_parameters = NotOptimizedCnecsParameters(
+        do_not_optimize_curative_cnecs_for_tsos_without_cras=True
+    )
+
     parameters2 = RaoParameters(
         objective_function_parameters=objective_function_param,
         range_action_optimization_parameters=range_action_optim_param,
-        topo_optimization_parameters=topo_optimization_param
+        topo_optimization_parameters=topo_optimization_param,
+        multithreading_parameters=multithreading_param,
+        second_preventive_rao_parameters=second_preventive_params,
+        not_optimized_cnecs_parameters=not_optimized_cnecs_parameters
     )
 
     assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST_IN_MEGAWATT
@@ -93,6 +130,17 @@ def test_rao_parameters():
     assert parameters2.topo_optimization_parameters.absolute_min_impact_threshold == 32.0
     assert parameters2.topo_optimization_parameters.skip_actions_far_from_most_limiting_element == False
     assert parameters2.topo_optimization_parameters.max_number_of_boundaries_for_skipping_actions == 6
+
+    assert parameters2.multithreading_parameters.contingency_scenarios_in_parallel == 8
+    assert parameters2.multithreading_parameters.preventive_leaves_in_parallel == 9
+    assert parameters2.multithreading_parameters.auto_leaves_in_parallel == 11
+    assert parameters2.multithreading_parameters.curative_leaves_in_parallel == 12
+
+    assert parameters2.second_preventive_rao_parameters.execution_condition == ExecutionCondition.COST_INCREASE
+    assert parameters2.second_preventive_rao_parameters.re_optimize_curative_range_actions == False
+    assert parameters2.second_preventive_rao_parameters.hint_from_first_preventive_rao == False
+
+    assert parameters2.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
 
 def test_rao_from_files():
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
