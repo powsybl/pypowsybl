@@ -81,7 +81,7 @@ public class ContingencyContainerImpl implements ContingencyContainer {
                 contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
             }
             return contingencies;
-        } else if (elementIdsByContingencyId.isEmpty()){
+        } else if (elementIdsByContingencyId.isEmpty()) {
             List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
             for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
                 String contingencyId = e.getKey();
@@ -96,7 +96,5 @@ public class ContingencyContainerImpl implements ContingencyContainer {
         } else {
             throw new PowsyblException("Can't find contingencies");
         }
-
-
     }
 }
