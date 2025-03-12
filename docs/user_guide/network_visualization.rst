@@ -317,10 +317,9 @@ The optional parameter fixed_positions can also be set in the write_network_area
 Note that positions for elements not included in the dataframe are computed using the current layout algorithm.
 
 
-We can further customize the NAD diagram using the NadCustomizer. For example, to set
-   - the labels of the NAD branches and the arrows direction
-   - the labels of the VL labels
-   - the BUS labels
+We can further customize the NAD diagram using the NadProfile. For example, to set
+   - the labels for the branches, and the arrows direction
+   - the VL and BUS descriptions in the VL info boxes
 
 by using dataframes:
 
@@ -349,10 +348,10 @@ by using dataframes:
                                                   {'id': 'S1VL2_0', 'description': 'BUS B'},
                                                   {'id': 'S2VL1_0', 'description': 'BUS C'},
                                                   {'id': 'S3VL1_0', 'description': 'BUS D'}
-                                              ])                                              
-    >>> diagram_customizer=pp.network.NadCustomizer(branch_labels=labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
+                                              ])
+    >>> diagram_profile=pp.network.NadProfile(branch_labels=labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
     >>> pars=pp.network.NadParameters(edge_name_displayed=True)
-    >>> network.get_network_area_diagram(voltage_level_ids='S1VL1', depth=2, nad_parameters=pars, nad_customizer=diagram_customizer)
+    >>> network.get_network_area_diagram(voltage_level_ids='S1VL1', depth=2, nad_parameters=pars, nad_profile=diagram_profile)
 
 In the branch_labels dataframe parameter:
     - id is the branch id
@@ -374,7 +373,7 @@ An additional three_wt_labels dataframe parameter can be used to set the labels 
     - side1, side2, and side3 define the labels along the three winding transformer legs
     - arrow1, arrow2, and arrow3 define the direction of the arrows at the ends of the three winding transformer legs: 'IN' or 'OUT'. None (or an empty string) does not display the arrow.
 
-The optional parameter nad_customizer can also be set in the write_network_area_diagram function.
+The optional parameter nad_profile can also be set in the write_network_area_diagram function.
 
 Network area diagram using geographical data
 --------------------------------------------

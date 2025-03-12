@@ -27,7 +27,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadCustomizer
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -1178,16 +1178,15 @@ def test_nad_fixed_positions():
         assert exists(fixed_positions_svg_file)
 
 
-def test_nad_customizer():
-    diagram_customizer = NadCustomizer()
-    assert not diagram_customizer.branch_labels
-    diagram_customizer = NadCustomizer(branch_labels=None)
-    assert not diagram_customizer.branch_labels
+def test_nad_profile():
+    diagram_profile = NadProfile()
+    assert not diagram_profile.branch_labels
+    diagram_profile = NadProfile(branch_labels=None)
+    assert not diagram_profile.branch_labels
     n = pp.network.create_ieee14()
     branch_labels_df = pd.DataFrame.from_records(index='id',
                                              data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'middle': 'MIDDLE_1', 'side2': 'S2_1', 'arrow1': 'IN', 'arrow2': 'IN'},
                                                    {'id': 'L2-5-1', 'side1': 'S1_2', 'middle': 'MIDDLE_2', 'side2': 'S2_2', 'arrow1': 'OUT', 'arrow2': 'OUT'}])
-    
     vl_descriptions_df=pd.DataFrame.from_records(index='id',
                                              data=[
                                                  {'id': 'VL1', 'type': 'HEADER', 'description': 'VL1 header'},
@@ -1202,19 +1201,19 @@ def test_nad_customizer():
                                                 {'id': 'VL2_0', 'description': 'VL2 bus'},
                                                 {'id': 'VL5_0', 'description': 'VL3 bus'}
                                                 ])
-    diagram_customizer=NadCustomizer(branch_labels=branch_labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
-    assert isinstance(diagram_customizer.branch_labels, pd.DataFrame)
-    assert isinstance(diagram_customizer.vl_descriptions, pd.DataFrame)
-    assert isinstance(diagram_customizer.bus_descriptions, pd.DataFrame)    
+    diagram_profile=NadProfile(branch_labels=branch_labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
+    assert isinstance(diagram_profile.branch_labels, pd.DataFrame)
+    assert isinstance(diagram_profile.vl_descriptions, pd.DataFrame)
+    assert isinstance(diagram_profile.bus_descriptions, pd.DataFrame)
     pars=pp.network.NadParameters(edge_name_displayed=True)
-    nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_customizer=diagram_customizer)
+    nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_profile=diagram_profile)
     assert re.search('.*<svg.*', nad1.svg)
     assert len(nad1.metadata) > 0
 
     with tempfile.TemporaryDirectory() as tmp_dir_name:
         tmp_dir_path = pathlib.Path(tmp_dir_name)
         branch_labels_svg_file = tmp_dir_path.joinpath('test_branch_labels.svg')
-        n.write_network_area_diagram(branch_labels_svg_file, voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_customizer=diagram_customizer)
+        n.write_network_area_diagram(branch_labels_svg_file, voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_profile=diagram_profile)
         assert exists(branch_labels_svg_file)
 
     n_three_wt=pp.network._create_network('three_windings_transformer')
@@ -1235,10 +1234,10 @@ def test_nad_customizer():
                                                                  {'id': 'VL_33_0', 'description': 'BUS B'},
                                                                  {'id': 'VL_11_0', 'description': 'BUS C'}
                                                                  ])
-    diagram_customizer_three_wt=pp.network.NadCustomizer(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df, 
+    diagram_profile_three_wt=pp.network.NadProfile(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df, 
                                                          bus_descriptions=three_wt_bus_descriptions_df)
-    assert isinstance(diagram_customizer_three_wt.three_wt_labels, pd.DataFrame)
-    nad_three_wt=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_customizer=diagram_customizer_three_wt)
+    assert isinstance(diagram_profile_three_wt.three_wt_labels, pd.DataFrame)
+    nad_three_wt=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_profile=diagram_profile_three_wt)
     assert re.search('.*<svg.*', nad_three_wt.svg)
     assert len(nad_three_wt.metadata) > 0
 

@@ -4,18 +4,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import (
-    Optional
-)
+from typing import Optional
 
 from pandas import DataFrame
 
 import pypowsybl._pypowsybl as _pp
-from pypowsybl.utils import (
-    _create_c_dataframe
-)
+from pypowsybl.utils import _create_c_dataframe
 
-class NadCustomizer:
+class NadProfile:
     """
     This class represents parameters to customize a network area diagram (e.g., labels on branches)."""
 
@@ -70,16 +66,16 @@ class NadCustomizer:
 
     def _create_nad_branch_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._branch_labels is None else _create_c_dataframe(self._branch_labels.fillna(''),
-                                                                           NadCustomizer._nad_branch_labels_metadata)
+                                                                           NadProfile._nad_branch_labels_metadata)
 
     def _create_nad_three_wt_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._three_wt_labels is None else _create_c_dataframe(self._three_wt_labels.fillna(''),
-                                                                           NadCustomizer._nad_three_wt_metadata)
+                                                                           NadProfile._nad_three_wt_metadata)
 
     def _create_nad_bus_descriptions_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._bus_descriptions is None else _create_c_dataframe(self._bus_descriptions.fillna(''),
-                                                                           NadCustomizer._nad_bus_descriptions_metadata)
+                                                                           NadProfile._nad_bus_descriptions_metadata)
 
     def _create_nad_vl_descriptions_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._vl_descriptions is None else _create_c_dataframe(self._vl_descriptions.fillna(''),
-                                                                           NadCustomizer._nad_descriptions_metadata)
+                                                                           NadProfile._nad_descriptions_metadata)
