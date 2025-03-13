@@ -8,19 +8,25 @@
 package com.powsybl.dataframe;
 
 import com.google.common.base.Functions;
+import com.powsybl.commons.parameters.Parameter;
+import com.powsybl.commons.parameters.ParameterScope;
+import com.powsybl.commons.parameters.ParameterType;
 import com.powsybl.dataframe.DataframeFilter.AttributeFilterType;
 import com.powsybl.dataframe.impl.DefaultDataframeHandler;
+import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dataframe.update.TestIntSeries;
+import com.powsybl.python.network.Dataframes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.powsybl.python.commons.Util.SPECIFIC_PARAMETERS_MAPPER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -301,5 +307,27 @@ class DataframeMapperBuilderTest {
             .extracting(com.powsybl.dataframe.impl.Series::getName)
             .containsExactly("id", "str", "color");
 
+    }
+
+    @Test
+    void testSpecificParametersDataframesMapper() {
+        List<Parameter> parameters = List.of(
+                new Parameter("PARAM1", ParameterType.STRING, "Parameter 1", "empty"),
+                new Parameter(List.of("PARAM2", "PARAMETER 2"), ParameterType.STRING, "Parameter 2",
+                        "KO", List.of("OK", "KO"), ParameterScope.FUNCTIONAL, "Test2"),
+                new Parameter("PARAM3", ParameterType.INTEGER, "Parameter 3", 0,
+                        List.of(0, 1, 2, 3), ParameterScope.FUNCTIONAL, "Test1"),
+                new Parameter("PARAM4", ParameterType.DOUBLE, "Parameter 4", 0.0));
+        List<Series> series = Dataframes.createSeries(SPECIFIC_PARAMETERS_MAPPER, parameters);
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("name", "category_key", "description", "type", "default", "possible_values");
+        assertThat(series).satisfiesExactly(
+                index -> assertThat(index.getStrings()).containsExactly("PARAM3", "PARAM2", "PARAM1", "PARAM4"),
+                cat -> assertThat(cat.getStrings()).containsExactly("Test1", "Test2", "", ""),
+                desc -> assertThat(desc.getStrings()).containsExactly("Parameter 3", "Parameter 2", "Parameter 1", "Parameter 4"),
+                type -> assertThat(type.getStrings()).containsExactly("INTEGER", "STRING", "STRING", "DOUBLE"),
+                def -> assertThat(def.getStrings()).containsExactly("0", "KO", "empty", "0.0"),
+                val -> assertThat(val.getStrings()).containsExactly("[0, 1, 2, 3]", "[OK, KO]", "", ""));
     }
 }
