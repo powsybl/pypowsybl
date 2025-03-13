@@ -31,16 +31,6 @@ import java.util.stream.Collectors;
  */
 public final class LoadFlowCUtils {
 
-    static final DataframeMapper<LoadFlowProvider, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<LoadFlowProvider, Parameter, Void>()
-            .itemsProvider(provider -> provider.getSpecificParameters().stream().sorted(Comparator.comparing(Parameter::getCategoryKey).thenComparing(Parameter::getName)).toList())
-            .stringsIndex("name", Parameter::getName)
-            .strings("category_key", p -> Objects.toString(p.getCategoryKey(), ""))
-            .strings("description", Parameter::getDescription)
-            .enums("type", ParameterType.class, Parameter::getType)
-            .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
-            .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
-            .build();
-
     private LoadFlowCUtils() {
     }
 
