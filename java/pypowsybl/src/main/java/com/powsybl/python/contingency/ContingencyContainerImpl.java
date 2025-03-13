@@ -72,7 +72,7 @@ public class ContingencyContainerImpl implements ContingencyContainer {
 
     protected List<Contingency> createContingencies(Network network) {
         try {
-            if (pathToContingencyJsonFile == null) {
+            if (pathToContingencyJsonFile != null) {
                 ContingencyList contingenciesList;
                 List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
 
