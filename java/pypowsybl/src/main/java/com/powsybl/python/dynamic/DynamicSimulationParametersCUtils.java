@@ -8,12 +8,14 @@
 package com.powsybl.python.dynamic;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.dynamicsimulation.DynamicSimulationParameters;
 import com.powsybl.dynamicsimulation.DynamicSimulationProvider;
 import com.powsybl.dynawo.DynawoSimulationParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicSimulationParametersPointer;
 
+import java.util.List;
 import java.util.Map;
 
 import static com.powsybl.python.commons.PyPowsyblConfiguration.getDefaultDynamicSimulationProvider;
@@ -36,6 +38,10 @@ public final class DynamicSimulationParametersCUtils {
 
     public static DynamicSimulationParameters createDynamicSimulationParameters() {
         return isReadConfig() ? DynamicSimulationParameters.load() : new DynamicSimulationParameters();
+    }
+
+    public static List<Parameter> getSpecificParametersInfo() {
+        return getDynamicSimulationProvider().getSpecificParameters();
     }
 
     //TODO check how to handle parameterSet

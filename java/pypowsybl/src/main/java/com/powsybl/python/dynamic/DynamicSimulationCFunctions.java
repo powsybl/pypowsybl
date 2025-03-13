@@ -9,8 +9,7 @@ package com.powsybl.python.dynamic;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
-import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.copyToCDynamicSimulationParameters;
-import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.getDynamicSimulationProvider;
+import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
 import java.util.ArrayList;
@@ -282,8 +281,7 @@ public final class DynamicSimulationCFunctions {
     @CEntryPoint(name = "getDynamicSimulationProviderParametersNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getDynamicSimulationProviderParametersNames(IsolateThread thread,
                                                                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(getDynamicSimulationProvider()
-                .getSpecificParameters().stream()
+        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(getSpecificParametersInfo().stream()
                 .map(Parameter::getName)
                 .collect(Collectors.toList())));
     }
@@ -292,6 +290,6 @@ public final class DynamicSimulationCFunctions {
     static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createDynamicSimulationProviderParametersSeriesArray(IsolateThread thread,
                                                                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () ->
-                Dataframes.createCDataframe(SPECIFIC_PARAMETERS_MAPPER, getDynamicSimulationProvider().getSpecificParameters()));
+                Dataframes.createCDataframe(SPECIFIC_PARAMETERS_MAPPER, getSpecificParametersInfo()));
     }
 }

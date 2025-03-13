@@ -56,7 +56,7 @@ public final class Util {
 
     public static final DataframeMapper<List<Parameter>, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<List<Parameter>, Parameter, Void>()
             .itemsProvider(parameters -> parameters.stream()
-                    .sorted(Comparator.comparing(Parameter::getCategoryKey).thenComparing(Parameter::getName))
+                    .sorted(Comparator.comparing(Parameter::getCategoryKey, Comparator.nullsLast(Comparator.naturalOrder())).thenComparing(Parameter::getName))
                     .toList())
             .stringsIndex("name", Parameter::getName)
             .strings("category_key", p -> Objects.toString(p.getCategoryKey(), ""))
