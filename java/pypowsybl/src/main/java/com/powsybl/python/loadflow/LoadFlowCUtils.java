@@ -9,10 +9,6 @@ package com.powsybl.python.loadflow;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
-import com.powsybl.commons.parameters.Parameter;
-import com.powsybl.commons.parameters.ParameterType;
-import com.powsybl.dataframe.DataframeMapper;
-import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
@@ -21,9 +17,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.graalvm.nativeimage.UnmanagedMemory;
 
-import java.util.Comparator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
