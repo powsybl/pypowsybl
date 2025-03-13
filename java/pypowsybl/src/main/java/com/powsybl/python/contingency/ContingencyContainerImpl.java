@@ -71,33 +71,26 @@ public class ContingencyContainerImpl implements ContingencyContainer {
     }
 
     protected List<Contingency> createContingencies(Network network) {
-        try {
-            if (pathToContingencyJsonFile != null) {
-                ContingencyList contingenciesList;
-                List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
+        List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
 
-                contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
+        if (pathToContingencyJsonFile != null) {
+            ContingencyList contingenciesList;
+            contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
 
-                for (Contingency contingency : contingenciesList.getContingencies(network)) {
-                    contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
-                }
-                return contingencies;
-
-            } else {
-                List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
-                for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
-                    String contingencyId = e.getKey();
-                    List<String> elementIds = e.getValue();
-                    List<ContingencyElement> elements = elementIds.stream()
-                            .map(elementId -> createContingencyElement(network, elementId))
-                            .collect(Collectors.toList());
-                    contingencies.add(new Contingency(contingencyId, elements));
-                }
-                return contingencies;
+            for (Contingency contingency : contingenciesList.getContingencies(network)) {
+                contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
             }
-
-        } catch (NullPointerException e) {
-            throw new PowsyblException("Can't find contingencies", e);
         }
+
+        for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
+            String contingencyId = e.getKey();
+            List<String> elementIds = e.getValue();
+            List<ContingencyElement> elements = elementIds.stream()
+                    .map(elementId -> createContingencyElement(network, elementId))
+                    .collect(Collectors.toList());
+            contingencies.add(new Contingency(contingencyId, elements));
+        }
+
+        return contingencies;
     }
 }

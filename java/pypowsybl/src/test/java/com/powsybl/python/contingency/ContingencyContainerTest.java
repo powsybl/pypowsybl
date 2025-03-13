@@ -106,7 +106,7 @@ class ContingencyContainerTest {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
-        Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/contingencies.json")), fileSystem.getPath("/contingencies.json"));
+        Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
         container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
 
@@ -115,7 +115,7 @@ class ContingencyContainerTest {
         assertEquals("contingency", contingencies.get(0).getId());
         assertEquals("contingency2", contingencies.get(1).getId());
         assertThrows(NullPointerException.class, () -> {
-            Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/notExistingContingencies.json")), fileSystem.getPath("/notExistingContingencies.json"));
+            Files.copy(getClass().getResourceAsStream("/notExistingContingencies.json"), fileSystem.getPath("/notExistingContingencies.json"));
             container.addContingencyFromJsonFile(fileSystem.getPath("/notExistingContingencies.json"));
         });
     }
