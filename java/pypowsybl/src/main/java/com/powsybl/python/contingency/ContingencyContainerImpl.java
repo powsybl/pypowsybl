@@ -78,17 +78,19 @@ public class ContingencyContainerImpl implements ContingencyContainer {
 
     protected List<Contingency> createContingencies(Network network) {
         List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
-        ContingencyList contingenciesList;
-        try {
-            contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
-        } catch (NullPointerException e) {
-            throw new PowsyblException("Can't find JSON file.", e);
-        }
+
+        if (pathToContingencyJsonFile != null) {
+            ContingencyList contingenciesList;
+            try {
+                contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
+            } catch (NullPointerException e) {
+                throw new PowsyblException("Can't find JSON file.", e);
+            }
 
             for (Contingency contingency : contingenciesList.getContingencies(network)) {
                 contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
             }
-
+        }
 
         for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
             String contingencyId = e.getKey();
