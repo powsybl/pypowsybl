@@ -314,7 +314,31 @@ We can generate a network area diagram using fixed positions, defined in a dataf
 
     The optional parameter fixed_positions can also be set in the write_network_area_diagram function.
     Note that positions for elements not included in the dataframe are computed using the current layout algorithm.
-    
+
+
+We can further customize the NAD diagram using the NadProfile. For example, to set the labels of the NAD branches and the arrows direction, using a dataframe:
+
+.. code-block:: python
+
+    >>> import pandas as pd
+    >>> network = pp.network.create_four_substations_node_breaker_network()
+    >>> labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'side1', 'middle', 'side2', 'arrow1', 'arrow2'],
+                                              data=[
+                                                  ('LINE_S2S3', 'L1_1', 'L1', 'L1_2', 'IN', 'IN'),
+                                                  ('LINE_S3S4', 'L2_1', 'L2', 'L2_2', 'OUT', 'IN'),
+                                                  ('TWT', 'TWT1_1', 'TWT1', 'TWT1_2', None, 'OUT')
+                                              ])
+    >>> diagram_profile=pp.network.NadProfile(branch_labels=labels_df)
+    >>> pars=pp.network.NadParameters(edge_name_displayed=True)
+    >>> network.get_network_area_diagram(voltage_level_ids='S1VL1', depth=2, nad_parameters=pars, nad_profile=diagram_profile)
+
+    In the dataframe:
+    - id is the branch id
+    - side1 and side2 define the labels along the two branch's edges
+    - middle defines the branch's label
+    - arrow1 and arrow2 define the direction of the arrows at the ends of the branch: 'IN' or 'OUT'. None (or an empty string) does not display the arrow.
+
+    The optional parameter nad_profile can also be set in the write_network_area_diagram function.
 
 Network area diagram using geographical data
 --------------------------------------------
