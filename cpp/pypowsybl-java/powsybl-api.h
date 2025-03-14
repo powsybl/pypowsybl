@@ -531,3 +531,56 @@ typedef enum {
     UPDATE_BRANCH_BUS1,
     UPDATE_BRANCH_BUS2,
 } Grid2opUpdateIntegerValueType;
+
+typedef struct rao_parameters_struct {
+
+  int objective_function_type; // Objective function parameters
+  int preventive_stop_criterion;
+  int curative_stop_criterion;
+  double curative_min_obj_improvement;
+  unsigned char forbid_cost_increase;
+  unsigned char optimize_curative_if_preventive_unsecure;
+
+  // range action solver
+  int solver;
+  double relative_mip_gap;
+  char* solver_specific_parameters;
+
+  int max_mip_iterations; // range action optimization parameters
+  double pst_penalty_cost;
+  double pst_sensitivity_threshold;
+  int pst_model;
+  double hvdc_penalty_cost;
+  double hvdc_sensitivity_threshold;
+  double injection_ra_penalty_cost;
+  double injection_ra_sensitivity_threshold;
+  int ra_range_shrinking;
+
+  int max_preventive_search_tree_depth; // topo optimization parameters
+  int max_auto_search_tree_depth;
+  int max_curative_search_tree_depth;
+  double relative_min_impact_threshold;
+  double absolute_min_impact_threshold;
+  unsigned char skip_actions_far_from_most_limiting_element;
+  int max_number_of_boundaries_for_skipping_actions;
+
+  int contingency_scenarios_in_parallel; // Multithreading parameters
+  int preventive_leaves_in_parallel;
+  int auto_leaves_in_parallel;
+  int curative_leaves_in_parallel;
+
+  int execution_condition;  // Second preventive rao parameters
+  unsigned char re_optimize_curative_range_actions;
+  unsigned char hint_from_first_preventive_rao;
+
+  unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters
+
+  char* load_flow_provider;  // Load flow and sensitivity parameters
+  char* sensitivity_provider;
+  double sensitivity_failure_overcost;
+
+  char** provider_parameters_keys; // For extension storage
+  int provider_parameters_keys_count;
+  char** provider_parameters_values;
+  int provider_parameters_values_count;
+} rao_parameters;
