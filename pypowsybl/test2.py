@@ -48,7 +48,7 @@ def branch_flow(vars, params):
     return [p1, q1, p2, q2]
 
 
-def add_branch_constraint(bf, v1, v2, ph1, ph2, p1, q1, p2, q2,
+def add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
                           r, x, g1, b1, g2, b2, r1, a1):
     z = hypot(r, x)
     y = 1.0 / z
@@ -57,14 +57,14 @@ def add_branch_constraint(bf, v1, v2, ph1, ph2, p1, q1, p2, q2,
     model.add_nl_constraint(
         bf,
         vars=nlfunc.Vars(
-            v1=v1,
-            v2=v2,
-            ph1=ph1,
-            ph2=ph2,
-            p1=p1,
-            q1=q1,
-            p2=p2,
-            q2=q2
+            v1=v1_var,
+            v2=v2_var,
+            ph1=ph1_var,
+            ph2=ph2_var,
+            p1=p1_var,
+            q1=q1_var,
+            p2=p2_var,
+            q2=q2_var
         ),
         params=nlfunc.Params(
             y=y,
@@ -128,26 +128,26 @@ if __name__ == "__main__":
     gen_count = len(generators)
 
     # create variables
-    branch_p1 = model.add_variables(range(branch_count), name='branch_p1')
-    branch_q1 = model.add_variables(range(branch_count), name='branch_q1')
-    branch_p2 = model.add_variables(range(branch_count), name='branch_p2')
-    branch_q2 = model.add_variables(range(branch_count), name='branch_q2')
+    branch_p1_vars = model.add_variables(range(branch_count), name='branch_p1')
+    branch_q1_vars = model.add_variables(range(branch_count), name='branch_q1')
+    branch_p2_vars = model.add_variables(range(branch_count), name='branch_p2')
+    branch_q2_vars = model.add_variables(range(branch_count), name='branch_q2')
 
-    v = model.add_variables(range(bus_count), name="v")
-    ph = model.add_variables(range(bus_count), name="ph")
+    v_vars = model.add_variables(range(bus_count), name="v")
+    ph_vars = model.add_variables(range(bus_count), name="ph")
 
     # voltage buses bounds
     for i in range(bus_count):
         vmin, vmax = 0.5, 1.5  # FIXME get from voltage level dataframe
-        model.set_variable_bounds(v[i], vmin, vmax)
+        model.set_variable_bounds(v_vars[i], vmin, vmax)
 
     # slack bus angle forced to 0
     slack_bus_num = buses.index.get_loc(slack_bus_id)
-    model.set_variable_bounds(ph[slack_bus_num], 0.0, 0.0)
+    model.set_variable_bounds(ph_vars[slack_bus_num], 0.0, 0.0)
 
     # generators reactive power bounds
-    gen_p = model.add_variables(range(gen_count), name="gen_p")
-    gen_q = model.add_variables(range(gen_count), name="gen_q")
+    gen_p_vars = model.add_variables(range(gen_count), name="gen_p")
+    gen_q_vars = model.add_variables(range(gen_count), name="gen_q")
 
     # for num, row in enumerate(generators.itertuples(index=False)):
     #     model.set_variable_bounds(gen_p[num], row.min_p, row.max_p)
@@ -159,19 +159,19 @@ if __name__ == "__main__":
         r1 = 1
         a1 = 0
 
-        p1 = branch_p1[branch_num]
-        q1 = branch_q1[branch_num]
-        p2 = branch_p2[branch_num]
-        q2 = branch_q2[branch_num]
+        p1_var = branch_p1_vars[branch_num]
+        q1_var = branch_q1_vars[branch_num]
+        p2_var = branch_p2_vars[branch_num]
+        q2_var = branch_q2_vars[branch_num]
 
         if row.bus1_id and row.bus2_id:
             bus1_num = buses.index.get_loc(row.bus1_id)
             bus2_num = buses.index.get_loc(row.bus2_id)
-            v1 = v[bus1_num]
-            v2 = v[bus2_num]
-            ph1 = ph[bus1_num]
-            ph2 = ph[bus2_num]
-            add_branch_constraint(bf, v1, v2, ph1, ph2, p1, q1, p2, q2, r, x, g1, b1, g2, b2, r1, a1)
+            v1_var = v_vars[bus1_num]
+            v2_var = v_vars[bus2_num]
+            ph1_var = ph_vars[bus1_num]
+            ph2_var = ph_vars[bus2_num]
+            add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var, r, x, g1, b1, g2, b2, r1, a1)
         else:
             raise PyPowsyblError("Only branches connected to both sides are supported")
 
@@ -185,77 +185,72 @@ if __name__ == "__main__":
         a1 = 0 # TODO
 
         branch_num = len(lines) + transfo_num
-        p1 = branch_p1[branch_num]
-        q1 = branch_q1[branch_num]
-        p2 = branch_p2[branch_num]
-        q2 = branch_q2[branch_num]
+        p1_var = branch_p1_vars[branch_num]
+        q1_var = branch_q1_vars[branch_num]
+        p2_var = branch_p2_vars[branch_num]
+        q2_var = branch_q2_vars[branch_num]
 
         if row.bus1_id and row.bus2_id:
             bus1_num = buses.index.get_loc(row.bus1_id)
             bus2_num = buses.index.get_loc(row.bus2_id)
-            v1 = v[bus1_num]
-            v2 = v[bus2_num]
-            ph1 = ph[bus1_num]
-            ph2 = ph[bus2_num]
-            add_branch_constraint(bf, v1, v2, ph1, ph2, p1, q1, p2, q2, r, x, g1, b1, g2, b2, r1, a1)
+            v1_var = v_vars[bus1_num]
+            v2_var = v_vars[bus2_num]
+            ph1_var = ph_vars[bus1_num]
+            ph2_var = ph_vars[bus2_num]
+            add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var, r, x, g1, b1, g2, b2, r1, a1)
         else:
             raise PyPowsyblError("Only branches connected to both sides are supported")
 
     # power balance constraints
-    bus_p = [poi.ExprBuilder() for i in range(bus_count)]
-    bus_q = [poi.ExprBuilder() for i in range(bus_count)]
+    bus_p_gen = [[] for i in range(bus_count)]
+    bus_q_gen = [[] for i in range(bus_count)]
+    bus_p_load = [0.0 for i in range(bus_count)]
+    bus_q_load = [0.0 for i in range(bus_count)]
 
-    bus_branch_p1 = {}
-    bus_branch_q1 = {}
-    bus_branch_p2 = {}
-    bus_branch_q2 = {}
     for num, row in enumerate(branches.itertuples(index=False)):
         if row.bus1_id and row.bus2_id:
             bus1_num = buses.index.get_loc(row.bus1_id)
             bus2_num = buses.index.get_loc(row.bus2_id)
-            bus_branch_p1.setdefault(bus1_num, []).append(branch_p1[num])
-            bus_branch_q1.setdefault(bus1_num, []).append(branch_q1[num])
-            bus_branch_p2.setdefault(bus2_num, []).append(branch_p2[num])
-            bus_branch_q2.setdefault(bus2_num, []).append(branch_q2[num])
+            bus_p_gen[bus1_num].append(branch_p1_vars[num])
+            bus_q_gen[bus1_num].append(branch_q1_vars[num])
+            bus_p_gen[bus2_num].append(branch_p2_vars[num])
+            bus_q_gen[bus2_num].append(branch_q2_vars[num])
         else:
             raise PyPowsyblError("Only branches connected to both sides are supported")
 
-    bus_gen_p = {}
-    bus_gen_q = {}
     for num, row in enumerate(generators.itertuples(index=False)):
         bus_id = row.bus_id
         if bus_id:
             bus_num = buses.index.get_loc(bus_id)
-            bus_gen_p.setdefault(bus_num, []).append(gen_p[num])
-            bus_gen_q.setdefault(bus_num, []).append(gen_q[num])
-
-    for bus_num in range(bus_count):
-        bus_p[bus_num] += poi.quicksum(bus_branch_p1.setdefault(bus_num, []))
-        bus_p[bus_num] += poi.quicksum(bus_branch_p2.setdefault(bus_num, []))
-        bus_p[bus_num] += poi.quicksum(bus_gen_p.setdefault(bus_num, []))
-        bus_q[bus_num] += poi.quicksum(bus_branch_q1.setdefault(bus_num, []))
-        bus_q[bus_num] += poi.quicksum(bus_branch_q2.setdefault(bus_num, []))
-        bus_q[bus_num] += poi.quicksum(bus_gen_q.setdefault(bus_num, []))
+            bus_p_gen[bus_num].append(gen_p_vars[num])
+            bus_q_gen[bus_num].append(gen_q_vars[num])
 
     loads_sum = loads.groupby("bus_id", as_index=False).agg({"p0": "sum", "q0": "sum"})
     for row in loads_sum.itertuples(index=False):
         bus_id = row.bus_id
         if bus_id:
             bus_num = buses.index.get_loc(bus_id)
-            bus_p[bus_num] -= row.p0
-            bus_q[bus_num] -= row.q0
+            bus_p_load[bus_num] -= row.p0
+            bus_q_load[bus_num] -= row.q0
 
     # TODO shunts
 
     for bus_num in range(bus_count):
-        model.add_quadratic_constraint(bus_p[bus_num], poi.Eq, 0.0)
-        model.add_quadratic_constraint(bus_q[bus_num], poi.Eq, 0.0)
+        bus_p_expr = poi.ExprBuilder()
+        bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
+        bus_p_expr -= bus_p_load[bus_num]
+        model.add_quadratic_constraint(bus_p_expr, poi.Eq, 0.0)
+
+        bus_q_expr = poi.ExprBuilder()
+        bus_q_expr += poi.quicksum(bus_q_gen[bus_num])
+        bus_q_expr -= bus_q_load[bus_num]
+        model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
     # cost function: minimize active power
     cost = poi.ExprBuilder()
     for gen_num in range(gen_count):
         a, b, c = 0, 1.0, 0 # TODO
-        cost += a * gen_p[gen_num] * gen_p[gen_num] + b * gen_p[gen_num] + c
+        cost += a * gen_p_vars[gen_num] * gen_p_vars[gen_num] + b * gen_p_vars[gen_num] + c
     model.set_objective(cost)
 
     model.optimize()
@@ -263,7 +258,7 @@ if __name__ == "__main__":
     print(model.get_model_attribute(poi.ModelAttribute.TerminationStatus))
 
     for i in range(gen_count):
-        print(f"Generator {i} p={model.get_value(gen_p[i])} q={model.get_value(gen_q[i])}")
+        print(f"Generator {i} p={model.get_value(gen_p_vars[i])} q={model.get_value(gen_q_vars[i])}")
 
     for i in range(bus_count):
-        print(f"Bus {i} v=: {model.get_value(v[i])}")
+        print(f"Bus {i} v=: {model.get_value(v_vars[i])}")
