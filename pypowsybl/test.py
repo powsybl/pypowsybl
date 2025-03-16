@@ -6,30 +6,6 @@ from pyoptinterface import nlfunc, ipopt
 import pypowsybl as pp
 
 
-def branch_flow(vars, params):
-    G, B, Bc = params.G, params.B, params.Bc
-    Vi, Vj, theta_i, theta_j, Pij, Qij, Pji, Qji = (
-        vars.Vi,
-        vars.Vj,
-        vars.theta_i,
-        vars.theta_j,
-        vars.Pij,
-        vars.Qij,
-        vars.Pji,
-        vars.Qji,
-    )
-
-    sin_ij = nlfunc.sin(theta_i - theta_j)
-    cos_ij = nlfunc.cos(theta_i - theta_j)
-
-    Pij_eq = G * Vi ** 2 - Vi * Vj * (G * cos_ij + B * sin_ij) - Pij
-    Qij_eq = -(B + Bc) * Vi ** 2 - Vi * Vj * (G * sin_ij - B * cos_ij) - Qij
-    Pji_eq = G * Vj ** 2 - Vi * Vj * (G * cos_ij - B * sin_ij) - Pji
-    Qji_eq = -(B + Bc) * Vj ** 2 - Vi * Vj * (-G * sin_ij - B * cos_ij) - Qji
-
-    return [Pij_eq, Qij_eq, Pji_eq, Qji_eq]
-
-
 # pip install pyoptinterface llvmlite tccbox
 #
 # git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
@@ -48,6 +24,33 @@ def branch_flow(vars, params):
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/mumps/lib:$HOME/ipopt/lib
 #
 if __name__ == "__main__":
+    model = ipopt.Model()
+
+    def branch_flow(vars, params):
+        G, B, Bc = params.G, params.B, params.Bc
+        Vi, Vj, theta_i, theta_j, Pij, Qij, Pji, Qji = (
+            vars.Vi,
+            vars.Vj,
+            vars.theta_i,
+            vars.theta_j,
+            vars.Pij,
+            vars.Qij,
+            vars.Pji,
+            vars.Qji,
+        )
+
+        sin_ij = nlfunc.sin(theta_i - theta_j)
+        cos_ij = nlfunc.cos(theta_i - theta_j)
+
+        Pij_eq = G * Vi ** 2 - Vi * Vj * (G * cos_ij + B * sin_ij) - Pij
+        Qij_eq = -(B + Bc) * Vi ** 2 - Vi * Vj * (G * sin_ij - B * cos_ij) - Qij
+        Pji_eq = G * Vj ** 2 - Vi * Vj * (G * cos_ij - B * sin_ij) - Pji
+        Qji_eq = -(B + Bc) * Vj ** 2 - Vi * Vj * (-G * sin_ij - B * cos_ij) - Qji
+
+        return [Pij_eq, Qij_eq, Pji_eq, Qji_eq]
+
+    bf = model.register_function(branch_flow)
+
     branches = [
         # (from, to, R, X, B, angmin, angmax, Smax)
         (0, 1, 0.00281, 0.0281, 0.00712, -30.0, 30.0, 4.00),
@@ -76,22 +79,12 @@ if __name__ == "__main__":
         (4, 0.0, 6.0, -4.500, 4.500, 0.0, 1000, 0.0),
     ]
 
-    import pandas as pd
-
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
-    # n = pp.network.load("/home/jamgotchiangeo/cases/case5.mat")
-    # print(n.get_lines())
-
     slack_bus = 3
 
-    model = ipopt.Model()
-    bf = model.register_function(branch_flow)
     N_branch = len(branches)
     N_bus = len(buses)
     N_gen = len(generators)
 
-    # create variables and bounds
     Pbr_from = model.add_variables(range(N_branch))
     Qbr_from = model.add_variables(range(N_branch))
     Pbr_to = model.add_variables(range(N_branch))
@@ -160,50 +153,50 @@ if __name__ == "__main__":
         Gs, Bs = buses[b][2], buses[b][3]
         Vb = V[b]
 
-    P_balance_eq[b] -= poi.quicksum(
-        Pbr_from[k] for k in range(N_branch) if branches[k][0] == b
-    )
-    P_balance_eq[b] -= poi.quicksum(
-        Pbr_to[k] for k in range(N_branch) if branches[k][1] == b
-    )
-    P_balance_eq[b] += poi.quicksum(P[i] for i in range(N_gen) if generators[i][0] == b)
-    P_balance_eq[b] -= Pd
-    P_balance_eq[b] -= Gs * Vb * Vb
+        P_balance_eq[b] -= poi.quicksum(
+            Pbr_from[k] for k in range(N_branch) if branches[k][0] == b
+        )
+        P_balance_eq[b] -= poi.quicksum(
+            Pbr_to[k] for k in range(N_branch) if branches[k][1] == b
+        )
+        P_balance_eq[b] += poi.quicksum(P[i] for i in range(N_gen) if generators[i][0] == b)
+        P_balance_eq[b] -= Pd
+        P_balance_eq[b] -= Gs * Vb * Vb
 
-    Q_balance_eq[b] -= poi.quicksum(
-        Qbr_from[k] for k in range(N_branch) if branches[k][0] == b
-    )
-    Q_balance_eq[b] -= poi.quicksum(
-        Qbr_to[k] for k in range(N_branch) if branches[k][1] == b
-    )
-    Q_balance_eq[b] += poi.quicksum(Q[i] for i in range(N_gen) if generators[i][0] == b)
-    Q_balance_eq[b] -= Qd
-    Q_balance_eq[b] += Bs * Vb * Vb
+        Q_balance_eq[b] -= poi.quicksum(
+            Qbr_from[k] for k in range(N_branch) if branches[k][0] == b
+        )
+        Q_balance_eq[b] -= poi.quicksum(
+            Qbr_to[k] for k in range(N_branch) if branches[k][1] == b
+        )
+        Q_balance_eq[b] += poi.quicksum(Q[i] for i in range(N_gen) if generators[i][0] == b)
+        Q_balance_eq[b] -= Qd
+        Q_balance_eq[b] += Bs * Vb * Vb
 
-    model.add_quadratic_constraint(P_balance_eq[b], poi.Eq, 0.0)
-    model.add_quadratic_constraint(Q_balance_eq[b], poi.Eq, 0.0)
-
-    for k in range(N_branch):
-        branch = branches[k]
-
-        i = branch[0]
-        j = branch[1]
-
-        theta_i = theta[i]
-        theta_j = theta[j]
-
-        angmin = branch[5] / 180 * math.pi
-        angmax = branch[6] / 180 * math.pi
-
-        model.add_linear_constraint(theta_i - theta_j, poi.In, angmin, angmax)
-
-        Smax = branch[7]
-        Pij = Pbr_from[k]
-        Qij = Qbr_from[k]
-        Pji = Pbr_to[k]
-        Qji = Qbr_to[k]
-        model.add_quadratic_constraint(Pij * Pij + Qij * Qij, poi.Leq, Smax * Smax)
-        model.add_quadratic_constraint(Pji * Pji + Qji * Qji, poi.Leq, Smax * Smax)
+        model.add_quadratic_constraint(P_balance_eq[b], poi.Eq, 0.0)
+        model.add_quadratic_constraint(Q_balance_eq[b], poi.Eq, 0.0)
+    #
+    # for k in range(N_branch):
+    #     branch = branches[k]
+    #
+    #     i = branch[0]
+    #     j = branch[1]
+    #
+    #     theta_i = theta[i]
+    #     theta_j = theta[j]
+    #
+    #     angmin = branch[5] / 180 * math.pi
+    #     angmax = branch[6] / 180 * math.pi
+    #
+    #     model.add_linear_constraint(theta_i - theta_j, poi.In, angmin, angmax)
+    #
+    #     Smax = branch[7]
+    #     Pij = Pbr_from[k]
+    #     Qij = Qbr_from[k]
+    #     Pji = Pbr_to[k]
+    #     Qji = Qbr_to[k]
+    #     model.add_quadratic_constraint(Pij * Pij + Qij * Qij, poi.Leq, Smax * Smax)
+    #     model.add_quadratic_constraint(Pji * Pji + Qji * Qji, poi.Leq, Smax * Smax)
 
     cost = poi.ExprBuilder()
     for i in range(N_gen):

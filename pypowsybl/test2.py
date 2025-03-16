@@ -6,8 +6,8 @@ from pyoptinterface import nlfunc, ipopt
 import pypowsybl as pp
 from pypowsybl import PyPowsyblError
 
-R2 = 1
-A2 = 0
+R2 = 1.0
+A2 = 0.0
 
 def branch_flow(vars, params):
     y, ksi, g1, b1, g2, b2, r1, a1 = (
@@ -113,7 +113,7 @@ if __name__ == "__main__":
     transfos = n.get_2_windings_transformers(all_attributes=True)
     branches = n.get_branches()
     loads = n.get_loads()
-    n.save("/tmp/toto.xiidm")
+#    n.save("/tmp/toto.xiidm")
 
     slack_terminal = n.get_extensions('slackTerminal')
     if len(slack_terminal) > 0:
@@ -149,15 +149,15 @@ if __name__ == "__main__":
     gen_p_vars = model.add_variables(range(gen_count), name="gen_p")
     gen_q_vars = model.add_variables(range(gen_count), name="gen_q")
 
-    # for num, row in enumerate(generators.itertuples(index=False)):
-    #     model.set_variable_bounds(gen_p[num], row.min_p, row.max_p)
-    #     model.set_variable_bounds(gen_q[num], row.min_q, row.max_q)
+    for gen_num, row in enumerate(generators.itertuples(index=False)):
+        model.set_variable_bounds(gen_p_vars[gen_num], row.min_p, row.max_p)
+        model.set_variable_bounds(gen_q_vars[gen_num], row.min_q, row.max_q)
 
     # branch flow nonlinear constraints
     for branch_num, row in enumerate(lines.itertuples(index=False)):
         r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
-        r1 = 1
-        a1 = 0
+        r1 = 1.0
+        a1 = 0.0
 
         p1_var = branch_p1_vars[branch_num]
         q1_var = branch_q1_vars[branch_num]
@@ -207,14 +207,14 @@ if __name__ == "__main__":
     bus_p_load = [0.0 for i in range(bus_count)]
     bus_q_load = [0.0 for i in range(bus_count)]
 
-    for num, row in enumerate(branches.itertuples(index=False)):
+    for branch_num, row in enumerate(branches.itertuples(index=False)):
         if row.bus1_id and row.bus2_id:
             bus1_num = buses.index.get_loc(row.bus1_id)
             bus2_num = buses.index.get_loc(row.bus2_id)
-            bus_p_gen[bus1_num].append(branch_p1_vars[num])
-            bus_q_gen[bus1_num].append(branch_q1_vars[num])
-            bus_p_gen[bus2_num].append(branch_p2_vars[num])
-            bus_q_gen[bus2_num].append(branch_q2_vars[num])
+            bus_p_gen[bus1_num].append(branch_p1_vars[branch_num])
+            bus_q_gen[bus1_num].append(branch_q1_vars[branch_num])
+            bus_p_gen[bus2_num].append(branch_p2_vars[branch_num])
+            bus_q_gen[bus2_num].append(branch_q2_vars[branch_num])
         else:
             raise PyPowsyblError("Only branches connected to both sides are supported")
 
