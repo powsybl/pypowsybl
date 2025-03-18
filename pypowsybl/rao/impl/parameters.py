@@ -103,6 +103,7 @@ class Parameters:
 
         c_parameters.load_flow_provider = self.loadflow_and_sensitivity_parameters.load_flow_provider
         c_parameters.sensitivity_provider = self.loadflow_and_sensitivity_parameters.sensitivity_provider
+        c_parameters.sensitivity_parameters = self.loadflow_and_sensitivity_parameters.sensitivity_parameters._to_c_parameters()
         c_parameters.sensitivity_failure_overcost = self.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost
 
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())

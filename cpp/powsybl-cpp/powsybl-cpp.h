@@ -570,6 +570,7 @@ public:
 
     // Load flow and sensitivity parameters
     std::string load_flow_provider;
+    SensitivityAnalysisParameters* sensitivity_parameters;
     std::string sensitivity_provider;
     double sensitivity_failure_overcost;
 
@@ -666,6 +667,8 @@ SecurityAnalysisParameters* createSecurityAnalysisParameters();
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
 
 SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
+
+SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(sensitivity_analysis_parameters* parameters_ptr);
 
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 

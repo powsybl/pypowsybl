@@ -9,6 +9,7 @@ import io
 import unittest
 
 import pypowsybl as pp
+import pypowsybl.sensitivity
 from pypowsybl._pypowsybl import (
     RaoComputationStatus,
     ObjectiveFunctionType,
@@ -25,7 +26,8 @@ from pypowsybl.rao import (
     TopoOptimizationParameters,
     MultithreadingParameters,
     SecondPreventiveRaoParameters,
-    NotOptimizedCnecsParameters)
+    NotOptimizedCnecsParameters,
+    LoadFlowAndSensitivityParameters)
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -95,13 +97,21 @@ def test_rao_parameters():
         do_not_optimize_curative_cnecs_for_tsos_without_cras=True
     )
 
+    custom_sensi_param = pypowsybl.sensitivity.Parameters()
+    custom_sensi_param.load_flow_parameters.phase_shifter_regulation_on = True
+    sensitivity_parameters = LoadFlowAndSensitivityParameters(
+        sensitivity_parameters=custom_sensi_param,
+        sensitivity_failure_overcost=32.0
+    )
+
     parameters2 = RaoParameters(
         objective_function_parameters=objective_function_param,
         range_action_optimization_parameters=range_action_optim_param,
         topo_optimization_parameters=topo_optimization_param,
         multithreading_parameters=multithreading_param,
         second_preventive_rao_parameters=second_preventive_params,
-        not_optimized_cnecs_parameters=not_optimized_cnecs_parameters
+        not_optimized_cnecs_parameters=not_optimized_cnecs_parameters,
+        loadflow_and_sensitivity_parameters=sensitivity_parameters
     )
 
     assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST_IN_MEGAWATT
@@ -141,6 +151,10 @@ def test_rao_parameters():
     assert parameters2.second_preventive_rao_parameters.hint_from_first_preventive_rao == False
 
     assert parameters2.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
+
+    assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost == 32.0
+    assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters.phase_shifter_regulation_on == True
+
 
 def test_rao_from_files():
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))

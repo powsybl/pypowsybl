@@ -1609,6 +1609,12 @@ public final class PyPowsyblApiHeader {
         @CField("sensitivity_provider")
         void setSensitivityProvider(CCharPointer sensitivityProvider);
 
+        @CField("sensitivity_parameters")
+        SensitivityAnalysisParametersPointer getSensitivityParameters();
+
+        @CField("sensitivity_parameters")
+        void setSensitivityParameters(SensitivityAnalysisParametersPointer sensitivityParameters);
+
         @CField("sensitivity_failure_overcost")
         double getSensitivityFailureOvercost();
 

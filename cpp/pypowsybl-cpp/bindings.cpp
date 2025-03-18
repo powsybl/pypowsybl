@@ -837,6 +837,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("do_not_optimize_curative_cnecs_for_tsos_without_cras", &pypowsybl::RaoParameters::do_not_optimize_curative_cnecs_for_tsos_without_cras)
             .def_readwrite("load_flow_provider", &pypowsybl::RaoParameters::load_flow_provider)
             .def_readwrite("sensitivity_provider", &pypowsybl::RaoParameters::sensitivity_provider)
+            .def_readwrite("sensitivity_parameters", &pypowsybl::RaoParameters::sensitivity_parameters)
             .def_readwrite("sensitivity_failure_overcost", &pypowsybl::RaoParameters::sensitivity_failure_overcost)
             .def_readwrite("provider_parameters_keys", &pypowsybl::RaoParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values);
