@@ -7,13 +7,15 @@ You can use the module :mod:`pypowsybl.rao` in order to perform a remedial actio
 
 For detailed documentation of involved classes and methods, please refer to the :mod:`API reference <pypowsybl.rao>`.
 
+For detailed documentation of the Powsybl OpenRAO please refer to the `PowSyBl RAO documentation <https://powsybl.readthedocs.io/projects/openrao/en/stable/>`_.
+
 Inputs for a RAO
 ----------------
 To run a RAO you need:
 
 - a network in a PyPowsybl supported exchange format
 - a CRAC file (Contingency list, Remedial Actions and additional Constraints) in json
-- a GLSK file (Generation and Load Shift Keys) in json
+- optionally a GLSK file (Generation and Load Shift Keys) in json
 - optionally a parameters file, in json, allowing to override the RAO parameters
 
 Here is a code example of how to configure and run the RAO:

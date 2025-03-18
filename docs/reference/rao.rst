@@ -3,7 +3,7 @@ Remedial action optimizer (RAO)
 
 .. module:: pypowsybl.rao
 
-The RAO module allows to compute optimize remedial actions for electrical power systems (coordinated capacity calculation, local security analysis and coordinated security analysis).
+The RAO module allows to optimize remedial actions for electrical power systems (coordinated capacity calculation, local security analysis and coordinated security analysis).
 
 Run a RAO
 -----------------------
