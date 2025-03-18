@@ -40,12 +40,12 @@ def branch_flow(vars, params):
     sinTheta2 = nlfunc.sin(theta2)
     cosTheta2 = nlfunc.cos(theta2)
 
-    p1 = r1 * v1 * (g1 * r1 * v1 + y * r1 * v1 * sinKsi - y * R2 * v2 * sinTheta1)
-    q1 = r1 * v1 * (-b1 * r1 * v1 + y * r1 * v1 * cosKsi - y * R2 * v2 * cosTheta1)
-    p2 = R2 * v2 * (g2 * R2 * v2 - y * r1 * v1 * sinTheta2 + y * R2 * v2 * sinKsi)
-    q2 = R2 * v2 * (-b2 * R2 * v2 - y * r1 * v1 * cosTheta2 + y * R2 * v2 * cosKsi)
+    p1_eq = r1 * v1 * (g1 * r1 * v1 + y * r1 * v1 * sinKsi - y * R2 * v2 * sinTheta1) - p1
+    q1_eq = r1 * v1 * (-b1 * r1 * v1 + y * r1 * v1 * cosKsi - y * R2 * v2 * cosTheta1) - q1
+    p2_eq = R2 * v2 * (g2 * R2 * v2 - y * r1 * v1 * sinTheta2 + y * R2 * v2 * sinKsi) - p2
+    q2_eq = R2 * v2 * (-b2 * R2 * v2 - y * r1 * v1 * cosTheta2 + y * R2 * v2 * cosKsi) - q2
 
-    return [p1, q1, p2, q2]
+    return [p1_eq, q1_eq, p2_eq, q2_eq]
 
 
 def add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
@@ -109,7 +109,6 @@ if __name__ == "__main__":
     lines = n.get_lines()
     buses = n.get_buses()
     generators = n.get_generators()
-    print(generators)
     transfos = n.get_2_windings_transformers(all_attributes=True)
     branches = n.get_branches()
     loads = n.get_loads()
@@ -138,7 +137,7 @@ if __name__ == "__main__":
 
     # voltage buses bounds
     for i in range(bus_count):
-        vmin, vmax = 0.5, 1.5  # FIXME get from voltage level dataframe
+        vmin, vmax = 0.9, 1.1  # FIXME get from voltage level dataframe
         model.set_variable_bounds(v_vars[i], vmin, vmax)
 
     # slack bus angle forced to 0
@@ -171,7 +170,9 @@ if __name__ == "__main__":
             v2_var = v_vars[bus2_num]
             ph1_var = ph_vars[bus1_num]
             ph2_var = ph_vars[bus2_num]
-            add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var, r, x, g1, b1, g2, b2, r1, a1)
+            add_branch_constraint(bf,
+                                  v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
+                                  r, x, g1, b1, g2, b2, r1, a1)
         else:
             raise PyPowsyblError("Only branches connected to both sides are supported")
 
@@ -197,7 +198,9 @@ if __name__ == "__main__":
             v2_var = v_vars[bus2_num]
             ph1_var = ph_vars[bus1_num]
             ph2_var = ph_vars[bus2_num]
-            add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var, r, x, g1, b1, g2, b2, r1, a1)
+            add_branch_constraint(bf,
+                                  v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
+                                  r, x, g1, b1, g2, b2, r1, a1)
         else:
             raise PyPowsyblError("Only branches connected to both sides are supported")
 
@@ -234,7 +237,6 @@ if __name__ == "__main__":
             bus_q_load[bus_num] -= row.q0
 
     # TODO shunts
-
     for bus_num in range(bus_count):
         bus_p_expr = poi.ExprBuilder()
         bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
