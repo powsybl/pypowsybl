@@ -279,7 +279,9 @@ std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
     });
 }
 
-RaoParameters::RaoParameters(rao_parameters* src) {
+RaoParameters::RaoParameters(rao_parameters* src):
+   sensitivity_parameters(createSensitivityAnalysisParametersFromCStruct(src->sensitivity_parameters))
+{
     objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
     preventive_stop_criterion = static_cast<PreventiveStopCriterion>(src->preventive_stop_criterion);
     curative_stop_criterion = static_cast<CurativeStopCriterion>(src->curative_stop_criterion);
@@ -387,6 +389,7 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     // Load flow and sensitivity parameters
     res.load_flow_provider = copyStringToCharPtr(load_flow_provider);
     res.sensitivity_provider = copyStringToCharPtr(sensitivity_provider);
+    res.sensitivity_parameters = sensitivity_parameters->to_c_struct().get();
     res.sensitivity_failure_overcost = sensitivity_failure_overcost;
 
     res.base = new parameter_base();
@@ -794,7 +797,11 @@ SecurityAnalysisParameters* createSecurityAnalysisParameters() {
 
 SensitivityAnalysisParameters* createSensitivityAnalysisParameters() {
     sensitivity_analysis_parameters* parameters_ptr = PowsyblCaller::get()->callJava<sensitivity_analysis_parameters*>(::createSensitivityAnalysisParameters);
-     auto parameters = std::shared_ptr<sensitivity_analysis_parameters>(parameters_ptr, [](sensitivity_analysis_parameters* ptr){
+    return createSensitivityAnalysisParametersFromCStruct(parameters_ptr);
+}
+
+SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(sensitivity_analysis_parameters* parameters_ptr) {
+    auto parameters = std::shared_ptr<sensitivity_analysis_parameters>(parameters_ptr, [](sensitivity_analysis_parameters* ptr){
         PowsyblCaller::get()->callJava(::freeSensitivityAnalysisParameters, ptr);
     });
     return new SensitivityAnalysisParameters(parameters.get());

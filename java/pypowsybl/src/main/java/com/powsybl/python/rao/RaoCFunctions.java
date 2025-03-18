@@ -46,6 +46,9 @@ import static com.powsybl.python.commons.CTypeUtil.createParameterBase;
 import static com.powsybl.python.commons.Util.binaryBufferToBytes;
 import static com.powsybl.python.commons.Util.doCatch;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
+import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
+import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
+import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
 
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
@@ -274,6 +277,9 @@ public final class RaoCFunctions {
         raoParameters.getLoadFlowAndSensitivityParameters().setLoadFlowProvider(CTypeUtil.toString(paramPointer.getLoadFlowProvider()));
         raoParameters.getLoadFlowAndSensitivityParameters().setSensitivityProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()));
         raoParameters.getLoadFlowAndSensitivityParameters().setSensitivityFailureOvercost(paramPointer.getSensitivityFailureOvercost());
+        raoParameters.getLoadFlowAndSensitivityParameters().setSensitivityWithLoadFlowParameters(createSensitivityAnalysisParameters(
+            false, paramPointer.getSensitivityParameters(),
+            getProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()))));
 
         Map<String, String> extensionData = getExtensionData(paramPointer);
         MnecParametersExtension mnecExt = RaoUtils.buildMnecParametersExtension(extensionData);
@@ -338,6 +344,9 @@ public final class RaoCFunctions {
         // Load flow and sensitivity providers
         paramsPtr.setLoadFlowProvider(CTypeUtil.toCharPtr(parameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
         paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(parameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
+        paramsPtr.setSensitivityParameters(
+            convertToSensitivityAnalysisParametersPointer(
+                parameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters()));
         paramsPtr.setSensitivityFailureOvercost(parameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
 
         convertExtensionData(parameters, paramsPtr);

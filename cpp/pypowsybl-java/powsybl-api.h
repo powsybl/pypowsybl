@@ -572,5 +572,6 @@ typedef struct rao_parameters_struct {
 
   char* load_flow_provider;  // Load flow and sensitivity parameters
   char* sensitivity_provider;
+  struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
   double sensitivity_failure_overcost;
 } rao_parameters;

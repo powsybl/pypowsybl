@@ -1,10 +1,14 @@
 from pypowsybl._pypowsybl import (
     RaoParameters
 )
+from pypowsybl.sensitivity import Parameters as SensitivityParameters
+from pypowsybl.loadflow.impl.util import parameters_from_c
+
 
 class LoadFlowAndSensitivityParameters:
     def __init__(self, load_flow_provider: str = None,
                  sensitivity_provider: str = None,
+                 sensitivity_parameters: SensitivityParameters = None,
                  sensitivity_failure_overcost: float = None,
                  rao_parameters: RaoParameters = None) -> None:
         if rao_parameters is not None:
@@ -17,6 +21,8 @@ class LoadFlowAndSensitivityParameters:
             self.sensitivity_provider = sensitivity_provider
         if sensitivity_failure_overcost is not None:
             self.sensitivity_failure_overcost = sensitivity_failure_overcost
+        if sensitivity_parameters is not None:
+            self.sensitivity_parameters = sensitivity_parameters
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(RaoParameters())
@@ -25,6 +31,9 @@ class LoadFlowAndSensitivityParameters:
         self.load_flow_provider = c_parameters.load_flow_provider
         self.sensitivity_provider = c_parameters.sensitivity_provider
         self.sensitivity_failure_overcost = c_parameters.sensitivity_failure_overcost
+        sensitivity_provider_params = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+        self.sensitivity_parameters = SensitivityParameters(parameters_from_c(c_parameters.sensitivity_parameters.loadflow_parameters),
+                                                            sensitivity_provider_params)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \

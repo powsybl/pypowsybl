@@ -930,6 +930,7 @@ class RaoParameters:
     do_not_optimize_curative_cnecs_for_tsos_without_cras: bool
     load_flow_provider: str
     sensitivity_provider: str
+    sensitivity_parameters: SensitivityAnalysisParameters
     sensitivity_failure_overcost: float
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
