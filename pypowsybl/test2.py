@@ -48,6 +48,21 @@ def branch_flow(vars, params):
 
     return [p1_eq, q1_eq, p2_eq, q2_eq]
 
+def shunt_flow(vars, params):
+    g, b = (
+        params.g,
+        params.b
+    )
+    v, p, q = (
+        vars.v,
+        vars.p,
+        vars.q
+    )
+
+    p_eq = -g * v * v - p
+    q_eq = -b * v * v - q
+
+    return [p_eq, q_eq]
 
 def add_branch_constraint(bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
                           r, x, g1, b1, g2, b2, r1, a1):
@@ -104,12 +119,13 @@ if __name__ == "__main__":
     pd.options.display.max_columns = None
     pd.options.display.expand_frame_repr = False
 
-    n = pp.network.create_ieee9()
+    n = pp.network.create_ieee118()
 #    n = pp.network.create_eurostag_tutorial_example1_network()
     n.per_unit = True
     buses = n.get_buses()
     generators = n.get_generators()
     loads = n.get_loads()
+    shunts = n.get_shunt_compensators()
     lines = n.get_lines()
     transfos = n.get_2_windings_transformers(all_attributes=True)
     branches = n.get_branches()
@@ -122,9 +138,11 @@ if __name__ == "__main__":
 
     model = ipopt.Model()
     bf = model.register_function(branch_flow)
+    sf = model.register_function(shunt_flow)
     branch_count = len(lines) + len(transfos)
     bus_count = len(buses)
     gen_count = len(generators)
+    shunt_count = len(shunts)
 
     # create variables
     branch_p1_vars = model.add_variables(range(branch_count), name='branch_p1')
@@ -148,9 +166,13 @@ if __name__ == "__main__":
     gen_p_vars = model.add_variables(range(gen_count), name="gen_p")
     gen_q_vars = model.add_variables(range(gen_count), name="gen_q")
 
+    shunt_p_vars = model.add_variables(range(gen_count), name="shunt_p")
+    shunt_q_vars = model.add_variables(range(gen_count), name="shunt_q")
+
+    q_margin = 1.0 / n.nominal_apparent_power
     for gen_num, row in enumerate(generators.itertuples(index=False)):
         model.set_variable_bounds(gen_p_vars[gen_num], row.min_p, row.max_p)
-        model.set_variable_bounds(gen_q_vars[gen_num], row.min_q, row.max_q)
+        model.set_variable_bounds(gen_q_vars[gen_num], row.min_q + q_margin, row.max_q - q_margin)
 
     # branch flow nonlinear constraints
     for branch_num, row in enumerate(lines.itertuples(index=False)):
@@ -236,7 +258,29 @@ if __name__ == "__main__":
             bus_p_load[bus_num] -= row.p0
             bus_q_load[bus_num] -= row.q0
 
-    # TODO shunts
+    for num, row in enumerate(shunts.itertuples(index=False)):
+        g, b, bus_id = row.g, row.b, row.bus_id
+        if bus_id:
+            p_var = shunt_p_vars[num]
+            q_var = shunt_q_vars[num]
+            bus_num = buses.index.get_loc(bus_id)
+            v_var = v_vars[bus_num]
+            model.add_nl_constraint(
+                sf,
+                vars=nlfunc.Vars(
+                    v=v_var,
+                    p=p_var,
+                    q=q_var,
+                ),
+                params=nlfunc.Params(
+                    g=g,
+                    b=b,
+                ),
+                eq=0.0,
+            )
+            bus_p_gen[bus_num].append(p_var)
+            bus_q_gen[bus_num].append(q_var)
+
     for bus_num in range(bus_count):
         bus_p_expr = poi.ExprBuilder()
         bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
@@ -273,7 +317,9 @@ if __name__ == "__main__":
             bus_num = buses.index.get_loc(bus_id)
             gen_target_v.append(model.get_value(v_vars[bus_num]))
 
-    n.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v)
+    n.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
+                        voltage_regulator_on = [True] * len(gen_ids))
+    #print(n.get_generators())
 
     bus_ids = []
     bus_v_mag = []
@@ -284,7 +330,7 @@ if __name__ == "__main__":
         bus_v_angle.append(model.get_value(ph_vars[bus_num]))
 
     n.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
-    print(n.get_buses())
+    #print(n.get_buses())
 
     parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.PREVIOUS_VALUES)
     logging.basicConfig(level=logging.DEBUG)
