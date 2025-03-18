@@ -1,3 +1,4 @@
+import logging
 from math import hypot, atan2
 
 import pyoptinterface as poi
@@ -103,16 +104,15 @@ if __name__ == "__main__":
     pd.options.display.max_columns = None
     pd.options.display.expand_frame_repr = False
 
-#    n = pp.network.create_ieee9()
-    n = pp.network.create_eurostag_tutorial_example1_network()
+    n = pp.network.create_ieee9()
+#    n = pp.network.create_eurostag_tutorial_example1_network()
     n.per_unit = True
-    lines = n.get_lines()
     buses = n.get_buses()
     generators = n.get_generators()
+    loads = n.get_loads()
+    lines = n.get_lines()
     transfos = n.get_2_windings_transformers(all_attributes=True)
     branches = n.get_branches()
-    loads = n.get_loads()
-#    n.save("/tmp/toto.xiidm")
 
     slack_terminal = n.get_extensions('slackTerminal')
     if len(slack_terminal) > 0:
@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     # voltage buses bounds
     for i in range(bus_count):
-        vmin, vmax = 0.9, 1.1  # FIXME get from voltage level dataframe
+        vmin, vmax = 0.90, 1.1  # FIXME get from voltage level dataframe
         model.set_variable_bounds(v_vars[i], vmin, vmax)
 
     # slack bus angle forced to 0
@@ -259,8 +259,35 @@ if __name__ == "__main__":
 
     print(model.get_model_attribute(poi.ModelAttribute.TerminationStatus))
 
-    for i in range(gen_count):
-        print(f"Generator {i} p={model.get_value(gen_p_vars[i])} q={model.get_value(gen_q_vars[i])}")
+    # update
+    gen_ids = []
+    gen_target_p = []
+    gen_target_q = []
+    gen_target_v = []
+    for gen_num, (gen_id, row) in enumerate(generators.iterrows()):
+        bus_id = row.bus_id
+        if bus_id:
+            gen_ids.append(gen_id)
+            gen_target_p.append(-model.get_value(gen_p_vars[gen_num]))
+            gen_target_q.append(-model.get_value(gen_q_vars[gen_num]))
+            bus_num = buses.index.get_loc(bus_id)
+            gen_target_v.append(model.get_value(v_vars[bus_num]))
 
-    for i in range(bus_count):
-        print(f"Bus {i} v=: {model.get_value(v_vars[i])}")
+    n.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v)
+
+    bus_ids = []
+    bus_v_mag = []
+    bus_v_angle = []
+    for bus_num, (bus_id, row) in enumerate(buses.iterrows()):
+        bus_ids.append(bus_id)
+        bus_v_mag.append(model.get_value(v_vars[bus_num]))
+        bus_v_angle.append(model.get_value(ph_vars[bus_num]))
+
+    n.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
+    print(n.get_buses())
+
+    parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.PREVIOUS_VALUES)
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('powsybl').setLevel(logging.DEBUG)
+    r = pp.loadflow.run_ac(n, parameters)
+    print(r)
