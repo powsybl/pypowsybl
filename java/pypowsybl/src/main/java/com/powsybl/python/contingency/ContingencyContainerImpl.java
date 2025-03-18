@@ -9,12 +9,12 @@ package com.powsybl.python.contingency;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
+import com.powsybl.contingency.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,10 +23,21 @@ import java.util.stream.Collectors;
 public class ContingencyContainerImpl implements ContingencyContainer {
 
     private final Map<String, List<String>> elementIdsByContingencyId = new HashMap<>();
+    private Path pathToContingencyJsonFile = null;
 
     @Override
     public void addContingency(String contingencyId, List<String> elementIds) {
         elementIdsByContingencyId.put(contingencyId, elementIds);
+    }
+
+    @Override
+    public void addContingencyFromJsonFile(Path pathToJsonFile) {
+        if (Files.exists(pathToJsonFile)) {
+            pathToContingencyJsonFile = pathToJsonFile;
+        } else {
+            throw new PowsyblException("Can't find JSON file: " + pathToJsonFile);
+        }
+
     }
 
     private static ContingencyElement createContingencyElement(Network network, String elementId) {
@@ -67,6 +78,20 @@ public class ContingencyContainerImpl implements ContingencyContainer {
 
     protected List<Contingency> createContingencies(Network network) {
         List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
+
+        if (pathToContingencyJsonFile != null) {
+            ContingencyList contingenciesList;
+            try {
+                contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
+            } catch (NullPointerException e) {
+                throw new PowsyblException("Can't find JSON file.", e);
+            }
+
+            for (Contingency contingency : contingenciesList.getContingencies(network)) {
+                contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
+            }
+        }
+
         for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
             String contingencyId = e.getKey();
             List<String> elementIds = e.getValue();
