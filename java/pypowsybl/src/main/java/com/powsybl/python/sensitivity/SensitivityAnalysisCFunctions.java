@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.powsybl.python.commons.CTypeUtil.createParameterBase;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.createCharPtrArray;
 import static com.powsybl.python.commons.Util.doCatch;
@@ -162,7 +163,7 @@ public final class SensitivityAnalysisCFunctions {
         });
     }
 
-    private static SensitivityAnalysisProvider getProvider(String name) {
+    public static SensitivityAnalysisProvider getProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider() : name;
         return SensitivityAnalysisProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
@@ -184,11 +185,12 @@ public final class SensitivityAnalysisCFunctions {
         return doCatch(exceptionHandlerPtr, () -> convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters()));
     }
 
-    private static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
+    public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
         SensitivityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SensitivityAnalysisParametersPointer.class));
         LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.setParameterBase(createParameterBase());
+        paramsPtr.getParameterBase().setProviderParametersValuesCount(0);
+        paramsPtr.getParameterBase().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 
