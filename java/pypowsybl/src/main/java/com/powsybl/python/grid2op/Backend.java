@@ -45,6 +45,7 @@ public class Backend implements Closeable {
 
     private final Bus[] buses;
     private final double[] busV;
+    private final double[] busAngle;
     private Map<String, Integer> busIdToGlobalNum;
 
     private final List<Load> loads;
@@ -53,6 +54,7 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> loadP;
     private final ArrayPointer<CDoublePointer> loadQ;
     private final ArrayPointer<CDoublePointer> loadV;
+    private final ArrayPointer<CDoublePointer> loadAngle;
     private final int[] loadBusGlobalNum;
 
     private final List<Generator> generators;
@@ -61,6 +63,7 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> generatorP;
     private final ArrayPointer<CDoublePointer> generatorQ;
     private final ArrayPointer<CDoublePointer> generatorV;
+    private final ArrayPointer<CDoublePointer> generatorAngle;
     private final int[] generatorBusGlobalNum;
 
     private final List<ShuntCompensator> shunts;
@@ -69,6 +72,7 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> shuntP;
     private final ArrayPointer<CDoublePointer> shuntQ;
     private final ArrayPointer<CDoublePointer> shuntV;
+    private final ArrayPointer<CDoublePointer> shuntAngle;
     private final int[] shuntBusGlobalNum;
     private final ArrayPointer<CIntPointer> shuntBusLocalNum;
 
@@ -84,6 +88,8 @@ public class Backend implements Closeable {
     private final ArrayPointer<CDoublePointer> branchQ2;
     private final ArrayPointer<CDoublePointer> branchV1;
     private final ArrayPointer<CDoublePointer> branchV2;
+    private final ArrayPointer<CDoublePointer> branchAngle1;
+    private final ArrayPointer<CDoublePointer> branchAngle2;
     private final ArrayPointer<CDoublePointer> branchI1;
     private final ArrayPointer<CDoublePointer> branchI2;
     private final ArrayPointer<CDoublePointer> branchPermanentLimitA;
@@ -128,6 +134,7 @@ public class Backend implements Closeable {
         int busCount = network.getBusBreakerView().getBusCount();
         buses = new Bus[busCount];
         busV = new double[busCount];
+        busAngle = new double[busCount];
         busIdToGlobalNum = new HashMap<>(busCount);
         for (int voltageLevelNum = 0; voltageLevelNum < voltageLevels.size(); voltageLevelNum++) {
             VoltageLevel voltageLevel = voltageLevels.get(voltageLevelNum);
@@ -149,6 +156,7 @@ public class Backend implements Closeable {
         loadP = createDoubleArrayPointer(loads.size());
         loadQ = createDoubleArrayPointer(loads.size());
         loadV = createDoubleArrayPointer(loads.size());
+        loadAngle = createDoubleArrayPointer(loads.size());
         loadBusGlobalNum = new int[loads.size()];
         for (int i = 0; i < loads.size(); i++) {
             Load load = loads.get(i);
@@ -164,6 +172,7 @@ public class Backend implements Closeable {
         generatorP = createDoubleArrayPointer(generators.size());
         generatorQ = createDoubleArrayPointer(generators.size());
         generatorV = createDoubleArrayPointer(generators.size());
+        generatorAngle = createDoubleArrayPointer(generators.size());
         generatorBusGlobalNum = new int[generators.size()];
         for (int i = 0; i < generators.size(); i++) {
             Generator generator = generators.get(i);
@@ -179,6 +188,7 @@ public class Backend implements Closeable {
         shuntP = createDoubleArrayPointer(shunts.size());
         shuntQ = createDoubleArrayPointer(shunts.size());
         shuntV = createDoubleArrayPointer(shunts.size());
+        shuntAngle = createDoubleArrayPointer(shunts.size());
         shuntBusGlobalNum = new int[shunts.size()];
         shuntBusLocalNum = createIntArrayPointer(shunts.size());
         for (int i = 0; i < shunts.size(); i++) {
@@ -200,6 +210,8 @@ public class Backend implements Closeable {
         branchQ2 = createDoubleArrayPointer(branches.size());
         branchV1 = createDoubleArrayPointer(branches.size());
         branchV2 = createDoubleArrayPointer(branches.size());
+        branchAngle1 = createDoubleArrayPointer(branches.size());
+        branchAngle2 = createDoubleArrayPointer(branches.size());
         branchI1 = createDoubleArrayPointer(branches.size());
         branchI2 = createDoubleArrayPointer(branches.size());
         branchPermanentLimitA = createDoubleArrayPointer(branches.size());
@@ -436,6 +448,7 @@ public class Backend implements Closeable {
             Bus bus = buses[i];
             if (bus != null) {
                 busV[i] = fixNan(bus.getV());
+                busAngle[i] = fixNan(Math.toRadians(bus.getAngle()));
             }
         }
     }
@@ -446,6 +459,14 @@ public class Backend implements Closeable {
             return 0.0;
         }
         return busV[globalNum];
+    }
+
+    private double getAngle(int i, int[] xBusGlobalNum) {
+        int globalNum = xBusGlobalNum[i];
+        if (globalNum == -1) {
+            return 0.0;
+        }
+        return busAngle[globalNum];
     }
 
     private double getP(Terminal t, int i, int[] xBusGlobalNum) {
@@ -479,6 +500,7 @@ public class Backend implements Closeable {
             loadP.getPtr().write(i, getP(terminal, i, loadBusGlobalNum));
             loadQ.getPtr().write(i, getQ(terminal, i, loadBusGlobalNum));
             loadV.getPtr().write(i, getV(i, loadBusGlobalNum));
+            loadAngle.getPtr().write(i, getAngle(i, loadBusGlobalNum));
         }
     }
 
@@ -489,6 +511,7 @@ public class Backend implements Closeable {
             generatorP.getPtr().write(i, -getP(terminal, i, generatorBusGlobalNum)); // grid2op convention
             generatorQ.getPtr().write(i, -getQ(terminal, i, generatorBusGlobalNum)); // grid2op convention
             generatorV.getPtr().write(i, getV(i, generatorBusGlobalNum));
+            generatorAngle.getPtr().write(i, getAngle(i, generatorBusGlobalNum));
         }
     }
 
@@ -499,6 +522,7 @@ public class Backend implements Closeable {
             shuntP.getPtr().write(i, getP(terminal, i, shuntBusGlobalNum));
             shuntQ.getPtr().write(i, getQ(terminal, i, shuntBusGlobalNum));
             shuntV.getPtr().write(i, getV(i, shuntBusGlobalNum));
+            shuntAngle.getPtr().write(i, getAngle(i, shuntBusGlobalNum));
         }
     }
 
@@ -513,6 +537,8 @@ public class Backend implements Closeable {
             branchQ2.getPtr().write(i, getQ(terminal2, i, branchBusGlobalNum2));
             branchV1.getPtr().write(i, getV(i, branchBusGlobalNum1));
             branchV2.getPtr().write(i, getV(i, branchBusGlobalNum2));
+            branchAngle1.getPtr().write(i, getAngle(i, branchBusGlobalNum1));
+            branchAngle2.getPtr().write(i, getAngle(i, branchBusGlobalNum2));
             branchI1.getPtr().write(i, getI(terminal1, i, branchBusGlobalNum1));
             branchI2.getPtr().write(i, getI(terminal2, i, branchBusGlobalNum2));
         }
@@ -548,18 +574,23 @@ public class Backend implements Closeable {
             case LOAD_P -> loadP;
             case LOAD_Q -> loadQ;
             case LOAD_V -> loadV;
+            case LOAD_ANGLE -> loadAngle;
             case GENERATOR_P -> generatorP;
             case GENERATOR_Q -> generatorQ;
             case GENERATOR_V -> generatorV;
+            case GENERATOR_ANGLE -> generatorAngle;
             case SHUNT_P -> shuntP;
             case SHUNT_Q -> shuntQ;
             case SHUNT_V -> shuntV;
+            case SHUNT_ANGLE -> shuntAngle;
             case BRANCH_P1 -> branchP1;
             case BRANCH_P2 -> branchP2;
             case BRANCH_Q1 -> branchQ1;
             case BRANCH_Q2 -> branchQ2;
             case BRANCH_V1 -> branchV1;
             case BRANCH_V2 -> branchV2;
+            case BRANCH_ANGLE1 -> branchAngle1;
+            case BRANCH_ANGLE2 -> branchAngle2;
             case BRANCH_I1 -> branchI1;
             case BRANCH_I2 -> branchI2;
             case BRANCH_PERMANENT_LIMIT_A -> branchPermanentLimitA;
@@ -841,18 +872,21 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(loadP);
         PyPowsyblApiHeader.freeArrayPointer(loadQ);
         PyPowsyblApiHeader.freeArrayPointer(loadV);
+        PyPowsyblApiHeader.freeArrayPointer(loadAngle);
 
         Util.freeCharPtrArray(generatorName);
         PyPowsyblApiHeader.freeArrayPointer(generatorToVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(generatorP);
         PyPowsyblApiHeader.freeArrayPointer(generatorQ);
         PyPowsyblApiHeader.freeArrayPointer(generatorV);
+        PyPowsyblApiHeader.freeArrayPointer(generatorAngle);
 
         Util.freeCharPtrArray(shuntName);
         PyPowsyblApiHeader.freeArrayPointer(shuntToVoltageLevelNum);
         PyPowsyblApiHeader.freeArrayPointer(shuntP);
         PyPowsyblApiHeader.freeArrayPointer(shuntQ);
         PyPowsyblApiHeader.freeArrayPointer(shuntV);
+        PyPowsyblApiHeader.freeArrayPointer(shuntAngle);
         PyPowsyblApiHeader.freeArrayPointer(shuntBusLocalNum);
 
         Util.freeCharPtrArray(branchName);
@@ -864,6 +898,8 @@ public class Backend implements Closeable {
         PyPowsyblApiHeader.freeArrayPointer(branchQ2);
         PyPowsyblApiHeader.freeArrayPointer(branchV1);
         PyPowsyblApiHeader.freeArrayPointer(branchV2);
+        PyPowsyblApiHeader.freeArrayPointer(branchAngle1);
+        PyPowsyblApiHeader.freeArrayPointer(branchAngle2);
         PyPowsyblApiHeader.freeArrayPointer(branchI1);
         PyPowsyblApiHeader.freeArrayPointer(branchI2);
 
