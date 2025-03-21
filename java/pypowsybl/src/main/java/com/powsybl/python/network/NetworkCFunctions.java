@@ -35,8 +35,14 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
+import com.powsybl.nad.model.BranchEdge;
+import com.powsybl.nad.model.Edge;
+import com.powsybl.nad.model.Graph;
 import com.powsybl.nad.model.Point;
+import com.powsybl.nad.svg.EdgeInfo;
 import com.powsybl.nad.svg.SvgParameters;
+import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
+import com.powsybl.nad.svg.iidm.LabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -1117,7 +1123,8 @@ public final class NetworkCFunctions {
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile, CCharPointer metadataFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
                                                   double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
-                                                  DataframePointer fixedPositions, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  DataframePointer fixedPositions, DataframePointer branchLabels,
+                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String svgFileStr = CTypeUtil.toString(svgFile);
@@ -1125,6 +1132,7 @@ public final class NetworkCFunctions {
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             applyFixedPositions(fixedPositions, nadParameters);
+            applyCustomLabels(branchLabels, nadParameters);
             NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
     }
@@ -1192,16 +1200,91 @@ public final class NetworkCFunctions {
         }
     }
 
+    record CustomBranchLabels(String side1, String middle, String side2, EdgeInfo.Direction arrow1, EdgeInfo.Direction arrow2) {
+    }
+
+    private static String getValueFromSeriesOrNull(StringSeries series, int row) {
+        return (series != null) ? series.get(row) : null;
+    }
+
+    private static EdgeInfo.Direction getDirectionFromSeriesOrNull(StringSeries series, int row) {
+        if (series == null) {
+            return null;
+        }
+        String dir = series.get(row);
+        return (dir != null && !dir.isEmpty()) ? EdgeInfo.Direction.valueOf(dir) : null;
+    }
+
+    private static Map<String, CustomBranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries,
+                                                                            StringSeries side1Label, StringSeries middleLabel,
+                                                                            StringSeries side2Label, StringSeries arrow1,
+                                                                            StringSeries arrow2) {
+        Map<String, CustomBranchLabels> nadCustomBranchLabels = new HashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            String id = idSeries.get(i);
+            CustomBranchLabels labels = new CustomBranchLabels(
+                    getValueFromSeriesOrNull(side1Label, i),
+                    getValueFromSeriesOrNull(middleLabel, i),
+                    getValueFromSeriesOrNull(side2Label, i),
+                    getDirectionFromSeriesOrNull(arrow1, i),
+                    getDirectionFromSeriesOrNull(arrow2, i)
+            );
+            nadCustomBranchLabels.put(id, labels);
+        }
+        return nadCustomBranchLabels;
+    }
+
+    private static LabelProviderFactory getCustomLabelProviderFactory(Map<String, CustomBranchLabels> branchLabels) {
+        return (network, svgParameters) -> new DefaultLabelProvider(network, svgParameters) {
+            @Override
+            public Optional<EdgeInfo> getEdgeInfo(Graph graph, BranchEdge edge, BranchEdge.Side side) {
+                CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
+                String label = null;
+                EdgeInfo.Direction arrowDirection = null;
+                if (bl != null) {
+                    label = side == BranchEdge.Side.ONE ? bl.side1 : bl.side2;
+                    arrowDirection = side == BranchEdge.Side.ONE ? bl.arrow1 : bl.arrow2;
+                }
+                return Optional.of(new EdgeInfo("ActivePower", arrowDirection, null, label));
+            }
+
+            @Override
+            public String getLabel(Edge edge) {
+                CustomBranchLabels bl = branchLabels.get(edge.getEquipmentId());
+                return (bl != null) ? bl.middle : null;
+            }
+        };
+    }
+
+    private static void applyCustomLabels(DataframePointer customLabels, NadParameters nadParameters) {
+        UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
+        if (customLabelsDataframe != null) {
+
+            //when the custom dataframe is defined, the displaying of the edge name is forced
+            nadParameters.getSvgParameters().setEdgeNameDisplayed(true);
+
+            StringSeries idSeries = customLabelsDataframe.getStrings("id");
+            int rowCount = customLabelsDataframe.getRowCount();
+
+            Map<String, CustomBranchLabels> branchLabels = getNadCustomBranchLabels(rowCount, idSeries, customLabelsDataframe.getStrings("side1"),
+                    customLabelsDataframe.getStrings("middle"), customLabelsDataframe.getStrings("side2"),
+                    customLabelsDataframe.getStrings("arrow1"), customLabelsDataframe.getStrings("arrow2"));
+
+            nadParameters.setLabelProviderFactory(getCustomLabelProviderFactory(branchLabels));
+        }
+    }
+
     @CEntryPoint(name = "getNetworkAreaDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
                                                         double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
-                                                        DataframePointer fixedPositions, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                        DataframePointer fixedPositions, DataframePointer branchLabels, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             applyFixedPositions(fixedPositions, nadParameters);
+            applyCustomLabels(branchLabels, nadParameters);
             List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return createCharPtrArray(svgAndMeta);
         });
