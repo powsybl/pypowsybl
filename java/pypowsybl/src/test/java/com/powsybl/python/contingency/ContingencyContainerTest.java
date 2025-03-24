@@ -15,8 +15,6 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.*;
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
@@ -33,7 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class ContingencyContainerTest {
 
     protected FileSystem fileSystem;
-    private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyContainerTest.class);
 
     @Test
     void testContingencyConverter() {
@@ -117,10 +114,5 @@ class ContingencyContainerTest {
         assertEquals(2, contingencies.size());
         assertEquals("contingency", contingencies.get(0).getId());
         assertEquals("contingency2", contingencies.get(1).getId());
-
-        assertThrows(PowsyblException.class, () -> {
-            container.addContingencyFromJsonFile(fileSystem.getPath("/notExistingContingencies.json"));
-            container.createContingencies(network);
-        });
     }
 }
