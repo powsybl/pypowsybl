@@ -7,8 +7,6 @@
 
 from typing import List, Callable
 from pypowsybl import _pypowsybl
-from pypowsybl.network import Network
-
 
 class ContingencyContainer:
     def __init__(self, handle: _pypowsybl.JavaHandle):
