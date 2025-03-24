@@ -37,7 +37,6 @@ public class ContingencyContainerImpl implements ContingencyContainer {
         } else {
             throw new PowsyblException("Can't find JSON file: " + pathToJsonFile);
         }
-
     }
 
     private static ContingencyElement createContingencyElement(Network network, String elementId) {
@@ -81,11 +80,7 @@ public class ContingencyContainerImpl implements ContingencyContainer {
 
         if (pathToContingencyJsonFile != null) {
             ContingencyList contingenciesList;
-            try {
-                contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
-            } catch (NullPointerException e) {
-                throw new PowsyblException("Can't find JSON file.", e);
-            }
+            contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
 
             for (Contingency contingency : contingenciesList.getContingencies(network)) {
                 contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
