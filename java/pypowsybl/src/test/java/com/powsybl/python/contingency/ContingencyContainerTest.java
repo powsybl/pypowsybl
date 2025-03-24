@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -106,7 +107,7 @@ class ContingencyContainerTest {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
-        Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
+        Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/contingencies.json")), fileSystem.getPath("/contingencies.json"));
         container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
 
@@ -119,5 +120,8 @@ class ContingencyContainerTest {
             container.addContingencyFromJsonFile(fileSystem.getPath("/notExistingContingencies.json"));
             container.createContingencies(network);
         });
+
+        assertThrows(NullPointerException.class, () ->
+            Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/notExistingContingencies.json")), fileSystem.getPath("/notExistingContingencies.json")));
     }
 }
