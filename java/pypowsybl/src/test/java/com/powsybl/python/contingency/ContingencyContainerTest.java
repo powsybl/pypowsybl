@@ -111,11 +111,12 @@ class ContingencyContainerTest {
 
         try {
             Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
-        } catch (NullPointerException e) {
+            container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
+
+        } catch (Exception e) {
             LOGGER.error("JSON file required doesn't exist");
         }
 
-        container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
 
         assertFalse(contingencies.isEmpty());
