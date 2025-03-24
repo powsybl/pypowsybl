@@ -407,3 +407,13 @@ def test_tie_line_contingency():
     sa.add_single_element_contingency('NHV1_NHV2_1', 'tie line contingency')
     sa_result = sa.run_ac(n)
     assert 'tie line contingency' in sa_result.post_contingency_results.keys()
+
+def test_add_contingencies_from_json_file():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_contingencies_from_json_file("/contingencies.json")
+    sa_result = sa.run_ac(n)
+    assert 'contingency' in sa_result.post_contingency_results.keys()
+    assert 'contingency2' in sa_result.post_contingency_results.keys()
+
+
