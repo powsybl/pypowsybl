@@ -109,14 +109,8 @@ class ContingencyContainerTest {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
-        try {
-            Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
-            container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
-
-        } catch (Exception e) {
-            LOGGER.error("JSON file required doesn't exist");
-        }
-
+        Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
+        container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
 
         assertFalse(contingencies.isEmpty());
