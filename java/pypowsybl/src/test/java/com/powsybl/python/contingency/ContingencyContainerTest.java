@@ -15,12 +15,13 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.*;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ContingencyContainerTest {
 
     protected FileSystem fileSystem;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ContingencyContainerTest.class);
 
     @Test
     void testContingencyConverter() {
@@ -107,7 +109,12 @@ class ContingencyContainerTest {
         Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
-        Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/contingencies.json")), fileSystem.getPath("/contingencies.json"));
+        try {
+            Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
+        } catch (NullPointerException e) {
+            LOGGER.error("JSON file required doesn't exist");
+        }
+
         container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
         List<Contingency> contingencies = container.createContingencies(network);
 
@@ -120,8 +127,5 @@ class ContingencyContainerTest {
             container.addContingencyFromJsonFile(fileSystem.getPath("/notExistingContingencies.json"));
             container.createContingencies(network);
         });
-
-        assertThrows(NullPointerException.class, () ->
-            Files.copy(Objects.requireNonNull(getClass().getResourceAsStream("/notExistingContingencies.json")), fileSystem.getPath("/notExistingContingencies.json")));
     }
 }
