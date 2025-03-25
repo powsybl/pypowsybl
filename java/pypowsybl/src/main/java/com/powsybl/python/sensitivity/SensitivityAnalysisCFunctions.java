@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.powsybl.python.commons.CTypeUtil.createParameterBase;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.createCharPtrArray;
 import static com.powsybl.python.commons.Util.doCatch;
@@ -188,7 +187,6 @@ public final class SensitivityAnalysisCFunctions {
     public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
         SensitivityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SensitivityAnalysisParametersPointer.class));
         LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters());
-        paramsPtr.setParameterBase(createParameterBase());
         paramsPtr.getParameterBase().setProviderParametersValuesCount(0);
         paramsPtr.getParameterBase().setProviderParametersKeysCount(0);
         return paramsPtr;

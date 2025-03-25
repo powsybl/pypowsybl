@@ -171,8 +171,4 @@ public final class CTypeUtil {
         cMetadata.setAttributesCount(metadata.size());
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
     }
-
-    public static PyPowsyblApiHeader.ParameterBase createParameterBase() {
-        return UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.ParameterBase.class));
-    }
 }
