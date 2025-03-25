@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.powsybl.python.commons.CTypeUtil.createParameterBase;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.freeArrayPointer;
 import static com.powsybl.python.commons.Util.createCharPtrArray;
@@ -176,7 +175,6 @@ public final class LoadFlowCFunctions {
         cParameters.setCountriesToBalanceCount(countries.size());
         cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
         cParameters.setDcPowerFactor(parameters.getDcPowerFactor());
-        cParameters.setParameterBase(createParameterBase());
         cParameters.getParameterBase().setProviderParametersValuesCount(0);
         cParameters.getParameterBase().setProviderParametersKeysCount(0);
     }

@@ -227,11 +227,8 @@ public final class PyPowsyblApiHeader {
     @CStruct("loadflow_parameters")
     public interface LoadFlowParametersPointer extends PointerBase {
 
-        @CField("base")
+        @CFieldAddress("base")
         ParameterBase getParameterBase();
-
-        @CField("base")
-        void setParameterBase(ParameterBase base);
 
         @CField("voltage_init_mode")
         int getVoltageInitMode();
@@ -394,11 +391,8 @@ public final class PyPowsyblApiHeader {
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
-        @CField("base")
+        @CFieldAddress("base")
         ParameterBase getParameterBase();
-
-        @CField("base")
-        void setParameterBase(ParameterBase base);
 
         @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
@@ -437,11 +431,8 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
-        @CField("base")
+        @CFieldAddress("base")
         ParameterBase getParameterBase();
-
-        @CField("base")
-        void setParameterBase(ParameterBase base);
 
         @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
@@ -1262,11 +1253,8 @@ public final class PyPowsyblApiHeader {
     @CStruct("shortcircuit_analysis_parameters")
     public interface ShortCircuitAnalysisParametersPointer extends PointerBase {
 
-        @CField("base")
+        @CFieldAddress("base")
         ParameterBase getParameterBase();
-
-        @CField("base")
-        void setParameterBase(ParameterBase base);
 
         @CField("with_voltage_result")
         boolean isWithVoltageResult();
@@ -1391,11 +1379,8 @@ public final class PyPowsyblApiHeader {
     @CStruct("rao_parameters")
     public interface RaoParametersPointer extends PointerBase {
 
-        @CField("base")
+        @CFieldAddress("base")
         ParameterBase getParameterBase();
-
-        @CField("base")
-        void setParameterBase(ParameterBase base);
 
         @CField("objective_function_type")
         int getObjectiveFunctionType();

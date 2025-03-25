@@ -42,7 +42,6 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static com.powsybl.python.commons.CTypeUtil.createParameterBase;
 import static com.powsybl.python.commons.Util.binaryBufferToBytes;
 import static com.powsybl.python.commons.Util.doCatch;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
@@ -294,7 +293,6 @@ public final class RaoCFunctions {
 
     private static PyPowsyblApiHeader.RaoParametersPointer convertToRaoParametersPointer(RaoParameters parameters) {
         PyPowsyblApiHeader.RaoParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.RaoParametersPointer.class));
-        paramsPtr.setParameterBase(createParameterBase());
         // Objective function parameters
         paramsPtr.setObjectiveFunctionType(parameters.getObjectiveFunctionParameters().getType().ordinal());
         paramsPtr.setForbidCostIncrease(parameters.getObjectiveFunctionParameters().getForbidCostIncrease());
