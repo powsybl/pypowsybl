@@ -227,6 +227,21 @@ void deleteLoadFlowParameters(loadflow_parameters* ptr) {
     pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_values, ptr->base.provider_parameters_values_count);
 }
 
+void providerParametersToBase(parameter_base& base, std::vector<std::string> const& provider_parameters_keys,
+  std::vector<std::string> const& provider_parameters_values) {
+     base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+     base.provider_parameters_keys_count = provider_parameters_keys.size();
+     base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
+     base.provider_parameters_values_count = provider_parameters_values.size();
+
+}
+
+void baseToProviderParameters(parameter_base& base, std::vector<std::string>& provider_parameters_keys,
+  std::vector<std::string>& provider_parameters_values) {
+     copyCharPtrPtrToVector(base.provider_parameters_keys, base.provider_parameters_keys_count, provider_parameters_keys);
+     copyCharPtrPtrToVector(base.provider_parameters_values, base.provider_parameters_values_count, provider_parameters_values);
+}
+
 LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     voltage_init_mode = static_cast<VoltageInitMode>(src->voltage_init_mode);
     transformer_voltage_control_on = (bool) src->transformer_voltage_control_on;
@@ -242,8 +257,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
     dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
-    copyCharPtrPtrToVector(src->base.provider_parameters_keys, src->base.provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->base.provider_parameters_values, src->base.provider_parameters_values_count, provider_parameters_values);
+    baseToProviderParameters(src->base, provider_parameters_keys, provider_parameters_values);
 }
 
 void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
@@ -262,10 +276,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
     res.dc_power_factor = dc_power_factor;
-    res.base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res.base.provider_parameters_keys_count = provider_parameters_keys.size();
-    res.base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res.base.provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToBase(res.base, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
@@ -340,8 +351,7 @@ RaoParameters::RaoParameters(rao_parameters* src):
     sensitivity_provider = toString(src->sensitivity_provider);
     sensitivity_failure_overcost = src->sensitivity_failure_overcost;
 
-    copyCharPtrPtrToVector(src->base.provider_parameters_keys, src->base.provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->base.provider_parameters_values, src->base.provider_parameters_values_count, provider_parameters_values);
+    baseToProviderParameters(src->base, provider_parameters_keys, provider_parameters_values);
 }
 
 void RaoParameters::load_to_c_struct(rao_parameters& res) const {
@@ -397,11 +407,7 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.sensitivity_parameters = new sensitivity_analysis_parameters();
     sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
     res.sensitivity_failure_overcost = sensitivity_failure_overcost;
-
-    res.base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res.base.provider_parameters_keys_count = provider_parameters_keys.size();
-    res.base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res.base.provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToBase(res.base, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<rao_parameters> RaoParameters::to_c_struct() const {
@@ -472,8 +478,7 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
     low_voltage_absolute_threshold = (double) src->low_voltage_absolute_threshold;
     high_voltage_proportional_threshold = (double) src->high_voltage_proportional_threshold;
     high_voltage_absolute_threshold = (double) src->high_voltage_absolute_threshold;
-    copyCharPtrPtrToVector(src->base.provider_parameters_keys, src->base.provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->base.provider_parameters_values, src->base.provider_parameters_values_count, provider_parameters_values);
+    baseToProviderParameters(src->base, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_struct() const {
@@ -485,10 +490,7 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
     res->high_voltage_proportional_threshold = (double) high_voltage_proportional_threshold;
     res->high_voltage_absolute_threshold = (double) high_voltage_absolute_threshold;
 
-    res->base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->base.provider_parameters_keys_count = provider_parameters_keys.size();
-    res->base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->base.provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToBase(res->base, provider_parameters_keys, provider_parameters_values);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<security_analysis_parameters>(res, [](security_analysis_parameters* ptr){
         deleteSecurityAnalysisParameters(ptr);
@@ -499,8 +501,7 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
     loadflow_parameters(&src->loadflow_parameters)
 {
-    copyCharPtrPtrToVector(src->base.provider_parameters_keys, src->base.provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->base.provider_parameters_values, src->base.provider_parameters_values_count, provider_parameters_values);
+    baseToProviderParameters(src->base, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::to_c_struct() const {
@@ -515,10 +516,7 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
 
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
-    params.base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    params.base.provider_parameters_keys_count = provider_parameters_keys.size();
-    params.base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    params.base.provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToBase(params.base, provider_parameters_keys, provider_parameters_values);
 }
 
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
@@ -1588,8 +1586,7 @@ ShortCircuitAnalysisParameters::ShortCircuitAnalysisParameters(shortcircuit_anal
     min_voltage_drop_proportional_threshold = (double) src->min_voltage_drop_proportional_threshold;
     initial_voltage_profile_mode = static_cast<InitialVoltageProfileMode>(src->initial_voltage_profile_mode);
 
-    copyCharPtrPtrToVector(src->base.provider_parameters_keys, src->base.provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->base.provider_parameters_values, src->base.provider_parameters_values_count, provider_parameters_values);
+    baseToProviderParameters(src->base, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters::to_c_struct() const {
@@ -1602,10 +1599,7 @@ std::shared_ptr<shortcircuit_analysis_parameters> ShortCircuitAnalysisParameters
     res->min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold;
     res->initial_voltage_profile_mode = initial_voltage_profile_mode;
 
-    res->base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->base.provider_parameters_keys_count = provider_parameters_keys.size();
-    res->base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->base.provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToBase(res->base, provider_parameters_keys, provider_parameters_values);
 
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<shortcircuit_analysis_parameters>(res, [](shortcircuit_analysis_parameters* ptr){
