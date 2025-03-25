@@ -361,6 +361,7 @@ class SensitivityAnalysisParameters {
 public:
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
+    void load_to_c_struct(sensitivity_analysis_parameters& params) const;
 
     LoadFlowParameters loadflow_parameters;
     std::vector<std::string> provider_parameters_keys;
@@ -570,7 +571,7 @@ public:
 
     // Load flow and sensitivity parameters
     std::string load_flow_provider;
-    SensitivityAnalysisParameters* sensitivity_parameters;
+    SensitivityAnalysisParameters sensitivity_parameters;
     std::string sensitivity_provider;
     double sensitivity_failure_overcost;
 

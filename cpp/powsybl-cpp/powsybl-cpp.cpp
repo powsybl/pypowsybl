@@ -278,8 +278,14 @@ std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
     });
 }
 
+void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
+    deleteLoadFlowParameters(&ptr->loadflow_parameters);
+    pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_keys, ptr->base.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_values, ptr->base.provider_parameters_values_count);
+}
+
 RaoParameters::RaoParameters(rao_parameters* src):
-   sensitivity_parameters(createSensitivityAnalysisParametersFromCStruct(src->sensitivity_parameters))
+   sensitivity_parameters(src->sensitivity_parameters)
 {
     objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
     preventive_stop_criterion = static_cast<PreventiveStopCriterion>(src->preventive_stop_criterion);
@@ -388,7 +394,8 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     // Load flow and sensitivity parameters
     res.load_flow_provider = copyStringToCharPtr(load_flow_provider);
     res.sensitivity_provider = copyStringToCharPtr(sensitivity_provider);
-    res.sensitivity_parameters = sensitivity_parameters->to_c_struct().get();
+    res.sensitivity_parameters = new sensitivity_analysis_parameters();
+    sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
     res.sensitivity_failure_overcost = sensitivity_failure_overcost;
 
     res.base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
@@ -401,6 +408,10 @@ std::shared_ptr<rao_parameters> RaoParameters::to_c_struct() const {
     rao_parameters* res = new rao_parameters();
     load_to_c_struct(*res);
     return std::shared_ptr<rao_parameters>(res, [](rao_parameters* ptr){
+        deleteSensitivityAnalysisParameters(ptr->sensitivity_parameters);
+        pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_keys, ptr->base.provider_parameters_keys_count);
+        pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_values, ptr->base.provider_parameters_values_count);
+        delete ptr;
     });
 }
 
@@ -485,12 +496,6 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
     });
 }
 
-void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
-    deleteLoadFlowParameters(&ptr->loadflow_parameters);
-    pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_keys, ptr->base.provider_parameters_keys_count);
-    pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_values, ptr->base.provider_parameters_values_count);
-}
-
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
     loadflow_parameters(&src->loadflow_parameters)
 {
@@ -500,16 +505,20 @@ SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysi
 
 std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::to_c_struct() const {
     sensitivity_analysis_parameters* res = new sensitivity_analysis_parameters();
-    loadflow_parameters.load_to_c_struct(res->loadflow_parameters);
-    res->base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->base.provider_parameters_keys_count = provider_parameters_keys.size();
-    res->base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->base.provider_parameters_values_count = provider_parameters_values.size();
+    load_to_c_struct(*res);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<sensitivity_analysis_parameters>(res, [](sensitivity_analysis_parameters* ptr){
         deleteSensitivityAnalysisParameters(ptr);
         delete ptr;
     });
+}
+
+void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
+    loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
+    params.base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
+    params.base.provider_parameters_keys_count = provider_parameters_keys.size();
+    params.base.provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
+    params.base.provider_parameters_values_count = provider_parameters_values.size();
 }
 
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
