@@ -724,6 +724,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
               py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
 
+    m.def("add_terminals_connection_action", &pypowsybl::addTerminalsConnectionAction, "Add a terminals connection action",
+                  py::arg("analysis_context"), py::arg("action_id"), py::arg("element_id"), py::arg("side"), py::arg("open"));
+
     m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
           py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
           py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
