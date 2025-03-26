@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-
+from pathlib import Path
 from typing import List, Callable
 from pypowsybl import _pypowsybl
 
@@ -48,12 +48,12 @@ class ContingencyContainer:
             contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
-    def add_contingencies_from_json_file(self, path_to_json_file: str) -> None:
+    def add_contingencies_from_json_file(self, path_to_json_file: Path) -> None:
         """
         Add contingencies from JSON file.
 
         Args:
-            path_to_json_file: The path to the JSON file to add to the contingency list.
+            path_to_json_file: The path to the JSON file from which we extract the contingency list.
         """
 
         _pypowsybl.add_contingency_from_json_file(self._handle, path_to_json_file)
