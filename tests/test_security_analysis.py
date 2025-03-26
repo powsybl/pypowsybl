@@ -11,6 +11,7 @@ import pandas as pd
 import pypowsybl.report as rp
 from pypowsybl._pypowsybl import ConditionType
 import re
+from pathlib import Path
 
 
 @pytest.fixture(autouse=True)
@@ -411,7 +412,8 @@ def test_tie_line_contingency():
 def test_add_contingencies_from_json_file():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
-    sa.add_contingencies_from_json_file("/contingencies.json")
+    str_path = "/contingencies.json"
+    sa.add_contingencies_from_json_file(Path(str_path))
     sa_result = sa.run_ac(n)
     assert 'contingency' in sa_result.post_contingency_results.keys()
     assert 'contingency2' in sa_result.post_contingency_results.keys()
