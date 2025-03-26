@@ -411,6 +411,7 @@ class NadParameters:
     scaling_factor: int
     radius_factor: float
     edge_info_displayed: EdgeInfoType
+    voltage_level_details: bool
     def __init__(self) -> None: ...
 
 class SlackBusResult:
