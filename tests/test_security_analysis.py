@@ -241,8 +241,8 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
 

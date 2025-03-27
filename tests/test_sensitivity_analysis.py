@@ -252,7 +252,7 @@ def test_provider_parameters():
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.add_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
-    with pytest.raises(pp.PyPowsyblError, match='Load flow ended with status MAX_ITERATION_REACHED'):
+    with pytest.raises(pp.PyPowsyblError, match='Initial load flow of base situation ended with solver status MAX_ITERATION_REACHED'):
         analysis.run(n, parameters)
     # does not throw
     result = analysis.run(n)

@@ -164,8 +164,8 @@ def test_get_import_supported_extensions():
 
 def test_get_import_parameters():
     parameters = pp.network.get_import_parameters('PSS/E')
-    assert 1 == len(parameters)
-    assert ['psse.import.ignore-base-voltage'] == parameters.index.tolist()
+    assert 2 == len(parameters)
+    assert ['psse.import.ignore-base-voltage', 'psse.import.ignore-node-breaker-topology'] == parameters.index.tolist()
     assert 'Ignore base voltage specified in the file' == parameters['description']['psse.import.ignore-base-voltage']
     assert 'BOOLEAN' == parameters['type']['psse.import.ignore-base-voltage']
     assert 'false' == parameters['default']['psse.import.ignore-base-voltage']
@@ -912,13 +912,13 @@ def test_ratio_tap_changers():
 
 def test_ratio_tap_changers_3_windings():
     n = pp.network.create_micro_grid_be_network()
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['e482b89a-fa84-4ea9-8e70-a83d44790957',
-                                                             'b94318f6-6d24-4f56-96b9-df2531ad6543',
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                             'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
                             columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
                                   ['TWO', 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
@@ -928,13 +928,13 @@ def test_ratio_tap_changers_3_windings():
                                                           data=[[9, 16.7, True]])
     n.update_ratio_tap_changers(update)
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['e482b89a-fa84-4ea9-8e70-a83d44790957',
-                                                             'b94318f6-6d24-4f56-96b9-df2531ad6543',
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                             'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
                             columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
                                   ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 

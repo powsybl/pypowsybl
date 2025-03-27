@@ -4,6 +4,10 @@
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.config.PlatformConfigProvider\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider\\E"}, 
     {"pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionXmlSerializer\\E"},
-    {"pattern":"\\Qbase-voltages.yml\\E"}
+    {"pattern":"\\Qbase-voltages.yml\\E"},
+    {"pattern":"\\Qcom/powsybl/commons/reports.properties\\E"},
+    {"pattern":"\\Qcom/powsybl/commons/reports_en_US.properties\\E"},
+    {"pattern":"\\Qcom/powsybl/commons/reports_fr.properties\\E"},
+    {"pattern":"\\Qcom/powsybl/commons/reports_fr_FR.properties\\E"}
   ]}
 }

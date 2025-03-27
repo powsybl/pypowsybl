@@ -61,9 +61,9 @@ def test_run_lf_ac_2slacks():
     sbr0 = results[0].slack_bus_results[0]
     sbr1 = results[0].slack_bus_results[1]
     assert 'VL4_0' == sbr0.id
-    assert abs(-0.56 - sbr0.active_power_mismatch) < 0.01
+    assert abs(sbr0.active_power_mismatch) < 0.01
     assert 'VL2_0' == sbr1.id
-    assert abs(-0.56 - sbr1.active_power_mismatch) < 0.01
+    assert abs(sbr1.active_power_mismatch) < 0.01
 
 
 def test_run_lf_dc():
@@ -278,11 +278,14 @@ def test_get_provider_parameters_names():
                                    'fictitiousGeneratorVoltageControlCheckMode',
                                    'areaInterchangeControl',
                                    'areaInterchangeControlAreaType',
-                                   'areaInterchangePMaxMismatch']
+                                   'areaInterchangePMaxMismatch',
+                                   'voltageRemoteControlRobustMode',
+                                   'forceTargetQInReactiveLimits',
+                                   'disableInconsistentVoltageControls']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 71 == len(specific_parameters)
+    assert 74 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
