@@ -398,8 +398,10 @@ class Network:  # pylint: disable=too-many-public-methods
                                            None if nad_profile is None else nad_profile._create_nad_branch_labels_c_dataframe(), # pylint: disable=protected-access
                                            None if nad_profile is None else nad_profile._create_nad_three_wt_labels_c_dataframe(), # pylint: disable=protected-access
                                            None if nad_profile is None else nad_profile._create_nad_bus_descriptions_c_dataframe(), # pylint: disable=protected-access
-                                           None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe()) # pylint: disable=protected-access
-
+                                           None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_bus_node_styles_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_edge_styles_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_three_wt_styles_c_dataframe()) # pylint: disable=protected-access
 
     def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
         nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
@@ -441,7 +443,10 @@ class Network:  # pylint: disable=too-many-public-methods
                                                     None if nad_profile is None else nad_profile._create_nad_branch_labels_c_dataframe(), # pylint: disable=protected-access
                                                     None if nad_profile is None else nad_profile._create_nad_three_wt_labels_c_dataframe(), # pylint: disable=protected-access
                                                     None if nad_profile is None else nad_profile._create_nad_bus_descriptions_c_dataframe(), # pylint: disable=protected-access
-                                                    None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe()) # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_bus_node_styles_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_edge_styles_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_three_wt_styles_c_dataframe()) # pylint: disable=protected-access
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
