@@ -42,51 +42,51 @@ public class DiscreteMeasurementsDataframeAdder extends AbstractSimpleAdder {
     );
 
     private static class DiscreteMeasurementsSeries {
-        private final StringSeries id;
-        private final StringSeries elementId;
-        private final StringSeries type;
-        private final StringSeries tapChanger;
-        private final StringSeries valueType;
-        private final StringSeries value;
-        private final IntSeries valid;
+        private final StringSeries ids;
+        private final StringSeries elementIds;
+        private final StringSeries types;
+        private final StringSeries tapChangers;
+        private final StringSeries valueTypes;
+        private final StringSeries values;
+        private final IntSeries valids;
         private final Map<String, DiscreteMeasurements<?>> measurementsByElementId = new HashMap<>();
 
         DiscreteMeasurementsSeries(UpdatingDataframe dataframe) {
-            this.elementId = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.ELEMENT_ID);
-            this.id = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.ID);
-            this.type = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.TYPE);
-            this.tapChanger = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.TAP_CHANGER);
-            this.valueType = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.VALUE_TYPE);
-            this.value = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.VALUE);
-            this.valid = dataframe.getInts(DiscreteMeasurementsDataframeProvider.VALID);
+            this.elementIds = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.ELEMENT_ID);
+            this.ids = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.ID);
+            this.types = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.TYPE);
+            this.tapChangers = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.TAP_CHANGER);
+            this.valueTypes = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.VALUE_TYPE);
+            this.values = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.VALUE);
+            this.valids = dataframe.getInts(DiscreteMeasurementsDataframeProvider.VALID);
         }
 
         void create(int row) {
-            String elementId = this.elementId.get(row);
+            String elementId = this.elementIds.get(row);
             DiscreteMeasurements<?> measurements = measurementsByElementId.get(elementId);
             DiscreteMeasurementAdder adder = measurements.newDiscreteMeasurement();
-            SeriesUtils.applyIfPresent(id, row, adder::setId);
-            SeriesUtils.applyIfPresent(type, row, type -> adder.setType(DiscreteMeasurement.Type.valueOf(type)));
-            SeriesUtils.applyIfPresent(tapChanger, row, tapChanger -> adder.setTapChanger(DiscreteMeasurement.TapChanger.valueOf(tapChanger)));
-            SeriesUtils.applyIfPresent(value, row, value -> {
-                switch (DiscreteMeasurement.ValueType.valueOf(valueType.get(row))) {
+            SeriesUtils.applyIfPresent(ids, row, adder::setId);
+            SeriesUtils.applyIfPresent(types, row, type -> adder.setType(DiscreteMeasurement.Type.valueOf(type)));
+            SeriesUtils.applyIfPresent(tapChangers, row, tapChanger -> adder.setTapChanger(DiscreteMeasurement.TapChanger.valueOf(tapChanger)));
+            SeriesUtils.applyIfPresent(values, row, value -> {
+                switch (DiscreteMeasurement.ValueType.valueOf(valueTypes.get(row))) {
                     case BOOLEAN -> adder.setValue(Boolean.parseBoolean(value));
                     case INT -> adder.setValue(Integer.parseInt(value));
                     case STRING -> adder.setValue(value);
                 }
             });
-            SeriesUtils.applyBooleanIfPresent(valid, row, adder::setValid);
+            SeriesUtils.applyBooleanIfPresent(valids, row, adder::setValid);
             adder.add();
         }
 
         @SuppressWarnings("unchecked")
-        DiscreteMeasurements<?> createDiscreteMeasurement(Identifiable<?> identifiable) {
-            DiscreteMeasurementsAdder<?> adder = identifiable.newExtension(DiscreteMeasurementsAdder.class);
+        <I extends Identifiable<I>> DiscreteMeasurements<I> createDiscreteMeasurement(Identifiable<?> identifiable) {
+            DiscreteMeasurementsAdder<I> adder = identifiable.newExtension(DiscreteMeasurementsAdder.class);
             return adder.add();
         }
 
         void removeAndInitialize(Network network, int row) {
-            String elementId = this.elementId.get(row);
+            String elementId = this.elementIds.get(row);
             if (!measurementsByElementId.containsKey(elementId)) {
                 Identifiable<?> identifiable = network.getIdentifiable(elementId);
                 if (identifiable == null) {
