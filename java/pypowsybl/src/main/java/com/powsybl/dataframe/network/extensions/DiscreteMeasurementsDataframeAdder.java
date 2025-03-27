@@ -80,7 +80,7 @@ public class DiscreteMeasurementsDataframeAdder extends AbstractSimpleAdder {
         }
 
         @SuppressWarnings("unchecked")
-        <I extends Identifiable<I>> DiscreteMeasurements<I> createDiscreteMeasurement(Identifiable<?> identifiable) {
+        <I extends Identifiable<I>> DiscreteMeasurements<I> createDiscreteMeasurement(Identifiable<I> identifiable) {
             DiscreteMeasurementsAdder<I> adder = identifiable.newExtension(DiscreteMeasurementsAdder.class);
             return adder.add();
         }

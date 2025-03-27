@@ -73,7 +73,6 @@ public class DiscreteMeasurementsDataframeProvider extends AbstractSingleDatafra
                 .forEach(DiscreteMeasurementsDataframeProvider::removeDiscreteMeasurements);
     }
 
-    @SuppressWarnings("unchecked")
     static <I extends Identifiable<I>> DiscreteMeasurements<I> getDiscreteMeasurements(Identifiable<I> identifiable) {
         return identifiable.getExtension(DiscreteMeasurements.class);
     }
