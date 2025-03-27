@@ -74,8 +74,8 @@ public class DiscreteMeasurementsDataframeProvider extends AbstractSingleDatafra
     }
 
     @SuppressWarnings("unchecked")
-    static DiscreteMeasurements<?> getDiscreteMeasurements(Identifiable<?> identifiable) {
-        return (DiscreteMeasurements<?>) identifiable.getExtension(DiscreteMeasurements.class);
+    static <I extends Identifiable<I>> DiscreteMeasurements<I> getDiscreteMeasurements(Identifiable<I> identifiable) {
+        return identifiable.getExtension(DiscreteMeasurements.class);
     }
 
     private Stream<DiscreteMeasurementInformation> itemsStream(Network network) {
