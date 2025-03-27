@@ -32,11 +32,7 @@ public class ContingencyContainerImpl implements ContingencyContainer {
 
     @Override
     public void addContingencyFromJsonFile(Path pathToJsonFile) {
-        if (Files.exists(pathToJsonFile)) {
-            pathToContingencyJsonFile = pathToJsonFile;
-        } else {
-            throw new PowsyblException("Can't find JSON file: " + pathToJsonFile);
-        }
+        pathToContingencyJsonFile = pathToJsonFile;
     }
 
     private static ContingencyElement createContingencyElement(Network network, String elementId) {
@@ -79,12 +75,17 @@ public class ContingencyContainerImpl implements ContingencyContainer {
         List<Contingency> contingencies = new ArrayList<>(elementIdsByContingencyId.size());
 
         if (pathToContingencyJsonFile != null) {
-            ContingencyList contingenciesList;
-            contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
+            if (Files.exists(pathToContingencyJsonFile)) {
+                ContingencyList contingenciesList;
+                contingenciesList = ContingencyList.load(pathToContingencyJsonFile);
 
-            for (Contingency contingency : contingenciesList.getContingencies(network)) {
-                contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
+                for (Contingency contingency : contingenciesList.getContingencies(network)) {
+                    contingencies.add(new Contingency(contingency.getId(), contingency.getElements()));
+                }
+            } else {
+                throw new PowsyblException("File not found: " + pathToContingencyJsonFile);
             }
+
         }
 
         for (Map.Entry<String, List<String>> e : elementIdsByContingencyId.entrySet()) {
