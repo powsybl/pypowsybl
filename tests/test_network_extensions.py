@@ -222,6 +222,20 @@ def test_measurements():
     assert n.get_extensions(extension_name).empty
 
 
+def test_discrete_measurements():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'discreteMeasurements'
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+    n.create_extensions(extension_name, id='TWT_TAP_TS', element_id='TWT', type='TAP_POSITION',
+                        tap_changer='PHASE_TAP_CHANGER', value_type='INT', value='17', valid=True)
+    extensions = n.get_extensions(extension_name)
+    expected = pd.DataFrame(index=pd.Series(name='element_id', data=['TWT']),
+                            columns=['id', 'type', 'tap_changer', 'value_type', 'value', 'valid'],
+                            data=[['TWT_TAP_TS', 'TAP_POSITION', 'PHASE_TAP_CHANGER', 'INT', '17', True]])
+    pd.testing.assert_frame_equal(expected, extensions, check_dtype=False)
+
+
 def test_injection_observability():
     n = pn.create_four_substations_node_breaker_network()
     extension_name = 'injectionObservability'
@@ -533,7 +547,7 @@ def test_get_extensions_information():
     assert extensions_information.loc['cgmesMetadataModels']['attributes'] == ('index : id (str), cgmes_subset (str), description (str), ' \
                                                                             'version (int), modeling_authority_set (str), profiles (str), ' \
                                                                             'dependent_on (str), supersedes (str) ')
-    assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'
+    assert extensions_information.loc['measurements']['detail'] == 'Provides measurements about a specific equipment'
     assert extensions_information.loc['measurements']['attributes'] == 'index : element_id (str),id (str), type (str), ' \
                                                                        'standard_deviation (float), value (float), valid (bool)'
     assert extensions_information.loc['branchObservability']['detail'] == 'Provides information about the observability of a branch'
