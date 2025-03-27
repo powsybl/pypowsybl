@@ -41,7 +41,7 @@ public class DiscreteMeasurementsDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.booleans(DiscreteMeasurementsDataframeProvider.VALID)
     );
 
-    private static class MeasurementsSeries {
+    private static class DiscreteMeasurementsSeries {
         private final StringSeries id;
         private final StringSeries elementId;
         private final StringSeries type;
@@ -51,7 +51,7 @@ public class DiscreteMeasurementsDataframeAdder extends AbstractSimpleAdder {
         private final IntSeries valid;
         private final Map<String, DiscreteMeasurements<?>> measurementsByElementId = new HashMap<>();
 
-        MeasurementsSeries(UpdatingDataframe dataframe) {
+        DiscreteMeasurementsSeries(UpdatingDataframe dataframe) {
             this.elementId = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.ELEMENT_ID);
             this.id = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.ID);
             this.type = dataframe.getStrings(DiscreteMeasurementsDataframeProvider.TYPE);
@@ -100,7 +100,7 @@ public class DiscreteMeasurementsDataframeAdder extends AbstractSimpleAdder {
 
     @Override
     public void addElements(Network network, UpdatingDataframe dataframe) {
-        MeasurementsSeries series = new MeasurementsSeries(dataframe);
+        DiscreteMeasurementsSeries series = new DiscreteMeasurementsSeries(dataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.removeAndInitialize(network, row);
         }
