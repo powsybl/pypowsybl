@@ -547,7 +547,7 @@ def test_get_extensions_information():
     assert extensions_information.loc['cgmesMetadataModels']['attributes'] == ('index : id (str), cgmes_subset (str), description (str), ' \
                                                                             'version (int), modeling_authority_set (str), profiles (str), ' \
                                                                             'dependent_on (str), supersedes (str) ')
-    assert extensions_information.loc['measurements']['detail'] == 'Provides measurement about a specific equipment'
+    assert extensions_information.loc['measurements']['detail'] == 'Provides measurements about a specific equipment'
     assert extensions_information.loc['measurements']['attributes'] == 'index : element_id (str),id (str), type (str), ' \
                                                                        'standard_deviation (float), value (float), valid (bool)'
     assert extensions_information.loc['branchObservability']['detail'] == 'Provides information about the observability of a branch'
