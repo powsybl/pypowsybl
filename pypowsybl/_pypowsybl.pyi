@@ -916,6 +916,7 @@ class RaoParameters:
     max_preventive_search_tree_depth: int
     max_auto_search_tree_depth: int
     max_curative_search_tree_depth: int
+    predefined_combinations: List[List[str]]
     relative_min_impact_threshold: float
     absolute_min_impact_threshold: float
     skip_actions_far_from_most_limiting_element: bool

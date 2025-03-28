@@ -15,10 +15,12 @@ import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
-import org.graalvm.nativeimage.UnmanagedMemory;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.powsybl.python.commons.Util.freeCharPtrPtr;
+import static com.powsybl.python.commons.Util.freeParameterBase;
 
 /**
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
@@ -99,9 +101,7 @@ public final class LoadFlowCUtils {
      * Frees inner memory, but not the pointer itself.
      */
     public static void freeLoadFlowParametersContent(LoadFlowParametersPointer parameters) {
-        for (int i = 0; i < parameters.getCountriesToBalanceCount(); i++) {
-            UnmanagedMemory.free(parameters.getCountriesToBalance().read(i));
-        }
-        UnmanagedMemory.free(parameters.getCountriesToBalance());
+        freeParameterBase(parameters.getParameterBase());
+        freeCharPtrPtr(parameters.getCountriesToBalance(), parameters.getCountriesToBalanceCount());
     }
 }

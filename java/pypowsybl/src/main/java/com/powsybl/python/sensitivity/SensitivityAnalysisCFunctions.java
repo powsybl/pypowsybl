@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
-import static com.powsybl.python.commons.Util.createCharPtrArray;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.*;
 
 /**
  * C functions related to sensitivity analysis.
@@ -174,6 +173,7 @@ public final class SensitivityAnalysisCFunctions {
     public static void freeSensitivityAnalysisParameters(IsolateThread thread, SensitivityAnalysisParametersPointer parameters,
                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            freeParameterBase(parameters.getParameterBase());
             LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
             UnmanagedMemory.free(parameters);
         });

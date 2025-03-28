@@ -1521,6 +1521,9 @@ public final class PyPowsyblApiHeader {
         @CField("absolute_min_impact_threshold")
         void setAbsoluteMinImpactThreshold(double threshold);
 
+        @CFieldAddress("predefined_combinations")
+        ArrayPointer<ArrayPointer<CCharPointerPointer>> getPredefinedCombinations();
+
         @CField("skip_actions_far_from_most_limiting_element")
         boolean getSkipActionsFarFromMostLimitingElement();
 
