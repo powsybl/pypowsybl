@@ -20,6 +20,7 @@ from pypowsybl._pypowsybl import (
     Solver,
     ExecutionCondition)
 from pypowsybl.rao import Parameters as RaoParameters
+from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl.rao import (
     ObjectiveFunctionParameters,
     RangeActionOptimizationParameters,
@@ -187,6 +188,23 @@ def test_rao_from_buffers():
     assert list(json_result.keys()) == ['type', 'version', 'info', 'computationStatus', 'executionDetails', 'costResults',
                                     'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
                                     'networkActionResults', 'rangeActionResults']
+
+def test_rao_monitoring():
+    network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json"))
+    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/rao_glsk.xml"))
+    result = rao_runner.run(network, parameters)
+
+    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, LfParameters())
+    assert RaoComputationStatus.DEFAULT == result_with_voltage_monitoring.status()
+
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, LfParameters())
+    assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
+
 
 if __name__ == '__main__':
     unittest.main()

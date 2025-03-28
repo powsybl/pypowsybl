@@ -101,7 +101,11 @@ public final class RaoCFunctions {
             InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
             try {
                 Crac crac = Crac.read("crac.json", streamedCrac, network);
-                raoContext.setCrac(crac);
+                if (crac != null) {
+                    raoContext.setCrac(crac);
+                } else {
+                    throw new PowsyblException("crac is invalid, please check detailed log.");
+                }
             } catch (IOException e) {
                 throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
             }
@@ -122,41 +126,43 @@ public final class RaoCFunctions {
     }
 
     @CEntryPoint(name = "runRao")
-    public static void runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
+    public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
                               PyPowsyblApiHeader.RaoParametersPointer parametersPointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
+        return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
             RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
-            raoContext.run(network, raoParameters);
+            return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters));
         });
     }
 
     @CEntryPoint(name = "runVoltageMonitoring")
-    public static void runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
+    public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                      CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
+        return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
+            RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
             String providerStr = CTypeUtil.toString(provider);
             LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
             LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
-            raoContext.runVoltageMonitoring(network, providerStr, lfParameters);
+            return ObjectHandles.getGlobal().create(raoContext.runVoltageMonitoring(network, result, providerStr, lfParameters));
         });
     }
 
     @CEntryPoint(name = "runAngleMonitoring")
-    public static void runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
+    public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                      CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
+        return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
+            RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
             String providerStr = CTypeUtil.toString(provider);
             LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
             LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
-            raoContext.runAngleMonitoring(network, providerStr, lfParameters);
+            return ObjectHandles.getGlobal().create(raoContext.runAngleMonitoring(network, result, providerStr, lfParameters));
         });
     }
 
@@ -199,14 +205,6 @@ public final class RaoCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
             return ObjectHandles.getGlobal().create(raoContext.getCrac());
-        });
-    }
-
-    @CEntryPoint(name = "getRaoResult")
-    public static ObjectHandle getRaoResult(IsolateThread thread, ObjectHandle raoContextHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-            return ObjectHandles.getGlobal().create(raoContext.getResults());
         });
     }
 
