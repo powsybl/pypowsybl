@@ -556,6 +556,7 @@ typedef struct rao_parameters_struct {
   int max_curative_search_tree_depth;
   double relative_min_impact_threshold;
   double absolute_min_impact_threshold;
+  array predefined_combinations;
   unsigned char skip_actions_far_from_most_limiting_element;
   int max_number_of_boundaries_for_skipping_actions;
 

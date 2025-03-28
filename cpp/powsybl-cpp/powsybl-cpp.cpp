@@ -242,6 +242,40 @@ void baseToProviderParameters(parameter_base& base, std::vector<std::string>& pr
      copyCharPtrPtrToVector(base.provider_parameters_values, base.provider_parameters_values_count, provider_parameters_values);
 }
 
+std::vector<std::vector<std::string>> arrayToStringVectorVector(array nestedStringVector) {
+    std::vector<std::vector<std::string>> mainList;
+    for (int i = 0; i < nestedStringVector.length; i++) {
+        std::vector<std::string> subList;
+        array value = *((array*) nestedStringVector.ptr + i);
+        for (int j = 0; j < value.length; j++) {
+            char* subValue = *((char**) value.ptr + j);
+            subList.push_back(std::string(subValue));
+        }
+        mainList.push_back(subList);
+    }
+    return mainList;
+}
+
+array stringVectorVectorToArray(std::vector<std::vector<std::string>> const& nestedStringVector) {
+    array mainArray;
+    array* mainPtr = new array[nestedStringVector.size()];
+    mainArray.length = nestedStringVector.size();
+    for (int i=0; i < nestedStringVector.size(); ++i) {
+        mainPtr[i].ptr = copyVectorStringToCharPtrPtr(nestedStringVector[i]);
+        mainPtr[i].length =  nestedStringVector[i].size();
+    }
+    mainArray.ptr = mainPtr;
+    return mainArray;
+}
+
+void freeStringListListArray(array mainArray) {
+    for (int i=0; i < mainArray.length; ++i) {
+        array* subArray = (array*) mainArray.ptr;
+        deleteCharPtrPtr((char**) subArray[i].ptr, subArray[i].length);
+    }
+    delete[] mainArray.ptr;
+}
+
 LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     voltage_init_mode = static_cast<VoltageInitMode>(src->voltage_init_mode);
     transformer_voltage_control_on = (bool) src->transformer_voltage_control_on;
@@ -327,6 +361,8 @@ RaoParameters::RaoParameters(rao_parameters* src):
     max_auto_search_tree_depth = src->max_auto_search_tree_depth;
     max_curative_search_tree_depth = src->max_curative_search_tree_depth;
     // Missing predefinedCombinations (list of list of string..)
+    predefined_combinations = arrayToStringVectorVector(src->predefined_combinations);
+
     relative_min_impact_threshold = src->relative_min_impact_threshold;
     absolute_min_impact_threshold = src->absolute_min_impact_threshold;
     skip_actions_far_from_most_limiting_element = (bool) src->skip_actions_far_from_most_limiting_element;
@@ -382,6 +418,7 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.max_auto_search_tree_depth = max_auto_search_tree_depth;
     res.max_curative_search_tree_depth = max_curative_search_tree_depth;
     // Missing predefinedCombinations (list of list of string..)
+    res.predefined_combinations = stringVectorVectorToArray(predefined_combinations);
     res.relative_min_impact_threshold = relative_min_impact_threshold;
     res.absolute_min_impact_threshold = absolute_min_impact_threshold;
     res.skip_actions_far_from_most_limiting_element = skip_actions_far_from_most_limiting_element;
@@ -415,6 +452,9 @@ std::shared_ptr<rao_parameters> RaoParameters::to_c_struct() const {
     load_to_c_struct(*res);
     return std::shared_ptr<rao_parameters>(res, [](rao_parameters* ptr){
         deleteSensitivityAnalysisParameters(ptr->sensitivity_parameters);
+        freeStringListListArray(ptr->predefined_combinations);
+        delete ptr->load_flow_provider;
+        delete ptr->sensitivity_provider;
         pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_keys, ptr->base.provider_parameters_keys_count);
         pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_values, ptr->base.provider_parameters_values_count);
         delete ptr;

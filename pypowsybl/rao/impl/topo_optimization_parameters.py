@@ -2,10 +2,13 @@ from pypowsybl._pypowsybl import (
     RaoParameters
 )
 
+from typing import List
+
 class TopoOptimizationParameters:
     def __init__(self, max_preventive_search_tree_depth: int = None,
                  max_auto_search_tree_depth: int = None,
                  max_curative_search_tree_depth: int = None,
+                 predefined_combinations: List[List[str]] = None,
                  relative_min_impact_threshold: float = None,
                  absolute_min_impact_threshold: float = None,
                  skip_actions_far_from_most_limiting_element: bool = None,
@@ -21,6 +24,8 @@ class TopoOptimizationParameters:
             self.max_auto_search_tree_depth = max_auto_search_tree_depth
         if max_curative_search_tree_depth is not None:
             self.max_curative_search_tree_depth = max_curative_search_tree_depth
+        if predefined_combinations is not None:
+            self.predefined_combinations = predefined_combinations
         if relative_min_impact_threshold is not None:
             self.relative_min_impact_threshold = relative_min_impact_threshold
         if absolute_min_impact_threshold is not None:
@@ -37,6 +42,7 @@ class TopoOptimizationParameters:
         self.max_preventive_search_tree_depth = c_parameters.max_preventive_search_tree_depth
         self.max_auto_search_tree_depth = c_parameters.max_auto_search_tree_depth
         self.max_curative_search_tree_depth = c_parameters.max_curative_search_tree_depth
+        self.predefined_combinations = c_parameters.predefined_combinations
         self.relative_min_impact_threshold = c_parameters.relative_min_impact_threshold
         self.absolute_min_impact_threshold = c_parameters.absolute_min_impact_threshold
         self.skip_actions_far_from_most_limiting_element = c_parameters.skip_actions_far_from_most_limiting_element

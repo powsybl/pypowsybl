@@ -549,6 +549,7 @@ public:
     int max_preventive_search_tree_depth;
     int max_auto_search_tree_depth;
     int max_curative_search_tree_depth;
+    std::vector<std::vector<std::string>> predefined_combinations;
     // Missing predefinedCombinations (list of list of string..)
     double relative_min_impact_threshold;
     double absolute_min_impact_threshold;

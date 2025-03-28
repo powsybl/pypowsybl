@@ -42,8 +42,8 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static com.powsybl.python.commons.Util.binaryBufferToBytes;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.CTypeUtil.*;
+import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
@@ -218,6 +218,19 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "freeRaoParameters")
     public static void freeRaoParameters(IsolateThread thread, PyPowsyblApiHeader.RaoParametersPointer parametersPointer,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+
+        // Top level string parameters are freed by toString call on c side
+        // Free predefined combinations
+        freeNestedArrayPointer(parametersPointer.getPredefinedCombinations());
+
+        // Free sensitivity parameters
+        LoadFlowCUtils.freeLoadFlowParametersContent(parametersPointer.getSensitivityParameters().getLoadFlowParameters());
+        UnmanagedMemory.free(parametersPointer.getSensitivityParameters());
+
+        // Free extensions
+        freeParameterBase(parametersPointer.getParameterBase());
+
+        // Free main pointer
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parametersPointer));
     }
 
@@ -253,6 +266,7 @@ public final class RaoCFunctions {
         raoParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
         raoParameters.getTopoOptimizationParameters().setMaxAutoSearchTreeDepth(paramPointer.getMaxAutoSearchTreeDepth());
         raoParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
+        raoParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
         raoParameters.getTopoOptimizationParameters().setRelativeMinImpactThreshold(paramPointer.getRelativeMinImpactThreshold());
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(paramPointer.getAbsoluteMinImpactThreshold());
         raoParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
@@ -324,6 +338,8 @@ public final class RaoCFunctions {
         paramsPtr.setAbsoluteMinImpactThreshold(parameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
         paramsPtr.setSkipActionsFarFromMostLimitingElement(parameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
         paramsPtr.setMaxNumberOfBoundariesForSkippingActions(parameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());
+
+        stringListListToArrayPointer(paramsPtr.getPredefinedCombinations(), parameters.getTopoOptimizationParameters().getPredefinedCombinations());
 
         // Multithreading parameters
         paramsPtr.setContingencyScenariosInParallel(parameters.getMultithreadingParameters().getContingencyScenariosInParallel());

@@ -85,6 +85,7 @@ class Parameters:
         c_parameters.max_preventive_search_tree_depth = self.topo_optimization_parameters.max_preventive_search_tree_depth
         c_parameters.max_auto_search_tree_depth = self.topo_optimization_parameters.max_auto_search_tree_depth
         c_parameters.max_curative_search_tree_depth = self.topo_optimization_parameters.max_curative_search_tree_depth
+        c_parameters.predefined_combinations = self.topo_optimization_parameters.predefined_combinations
         c_parameters.relative_min_impact_threshold = self.topo_optimization_parameters.relative_min_impact_threshold
         c_parameters.absolute_min_impact_threshold = self.topo_optimization_parameters.absolute_min_impact_threshold
         c_parameters.skip_actions_far_from_most_limiting_element = self.topo_optimization_parameters.skip_actions_far_from_most_limiting_element
