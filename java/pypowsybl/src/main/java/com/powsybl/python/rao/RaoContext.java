@@ -30,8 +30,6 @@ public class RaoContext {
     public RaoContext() {
     }
 
-    private RaoResult results;
-
     private Crac crac;
 
     private GlskDocument glsks;
@@ -44,7 +42,7 @@ public class RaoContext {
         this.glsks = glskDocument;
     }
 
-    public void run(Network network, RaoParameters parameters) {
+    public RaoResult run(Network network, RaoParameters parameters) {
         if (crac == null) {
             throw new PowsyblException("Providing a crac source is mandatory to run a Rao.");
         }
@@ -52,25 +50,21 @@ public class RaoContext {
         if (glsks != null) {
             inputBuilder.withGlskProvider(glsks.getZonalGlsks(network));
         }
-        results = Rao.run(inputBuilder.build(), parameters);
+        return Rao.run(inputBuilder.build(), parameters);
     }
 
-    public void runVoltageMonitoring(Network network, String provider, LoadFlowParameters parameters) {
+    public RaoResultWithVoltageMonitoring runVoltageMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
         Monitoring raoMonitoring = new Monitoring(provider, parameters);
-        MonitoringInput inputs = MonitoringInput.buildWithVoltage(network, crac, results).build();
+        MonitoringInput inputs = MonitoringInput.buildWithVoltage(network, crac, resultIn).build();
         MonitoringResult monitoringResult = raoMonitoring.runMonitoring(inputs, 1);
-        results = new RaoResultWithVoltageMonitoring(results, monitoringResult);
+        return new RaoResultWithVoltageMonitoring(resultIn, monitoringResult);
     }
 
-    public void runAngleMonitoring(Network network, String provider, LoadFlowParameters parameters) {
+    public RaoResultWithAngleMonitoring runAngleMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
         Monitoring raoMonitoring = new Monitoring(provider, parameters);
-        MonitoringInput inputs = MonitoringInput.buildWithAngle(network, crac, results, glsks.getZonalScalable(network)).build();
+        MonitoringInput inputs = MonitoringInput.buildWithAngle(network, crac, resultIn, glsks.getZonalScalable(network)).build();
         MonitoringResult monitoringResult = raoMonitoring.runMonitoring(inputs, 1);
-        results = new RaoResultWithAngleMonitoring(results, monitoringResult);
-    }
-
-    public RaoResult getResults() {
-        return results;
+        return new RaoResultWithAngleMonitoring(resultIn, monitoringResult);
     }
 
     public Crac getCrac() {

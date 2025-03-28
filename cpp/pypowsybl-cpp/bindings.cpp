@@ -1231,14 +1231,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("set_glsk_source", ::setGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source",
             py::arg("network"), py::arg("rao_context"), py::arg("glsk_source"));
     m.def("get_crac", &pypowsybl::getCrac, "Get crac associated to the rao context", py::arg("rao_context"));
-    m.def("get_rao_result", &pypowsybl::getRaoResult, "Get rao result associated to the rao context", py::arg("rao_context"));
     m.def("create_default_rao_parameters", &pypowsybl::createDefaultRaoParameters, "Create a default rao parameter");
     m.def("load_rao_parameters", ::loadRaoParametersFromBuffer, "Load rao parameters from a buffer", py::arg("parameters_buffer"));
     m.def("serialize_rao_parameters", ::saveRaoParametersToBinaryBuffer, "Serialize rao parameters to a buffer", py::arg("rao_parameters"));
     m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_result"), py::arg("crac"));
     m.def("get_rao_result_status", &pypowsybl::getRaoResultStatus, "Get the status of a rao result", py::arg("rao_result"));
-    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("rao_context"), py::arg("load_flow_parameters"), py::arg("provider"));
-    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("rao_context"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
