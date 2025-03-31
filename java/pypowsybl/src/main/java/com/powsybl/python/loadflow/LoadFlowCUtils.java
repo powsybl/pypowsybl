@@ -9,10 +9,6 @@ package com.powsybl.python.loadflow;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
-import com.powsybl.commons.parameters.Parameter;
-import com.powsybl.commons.parameters.ParameterType;
-import com.powsybl.dataframe.DataframeMapper;
-import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
@@ -21,25 +17,13 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.graalvm.nativeimage.UnmanagedMemory;
 
-import java.util.Comparator;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
 public final class LoadFlowCUtils {
-
-    static final DataframeMapper<LoadFlowProvider, Void> SPECIFIC_PARAMETERS_MAPPER = new DataframeMapperBuilder<LoadFlowProvider, Parameter, Void>()
-            .itemsProvider(provider -> provider.getSpecificParameters().stream().sorted(Comparator.comparing(Parameter::getCategoryKey).thenComparing(Parameter::getName)).toList())
-            .stringsIndex("name", Parameter::getName)
-            .strings("category_key", p -> Objects.toString(p.getCategoryKey(), ""))
-            .strings("description", Parameter::getDescription)
-            .enums("type", ParameterType.class, Parameter::getType)
-            .strings("default", p -> Objects.toString(p.getDefaultValue(), ""))
-            .strings("possible_values", p -> p.getPossibleValues() == null ? "" : p.getPossibleValues().toString())
-            .build();
 
     private LoadFlowCUtils() {
     }
