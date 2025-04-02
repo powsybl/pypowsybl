@@ -467,7 +467,7 @@ public final class SecurityAnalysisCFunctions {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String stringPath = CTypeUtil.toString(jsonFilePath);
             Path path = Paths.get(stringPath);
-            analysisContext.addActionsFromJsonFile(path);
+            analysisContext.addActionFromJsonFile(path);
         });
     }
 
@@ -499,7 +499,7 @@ public final class SecurityAnalysisCFunctions {
         SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
         String stringPath = CTypeUtil.toString(jsonFilePath);
         Path path = Paths.get(stringPath);
-        analysisContext.addOperatorStrategiesFromJsonFile(path);
+        analysisContext.addOperatorStrategyFromJsonFile(path);
     }
 
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,
