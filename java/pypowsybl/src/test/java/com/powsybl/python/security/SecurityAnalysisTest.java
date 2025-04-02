@@ -9,8 +9,6 @@ package com.powsybl.python.security;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
-import com.powsybl.action.Action;
-import com.powsybl.action.ActionList;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
@@ -34,10 +32,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.InstanceOfAssertFactories.atomicReferenceArray;
-import static org.ejml.EjmlUnitTests.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
@@ -104,6 +98,6 @@ class SecurityAnalysisTest {
         analysisContext.addActionsFromJsonFile(fileSystem.getPath("/ActionFileTestV1.0.json"));
 
         Files.copy(getClass().getResourceAsStream("/OperatorStrategyFileTestV1.0.json"), fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
-        analysisContext.addActionsFromJsonFile(fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
+        analysisContext.addOperatorStrategiesFromJsonFile(fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
     }
 }
