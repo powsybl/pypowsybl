@@ -49,7 +49,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
         return report.getResult();
     }
 
-    void addActionsFromJsonFile(Path path) {
+    void addActionFromJsonFile(Path path) {
         if (Files.exists(path)) {
             ActionList actionList;
             actionList = ActionList.readJsonFile(path);
@@ -59,7 +59,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
         }
     }
 
-    void addOperatorStrategiesFromJsonFile(Path path) {
+    void addOperatorStrategyFromJsonFile(Path path) {
         if (Files.exists(path)) {
             OperatorStrategyList operatorStrategyList;
             operatorStrategyList = OperatorStrategyList.read(path);

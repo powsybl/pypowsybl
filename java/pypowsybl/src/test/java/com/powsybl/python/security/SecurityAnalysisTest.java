@@ -95,9 +95,9 @@ class SecurityAnalysisTest {
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
         Files.copy(getClass().getResourceAsStream("/ActionFileTestV1.0.json"), fileSystem.getPath("/ActionFileTestV1.0.json"));
-        analysisContext.addActionsFromJsonFile(fileSystem.getPath("/ActionFileTestV1.0.json"));
+        analysisContext.addActionFromJsonFile(fileSystem.getPath("/ActionFileTestV1.0.json"));
 
         Files.copy(getClass().getResourceAsStream("/OperatorStrategyFileTestV1.0.json"), fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
-        analysisContext.addOperatorStrategiesFromJsonFile(fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
+        analysisContext.addOperatorStrategyFromJsonFile(fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
     }
 }

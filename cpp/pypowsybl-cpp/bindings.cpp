@@ -729,6 +729,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
           py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
 
+    m.def("add_action_from_json_file", &pypowsybl::addActionFromJsonFile, "Add actions from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
+
+    m.def("add_operator_strategy_from_json_file", &pypowsybl::addOperatorStrategyFromJsonFile, "Add operator strategies from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
+
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("ACTIVE_POWER", pypowsybl::LimitType::ACTIVE_POWER)
             .value("APPARENT_POWER", pypowsybl::LimitType::APPARENT_POWER)

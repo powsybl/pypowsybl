@@ -246,3 +246,23 @@ class SecurityAnalysis(ContingencyContainer):
         if violation_subject_ids is None:
             violation_subject_ids = []
         _pypowsybl.add_operator_strategy(self._handle, operator_strategy_id, contingency_id, action_ids, condition_type, violation_subject_ids, violation_types)
+
+    def add_actions_from_json_file(self, path_to_json_file: str) -> None:
+        """
+        Add any kinds of actions by reading them from a JSON file.
+
+        Args:
+            path_to_json_file: the path to the JSON file in which we extract the actions' data.
+        """
+
+        _pypowsybl.add_action_from_json_file(self._handle, path_to_json_file)
+
+    def add_operator_strategies_from_json_file(self, path_to_json_file: str) -> None:
+        """
+        Add operator strategies by reading them from a JSON file.
+
+        Args:
+            path_to_json_file: the path to the JSON file in which we extract the operator strategies' data.
+        """
+
+        _pypowsybl.add_operator_strategy_from_json_file(self._handle, path_to_json_file)

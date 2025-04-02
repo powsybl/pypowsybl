@@ -817,6 +817,15 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
         conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
 }
 
+void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string jsonFilePath) {
+      PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
+void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string jsonFilePath) {
+      PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
+
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
     z->id = copyStringToCharPtr(id);
