@@ -460,6 +460,17 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addActionFromJsonFile")
+    public static void addActionFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addActionsFromJsonFile(path);
+        });
+    }
+
     @CEntryPoint(name = "addOperatorStrategy")
     public static void addOperatorStrategy(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                          CCharPointer operationStrategyId, CCharPointer contingencyId,
@@ -480,6 +491,15 @@ public final class SecurityAnalysisCFunctions {
                     ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
         });
+    }
+
+    @CEntryPoint(name = "addOperatorStrategyFromJsonFile")
+    public static void addOperatorStrategyFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                       CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+        String stringPath = CTypeUtil.toString(jsonFilePath);
+        Path path = Paths.get(stringPath);
+        analysisContext.addOperatorStrategiesFromJsonFile(path);
     }
 
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,

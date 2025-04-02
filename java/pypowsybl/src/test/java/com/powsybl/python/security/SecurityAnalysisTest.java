@@ -7,6 +7,10 @@
  */
 package com.powsybl.python.security;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
+import com.powsybl.action.Action;
+import com.powsybl.action.ActionList;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
@@ -23,15 +27,24 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.atomicReferenceArray;
+import static org.ejml.EjmlUnitTests.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 class SecurityAnalysisTest {
+
+    protected FileSystem fileSystem;
 
     @Test
     void testStateMonitors() {
@@ -79,5 +92,18 @@ class SecurityAnalysisTest {
             .containsExactly("First contingency", "First contingency");
         Assertions.assertThat(series.get(1).getStrings())
             .containsExactly("NHV1_NHV2_2", "VLHV1");
+    }
+
+    @Test
+    void testToAddActionsAndOperatorStrategiesFromJsonFile() throws IOException {
+        SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
+        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
+        Files.copy(getClass().getResourceAsStream("/ActionFileTestV1.0.json"), fileSystem.getPath("/ActionFileTestV1.0.json"));
+        analysisContext.addActionsFromJsonFile(fileSystem.getPath("/ActionFileTestV1.0.json"));
+
+        Files.copy(getClass().getResourceAsStream("/OperatorStrategyFileTestV1.0.json"), fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
+        analysisContext.addActionsFromJsonFile(fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
     }
 }

@@ -8,6 +8,7 @@
 package com.powsybl.python.security;
 
 import com.powsybl.action.Action;
+import com.powsybl.action.ActionList;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
@@ -16,7 +17,10 @@ import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.strategy.OperatorStrategy;
+import com.powsybl.security.strategy.OperatorStrategyList;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,6 +47,26 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(network, network.getVariantManager().getWorkingVariantId(), contingencies, runParameters);
         return report.getResult();
+    }
+
+    void addActionsFromJsonFile(Path path) {
+        if (Files.exists(path)) {
+            ActionList actionList;
+            actionList = ActionList.readJsonFile(path);
+            actions.addAll(actionList.getActions());
+        } else {
+            throw new SecurityException("No actions found in " + path);
+        }
+    }
+
+    void addOperatorStrategiesFromJsonFile(Path path) {
+        if (Files.exists(path)) {
+            OperatorStrategyList operatorStrategyList;
+            operatorStrategyList = OperatorStrategyList.read(path);
+            operatorStrategies.addAll(operatorStrategyList.getOperatorStrategies());
+        } else {
+            throw new SecurityException("No operatorStrategies found in " + path);
+        }
     }
 
     void addAction(Action action) {
