@@ -196,8 +196,8 @@ public final class PyPowsyblApiHeader {
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
-    @CStruct("parameter_base")
-    public interface ParameterBase extends PointerBase {
+    @CStruct("provider_parameters")
+    public interface ProviderParameters extends PointerBase {
 
         @CField("provider_parameters_keys")
         void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
@@ -228,7 +228,7 @@ public final class PyPowsyblApiHeader {
     public interface LoadFlowParametersPointer extends PointerBase {
 
         @CFieldAddress("base")
-        ParameterBase getParameterBase();
+        ProviderParameters getProviderParameters();
 
         @CField("voltage_init_mode")
         int getVoltageInitMode();
@@ -392,7 +392,7 @@ public final class PyPowsyblApiHeader {
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
         @CFieldAddress("base")
-        ParameterBase getParameterBase();
+        ProviderParameters getProviderParameters();
 
         @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
@@ -432,7 +432,7 @@ public final class PyPowsyblApiHeader {
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
         @CFieldAddress("base")
-        ParameterBase getParameterBase();
+        ProviderParameters getProviderParameters();
 
         @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
@@ -1254,7 +1254,7 @@ public final class PyPowsyblApiHeader {
     public interface ShortCircuitAnalysisParametersPointer extends PointerBase {
 
         @CFieldAddress("base")
-        ParameterBase getParameterBase();
+        ProviderParameters getProviderParameters();
 
         @CField("with_voltage_result")
         boolean isWithVoltageResult();
@@ -1380,7 +1380,7 @@ public final class PyPowsyblApiHeader {
     public interface RaoParametersPointer extends PointerBase {
 
         @CFieldAddress("base")
-        ParameterBase getParameterBase();
+        ProviderParameters getProviderParameters();
 
         @CField("objective_function_type")
         int getObjectiveFunctionType();

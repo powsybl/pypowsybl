@@ -160,9 +160,9 @@ public final class Util {
         UnmanagedMemory.free(ptr);
     }
 
-    public static void freeParameterBase(ParameterBase base) {
-        freeCharPtrPtr(base.getProviderParametersKeys(), base.getProviderParametersKeysCount());
-        freeCharPtrPtr(base.getProviderParametersValues(), base.getProviderParametersValuesCount());
+    public static void freeProviderParameters(ProviderParameters parameters) {
+        freeCharPtrPtr(parameters.getProviderParametersKeys(), parameters.getProviderParametersKeysCount());
+        freeCharPtrPtr(parameters.getProviderParametersValues(), parameters.getProviderParametersValuesCount());
     }
 
     /**

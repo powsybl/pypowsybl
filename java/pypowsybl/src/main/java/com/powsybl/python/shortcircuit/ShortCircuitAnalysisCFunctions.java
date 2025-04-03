@@ -108,7 +108,7 @@ public final class ShortCircuitAnalysisCFunctions {
     public static void freeShortCircuitAnalysisParameters(IsolateThread thread, ShortCircuitAnalysisParametersPointer parameters,
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-            freeParameterBase(parameters.getParameterBase());
+            freeProviderParameters(parameters.getProviderParameters());
             UnmanagedMemory.free(parameters);
         });
     }
@@ -127,8 +127,8 @@ public final class ShortCircuitAnalysisCFunctions {
         paramsPtr.setMinVoltageDropProportionalThreshold(parameters.getMinVoltageDropProportionalThreshold());
         paramsPtr.setStudyType(parameters.getStudyType().ordinal());
         paramsPtr.setInitialVoltageProfileMode(parameters.getInitialVoltageProfileMode().ordinal());
-        paramsPtr.getParameterBase().setProviderParametersValuesCount(0);
-        paramsPtr.getParameterBase().setProviderParametersKeysCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 

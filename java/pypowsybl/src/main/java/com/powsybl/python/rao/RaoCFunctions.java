@@ -226,7 +226,7 @@ public final class RaoCFunctions {
         UnmanagedMemory.free(parametersPointer.getSensitivityParameters());
 
         // Free extensions
-        freeParameterBase(parametersPointer.getParameterBase());
+        freeProviderParameters(parametersPointer.getProviderParameters());
 
         // Free main pointer
         doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parametersPointer));
@@ -366,10 +366,10 @@ public final class RaoCFunctions {
     }
 
     private static Map<String, String> getExtensionData(PyPowsyblApiHeader.RaoParametersPointer parameterPointer) {
-        return CTypeUtil.toStringMap(parameterPointer.getParameterBase().getProviderParametersKeys(),
-            parameterPointer.getParameterBase().getProviderParametersKeysCount(),
-            parameterPointer.getParameterBase().getProviderParametersValues(),
-            parameterPointer.getParameterBase().getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(parameterPointer.getProviderParameters().getProviderParametersKeys(),
+            parameterPointer.getProviderParameters().getProviderParametersKeysCount(),
+            parameterPointer.getProviderParameters().getProviderParametersValues(),
+            parameterPointer.getProviderParameters().getProviderParametersValuesCount());
     }
 
     private static void convertExtensionData(RaoParameters parameters, PyPowsyblApiHeader.RaoParametersPointer parameterPointer) {
@@ -392,9 +392,9 @@ public final class RaoCFunctions {
             keys.add(key);
             values.add(value);
         });
-        parameterPointer.getParameterBase().setProviderParametersKeys(Util.getStringListAsPtr(keys));
-        parameterPointer.getParameterBase().setProviderParametersKeysCount(keys.size());
-        parameterPointer.getParameterBase().setProviderParametersValues(Util.getStringListAsPtr(values));
-        parameterPointer.getParameterBase().setProviderParametersValuesCount(values.size());
+        parameterPointer.getProviderParameters().setProviderParametersKeys(Util.getStringListAsPtr(keys));
+        parameterPointer.getProviderParameters().setProviderParametersKeysCount(keys.size());
+        parameterPointer.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(values));
+        parameterPointer.getProviderParameters().setProviderParametersValuesCount(values.size());
     }
 }

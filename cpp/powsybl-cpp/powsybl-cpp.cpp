@@ -227,7 +227,7 @@ void deleteLoadFlowParameters(loadflow_parameters* ptr) {
     pypowsybl::deleteCharPtrPtr(ptr->base.provider_parameters_values, ptr->base.provider_parameters_values_count);
 }
 
-void providerParametersToBase(parameter_base& base, std::vector<std::string> const& provider_parameters_keys,
+void providerParametersToBase(provider_parameters& base, std::vector<std::string> const& provider_parameters_keys,
   std::vector<std::string> const& provider_parameters_values) {
      base.provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
      base.provider_parameters_keys_count = provider_parameters_keys.size();
@@ -236,7 +236,7 @@ void providerParametersToBase(parameter_base& base, std::vector<std::string> con
 
 }
 
-void baseToProviderParameters(parameter_base& base, std::vector<std::string>& provider_parameters_keys,
+void baseToProviderParameters(provider_parameters& base, std::vector<std::string>& provider_parameters_keys,
   std::vector<std::string>& provider_parameters_values) {
      copyCharPtrPtrToVector(base.provider_parameters_keys, base.provider_parameters_keys_count, provider_parameters_keys);
      copyCharPtrPtrToVector(base.provider_parameters_values, base.provider_parameters_values_count, provider_parameters_values);

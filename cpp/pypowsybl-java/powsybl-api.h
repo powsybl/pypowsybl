@@ -47,15 +47,15 @@ typedef struct loadflow_component_result_struct {
     double distributed_active_power;
 } loadflow_component_result;
 
-typedef struct parameter_base_struct {
+typedef struct provider_parameters_struct {
     char** provider_parameters_keys;
     int provider_parameters_keys_count;
     char** provider_parameters_values;
     int provider_parameters_values_count;
-} parameter_base;
+} provider_parameters;
 
 typedef struct loadflow_parameters_struct {
-    struct parameter_base_struct base;
+    struct provider_parameters_struct base;
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
     unsigned char use_reactive_limits;
@@ -88,7 +88,7 @@ typedef struct loadflow_validation_parameters_struct {
 } loadflow_validation_parameters;
 
 typedef struct security_analysis_parameters_struct {
-    struct parameter_base_struct base;
+    struct provider_parameters_struct base;
     struct loadflow_parameters_struct loadflow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
@@ -98,7 +98,7 @@ typedef struct security_analysis_parameters_struct {
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
-    struct parameter_base_struct base;
+    struct provider_parameters_struct base;
     struct loadflow_parameters_struct loadflow_parameters;
 } sensitivity_analysis_parameters;
 
@@ -422,7 +422,7 @@ typedef enum {
 } ThreeSide;
 
 typedef struct shortcircuit_analysis_parameters_struct {
-    struct parameter_base_struct base;
+    struct provider_parameters_struct base;
     unsigned char with_voltage_result;
     unsigned char with_feeder_result;
     unsigned char with_limit_violations;
@@ -528,7 +528,7 @@ typedef enum {
 } Grid2opUpdateIntegerValueType;
 
 typedef struct rao_parameters_struct {
-  struct parameter_base_struct base;
+  struct provider_parameters_struct base;
   int objective_function_type; // Objective function parameters
   int preventive_stop_criterion;
   int curative_stop_criterion;

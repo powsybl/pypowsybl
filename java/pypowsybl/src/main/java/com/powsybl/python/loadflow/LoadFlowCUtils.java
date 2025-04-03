@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.Util.freeCharPtrPtr;
-import static com.powsybl.python.commons.Util.freeParameterBase;
+import static com.powsybl.python.commons.Util.freeProviderParameters;
 
 /**
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
@@ -39,10 +39,10 @@ public final class LoadFlowCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(LoadFlowParametersPointer loadFlowParametersPtr) {
-        return CTypeUtil.toStringMap(loadFlowParametersPtr.getParameterBase().getProviderParametersKeys(),
-                loadFlowParametersPtr.getParameterBase().getProviderParametersKeysCount(),
-                loadFlowParametersPtr.getParameterBase().getProviderParametersValues(),
-                loadFlowParametersPtr.getParameterBase().getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(loadFlowParametersPtr.getProviderParameters().getProviderParametersKeys(),
+                loadFlowParametersPtr.getProviderParameters().getProviderParametersKeysCount(),
+                loadFlowParametersPtr.getProviderParameters().getProviderParametersValues(),
+                loadFlowParametersPtr.getProviderParameters().getProviderParametersValuesCount());
     }
 
     public static LoadFlowParameters createLoadFlowParameters() {
@@ -101,7 +101,7 @@ public final class LoadFlowCUtils {
      * Frees inner memory, but not the pointer itself.
      */
     public static void freeLoadFlowParametersContent(LoadFlowParametersPointer parameters) {
-        freeParameterBase(parameters.getParameterBase());
+        freeProviderParameters(parameters.getProviderParameters());
         freeCharPtrPtr(parameters.getCountriesToBalance(), parameters.getCountriesToBalanceCount());
     }
 }

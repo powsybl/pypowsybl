@@ -59,9 +59,9 @@ public final class SensitivityAnalysisCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(PyPowsyblApiHeader.SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPointer) {
-        return CTypeUtil.toStringMap(sensitivityAnalysisParametersPointer.getParameterBase().getProviderParametersKeys(),
-                sensitivityAnalysisParametersPointer.getParameterBase().getProviderParametersKeysCount(),
-                sensitivityAnalysisParametersPointer.getParameterBase().getProviderParametersValues(),
-                sensitivityAnalysisParametersPointer.getParameterBase().getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(sensitivityAnalysisParametersPointer.getProviderParameters().getProviderParametersKeys(),
+                sensitivityAnalysisParametersPointer.getProviderParameters().getProviderParametersKeysCount(),
+                sensitivityAnalysisParametersPointer.getProviderParameters().getProviderParametersValues(),
+                sensitivityAnalysisParametersPointer.getProviderParameters().getProviderParametersValuesCount());
     }
 }
