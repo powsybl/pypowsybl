@@ -421,12 +421,10 @@ def test_add_contingencies_from_json_file():
     assert 'contingency2' in sa_result.post_contingency_results.keys()
 
 def test_add_actions_from_json_file():
-    n = pp.network.create_eurostag_tutorial_example1_network()
+    n = pp.network.create_four_substations_node_breaker_network()
     sa = pp.security.create_analysis()
     sa.add_actions_from_json_file(str(DATA_DIR.joinpath('ActionFileTestV1.0.json')))
     sa_result = sa.run_ac(n)
     df = sa_result.branch_results
     assert 'MULTIPLE_ACTIONS' in df.keys()
     assert 'PHASE_TAP_CHANGER_TAP_POSITION' in df.keys()
-
-
