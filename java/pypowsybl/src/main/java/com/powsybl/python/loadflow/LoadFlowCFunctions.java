@@ -175,8 +175,8 @@ public final class LoadFlowCFunctions {
         cParameters.setCountriesToBalanceCount(countries.size());
         cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
         cParameters.setDcPowerFactor(parameters.getDcPowerFactor());
-        cParameters.setProviderParametersValuesCount(0);
-        cParameters.setProviderParametersKeysCount(0);
+        cParameters.getProviderParameters().setProviderParametersValuesCount(0);
+        cParameters.getProviderParameters().setProviderParametersKeysCount(0);
     }
 
     public static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
