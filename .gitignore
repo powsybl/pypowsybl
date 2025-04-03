@@ -58,6 +58,3 @@ build/*
 tests/_trial_temp/*
 
 *.orig
-
-# Documentation generated files (autosummary)
-docs/reference/api/
