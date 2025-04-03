@@ -817,11 +817,11 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
         conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
 }
 
-void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string jsonFilePath) {
+void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
       PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
-void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string jsonFilePath) {
+void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
       PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
