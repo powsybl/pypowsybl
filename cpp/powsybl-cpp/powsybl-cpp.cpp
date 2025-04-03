@@ -761,6 +761,10 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
     PowsyblCaller::get()->callJava(::addContingency, analysisContext, (char*) contingencyId.data(), elementIdPtr.get(), elementsIds.size());
 }
 
+void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
+    PowsyblCaller::get()->callJava(::addContingencyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
                                const std::string& provider, bool dc, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
