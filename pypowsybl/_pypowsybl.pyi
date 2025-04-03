@@ -1,11 +1,7 @@
 from logging import Logger
-from pathlib import Path
 from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union
 
 from numpy import ndarray
-
-from pypowsybl.network import Network
-
 
 class ArrayStruct:
     def __init__(self) -> None: ...
