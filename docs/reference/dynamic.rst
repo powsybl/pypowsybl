@@ -30,7 +30,7 @@ ModelMapping
     ModelMapping.add_base_bus
     ModelMapping.add_infinite_bus
     ModelMapping.add_overload_management_system
-    ModelMapping.add_two_levels_overload_management_system
+    ModelMapping.add_two_level_overload_management_system
     ModelMapping.add_under_voltage_automation_system
     ModelMapping.add_phase_shifter_i_automation_system
     ModelMapping.add_phase_shifter_p_automation_system
