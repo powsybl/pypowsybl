@@ -227,7 +227,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("loadflow_parameters")
     public interface LoadFlowParametersPointer extends PointerBase {
 
-        @CFieldAddress("base")
+        @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
         @CField("voltage_init_mode")
@@ -391,7 +391,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("base")
+        @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
         @CFieldAddress("loadflow_parameters")
@@ -431,7 +431,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("base")
+        @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
         @CFieldAddress("loadflow_parameters")
@@ -1253,7 +1253,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("shortcircuit_analysis_parameters")
     public interface ShortCircuitAnalysisParametersPointer extends PointerBase {
 
-        @CFieldAddress("base")
+        @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
         @CField("with_voltage_result")
@@ -1379,7 +1379,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("rao_parameters")
     public interface RaoParametersPointer extends PointerBase {
 
-        @CFieldAddress("base")
+        @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
         @CField("objective_function_type")
