@@ -91,7 +91,6 @@ class SecurityAnalysisTest {
     @Test
     void testToAddActionsAndOperatorStrategiesFromJsonFile() throws IOException {
         SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
-        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
         fileSystem = Jimfs.newFileSystem(Configuration.unix());
 
         Files.copy(getClass().getResourceAsStream("/ActionFileTestV1.0.json"), fileSystem.getPath("/ActionFileTestV1.0.json"));
