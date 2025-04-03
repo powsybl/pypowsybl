@@ -27,7 +27,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractSimpleDynamicModelAdder {
+public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimpleDynamicModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),

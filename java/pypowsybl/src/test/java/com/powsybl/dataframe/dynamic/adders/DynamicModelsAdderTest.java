@@ -172,7 +172,7 @@ class DynamicModelsAdderTest {
                             df.addSeries(I_MEASUREMENT, false, createTwoRowsSeries(lineId));
                             df.addSeries(I_MEASUREMENT_SIDE, false, createTwoRowsSeries(TwoSides.ONE.toString()));
                         }),
-                Arguments.of(TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM,
+                Arguments.of(TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
                             df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
