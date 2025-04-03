@@ -9,6 +9,7 @@ of pypowsybl classes and methods.
 
    network
    loadflow
+   rao
    security
    sensitivity
    flowdecomposition
