@@ -38,8 +38,6 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -135,17 +133,6 @@ public final class SecurityAnalysisCFunctions {
             String contingencyId = CTypeUtil.toString(contingencyIdPtr);
             List<String> elementIds = toStringList(elementIdPtrPtr, elementCount);
             contingencyContainer.addContingency(contingencyId, elementIds);
-        });
-    }
-
-    @CEntryPoint(name = "addContingencyFromJsonFile")
-    public static void addContingencyFromJsonFile(IsolateThread thread, ObjectHandle contingencyContainerHandle, CCharPointer jsonFilePath,
-                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            ContingencyContainer contingencyContainer = ObjectHandles.getGlobal().get(contingencyContainerHandle);
-            String stringPath = CTypeUtil.toString(jsonFilePath);
-            Path path = Paths.get(stringPath);
-            contingencyContainer.addContingencyFromJsonFile(path);
         });
     }
 
@@ -460,14 +447,21 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
-    @CEntryPoint(name = "addActionFromJsonFile")
-    public static void addActionFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "addTerminalsConnectionAction")
+    public static void addTerminalsConnectionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                         CCharPointer actionId, CCharPointer elementId, PyPowsyblApiHeader.ThreeSideType side,
+                                                         boolean opening, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-            String stringPath = CTypeUtil.toString(jsonFilePath);
-            Path path = Paths.get(stringPath);
-            analysisContext.addActionFromJsonFile(path);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String elementIdStr = CTypeUtil.toString(elementId);
+            TerminalsConnectionActionBuilder builder = new TerminalsConnectionActionBuilder();
+            TerminalsConnectionAction action = builder.withId(actionIdStr)
+                    .withNetworkElementId(elementIdStr)
+                    .withSide(Util.convert(side))
+                    .withOpen(opening)
+                    .build();
+            analysisContext.addAction(action);
         });
     }
 
@@ -491,15 +485,6 @@ public final class SecurityAnalysisCFunctions {
                     ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
         });
-    }
-
-    @CEntryPoint(name = "addOperatorStrategyFromJsonFile")
-    public static void addOperatorStrategyFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
-                                                       CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
-        String stringPath = CTypeUtil.toString(jsonFilePath);
-        Path path = Paths.get(stringPath);
-        analysisContext.addOperatorStrategyFromJsonFile(path);
     }
 
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,
