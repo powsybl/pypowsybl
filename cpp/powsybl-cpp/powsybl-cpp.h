@@ -436,6 +436,7 @@ public:
     int scaling_factor;
     double radius_factor;
     EdgeInfoType edge_info_displayed;
+    bool voltage_level_details;
 };
 
 //=======short-circuit analysis==========

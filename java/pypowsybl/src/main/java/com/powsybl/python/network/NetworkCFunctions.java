@@ -973,6 +973,7 @@ public final class NetworkCFunctions {
         cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
         cParameters.setEdgeInfoDisplayed(edgeInfo);
+        cParameters.setVoltageLevelDetails(parameters.getSvgParameters().isVoltageLevelDetails());
     }
 
     @CEntryPoint(name = "createNadParameters")
