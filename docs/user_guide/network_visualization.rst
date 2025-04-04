@@ -352,7 +352,20 @@ by using dataframes:
                                                   {'id': 'S2VL1_0', 'description': 'BUS C'},
                                                   {'id': 'S3VL1_0', 'description': 'BUS D'}
                                               ])
-    >>> diagram_profile=pp.network.NadProfile(branch_labels=labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
+    >>> bus_node_style_df = pd.DataFrame.from_records(index='id', 
+                                              data=[
+                                                  {'id': 'S1VL1_0', 'fill': 'red', 'edge': 'black', 'edge-width': '4px'},
+                                                  {'id': 'S1VL2_0', 'fill': 'blue', 'edge': 'black', 'edge-width': '4px'},
+                                                  {'id': 'S2VL1_0', 'fill': 'yellow', 'edge': 'black', 'edge-width': '4px'},
+                                              ])
+    >>> edge_style_df = pd.DataFrame.from_records(index='id', 
+                                          data=[
+                                              {'id': 'LINE_S2S3', 'edge1': 'blue', 'width1': '16px', 'dash1': '12,12' ,'edge2': 'blue', 'width2': '16px', 'dash2': '12,12'},
+                                              {'id': 'LINE_S3S4', 'edge1': 'green',  'width1': '3px', 'edge2': 'green',  'width2': '3px'},
+                                              {'id': 'TWT'      , 'edge1': 'yellow', 'width1': '4px', 'edge2': 'blue',  'width2': '4px'},
+                                          ])
+    >>> diagram_profile=pp.network.NadProfile(branch_labels=labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df,
+                                      bus_node_styles=bus_node_style_df, edge_styles=edge_style_df)
     >>> pars=pp.network.NadParameters(edge_name_displayed=True)
     >>> network.get_network_area_diagram(voltage_level_ids='S1VL1', depth=2, nad_parameters=pars, nad_profile=diagram_profile)
 
@@ -371,10 +384,29 @@ In the bus_descriptions dataframe parameter:
     - id is the BUS id
     - description define a label for the BUS
 
+In the bus_node_styles dataframe parameter:
+    - id is the BUS id
+    - fill is the fill color for the node
+    - edge is the edge color for the node
+    - width is the width of the edge for the node
+
+In the edge_styles dataframe parameter:
+    - id is the branch id
+    - edge1, width1 and dash1 is the color, the width and the dash pattern for the first branch's edge
+    - edge2, width2 and dash2 is the color, the width and the dash pattern for the second branch's edge
+
+The dash pattern string specifies the lengths of alternating dashes and gaps in the edge, separated by commas and/or spaces
+
 An additional three_wt_labels dataframe parameter can be used to set the labels and the arrows direction for three winding transformers:
     - id is the three winding transformer id
     - side1, side2, and side3 define the labels along the three winding transformer legs
     - arrow1, arrow2, and arrow3 define the direction of the arrows at the ends of the three winding transformer legs: 'IN' or 'OUT'. None (or an empty string) does not display the arrow.
+
+Similarly to the edge_styles, the three_wt_styles parameter can be used to set the style for the three winding transformers:
+    - id is the three winding transformer id
+    - edge1, width1 and dash1 is the color, the width and the dash pattern for the first transformer's leg
+    - edge2, width2 and dash2 is the color, the width and the dash pattern for the second transformer's leg
+    - edge3, width3 and dash3 is the color, the width and the dash pattern for the third transformer's leg
 
 The optional parameter nad_profile can also be set in the write_network_area_diagram function.
 
