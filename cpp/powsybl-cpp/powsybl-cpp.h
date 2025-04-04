@@ -436,6 +436,7 @@ public:
     int scaling_factor;
     double radius_factor;
     EdgeInfoType edge_info_displayed;
+    bool voltage_level_details;
 };
 
 //=======short-circuit analysis==========
@@ -610,6 +611,9 @@ void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const s
 void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition, ThreeSide side);
 
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
+
+void addTerminalsConnectionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& elementId,
+                                       ThreeSide side, bool opening);
 
 void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
                          condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
