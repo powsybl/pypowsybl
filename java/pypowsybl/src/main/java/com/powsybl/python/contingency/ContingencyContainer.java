@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.contingency;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -15,4 +16,6 @@ import java.util.List;
 public interface ContingencyContainer {
 
     void addContingency(String contingencyId, List<String> elementIds);
+
+    void addContingencyFromJsonFile(Path pathToJsonFile);
 }
