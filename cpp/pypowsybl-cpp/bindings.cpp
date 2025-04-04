@@ -205,7 +205,7 @@ void dynamicSimulationBindings(py::module_& m) {
         .value("BASE_BUS", DynamicMappingType::BASE_BUS)
         .value("INFINITE_BUS", DynamicMappingType::INFINITE_BUS)
         .value("OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::OVERLOAD_MANAGEMENT_SYSTEM)
-        .value("TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM)
         .value("UNDER_VOLTAGE", DynamicMappingType::UNDER_VOLTAGE)
         .value("PHASE_SHIFTER_I", DynamicMappingType::PHASE_SHIFTER_I)
         .value("PHASE_SHIFTER_P", DynamicMappingType::PHASE_SHIFTER_P)
