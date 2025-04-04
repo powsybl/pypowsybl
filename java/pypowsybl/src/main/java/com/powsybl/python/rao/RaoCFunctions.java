@@ -86,7 +86,11 @@ public final class RaoCFunctions {
             InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
             try {
                 Crac crac = Crac.read("crac.json", streamedCrac, network);
-                raoContext.setCrac(crac);
+                if (crac != null) {
+                    raoContext.setCrac(crac);
+                } else {
+                    throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.")
+                }
             } catch (IOException e) {
                 throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
             }
