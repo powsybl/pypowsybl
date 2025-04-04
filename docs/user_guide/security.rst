@@ -112,6 +112,7 @@ The supported actions in PyPowsybl are listed here:
 - `load_reactive_power`, to change the reactive power of a load
 - `shunt_compensator_position`, to change the section of a shunt compensator
 - `generator_active_power`, to modify the generator active power
+- `terminals_connection`, to connect/disconnect one or multiple sides of a network element
 
 The following example defines a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
 
