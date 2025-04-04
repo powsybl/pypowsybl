@@ -21,12 +21,11 @@ def test_simulation():
     report_node = rp.Reporter()
 
     model_mapping = dyn.ModelMapping()
-    model_mapping.add_base_load(static_id='B3-L', parameter_set_id='LAB', dynamic_model_id='BBM_LOAD', model_name='LoadAlphaBeta')
+    model_mapping.add_base_load(static_id='B3-L', parameter_set_id='LAB', model_name='LoadAlphaBeta')
 
     generator_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
         data={
-            'dynamic_model_id': ['BBM_GEN6', 'BBM_GEN8'],
             'parameter_set_id': ['GSTWPR_GEN____6_SM', 'GSTWPR_GEN____8_SM'],
             'model_name': 'GeneratorSynchronousThreeWindingsProportionalRegulations'
         }
@@ -38,7 +37,7 @@ def test_simulation():
     event_mapping.add_active_power_variation(static_id='B3-L', start_time=4, delta_p=0.02)
 
     variables_mapping = dyn.OutputVariableMapping()
-    variables_mapping.add_dynamic_model_curves('BBM_GEN6', ['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
+    variables_mapping.add_dynamic_model_curves('B6-G', ['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
     variables_mapping.add_standard_model_final_state_values('B3', 'Upu_value')
 
     sim = dyn.Simulation()
@@ -47,8 +46,8 @@ def test_simulation():
     assert report_node
     assert DynamicSimulationStatus.SUCCESS == res.status()
     assert "" == res.status_text()
-    assert 'BBM_GEN6_generator_PGen' in res.curves()
-    assert 'BBM_GEN6_generator_QGen' in res.curves()
-    assert 'BBM_GEN6_generator_UStatorPu' in res.curves()
+    assert 'B6-G_generator_PGen' in res.curves()
+    assert 'B6-G_generator_QGen' in res.curves()
+    assert 'B6-G_generator_UStatorPu' in res.curves()
     assert False == res.final_state_values().loc['NETWORK_B3_Upu_value'].empty
     assert False == res.timeline().empty

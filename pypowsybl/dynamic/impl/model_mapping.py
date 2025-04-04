@@ -40,7 +40,6 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -50,7 +49,6 @@ class ModelMapping:
 
                 model_mapping.add_base_load(static_id='LOAD',
                                             parameter_set_id='lab',
-                                            dynamic_model_id='DM_LOAD',
                                             model_name='LoadPQ')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.BASE_LOAD, [df], **kwargs)
@@ -72,7 +70,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -82,7 +80,6 @@ class ModelMapping:
 
                 model_mapping.add_load_one_transformer(static_id='LOAD',
                                                        parameter_set_id='lt',
-                                                       dynamic_model_id='DM_LT',
                                                        model_name='LoadOneTransformer')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.LOAD_ONE_TRANSFORMER, [df], **kwargs)
@@ -104,7 +101,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -114,7 +111,6 @@ class ModelMapping:
 
                 model_mapping.add_load_one_transformer_tap_changer(static_id='LOAD',
                                                                    parameter_set_id='lt_tc',
-                                                                   dynamic_model_id='DM_LT_TC',
                                                                    model_name='LoadOneTransformerTapChanger')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.LOAD_ONE_TRANSFORMER_TAP_CHANGER, [df], **kwargs)
@@ -136,7 +132,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -146,7 +142,6 @@ class ModelMapping:
 
                 model_mapping.add_load_two_transformers(static_id='LOAD',
                                                         parameter_set_id='ltt',
-                                                        dynamic_model_id='DM_LTT',
                                                         model_name='LoadTwoTransformers')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.LOAD_TWO_TRANSFORMERS, [df], **kwargs)
@@ -168,7 +163,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -178,7 +173,6 @@ class ModelMapping:
 
                 model_mapping.add_load_two_transformers_tap_changers(static_id='LOAD',
                                                                      parameter_set_id='ltt_tc',
-                                                                     dynamic_model_id='DM_LTT_TC',
                                                                      model_name='LoadTwoTransformersTapChangers')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.LOAD_TWO_TRANSFORMERS_TAP_CHANGERS, [df], **kwargs)
@@ -200,7 +194,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -210,7 +204,6 @@ class ModelMapping:
 
                 model_mapping.add_base_generator(static_id='GEN',
                                                  parameter_set_id='gen',
-                                                 dynamic_model_id='DM_GEN',
                                                  model_name='GeneratorFictitious')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.BASE_GENERATOR, [df], **kwargs)
@@ -232,7 +225,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -242,7 +235,6 @@ class ModelMapping:
 
                 model_mapping.add_synchronized_generator(static_id='GEN',
                                                          parameter_set_id='sgen',
-                                                         dynamic_model_id='DM_SYNCH_GEN',
                                                          model_name='GeneratorPVFixed')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.SYNCHRONIZED_GENERATOR, [df], **kwargs)
@@ -264,7 +256,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -274,7 +266,6 @@ class ModelMapping:
 
                     model_mapping.add_synchronous_generator(static_id='GEN',
                                                             parameter_set_id='ssgen',
-                                                            dynamic_model_id='DM_SYNCHRONOUS_GEN',
                                                             model_name='GeneratorSynchronousThreeWindings')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.SYNCHRONOUS_GENERATOR, [df], **kwargs)
@@ -296,7 +287,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -306,7 +297,6 @@ class ModelMapping:
 
                     model_mapping.add_wecc(static_id='GEN',
                                            parameter_set_id='wecc',
-                                           dynamic_model_id='DM_WECC',
                                            model_name='WT4BWeccCurrentSource')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.WECC, [df], **kwargs)
@@ -328,7 +318,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -338,7 +328,6 @@ class ModelMapping:
 
                 model_mapping.add_grid_forming_converter(static_id='GEN',
                                                          parameter_set_id='gf',
-                                                         dynamic_model_id='DM_GF',
                                                          model_name='GridFormingConverterMatchingControl')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.GRID_FORMING_CONVERTER, [df], **kwargs)
@@ -360,7 +349,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -370,7 +359,6 @@ class ModelMapping:
 
                 model_mapping.add_signal_n_generator(static_id='GEN',
                                                      parameter_set_id='signal_n',
-                                                     dynamic_model_id='DM_SIGNAL_N',
                                                      model_name='GeneratorPVSignalN')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.SIGNAL_N_GENERATOR, [df], **kwargs)
@@ -392,7 +380,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -402,7 +390,6 @@ class ModelMapping:
 
                 model_mapping.add_hvdc_p(static_id='HVDC_LINE',
                                          parameter_set_id='hvdc_p',
-                                         dynamic_model_id='DM_HVDC_P',
                                          model_name='HvdcPV')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.HVDC_P, [df], **kwargs)
@@ -424,7 +411,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -434,7 +421,6 @@ class ModelMapping:
 
                 model_mapping.add_hvdc_vsc(static_id='HVDC_LINE',
                                            parameter_set_id='hvdc_vsc',
-                                           dynamic_model_id='DM_HVDC_VSC',
                                            model_name='HvdcVSCDanglingP')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.HVDC_VSC, [df], **kwargs)
@@ -456,7 +442,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -466,7 +452,6 @@ class ModelMapping:
 
                 model_mapping.add_base_transformer(static_id='TFO',
                                                    parameter_set_id='tfo',
-                                                   dynamic_model_id='DM_TFO',
                                                    model_name='TransformerFixedRatio')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.BASE_TRANSFORMER, [df], **kwargs)
@@ -488,7 +473,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -498,7 +483,6 @@ class ModelMapping:
 
                 model_mapping.add_base_static_var_compensator(static_id='SVARC',
                                                               parameter_set_id='svarc',
-                                                              dynamic_model_id='DM_SVARC',
                                                               model_name='StaticVarCompensatorPV')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR, [df], **kwargs)
@@ -520,7 +504,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -530,7 +514,6 @@ class ModelMapping:
 
                 mmodel_mapping.add_base_line(static_id='LINE',
                                              parameter_set_id='l',
-                                             dynamic_model_id='DM_LINE',
                                              model_name='Line')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.BASE_LINE, [df], **kwargs)
@@ -552,7 +535,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -562,7 +545,6 @@ class ModelMapping:
 
                 model_mapping.add_base_bus(static_id='BUS',
                                            parameter_set_id='bus',
-                                           dynamic_model_id='DM_BUS',
                                            model_name='Bus')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.BASE_BUS, [df], **kwargs)
@@ -584,7 +566,7 @@ class ModelMapping:
 
             - **static_id**: id of the network element to map
             - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-            - **dynamic_model_id**: id of the model mapping the network element (if none the static id will be used)
+
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -594,7 +576,6 @@ class ModelMapping:
 
                 model_mapping.add_infinite_bus(static_id='BUS',
                                                parameter_set_id='inf_bus',
-                                               dynamic_model_id='DM_INF_BUS',
                                                model_name='InfiniteBus')
         """
         self._add_all_dynamic_mappings(DynamicMappingType.INFINITE_BUS, [df], **kwargs)
@@ -635,9 +616,9 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings(DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM, [df], **kwargs)
 
-    def add_two_levels_overload_management_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_two_level_overload_management_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
-        Add a dynamic two levels overload management system (not link to a network element)
+        Add a dynamic two level overload management system (not link to a network element)
 
         :Args:
             df: Attributes as a dataframe.
@@ -650,7 +631,7 @@ class ModelMapping:
 
             Valid attributes are:
             
-                - **dynamic_model_id**: id of the two levels overload management system
+                - **dynamic_model_id**: id of the two level overload management system
                 - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
                 - **controlled_branch**: id of the branch controlled by the automation system
                 - **i_measurement_1**: id of the first branch used for the current intensity measurement
@@ -664,7 +645,7 @@ class ModelMapping:
 
             .. code-block:: python
 
-                model_mapping.add_two_levels_overload_management_system(dynamic_model_id='DM_TOV',
+                model_mapping.add_two_level_overload_management_system(dynamic_model_id='DM_TOV',
                                                                         parameter_set_id='tov',
                                                                         controlled_branch= 'LINE1',
                                                                         i_measurement_1='LINE1',
@@ -673,7 +654,7 @@ class ModelMapping:
                                                                         i_measurement_2_side='ONE',
                                                                         model_name='TwoLevelsOverloadManagementSystem')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM, [df], **kwargs)
+        self._add_all_dynamic_mappings(DynamicMappingType.TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM, [df], **kwargs)
 
     def add_under_voltage_automation_system(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """

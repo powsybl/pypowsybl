@@ -27,7 +27,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -164,8 +164,8 @@ def test_get_import_supported_extensions():
 
 def test_get_import_parameters():
     parameters = pp.network.get_import_parameters('PSS/E')
-    assert 1 == len(parameters)
-    assert ['psse.import.ignore-base-voltage'] == parameters.index.tolist()
+    assert 2 == len(parameters)
+    assert ['psse.import.ignore-base-voltage', 'psse.import.ignore-node-breaker-topology'] == parameters.index.tolist()
     assert 'Ignore base voltage specified in the file' == parameters['description']['psse.import.ignore-base-voltage']
     assert 'BOOLEAN' == parameters['type']['psse.import.ignore-base-voltage']
     assert 'false' == parameters['default']['psse.import.ignore-base-voltage']
@@ -912,13 +912,13 @@ def test_ratio_tap_changers():
 
 def test_ratio_tap_changers_3_windings():
     n = pp.network.create_micro_grid_be_network()
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['e482b89a-fa84-4ea9-8e70-a83d44790957',
-                                                             'b94318f6-6d24-4f56-96b9-df2531ad6543',
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                             'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
                             columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
                                   ['TWO', 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
@@ -928,13 +928,13 @@ def test_ratio_tap_changers_3_windings():
                                                           data=[[9, 16.7, True]])
     n.update_ratio_tap_changers(update)
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['e482b89a-fa84-4ea9-8e70-a83d44790957',
-                                                             'b94318f6-6d24-4f56-96b9-df2531ad6543',
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                             'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
                             columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
                                   ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
@@ -1178,6 +1178,70 @@ def test_nad_fixed_positions():
         fixed_positions_svg_file = tmp_dir_path.joinpath('test_fixed_positions.svg')
         n.write_network_area_diagram(fixed_positions_svg_file, voltage_level_ids=['VL8', 'VL7'], fixed_positions=fixed_positions_df2)
         assert exists(fixed_positions_svg_file)
+
+
+def test_nad_profile():
+    diagram_profile = NadProfile()
+    assert not diagram_profile.branch_labels
+    diagram_profile = NadProfile(branch_labels=None)
+    assert not diagram_profile.branch_labels
+    n = pp.network.create_ieee14()
+    branch_labels_df = pd.DataFrame.from_records(index='id',
+                                             data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'middle': 'MIDDLE_1', 'side2': 'S2_1', 'arrow1': 'IN', 'arrow2': 'IN'},
+                                                   {'id': 'L2-5-1', 'side1': 'S1_2', 'middle': 'MIDDLE_2', 'side2': 'S2_2', 'arrow1': 'OUT', 'arrow2': 'OUT'}])
+    vl_descriptions_df=pd.DataFrame.from_records(index='id',
+                                             data=[
+                                                 {'id': 'VL1', 'type': 'HEADER', 'description': 'VL1 header'},
+                                                 {'id': 'VL1', 'type': 'HEADER', 'description': 'VL1 header2'},
+                                                 {'id': 'VL1', 'type': 'FOOTER', 'description': 'VL1 footer'},
+                                                 {'id': 'VL2', 'type': 'HEADER', 'description': 'VL2 header'},
+                                                 {'id': 'VL5', 'type': 'FOOTER', 'description': 'VL5 footer'}
+                                                 ])
+    bus_descriptions_df = pd.DataFrame.from_records(index='id',
+                                            data=[
+                                                {'id': 'VL1_0', 'description': 'VL1 bus'},
+                                                {'id': 'VL2_0', 'description': 'VL2 bus'},
+                                                {'id': 'VL5_0', 'description': 'VL3 bus'}
+                                                ])
+    diagram_profile=NadProfile(branch_labels=branch_labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df)
+    assert isinstance(diagram_profile.branch_labels, pd.DataFrame)
+    assert isinstance(diagram_profile.vl_descriptions, pd.DataFrame)
+    assert isinstance(diagram_profile.bus_descriptions, pd.DataFrame)
+    pars=pp.network.NadParameters(edge_name_displayed=True)
+    nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_profile=diagram_profile)
+    assert re.search('.*<svg.*', nad1.svg)
+    assert len(nad1.metadata) > 0
+
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        branch_labels_svg_file = tmp_dir_path.joinpath('test_branch_labels.svg')
+        n.write_network_area_diagram(branch_labels_svg_file, voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_profile=diagram_profile)
+        assert exists(branch_labels_svg_file)
+
+    n_three_wt=pp.network._create_network('three_windings_transformer')
+    three_wt_labels_df = pd.DataFrame.from_records(index='id',
+                                                   data=[
+                                                       {'id': '3WT', 'side1': 'SIDE1',  'side2': 'SIDE2', 'side3': 'SIDE3',
+                                                        'arrow1':'OUT', 'arrow2':'IN', 'arrow3':'OUT'}
+                                                        ])
+    three_wt_vl_descriptions_df=pd.DataFrame.from_records(index='id',
+                                                          data=[
+                                                              {'id': 'VL_132', 'type': 'HEADER', 'description': 'VL A'},
+                                                              {'id': 'VL_33',  'type': 'HEADER','description': 'VL B'},
+                                                              {'id': 'VL_11',  'type': 'HEADER','description': 'VL C'}
+                                                              ])
+    three_wt_bus_descriptions_df = pd.DataFrame.from_records(index='id',
+                                                             data=[
+                                                                 {'id': 'VL_132_0', 'description': 'BUS A'},
+                                                                 {'id': 'VL_33_0', 'description': 'BUS B'},
+                                                                 {'id': 'VL_11_0', 'description': 'BUS C'}
+                                                                 ])
+    diagram_profile_three_wt=pp.network.NadProfile(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df, 
+                                                         bus_descriptions=three_wt_bus_descriptions_df)
+    assert isinstance(diagram_profile_three_wt.three_wt_labels, pd.DataFrame)
+    nad_three_wt=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_profile=diagram_profile_three_wt)
+    assert re.search('.*<svg.*', nad_three_wt.svg)
+    assert len(nad_three_wt.metadata) > 0
 
 
 def test_current_limits():
