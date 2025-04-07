@@ -144,3 +144,34 @@ The following operator strategy define the application of the switch action 'Swi
     240.00360040333226
 
 Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.
+
+Adding input data from JSON files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is possible to add the input data of a security analysis using JSON files.
+For now, only the contingencies can be added this way, using the `add_contingencies_from_json_file` method.
+An example of a valid JSON contingency file is the following :
+
+.. code-block:: JSON
+
+    {
+      "type" : "default",
+      "version" : "1.0",
+      "name" : "list",
+      "contingencies" : [ {
+        "id" : "contingency",
+        "elements" : [ {
+          "id" : "NHV1_NHV2_1",
+          "type" : "BRANCH"
+        }, {
+          "id" : "NHV1_NHV2_2",
+          "type" : "BRANCH"
+        } ]
+      }, {
+        "id" : "contingency2",
+        "elements" : [ {
+          "id" : "GEN",
+          "type" : "GENERATOR"
+        } ]
+      } ]
+    }

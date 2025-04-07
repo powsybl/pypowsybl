@@ -7,19 +7,29 @@
  */
 package com.powsybl.python.contingency;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import com.powsybl.contingency.*;
+import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.*;
+
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
+import java.nio.file.FileSystem;
+import java.nio.file.Files;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
 class ContingencyContainerTest {
+
+    protected FileSystem fileSystem;
 
     @Test
     void testContingencyConverter() {
@@ -89,4 +99,19 @@ class ContingencyContainerTest {
                 .hasOnlyOneElementSatisfying(c -> assertThat(c.getElements().get(0)).isInstanceOf(BatteryContingency.class));
     }
 
+    @Test
+    void testToAddContingencyFromJsonFile() throws IOException {
+        ContingencyContainerImpl container = new ContingencyContainerImpl();
+        Network network = EurostagTutorialExample1Factory.createWithFixedCurrentLimits();
+        fileSystem = Jimfs.newFileSystem(Configuration.unix());
+
+        Files.copy(getClass().getResourceAsStream("/contingencies.json"), fileSystem.getPath("/contingencies.json"));
+        container.addContingencyFromJsonFile(fileSystem.getPath("/contingencies.json"));
+        List<Contingency> contingencies = container.createContingencies(network);
+
+        assertFalse(contingencies.isEmpty());
+        assertEquals(2, contingencies.size());
+        assertEquals("contingency", contingencies.get(0).getId());
+        assertEquals("contingency2", contingencies.get(1).getId());
+    }
 }
