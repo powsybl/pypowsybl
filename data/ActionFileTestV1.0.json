@@ -3,16 +3,12 @@
   "actions" : [ {
     "type" : "SWITCH",
     "id" : "id1",
-    "switchId" : "switchId1",
+    "switchId" : "S1VL2_LCC1_BREAKER",
     "open" : true
   }, {
-    "type" : "MULTIPLE_ACTIONS",
+    "type" : "SWITCH",
     "id" : "id2",
-    "actions" : [ {
-      "type" : "SWITCH",
-      "id" : "id3",
-      "switchId" : "switchId2",
-      "open" : true
-    } ]
+    "switchId" : "S1VL2_BBS2_COUPLER_DISCONNECTOR",
+    "open" : true
   }]
 }

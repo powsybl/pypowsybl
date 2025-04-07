@@ -3,24 +3,24 @@
   "operatorStrategies" : [ {
     "id" : "id1",
     "contingencyContextType" : "SPECIFIC",
-    "contingencyId" : "contingencyId1",
+    "contingencyId" : "BE-G2_contingency",
     "conditionalActions" : [ {
       "id" : "stage1",
       "condition" : {
         "type" : "TRUE_CONDITION"
       },
-      "actionIds" : [ "actionId1", "actionId2", "actionId3" ]
+      "actionIds" : [ "S1VL2_LCC1_BREAKER", "S1VL2_BBS2_COUPLER_DISCONNECTOR" ]
     } ]
   }, {
     "id" : "id2",
     "contingencyContextType" : "SPECIFIC",
-    "contingencyId" : "contingencyId2",
+    "contingencyId" : "Line contingency",
     "conditionalActions" : [ {
       "id" : "stage1",
       "condition" : {
         "type" : "ANY_VIOLATION_CONDITION"
       },
-      "actionIds" : [ "actionId4" ]
+      "actionIds" : [ "S4VL1_BBS_LINES3S4_DISCONNECTOR" ]
     } ]
   } ]
 }
