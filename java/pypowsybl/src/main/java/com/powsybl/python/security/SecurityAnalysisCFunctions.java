@@ -460,6 +460,24 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addTerminalsConnectionAction")
+    public static void addTerminalsConnectionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                                         CCharPointer actionId, CCharPointer elementId, PyPowsyblApiHeader.ThreeSideType side,
+                                                         boolean opening, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String actionIdStr = CTypeUtil.toString(actionId);
+            String elementIdStr = CTypeUtil.toString(elementId);
+            TerminalsConnectionActionBuilder builder = new TerminalsConnectionActionBuilder();
+            TerminalsConnectionAction action = builder.withId(actionIdStr)
+                    .withNetworkElementId(elementIdStr)
+                    .withSide(Util.convert(side))
+                    .withOpen(opening)
+                    .build();
+            analysisContext.addAction(action);
+        });
+    }
+
     @CEntryPoint(name = "addOperatorStrategy")
     public static void addOperatorStrategy(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                          CCharPointer operationStrategyId, CCharPointer contingencyId,

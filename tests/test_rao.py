@@ -18,15 +18,15 @@ DATA_DIR = TEST_DIR.parent / 'data'
 def test_default_rao_parameters():
     parameters = RaoParameters()
     json_param = parameters.to_json()
-    assert json_param['version'] == '2.4'
-    assert json_param['objective-function']['type'] == 'MAX_MIN_MARGIN_IN_MEGAWATT'
+    assert json_param['version'] == '3.0'
+    assert json_param['objective-function']['type'] == 'SECURE_FLOW'
 
 def test_rao_parameters():
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
     json_param = parameters.to_json()
-    assert json_param['range-actions-optimization']['max-mip-iterations'] == 15
-    assert json_param['objective-function']['type'] == 'MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT'
+    assert json_param['range-actions-optimization']['pst-ra-min-impact-threshold'] == 0.01
+    assert json_param['objective-function']['type'] == 'MAX_MIN_MARGIN'
 
 def test_rao_from_files():
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))

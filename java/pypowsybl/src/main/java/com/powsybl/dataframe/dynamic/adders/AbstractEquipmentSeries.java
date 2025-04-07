@@ -31,6 +31,5 @@ abstract class AbstractEquipmentSeries<E extends Identifiable<?>, B extends Equi
     protected void applyOnBuilder(int row, B builder) {
         applyIfPresent(staticIds, row, builder::staticId);
         applyIfPresent(parameterSetIds, row, builder::parameterSetId);
-        applyIfPresent(dynamicModelIds, row, builder::dynamicModelId);
     }
 }

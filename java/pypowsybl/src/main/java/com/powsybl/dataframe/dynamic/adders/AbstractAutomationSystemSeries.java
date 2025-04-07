@@ -7,9 +7,12 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.dataframe.dynamic.PersistentStringSeries;
+import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.models.automationsystems.AbstractAutomationSystemModelBuilder;
 
+import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.DYNAMIC_MODEL_ID;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -17,8 +20,11 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  */
 abstract class AbstractAutomationSystemSeries<T extends AbstractAutomationSystemModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
 
+    protected final StringSeries dynamicModelIds;
+
     AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
         super(dataframe);
+        this.dynamicModelIds = PersistentStringSeries.copyOf(dataframe, DYNAMIC_MODEL_ID);
     }
 
     protected void applyOnBuilder(int row, T builder) {

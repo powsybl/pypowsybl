@@ -13,7 +13,7 @@ import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
-import com.powsybl.dynawo.models.automationsystems.overloadmanagments.DynamicTwoLevelsOverloadManagementSystemBuilder;
+import com.powsybl.dynawo.models.automationsystems.overloadmanagments.DynamicTwoLevelOverloadManagementSystemBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 
@@ -27,7 +27,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractSimpleDynamicModelAdder {
+public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimpleDynamicModelAdder {
 
     protected static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex(DYNAMIC_MODEL_ID),
@@ -46,10 +46,10 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractSimpl
 
     @Override
     public Collection<ModelInfo> getSupportedModels() {
-        return DynamicTwoLevelsOverloadManagementSystemBuilder.getSupportedModelInfos();
+        return DynamicTwoLevelOverloadManagementSystemBuilder.getSupportedModelInfos();
     }
 
-    private static class OverloadManagementSystemSeries extends AbstractAutomationSystemSeries<DynamicTwoLevelsOverloadManagementSystemBuilder> {
+    private static class OverloadManagementSystemSeries extends AbstractAutomationSystemSeries<DynamicTwoLevelOverloadManagementSystemBuilder> {
 
         private final StringSeries controlledBranch;
         private final StringSeries iMeasurement1;
@@ -67,7 +67,7 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractSimpl
         }
 
         @Override
-        protected void applyOnBuilder(int row, DynamicTwoLevelsOverloadManagementSystemBuilder builder) {
+        protected void applyOnBuilder(int row, DynamicTwoLevelOverloadManagementSystemBuilder builder) {
             super.applyOnBuilder(row, builder);
             applyIfPresent(controlledBranch, row, builder::controlledBranch);
             applyIfPresent(iMeasurement1, row, builder::iMeasurement1);
@@ -77,13 +77,13 @@ public class DynamicTwoLevelsOverloadManagementSystemAdder extends AbstractSimpl
         }
 
         @Override
-        protected DynamicTwoLevelsOverloadManagementSystemBuilder createBuilder(Network network, ReportNode reportNode) {
-            return DynamicTwoLevelsOverloadManagementSystemBuilder.of(network, reportNode);
+        protected DynamicTwoLevelOverloadManagementSystemBuilder createBuilder(Network network, ReportNode reportNode) {
+            return DynamicTwoLevelOverloadManagementSystemBuilder.of(network, reportNode);
         }
 
         @Override
-        protected DynamicTwoLevelsOverloadManagementSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
-            return DynamicTwoLevelsOverloadManagementSystemBuilder.of(network, modelName, reportNode);
+        protected DynamicTwoLevelOverloadManagementSystemBuilder createBuilder(Network network, String modelName, ReportNode reportNode) {
+            return DynamicTwoLevelOverloadManagementSystemBuilder.of(network, modelName, reportNode);
         }
     }
 

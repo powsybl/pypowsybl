@@ -269,7 +269,7 @@ Network-area diagrams can be customized through NadParameters:
 
     >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER))
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False))
 
     - edge_name_displayed: if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
@@ -281,6 +281,9 @@ Network-area diagrams can be customized through NadParameters:
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
     - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
+    - voltage_level_details: if true, additional information about voltage levels is displayed in text boxes. The content of the additional information is determined by the label provider that is used.
+
+
 
 In order to get a list of the displayed voltage levels from an input voltage level (or an input list of voltage levels) and a depth:
 
@@ -306,15 +309,106 @@ We can generate a network area diagram using fixed positions, defined in a dataf
                                            ])
     >>> nad = network.get_network_area_diagram(fixed_positions=pos_df)
 
-    In the dataframe:
-    - id is the equipment id for the node
-    - x, y define the position for the node
-    - legend_shift_x, legend_shift_y define the legend box top-left position (relative to the node position)
-    - legend_connection_shift_x, legend_connection_shift_y define the legend box side endpoint position (relative to the node position) for the segment connecting a node and its legend box
+In the dataframe:
 
-    The optional parameter fixed_positions can also be set in the write_network_area_diagram function.
-    Note that positions for elements not included in the dataframe are computed using the current layout algorithm.
-    
+- id is the equipment id for the node
+- x, y define the position for the node
+- legend_shift_x, legend_shift_y define the legend box top-left position (relative to the node position)
+- legend_connection_shift_x, legend_connection_shift_y define the legend box side endpoint position (relative to the node position) for the segment connecting a node and its legend box
+
+The optional parameter fixed_positions can also be set in the write_network_area_diagram function.
+Note that positions for elements not included in the dataframe are computed using the current layout algorithm.
+
+
+We can further customize the NAD diagram using the NadProfile. For example, to set
+   - the labels for the branches, and the arrows direction
+   - the VL and BUS descriptions in the VL info boxes
+
+by using dataframes:
+
+.. code-block:: python
+
+    >>> import pandas as pd
+    >>> network = pp.network.create_four_substations_node_breaker_network()
+    >>> labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'side1', 'middle', 'side2', 'arrow1', 'arrow2'],
+                                              data=[
+                                                  ('LINE_S2S3', 'L1_1', 'L1', 'L1_2', 'IN', 'IN'),
+                                                  ('LINE_S3S4', 'L2_1', 'L2', 'L2_2', 'OUT', 'IN'),
+                                                  ('TWT', 'TWT1_1', 'TWT1', 'TWT1_2', None, 'OUT')
+                                              ])
+    >>> vl_descriptions_df=pd.DataFrame.from_records(index='id',
+                                              data=[
+                                                 {'id': 'S1VL1', 'type': 'HEADER', 'description': 'VL A'},
+                                                 {'id': 'S1VL1', 'type': 'FOOTER', 'description': 'VL A footer'},
+                                                 {'id': 'S1VL2', 'type': 'HEADER', 'description': 'VL B'},
+                                                 {'id': 'S2VL1', 'type': 'HEADER', 'description': 'VL C'},
+                                                 {'id': 'S3VL1', 'type': 'HEADER', 'description': 'VL D'},
+                                                 {'id': 'S3VL1', 'type': 'FOOTER', 'description': 'VL D footer'}
+                                              ])
+    >>> bus_descriptions_df=pd.DataFrame.from_records(index='id',
+                                              data=[
+                                                  {'id': 'S1VL1_0', 'description': 'BUS A'},
+                                                  {'id': 'S1VL2_0', 'description': 'BUS B'},
+                                                  {'id': 'S2VL1_0', 'description': 'BUS C'},
+                                                  {'id': 'S3VL1_0', 'description': 'BUS D'}
+                                              ])
+    >>> bus_node_style_df = pd.DataFrame.from_records(index='id', 
+                                              data=[
+                                                  {'id': 'S1VL1_0', 'fill': 'red', 'edge': 'black', 'edge-width': '4px'},
+                                                  {'id': 'S1VL2_0', 'fill': 'blue', 'edge': 'black', 'edge-width': '4px'},
+                                                  {'id': 'S2VL1_0', 'fill': 'yellow', 'edge': 'black', 'edge-width': '4px'},
+                                              ])
+    >>> edge_style_df = pd.DataFrame.from_records(index='id', 
+                                          data=[
+                                              {'id': 'LINE_S2S3', 'edge1': 'blue', 'width1': '16px', 'dash1': '12,12' ,'edge2': 'blue', 'width2': '16px', 'dash2': '12,12'},
+                                              {'id': 'LINE_S3S4', 'edge1': 'green',  'width1': '3px', 'edge2': 'green',  'width2': '3px'},
+                                              {'id': 'TWT'      , 'edge1': 'yellow', 'width1': '4px', 'edge2': 'blue',  'width2': '4px'},
+                                          ])
+    >>> diagram_profile=pp.network.NadProfile(branch_labels=labels_df, vl_descriptions=vl_descriptions_df, bus_descriptions=bus_descriptions_df,
+                                      bus_node_styles=bus_node_style_df, edge_styles=edge_style_df)
+    >>> pars=pp.network.NadParameters(edge_name_displayed=True)
+    >>> network.get_network_area_diagram(voltage_level_ids='S1VL1', depth=2, nad_parameters=pars, nad_profile=diagram_profile)
+
+In the branch_labels dataframe parameter:
+    - id is the branch id
+    - side1 and side2 define the labels along the two branch's edges
+    - middle defines the branch's label
+    - arrow1 and arrow2 define the direction of the arrows at the ends of the branch: 'IN' or 'OUT'. None (or an empty string) does not display the arrow.
+
+In the vl_descriptions dataframe parameter:
+    - id is the VL id
+    - type: 'HEADER' or 'FOOTER' determines if the descrtiption appears above or below the bus description, in the VL info box
+    - description define a label for the VL. Entries with the same VL id are displayed sequentially as multiple rows
+
+In the bus_descriptions dataframe parameter:
+    - id is the BUS id
+    - description define a label for the BUS
+
+In the bus_node_styles dataframe parameter:
+    - id is the BUS id
+    - fill is the fill color for the node
+    - edge is the edge color for the node
+    - width is the width of the edge for the node
+
+In the edge_styles dataframe parameter:
+    - id is the branch id
+    - edge1, width1 and dash1 is the color, the width and the dash pattern for the first branch's edge
+    - edge2, width2 and dash2 is the color, the width and the dash pattern for the second branch's edge
+
+The dash pattern string specifies the lengths of alternating dashes and gaps in the edge, separated by commas and/or spaces
+
+An additional three_wt_labels dataframe parameter can be used to set the labels and the arrows direction for three winding transformers:
+    - id is the three winding transformer id
+    - side1, side2, and side3 define the labels along the three winding transformer legs
+    - arrow1, arrow2, and arrow3 define the direction of the arrows at the ends of the three winding transformer legs: 'IN' or 'OUT'. None (or an empty string) does not display the arrow.
+
+Similarly to the edge_styles, the three_wt_styles parameter can be used to set the style for the three winding transformers:
+    - id is the three winding transformer id
+    - edge1, width1 and dash1 is the color, the width and the dash pattern for the first transformer's leg
+    - edge2, width2 and dash2 is the color, the width and the dash pattern for the second transformer's leg
+    - edge3, width3 and dash3 is the color, the width and the dash pattern for the third transformer's leg
+
+The optional parameter nad_profile can also be set in the write_network_area_diagram function.
 
 Network area diagram using geographical data
 --------------------------------------------

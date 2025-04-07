@@ -722,11 +722,12 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
     return svgAndMetadata.get();
 }
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions) {
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles) {
     auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
     PowsyblCaller::get()->callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) metadataFile.data(),
-        voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions);
+        voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions, branch_labels, three_wt_labels, bus_descriptions, vl_descriptions, bus_node_styles, edge_styles, three_wt_styles);
 }
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
@@ -735,10 +736,11 @@ std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vecto
     return toString(PowsyblCaller::get()->callJava<char*>(::getNetworkAreaDiagramSvg, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get()));
 }
 
-std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions) {
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles) {
     auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramSvgAndMetadata, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions);
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramSvgAndMetadata, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions, branch_labels, three_wt_labels, bus_descriptions, vl_descriptions, bus_node_styles, edge_styles, three_wt_styles);
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
@@ -802,6 +804,12 @@ void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const s
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId,
                                        int sectionCount) {
     PowsyblCaller::get()->callJava(::addShuntCompensatorPositionAction, analysisContext, (char*) actionId.data(), (char*) shuntId.data(), sectionCount);
+}
+
+void addTerminalsConnectionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& elementId,
+                                       ThreeSide side, bool opening) {
+    PowsyblCaller::get()->callJava(::addTerminalsConnectionAction, analysisContext, (char*) actionId.data(), (char*) elementId.data(),
+     side, opening);
 }
 
 void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
@@ -1251,6 +1259,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     scaling_factor = src->scaling_factor;
     radius_factor = src->radius_factor;
     edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
+    voltage_level_details = (bool) src->voltage_level_details;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1281,6 +1290,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.scaling_factor = scaling_factor;
     res.radius_factor = radius_factor;
     res.edge_info_displayed = (int) edge_info_displayed;
+    res.voltage_level_details = (unsigned char) voltage_level_details;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1684,8 +1694,8 @@ JavaHandle createDefaultRaoParameters() {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createDefaultRaoParameters);
 }
 
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, considerOpenBranchReactiveFlow, busesPerVoltageLevel, connectAllElementsToFirstBus);
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, bool checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, bool connectAllElementsToFirstBus) {
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::createGrid2opBackend, networkHandle, considerOpenBranchReactiveFlow, checkIsolatedAndDisconnectedInjections, busesPerVoltageLevel, connectAllElementsToFirstBus);
 }
 
 void freeGrid2opBackend(const JavaHandle& backendHandle) {
