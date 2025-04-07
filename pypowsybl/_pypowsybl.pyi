@@ -2,7 +2,6 @@ from logging import Logger
 from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union
 from numpy import ndarray
 
-
 class ArrayStruct:
     def __init__(self) -> None: ...
 
@@ -1204,3 +1203,4 @@ def update_grid2op_integer_value(backend: JavaHandle, value_type: Grid2opUpdateI
 def check_grid2op_isolated_and_disconnected_injections(backend: JavaHandle) -> bool: ...
 
 def run_grid2op_loadflow(backend: JavaHandle, dc: bool, parameters: LoadFlowParameters) -> LoadFlowComponentResultArray: ...
+
