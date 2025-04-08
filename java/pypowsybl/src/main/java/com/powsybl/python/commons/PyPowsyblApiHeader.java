@@ -1385,6 +1385,7 @@ public final class PyPowsyblApiHeader {
     @CStruct("rao_parameters")
     public interface RaoParametersPointer extends PointerBase {
 
+        // Objective function parameters
         @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
@@ -1394,17 +1395,17 @@ public final class PyPowsyblApiHeader {
         @CField("objective_function_type")
         void setObjectiveFunctionType(int type);
 
-        @CField("preventive_stop_criterion")
-        int getPreventiveStopCriterion();
+        @CField("enforce_curative_security")
+        boolean getEnforceCurativeSecurity();
 
-        @CField("preventive_stop_criterion")
-        void setPreventiveStopCriterion(int preventiveStopCriterion);
+        @CField("enforce_curative_security")
+        void setEnforceCurativeSecurity(boolean enforceCurativeSecurity);
 
-        @CField("curative_stop_criterion")
-        int getCurativeStopCriterion();
+        @CField("unit")
+        int getUnit();
 
-        @CField("curative_stop_criterion")
-        void setCurativeStopCriterion(int curativeStopCriterion);
+        @CField("unit")
+        void setUnit(int unit);
 
         @CField("curative_min_obj_improvement")
         double getCurativeMinObjImprovement();
@@ -1412,18 +1413,7 @@ public final class PyPowsyblApiHeader {
         @CField("curative_min_obj_improvement")
         void setCurativeMinObjImprovement(double curativeMinObjImprovement);
 
-        @CField("forbid_cost_increase")
-        boolean getForbidCostIncrease();
-
-        @CField("forbid_cost_increase")
-        void setForbidCostIncrease(boolean forbidCostIncrease);
-
-        @CField("optimize_curative_if_preventive_unsecure")
-        boolean getOptimizeCurativeIfPreventiveUnsecure();
-
-        @CField("optimize_curative_if_preventive_unsecure")
-        void setOptimizeCurativeIfPreventiveUnsecure(boolean optimizeCurativeIfPreventiveUnsecure);
-
+        // Range action optim parameters (solver)
         @CField("solver")
         int getSolver();
 
@@ -1442,17 +1432,30 @@ public final class PyPowsyblApiHeader {
         @CField("solver_specific_parameters")
         void setSolverSpecificParameters(CCharPointer solverSpecificParameters);
 
+        // Range action optim parameters
+        @CField("pst_ra_min_impact_threshold")
+        double getPstRaMinImpactThreshold();
+
+        @CField("pst_ra_min_impact_threshold")
+        void setPstRaMinImpactThreshold(double pstRaMinImpactThreshold);
+
+        @CField("hvdc_ra_min_impact_threshold")
+        double getHvdcRaMinImpactThreshold();
+
+        @CField("hvdc_ra_min_impact_threshold")
+        void setHvdcRaMinImpactThreshold(double hvdcRaMinImpactThreshold);
+
+        @CField("injection_ra_min_impact_threshold")
+        double getInjectionRaMinImpactThreshold();
+
+        @CField("injection_ra_min_impact_threshold")
+        void setInjectionRaMinImpactThreshold(double injectionRaMinImpactThreshold);
+
         @CField("max_mip_iterations")
         int getMaxMipIterations();
 
         @CField("max_mip_iterations")
         void setMaxMipIterations(int maxMipIterations);
-
-        @CField("pst_penalty_cost")
-        double getPstPenaltyCost();
-
-        @CField("pst_penalty_cost")
-        void setPstPenaltyCost(double pstPenaltyCost);
 
         @CField("pst_sensitivity_threshold")
         double getPstSensitivityThreshold();
@@ -1460,29 +1463,17 @@ public final class PyPowsyblApiHeader {
         @CField("pst_sensitivity_threshold")
         void setPstSensitivityThreshold(double pstSensitivityThreshold);
 
+        @CField("hvdc_sensitivity_threshold")
+        double getHvdcSensitivityThreshold();
+
+        @CField("hvdc_sensitivity_threshold")
+        void setHvdcSensitivityThreshold(double pstSensitivityThreshold);
+
         @CField("pst_model")
         int getPstModel();
 
         @CField("pst_model")
         void setPstModel(int pstModel);
-
-        @CField("hvdc_penalty_cost")
-        double getHvdcPenaltyCost();
-
-        @CField("hvdc_penalty_cost")
-        void setHvdcPenaltyCost(double hvdcPenaltyCost);
-
-        @CField("hvdc_sensitivity_threshold")
-        double getHvdcSensitivityThreshold();
-
-        @CField("hvdc_sensitivity_threshold")
-        void setHvdcSensitivityThreshold(double hvdcSensitivityThreshold);
-
-        @CField("injection_ra_penalty_cost")
-        double getInjectionRaPenaltyCost();
-
-        @CField("injection_ra_penalty_cost")
-        void setInjectionRaPenaltyCost(double injectionRaPenaltyCost);
 
         @CField("injection_ra_sensitivity_threshold")
         double getInjectionRaSensitivityThreshold();
@@ -1497,6 +1488,18 @@ public final class PyPowsyblApiHeader {
         void setRaRangeShrinking(int raRangeShrinking);
 
         // Topo optimization parameters
+        @CField("relative_min_impact_threshold")
+        double getRelativeMinImpactThreshold();
+
+        @CField("relative_min_impact_threshold")
+        void setRelativeMinImpactThreshold(double threshold);
+
+        @CField("absolute_min_impact_threshold")
+        double getAbsoluteMinImpactThreshold();
+
+        @CField("absolute_min_impact_threshold")
+        void setAbsoluteMinImpactThreshold(double threshold);
+
         @CField("max_preventive_search_tree_depth")
         int getMaxPreventiveSearchTreeDepth();
 
@@ -1515,18 +1518,6 @@ public final class PyPowsyblApiHeader {
         @CField("max_curative_search_tree_depth")
         void setMaxCurativeSearchTreeDepth(int depth);
 
-        @CField("relative_min_impact_threshold")
-        double getRelativeMinImpactThreshold();
-
-        @CField("relative_min_impact_threshold")
-        void setRelativeMinImpactThreshold(double threshold);
-
-        @CField("absolute_min_impact_threshold")
-        double getAbsoluteMinImpactThreshold();
-
-        @CField("absolute_min_impact_threshold")
-        void setAbsoluteMinImpactThreshold(double threshold);
-
         @CFieldAddress("predefined_combinations")
         ArrayPointer<ArrayPointer<CCharPointerPointer>> getPredefinedCombinations();
 
@@ -1543,30 +1534,13 @@ public final class PyPowsyblApiHeader {
         void setMaxNumberOfBoundariesForSkippingActions(int boundaries);
 
         // Multithreading parameters
-        @CField("contingency_scenarios_in_parallel")
-        int getContingencyScenariosInParallel();
+        @CField("available_cpus")
+        int getAvailableCpus();
 
-        @CField("contingency_scenarios_in_parallel")
-        void setContingencyScenariosInParallel(int contingencyScenariosInParallel);
+        @CField("available_cpus")
+        void setAvailableCpus(int availableCpus);
 
-        @CField("preventive_leaves_in_parallel")
-        int getPreventiveLeavesInParallel();
-
-        @CField("preventive_leaves_in_parallel")
-        void setPreventiveLeavesInParallel(int preventiveLeavesInParallel);
-
-        @CField("auto_leaves_in_parallel")
-        int getAutoLeavesInParallel();
-
-        @CField("auto_leaves_in_parallel")
-        void setAutoLeavesInParallel(int autoLeavesInParallel);
-
-        @CField("curative_leaves_in_parallel")
-        int getCurativeLeavesInParallel();
-
-        @CField("curative_leaves_in_parallel")
-        void setCurativeLeavesInParallel(int curativeLeavesInParallel);
-
+        // Second preventive parameters
         @CField("execution_condition")
         int getExecutionCondition();
 

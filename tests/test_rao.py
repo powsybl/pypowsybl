@@ -13,12 +13,11 @@ import pypowsybl.sensitivity
 from pypowsybl._pypowsybl import (
     RaoComputationStatus,
     ObjectiveFunctionType,
-    PreventiveStopCriterion,
-    CurativeStopCriterion,
     PstModel,
     RaRangeShrinking,
     Solver,
-    ExecutionCondition)
+    ExecutionCondition,
+    Unit)
 from pypowsybl.rao import Parameters as RaoParameters
 from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl.rao import (
@@ -35,7 +34,7 @@ DATA_DIR = TEST_DIR.parent / 'data'
 
 def test_default_rao_parameters():
     parameters = RaoParameters()
-    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN_IN_MEGAWATT
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.SECURE_FLOW
 
 def test_rao_parameters():
     # Default
@@ -44,27 +43,25 @@ def test_rao_parameters():
 
     # From file
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
-    assert parameters.range_action_optimization_parameters.max_mip_iterations == 30
-    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT
+    assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN
 
     # Full setup
     objective_function_param = ObjectiveFunctionParameters(
-        objective_function_type=ObjectiveFunctionType.MIN_COST_IN_MEGAWATT,
-        preventive_stop_criterion=PreventiveStopCriterion.MIN_OBJECTIVE,
-        curative_stop_criterion=CurativeStopCriterion.MIN_OBJECTIVE,
+        objective_function_type=ObjectiveFunctionType.MIN_COST,
+        unit=Unit.MEGAWATT,
         curative_min_obj_improvement=1.0,
-        forbid_cost_increase=True,
-        optimize_curative_if_preventive_unsecure=False
+        enforce_curative_security=True
     )
 
     range_action_optim_param = RangeActionOptimizationParameters(
         max_mip_iterations=10,
-        pst_penalty_cost=5.0,
+        pst_ra_min_impact_threshold=5.0,
         pst_sensitivity_threshold=12.0,
         pst_model=PstModel.CONTINUOUS,
-        hvdc_penalty_cost=22.0,
+        hvdc_ra_min_impact_threshold=22.0,
         hvdc_sensitivity_threshold=46.0,
-        injection_ra_penalty_cost=44.0,
+        injection_ra_min_impact_threshold=44.0,
         injection_ra_sensitivity_threshold=33.0,
         ra_range_shrinking=RaRangeShrinking.ENABLED_IN_FIRST_PRAO_AND_CRAO,
         solver=Solver.XPRESS,
@@ -82,10 +79,7 @@ def test_rao_parameters():
     )
 
     multithreading_param = MultithreadingParameters(
-        contingency_scenarios_in_parallel=8,
-        preventive_leaves_in_parallel=9,
-        auto_leaves_in_parallel=11,
-        curative_leaves_in_parallel=12
+        available_cpus=8
     )
 
     second_preventive_params = SecondPreventiveRaoParameters(
@@ -115,20 +109,18 @@ def test_rao_parameters():
         loadflow_and_sensitivity_parameters=sensitivity_parameters
     )
 
-    assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST_IN_MEGAWATT
-    assert parameters2.objective_function_parameters.preventive_stop_criterion == PreventiveStopCriterion.MIN_OBJECTIVE
-    assert parameters2.objective_function_parameters.curative_stop_criterion == CurativeStopCriterion.MIN_OBJECTIVE
+    assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
+    assert parameters2.objective_function_parameters.unit == Unit.MEGAWATT
     assert parameters2.objective_function_parameters.curative_min_obj_improvement == 1.0
-    assert parameters2.objective_function_parameters.forbid_cost_increase == True
-    assert parameters2.objective_function_parameters.optimize_curative_if_preventive_unsecure == False
+    assert parameters2.objective_function_parameters.enforce_curative_security == True
 
     assert parameters2.range_action_optimization_parameters.max_mip_iterations == 10.0
-    assert parameters2.range_action_optimization_parameters.pst_penalty_cost == 5.0
+    assert parameters2.range_action_optimization_parameters.pst_ra_min_impact_threshold == 5.0
     assert parameters2.range_action_optimization_parameters.pst_sensitivity_threshold == 12.0
     assert parameters2.range_action_optimization_parameters.pst_model == PstModel.CONTINUOUS
-    assert parameters2.range_action_optimization_parameters.hvdc_penalty_cost == 22.0
+    assert parameters2.range_action_optimization_parameters.hvdc_ra_min_impact_threshold == 22.0
     assert parameters2.range_action_optimization_parameters.hvdc_sensitivity_threshold == 46.0
-    assert parameters2.range_action_optimization_parameters.injection_ra_penalty_cost == 44.0
+    assert parameters2.range_action_optimization_parameters.injection_ra_min_impact_threshold == 44.0
     assert parameters2.range_action_optimization_parameters.injection_ra_sensitivity_threshold == 33.0
     assert parameters2.range_action_optimization_parameters.ra_range_shrinking == RaRangeShrinking.ENABLED_IN_FIRST_PRAO_AND_CRAO
     assert parameters2.range_action_optimization_parameters.solver == Solver.XPRESS
@@ -142,10 +134,7 @@ def test_rao_parameters():
     assert parameters2.topo_optimization_parameters.skip_actions_far_from_most_limiting_element == False
     assert parameters2.topo_optimization_parameters.max_number_of_boundaries_for_skipping_actions == 6
 
-    assert parameters2.multithreading_parameters.contingency_scenarios_in_parallel == 8
-    assert parameters2.multithreading_parameters.preventive_leaves_in_parallel == 9
-    assert parameters2.multithreading_parameters.auto_leaves_in_parallel == 11
-    assert parameters2.multithreading_parameters.curative_leaves_in_parallel == 12
+    assert parameters2.multithreading_parameters.available_cpus == 8
 
     assert parameters2.second_preventive_rao_parameters.execution_condition == ExecutionCondition.COST_INCREASE
     assert parameters2.second_preventive_rao_parameters.re_optimize_curative_range_actions == False

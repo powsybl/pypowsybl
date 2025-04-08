@@ -407,7 +407,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>monitoring</artifactId>
-            <version>${powsybl-open-rao.version}</version>
+            <version>6.4.0</version>
         </dependency>
     </dependencies>
 </project>

@@ -7,13 +7,13 @@ from pypowsybl._pypowsybl import (
 
 class RangeActionOptimizationParameters:
     def __init__(self, max_mip_iterations: int = None,
-                 pst_penalty_cost: float = None,
+                 pst_ra_min_impact_threshold: float = None,
+                 hvdc_ra_min_impact_threshold: float = None,
+                 injection_ra_min_impact_threshold: float = None,
                  pst_sensitivity_threshold: float = None,
-                 pst_model: PstModel = None,
-                 hvdc_penalty_cost: float = None,
                  hvdc_sensitivity_threshold: float = None,
-                 injection_ra_penalty_cost: float = None,
                  injection_ra_sensitivity_threshold: float = None,
+                 pst_model: PstModel = None,
                  ra_range_shrinking: RaRangeShrinking = None,
                  solver: Solver = None,
                  relative_mip_gap: float = None,
@@ -23,20 +23,20 @@ class RangeActionOptimizationParameters:
             self._init_from_c(rao_parameters)
         else:
             self._init_with_default_values()
+        if pst_ra_min_impact_threshold is not None:
+            self.pst_ra_min_impact_threshold = pst_ra_min_impact_threshold
+        if hvdc_ra_min_impact_threshold is not None:
+            self.hvdc_ra_min_impact_threshold = hvdc_ra_min_impact_threshold
+        if injection_ra_min_impact_threshold is not None:
+            self.injection_ra_min_impact_threshold = injection_ra_min_impact_threshold
         if max_mip_iterations is not None:
             self.max_mip_iterations = max_mip_iterations
-        if pst_penalty_cost is not None:
-            self.pst_penalty_cost = pst_penalty_cost
         if pst_sensitivity_threshold is not None:
             self.pst_sensitivity_threshold = pst_sensitivity_threshold
         if pst_model is not None:
             self.pst_model = pst_model
-        if hvdc_penalty_cost is not None:
-            self.hvdc_penalty_cost = hvdc_penalty_cost
         if hvdc_sensitivity_threshold is not None:
             self.hvdc_sensitivity_threshold = hvdc_sensitivity_threshold
-        if injection_ra_penalty_cost is not None:
-            self.injection_ra_penalty_cost = injection_ra_penalty_cost
         if injection_ra_sensitivity_threshold is not None:
             self.injection_ra_sensitivity_threshold = injection_ra_sensitivity_threshold
         if ra_range_shrinking is not None:
@@ -52,13 +52,13 @@ class RangeActionOptimizationParameters:
         self._init_from_c(RaoParameters())
 
     def _init_from_c(self, c_parameters: RaoParameters) -> None:
+        self.pst_ra_min_impact_threshold = c_parameters.pst_ra_min_impact_threshold
+        self.hvdc_ra_min_impact_threshold = c_parameters.hvdc_ra_min_impact_threshold
+        self.injection_ra_min_impact_threshold = c_parameters.injection_ra_min_impact_threshold
         self.max_mip_iterations = c_parameters.max_mip_iterations
-        self.pst_penalty_cost = c_parameters.pst_penalty_cost
         self.pst_sensitivity_threshold = c_parameters.pst_sensitivity_threshold
         self.pst_model = c_parameters.pst_model
-        self.hvdc_penalty_cost = c_parameters.hvdc_penalty_cost
         self.hvdc_sensitivity_threshold = c_parameters.hvdc_sensitivity_threshold
-        self.injection_ra_penalty_cost = c_parameters.injection_ra_penalty_cost
         self.injection_ra_sensitivity_threshold = c_parameters.injection_ra_sensitivity_threshold
         self.ra_range_shrinking = c_parameters.ra_range_shrinking
         self.solver = c_parameters.solver
@@ -68,12 +68,12 @@ class RangeActionOptimizationParameters:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
                f"max_mip_iterations={self.max_mip_iterations!r}" \
-               f", pst_penalty_cost={self.pst_penalty_cost!r}" \
+               f", pst_penalty_cost={self.pst_ra_min_impact_threshold!r}" \
                f", pst_sensitivity_threshold={self.pst_sensitivity_threshold!r}" \
                f", pst_model={self.pst_model.name}" \
-               f", hvdc_penalty_cost={self.hvdc_penalty_cost!r}" \
+               f", hvdc_penalty_cost={self.hvdc_ra_min_impact_threshold!r}" \
                f", hvdc_sensitivity_threshold={self.hvdc_sensitivity_threshold!r}" \
-               f", injection_ra_penalty_cost={self.injection_ra_penalty_cost!r}" \
+               f", injection_ra_penalty_cost={self.injection_ra_min_impact_threshold!r}" \
                f", injection_ra_sensitivity_threshold={self.injection_ra_sensitivity_threshold!r}" \
                f", ra_range_shrinking={self.ra_range_shrinking.name}" \
                f", solver={self.solver!r}" \

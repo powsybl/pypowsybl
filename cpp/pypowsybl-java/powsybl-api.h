@@ -531,25 +531,23 @@ typedef enum {
 typedef struct rao_parameters_struct {
   struct provider_parameters_struct provider_parameters;
   int objective_function_type; // Objective function parameters
-  int preventive_stop_criterion;
-  int curative_stop_criterion;
+  unsigned char enforce_curative_security;
+  int unit; // Objective function parameters
   double curative_min_obj_improvement;
-  unsigned char forbid_cost_increase;
-  unsigned char optimize_curative_if_preventive_unsecure;
 
   // range action solver
   int solver;
   double relative_mip_gap;
   char* solver_specific_parameters;
 
+  double pst_ra_min_impact_threshold;
+  double hvdc_ra_min_impact_threshold;
+  double injection_ra_min_impact_threshold;
   int max_mip_iterations; // range action optimization parameters
-  double pst_penalty_cost;
   double pst_sensitivity_threshold;
-  int pst_model;
-  double hvdc_penalty_cost;
   double hvdc_sensitivity_threshold;
-  double injection_ra_penalty_cost;
   double injection_ra_sensitivity_threshold;
+  int pst_model;
   int ra_range_shrinking;
 
   int max_preventive_search_tree_depth; // topo optimization parameters
@@ -561,10 +559,7 @@ typedef struct rao_parameters_struct {
   unsigned char skip_actions_far_from_most_limiting_element;
   int max_number_of_boundaries_for_skipping_actions;
 
-  int contingency_scenarios_in_parallel; // Multithreading parameters
-  int preventive_leaves_in_parallel;
-  int auto_leaves_in_parallel;
-  int curative_leaves_in_parallel;
+  int available_cpus; // Multithreading parameters
 
   int execution_condition;  // Second preventive rao parameters
   unsigned char re_optimize_curative_range_actions;
