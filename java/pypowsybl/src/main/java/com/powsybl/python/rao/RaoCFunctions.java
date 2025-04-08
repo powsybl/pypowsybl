@@ -13,16 +13,12 @@ import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
+import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
-import com.powsybl.openrao.raoapi.parameters.ObjectiveFunctionParameters;
-import com.powsybl.openrao.raoapi.parameters.RangeActionsOptimizationParameters;
-import com.powsybl.openrao.raoapi.parameters.RaoParameters;
-import com.powsybl.openrao.raoapi.parameters.SecondPreventiveRaoParameters;
-import com.powsybl.openrao.raoapi.parameters.extensions.LoopFlowParametersExtension;
-import com.powsybl.openrao.raoapi.parameters.extensions.MnecParametersExtension;
-import com.powsybl.openrao.raoapi.parameters.extensions.RelativeMarginsParametersExtension;
+import com.powsybl.openrao.raoapi.parameters.*;
+import com.powsybl.openrao.raoapi.parameters.extensions.*;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -234,132 +230,148 @@ public final class RaoCFunctions {
 
     private static RaoParameters convertToRaoParameters(PyPowsyblApiHeader.RaoParametersPointer paramPointer) {
         RaoParameters raoParameters = new RaoParameters();
+
+        OpenRaoSearchTreeParameters searchTreeParameters = new OpenRaoSearchTreeParameters();
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
-        raoParameters.getObjectiveFunctionParameters().setForbidCostIncrease(paramPointer.getForbidCostIncrease());
-        raoParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
-        raoParameters.getObjectiveFunctionParameters().setPreventiveStopCriterion(ObjectiveFunctionParameters.PreventiveStopCriterion.values()[paramPointer.getPreventiveStopCriterion()]);
-        raoParameters.getObjectiveFunctionParameters().setCurativeStopCriterion(ObjectiveFunctionParameters.CurativeStopCriterion.values()[paramPointer.getCurativeStopCriterion()]);
-        raoParameters.getObjectiveFunctionParameters().setOptimizeCurativeIfPreventiveUnsecure(paramPointer.getOptimizeCurativeIfPreventiveUnsecure());
+        searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
+        raoParameters.getObjectiveFunctionParameters().setUnit(Unit.values()[paramPointer.getUnit()]);
+        raoParameters.getObjectiveFunctionParameters().setEnforceCurativeSecurity(paramPointer.getEnforceCurativeSecurity());
 
         // Range action optimization solver
-        raoParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
-            .setSolver(RangeActionsOptimizationParameters.Solver.values()[paramPointer.getSolver()]);
-        raoParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
+        searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
+            .setSolver(SearchTreeRaoRangeActionsOptimizationParameters.Solver.values()[paramPointer.getSolver()]);
+        searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
             .setRelativeMipGap(paramPointer.getRelativeMipGap());
-        raoParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
+        searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
             .setSolverSpecificParameters(CTypeUtil.toString(paramPointer.getSolverSpecificParameters()));
 
         // Range action optimization parameters
-        raoParameters.getRangeActionsOptimizationParameters().setMaxMipIterations(paramPointer.getMaxMipIterations());
-        raoParameters.getRangeActionsOptimizationParameters().setPstPenaltyCost(paramPointer.getPstPenaltyCost());
-        raoParameters.getRangeActionsOptimizationParameters().setPstSensitivityThreshold(paramPointer.getPstSensitivityThreshold());
-        raoParameters.getRangeActionsOptimizationParameters().setPstModel(RangeActionsOptimizationParameters.PstModel.values()[paramPointer.getPstModel()]);
-        raoParameters.getRangeActionsOptimizationParameters().setHvdcPenaltyCost(paramPointer.getHvdcPenaltyCost());
-        raoParameters.getRangeActionsOptimizationParameters().setInjectionRaPenaltyCost(paramPointer.getInjectionRaPenaltyCost());
-        raoParameters.getRangeActionsOptimizationParameters().setInjectionRaSensitivityThreshold(paramPointer.getInjectionRaSensitivityThreshold());
-        raoParameters.getRangeActionsOptimizationParameters().setRaRangeShrinking(RangeActionsOptimizationParameters.RaRangeShrinking.values()[paramPointer.getRaRangeShrinking()]);
+        raoParameters.getRangeActionsOptimizationParameters().setPstRAMinImpactThreshold(paramPointer.getPstRaMinImpactThreshold());
+        raoParameters.getRangeActionsOptimizationParameters().setHvdcRAMinImpactThreshold(paramPointer.getHvdcRaMinImpactThreshold());
+        raoParameters.getRangeActionsOptimizationParameters().setInjectionRAMinImpactThreshold(paramPointer.getInjectionRaMinImpactThreshold());
+        searchTreeParameters.getRangeActionsOptimizationParameters().setMaxMipIterations(paramPointer.getMaxMipIterations());
+        searchTreeParameters.getRangeActionsOptimizationParameters().setPstSensitivityThreshold(paramPointer.getPstSensitivityThreshold());
+        searchTreeParameters.getRangeActionsOptimizationParameters().setHvdcSensitivityThreshold(paramPointer.getHvdcSensitivityThreshold());
+        searchTreeParameters.getRangeActionsOptimizationParameters().setPstModel(SearchTreeRaoRangeActionsOptimizationParameters.PstModel.values()[paramPointer.getPstModel()]);
+        searchTreeParameters.getRangeActionsOptimizationParameters().setInjectionRaSensitivityThreshold(paramPointer.getInjectionRaSensitivityThreshold());
+        searchTreeParameters.getRangeActionsOptimizationParameters().setRaRangeShrinking(SearchTreeRaoRangeActionsOptimizationParameters.RaRangeShrinking.values()[paramPointer.getRaRangeShrinking()]);
 
         // Topo optimization parameters
-        raoParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
-        raoParameters.getTopoOptimizationParameters().setMaxAutoSearchTreeDepth(paramPointer.getMaxAutoSearchTreeDepth());
-        raoParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
-        raoParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
         raoParameters.getTopoOptimizationParameters().setRelativeMinImpactThreshold(paramPointer.getRelativeMinImpactThreshold());
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(paramPointer.getAbsoluteMinImpactThreshold());
-        raoParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
-        raoParameters.getTopoOptimizationParameters().setMaxNumberOfBoundariesForSkippingActions(paramPointer.getMaxNumberOfBoundariesForSkippingActions());
+        searchTreeParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
+        searchTreeParameters.getTopoOptimizationParameters().setMaxAutoSearchTreeDepth(paramPointer.getMaxAutoSearchTreeDepth());
+        searchTreeParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
+        searchTreeParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
+        searchTreeParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
+        searchTreeParameters.getTopoOptimizationParameters().setMaxNumberOfBoundariesForSkippingActions(paramPointer.getMaxNumberOfBoundariesForSkippingActions());
 
         // Multithreading parameters
-        raoParameters.getMultithreadingParameters().setContingencyScenariosInParallel(paramPointer.getContingencyScenariosInParallel());
-        raoParameters.getMultithreadingParameters().setPreventiveLeavesInParallel(paramPointer.getPreventiveLeavesInParallel());
-        raoParameters.getMultithreadingParameters().setAutoLeavesInParallel(paramPointer.getAutoLeavesInParallel());
-        raoParameters.getMultithreadingParameters().setCurativeLeavesInParallel(paramPointer.getCurativeLeavesInParallel());
+        searchTreeParameters.getMultithreadingParameters().setAvailableCPUs(paramPointer.getAvailableCpus());
 
         // Second preventive parameters
-        raoParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
-        raoParameters.getSecondPreventiveRaoParameters().setReOptimizeCurativeRangeActions(paramPointer.getReOptimizeCurativeRangeActions());
-        raoParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
+        searchTreeParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
+        searchTreeParameters.getSecondPreventiveRaoParameters().setReOptimizeCurativeRangeActions(paramPointer.getReOptimizeCurativeRangeActions());
+        searchTreeParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
 
         // Not opitmized cnec parameters
         raoParameters.getNotOptimizedCnecsParameters().setDoNotOptimizeCurativeCnecsForTsosWithoutCras(paramPointer.getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
         // Load flow and sensitivity providers
-        raoParameters.getLoadFlowAndSensitivityParameters().setLoadFlowProvider(CTypeUtil.toString(paramPointer.getLoadFlowProvider()));
-        raoParameters.getLoadFlowAndSensitivityParameters().setSensitivityProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()));
-        raoParameters.getLoadFlowAndSensitivityParameters().setSensitivityFailureOvercost(paramPointer.getSensitivityFailureOvercost());
-        raoParameters.getLoadFlowAndSensitivityParameters().setSensitivityWithLoadFlowParameters(createSensitivityAnalysisParameters(
+        searchTreeParameters.getLoadFlowAndSensitivityParameters().setLoadFlowProvider(CTypeUtil.toString(paramPointer.getLoadFlowProvider()));
+        searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()));
+        searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityFailureOvercost(paramPointer.getSensitivityFailureOvercost());
+        searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityWithLoadFlowParameters(createSensitivityAnalysisParameters(
             false, paramPointer.getSensitivityParameters(),
             getProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()))));
 
         Map<String, String> extensionData = getExtensionData(paramPointer);
-        MnecParametersExtension mnecExt = RaoUtils.buildMnecParametersExtension(extensionData);
-        RelativeMarginsParametersExtension relativeMargingExt = RaoUtils.buildRelativeMarginsParametersExtension(extensionData);
-        LoopFlowParametersExtension loopFlowExt = RaoUtils.buildLoopFlowParametersExtension(extensionData);
-        raoParameters.addExtension(MnecParametersExtension.class, mnecExt);
-        raoParameters.addExtension(RelativeMarginsParametersExtension.class, relativeMargingExt);
-        raoParameters.addExtension(LoopFlowParametersExtension.class, loopFlowExt);
-
+        if (hasExtensionData(extensionData, RaoUtils.MNEC_EXT_PREFIX)) {
+            MnecParameters mnecExt = RaoUtils.buildMnecParametersExtension(extensionData);
+            raoParameters.setMnecParameters(mnecExt);
+        }
+        if (hasExtensionData(extensionData, RaoUtils.MNEC_ST_EXT_PREFIX)) {
+            SearchTreeRaoMnecParameters searchTreeMnecExt = RaoUtils.buildMnecSearchTreeParametersExtension(extensionData);
+            searchTreeParameters.setMnecParameters(searchTreeMnecExt);
+        }
+        if (hasExtensionData(extensionData, RaoUtils.RELATIVE_MARGIN_EXT_PREFIX)) {
+            RelativeMarginsParameters relativeMargingExt = RaoUtils.buildRelativeMarginsParametersExtension(extensionData);
+            raoParameters.setRelativeMarginsParameters(relativeMargingExt);
+        }
+        if (hasExtensionData(extensionData, RaoUtils.RELATIVE_MARGIN_ST_EXT_PREFIX)) {
+            SearchTreeRaoRelativeMarginsParameters searchTreeRelativeMarginsParameters = RaoUtils.buildRelativeMarginsSearchTreeParametersExtension(extensionData);
+            searchTreeParameters.setRelativeMarginsParameters(searchTreeRelativeMarginsParameters);
+        }
+        if (hasExtensionData(extensionData, RaoUtils.LOOP_FLOW_EXT_PREFIX)) {
+            LoopFlowParameters loopFlowExt = RaoUtils.buildLoopFlowParametersExtension(extensionData);
+            raoParameters.setLoopFlowParameters(loopFlowExt);
+        }
+        if (hasExtensionData(extensionData, RaoUtils.LOOP_FLOW_ST_EXT_PREFIX)) {
+            SearchTreeRaoLoopFlowParameters searchTreeLoopFlowExt = RaoUtils.buildLoopFlowSearchTreeParametersExtension(extensionData);
+            searchTreeParameters.setLoopFlowParameters(searchTreeLoopFlowExt);
+        }
         return raoParameters;
     }
 
     private static PyPowsyblApiHeader.RaoParametersPointer convertToRaoParametersPointer(RaoParameters parameters) {
         PyPowsyblApiHeader.RaoParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.RaoParametersPointer.class));
+        OpenRaoSearchTreeParameters searchTreeParameters = parameters.getExtension(OpenRaoSearchTreeParameters.class);
+        if (searchTreeParameters == null) {
+            searchTreeParameters = new OpenRaoSearchTreeParameters();
+        }
+
         // Objective function parameters
         paramsPtr.setObjectiveFunctionType(parameters.getObjectiveFunctionParameters().getType().ordinal());
-        paramsPtr.setForbidCostIncrease(parameters.getObjectiveFunctionParameters().getForbidCostIncrease());
-        paramsPtr.setCurativeMinObjImprovement(parameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
-        paramsPtr.setPreventiveStopCriterion(parameters.getObjectiveFunctionParameters().getPreventiveStopCriterion().ordinal());
-        paramsPtr.setCurativeStopCriterion(parameters.getObjectiveFunctionParameters().getCurativeStopCriterion().ordinal());
-        paramsPtr.setOptimizeCurativeIfPreventiveUnsecure(parameters.getObjectiveFunctionParameters().getOptimizeCurativeIfPreventiveUnsecure());
+        paramsPtr.setUnit(parameters.getObjectiveFunctionParameters().getUnit().ordinal());
+        paramsPtr.setCurativeMinObjImprovement(searchTreeParameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
 
         // Range action optimization solver
-        paramsPtr.setSolver(parameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolver().ordinal());
-        paramsPtr.setRelativeMipGap(parameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getRelativeMipGap());
-        paramsPtr.setSolverSpecificParameters(CTypeUtil.toCharPtr(parameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolverSpecificParameters()));
+        paramsPtr.setSolver(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolver().ordinal());
+        paramsPtr.setRelativeMipGap(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getRelativeMipGap());
+        paramsPtr.setSolverSpecificParameters(CTypeUtil.toCharPtr(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolverSpecificParameters()));
 
         // Range action optimization parameters
-        paramsPtr.setMaxMipIterations(parameters.getRangeActionsOptimizationParameters().getMaxMipIterations());
-        paramsPtr.setPstPenaltyCost(parameters.getRangeActionsOptimizationParameters().getPstPenaltyCost());
-        paramsPtr.setPstSensitivityThreshold(parameters.getRangeActionsOptimizationParameters().getPstSensitivityThreshold());
-        paramsPtr.setPstModel(parameters.getRangeActionsOptimizationParameters().getPstModel().ordinal());
-        paramsPtr.setHvdcPenaltyCost(parameters.getRangeActionsOptimizationParameters().getHvdcPenaltyCost());
-        paramsPtr.setInjectionRaPenaltyCost(parameters.getRangeActionsOptimizationParameters().getInjectionRaPenaltyCost());
-        paramsPtr.setInjectionRaSensitivityThreshold(parameters.getRangeActionsOptimizationParameters().getInjectionRaSensitivityThreshold());
-        paramsPtr.setRaRangeShrinking(parameters.getRangeActionsOptimizationParameters().getRaRangeShrinking().ordinal());
+        paramsPtr.setPstRaMinImpactThreshold(parameters.getRangeActionsOptimizationParameters().getPstRAMinImpactThreshold());
+        paramsPtr.setHvdcRaMinImpactThreshold(parameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
+        paramsPtr.setInjectionRaMinImpactThreshold(parameters.getRangeActionsOptimizationParameters().getInjectionRAMinImpactThreshold());
+
+        paramsPtr.setMaxMipIterations(searchTreeParameters.getRangeActionsOptimizationParameters().getMaxMipIterations());
+        paramsPtr.setPstSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getPstSensitivityThreshold());
+        paramsPtr.setHvdcSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getHvdcSensitivityThreshold());
+        paramsPtr.setPstModel(searchTreeParameters.getRangeActionsOptimizationParameters().getPstModel().ordinal());
+        paramsPtr.setInjectionRaSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getInjectionRaSensitivityThreshold());
+        paramsPtr.setRaRangeShrinking(searchTreeParameters.getRangeActionsOptimizationParameters().getRaRangeShrinking().ordinal());
 
         // Topo optimization parameters
-        paramsPtr.setMaxPreventiveSearchTreeDepth(parameters.getTopoOptimizationParameters().getMaxPreventiveSearchTreeDepth());
-        paramsPtr.setMaxAutoSearchTreeDepth(parameters.getTopoOptimizationParameters().getMaxAutoSearchTreeDepth());
-        paramsPtr.setMaxCurativeSearchTreeDepth(parameters.getTopoOptimizationParameters().getMaxCurativeSearchTreeDepth());
         paramsPtr.setRelativeMinImpactThreshold(parameters.getTopoOptimizationParameters().getRelativeMinImpactThreshold());
         paramsPtr.setAbsoluteMinImpactThreshold(parameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
-        paramsPtr.setSkipActionsFarFromMostLimitingElement(parameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
-        paramsPtr.setMaxNumberOfBoundariesForSkippingActions(parameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());
+        paramsPtr.setMaxPreventiveSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxPreventiveSearchTreeDepth());
+        paramsPtr.setMaxAutoSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxAutoSearchTreeDepth());
+        paramsPtr.setMaxCurativeSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxCurativeSearchTreeDepth());
+        paramsPtr.setSkipActionsFarFromMostLimitingElement(searchTreeParameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
+        paramsPtr.setMaxNumberOfBoundariesForSkippingActions(searchTreeParameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());
 
-        stringListListToArrayPointer(paramsPtr.getPredefinedCombinations(), parameters.getTopoOptimizationParameters().getPredefinedCombinations());
+        stringListListToArrayPointer(paramsPtr.getPredefinedCombinations(), searchTreeParameters.getTopoOptimizationParameters().getPredefinedCombinations());
 
         // Multithreading parameters
-        paramsPtr.setContingencyScenariosInParallel(parameters.getMultithreadingParameters().getContingencyScenariosInParallel());
-        paramsPtr.setPreventiveLeavesInParallel(parameters.getMultithreadingParameters().getPreventiveLeavesInParallel());
-        paramsPtr.setAutoLeavesInParallel(parameters.getMultithreadingParameters().getAutoLeavesInParallel());
-        paramsPtr.setCurativeLeavesInParallel(parameters.getMultithreadingParameters().getCurativeLeavesInParallel());
+        paramsPtr.setAvailableCpus(searchTreeParameters.getMultithreadingParameters().getAvailableCPUs());
 
         // Second preventive parameters
-        paramsPtr.setExecutionCondition(parameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
-        paramsPtr.setReOptimizeCurativeRangeActions(parameters.getSecondPreventiveRaoParameters().getReOptimizeCurativeRangeActions());
-        paramsPtr.setHintFromFirstPreventiveRao(parameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
+        paramsPtr.setExecutionCondition(searchTreeParameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
+        paramsPtr.setReOptimizeCurativeRangeActions(searchTreeParameters.getSecondPreventiveRaoParameters().getReOptimizeCurativeRangeActions());
+        paramsPtr.setHintFromFirstPreventiveRao(searchTreeParameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
 
         // Not opitmized cnec parameters
         paramsPtr.setDoNotOptimizeCurativeCnecsForTsosWithoutCras(parameters.getNotOptimizedCnecsParameters().getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
         // Load flow and sensitivity providers
-        paramsPtr.setLoadFlowProvider(CTypeUtil.toCharPtr(parameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
-        paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(parameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
+        paramsPtr.setLoadFlowProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
+        paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
         paramsPtr.setSensitivityParameters(
             convertToSensitivityAnalysisParametersPointer(
-                parameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters()));
-        paramsPtr.setSensitivityFailureOvercost(parameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
+                searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters()));
+        paramsPtr.setSensitivityFailureOvercost(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
 
         convertExtensionData(parameters, paramsPtr);
         return paramsPtr;
@@ -372,20 +384,35 @@ public final class RaoCFunctions {
             parameterPointer.getProviderParameters().getProviderParametersValuesCount());
     }
 
+    private static boolean hasExtensionData(Map<String, String> data, String prefix) {
+        for (String key : data.keySet()) {
+            if (key.contains(prefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void convertExtensionData(RaoParameters parameters, PyPowsyblApiHeader.RaoParametersPointer parameterPointer) {
         Map<String, String> extensionData = new HashMap<>();
-        MnecParametersExtension mnecExt = parameters.getExtension(MnecParametersExtension.class);
-        if (mnecExt != null) {
-            extensionData.putAll(RaoUtils.mnecParametersExtensionToMap(mnecExt));
+
+        parameters.getMnecParameters().ifPresent(
+            mnecParam -> extensionData.putAll(RaoUtils.mnecParametersExtensionToMap(mnecParam)));
+        parameters.getRelativeMarginsParameters().ifPresent(
+            relativeMarginsParameters -> extensionData.putAll(RaoUtils.relativeMarginsParametersExtensionToMap(relativeMarginsParameters)));
+        parameters.getLoopFlowParameters().ifPresent(
+            loopFlowParameters -> extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters)));
+
+        OpenRaoSearchTreeParameters searchTreeParameters = parameters.getExtension(OpenRaoSearchTreeParameters.class);
+        if (searchTreeParameters != null) {
+            searchTreeParameters.getMnecParameters().ifPresent(
+                mnecParam -> extensionData.putAll(RaoUtils.mnecParametersExtensionToMap(mnecParam)));
+            searchTreeParameters.getRelativeMarginsParameters().ifPresent(
+                relativeMarginsParameters -> extensionData.putAll(RaoUtils.relativeMarginsParametersExtensionToMap(relativeMarginsParameters)));
+            searchTreeParameters.getLoopFlowParameters().ifPresent(
+                loopFlowParameters -> extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters)));
         }
-        RelativeMarginsParametersExtension relativeMarginExt = parameters.getExtension(RelativeMarginsParametersExtension.class);
-        if (relativeMarginExt != null) {
-            extensionData.putAll(RaoUtils.relativeMarginsParametersExtensionToMap(relativeMarginExt));
-        }
-        LoopFlowParametersExtension loopFlowExt = parameters.getExtension(LoopFlowParametersExtension.class);
-        if (loopFlowExt != null) {
-            extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowExt));
-        }
+
         List<String> keys = new ArrayList<>();
         List<String> values = new ArrayList<>();
         extensionData.forEach((key, value) -> {

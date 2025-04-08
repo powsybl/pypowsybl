@@ -63,19 +63,17 @@ class Parameters:
     def _to_c_parameters(self) -> RaoParameters:
         c_parameters = RaoParameters()
         c_parameters.objective_function_type = self.objective_function_parameters.objective_function_type
-        c_parameters.preventive_stop_criterion = self.objective_function_parameters.preventive_stop_criterion
-        c_parameters.curative_stop_criterion = self.objective_function_parameters.curative_stop_criterion
+        c_parameters.unit = self.objective_function_parameters.unit
         c_parameters.curative_min_obj_improvement = self.objective_function_parameters.curative_min_obj_improvement
-        c_parameters.forbid_cost_increase = self.objective_function_parameters.forbid_cost_increase
-        c_parameters.optimize_curative_if_preventive_unsecure = self.objective_function_parameters.optimize_curative_if_preventive_unsecure
+        c_parameters.enforce_curative_security = self.objective_function_parameters.enforce_curative_security
 
         c_parameters.max_mip_iterations = self.range_action_optimization_parameters.max_mip_iterations
-        c_parameters.pst_penalty_cost = self.range_action_optimization_parameters.pst_penalty_cost
+        c_parameters.pst_ra_min_impact_threshold = self.range_action_optimization_parameters.pst_ra_min_impact_threshold
         c_parameters.pst_sensitivity_threshold = self.range_action_optimization_parameters.pst_sensitivity_threshold
         c_parameters.pst_model = self.range_action_optimization_parameters.pst_model
-        c_parameters.hvdc_penalty_cost = self.range_action_optimization_parameters.hvdc_penalty_cost
+        c_parameters.hvdc_ra_min_impact_threshold = self.range_action_optimization_parameters.hvdc_ra_min_impact_threshold
         c_parameters.hvdc_sensitivity_threshold = self.range_action_optimization_parameters.hvdc_sensitivity_threshold
-        c_parameters.injection_ra_penalty_cost = self.range_action_optimization_parameters.injection_ra_penalty_cost
+        c_parameters.injection_ra_min_impact_threshold = self.range_action_optimization_parameters.injection_ra_min_impact_threshold
         c_parameters.injection_ra_sensitivity_threshold = self.range_action_optimization_parameters.injection_ra_sensitivity_threshold
         c_parameters.ra_range_shrinking = self.range_action_optimization_parameters.ra_range_shrinking
         c_parameters.solver = self.range_action_optimization_parameters.solver
@@ -91,10 +89,7 @@ class Parameters:
         c_parameters.skip_actions_far_from_most_limiting_element = self.topo_optimization_parameters.skip_actions_far_from_most_limiting_element
         c_parameters.max_number_of_boundaries_for_skipping_actions = self.topo_optimization_parameters.max_number_of_boundaries_for_skipping_actions
 
-        c_parameters.contingency_scenarios_in_parallel = self.multithreading_parameters.contingency_scenarios_in_parallel
-        c_parameters.preventive_leaves_in_parallel = self.multithreading_parameters.preventive_leaves_in_parallel
-        c_parameters.auto_leaves_in_parallel = self.multithreading_parameters.auto_leaves_in_parallel
-        c_parameters.curative_leaves_in_parallel = self.multithreading_parameters.curative_leaves_in_parallel
+        c_parameters.available_cpus = self.multithreading_parameters.available_cpus
 
         c_parameters.execution_condition = self.second_preventive_rao_parameters.execution_condition
         c_parameters.re_optimize_curative_range_actions = self.second_preventive_rao_parameters.re_optimize_curative_range_actions

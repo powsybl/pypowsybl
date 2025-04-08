@@ -472,25 +472,21 @@ public:
 };
 
 // RAO
-enum PreventiveStopCriterion {
-    P_MIN_OBJECTIVE = 0,
-    P_SECURE,
-};
-
-enum CurativeStopCriterion {
-    C_MIN_OBJECTIVE = 0,
-    C_SECURE,
-    C_PREVENTIVE_OBJECTIVE,
-    C_PREVENTIVE_OBJECTIVE_AND_SECURE,
-};
-
 enum ObjectiveFunctionType {
-    MAX_MIN_MARGIN_IN_MEGAWATT = 0,
-    MAX_MIN_MARGIN_IN_AMPERE,
-    MAX_MIN_RELATIVE_MARGIN_IN_MEGAWATT,
-    MAX_MIN_RELATIVE_MARGIN_IN_AMPERE,
-    MIN_COST_IN_MEGAWATT,
-    MIN_COST_IN_AMPERE,
+    SECURE_FLOW = 0,
+    MAX_MIN_MARGIN,
+    MAX_MIN_RELATIVE_MARGIN,
+    MIN_COST
+};
+
+enum Unit {
+    AMPERE = 0,
+    DEGREE,
+    MEGAWATT,
+    KILOVOLT,
+    PERCENT_IMAX,
+    TAP,
+    SECTION_COUNT
 };
 
 enum Solver {
@@ -524,11 +520,9 @@ public:
 
     // Objective function parameters
     ObjectiveFunctionType objective_function_type;
-    PreventiveStopCriterion preventive_stop_criterion;
-    CurativeStopCriterion curative_stop_criterion;
+    Unit unit;
+    bool enforce_curative_security;
     double curative_min_obj_improvement;
-    bool forbid_cost_increase;
-    bool optimize_curative_if_preventive_unsecure;
 
     // range action solver
     Solver solver;
@@ -536,14 +530,14 @@ public:
     std::string solver_specific_parameters;
 
     // range action optimization parameters
+    double pst_ra_min_impact_threshold;
+    double hvdc_ra_min_impact_threshold;
+    double injection_ra_min_impact_threshold;
     int max_mip_iterations;
-    double pst_penalty_cost;
     double pst_sensitivity_threshold;
-    PstModel pst_model;
-    double hvdc_penalty_cost;
     double hvdc_sensitivity_threshold;
-    double injection_ra_penalty_cost;
     double injection_ra_sensitivity_threshold;
+    PstModel pst_model;
     RaRangeShrinking ra_range_shrinking;
 
     // topo optimization parameters
@@ -558,10 +552,7 @@ public:
     int max_number_of_boundaries_for_skipping_actions;
 
     // Multithreading parameters
-    int contingency_scenarios_in_parallel;
-    int preventive_leaves_in_parallel;
-    int auto_leaves_in_parallel;
-    int curative_leaves_in_parallel;
+    int available_cpus;
 
     // Second preventive rao parameters
     ExecutionCondition execution_condition;
