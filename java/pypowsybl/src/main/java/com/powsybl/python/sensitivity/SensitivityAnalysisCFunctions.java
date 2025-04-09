@@ -37,8 +37,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
-import static com.powsybl.python.commons.Util.createCharPtrArray;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.*;
 
 /**
  * C functions related to sensitivity analysis.
@@ -162,7 +161,7 @@ public final class SensitivityAnalysisCFunctions {
         });
     }
 
-    private static SensitivityAnalysisProvider getProvider(String name) {
+    public static SensitivityAnalysisProvider getProvider(String name) {
         String actualName = name.isEmpty() ? PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider() : name;
         return SensitivityAnalysisProvider.findAll().stream()
                 .filter(provider -> provider.getName().equals(actualName))
@@ -174,6 +173,7 @@ public final class SensitivityAnalysisCFunctions {
     public static void freeSensitivityAnalysisParameters(IsolateThread thread, SensitivityAnalysisParametersPointer parameters,
                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parameters.getProviderParameters());
             LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
             UnmanagedMemory.free(parameters);
         });
@@ -184,11 +184,11 @@ public final class SensitivityAnalysisCFunctions {
         return doCatch(exceptionHandlerPtr, () -> convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters()));
     }
 
-    private static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
+    public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
         SensitivityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SensitivityAnalysisParametersPointer.class));
         LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 
