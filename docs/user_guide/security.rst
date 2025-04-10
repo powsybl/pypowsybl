@@ -150,6 +150,7 @@ Adding input data from JSON files
 
 It is possible to add the input data of a security analysis using JSON files.
 The contingencies can be added this way, using the `add_contingencies_from_json_file` method.
+
 An example of a valid JSON contingency file is the following :
 
 .. code-block:: JSON
@@ -175,6 +176,7 @@ An example of a valid JSON contingency file is the following :
         } ]
       } ]
     }
+
 
 From now on, it is possible to add the remedial actions using JSON files too, using the `add_actions_from_json_file` method.
 The following example is a valid JSON file input for this method :
@@ -217,3 +219,4 @@ The following example is a valid JSON file input for this method :
         } ]
       }]
     }
+
