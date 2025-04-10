@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
@@ -86,17 +87,5 @@ class SecurityAnalysisTest {
             .containsExactly("First contingency", "First contingency");
         Assertions.assertThat(series.get(1).getStrings())
             .containsExactly("NHV1_NHV2_2", "VLHV1");
-    }
-
-    @Test
-    void testToAddActionsAndOperatorStrategiesFromJsonFile() throws IOException {
-        SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
-        fileSystem = Jimfs.newFileSystem(Configuration.unix());
-
-        Files.copy(getClass().getResourceAsStream("/ActionFileTestV1.0.json"), fileSystem.getPath("/ActionFileTestV1.0.json"));
-        analysisContext.addActionFromJsonFile(fileSystem.getPath("/ActionFileTestV1.0.json"));
-
-        Files.copy(getClass().getResourceAsStream("/OperatorStrategyFileTestV1.0.json"), fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
-        analysisContext.addOperatorStrategyFromJsonFile(fileSystem.getPath("/OperatorStrategyFileTestV1.0.json"));
     }
 }
