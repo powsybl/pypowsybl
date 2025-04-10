@@ -1182,6 +1182,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("edge_info_displayed")
         int getEdgeInfoDisplayed();
+
+        @CField("voltage_level_details")
+        void setVoltageLevelDetails(boolean isVoltageLevelDetails);
+
+        @CField("voltage_level_details")
+        boolean isVoltageLevelDetails();
     }
 
     @CEnum("DynamicMappingType")
@@ -1205,7 +1211,7 @@ public final class PyPowsyblApiHeader {
         BASE_BUS,
         INFINITE_BUS,
         OVERLOAD_MANAGEMENT_SYSTEM,
-        TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM,
+        TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
         UNDER_VOLTAGE,
         PHASE_SHIFTER_I,
         PHASE_SHIFTER_P,

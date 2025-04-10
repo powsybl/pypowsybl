@@ -116,10 +116,10 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
     id                                                                                                                                                                                        
     BLOAD 11 BLOAD 12 2       0.5  1.5  0.0002  0.00015     400.0     400.0      NaN NaN NaN NaN NaN NaN NaN           BLOAD 1           BLOAD 1  BLOAD 1_1  BLOAD 1_0        True        True
     >>> network.get_phase_tap_changers()
-                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
-    id                                                                                                                                      
-    BLOAD 11 BLOAD 12 2    0      -16        16          33       False       FIXED_TAP               NaN              NaN
-    
+                        side  tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
+    id
+    BLOAD 11 BLOAD 12 2         0      -16        16          33       False       FIXED_TAP               NaN              NaN
+
 Neutral tap position
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -154,9 +154,9 @@ Here are the results with non-neutral tap position.
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     >>> network.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     >>> network.get_phase_tap_changers()
-                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
-    id                                                                                                                                      
-    BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN
+                        side  tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
+    id
+    BLOAD 11 BLOAD 12 2         1      -16        16          33       False       FIXED_TAP               NaN              NaN
     >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe

@@ -11,10 +11,8 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.glsk.commons.ZonalData;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.openrao.commons.Unit;
-import com.powsybl.openrao.data.cracapi.Crac;
-import com.powsybl.openrao.data.raoresultapi.RaoResult;
-import com.powsybl.openrao.data.raoresultjson.RaoResultJsonExporter;
+import com.powsybl.openrao.data.crac.api.Crac;
+import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
 import com.powsybl.python.commons.Directives;
@@ -31,7 +29,7 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.Set;
+import java.util.Properties;
 
 import static com.powsybl.python.commons.Util.binaryBufferToBytes;
 import static com.powsybl.python.commons.Util.doCatch;
@@ -88,7 +86,11 @@ public final class RaoCFunctions {
             InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
             try {
                 Crac crac = Crac.read("crac.json", streamedCrac, network);
-                raoContext.setCrac(crac);
+                if (crac != null) {
+                    raoContext.setCrac(crac);
+                } else {
+                    throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
+                }
             } catch (IOException e) {
                 throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
             }
@@ -127,8 +129,10 @@ public final class RaoCFunctions {
             RaoResult raoResult = ObjectHandles.getGlobal().get(raoResultHandle);
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                new RaoResultJsonExporter().exportData(
-                    raoResult, crac, Set.of(Unit.MEGAWATT), output);
+                Properties properties = new Properties();
+                properties.setProperty("rao-result.export.json.flows-in-amperes", "true");
+                properties.setProperty("rao-result.export.json.flows-in-megawatts", "true");
+                raoResult.write("JSON", crac, properties, output);
                 return Util.createByteArray(output.toByteArray());
             } catch (IOException e) {
                 throw new PowsyblException("Could not serialize rao results : " + e.getMessage());

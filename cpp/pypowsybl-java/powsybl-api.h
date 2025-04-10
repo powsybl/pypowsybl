@@ -369,6 +369,7 @@ typedef struct nad_parameters_struct {
     int scaling_factor;
     double radius_factor;
     int edge_info_displayed;
+    unsigned char voltage_level_details;
 } nad_parameters;
 
 typedef enum {
@@ -391,7 +392,7 @@ typedef enum {
     BASE_BUS,
     INFINITE_BUS,
     OVERLOAD_MANAGEMENT_SYSTEM,
-    TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM,
+    TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
     UNDER_VOLTAGE,
     PHASE_SHIFTER_I,
     PHASE_SHIFTER_P,
@@ -494,18 +495,23 @@ typedef enum {
     LOAD_P = 0,
     LOAD_Q,
     LOAD_V,
+    LOAD_ANGLE,
     GENERATOR_P,
     GENERATOR_Q,
     GENERATOR_V,
+    GENERATOR_ANGLE,
     SHUNT_P,
     SHUNT_Q,
     SHUNT_V,
+    SHUNT_ANGLE,
     BRANCH_P1,
     BRANCH_P2,
     BRANCH_Q1,
     BRANCH_Q2,
     BRANCH_V1,
     BRANCH_V2,
+    BRANCH_ANGLE1,
+    BRANCH_ANGLE2,
     BRANCH_I1,
     BRANCH_I2,
     BRANCH_PERMANENT_LIMIT_A,

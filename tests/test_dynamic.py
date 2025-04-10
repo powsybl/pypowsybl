@@ -18,28 +18,28 @@ def set_up():
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()
     # Equipments
-    model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', dynamic_model_id='DM_LOAD', model_name='LoadPQ')
-    model_mapping.add_load_one_transformer(static_id='LOAD', parameter_set_id='lt', dynamic_model_id='DM_LT', model_name='LoadOneTransformer')
-    model_mapping.add_load_one_transformer_tap_changer(static_id='LOAD', parameter_set_id='lt_tc', dynamic_model_id='DM_LT_TC', model_name='LoadOneTransformerTapChanger')
-    model_mapping.add_load_two_transformers(static_id='LOAD', parameter_set_id='ltt', dynamic_model_id='DM_LTT', model_name='LoadTwoTransformers')
-    model_mapping.add_load_two_transformers_tap_changers(static_id='LOAD', parameter_set_id='ltt_tc', dynamic_model_id='DM_LTT_TC', model_name='LoadTwoTransformersTapChangers')
-    model_mapping.add_base_generator(static_id='GEN', parameter_set_id='gen', dynamic_model_id='DM_GEN', model_name='GeneratorFictitious')
-    model_mapping.add_synchronized_generator(static_id='GEN', parameter_set_id='sgen', dynamic_model_id='DM_SYNCH_GEN', model_name='GeneratorPVFixed')
-    model_mapping.add_synchronous_generator(static_id='GEN', parameter_set_id='ssgen', dynamic_model_id='DM_SYNCHRONOUS_GEN', model_name='GeneratorSynchronousThreeWindings')
-    model_mapping.add_wecc(static_id='GEN', parameter_set_id='wecc', dynamic_model_id='DM_WECC', model_name='WT4BWeccCurrentSource')
-    model_mapping.add_grid_forming_converter(static_id='GEN', parameter_set_id='gf', dynamic_model_id='DM_GF', model_name='GridFormingConverterMatchingControl')
-    model_mapping.add_signal_n_generator(static_id='GEN', parameter_set_id='signal_n', dynamic_model_id='DM_SIGNAL_N', model_name='GeneratorPVSignalN')
-    model_mapping.add_hvdc_p(static_id='HVDC_LINE', parameter_set_id='hvdc_p', dynamic_model_id='DM_HVDC_P', model_name='HvdcPV')
-    model_mapping.add_hvdc_vsc(static_id='HVDC_LINE', parameter_set_id='hvdc_vsc', dynamic_model_id='DM_HVDC_VSC', model_name='HvdcVSCDanglingP')
-    model_mapping.add_base_transformer(static_id='TFO', parameter_set_id='tfo', dynamic_model_id='DM_TFO', model_name='TransformerFixedRatio')
-    model_mapping.add_base_static_var_compensator(static_id='SVARC', parameter_set_id='svarc', dynamic_model_id='DM_SVARC', model_name='StaticVarCompensatorPV')
-    model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', dynamic_model_id='DM_LINE', model_name='Line')
-    model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', dynamic_model_id='DM_BUS', model_name='Bus')
-    model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', dynamic_model_id='DM_INF_BUS', model_name='InfiniteBus')
+    model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name='LoadPQ')
+    model_mapping.add_load_one_transformer(static_id='LOAD', parameter_set_id='lt', model_name='LoadOneTransformer')
+    model_mapping.add_load_one_transformer_tap_changer(static_id='LOAD', parameter_set_id='lt_tc', model_name='LoadOneTransformerTapChanger')
+    model_mapping.add_load_two_transformers(static_id='LOAD', parameter_set_id='ltt', model_name='LoadTwoTransformers')
+    model_mapping.add_load_two_transformers_tap_changers(static_id='LOAD', parameter_set_id='ltt_tc', model_name='LoadTwoTransformersTapChangers')
+    model_mapping.add_base_generator(static_id='GEN', parameter_set_id='gen', model_name='GeneratorFictitious')
+    model_mapping.add_synchronized_generator(static_id='GEN', parameter_set_id='sgen', model_name='GeneratorPVFixed')
+    model_mapping.add_synchronous_generator(static_id='GEN', parameter_set_id='ssgen', model_name='GeneratorSynchronousThreeWindings')
+    model_mapping.add_wecc(static_id='GEN', parameter_set_id='wecc', model_name='WT4BWeccCurrentSource')
+    model_mapping.add_grid_forming_converter(static_id='GEN', parameter_set_id='gf', model_name='GridFormingConverterMatchingControl')
+    model_mapping.add_signal_n_generator(static_id='GEN', parameter_set_id='signal_n', model_name='GeneratorPVSignalN')
+    model_mapping.add_hvdc_p(static_id='HVDC_LINE', parameter_set_id='hvdc_p', model_name='HvdcPV')
+    model_mapping.add_hvdc_vsc(static_id='HVDC_LINE', parameter_set_id='hvdc_vsc', model_name='HvdcVSCDanglingP')
+    model_mapping.add_base_transformer(static_id='TFO', parameter_set_id='tfo', model_name='TransformerFixedRatio')
+    model_mapping.add_base_static_var_compensator(static_id='SVARC', parameter_set_id='svarc', model_name='StaticVarCompensatorPV')
+    model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
+    model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
+    model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_model_id='DM_OV', parameter_set_id='ov', controlled_branch='LINE1',
                                                  i_measurement='LINE2', i_measurement_side='TWO', model_name='OverloadManagementSystem')
-    model_mapping.add_two_levels_overload_management_system(dynamic_model_id='DM_TOV', parameter_set_id='tov',
+    model_mapping.add_two_level_overload_management_system(dynamic_model_id='DM_TOV', parameter_set_id='tov',
                                                             controlled_branch= 'LINE1',
                                                             i_measurement_1='LINE1', i_measurement_1_side='TWO',
                                                             i_measurement_2='LINE2', i_measurement_2_side='ONE',
@@ -58,7 +58,7 @@ def test_add_mapping():
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab')
     # Equipment model from Supported models
     model_name = model_mapping.get_supported_models(dyn.DynamicMappingType.BASE_LOAD)[0]
-    model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', dynamic_model_id='DM_LOAD', model_name=model_name)
+    model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name=model_name)
 
 
 def test_dynamic_dataframe():

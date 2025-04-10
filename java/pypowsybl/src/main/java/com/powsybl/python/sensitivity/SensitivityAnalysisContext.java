@@ -187,37 +187,23 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                     }
                 }
 
-                switch (matrix.getFunctionType()) {
-                    case BRANCH_ACTIVE_POWER_1, BRANCH_ACTIVE_POWER_2, BRANCH_ACTIVE_POWER_3,
-                            BRANCH_REACTIVE_POWER_1, BRANCH_REACTIVE_POWER_2, BRANCH_REACTIVE_POWER_3,
-                            BRANCH_CURRENT_1, BRANCH_CURRENT_2, BRANCH_CURRENT_3 -> {
-                        for (String variableId : rows) {
-                            for (String branchId : columns) {
-                                SensitivityVariableType variableType = matrix.getVariableType();
-                                boolean variableSet = false;
-                                if (variableType == null) {
-                                    variableType = getVariableType(network, variableId);
-                                    if (variableType == null) {
-                                        if (variableSetsById.containsKey(variableId)) {
-                                            variableSet = true;
-                                            variableType = SensitivityVariableType.INJECTION_ACTIVE_POWER;
-                                        } else {
-                                            throw new PowsyblException("Variable '" + variableId + "' not found");
-                                        }
-                                    }
-                                }
-                                for (ContingencyContext cCtx : contingencyContexts) {
-                                    handler.onFactor(matrix.getFunctionType(), branchId, variableType, variableId, variableSet, cCtx);
+                for (String variableId : rows) {
+                    for (String functionId : columns) {
+                        SensitivityVariableType variableType = matrix.getVariableType();
+                        boolean variableSet = false;
+                        if (variableType == null) {
+                            variableType = getVariableType(network, variableId);
+                            if (variableType == null) {
+                                if (variableSetsById.containsKey(variableId)) {
+                                    variableSet = true;
+                                    variableType = SensitivityVariableType.INJECTION_ACTIVE_POWER;
+                                } else {
+                                    throw new PowsyblException("Variable '" + variableId + "' not found");
                                 }
                             }
                         }
-                    }
-                    case BUS_VOLTAGE -> {
-                        for (String targetVoltageId : rows) {
-                            for (String busVoltageId : columns) {
-                                handler.onFactor(SensitivityFunctionType.BUS_VOLTAGE, busVoltageId,
-                                        SensitivityVariableType.BUS_TARGET_VOLTAGE, targetVoltageId, false, ContingencyContext.all());
-                            }
+                        for (ContingencyContext cCtx : contingencyContexts) {
+                            handler.onFactor(matrix.getFunctionType(), functionId, variableType, variableId, variableSet, cCtx);
                         }
                     }
                 }

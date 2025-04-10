@@ -436,6 +436,7 @@ public:
     int scaling_factor;
     double radius_factor;
     EdgeInfoType edge_info_displayed;
+    bool voltage_level_details;
 };
 
 //=======short-circuit analysis==========
@@ -579,17 +580,21 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
-std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
 JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
+
+void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
 
@@ -612,6 +617,9 @@ void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const s
 void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition, ThreeSide side);
 
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
+
+void addTerminalsConnectionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& elementId,
+                                       ThreeSide side, bool opening);
 
 void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
                          condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
@@ -859,7 +867,7 @@ JavaHandle getRaoResult(const JavaHandle& raoContext);
 RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
 JavaHandle createDefaultRaoParameters();
 
-JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, bool checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);
 std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
 array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);

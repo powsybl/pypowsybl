@@ -577,6 +577,7 @@ public final class NetworkDataframes {
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup1, false)
                 .strings("selected_limits_group_2", twt -> twt.getSelectedOperationalLimitsGroupId2().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup2, false)
+                .doubles("rho", (twt, context) -> perUnitRho(context, twt, NetworkDataframes.computeRho(twt)), false)
                 .addProperties()
                 .build();
     }
@@ -604,6 +605,7 @@ public final class NetworkDataframes {
                 .booleans("connected1", g -> g.getLeg1().getTerminal().isConnected(), connectLeg1())
                 .strings("selected_limits_group_1", twt -> twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg1().setSelectedOperationalLimitsGroup(groupId), false)
+                .doubles("rho1", (twt, context) -> perUnitRho(context, twt, ThreeSides.ONE, NetworkDataframes.computeRho(twt, ThreeSides.ONE)), false)
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
                 .doubles("x2", (twt, context) -> perUnitRX(context, twt.getLeg2().getX(), twt), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
                 .doubles("g2", (twt, context) -> perUnitBG(context, twt.getLeg2().getG(), twt), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitBG(context, twt, g2)))
@@ -622,6 +624,7 @@ public final class NetworkDataframes {
                 .booleans("connected2", g -> g.getLeg2().getTerminal().isConnected(), connectLeg2())
                 .strings("selected_limits_group_2", twt -> twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg2().setSelectedOperationalLimitsGroup(groupId), false)
+                .doubles("rho2", (twt, context) -> perUnitRho(context, twt, ThreeSides.TWO, NetworkDataframes.computeRho(twt, ThreeSides.TWO)), false)
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
                 .doubles("x3", (twt, context) -> perUnitRX(context, twt.getLeg3().getX(), twt), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
                 .doubles("g3", (twt, context) -> perUnitBG(context, twt.getLeg3().getG(), twt), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitBG(context, twt, g3)))
@@ -640,6 +643,7 @@ public final class NetworkDataframes {
                 .booleans("connected3", twt -> twt.getLeg3().getTerminal().isConnected(), connectLeg3())
                 .strings("selected_limits_group_3", twt -> twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg3().setSelectedOperationalLimitsGroup(groupId), false)
+                .doubles("rho3", (twt, context) -> perUnitRho(context, twt, ThreeSides.THREE, NetworkDataframes.computeRho(twt, ThreeSides.THREE)), false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -904,57 +908,169 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    private static NetworkDataframeMapper rtcSteps() {
-        Function<Network, Stream<Triple<TwoWindingsTransformer, RatioTapChanger, Integer>>> ratioTapChangerSteps = network ->
-                network.getTwoWindingsTransformerStream()
-                        .filter(twt -> twt.getRatioTapChanger() != null)
-                        .flatMap(twt -> twt.getRatioTapChanger().getAllSteps().keySet().stream().map(position -> Triple.of(twt, twt.getRatioTapChanger(), position)));
-        return NetworkDataframeMapperBuilder.ofStream(ratioTapChangerSteps, NetworkDataframes::getRatioTapChangers)
-                .stringsIndex("id", triple -> triple.getLeft().getId())
-                .intsIndex("position", Triple::getRight)
-                .doubles("rho", (p, context) -> p.getMiddle().getStep(p.getRight()).getRho(),
-                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
-                .doubles("r", (p, context) -> p.getMiddle().getStep(p.getRight()).getR(),
-                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
-                .doubles("x", (p, context) -> p.getMiddle().getStep(p.getRight()).getX(),
-                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
-                .doubles("g", (p, context) -> p.getMiddle().getStep(p.getRight()).getG(),
-                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
-                .doubles("b", (p, context) -> p.getMiddle().getStep(p.getRight()).getB(),
-                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
-                .build();
+    interface TapChangerStepRow {
+        String getId();
+
+        String getSide();
+
+        RatioTapChangerStep getRtcStep();
+
+        PhaseTapChangerStep getPtcStep();
+
+        int getPosition();
     }
 
-    static Triple<TwoWindingsTransformer, RatioTapChanger, Integer> getRatioTapChangers(Network network, UpdatingDataframe dataframe, int index) {
+    record TapChangerStepRow2(TwoWindingsTransformer twt, int position) implements TapChangerStepRow {
+        @Override
+        public String getId() {
+            return twt.getId();
+        }
+
+        @Override
+        public String getSide() {
+            return "";
+        }
+
+        @Override
+        public RatioTapChangerStep getRtcStep() {
+            return twt.getRatioTapChanger().getStep(position);
+        }
+
+        @Override
+        public PhaseTapChangerStep getPtcStep() {
+            return twt.getPhaseTapChanger().getStep(position);
+        }
+
+        @Override
+        public int getPosition() {
+            return position;
+        }
+    }
+
+    record TapChangerStepRow3(ThreeWindingsTransformer twt, ThreeSides side, int position) implements TapChangerStepRow {
+        @Override
+        public String getId() {
+            return twt.getId();
+        }
+
+        @Override
+        public String getSide() {
+            return side.name();
+        }
+
+        @Override
+        public RatioTapChangerStep getRtcStep() {
+            return twt.getLeg(side).getRatioTapChanger().getStep(position);
+        }
+
+        @Override
+        public PhaseTapChangerStep getPtcStep() {
+            return twt.getLeg(side).getPhaseTapChanger().getStep(position);
+        }
+
+        @Override
+        public int getPosition() {
+            return position;
+        }
+    }
+
+    private static Stream<TapChangerStepRow> getTapChangerStepRows(Network network, TapChangerType type) {
+        List<TapChangerStepRow> rows = new ArrayList<>();
+        for (TwoWindingsTransformer twt : network.getTwoWindingsTransformers()) {
+            switch (type) {
+                case RATIO -> {
+                    RatioTapChanger rtc = twt.getRatioTapChanger();
+                    if (rtc != null) {
+                        rows.addAll(rtc.getAllSteps().keySet().stream().map(position -> new TapChangerStepRow2(twt, position)).toList());
+                    }
+                }
+                case PHASE -> {
+                    PhaseTapChanger ptc = twt.getPhaseTapChanger();
+                    if (ptc != null) {
+                        rows.addAll(ptc.getAllSteps().keySet().stream().map(position -> new TapChangerStepRow2(twt, position)).toList());
+                    }
+                }
+            }
+        }
+        for (ThreeWindingsTransformer twt : network.getThreeWindingsTransformers()) {
+            for (ThreeWindingsTransformer.Leg leg : twt.getLegs()) {
+                switch (type) {
+                    case RATIO -> {
+                        RatioTapChanger rtc = leg.getRatioTapChanger();
+                        if (rtc != null) {
+                            rows.addAll(rtc.getAllSteps().keySet().stream().map(position -> new TapChangerStepRow3(twt, leg.getSide(), position)).toList());
+                        }
+                    }
+                    case PHASE -> {
+                        PhaseTapChanger ptc = leg.getPhaseTapChanger();
+                        if (ptc != null) {
+                            rows.addAll(ptc.getAllSteps().keySet().stream().map(position -> new TapChangerStepRow3(twt, leg.getSide(), position)).toList());
+                        }
+                    }
+                }
+            }
+        }
+        return rows.stream();
+    }
+
+    static TapChangerStepRow getTapChangerStepRow(Network network, UpdatingDataframe dataframe, int index) {
         String id = dataframe.getStringValue("id", index)
                 .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
         int position = dataframe.getIntValue("position", index)
                 .orElseThrow(() -> new IllegalArgumentException("position column is missing"));
-        TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
-        return Triple.of(twt, twt.getRatioTapChanger(), position);
+        ThreeSides side = dataframe.getStringValue("side", index).stream()
+                .map(ThreeSides::valueOf)
+                .findFirst()
+                .orElse(null);
+        if (side == null) {
+            TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
+            if (twt == null) {
+                throw new PowsyblException("2 windings transformer '" + id + "' does not exist.");
+            }
+            return new TapChangerStepRow2(twt, position);
+        }
+        ThreeWindingsTransformer twt = network.getThreeWindingsTransformer(id);
+        if (twt == null) {
+            throw new PowsyblException("3 windings transformer '" + id + "' does not exist.");
+        }
+        return new TapChangerStepRow3(twt, side, position);
+    }
+
+    private static NetworkDataframeMapper rtcSteps() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> NetworkDataframes.getTapChangerStepRows(network, TapChangerType.RATIO), NetworkDataframes::getTapChangerStepRow)
+                .stringsIndex("id", TapChangerStepRow::getId)
+                .intsIndex("position", TapChangerStepRow::getPosition)
+                .strings("side", TapChangerStepRow::getSide)
+                .doubles("rho", (row, context) -> row.getRtcStep().getRho(),
+                    (row, rho, context) -> row.getRtcStep().setRho(rho))
+                .doubles("r", (row, context) -> row.getRtcStep().getR(),
+                    (row, r, context) -> row.getRtcStep().setR(r))
+                .doubles("x", (row, context) -> row.getRtcStep().getX(),
+                    (row, x, context) -> row.getRtcStep().setX(x))
+                .doubles("g", (row, context) -> row.getRtcStep().getG(),
+                    (row, g, context) -> row.getRtcStep().setG(g))
+                .doubles("b", (row, context) -> row.getRtcStep().getB(),
+                    (row, b, context) -> row.getRtcStep().setB(b))
+                .build();
     }
 
     private static NetworkDataframeMapper ptcSteps() {
-        Function<Network, Stream<Triple<TwoWindingsTransformer, PhaseTapChanger, Integer>>> phaseTapChangerSteps = network ->
-                network.getTwoWindingsTransformerStream()
-                        .filter(twt -> twt.getPhaseTapChanger() != null)
-                        .flatMap(twt -> twt.getPhaseTapChanger().getAllSteps().keySet()
-                            .stream().map(position -> Triple.of(twt, twt.getPhaseTapChanger(), position)));
-        return NetworkDataframeMapperBuilder.ofStream(phaseTapChangerSteps, NetworkDataframes::getPhaseTapChangers)
-                .stringsIndex("id", triple -> triple.getLeft().getId())
-                .intsIndex("position", Triple::getRight)
-                .doubles("rho", (p, context) -> p.getMiddle().getStep(p.getRight()).getRho(),
-                    (p, rho, context) -> p.getMiddle().getStep(p.getRight()).setRho(rho))
-                .doubles("alpha", (p, context) -> perUnitAngle(context, p.getMiddle().getStep(p.getRight()).getAlpha()),
-                    (p, alpha, context) -> p.getMiddle().getStep(p.getRight()).setAlpha(unPerUnitAngle(context, alpha)))
-                .doubles("r", (p, context) -> p.getMiddle().getStep(p.getRight()).getR(),
-                    (p, r, context) -> p.getMiddle().getStep(p.getRight()).setR(r))
-                .doubles("x", (p, context) -> p.getMiddle().getStep(p.getRight()).getX(),
-                    (p, x, context) -> p.getMiddle().getStep(p.getRight()).setX(x))
-                .doubles("g", (p, context) -> p.getMiddle().getStep(p.getRight()).getG(),
-                    (p, g, context) -> p.getMiddle().getStep(p.getRight()).setG(g))
-                .doubles("b", (p, context) -> p.getMiddle().getStep(p.getRight()).getB(),
-                    (p, b, context) -> p.getMiddle().getStep(p.getRight()).setB(b))
+        return NetworkDataframeMapperBuilder.ofStream(network -> NetworkDataframes.getTapChangerStepRows(network, TapChangerType.PHASE), NetworkDataframes::getTapChangerStepRow)
+                .stringsIndex("id", TapChangerStepRow::getId)
+                .intsIndex("position", TapChangerStepRow::getPosition)
+                .strings("side", TapChangerStepRow::getSide)
+                .doubles("rho", (row, context) -> row.getPtcStep().getRho(),
+                    (row, rho, context) -> row.getPtcStep().setRho(rho))
+                .doubles("alpha", (row, context) -> perUnitAngle(context, row.getPtcStep().getAlpha()),
+                    (row, alpha, context) -> row.getPtcStep().setAlpha(unPerUnitAngle(context, alpha)))
+                .doubles("r", (row, context) -> row.getPtcStep().getR(),
+                    (row, r, context) -> row.getPtcStep().setR(r))
+                .doubles("x", (row, context) -> row.getPtcStep().getX(),
+                    (row, x, context) -> row.getPtcStep().setX(x))
+                .doubles("g", (row, context) -> row.getPtcStep().getG(),
+                    (row, g, context) -> row.getPtcStep().setG(g))
+                .doubles("b", (row, context) -> row.getPtcStep().getB(),
+                    (row, b, context) -> row.getPtcStep().setB(b))
                 .build();
     }
 
@@ -967,34 +1083,235 @@ public final class NetworkDataframes {
         return Triple.of(twoWindingsTransformer, twoWindingsTransformer.getPhaseTapChanger(), position);
     }
 
+    interface TapChangerRow {
+        String getId();
+
+        String getSide();
+
+        RatioTapChanger getRtc();
+
+        PhaseTapChanger getPtc();
+
+        String getRtcRegulatedSide();
+
+        void setRtcRegulatedSide(String regulatedSide);
+
+        String getPtcRegulatedSide();
+
+        void setPtcRegulatedSide(String regulatedSide);
+    }
+
+    record TapChangerRow2(TwoWindingsTransformer twt) implements TapChangerRow {
+        @Override
+        public String getId() {
+            return twt.getId();
+        }
+
+        @Override
+        public String getSide() {
+            return null;
+        }
+
+        @Override
+        public RatioTapChanger getRtc() {
+            return twt.getRatioTapChanger();
+        }
+
+        @Override
+        public PhaseTapChanger getPtc() {
+            return twt.getPhaseTapChanger();
+        }
+
+        @Override
+        public String getRtcRegulatedSide() {
+            return NetworkDataframes.getTapChangerRegulatedSide(twt, TwoWindingsTransformer::getRatioTapChanger);
+        }
+
+        @Override
+        public void setRtcRegulatedSide(String regulatedSide) {
+            NetworkDataframes.setTapChangerRegulatedSide(twt, regulatedSide, TwoWindingsTransformer::getRatioTapChanger);
+        }
+
+        @Override
+        public String getPtcRegulatedSide() {
+            return NetworkDataframes.getTapChangerRegulatedSide(twt, TwoWindingsTransformer::getPhaseTapChanger);
+        }
+
+        @Override
+        public void setPtcRegulatedSide(String regulatedSide) {
+            NetworkDataframes.setTapChangerRegulatedSide(twt, regulatedSide, TwoWindingsTransformer::getPhaseTapChanger);
+        }
+    }
+
+    record TapChangerRow3(ThreeWindingsTransformer twt, ThreeSides side) implements TapChangerRow {
+        @Override
+        public String getId() {
+            return twt.getId();
+        }
+
+        @Override
+        public String getSide() {
+            return side.name();
+        }
+
+        @Override
+        public RatioTapChanger getRtc() {
+            return twt.getLeg(side).getRatioTapChanger();
+        }
+
+        @Override
+        public PhaseTapChanger getPtc() {
+            return twt.getLeg(side).getPhaseTapChanger();
+        }
+
+        @Override
+        public String getRtcRegulatedSide() {
+            return NetworkDataframes.getTapChangerRegulatedSide(twt, side, ThreeWindingsTransformer.Leg::getRatioTapChanger);
+        }
+
+        @Override
+        public void setRtcRegulatedSide(String regulatedSide) {
+            NetworkDataframes.setTapChangerRegulatedSide(twt, side, regulatedSide, ThreeWindingsTransformer.Leg::getRatioTapChanger);
+        }
+
+        @Override
+        public String getPtcRegulatedSide() {
+            return NetworkDataframes.getTapChangerRegulatedSide(twt, side, ThreeWindingsTransformer.Leg::getPhaseTapChanger);
+        }
+
+        @Override
+        public void setPtcRegulatedSide(String regulatedSide) {
+            NetworkDataframes.setTapChangerRegulatedSide(twt, side, regulatedSide, ThreeWindingsTransformer.Leg::getPhaseTapChanger);
+        }
+    }
+
+    enum TapChangerType {
+        RATIO,
+        PHASE
+    }
+
+    private static Stream<TapChangerRow> getTapChangerRows(Network network, TapChangerType type) {
+        Objects.requireNonNull(network);
+        Objects.requireNonNull(type);
+        List<TapChangerRow> rows = new ArrayList<>();
+        for (TwoWindingsTransformer twt : network.getTwoWindingsTransformers()) {
+            switch (type) {
+                case RATIO -> {
+                    if (twt.getRatioTapChanger() != null) {
+                        rows.add(new TapChangerRow2(twt));
+                    }
+                }
+                case PHASE -> {
+                    if (twt.getPhaseTapChanger() != null) {
+                        rows.add(new TapChangerRow2(twt));
+                    }
+                }
+            }
+
+        }
+        for (ThreeWindingsTransformer twt : network.getThreeWindingsTransformers()) {
+            for (ThreeWindingsTransformer.Leg leg : twt.getLegs()) {
+                switch (type) {
+                    case RATIO -> {
+                        if (leg.getRatioTapChanger() != null) {
+                            rows.add(new TapChangerRow3(twt, leg.getSide()));
+                        }
+                    }
+                    case PHASE -> {
+                        if (leg.getPhaseTapChanger() != null) {
+                            rows.add(new TapChangerRow3(twt, leg.getSide()));
+                        }
+                    }
+                }
+            }
+        }
+        return rows.stream();
+    }
+
+    static TapChangerRow getTapChangerRow(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("id", index)
+                .orElseThrow(() -> new IllegalArgumentException("id column is missing"));
+        ThreeSides side = dataframe.getStringValue("side", index).stream()
+                .map(ThreeSides::valueOf)
+                .findFirst()
+                .orElse(null);
+        if (side == null) {
+            TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
+            if (twt == null) {
+                throw new PowsyblException("2 windings transformer '" + id + "' does not exist.");
+            }
+            return new TapChangerRow2(twt);
+        }
+        ThreeWindingsTransformer twt = network.getThreeWindingsTransformer(id);
+        if (twt == null) {
+            throw new PowsyblException("3 windings transformer '" + id + "' does not exist.");
+        }
+        return new TapChangerRow3(twt, side);
+    }
+
     private static NetworkDataframeMapper rtcs() {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                        .filter(t -> t.getRatioTapChanger() != null), NetworkDataframes::getT2OrThrow)
-                .stringsIndex("id", TwoWindingsTransformer::getId)
-                .ints("tap", t -> t.getRatioTapChanger().getTapPosition(), (t, p) -> t.getRatioTapChanger().setTapPosition(p))
-                .ints("low_tap", t -> t.getRatioTapChanger().getLowTapPosition())
-                .ints("high_tap", t -> t.getRatioTapChanger().getHighTapPosition())
-                .ints("step_count", t -> t.getRatioTapChanger().getStepCount())
-                .booleans("on_load", t -> t.getRatioTapChanger().hasLoadTapChangingCapabilities(), (t, v) -> t.getRatioTapChanger().setLoadTapChangingCapabilities(v))
-                .booleans("regulating", t -> t.getRatioTapChanger().isRegulating(), (t, v) -> t.getRatioTapChanger().setRegulating(v))
-                .doubles("target_v", (t, context) -> perUnitTargetV(context, t.getRatioTapChanger().getTargetV(), t.getRatioTapChanger().getRegulationTerminal(), t.getTerminal2()),
-                    (t, v, context) -> t.getRatioTapChanger().setTargetV(unPerUnitTargetV(context, v, t.getRatioTapChanger().getRegulationTerminal(), t.getTerminal2())))
-                .doubles("target_deadband", (t, context) -> t.getRatioTapChanger().getTargetDeadband(),
-                    (t, v, context) -> t.getRatioTapChanger().setTargetDeadband(v))
-                .strings("regulating_bus_id", t -> getBusId(t.getRatioTapChanger().getRegulationTerminal()))
-                .doubles("rho", (twt, context) -> perUnitRho(context, twt, NetworkDataframes.computeRho(twt)))
-                .doubles("alpha", ifExistsDoublePerUnitAngle(TwoWindingsTransformer::getPhaseTapChanger, pc -> pc.getCurrentStep().getAlpha()))
-                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
-                .strings("regulated_side", NetworkDataframes::getRatioTapChangerRegulatedSide, NetworkDataframes::setRatioTapChangerRegulatedSide, false)
+        return NetworkDataframeMapperBuilder.ofStream(network -> NetworkDataframes.getTapChangerRows(network, TapChangerType.RATIO), NetworkDataframes::getTapChangerRow)
+                .stringsIndex("id", TapChangerRow::getId)
+                .strings("side", TapChangerRow::getSide)
+                .ints("tap", row -> row.getRtc().getTapPosition(), (row, p) -> row.getRtc().setTapPosition(p))
+                .ints("low_tap", row -> row.getRtc().getLowTapPosition())
+                .ints("high_tap", row -> row.getRtc().getHighTapPosition())
+                .ints("step_count", row -> row.getRtc().getStepCount())
+                .booleans("on_load", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
+                .booleans("regulating", row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
+                .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
+                        (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
+                .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
+                    (row, v, context) -> row.getRtc().setTargetDeadband(v))
+                .strings("regulating_bus_id", row -> getBusId(row.getRtc().getRegulationTerminal()))
+                .strings("regulated_side", TapChangerRow::getRtcRegulatedSide, TapChangerRow::setRtcRegulatedSide, false)
                 .build();
     }
 
-    private static String getRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
-        return getTerminalSideStr(transformer, transformer.getRatioTapChanger().getRegulationTerminal());
+    private static void setTransformerTargetV(RatioTapChanger rtc, double targetV, NetworkDataframeContext context) {
+        if (context.isPerUnit()) {
+            if (rtc.getRegulationTerminal() != null) {
+                rtc.setTargetV(unPerUnitV(context, targetV, rtc.getRegulationTerminal()));
+            }
+            // we are not able to per unit the target voltage as we don't know where is the regulated point and
+            // so on it nominal voltage
+        } else {
+            rtc.setTargetV(targetV);
+        }
     }
 
-    private static void setRatioTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side) {
-        transformer.getRatioTapChanger().setRegulationTerminal(getBranchTerminal(transformer, side));
+    private static double getTransformerTargetV(RatioTapChanger rtc, NetworkDataframeContext context) {
+        if (context.isPerUnit()) {
+            if (rtc.getRegulationTerminal() != null) {
+                return perUnitV(context, rtc.getTargetV(), rtc.getRegulationTerminal());
+            }
+            // we are not able to per unit the target voltage as we don't know where is the regulated point and
+            // so on it nominal voltage
+            return Double.NaN;
+        } else {
+            return rtc.getTargetV();
+        }
+    }
+
+    private static <T extends TapChanger<?, ?, ?, ?>> String getTapChangerRegulatedSide(TwoWindingsTransformer transformer, Function<TwoWindingsTransformer, T> tapChangerGetter) {
+        return getTerminalSideStr(transformer, tapChangerGetter.apply(transformer).getRegulationTerminal());
+    }
+
+    private static <T extends TapChanger<?, ?, ?, ?>> void setTapChangerRegulatedSide(TwoWindingsTransformer transformer, String side, Function<TwoWindingsTransformer, T> tapChangerGetter) {
+        tapChangerGetter.apply(transformer).setRegulationTerminal(getBranchTerminal(transformer, side));
+    }
+
+    private static <T extends TapChanger<?, ?, ?, ?>> String getTapChangerRegulatedSide(ThreeWindingsTransformer transformer, ThreeSides side, Function<ThreeWindingsTransformer.Leg, T> tapChangerGetter) {
+        var rtc = tapChangerGetter.apply(transformer.getLeg(side));
+        return getTerminalSideStr(transformer, rtc.getRegulationTerminal());
+    }
+
+    private static <T extends TapChanger<?, ?, ?, ?>> void setTapChangerRegulatedSide(ThreeWindingsTransformer transformer, ThreeSides side, String regulatedSide, Function<ThreeWindingsTransformer.Leg, T> tapChangerGetter) {
+        var rtc = tapChangerGetter.apply(transformer.getLeg(side));
+        if (regulatedSide.isEmpty()) {
+            rtc.setRegulationTerminal(null);
+        }
+        rtc.setRegulationTerminal(transformer.getTerminal(ThreeSides.valueOf(regulatedSide)));
     }
 
     private static double computeRho(TwoWindingsTransformer twoWindingsTransformer) {
@@ -1003,28 +1320,30 @@ public final class NetworkDataframes {
                 * (twoWindingsTransformer.getPhaseTapChanger() != null ? twoWindingsTransformer.getPhaseTapChanger().getCurrentStep().getRho() : 1);
     }
 
-    private static NetworkDataframeMapper ptcs() {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getTwoWindingsTransformerStream()
-                        .filter(t -> t.getPhaseTapChanger() != null), NetworkDataframes::getT2OrThrow)
-                .stringsIndex("id", TwoWindingsTransformer::getId)
-                .ints("tap", t -> t.getPhaseTapChanger().getTapPosition(), (t, v) -> t.getPhaseTapChanger().setTapPosition(v))
-                .ints("low_tap", t -> t.getPhaseTapChanger().getLowTapPosition())
-                .ints("high_tap", t -> t.getPhaseTapChanger().getHighTapPosition())
-                .ints("step_count", t -> t.getPhaseTapChanger().getStepCount())
-                .booleans("regulating", t -> t.getPhaseTapChanger().isRegulating(), (t, v) -> t.getPhaseTapChanger().setRegulating(v))
-                .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPhaseTapChanger().getRegulationMode(), (t, v) -> t.getPhaseTapChanger().setRegulationMode(v))
-                .doubles("regulation_value", (t, context) -> t.getPhaseTapChanger().getRegulationValue(),
-                    (t, v, context) -> t.getPhaseTapChanger().setRegulationValue(v))
-                .doubles("target_deadband", (t, context) -> t.getPhaseTapChanger().getTargetDeadband(),
-                    (t, v, context) -> t.getPhaseTapChanger().setTargetDeadband(v))
-                .strings("regulating_bus_id", t -> getBusId(t.getPhaseTapChanger().getRegulationTerminal()))
-                .strings("regulated_side", NetworkDataframes::getPhaseTapChangerRegulatedSide, NetworkDataframes::setPhaseTapChangerRegulatedSide, false)
-                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
-                .build();
+    private static double computeRho(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return twt.getRatedU0() / leg.getRatedU()
+                * (leg.getRatioTapChanger() != null ? leg.getRatioTapChanger().getCurrentStep().getRho() : 1)
+                * (leg.getPhaseTapChanger() != null ? leg.getPhaseTapChanger().getCurrentStep().getRho() : 1);
     }
 
-    static String getPhaseTapChangerRegulatedSide(TwoWindingsTransformer transformer) {
-        return getTerminalSideStr(transformer, transformer.getPhaseTapChanger().getRegulationTerminal());
+    private static NetworkDataframeMapper ptcs() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> NetworkDataframes.getTapChangerRows(network, TapChangerType.PHASE), NetworkDataframes::getTapChangerRow)
+                .stringsIndex("id", TapChangerRow::getId)
+                .strings("side", TapChangerRow::getSide)
+                .ints("tap", t -> t.getPtc().getTapPosition(), (t, v) -> t.getPtc().setTapPosition(v))
+                .ints("low_tap", t -> t.getPtc().getLowTapPosition())
+                .ints("high_tap", t -> t.getPtc().getHighTapPosition())
+                .ints("step_count", t -> t.getPtc().getStepCount())
+                .booleans("regulating", t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
+                .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
+                .doubles("regulation_value", (t, context) -> t.getPtc().getRegulationValue(),
+                    (t, v, context) -> t.getPtc().setRegulationValue(v))
+                .doubles("target_deadband", (t, context) -> t.getPtc().getTargetDeadband(),
+                    (t, v, context) -> t.getPtc().setTargetDeadband(v))
+                .strings("regulating_bus_id", t -> getBusId(t.getPtc().getRegulationTerminal()))
+                .strings("regulated_side", TapChangerRow::getPtcRegulatedSide, TapChangerRow::setPtcRegulatedSide, false)
+                .build();
     }
 
     static NetworkDataframeMapper identifiables() {
