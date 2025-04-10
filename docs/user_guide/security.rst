@@ -111,7 +111,7 @@ The following example defines a switch closing action with id 'SwitchAction' on 
     >>> sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
 
 
-The following example defines two different kinds of actions, which can be set with the `add_dangling_line_reactive_power_action` method,
+The next example defines two different kinds of actions, which can be set with the `add_dangling_line_reactive_power_action` method,
 and the `add_dangling_line_reactive_power_action`.
 
 .. doctest::
