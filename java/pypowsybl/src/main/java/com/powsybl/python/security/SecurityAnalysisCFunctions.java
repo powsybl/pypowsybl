@@ -511,6 +511,17 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addOperatorStrategyFromJsonFile")
+    public static void addOperatorStrategyFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addOperatorStrategyFromJsonFile(path);
+        });
+    }
+
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,
                                             CCharPointerPointer subjectIds, int subjectIdsCount,
                                             CIntPointer violationTypes, int violationTypesCount) {
