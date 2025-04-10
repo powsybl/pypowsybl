@@ -186,17 +186,13 @@ The following example is a valid JSON file input for this method :
       "actions" : [ {
         "type" : "SWITCH",
         "id" : "id1",
-        "switchId" : "switchId1",
+        "switchId" : "S1VL2_LCC1_BREAKER",
         "open" : true
       }, {
-        "type" : "MULTIPLE_ACTIONS",
+        "type" : "SWITCH",
         "id" : "id2",
-        "actions" : [ {
-          "type" : "SWITCH",
-          "id" : "id3",
-          "switchId" : "switchId2",
-          "open" : true
-        } ]
+        "switchId" : "S1VL2_BBS2_COUPLER_DISCONNECTOR",
+        "open" : true
       }]
     }
 
@@ -211,24 +207,13 @@ The following example is a valid JSON file input for this method :
       "operatorStrategies" : [ {
         "id" : "id1",
         "contingencyContextType" : "SPECIFIC",
-        "contingencyId" : "contingencyId1",
+        "contingencyId" : "contingency",
         "conditionalActions" : [ {
           "id" : "stage1",
           "condition" : {
             "type" : "TRUE_CONDITION"
           },
-          "actionIds" : [ "actionId1", "actionId2", "actionId3" ]
+          "actionIds" : [ "id1", "id2" ]
         } ]
-      }, {
-        "id" : "id2",
-        "contingencyContextType" : "SPECIFIC",
-        "contingencyId" : "contingencyId2",
-        "conditionalActions" : [ {
-          "id" : "stage1",
-          "condition" : {
-            "type" : "ANY_VIOLATION_CONDITION"
-          },
-          "actionIds" : [ "actionId4" ]
-        } ]
-      } ]
+      }]
     }
