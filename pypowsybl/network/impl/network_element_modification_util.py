@@ -1035,7 +1035,8 @@ def replace_3_windings_transformers_with_3_2_windings_transformers(network: Netw
     if isinstance(transformer_ids, str):
         transformer_ids = [transformer_ids]
 
-    _pp.split_or_merge_transformers(network._handle, transformer_ids, False, report_node._report_node) # pylint: disable=protected-access
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, False,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
 def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
                                                                    report_node: ReportNode = None) -> None:
@@ -1053,5 +1054,6 @@ def replace_3_2_windings_transformers_with_3_windings_transformers(network: Netw
     if isinstance(transformer_ids, str):
         transformer_ids = [transformer_ids]
 
-    _pp.split_or_merge_transformers(network._handle, transformer_ids, True, report_node._report_node) # pylint: disable=protected-access
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, True,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
