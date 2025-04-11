@@ -1486,6 +1486,16 @@ def test_split_or_merge_transformers():
     n = pp.network.create_micro_grid_be_network()
     assert len(n.get_3_windings_transformers()) == 1
     assert len(n.get_2_windings_transformers()) == 3
+
+    #Modify only specified
+    pp.network.replace_3_windings_transformers_with_3_2_windings_transformers(n, "84ed55f4-61f5-4d9d-8755-bba7b877a246")
+    assert len(n.get_3_windings_transformers()) == 0
+    assert len(n.get_2_windings_transformers()) == 6
+    pp.network.replace_3_2_windings_transformers_with_3_windings_transformers(n, "84ed55f4-61f5-4d9d-8755-bba7b877a246-Leg1")
+    assert len(n.get_3_windings_transformers()) == 1
+    assert len(n.get_2_windings_transformers()) == 3
+
+    #Modify all
     pp.network.replace_3_windings_transformers_with_3_2_windings_transformers(n)
     assert len(n.get_3_windings_transformers()) == 0
     assert len(n.get_2_windings_transformers()) == 6
