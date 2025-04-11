@@ -12,7 +12,6 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.modification.AbstractNetworkModification;
 import com.powsybl.iidm.modification.Replace3TwoWindingsTransformersByThreeWindingsTransformers;
 import com.powsybl.iidm.modification.ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
