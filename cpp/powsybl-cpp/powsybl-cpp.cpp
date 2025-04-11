@@ -1436,6 +1436,11 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
     pypowsybl::PowsyblCaller::get()->callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
+void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode) {
+    ToCharPtrPtr transformerIdsPtr(transformerIds);
+    pypowsybl::PowsyblCaller::get()->callJava(::splitOrMergeTransformers, network, transformerIdsPtr.get(), transformerIds.size(), merge, (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
 
 void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr) {
