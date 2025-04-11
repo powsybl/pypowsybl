@@ -842,6 +842,8 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
+void replace3WTWithThree2WT(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool reverse, JavaHandle* reportNode);
+
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
 std::vector<std::string> getShortCircuitAnalysisProviderNames();

@@ -1436,6 +1436,11 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
     pypowsybl::PowsyblCaller::get()->callJava(::createNetworkModification, network, dataframes, networkModificationType, throwException, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
+void replace3WTWithThree2WT(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool reverse, JavaHandle* reportNode) {
+    ToCharPtrPtr transformerIdsPtr(transformerIds);
+    pypowsybl::PowsyblCaller::get()->callJava(::replace3WTWithThree2WT, network, transformerIdsPtr.get(), transformerIds.size(), reverse, (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
 
 void deleteShortCircuitAnalysisParameters(shortcircuit_analysis_parameters* ptr) {
