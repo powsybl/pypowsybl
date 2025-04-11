@@ -75,7 +75,7 @@ from .impl.network_element_modification_util import (
     create_line_bays,
     create_2_windings_transformer_bays,
     remove_feeder_bays,
-    replace_3_windings_transformers_with_3_2_windings_transformers,
+    split_or_merge_transformers,
     replace_3_2_windings_transformers_with_3_windings_transformers
 )
 from .impl.perunit import (PerUnitView, per_unit_view)

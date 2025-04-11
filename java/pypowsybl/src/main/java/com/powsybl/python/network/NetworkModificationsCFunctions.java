@@ -12,6 +12,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.iidm.modification.AbstractNetworkModification;
 import com.powsybl.iidm.modification.Replace3TwoWindingsTransformersByThreeWindingsTransformers;
 import com.powsybl.iidm.modification.ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
@@ -150,16 +151,16 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    @CEntryPoint(name = "replace3WTWithThree2WT")
-    public static void replace3WTWithThree2WT(IsolateThread thread, ObjectHandle networkHandle,
+    @CEntryPoint(name = "splitOrMergeTransformers")
+    public static void splitOrMergeTransformers(IsolateThread thread, ObjectHandle networkHandle,
                                                CCharPointerPointer transformerIdsPtrPtr,
-                                               int transformerIdsCount, boolean reverse, ObjectHandle reportNodeHandle,
+                                               int transformerIdsCount, boolean merge, ObjectHandle reportNodeHandle,
                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             List<String> transformerIds = toStringList(transformerIdsPtrPtr, transformerIdsCount);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            if (reverse) {
+            if (merge) {
                 Replace3TwoWindingsTransformersByThreeWindingsTransformers modification;
                 if (transformerIds.isEmpty()) {
                     modification = new Replace3TwoWindingsTransformersByThreeWindingsTransformers();
@@ -178,5 +179,4 @@ public final class NetworkModificationsCFunctions {
             }
         });
     }
-
 }

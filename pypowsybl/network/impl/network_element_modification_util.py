@@ -1019,8 +1019,8 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
                                      raise_exception,
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, List[str], None] = None,
-                                                                   report_node: ReportNode | None = None) -> None:
+def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
+                                                                   report_node: ReportNode = None) -> None:
     """
     Breaks the 3-windings transformers of a network into 3 2-windings transformers.
 
@@ -1035,10 +1035,10 @@ def replace_3_windings_transformers_with_3_2_windings_transformers(network: Netw
     if isinstance(transformer_ids, str):
         transformer_ids = [transformer_ids]
 
-    _pp.replace_3_windings_transformers_with_3_2_windings_transformers(network._handle, transformer_ids, False, report_node) # pylint: disable=protected-access
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, False, report_node) # pylint: disable=protected-access
 
-def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = [],
-                                                                       report_node: ReportNode | None = None) -> None:
+def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
+                                                                   report_node: ReportNode = None) -> None:
     """
     Creates 3 windings transformers on a network by merging 3 2-windings transformers that respect certain criteria.
 
@@ -1053,5 +1053,5 @@ def replace_3_2_windings_transformers_with_3_windings_transformers(network: Netw
     if isinstance(transformer_ids, str):
         transformer_ids = [transformer_ids]
 
-    _pp.replace_3_windings_transformers_with_3_2_windings_transformers(network._handle, transformer_ids, True, report_node) # pylint: disable=protected-access
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, True, report_node) # pylint: disable=protected-access
 
