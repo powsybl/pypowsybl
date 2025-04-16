@@ -14,9 +14,14 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
+import com.powsybl.security.converter.JsonSecurityAnalysisResultExporter;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.strategy.OperatorStrategy;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,5 +60,11 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     void addMonitor(StateMonitor monitor) {
         monitors.add(monitor);
+    }
+
+    void exportToJson(Path path, SecurityAnalysisResult result) throws IOException {
+        Writer writer = Files.newBufferedWriter(path.resolve("json_security_analysis_result.json"));
+        JsonSecurityAnalysisResultExporter exporter = new JsonSecurityAnalysisResultExporter();
+        exporter.export(result, writer);
     }
 }

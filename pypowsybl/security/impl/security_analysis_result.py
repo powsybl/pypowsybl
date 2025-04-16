@@ -17,7 +17,7 @@ class SecurityAnalysisResult:
     The result of a security analysis.
     """
 
-    def __init__(self, handle: _pypowsybl.JavaHandle):
+    def w__init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
         self._pre_contingency_result = _pypowsybl.get_pre_contingency_result(self._handle)
         post_contingency_results = _pypowsybl.get_post_contingency_results(self._handle)
@@ -102,6 +102,15 @@ class SecurityAnalysisResult:
             print_limit_violation(operator_strategy_result.limit_violations)
         return table
 
+    def export_to_json(self, path: str) -> None:
+        """
+        Add the security analysis' output to the specified path in a JSON file.
+
+        Args :
+            path : the path where we ant the JSON file to be written after the security analysis.
+        """
+        _pypowsybl.export_to_json(self._handle, path)
+
     @property
     def limit_violations(self) -> pd.DataFrame:
         """
@@ -129,3 +138,4 @@ class SecurityAnalysisResult:
         Results (P, Q, I) for monitored three winding transformers.
         """
         return create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))
+

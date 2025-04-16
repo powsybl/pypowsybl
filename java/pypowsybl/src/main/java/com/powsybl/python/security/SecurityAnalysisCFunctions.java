@@ -38,6 +38,7 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -244,6 +245,22 @@ public final class SecurityAnalysisCFunctions {
             ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
             return ObjectHandles.getGlobal().create(result);
+        });
+    }
+
+    @CEntryPoint(name = "exportToJson")
+    public static void exportToJson(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, CCharPointer jsonFilePath,
+                                    ObjectHandle securityAnalysisContextHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            try {
+                analysisContext.exportToJson(path, result);
+            } catch (IOException e) {
+                throw new PowsyblException(e);
+            }
         });
     }
 
