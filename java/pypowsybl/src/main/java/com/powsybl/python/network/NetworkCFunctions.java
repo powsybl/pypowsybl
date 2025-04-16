@@ -70,6 +70,7 @@ import org.graalvm.word.WordFactory;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -161,6 +162,20 @@ public final class NetworkCFunctions {
         var importConfig = ImportConfig.load();
         importConfig.addPostProcessors(toStringList(postProcessorsPtrPtr, postProcessorsCount));
         return importConfig;
+    }
+
+    @CEntryPoint(name = "isNetworkLoadable")
+    public static boolean isNetworkLoadable(IsolateThread thread, CCharPointer file, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String fileStr = CTypeUtil.toString(file);
+            ReadOnlyDataSource dataSource = DataSource.fromPath(Path.of(fileStr));
+            for (Importer importer : Importer.list()) {
+                if (importer.exists(dataSource)) {
+                    return true;
+                }
+            }
+            return false;
+        });
     }
 
     @CEntryPoint(name = "loadNetwork")

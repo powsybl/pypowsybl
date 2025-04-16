@@ -536,6 +536,10 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) 
     });
 }
 
+bool isNetworkLoadable(const std::string& file) {
+    return PowsyblCaller::get()->callJava<bool>(::isNetworkLoadable, (char*) file.data());
+}
+
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;

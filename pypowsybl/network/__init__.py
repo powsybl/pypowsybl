@@ -35,6 +35,7 @@ from .impl.network_creation_util import (
     create_micro_grid_be_network,
     create_micro_grid_nl_network,
     create_metrix_tutorial_six_buses_network,
+    is_loadable,
     load,
     load_from_string,
     load_from_binary_buffer,
