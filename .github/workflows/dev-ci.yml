@@ -1,7 +1,11 @@
 name: Dev CI
 
 on:
-  pull_request:
+  push:
+    branches:
+      # on all branches except main where full build will be run
+      - '*'
+      - '!main'
 
 jobs:
   manylinux_build:
