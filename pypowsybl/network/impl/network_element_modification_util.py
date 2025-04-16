@@ -1018,3 +1018,42 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
     _pp.remove_elements_modification(network._handle, connectable_ids, None, _pp.RemoveModificationType.REMOVE_FEEDER,
                                      raise_exception,
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
+
+def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
+                                                                   report_node: ReportNode = None) -> None:
+    """
+    Breaks the 3-windings transformers of a network into 3 2-windings transformers.
+
+    Args:
+        network: The network in which to transform the 3-windings transformers
+        transformer_ids (optional): an id or list of ids of 3-windings transformers to replace.
+                                    If not provided, all 3-windings transformers are replaced.
+        report_node (optional): the reporter to be used to create an execution report, default is None (no report).
+    """
+    if transformer_ids is None:
+        transformer_ids = []
+    if isinstance(transformer_ids, str):
+        transformer_ids = [transformer_ids]
+
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, False,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
+
+def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
+                                                                   report_node: ReportNode = None) -> None:
+    """
+    Creates 3 windings transformers on a network by merging 3 2-windings transformers that respect certain criteria.
+
+    Args:
+        network: The network in which to merge the 2-windings transformers
+        transformer_ids (optional): an id or list of ids of 2-windings transformers to replace.
+                                    If not provided, the whole network is scanned to find the split 3-windings transformers to merge
+        report_node (optional): the reporter to be used to create an execution report, default is None (no report).
+    """
+    if transformer_ids is None:
+        transformer_ids = []
+    if isinstance(transformer_ids, str):
+        transformer_ids = [transformer_ids]
+
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, True,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
+
