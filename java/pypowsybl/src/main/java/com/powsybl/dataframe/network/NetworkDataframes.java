@@ -156,7 +156,7 @@ public final class NetworkDataframes {
 
     private static MinMaxReactiveLimits getMinMaxReactiveLimits(ReactiveLimitsHolder holder) {
         ReactiveLimits reactiveLimits = holder.getReactiveLimits();
-        return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
+        return reactiveLimits instanceof MinMaxReactiveLimits minMaxReactiveLimits ? minMaxReactiveLimits : null;
     }
 
     static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
@@ -377,6 +377,10 @@ public final class NetworkDataframes {
                     setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ),
                     setPerUnitMaxQ())
+                .doubles("min_q_at_target_p", getPerUnitMinQ(Battery::getTargetP), false)
+                .doubles("max_q_at_target_p", getPerUnitMaxQ(Battery::getTargetP), false)
+                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
+                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_p", (b, context) -> perUnitPQ(context, b.getTargetP()), (b, targetP, context) -> b.setTargetP(unPerUnitPQ(context, targetP)))
                 .doubles("target_q", (b, context) -> perUnitPQ(context, b.getTargetQ()), (b, targetQ, context) -> b.setTargetQ(unPerUnitPQ(context, targetQ)))
@@ -741,6 +745,8 @@ public final class NetworkDataframes {
                 .doubles("loss_factor", (vsc, context) -> vsc.getLossFactor(), (vscConverterStation, lf, context) -> vscConverterStation.setLossFactor((float) lf))
                 .doubles("min_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setPerUnitMaxQ())
+                .doubles("min_q_at_target_p", getPerUnitMinQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
+                .doubles("max_q_at_target_p", getPerUnitMaxQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
                 .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
                 .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
