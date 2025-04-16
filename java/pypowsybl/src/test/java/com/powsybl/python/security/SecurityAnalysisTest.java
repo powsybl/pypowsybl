@@ -22,7 +22,6 @@ import com.powsybl.security.results.BranchResult;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.assertj.core.data.Offset;
-
 import java.util.Collections;
 import java.util.List;
 
