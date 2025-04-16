@@ -123,10 +123,23 @@ The following example defines a switch closing action with id 'SwitchAction' on 
     >>> sa = pp.security.create_analysis()
     >>> sa.add_switch_action(action_id='SwitchAction', switch_id='S4VL1_BBS_LD6_DISCONNECTOR', open=False)
 
+
+The next example defines two different kinds of actions, which can be set with the `add_dangling_line_reactive_power_action` method,
+and the `add_dangling_line_reactive_power_action`.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> n = pp.network.create_eurostag_tutorial_example1_with_tie_lines_and_areas()
+    >>> sa = pp.security.create_analysis()
+    >>> sa.add_dangling_line_active_power_action('id', 'NHV1_XNODE1', False, 5.0 )
+    >>> sa.add_dangling_line_reactive_power_action('id', 'NHV1_XNODE1', True, 2.0 )
+
+
 To enable the application of the action you need to define an operator strategy and add the action to it.
 An operator strategy is a set of actions to be applied after the simulation of a contingency.
 It is defined with an unique id, a reference to the id of the contingency, a list action ids and a condition.
-The following operator strategy define the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied):
+The following operator strategy defines the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied):
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
