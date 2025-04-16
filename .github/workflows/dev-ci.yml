@@ -212,7 +212,6 @@ jobs:
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
           path: dist/*.whl
-        run: make html doctest SPHINXOPTS="-W"
 
       - name: Test standalone cpp build
         shell: bash
