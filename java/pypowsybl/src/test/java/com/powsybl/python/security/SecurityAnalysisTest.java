@@ -20,8 +20,8 @@ import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.data.Offset;
 import org.junit.jupiter.api.Test;
+import org.assertj.core.data.Offset;
 
 import java.nio.file.FileSystem;
 import java.util.Collections;
