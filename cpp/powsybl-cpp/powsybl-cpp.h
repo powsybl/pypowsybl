@@ -596,7 +596,7 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 
 void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
-void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath);
+void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath, const JavaHandle& securityAnalysisContext);
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
 
