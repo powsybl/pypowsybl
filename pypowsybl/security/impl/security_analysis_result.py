@@ -14,7 +14,7 @@ from pypowsybl.utils import create_data_frame_from_series_array
 
 class SecurityAnalysisResult:
     """
-    The result of a sensitivity analysis.
+    The result of a security analysis.
     """
 
     def __init__(self, handle: _pypowsybl.JavaHandle):

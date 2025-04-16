@@ -10,6 +10,11 @@ import pypowsybl as pp
 import pandas as pd
 import pypowsybl.report as rp
 from pypowsybl._pypowsybl import ConditionType
+import re
+import pathlib
+
+TEST_DIR = pathlib.Path(__file__).parent
+DATA_DIR = TEST_DIR.parent.joinpath('data')
 
 
 @pytest.fixture(autouse=True)
@@ -78,13 +83,13 @@ def test_variant():
 
 
 def test_monitored_elements():
-    n = pp.network.create_eurostag_tutorial_example1_network()
+    n = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'NHV1_NHV2_1')
-    sa.add_single_element_contingency('NGEN_NHV1', 'NGEN_NHV1')
+    sa.add_single_element_contingency('GEN', 'GEN')
     sa.add_monitored_elements(voltage_level_ids=['VLHV2'])
-    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
-    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
+    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'GEN'])
+    sa.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='GEN')
     sa.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
 
     sa_result = sa.run_ac(n)
@@ -93,17 +98,15 @@ def test_monitored_elements():
 
     assert bus_results.index.to_frame().columns.tolist() == ['contingency_id', 'operator_strategy_id', 'voltage_level_id', 'bus_id']
     assert bus_results.columns.tolist() == ['v_mag', 'v_angle']
-    assert len(bus_results) == 3
+    assert len(bus_results) == 1
     assert bus_results.loc['', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(389.95, abs=1e-2)
-    assert bus_results.loc['NGEN_NHV1', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(569.038987, abs=1e-2)
-    assert bus_results.loc['NHV1_NHV2_1', '', 'VLHV2', 'NHV2']['v_mag'] == pytest.approx(366.58, abs=1e-2)
 
     assert branch_results.index.to_frame().columns.tolist() == ['contingency_id', 'operator_strategy_id', 'branch_id']
     assert branch_results.columns.tolist() == ['p1', 'q1', 'i1', 'p2', 'q2', 'i2', 'flow_transfer']
     assert len(branch_results) == 4
     assert branch_results.loc['', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', '', 'NHV1_NHV2_1']['p1'] == pytest.approx(301.05, abs=1e-2)
-    assert branch_results.loc['NGEN_NHV1', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(301.05, abs=1e-2)
+    assert branch_results.loc['GEN', '', 'NHV1_NHV2_1']['p1'] == pytest.approx(302.44, abs=1e-2)
+    assert branch_results.loc['GEN', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(302.44, abs=1e-2)
     assert branch_results.loc['NHV1_NHV2_1', '', 'NHV1_NHV2_2']['p1'] == pytest.approx(610.56, abs=1e-2)
 
 
@@ -153,28 +156,39 @@ def test_provider_parameters():
 
 
 def test_ac_security_analysis_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
-    sa_result = sa.run_ac(n, reporter=reporter)
-    report2 = str(reporter)
+    sa.run_ac(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
+def test_ac_security_analysis_with_deprecated_report():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
+        report_node = rp.Reporter()
+        report1 = str(report_node)
+        assert len(report1) > 0
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sa = pp.security.create_analysis()
+        sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+        sa.run_ac(n, reporter=report_node)
+        report2 = str(report_node)
+        assert len(report2) >= len(report1)
 
 def test_dc_analysis_with_report():
-    reporter = rp.Reporter()
-    report1 = str(reporter)
+    report_node = rp.ReportNode()
+    report1 = str(report_node)
     assert len(report1) > 0
     n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     n.update_loads(id='LOAD', p0=900)
     n.update_generators(id='GEN', target_p=900)
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
-    sa_result = sa.run_dc(n, reporter=reporter)
-    report2 = str(reporter)
+    sa_result = sa.run_dc(n, report_node=report_node)
+    report2 = str(report_node)
     assert len(report2) >= len(report1)
 
 
@@ -193,10 +207,8 @@ def test_loadflow_parameters():
 
 def test_security_analysis_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
-         'type': 'CURRENT', 'value': 400,
-         'acceptable_duration': np.Inf, 'is_fictitious': False}]))
+    network.create_operational_limits(element_id='NHV1_NHV2_1', name='permanent_limit', side='ONE', type='CURRENT', value=400.0,
+         acceptable_duration=-1, fictitious=False)
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('', 'First contingency')
     sa.add_single_element_contingency('NHV1_NHV2_2', 'First contingency')
@@ -233,8 +245,8 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
 
@@ -353,9 +365,67 @@ def test_switch_action():
     assert df.loc['Breaker contingency', '', 'LINE_S3S4']['p1'] == pytest.approx(0.0, abs=1e-2)
     assert df.loc['Breaker contingency', 'OperatorStrategy1', 'LINE_S3S4']['p1'] == pytest.approx(2.400036e+02, abs=1e-2)
 
+
+def test_tap_changer_action():
+    n = pp.network.create_micro_grid_be_network()
+
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
+
+    sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
+
+    sa.add_phase_tap_changer_position_action(action_id='PhaseTapChanger_Action', transformer_id='a708c3bc-465d-4fe7-b6ef-6fa6408a62b0', is_relative=True, tap_position=5)
+    sa.add_ratio_tap_changer_position_action(action_id='RatioTapChanger_Action', transformer_id='e482b89a-fa84-4ea9-8e70-a83d44790957', is_relative=True, tap_position=5)
+
+    sa.add_operator_strategy('Strategy_PhaseTapChanger', 'BE-G2_contingency', ['PhaseTapChanger_Action'])
+    sa.add_operator_strategy('Strategy_RatioTapChanger', 'BE-G2_contingency', ['RatioTapChanger_Action'])
+
+    sa_result = sa.run_ac(n)
+    df = sa_result.branch_results
+
+    assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
+    assert df.loc['BE-G2_contingency', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.305, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_PhaseTapChanger', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.312, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_RatioTapChanger', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.306, abs=1e-2)
+
+def test_shunt_action():
+    n = pp.network.create_micro_grid_be_network()
+
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
+    sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
+
+    sa.add_shunt_compensator_position_action(action_id='ShuntCompensator_Action', shunt_id='d771118f-36e9-4115-a128-cc3d9ce3e3da', section=1)
+    sa.add_operator_strategy('Strategy_ShuntCompensator', 'BE-G2_contingency', ['ShuntCompensator_Action'])
+    sa_result = sa.run_ac(n)
+    df = sa_result.branch_results
+
+    assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
+    assert df.loc['BE-G2_contingency', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.305, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_ShuntCompensator', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.312, abs=1e-2)
+    assert df.loc['BE-G2_contingency', 'Strategy_ShuntCompensator', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.306, abs=1e-2)
+
 def test_tie_line_contingency():
     n = pp.network._create_network("eurostag_tutorial_example1_with_tie_line")
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'tie line contingency')
     sa_result = sa.run_ac(n)
     assert 'tie line contingency' in sa_result.post_contingency_results.keys()
+
+def test_add_contingencies_from_json_file():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_contingencies_from_json_file(str(DATA_DIR.joinpath('contingencies.json')))
+    sa_result = sa.run_ac(n)
+    assert 'contingency' in sa_result.post_contingency_results.keys()
+    assert 'contingency2' in sa_result.post_contingency_results.keys()
+
+def test_terminal_connection_action():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'Line contingency')
+    sa.add_terminals_connection_action(action_id="Disconnection", element_id='NHV1_NHV2_2', opening=True)
+    sa.add_operator_strategy('OperatorStrategy1', 'Line contingency', ['Disconnection'])
+    sa_result = sa.run_ac(n)
+    assert 'Line contingency' in sa_result.post_contingency_results.keys()
+    assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()

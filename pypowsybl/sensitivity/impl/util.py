@@ -32,9 +32,6 @@ def create_country_zone(network: Network, country: str,
                         key_type: ZoneKeyType = ZoneKeyType.GENERATOR_TARGET_P) -> Zone:
     substations = network.get_substations()
     voltage_levels = network.get_voltage_levels()
-    print(key_type.__class__)
-    print(ZoneKeyType.GENERATOR_MAX_P.__class__)
-    print(key_type == ZoneKeyType.GENERATOR_TARGET_P)
     if key_type in (ZoneKeyType.GENERATOR_MAX_P, ZoneKeyType.GENERATOR_TARGET_P):
         # join generators, voltage levels and substations to get generators with countries
         generators = network.get_generators()
@@ -65,9 +62,9 @@ def create_country_zone(network: Network, country: str,
 def create_zone_from_injections_and_shift_keys(id: str, injection_index: List[str], shift_keys: List[float]) -> Zone:
     """ Create country zone with custom generator name and shift keys
         Args:
-            country : Identifier of the zone
-            injection_index : IDs of the injection
-            shift_keys : shift keys for the generators
+            country: Identifier of the zone
+            injection_index: IDs of the injection
+            shift_keys: shift keys for the generators
         Returns:
             The zone object
     """
@@ -78,8 +75,8 @@ def create_zone_from_injections_and_shift_keys(id: str, injection_index: List[st
 def create_zones_from_glsk_file(network: Network, glsk_file: str, instant: datetime) -> List[Zone]:
     """ Create country zones from glsk file for a given datetime
         Args:
-            glsk_file : UCTE glsk file
-            instant : timepoint at which to select glsk data
+            glsk_file: UCTE glsk file
+            instant: timepoint at which to select glsk data
         Returns:
             A list of zones created from glsk file
     """

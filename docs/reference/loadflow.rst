@@ -66,7 +66,14 @@ The loadflow result is actually a list of results, one for each component of the
 
    loadflow/componentresult
 
-Some enum classes are used in results:
+Some classes and enum classes are used in results:
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+   :template: autosummary/class.rst
+
+    SlackBusResult
 
 .. autosummary::
    :toctree: api/

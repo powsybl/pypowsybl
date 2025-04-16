@@ -4,4 +4,5 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from .impl.report_node import ReportNode
 from .impl.reporter import Reporter

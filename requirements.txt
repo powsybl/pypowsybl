@@ -1,18 +1,26 @@
 # actual dependencies
-pandas==2.1.1; python_version == "3.12"
-pandas==2.0.3; python_version < "3.12"
-prettytable==2.0.0
+pandas==2.2.3; python_version >= "3.9"
+pandas==2.0.3; python_version <= "3.8"
+prettytable==3.11.0 # last version supporting python 3.8
 networkx
-matplotlib
+matplotlib==3.9.2; python_version >= "3.9"
+matplotlib==3.7.5; python_version <= "3.8"
+pybind11[global]==2.13.6
+
+# optional dependencies
+pandapower==2.14.11
+orderly-set==5.3.0 # TO REMOVE WHEN FIXED
 
 # documentation dependencies
-sphinx==5.0.2
-pydata-sphinx-theme==0.10.1
+sphinx==7.1.2
+furo==2024.1.29
 
 # CI dependencies
-wheel==0.38.1
+setuptools==75.3.0
+wheel==0.44.0
 coverage==7.3.2
-pytest>=6.2.5
+pytest>=8.3.3
 mypy==0.982
-pandas-stubs==1.2.0.47
-pylint==2.17.2
+pandas-stubs==2.2.2.240603; python_version >= "3.9"
+pandas-stubs==2.0.3.230814; python_version <= "3.8"
+pylint==3.2.0

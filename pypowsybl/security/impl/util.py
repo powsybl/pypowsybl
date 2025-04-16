@@ -12,37 +12,37 @@ from .security import SecurityAnalysis
 
 
 def create_analysis() -> SecurityAnalysis:
-    """ Creates a sensitivity analysis objet, which can be used to run a sensitivity analysis on a network
+    """ Creates a security analysis objet, which can be used to run a security analysis on a network
 
     Examples:
         .. code-block::
 
-            >>> analysis = pypowsybl.sensitivity.create_analysis()
+            >>> analysis = pypowsybl.security.create_analysis()
             >>> analysis.add_single_element_contingencies(['line 1', 'line 2'])
             >>> res = analysis.run_ac(network)
 
     Returns:
-        A sensitivity analysis object, which allows to run a sensitivity analysis on a network.
+        A security analysis object, which allows to run a security analysis on a network.
     """
     return SecurityAnalysis(_pypowsybl.create_security_analysis())
 
 
 def set_default_provider(provider: str) -> None:
     """
-    Set the default sensitivity analysis provider.
+    Set the default security analysis provider.
 
     Args:
-        provider: name of the default sensitivity analysis provider to set
+        provider: name of the default security analysis provider to set
     """
     _pypowsybl.set_default_security_analysis_provider(provider)
 
 
 def get_default_provider() -> str:
     """
-    Get the current default sensitivity analysis provider.
+    Get the current default security analysis provider.
 
     Returns:
-        the name of the current default sensitivity analysis provider
+        the name of the current default security analysis provider
     """
     return _pypowsybl.get_default_security_analysis_provider()
 
@@ -59,7 +59,7 @@ def get_provider_names() -> List[str]:
 
 def get_provider_parameters_names(provider: str = '') -> List[str]:
     """
-    Get list of parameters for the specified sensitivity analysis provider.
+    Get list of parameters for the specified security analysis provider.
 
     If not specified the provider will be the default one.
 

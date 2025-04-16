@@ -90,6 +90,7 @@ This will produce the following SVG image, which will just display if you run
 inside a notebook:
 
 .. image:: _static/images/getting-started-sld.svg
+   :class: forced-white-background
 
 
 Going further

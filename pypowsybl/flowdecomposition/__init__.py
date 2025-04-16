@@ -5,5 +5,5 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from .impl.flowdecomposition import (FlowDecomposition, ContingencyContextType)
-from .impl.parameters import (Parameters)
+from .impl.parameters import (Parameters, RescaleMode)
 from .impl.util import (create_decomposition)

@@ -3,15 +3,8 @@ The network model
 
 .. currentmodule:: pypowsybl.network
 
-.. testsetup:: *
-
-    import pandas as pd
-    pd.set_option('display.max_columns', None)
-    pd.set_option('display.expand_frame_repr', False)
-
-
 The :class:`Network` object is the main data structure of pypowsybl.
-It contains all the data of a power network : substations, generators, lines,
+It contains all the data of a power network: substations, generators, lines,
 transformers, ...
 
 pypowsybl provides methods to create networks, and to access and modify their data.
@@ -21,13 +14,13 @@ Create a network
 ----------------
 
 pypowsybl provides several factory methods to create well known network models.
-For example, you can create the IEEE 9-bus network case :
+For example, you can create the IEEE 9-bus network case:
 
 .. doctest::
 
     >>> network = pp.network.create_ieee9()
 
-Another common way of creating a network is to load it from a file :
+Another common way of creating a network is to load it from a file:
 
 .. code-block:: python
 
@@ -38,7 +31,10 @@ The supported formats are the following:
 .. doctest::
 
    >>> pp.network.get_import_formats()
-   ['CGMES', 'JIIDM', 'MATPOWER', 'IEEE-CDF', 'PSS/E', 'UCTE', 'XIIDM', 'POWER-FACTORY']
+   ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM']
+   >>> pp.network.get_import_supported_extensions()
+   ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml']
+
 
 .. Note::
 
@@ -59,6 +55,20 @@ Only zipped network loading are supported for now, but inside the zip file the s
             n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
 
 You may also create your own network from scratch, see below.
+
+We can also configure some post processors to be loaded after import.
+To see the list of available post processors:
+
+.. doctest::
+
+   >>> pp.network.get_import_post_processors()
+   ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines']
+
+Then a list of post processors can be pass to the load function:
+
+    .. code-block:: python
+
+       network = pp.network.load('mycgmes.zip', post_processors=['replaceTieLinesByLines'])
 
 
 Save a network
@@ -87,7 +97,7 @@ The supported formats are:
 .. doctest::
 
    >>> pp.network.get_export_formats()
-   ['AMPL', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
+   ['AMPL', 'BIIDM', 'CGMES', 'JIIDM', 'MATPOWER', 'PSS/E', 'UCTE', 'XIIDM']
 
 .. Note::
 
@@ -100,7 +110,9 @@ Reading network elements data
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
 
- - buses
+ - areas
+ - buses (from bus view)
+ - buses from bus/breaker view
  - lines
  - 2 windings transformers
  - 3 windings transformers
@@ -136,29 +148,29 @@ For example, you can retrieve generators data as follows:
     GEN2              OTHER     607.0 -9999.99  4999.0 -1.797693e+308  1.797693e+308      NaN              MIN_MAX      24.5     301.0                  True                 GEN2 NaN NaN NaN            VLGEN  VLGEN_0       True
 
 Most dataframes are indexed on the ID of the elements.
-However, some more complex dataframes have a multi-index : for example,
+However, some more complex dataframes have a multi-index: for example,
 ratio and phase tap changer steps are indexed on their transformer ID together with
 the step position:
 
 .. doctest::
 
     >>> network.get_ratio_tap_changer_steps() # doctest: +NORMALIZE_WHITESPACE
-                              rho    r    x    g    b
+                        side       rho    r    x    g    b
     id         position
-    NHV2_NLOAD 0         0.850567  0.0  0.0  0.0  0.0
-               1         1.000667  0.0  0.0  0.0  0.0
-               2         1.150767  0.0  0.0  0.0  0.0
+    NHV2_NLOAD 0              0.850567  0.0  0.0  0.0  0.0
+               1              1.000667  0.0  0.0  0.0  0.0
+               2              1.150767  0.0  0.0  0.0  0.0
 
 This allows to easily get steps related to just one transformer:
 
 .. doctest::
 
     >>> network.get_ratio_tap_changer_steps().loc['NHV2_NLOAD'] # doctest: +NORMALIZE_WHITESPACE
-                   rho    r    x    g    b
+             side       rho    r    x    g    b
     position
-    0         0.850567  0.0  0.0  0.0  0.0
-    1         1.000667  0.0  0.0  0.0  0.0
-    2         1.150767  0.0  0.0  0.0  0.0
+    0              0.850567  0.0  0.0  0.0  0.0
+    1              1.000667  0.0  0.0  0.0  0.0
+    2              1.150767  0.0  0.0  0.0  0.0
 
 For a detailed description of each dataframe, please refer
 to the reference API :doc:`documentation </reference/network>`.
@@ -209,7 +221,7 @@ Basic topology changes
 ----------------------
 
 Most elements dataframes contain information about "is this element connected?" and "where is it connected?".
-That information appears as the ``connected`` and ``bus_id`` columns :
+That information appears as the ``connected`` and ``bus_id`` columns:
 
 .. doctest::
 
@@ -262,7 +274,7 @@ of a generator to 700 MW:
 
    >>> network.set_working_variant('Variant')
    >>> network.update_generators(id='GEN', target_p=700)
-   >>> network.get_generators()['target_p']['GEN']
+   >>> network.get_generators()['target_p']['GEN'].item()
    700.0
 
 If you switch back to the initial variant, you will see that
@@ -271,7 +283,7 @@ its state has not changed, our generator still produces 607 MW:
 .. doctest::
 
    >>> network.set_working_variant('InitialState')
-   >>> network.get_generators()['target_p']['GEN']
+   >>> network.get_generators()['target_p']['GEN'].item()
    607.0
 
 Once you're done working with your variant, you can remove it:
@@ -320,7 +332,7 @@ Let's now create some buses inside those voltage levels:
    network.create_buses(id=['B1', 'B2'], voltage_level_id=['VL1', 'VL2'])
 
 
-Let's connect thoses buses with a line:
+Let's connect these buses with a line:
 
 .. testcode::
 
@@ -346,6 +358,44 @@ You can now run a loadflow to check our network actually works !
     >>> res = lf.run_ac(network)
     >>> str(res[0].status)
     'ComponentStatus.CONVERGED'
+
+Now let's see how to add a three-winding transformer to the network. First, let's add two voltage levels and their associated buses to the substation `S1`.
+
+.. testcode::
+
+    voltage_levels = pd.DataFrame.from_records(index='id', data=[
+        {'substation_id': 'S1', 'id': 'VL3', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 225},
+        {'substation_id': 'S1', 'id': 'VL4', 'topology_kind': 'BUS_BREAKER', 'nominal_v': 90},
+    ])
+    network.create_voltage_levels(voltage_levels)
+    network.create_buses(id=['B3', 'B4'], voltage_level_id=['VL3', 'VL4'])
+
+Now let's add a three-winding transformer between VL1, VL2 and VL3:
+
+.. testcode::
+
+    network.create_3_windings_transformers(id='T1', rated_u0 = 225, voltage_level1_id='VL1', bus1_id='B1',
+                                           voltage_level2_id='VL3', bus2_id='B3',
+                                           voltage_level3_id='VL4', bus3_id='B4',
+                                           b1=1e-6, g1=1e-6, r1=0.5, x1=10, rated_u1=400,
+                                           b2=1e-6, g2=1e-6, r2=0.5, x2=10, rated_u2=225,
+                                           b3=1e-6, g3=1e-6, r3=0.5, x3=10, rated_u3=90)
+
+You can add a ratio tap changer on the leg 1 of the three-winding transformer with:
+
+.. testcode::
+
+    rtc_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        data=[('T1', 2, 200, False, 0, 1, 'ONE')])
+    steps_df = pd.DataFrame.from_records(
+        index='id',
+        columns=['id', 'b', 'g', 'r', 'x', 'rho'],
+        data=[('T1', 2, 2, 1, 1, 0.5),
+              ('T1', 2, 2, 1, 1, 0.5),
+              ('T1', 2, 2, 1, 1, 0.8)])
+    network.create_ratio_tap_changers(rtc_df, steps_df)
 
 For more details and examples about network elements creations,
 please refer to the API reference :doc:`documentation </reference/network>`.
@@ -402,12 +452,14 @@ correctly. For more information about single line diagrams, check the :doc:`rela
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_only_bbs_without_extensions.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_only_bbs.svg
+   :class: forced-white-background
 
 As you can see on the diagram of *VL1*, the busbar sections are not positioned in any chosen way. It is possible to add position extensions on these busbar sections to precise relative positions. Use *busbarSectionPosition* extension for that purpose. If you want to put the three busbar sections of *VL1* on the same slice, then they need to have the same *section_index*. As they belong to three distinct busbars, their *busbar_index* are different:
 
@@ -425,6 +477,7 @@ You can draw the single line diagram of *VL1* again to check that the busbar sec
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_parallel_bbs.svg
+   :class: forced-white-background
 
 Now let's connect a load in a close to reality way. The first thing to do is to create switches. To connect a load on *VL1*, you need to add a disconnector
 on each busbar sections of a slice, two open and one closed, and a breaker between the disconnectors and the load.
@@ -472,12 +525,14 @@ Now you can draw the single line diagrams of *VL1* and *VL2* to check that the l
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_before_adding_extensions.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_before_adding_extensions.svg
+   :class: forced-white-background
 
 Here, similarly to busbar sections, the load and the line are randomly localized on the diagram.
 You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be 
@@ -500,18 +555,20 @@ correctly positioned.
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_extensions.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_after_adding_extensions.svg
+   :class: forced-white-background
 
 Done but fastidious! That is why Pypowsybl provides ready-for-use methods to create an equipment and its bay with a single line.
 The switches are created implicitly. The methods take a busbar section on which the disconnector is
 closed as an argument (note that switches on the other parallel busbar sections are open). You also need to fill the position of the equipment on the voltage level
 as well as its characteristics. Optionally, you can indicate the direction of the equipment drawing - by default, on the bottom for injections and on top for lines and two windings transformers -,
-if an exception should be raised in case of problem - by default, False - and a reporter to get logs.
+if an exception should be raised in case of problem - by default, True - and a report node to get logs.
 
 You can add a load and connect it to *BBS3* between the line and the load1 (order position between 10 and 20) with:
 
@@ -526,6 +583,7 @@ You can check that the load was added correctly by drawing a single line diagram
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_load.svg
+   :class: forced-white-background
 
 Now let's connect a generator on *BBS1* on the left of *load1*, a
 dangling line on the right of *line1* on *BBS3* and a shunt on *BBS4*:
@@ -554,12 +612,14 @@ You can draw the new single line diagrams:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_adding_everything.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_after_adding_everything.svg
+   :class: forced-white-background
 
 These methods exist for every type of injections and also work with bus/breaker voltage levels. Then the injection is simply
 added to the given bus.
@@ -585,12 +645,14 @@ You can draw the single line diagrams of both voltage levels to check that the l
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_with_new_line2.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_with_new_line2.svg
+   :class: forced-white-background
 
 Now let's see how to add a two windings transformer to our network. Both voltage levels VL1 and VL2 have a nominal voltage of 225kV.
 First, you need a new voltage level VL3, let's say of nominal voltage 63kV, to connect to one of the existing voltage level. Both voltage levels connected through a two-windings
@@ -616,6 +678,7 @@ To check that the topology was correctly created, you can draw the single line d
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_only_bbs.svg
+   :class: forced-white-background
 
 Now you can add some coupling devices between each section of the new voltage level. For that, you can use the built-in method and you just
 have to specify the two busbar sections on which the switches should be closed. Open switches will automatically be created on the parallel busbar
@@ -632,6 +695,7 @@ You can create the single line diagram to check that the coupling devices were w
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_coupling_device.svg
+   :class: forced-white-background
 
 Now, you can create a two windings transformer between VL1 and VL3. The features of the transformer must be specified, as well
 as the busbar sections on which it should be connected. You can connect it to BBS1 and to VL3_1_1. The position wanted for the
@@ -650,6 +714,7 @@ Let's draw the single line diagrams of VL1 and of VL3 to check that the two wind
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_with_transformer.svg
+   :class: forced-white-background
 
 
 .. code-block:: python
@@ -657,6 +722,7 @@ Let's draw the single line diagrams of VL1 and of VL3 to check that the two wind
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
+   :class: forced-white-background
 
 To add a HVDC line to the network, you can first add the two converter stations, just like any other injection.
 Let's add one on the busbar section BBS3 of VL1 on the right and one on BBS4 on the right too:
@@ -681,6 +747,7 @@ The single line diagrams of voltage levels VL1 and VL2 are now:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_with_hvdc.svg
+   :class: forced-white-background
 
 
 .. code-block:: python
@@ -688,6 +755,7 @@ The single line diagrams of voltage levels VL1 and VL2 are now:
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_with_hvdc.svg
+   :class: forced-white-background
 
 Now you know how to create a node-breaker voltage level and its topology, injections, lines and two-windings transformer with the built-in methods
 available in pypowsybl. For a reference of the available methods, please refer to: :doc:`documentation </reference/network>`.
@@ -711,6 +779,7 @@ The single line diagram of VL1 is then:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_without_load1.svg
+   :class: forced-white-background
 
 You can see that the load was removed, as well as all the breaker and disconnectors that was connecting it to the busbar section.
 
@@ -729,12 +798,14 @@ You can check on the single line diagram that everything went good:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_without_hvdc.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL2')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl2_without_hvdc.svg
+   :class: forced-white-background
 
 Finally, it is also possible to remove a full voltage level, with all its connectables. The lines and two windings transformers will be removed
 as well as their topology on both sides and the HVDC lines will be removed as well as their converter stations on both sides too.
@@ -752,12 +823,14 @@ The remaining voltage levels VL1 and VL3 are then:
     >>> n.get_single_line_diagram('VL1')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl1_after_removing_vl2.svg
+   :class: forced-white-background
 
 .. code-block:: python
 
     >>> n.get_single_line_diagram('VL3')
 
 .. image:: ../_static/images/node_breaker_network/test_network_vl3_with_transformer.svg
+   :class: forced-white-background
 
 On the diagrams, you can see that all the lines that were connecting VL1 to VL2 have been removed as well as their switches. On VL3, nothing was done as nothing was connected between VL2 and VL3.
 
@@ -822,3 +895,122 @@ parent network and become again a standalone network.
     :options: +NORMALIZE_WHITESPACE
 
     >>> nl_sub.detach()
+
+Reducing a network
+------------------
+
+Pypowsybl provides methods to reduce a network to a smaller one. It can be done with different parameters.
+It can be decided according to the voltage with the parameters v_min and v_max. It can also be by indicating the
+Voltage Levels that will be kept and also indicating the depth around these voltage levels.
+
+For this example we will keep only voltage levels with voltage superior or equal to 400 kV
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_four_substations_node_breaker_network()
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL1                 S1      225.0               240.0              220.0
+    S1VL2                 S1      400.0               440.0              390.0
+    S2VL1                 S2      400.0               440.0              390.0
+    S3VL1                 S3      400.0               440.0              390.0
+    S4VL1                 S4      400.0               440.0              390.0
+
+    >>> net.reduce(v_min=400)
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL2                 S1      400.0               440.0              390.0
+    S2VL1                 S2      400.0               440.0              390.0
+    S3VL1                 S3      400.0               440.0              390.0
+    S4VL1                 S4      400.0               440.0              390.0
+
+For the next example we will keep voltage level S1VL1 with a depth of 1.
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_four_substations_node_breaker_network()
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL1                 S1      225.0               240.0              220.0
+    S1VL2                 S1      400.0               440.0              390.0
+    S2VL1                 S2      400.0               440.0              390.0
+    S3VL1                 S3      400.0               440.0              390.0
+    S4VL1                 S4      400.0               440.0              390.0
+    >>> net.reduce(vl_depths=[['S1VL1', 1]])
+    >>> net.get_voltage_levels()
+          name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
+    id
+    S1VL1                 S1      225.0               240.0              220.0
+    S1VL2                 S1      400.0               440.0              390.0
+
+S1VL1 is connected to S1VL2 by the transformer TWT, so it is kept after the network reduction.
+It is the only voltage level connected to S1VL1 by one branch.
+
+the parameter "ids" can be used to specify the exact voltage levels that will be kept
+
+Using operational limits
+------------------------
+
+Operational limits can be added on various network elements :
+- each side of the branches (lines and 2 windings transformers)
+- each leg of 3 windings transformers
+- dangling lines
+
+For more information on the model of operational limits, see `the internal model documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_model/additional.html#loading-limits>`_
+
+Limits are defined in operational limit groups, that are represented by an `id`. Each line, transformer or dangling line is associated with a collection of groups, and for each element one of its groups is the selected one.
+The id of the selected limit group can be found in the data of each element :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_eurostag_tutorial_example1_network()
+    >>> net.get_lines(attributes=["selected_limits_group_1", "selected_limits_group_2"])
+                selected_limits_group_1 selected_limits_group_2
+    id
+    NHV1_NHV2_1                 DEFAULT                 DEFAULT
+    NHV1_NHV2_2                 DEFAULT                 DEFAULT
+
+To retrieve the limits present on a network, the user can use the `get_operational_limits` method (choosing with the `show_inactive_sets` parameter whether to get all groups or only the active ones).
+For example on a network with a line that has two sets of current limits :
+
+.. code-block:: python
+
+    >>> net.get_operational_limits() # only selected sets
+
+                element_type side             name     type     value  acceptable_duration
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60
+
+    >>> net.get_operational_limits(all_attributes=True, show_inactive_sets=True) # all sets
+
+                element_type side             name     type     value  acceptable_duration  fictitious     group_name  selected
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1       False        DEFAULT      True
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600       False        DEFAULT      True
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT      True
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP     False
+
+
+Finally, the user can change the selected group of limits using the respective update methods of network elements.
+Using the same example as above :
+
+.. code-block:: python
+
+    >>> net.update_lines(id='LINE1', 'selected_limits_group_2'='OTHER_GROUP')
+    >>> net.get_operational_limits(all_attributes=True, show_inactive_sets=True)
+
+                element_type side             name     type     value  acceptable_duration  fictitious     group_name  selected
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1       False        DEFAULT     False
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600       False        DEFAULT     False
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT     False
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP      True
+

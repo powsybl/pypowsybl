@@ -9,14 +9,17 @@ import re
 import sys
 import platform
 import subprocess
+import zipfile
+import glob
 
-from setuptools import setup, Extension
-from setuptools.command.build_ext import build_ext
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup
 from packaging.version import parse
 
-class PyPowsyblExtension(Extension):
+class PyPowsyblExtension(Pybind11Extension):
     def __init__(self):
-        Extension.__init__(self, 'pypowsybl._pypowsybl', sources=[])
+        Pybind11Extension.__init__(self, 'pypowsybl._pypowsybl',
+                                   ["cpp/*"])
 
 
 class PyPowsyblBuild(build_ext):
@@ -42,7 +45,7 @@ class PyPowsyblBuild(build_ext):
         if not extdir.endswith(os.path.sep):
             extdir += os.path.sep
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
-                      '-DPYTHON_EXECUTABLE=' + sys.executable]
+                      '-DPython_EXECUTABLE=' + sys.executable]
 
         cfg = 'Debug' if self.debug else 'Release'
         build_args = ['--config', cfg]
@@ -65,6 +68,41 @@ class PyPowsyblBuild(build_ext):
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
+
+        self.zipHeadersAndBinaries(extdir, cpp_source_dir)
+
+    def zipHeadersAndBinaries(self, binary_dir, cpp_source_dir):
+        binaries = dict()
+        binaries['bin'] = []
+        binaries['lib'] = []
+        if platform.system() == "Windows":
+            binaries['bin'] = [os.path.join(binary_dir, 'math.dll'),
+                               os.path.join(binary_dir, 'pypowsybl-java.dll')]
+            binaries['lib'] = [os.path.join(self.build_temp, 'java/pypowsybl-java.lib')]
+        elif platform.system() == "Linux":
+            binaries['lib'] = [os.path.join(binary_dir, 'libmath.so'),
+                               os.path.join(binary_dir, 'libpypowsybl-java.so')]
+        elif platform.system() == "Darwin" :
+            binaries['lib'] = [os.path.join(binary_dir, 'libmath.dylib'),
+                               os.path.join(binary_dir, 'libpypowsybl-java.dylib')]
+
+        includes = glob.glob(os.path.join(cpp_source_dir, 'powsybl-cpp/') + '*.h')
+        includes = includes + glob.glob(os.path.join(cpp_source_dir, 'pypowsybl-java/') + '*.h')
+        includes = includes + glob.glob(os.path.join(self.build_temp, 'java/') + '*.h')
+
+        if not os.path.exists(os.path.abspath('dist')):
+            os.makedirs(os.path.abspath('dist'))
+
+        binaries_archive = os.path.join(os.path.abspath('dist'), 'binaries.zip')
+        if os.path.exists(binaries_archive):
+            os.remove(binaries_archive)
+        with zipfile.ZipFile(binaries_archive, mode='x') as archive:
+            for binary in binaries['bin']:
+                archive.write(binary, arcname=os.path.join('bin', os.path.basename(binary)))
+            for lib in binaries['lib']:
+                archive.write(lib, arcname=os.path.join('lib', os.path.basename(lib)))
+            for include in includes:
+                archive.write(include, arcname=os.path.join('include', os.path.basename(include)))
 
 
 setup(

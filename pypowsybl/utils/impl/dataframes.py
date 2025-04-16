@@ -23,7 +23,9 @@ def _to_array(value: _Any) -> np.ndarray:
     """
     Converts a scalar or array to an array
     """
-    as_array = np.array(value, ndmin=1, copy=False)
+    as_array = np.asarray(value)
+    if as_array.ndim == 0:
+        as_array = np.expand_dims(as_array, axis=0)
     if as_array.ndim != 1:
         raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
                          f'as keyword argument, got {as_array.ndim} dimensions')
@@ -39,14 +41,15 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFra
     columns = {}
     expected_size = None
     for key, value in kwargs.items():
-        col = _to_array(value)
-        size = col.shape[0]
-        if expected_size is None:
-            expected_size = size
-        elif size != expected_size:
-            raise ValueError(f'Network elements update: all arguments must have the same size, '
-                             f'got size {size} for series {key}, expected {expected_size}')
-        columns[key] = col
+        if value is not None:
+            col = _to_array(value)
+            size = col.shape[0]
+            if expected_size is None:
+                expected_size = size
+            elif size != expected_size:
+                raise ValueError(f'Network elements update: all arguments must have the same size, '
+                                 f'got size {size} for series {key}, expected {expected_size}')
+            columns[key] = col
 
     index = None
     if len(index_columns) == 1:
@@ -86,9 +89,9 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         if index_name is None:
             index_name = series_metadata[idx].name
         if is_multi_index:
-            columns_values.append(df.index.get_level_values(index_name))
+            columns_values.append(list(df.index.get_level_values(index_name)))
         else:
-            columns_values.append(df.index.values)
+            columns_values.append(list(df.index.values))
         columns_names.append(index_name)
         columns_types.append(metadata_by_name[index_name].type)
         is_index.append(True)
@@ -99,7 +102,11 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
         series = df[series_name]
         series_type = metadata_by_name[series_name].type
         columns_types.append(series_type)
-        columns_values.append(series.values)
+        if series.values.size and isinstance(series.values[0], np.bool_):
+            # to avoid DeprecationWarning: In future, it will be an error for 'np.bool_' scalars to be interpreted as an index
+            columns_values.append(series.values.astype(int))
+        else:
+            columns_values.append(series.values)
         is_index.append(False)
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
@@ -153,7 +160,6 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
-
     columns = {}
     expected_size = None
     for key, value in kwargs.items():
@@ -162,7 +168,7 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
         if expected_size is None:
             expected_size = size
         elif size != expected_size:
-            raise ValueError(f'properties creation/update : all arguments must have the same size, '
+            raise ValueError(f'properties creation/update: all arguments must have the same size, '
                              f'got size {size} for series {key}, expected {expected_size}')
         columns[key] = col
     index_name = 'id'

@@ -13,7 +13,7 @@ from numpy.typing import ArrayLike
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
-from pypowsybl.report import Reporter
+from pypowsybl.report import ReportNode
 from pypowsybl.utils import (
     _adapt_df_or_kwargs,
     _create_c_dataframe,
@@ -22,22 +22,12 @@ from pypowsybl.utils import (
 )
 from .network import Network
 
+DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
-def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, deprecated_new_line_id: str = None,
-                        deprecated_new_line_r: float = None, deprecated_new_line_x: float = None,
-                        deprecated_new_line_b1: float = None, deprecated_new_line_b2: float = None,
-                        deprecated_new_line_g1: float = None, deprecated_new_line_g2: float = None,
-                        deprecated_line_id: str = None,
-                        deprecated_line1_id: str = None, deprecated_line1_name: str = None,
-                        deprecated_line2_id: str = None,
-                        deprecated_line2_name: str = None, deprecated_position_percent: float = None,
-                        deprecated_create_fictitious_substation: bool = None,
-                        deprecated_fictitious_voltage_level_id: str = None,
-                        deprecated_fictitious_voltage_level_name: str = None,
-                        deprecated_fictitious_substation_id: str = None,
-                        deprecated_fictitious_substation_name: str = None,
-                        df: DataFrame = None, raise_exception: bool = False,
-                        reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+
+def create_line_on_line(network: Network,
+                        df: DataFrame = None, raise_exception: bool = True,
+                        reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Connects an existing voltage level to an existing line through a tee point.
 
@@ -74,127 +64,26 @@ def create_line_on_line(network: Network, deprecated_bbs_or_bus_id: str = None, 
           - fictitious_substation_name: the name of the fictitious substation (optional).
 
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-                         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+                         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
                   bbs_or_bus_id: the ID of the existing bus or bus bar section of the voltage level voltage_level_id.
-        deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_r: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_x: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_b1: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_b2: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_g1: this argument is deprecated, use the dataframe instead
-        deprecated_new_line_g2: this argument is deprecated, use the dataframe instead
-        deprecated_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line1_name: this argument is deprecated, use the dataframe instead
-        deprecated_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line2_name: this argument is deprecated, use the dataframe instead
-        deprecated_position_percent: this argument is deprecated, use the dataframe instead
-        deprecated_create_fictitious_substation: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_voltage_level_id: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_voltage_level_name: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_substation_id: this argument is deprecated, use the dataframe instead
-        deprecated_fictitious_substation_name: this argument is deprecated, use the dataframe instead
         **kwargs: attributes as keyword arguments
 
     """
-    if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
-    if deprecated_new_line_id is not None:
-        warnings.warn("Use of deprecated argument new_line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_id'] = deprecated_new_line_id
-    if deprecated_new_line_r is not None:
-        warnings.warn("Use of deprecated argument new_line_r. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_r'] = deprecated_new_line_r
-    if deprecated_new_line_x is not None:
-        warnings.warn("Use of deprecated argument new_line_x. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_x'] = deprecated_new_line_x
-    if deprecated_new_line_b1 is not None:
-        warnings.warn("Use of deprecated argument new_line_b1. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_b1'] = deprecated_new_line_b1
-    if deprecated_new_line_b2 is not None:
-        warnings.warn("Use of deprecated argument new_line_b2. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_b2'] = deprecated_new_line_b2
-    if deprecated_new_line_g1 is not None:
-        warnings.warn("Use of deprecated argument new_line_g1. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_g1'] = deprecated_new_line_g1
-    if deprecated_new_line_g2 is not None:
-        warnings.warn("Use of deprecated argument new_line_g2. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line_g2'] = deprecated_new_line_g2
-    if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_id'] = deprecated_line_id
-    if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_id'] = deprecated_line1_id
-    if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_id'] = deprecated_line2_id
-    if deprecated_line1_name is not None:
-        warnings.warn("Use of deprecated argument line1_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_name'] = deprecated_line1_name
-    if deprecated_line2_name is not None:
-        warnings.warn("Use of deprecated argument line2_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_name'] = deprecated_line2_name
-    if deprecated_position_percent is not None:
-        warnings.warn("Use of deprecated argument position_percent. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['position_percent'] = deprecated_position_percent
-    if deprecated_create_fictitious_substation is not None:
-        warnings.warn(
-            "Use of deprecated argument create_fictitious_substation. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['create_fictitious_substation'] = deprecated_create_fictitious_substation
-    if deprecated_fictitious_voltage_level_id is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_voltage_level_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_voltage_level_id'] = deprecated_fictitious_voltage_level_id
-    if deprecated_fictitious_voltage_level_name is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_voltage_level_name. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_voltage_level_name'] = deprecated_fictitious_voltage_level_name
-    if deprecated_fictitious_substation_id is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_substation_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_substation_id'] = deprecated_fictitious_substation_id
-    if deprecated_fictitious_substation_name is not None:
-        warnings.warn(
-            "Use of deprecated argument fictitious_substation_name. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['fictitious_substation_name'] = deprecated_fictitious_substation_name
-
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_LINE_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_LINE_ON_LINE,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_id: str = None,
-                               deprecated_line_to_be_merged2_id: str = None,
-                               deprecated_line_to_be_deleted: str = None, deprecated_merged_line_id: str = None,
-                               deprecated_merged_line_name: str = None, df: DataFrame = None,
-                               raise_exception: bool = False,
-                               reporter: Reporter = None, **kwargs: str) -> None:
+def revert_create_line_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                               reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: str) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
     It replaces 3 existing lines (with the same voltage level as the one on their side) with a new line,
@@ -212,52 +101,23 @@ def revert_create_line_on_line(network: Network, deprecated_line_to_be_merged1_i
           - merged_line_name: The name of the new line from the two lines to be merged (default to line id)
 
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-                         be logged. Default is False.
+                         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        deprecated_line_to_be_merged1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_to_be_merged2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_to_be_deleted: this argument is deprecated, use the dataframe instead
-        deprecated_merged_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_merged_line_name: this argument is deprecated, use the dataframe instead
         **kwargs: attributes as keyword arguments
     """
-    if deprecated_line_to_be_merged1_id is not None:
-        warnings.warn(
-            "Use of deprecated argument line_to_be_merged1_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['line_to_be_merged1_id'] = deprecated_line_to_be_merged1_id
-    if deprecated_line_to_be_merged2_id is not None:
-        warnings.warn(
-            "Use of deprecated argument line_to_be_merged2_id. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['line_to_be_merged2_id'] = deprecated_line_to_be_merged2_id
-    if deprecated_line_to_be_deleted is not None:
-        warnings.warn("Use of deprecated argument line_to_be_deleted. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_to_be_deleted'] = deprecated_line_to_be_deleted
-    if deprecated_merged_line_id is not None:
-        warnings.warn("Use of deprecated arguments merged_line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['merged_line_id'] = deprecated_merged_line_id
-    if deprecated_merged_line_name is not None:
-        warnings.warn("Use of deprecated arguments merged_line_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['merged_line_name'] = deprecated_merged_line_name
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CREATE_LINE_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.REVERT_CREATE_LINE_ON_LINE,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: str = None,
-                                  deprecated_line_id: str = None,
-                                  deprecated_position_percent: float = None, deprecated_line1_id: str = None,
-                                  deprecated_line1_name: str = None, deprecated_line2_id: str = None,
-                                  deprecated_line2_name: str = None, df: DataFrame = None,
-                                  raise_exception: bool = False,
-                                  reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                  reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
@@ -279,58 +139,23 @@ def connect_voltage_level_on_line(network: Network, deprecated_bbs_or_bus_id: st
           - line2_name: when the initial line is cut, the line segment at side 2 will receive this name (optional).
 
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-                         be logged. Default is False.
+                         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_position_percent: this argument is deprecated, use the dataframe instead
-        deprecated_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line1_name: this argument is deprecated, use the dataframe instead
-        deprecated_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line2_name: this argument is deprecated, use the dataframe instead
         **kwargs: attributes as keyword arguments
     """
-    if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
-    if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_id'] = deprecated_line_id
-    if deprecated_position_percent is not None:
-        warnings.warn("Use of deprecated argument position_percent. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['position_percent'] = deprecated_position_percent
-    if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_id'] = deprecated_line1_id
-    if deprecated_line1_name is not None:
-        warnings.warn("Use of deprecated argument line1_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_name'] = deprecated_line1_name
-    if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_id'] = deprecated_line2_id
-    if deprecated_line2_name is not None:
-        warnings.warn("Use of deprecated argument line2_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_name'] = deprecated_line2_name
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: str = None,
-                                         deprecated_line2_id: str = None,
-                                         deprecated_line_id: str = None, deprecated_line_name: str = None,
-                                         df: DataFrame = None, raise_exception: bool = False,
-                                         reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def revert_connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     This method reverses the action done in the connect_voltage_level_on_line method.
     It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
@@ -345,41 +170,24 @@ def revert_connect_voltage_level_on_line(network: Network, deprecated_line1_id: 
             line_id: The id of the new line to be created
             line_name: The name of the line to be created (default to line_id)
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
+         be logged. Default is True.
         reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
-        deprecated_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_id: this argument is deprecated, use the dataframe instead
-        deprecated_line_name: this argument is deprecated, use the dataframe instead
         **kwargs: attributes as keyword arguments
     """
-    if deprecated_line1_id is not None:
-        warnings.warn("Use of deprecated argument line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line1_id'] = deprecated_line1_id
-    if deprecated_line2_id is not None:
-        warnings.warn("Use of deprecated argument line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line2_id'] = deprecated_line2_id
-    if deprecated_line_id is not None:
-        warnings.warn("Use of deprecated argument line_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_id'] = deprecated_line_id
-    if deprecated_line_name is not None:
-        warnings.warn("Use of deprecated argument line_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['line_name'] = deprecated_line_name
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df],
                                     NetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def create_load_bay(network: Network, df: DataFrame = None, raise_exception: bool = False, reporter: Reporter = None,
-                    **kwargs: ArrayLike) -> None:
+def create_load_bay(network: Network, df: DataFrame = None, raise_exception: bool = True, reporter: ReportNode = None,
+                    report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Creates a load, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -387,8 +195,9 @@ def create_load_bay(network: Network, df: DataFrame = None, raise_exception: boo
         network: the network to which we want to add the load
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
         The voltage level containing the busbar section can be described in node/breaker or bus/breaker topology.
@@ -409,11 +218,11 @@ def create_load_bay(network: Network, df: DataFrame = None, raise_exception: boo
         - **direction**: optionally, in node/breaker, the direction of the load, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                       reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                       reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Creates a battery, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -421,8 +230,9 @@ def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: 
         network: the network to which we want to add the battery
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
         The voltage level containing the busbar section can be described in node/breaker or bus/breaker topology.
@@ -444,11 +254,11 @@ def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: 
         - **direction**: optionally, in node/breaker, the direction of the battery, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_generator_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                         reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_generator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Creates a generator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -456,8 +266,9 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
         network: the network to which we want to add the generator
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -483,20 +294,23 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
         - **direction**: optionally, in node/breaker, the direction of the generator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                             reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_dangling_line_bay(network: Network, df: DataFrame = None, generation_df: DataFrame = pd.DataFrame(),
+                             raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None,
+                             **kwargs: ArrayLike) -> None:
     """
     Creates a dangling line, connects it to the network on a given bus or busbar section and creates the associated topology.
 
     Args:
         network: the network to which we want to add the dangling line
         df: Attributes as a dataframe.
+        generation_df: Optional dangling lines' generation part, only as a dataframe
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
     Notes:
@@ -506,7 +320,7 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         busbar section with an open disconnector. If the voltage level is bus/breaker, the dangling line is just
         connected to the bus.
 
-        Valid attributes are:
+        Valid attributes for dangling line dataframe or named arguments are:
 
         - **id**: the identifier of the new line
         - **name**: an optional human-readable name
@@ -520,14 +334,26 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         - **position_order**: in node/breaker, the order of the dangling line, will fill the ConnectablePosition extension
         - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
+        Dangling line generation information must be provided as a dataframe.
+        Valid attributes are:
+
+        - **id**: Identifier of the dangling line that contains this generation part
+        - **min_p**: Minimum active power output of the dangling line's generation part
+        - **max_p**: Maximum active power output of the dangling line's generation part
+        - **target_p**: Active power target of the generation part
+        - **target_q**: Reactive power target of the generation part
+        - **target_v**: Voltage target of the generation part
+        - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
     """
-    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df, generation_df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
 def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
                                  linear_model_df: Optional[DataFrame] = None,
                                  non_linear_model_df: Optional[DataFrame] = None,
-                                 raise_exception: bool = False, reporter: Reporter = None) -> None:
+                                 raise_exception: bool = True, reporter: ReportNode = None,
+                                 report_node: ReportNode = None) -> None:
     """
     Creates a shunt compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -537,8 +363,9 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
         linear_model_df: dataframe for linear model sections data
         non_linear_model_df: dataframe for sections data
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Notes:
         The voltage level containing the busbar section can be described in node/breaker or bus/breaker topology.
@@ -580,11 +407,12 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
     if non_linear_model_df is None:
         non_linear_model_df = pd.DataFrame()
     dfs: List[Optional[DataFrame]] = [shunt_df, linear_model_df, non_linear_model_df]
-    return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter)
+    return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter, report_node)
 
 
-def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                                      reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                      reporter: ReportNode = None, report_node: ReportNode = None,
+                                      **kwargs: ArrayLike) -> None:
     """
     Creates a static var compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -592,8 +420,9 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
         network: the network to which we want to add the static var compensator
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
     Notes:
@@ -617,11 +446,13 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
         - **direction**: optionally, in node/breaker, the direction of the static var compensator, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.STATIC_VAR_COMPENSATOR, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
-def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                                     reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                     reporter: ReportNode = None, report_node: ReportNode = None,
+                                     **kwargs: ArrayLike) -> None:
     """
     Creates a lcc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -629,8 +460,9 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
         network: the network to which we want to add the lcc converter station
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
     Notes:
@@ -651,11 +483,13 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
         - **direction**: optionally, in node/breaker, the direction of the lcc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.LCC_CONVERTER_STATION, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
-def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                                     reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                     reporter: ReportNode = None, report_node: ReportNode = None,
+                                     **kwargs: ArrayLike) -> None:
     """
     Creates a vsc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -663,8 +497,9 @@ def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, rai
         network: the network to which we want to add the vsc converter station
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
     Notes:
@@ -687,11 +522,13 @@ def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, rai
         - **direction**: optionally, in node/breaker, the direction of the vsc converter station, will fill the ConnectablePosition extension, default is BOTTOM.
 
     """
-    return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, **kwargs)
+    return _create_feeder_bay(network, [df], ElementType.VSC_CONVERTER_STATION, raise_exception, reporter, report_node,
+                              **kwargs)
 
 
 def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element_type: _pp.ElementType,
-                       raise_exception: bool, reporter: Optional[Reporter], **kwargs: ArrayLike) -> None:
+                       raise_exception: bool, reporter: Optional[ReportNode], report_node: Optional[ReportNode],
+                       **kwargs: ArrayLike) -> None:
     """
     Creates an injection, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -701,7 +538,8 @@ def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element
         element_type: the type of the element to be added.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: the data to be selected, as named arguments.
 
     Notes:
@@ -712,22 +550,19 @@ def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element
         to the bus.
 
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_FEEDER_BAY,
                                                                        element_type)
     c_dfs = _get_c_dataframes_and_add_element_type(dfs, metadata, element_type, **kwargs)
     _pp.create_network_modification(network._handle, c_dfs, NetworkModificationType.CREATE_FEEDER_BAY, raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_point_line1: str = None,
-                                               deprecated_tee_point_line2: str = None,
-                                               deprecated_tee_point_line_to_remove: str = None,
-                                               deprecated_bbs_or_bus_id: str = None,
-                                               deprecated_new_line1_id: str = None,
-                                               deprecated_new_line2_id: str = None,
-                                               deprecated_new_line1_name: str = None,
-                                               deprecated_new_line2_name: str = None, df: DataFrame = None,
-                                               raise_exception: bool = False, reporter: Reporter = None,
+def replace_tee_point_by_voltage_level_on_line(network: Network, df: DataFrame = None,
+                                               raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None,
                                                **kwargs: ArrayLike) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
@@ -746,66 +581,29 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, deprecated_tee_
           - new_line1_name: The optional name of the new line connecting the first voltage level to the attached voltage level
           - new_line2_name: The optional name of the new line connecting the second voltage level to the attached voltage level
 
-        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
+        raise_exception: whether an exception should be raised if a problem occurs. By default, true.
         reporter: an optional reporter to get functional logs.
-        deprecated_tee_point_line1: this argument is deprecated, use the dataframe instead
-        deprecated_tee_point_line2: this argument is deprecated, use the dataframe instead
-        deprecated_tee_point_line_to_remove: this argument is deprecated, use the dataframe instead
-        deprecated_bbs_or_bus_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line1_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line2_id: this argument is deprecated, use the dataframe instead
-        deprecated_new_line1_name: this argument is deprecated, use the dataframe instead
-        deprecated_new_line2_name: this argument is deprecated, use the dataframe instead
         kwargs: attributes as keyword arguments.
 
     Notes:
         It replaces 3 existing lines (with the same voltage level at one of their side (tee point)) with two new lines,
         and removes the tee point.
     """
-    if deprecated_tee_point_line1 is not None:
-        warnings.warn("Use of deprecated argument tee_point_line1. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['tee_point_line1'] = deprecated_tee_point_line1
-    if deprecated_tee_point_line2 is not None:
-        warnings.warn("Use of deprecated argument tee_point_line2. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['tee_point_line2'] = deprecated_tee_point_line2
-    if deprecated_tee_point_line_to_remove is not None:
-        warnings.warn(
-            "Use of deprecated argument tee_point_line_to_remove. Use the dataframe or keyword arguments instead.",
-            DeprecationWarning)
-        kwargs['tee_point_line_to_remove'] = deprecated_tee_point_line_to_remove
-    if deprecated_bbs_or_bus_id is not None:
-        warnings.warn("Use of deprecated argument bbs_or_bus_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['bbs_or_bus_id'] = deprecated_bbs_or_bus_id
-    if deprecated_new_line1_id is not None:
-        warnings.warn("Use of deprecated argument new_line1_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line1_id'] = deprecated_new_line1_id
-    if deprecated_new_line2_id is not None:
-        warnings.warn("Use of deprecated argument new_line2_id. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line2_id'] = deprecated_new_line2_id
-    if deprecated_new_line1_name is not None:
-        warnings.warn("Use of deprecated argument new_line1_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line1_name'] = deprecated_new_line1_name
-    if deprecated_new_line2_name is not None:
-        warnings.warn("Use of deprecated argument new_line2_name. Use the dataframe or keyword arguments instead.",
-                      DeprecationWarning)
-        kwargs['new_line2_name'] = deprecated_new_line2_name
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df],
                                     NetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                                  reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                  reporter: ReportNode = None, report_node: ReportNode = None,
+                                  **kwargs: ArrayLike) -> None:
     """
     Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number
     of sections.
@@ -813,8 +611,9 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
     Args:
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe.
-        raise_exception: whether an exception should be raised if a problem occurs. By default, false.
-        reporter: an optional reporter to get functional logs.
+        raise_exception: whether an exception should be raised if a problem occurs. By default, true.
+        reporter: deprecated, use report_node instead
+        report_node: an optional reporter to get functional logs.
         kwargs: attributes as keyword arguments.
     Notes:
         The voltage level must be created and in node/breaker or bus/breaker topology.
@@ -843,6 +642,10 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
        pp.network.create_voltage_level_topology(network=network, raise_exception=True, id='VL',
                                                 aligned_buses_or_busbar_count=3, switch_kinds='BREAKER, DISCONNECTOR')
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     if 'switch_kinds' in df.columns:
@@ -850,18 +653,17 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.VOLTAGE_LEVEL_TOPOLOGY_CREATION,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
 def transform_list_to_str(entry: Union[str, List[str]]) -> str:
     if isinstance(entry, list):
         return ','.join(str(e.replace(' ', '')) for e in entry)
-    if isinstance(entry, str):
-        return entry.replace(' ', '')
+    return entry.replace(' ', '')
 
 
-def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                           reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                           reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Creates a coupling device on the network between two busbar sections of a same voltage level.
 
@@ -869,8 +671,9 @@ def create_coupling_device(network: Network, df: DataFrame = None, raise_excepti
         network: the network in which the busbar sections are.
         df: Attributes as a dataframe.
         raise_exception: an optional boolean indicating if an exception should be raised in case an error occurs during
-        computation.
-        reporter: an optional reporter to store the funtional logs.
+        computation. By default, true.
+        reporter: deprecated, use report_node instead
+        report_node: an optional reporter to store the funtional logs.
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -897,12 +700,16 @@ def create_coupling_device(network: Network, df: DataFrame = None, raise_excepti
                             switch_prefix_id='sw')
 
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     metadata = _pp.get_network_modification_metadata(NetworkModificationType.CREATE_COUPLING_DEVICE)
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_COUPLING_DEVICE,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
 def _get_c_dataframes_and_add_element_type(dfs: List[Optional[DataFrame]],
@@ -950,8 +757,8 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[str]], raise_exception: bool = False,
-                          reporter: Reporter = None) -> None:
+def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[str]], raise_exception: bool = True,
+                          reporter: ReportNode = None, report_node: ReportNode = None) -> None:
     """
     Remove all voltage levels from a list and all their connectables.
     The lines and two windings transformers will also be removed in the voltage level on the other side as well as their switches.
@@ -961,19 +768,25 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
         network: the network from which we want to remove the voltage levels
         voltage_level_ids: either a list or a single string to indicate which voltage levels should be removed.
         raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     if isinstance(voltage_level_ids, str):
         voltage_level_ids = [voltage_level_ids]
     _pp.remove_elements_modification(network._handle, voltage_level_ids, None,
                                      _pp.RemoveModificationType.REMOVE_VOLTAGE_LEVEL, raise_exception,
-                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
 def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
                       shunt_compensator_ids: Dict[str, Union[str, List[str]]] = None,
-                      raise_exception: bool = False, reporter: Reporter = None) -> None:
+                      raise_exception: bool = True, reporter: ReportNode = None,
+                      report_node: ReportNode = None) -> None:
     """
     Removes hvdc lines and their LCC or SVC converter stations. In the case of a LCC converter station, a list of shunt
     compensators can be specified to be deleted as well.
@@ -983,9 +796,14 @@ def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
         hvdc_line_ids: the ids of the HVDC lines, either as a string or a list of strings.
         shunt_compensator_ids: the ids of the shunt compensators associated to
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     c_df = None
     if isinstance(hvdc_line_ids, str):
         hvdc_line_ids = [hvdc_line_ids]
@@ -997,7 +815,7 @@ def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
         c_df = _create_properties_c_dataframe(df)
     _pp.remove_elements_modification(network._handle, hvdc_line_ids, c_df, _pp.RemoveModificationType.REMOVE_HVDC_LINE,
                                      raise_exception,
-                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
 def get_connectables_order_positions(network: Network, voltage_level_id: str) -> DataFrame:
@@ -1050,8 +868,8 @@ def get_unused_order_positions_before(network: Network, busbar_section_id: str) 
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bool = False, reporter: Reporter = None,
-                     **kwargs: ArrayLike) -> None:
+def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bool = True, reporter: ReportNode = None,
+                     report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
     """
     Creates a line and connects it to buses or busbar sections through standard feeder bays.
 
@@ -1064,8 +882,9 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-                         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+                         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -1095,17 +914,22 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
     See Also:
         :meth:`Network.create_lines`
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     metadata = _pp.get_network_modification_metadata_with_element_type(NetworkModificationType.CREATE_LINE_FEEDER,
                                                                        ElementType.LINE)[0]
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df], NetworkModificationType.CREATE_LINE_FEEDER,
                                     raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, raise_exception: bool = False,
-                                       reporter: Reporter = None, **kwargs: ArrayLike) -> None:
+def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, raise_exception: bool = True,
+                                       reporter: ReportNode = None, report_node: ReportNode = None,
+                                       **kwargs: ArrayLike) -> None:
     """
     Creates a transformer and connects it to buses or busbar sections through standard feeder bays.
 
@@ -1119,8 +943,9 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
         network: the network to which we want to add the new line
         df: Attributes as a dataframe.
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
         kwargs: Attributes as keyword arguments.
 
     Notes:
@@ -1151,17 +976,21 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
     See Also:
         :meth:`Network.create_2_windings_transformers`
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     metadata = _pp.get_network_modification_metadata_with_element_type(
         NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, ElementType.TWO_WINDINGS_TRANSFORMER)[0]
     df = _adapt_df_or_kwargs(metadata, df, **kwargs)
     c_df = _create_c_dataframe(df, metadata)
     _pp.create_network_modification(network._handle, [c_df],
                                     NetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER, raise_exception,
-                                    None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]], raise_exception: bool = False,
-                       reporter: Reporter = None) -> None:
+def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]], raise_exception: bool = True,
+                       reporter: ReportNode = None, report_node: ReportNode = None) -> None:
     """
     Remove all feeders from a list as well as their bays: the connectables will be removed and all equipment connecting
     them to a bus or busbar (breaker, disconnector, ...).
@@ -1170,8 +999,9 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
         network: the network to which we want to remove the feeder bay
         connectable_ids: either a list or a single string to indicate which equipment will be removed with their feeder bay.
         raise_exception: optionally, whether the calculation should raise exceptions. In any case, errors will
-         be logged. Default is False.
-        reporter: optionally, the reporter to be used to create an execution report, default is None (no report).
+         be logged. Default is True.
+        reporter: deprecated, use report_node instead
+        report_node: optionally, the reporter to be used to create an execution report, default is None (no report).
 
     Examples:
 
@@ -1179,8 +1009,51 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
 
         pp.network.remove_feeder_bays(network, connectable_ids=['load1', 'line3'])
     """
+    if reporter is not None:
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        report_node = reporter
+
     if isinstance(connectable_ids, str):
         connectable_ids = [connectable_ids]
     _pp.remove_elements_modification(network._handle, connectable_ids, None, _pp.RemoveModificationType.REMOVE_FEEDER,
                                      raise_exception,
-                                     None if reporter is None else reporter._reporter_model)  # pylint: disable=protected-access
+                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
+
+def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
+                                                                   report_node: ReportNode = None) -> None:
+    """
+    Breaks the 3-windings transformers of a network into 3 2-windings transformers.
+
+    Args:
+        network: The network in which to transform the 3-windings transformers
+        transformer_ids (optional): an id or list of ids of 3-windings transformers to replace.
+                                    If not provided, all 3-windings transformers are replaced.
+        report_node (optional): the reporter to be used to create an execution report, default is None (no report).
+    """
+    if transformer_ids is None:
+        transformer_ids = []
+    if isinstance(transformer_ids, str):
+        transformer_ids = [transformer_ids]
+
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, False,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
+
+def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] = None,
+                                                                   report_node: ReportNode = None) -> None:
+    """
+    Creates 3 windings transformers on a network by merging 3 2-windings transformers that respect certain criteria.
+
+    Args:
+        network: The network in which to merge the 2-windings transformers
+        transformer_ids (optional): an id or list of ids of 2-windings transformers to replace.
+                                    If not provided, the whole network is scanned to find the split 3-windings transformers to merge
+        report_node (optional): the reporter to be used to create an execution report, default is None (no report).
+    """
+    if transformer_ids is None:
+        transformer_ids = []
+    if isinstance(transformer_ids, str):
+        transformer_ids = [transformer_ids]
+
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, True,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
+

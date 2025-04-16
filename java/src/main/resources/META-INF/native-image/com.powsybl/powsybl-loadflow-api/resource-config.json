@@ -1,7 +1,0 @@
-{
-  "resources":{
-  "includes":[
-    {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowParameters$ConfigLoader\\E"},
-    {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowProvider\\E"}
-  ]}
-}

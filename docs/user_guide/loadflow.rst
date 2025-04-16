@@ -5,12 +5,8 @@ Running a load flow
 
 .. testsetup:: *
 
-    import pypowsybl as pp
     import pypowsybl.loadflow as lf
     import pypowsybl.network as pn
-    import pandas as pd
-    pd.options.display.max_columns = None
-    pd.options.display.expand_frame_repr = False
 
 You can use the module :mod:`pypowsybl.loadflow` in order to run load flows on networks.
 
@@ -33,13 +29,13 @@ We can get the list of supported load flow implementations (so called providers)
     'OpenLoadFlow'
 
 By default, load flows are based on the OpenLoadFlow implementation,
-fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
+fully described `here <https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/>`_.
 OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 You may also use DynaFlow, provided by the `Dynawo <https://dynawo.github.io>`_ project.
 DynaFlow is a new steady-state simulation tool that aims at calculating the steady-state point by using
 a simplified time-domain simulation.
-Please see configuration instructions on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/dynaflow.html>`__.
+Please see configuration instructions `here <https://powsybl.readthedocs.io/projects/powsybl-dynawo/en/latest/>`__.
 
 
 Parameters
@@ -51,11 +47,11 @@ Let's have a look at the default ones:
 .. doctest::
 
     >>> lf.Parameters()
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, no_generator_reactive_limits=False, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, simul_shunt=False, read_slack_bus=True, write_slack_bus=False, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, provider_parameters={})
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, dc_power_factor=1.0, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
-All parameters are also fully described in `Powsybl loadfow parameter documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+All parameters are also fully described in `Powsybl load flow parameters documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/simulation/loadflow/configuration.html>`_.
 
 Parameters specific to a provider
 ---------------------------------
@@ -64,7 +60,23 @@ Some parameters are not supported by all load flow providers but specific to onl
 parameters could be specified in a less typed way than common parameters using the `provider_parameters` attribute.
 
 .. warning::
-    `provider_parameters` is dictionary and all keys and values have to be a string even in case of a numeric value.
+    `provider_parameters` is a dictionary in which all keys and values **must** be a string, even in case of a numeric value:
+
+    * string and integer parameters do not bring much challenge:
+
+      ``provider_parameters={'someStringParam' : 'myStringValue', 'someIntegerParam' : '42'}``
+
+    * for float (double) parameters, use the dot as decimal separator. E notation is also supported:
+
+      ``provider_parameters={'someDoubleParam' : '1.23', 'someOtherDoubleParam' : '4.56E-2'}``
+
+    * for boolean parameters, use either `'True'`, `'true'`, `'False'`, `'false'`:
+
+      ``provider_parameters={'someBooleanParam' : 'true'}``
+
+    * for string list parameters, use the comma as a separator:
+
+      ``provider_parameters={'someStringListParam' : 'value1,value2,value3'}``
 
 We can list supported parameters specific to default provider using:
 
@@ -73,16 +85,17 @@ We can list supported parameters specific to default provider using:
     >>> lf.get_provider_parameters_names()
     ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', ...]
 
-And get more detailed informations about theses parameters using:
+And get more detailed information about theses parameters, such as parameter description, type, default value if any,
+possible values if applicable, using:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> lf.get_provider_parameters().iloc[:2]
-                                        description    type      default                                possible_values
+    >>> lf.get_provider_parameters().query('name == "slackBusSelectionMode" or name == "slackBusesIds"')
+                                category_key               description         type      default                                possible_values
     name
-    slackBusSelectionMode  Slack bus selection mode  STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
-    slackBusesIds                     Slack bus IDs  STRING_LIST
+    slackBusSelectionMode  SlackDistribution  Slack bus selection mode       STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
+    slackBusesIds          SlackDistribution             Slack bus IDs  STRING_LIST
 
 For instance, OLF supports configuration of slack bus from its ID like this:
 
@@ -107,15 +120,15 @@ included in the computation:
 .. doctest::
 
     >>> results
-    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, iteration_count=3, slack_bus_id='VLHV1_0', slack_bus_active_power_mismatch=-606.5596837558763, distributed_active_power=0.0)]
+    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=Converged, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_results=[SlackBusResult(id='VLHV1_0', active_power_mismatch=-606.5596837558763)], distributed_active_power=0.0)]
 
-Component results provides general information about the loadflow: was it successful ? how many iterations did
-it need ? what's the remaining active power imbalance ? For example, let's have a look at the imbalance
+Component results provides general information about the loadflow execution: was it successful? How many iterations did
+it need? What is the remaining active power imbalance? For example, let's have a look at the imbalance
 on the main component of the network:
 
 .. doctest::
 
-    >>> results[0].slack_bus_active_power_mismatch
+    >>> results[0].slack_bus_results[0].active_power_mismatch
     -606.5596837558763
 
 Then, the main output of the loadflow is actually the updated data in the network itself:
@@ -136,7 +149,7 @@ the voltage magnitudes (rounded to 2 digits here):
 DC Load Flow
 ------------
 
-In order to run an AC loadflow, simply use the :func:`run_dc` method.
+In order to run a DC loadflow, simply use the :func:`run_dc` method.
 
 For that example, we will use a distributed slack, with imbalance distributed on generators,
 proportional to their maximum power. We also choose to ignore transformer ratios in the DC equations:

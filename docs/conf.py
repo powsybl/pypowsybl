@@ -30,6 +30,7 @@ except ImportError:
 
 project = 'pypowsybl'
 copyright = '2021, RTE (http://www.rte-france.com)'
+github_repository = "https://github.com/powsybl/pypowsybl/"
 
 
 # -- General configuration ---------------------------------------------------
@@ -59,36 +60,46 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "pydata_sphinx_theme"
+html_theme = "furo"
 
 html_title = 'pypowsybl'
 html_short_title = 'pypowsybl'
 
-html_logo = '_static/logos/powsybl_logo.svg'
+html_logo = '_static/logos/logo_lfe_powsybl.svg'
 html_favicon = "_static/favicon.ico"
 
+html_context = {
+    "sidebar_logo_href": "https://powsybl.readthedocs.io/",
+    "github_repository": github_repository
+}
+
 html_theme_options = {
-    "icon_links": [
-        {
-            "name": "GitHub",
-            "url": "https://github.com/powsybl/pypowsybl",
-            "icon": "fab fa-github-square",
-        }
-    ],
-    "navbar_start": ["navbar-brand-pypowsybl"],
+    # the following 3 lines enable edit button
+    "source_repository": github_repository,
+    "source_branch": "main",
+    "source_directory": "docs/"
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_css_files = ['styles/styles.css']
 
 doctest_global_setup = '''
-try:
-    import pypowsybl as pp
-    pp.set_config_read(False)
-except ImportError:
-    pp = None
+import pypowsybl as pp
+pp.set_config_read(False)
+
+import pathlib
+
+import pandas as pd    
+pd.options.display.max_columns = None
+pd.options.display.expand_frame_repr = False
+
+import os
+cwd = os.getcwd()
+PROJECT_DIR = pathlib.Path(cwd).parent
+DATA_DIR = PROJECT_DIR.joinpath('data')
 '''
 
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
