@@ -185,6 +185,26 @@ def create_metrix_tutorial_six_buses_network() -> Network:
     return _create_network('metrix_tutorial_six_buses')
 
 
+def is_loadable(file: Union[str, PathLike]) -> bool:
+    """
+      Check if a file is a loadable network.
+
+      A file is loadable if:
+       - file exists
+       - it is a network format and format version supported by powsybl (so an importer exists for it)
+       - the network file is well formatted
+       - it is either not compressed or compressed with a supported compression format (gzip, bzip2, zip, xz)
+
+      Args:
+         file: path to the supposed network file
+
+      Returns:
+          True is the file is a loadable network, False otherwise
+    """
+    file = path_to_str(file)
+    return _pp.is_network_loadable(file)
+
+
 def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_processors: List[str] = None, reporter: ReportNode = None,
          report_node: ReportNode = None) -> Network:
     """

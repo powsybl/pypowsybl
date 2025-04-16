@@ -2683,5 +2683,15 @@ def test_enconding_issue():
     assert '<iidm:substation id="Bürs"/>' in network.save_to_string(parameters={'iidm.export.xml.indent': 'false'})
 
 
+def test_is_loadable():
+    assert pp.network.is_loadable(DATA_DIR.joinpath('ieee14.dgs'))
+    assert pp.network.is_loadable(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    assert pp.network.is_loadable(DATA_DIR.joinpath('CGMES_Full.zip'))
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        file = pathlib.Path(tmp_dir_name) / 'foo.xiidm'
+        file.touch()
+        assert not pp.network.is_loadable(file)
+
+
 if __name__ == '__main__':
     unittest.main()
