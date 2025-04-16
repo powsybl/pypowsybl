@@ -460,6 +460,17 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addActionFromJsonFile")
+    public static void addActionFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addActionFromJsonFile(path);
+        });
+    }
+
     @CEntryPoint(name = "addTerminalsConnectionAction")
     public static void addTerminalsConnectionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                          CCharPointer actionId, CCharPointer elementId, PyPowsyblApiHeader.ThreeSideType side,
@@ -497,6 +508,17 @@ public final class SecurityAnalysisCFunctions {
             OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
                     ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
+        });
+    }
+
+    @CEntryPoint(name = "addOperatorStrategyFromJsonFile")
+    public static void addOperatorStrategyFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addOperatorStrategyFromJsonFile(path);
         });
     }
 
