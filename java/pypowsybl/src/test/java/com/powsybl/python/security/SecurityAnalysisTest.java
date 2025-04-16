@@ -23,7 +23,6 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.assertj.core.data.Offset;
 
-import java.nio.file.FileSystem;
 import java.util.Collections;
 import java.util.List;
 
@@ -33,8 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
 class SecurityAnalysisTest {
-
-    protected FileSystem fileSystem;
 
     @Test
     void testStateMonitors() {
