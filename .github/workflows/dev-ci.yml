@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-optimizer
-          ref: refs/heads/add_resources_path
+          ref: refs/heads/2-optimization-and-resources-path-given-in-platform-config
 
       - name: Build and install powsybl-optimizer with Maven
         run: mvn --batch-mode -DskipTests=true --file ../powsybl-optimizer/pom.xml install
@@ -168,7 +168,7 @@ jobs:
         uses: actions/checkout@v1
         with:
           repository: powsybl/powsybl-optimizer
-          ref: refs/heads/add_resources_path
+          ref: refs/heads/2-optimization-and-resources-path-given-in-platform-config
 
       - name: Build and install powsybl-optimizer with Maven
         run: mvn --batch-mode -DskipTests=true --file ../powsybl-optimizer/pom.xml install
