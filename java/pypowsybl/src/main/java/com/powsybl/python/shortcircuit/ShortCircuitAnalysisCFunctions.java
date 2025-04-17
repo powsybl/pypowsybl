@@ -36,8 +36,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.powsybl.python.commons.Util.createCharPtrArray;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.*;
 
 /**
  * C functions related to short-circuit analysis.
@@ -108,7 +107,10 @@ public final class ShortCircuitAnalysisCFunctions {
     @CEntryPoint(name = "freeShortCircuitAnalysisParameters")
     public static void freeShortCircuitAnalysisParameters(IsolateThread thread, ShortCircuitAnalysisParametersPointer parameters,
                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parameters));
+        doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parameters.getProviderParameters());
+            UnmanagedMemory.free(parameters);
+        });
     }
 
     @CEntryPoint(name = "createShortCircuitAnalysisParameters")
@@ -125,8 +127,8 @@ public final class ShortCircuitAnalysisCFunctions {
         paramsPtr.setMinVoltageDropProportionalThreshold(parameters.getMinVoltageDropProportionalThreshold());
         paramsPtr.setStudyType(parameters.getStudyType().ordinal());
         paramsPtr.setInitialVoltageProfileMode(parameters.getInitialVoltageProfileMode().ordinal());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 
