@@ -20,7 +20,6 @@ import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.condition.*;
-import com.powsybl.security.converter.JsonSecurityAnalysisResultExporter;
 import com.powsybl.security.converter.SecurityAnalysisResultExporter;
 import com.powsybl.security.converter.SecurityAnalysisResultExporters;
 import com.powsybl.security.monitor.StateMonitor;
