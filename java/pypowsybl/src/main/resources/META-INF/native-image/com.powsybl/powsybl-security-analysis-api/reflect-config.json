@@ -2,6 +2,29 @@
   {
     "name":"com.powsybl.security.results.NetworkResult",
     "allDeclaredFields":true,
-    "queryAllDeclaredMethods":true
+    "queryAllDeclaredMethods":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.security.results.BranchResult",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.security.results.BusResult",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.security.results.ThreeWindingsTransformerResult",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
   }
 ]
