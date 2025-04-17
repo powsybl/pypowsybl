@@ -700,6 +700,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
 
+    m.def("get_default_branch_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultBranchLabels, "Get network area diagram default branch labels",
+        py::arg("network"));
+
+    m.def("get_default_twt_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultTwtLabels, "Get network area diagram default twt labels",
+            py::arg("network"));
+
+    m.def("get_default_bus_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultBusDescriptions, "Get network area diagram default bus descriptions",
+        py::arg("network"));
+
+    m.def("get_default_voltage_level_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultVoltageLevelDescriptions, "Get network area diagram default voltage level descriptions",
+        py::arg("network"));
+    
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
