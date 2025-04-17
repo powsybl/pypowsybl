@@ -7,6 +7,8 @@
  */
 package com.powsybl.python.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.powsybl.action.*;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
@@ -256,6 +258,9 @@ public final class SecurityAnalysisCFunctions {
     public static void exportToJson(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, CCharPointer jsonFilePath,
                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
             SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
             String stringPath = CTypeUtil.toString(jsonFilePath);
             Path path = Paths.get(stringPath);
