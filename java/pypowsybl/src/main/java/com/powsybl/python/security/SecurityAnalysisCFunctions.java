@@ -21,6 +21,8 @@ import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.condition.*;
 import com.powsybl.security.converter.JsonSecurityAnalysisResultExporter;
+import com.powsybl.security.converter.SecurityAnalysisResultExporter;
+import com.powsybl.security.converter.SecurityAnalysisResultExporters;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.OperatorStrategyResult;
 import com.powsybl.security.results.PostContingencyResult;
@@ -260,7 +262,7 @@ public final class SecurityAnalysisCFunctions {
             Path path = Paths.get(stringPath);
             try {
                 Writer writer = Files.newBufferedWriter(path);
-                JsonSecurityAnalysisResultExporter exporter = new JsonSecurityAnalysisResultExporter();
+                SecurityAnalysisResultExporter exporter = SecurityAnalysisResultExporters.getExporter("JSON");
                 exporter.export(result, writer);
             } catch (IOException e) {
                 throw new PowsyblException(e);
