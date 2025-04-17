@@ -17,7 +17,7 @@ class SecurityAnalysisResult:
     The result of a security analysis.
     """
 
-    def w__init__(self, handle: _pypowsybl.JavaHandle):
+    def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
         self._pre_contingency_result = _pypowsybl.get_pre_contingency_result(self._handle)
         post_contingency_results = _pypowsybl.get_post_contingency_results(self._handle)

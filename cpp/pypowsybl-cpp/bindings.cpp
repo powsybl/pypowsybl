@@ -709,7 +709,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("analysis_context"), py::arg("path_to_json_file"));
 
     m.def("export_to_json", &pypowsybl::exportToJson, "Add the security analysis' output to the specified path in a JSON file.",
-          py::arg("security_analysis_result"), py::arg("path"), py::arg("security_analysis_context"));
+          py::arg("security_analysis_result"), py::arg("path"));
 
     m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
