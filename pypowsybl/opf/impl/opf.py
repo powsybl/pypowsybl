@@ -38,19 +38,19 @@ def branch_flow(vars, params):
         vars.q2,
     )
 
-    sinKsi = nlfunc.sin(ksi)
-    cosKsi = nlfunc.cos(ksi)
+    sin_ksi = nlfunc.sin(ksi)
+    cos_ksi = nlfunc.cos(ksi)
     theta1 = ksi - a1 + A2 - ph1 + ph2
     theta2 = ksi + a1 - A2 + ph1 - ph2
-    sinTheta1 = nlfunc.sin(theta1)
-    cosTheta1 = nlfunc.cos(theta1)
-    sinTheta2 = nlfunc.sin(theta2)
-    cosTheta2 = nlfunc.cos(theta2)
+    sin_theta1 = nlfunc.sin(theta1)
+    cos_theta1 = nlfunc.cos(theta1)
+    sin_theta2 = nlfunc.sin(theta2)
+    cos_theta2 = nlfunc.cos(theta2)
 
-    p1_eq = r1 * v1 * (g1 * r1 * v1 + y * r1 * v1 * sinKsi - y * R2 * v2 * sinTheta1) - p1
-    q1_eq = r1 * v1 * (-b1 * r1 * v1 + y * r1 * v1 * cosKsi - y * R2 * v2 * cosTheta1) - q1
-    p2_eq = R2 * v2 * (g2 * R2 * v2 - y * r1 * v1 * sinTheta2 + y * R2 * v2 * sinKsi) - p2
-    q2_eq = R2 * v2 * (-b2 * R2 * v2 - y * r1 * v1 * cosTheta2 + y * R2 * v2 * cosKsi) - q2
+    p1_eq = r1 * v1 * (g1 * r1 * v1 + y * r1 * v1 * sin_ksi - y * R2 * v2 * sin_theta1) - p1
+    q1_eq = r1 * v1 * (-b1 * r1 * v1 + y * r1 * v1 * cos_ksi - y * R2 * v2 * cos_theta1) - q1
+    p2_eq = R2 * v2 * (g2 * R2 * v2 - y * r1 * v1 * sin_theta2 + y * R2 * v2 * sin_ksi) - p2
+    q2_eq = R2 * v2 * (-b2 * R2 * v2 - y * r1 * v1 * cos_theta2 + y * R2 * v2 * cos_ksi) - q2
 
     return [p1_eq, q1_eq, p2_eq, q2_eq]
 
@@ -80,7 +80,7 @@ class NetworkCache:
         self._loads = self._network.get_loads()
         self._shunts = self._network.get_shunt_compensators()
         self._lines = self._network.get_lines()
-        self._transfos = self._network.get_2_windings_transformers(all_attributes=True)
+        self._transformers = self._network.get_2_windings_transformers(all_attributes=True)
         self._branches = self._network.get_branches()
         self._slack_terminal = self._network.get_extensions('slackTerminal')
 
@@ -110,7 +110,7 @@ class NetworkCache:
 
     @property
     def transformers(self):
-        return self._transfos
+        return self._transformers
 
     @property
     def branches(self):
