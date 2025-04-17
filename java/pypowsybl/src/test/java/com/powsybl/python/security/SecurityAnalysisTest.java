@@ -7,6 +7,8 @@
  */
 package com.powsybl.python.security;
 
+import com.google.common.jimfs.Configuration;
+import com.google.common.jimfs.Jimfs;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
