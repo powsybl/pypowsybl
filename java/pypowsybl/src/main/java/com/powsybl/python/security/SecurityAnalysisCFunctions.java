@@ -8,7 +8,6 @@
 package com.powsybl.python.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.powsybl.action.*;
 import com.powsybl.commons.PowsyblException;
