@@ -1,0 +1,7 @@
+[
+  {
+    "name":"com.powsybl.security.results.NetworkResult",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true
+  }
+]
