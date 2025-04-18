@@ -97,7 +97,7 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
 
     int c = graal_create_isolate(&params, &isolate, &thread);
     if (c != 0) {
-        throw std::runtime_error("graal_create_isolate_with_param error: " + std::to_string(c));
+        throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
     }
 }
 
