@@ -19,6 +19,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
+import org.slf4j.LoggerFactory;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.doCatch;
@@ -35,6 +36,11 @@ public final class CommonCFunctions {
     @CEntryPoint(name = "setJavaLibraryPath")
     public static void setJavaLibraryPath(IsolateThread thread, CCharPointer javaLibraryPath, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> System.setProperty("java.library.path", CTypeUtil.toString(javaLibraryPath)));
+    }
+
+    @CEntryPoint(name = "logMaxMemory")
+    public static void logMaxMemory(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> LoggerFactory.getLogger(CommonCFunctions.class).debug("Max heap is {}", Runtime.getRuntime().maxMemory() / (1024 * 1024) + " MB"));
     }
 
     @CEntryPoint(name = "setConfigRead")
