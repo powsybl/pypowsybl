@@ -6,6 +6,8 @@
  */
 #include "powsybl-cpp.h"
 #include <iostream>
+#include <sstream>
+#include <cstring>
 
 namespace pypowsybl {
 
@@ -13,6 +15,7 @@ std::mutex PowsyblCaller::initMutex_;
 PowsyblCaller *PowsyblCaller::singleton_ = nullptr;
 
 graal_isolate_t* isolate = nullptr;
+std::vector<char*> argv;
 
 GraalVmGuard::GraalVmGuard() {
     if (!isolate) {
@@ -55,6 +58,28 @@ void PowsyblCaller::setPostProcessingJavaCall(std::function<void()> func) {
     endCall_ = func;
 }
 
+// we need to pass arguments through GRAALVM_OPTIONS env variable like:
+// GRAALVM_OPTIONS="-Xmx1G" python
+void readArgvFromEnv() {
+    argv.reserve(1);
+    argv.push_back(strdup("from_env")); // argv[0] is expected to be the program name
+    const char* env = std::getenv("GRAALVM_OPTIONS");
+    if (env) {
+        // parse
+        std::istringstream iss(env);
+        std::string token;
+        while (iss >> token) {
+            argv.push_back(strdup(token.c_str()));
+        }
+    }
+}
+
+void freeArgv() {
+    for (auto& arg : argv) {
+        free(arg);
+    }
+    argv.clear();
+}
 
 void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
           std::function <void()> postJavaCall) {
@@ -63,9 +88,16 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
     PowsyblCaller::get()->setPreprocessingJavaCall(preJavaCall);
     PowsyblCaller::get()->setPostProcessingJavaCall(postJavaCall);
 
-    int c = graal_create_isolate(nullptr, &isolate, &thread);
+    readArgvFromEnv();
+    int argc = argv.size();
+
+    graal_create_isolate_params_t params;
+    params._reserved_1 = argv.size(); // argc
+    params._reserved_2 = &argv[0];
+
+    int c = graal_create_isolate(&params, &isolate, &thread);
     if (c != 0) {
-        throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
+        throw std::runtime_error("graal_create_isolate_with_param error: " + std::to_string(c));
     }
 }
 
@@ -410,6 +442,10 @@ std::shared_ptr<flow_decomposition_parameters> FlowDecompositionParameters::to_c
 
 void setJavaLibraryPath(const std::string& javaLibraryPath) {
     PowsyblCaller::get()->callJava<>(::setJavaLibraryPath, (char*) javaLibraryPath.data());
+}
+
+void logMaxMemory() {
+    PowsyblCaller::get()->callJava<>(::logMaxMemory);
 }
 
 void setConfigRead(bool configRead) {
@@ -1229,6 +1265,7 @@ void removeInternalConnections(pypowsybl::JavaHandle network, dataframe* datafra
 
 void closePypowsybl() {
     pypowsybl::PowsyblCaller::get()->callJava(::closePypowsybl);
+    freeArgv();
 }
 
 SldParameters::SldParameters(sld_parameters* src) {

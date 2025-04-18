@@ -340,6 +340,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
 
+    m.def("log_max_memory", &pypowsybl::logMaxMemory, "Log JVM max memory");
+
     m.def("set_java_library_path", &pypowsybl::setJavaLibraryPath, "Set java.library.path JVM property");
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
