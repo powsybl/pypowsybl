@@ -368,13 +368,20 @@ class OptimalPowerFlow:
             bus_v_angle.append(model.get_value(variable_context.ph_vars[bus_num]))
         self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
 
-    def run(self):
+    def run(self) -> bool:
         network_cache = NetworkCache(self._network)
 
         model, variable_context = self.create_model(network_cache)
         model.optimize()
 
         status = model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
-        logger.info(f"Optimize end with status {status}")
+        logger.info(f"Optimizer end with status {status}")
 
         self.update_network(network_cache, model, variable_context)
+
+        return status == poi.TerminationStatusCode.LOCALLY_SOLVED
+
+
+def run_ac(network: Network) -> bool:
+    opf = OptimalPowerFlow(network)
+    return opf.run()

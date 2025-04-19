@@ -19,7 +19,9 @@ from pypowsybl import (
     glsk,
     flowdecomposition,
     shortcircuit,
-    rao
+    rao,
+    grid2op,
+    opf
 )
 from pypowsybl.network import per_unit_view
 
@@ -41,7 +43,8 @@ __all__ = [
     "flowdecomposition",
     "shortcircuit",
     "voltage_initializer",
-    "grid2op"
+    "grid2op",
+    "opf"
 ]
 
 
