@@ -72,7 +72,6 @@ To run a Dynawo simulation:
     model_mapping = dyn.ModelMapping()
     model_mapping.add_base_load(static_id='LOAD',
                                 parameter_set_id='LAB',
-                                dynamic_model_id='DM_LOAD',
                                 model_name='LoadAlphaBeta') # and so on
 
     # events mapping

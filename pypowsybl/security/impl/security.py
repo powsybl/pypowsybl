@@ -228,6 +228,18 @@ class SecurityAnalysis(ContingencyContainer):
         """
         _pypowsybl.add_shunt_compensator_position_action(self._handle, action_id, shunt_id, section)
 
+    def add_terminals_connection_action(self, action_id: str, element_id: str, side: Side = Side.NONE, opening: bool = True) -> None:
+        """ Add a terminals connection action, connecting/disconnecting one or multiple sides of a network element
+
+        Args:
+            action_id: unique ID for the action
+            element_id: network element identifier
+            side: The side of the element to modify (all if side=None)
+            opening: True to open the terminals, False otherwise
+        """
+        _pypowsybl.add_terminals_connection_action(self._handle, action_id, element_id, side, opening)
+
+
     def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
                               condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] = None,
                               violation_types: List[ViolationType] = None) -> None:

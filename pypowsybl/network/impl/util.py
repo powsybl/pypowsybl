@@ -76,7 +76,7 @@ def get_import_parameters(fmt: str) -> DataFrame:
 
            >>> parameters = pp.network.get_import_parameters('PSS/E')
            >>> parameters.index.tolist()
-           ['psse.import.ignore-base-voltage']
+           ['psse.import.ignore-base-voltage', 'psse.import.ignore-node-breaker-topology']
            >>> parameters['description']['psse.import.ignore-base-voltage']
            'Ignore base voltage specified in the file'
            >>> parameters['type']['psse.import.ignore-base-voltage']
