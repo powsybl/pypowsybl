@@ -75,13 +75,13 @@ class NetworkCache:
     def __init__(self, network: Network) -> None:
         self._network = network
         self._network.per_unit = True
-        self._buses = self._network.get_buses()
-        self._generators = self._network.get_generators()
-        self._loads = self._network.get_loads()
-        self._shunts = self._network.get_shunt_compensators()
-        self._lines = self._network.get_lines()
-        self._transformers = self._network.get_2_windings_transformers(all_attributes=True)
-        self._branches = self._network.get_branches()
+        self._buses = self._network.get_buses(attributes=[])
+        self._generators = self._network.get_generators(attributes=['bus_id', 'min_p', 'max_p', 'min_q', 'max_q'])
+        self._loads = self._network.get_loads(attributes=['bus_id', 'p0', 'q0'])
+        self._shunts = self._network.get_shunt_compensators(attributes=['bus_id', 'g', 'b'])
+        self._lines = self._network.get_lines(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'])
+        self._transformers = self._network.get_2_windings_transformers(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g', 'b', 'rho'])
+        self._branches = self._network.get_branches(attributes=['bus1_id', 'bus2_id'])
         self._slack_terminal = self._network.get_extensions('slackTerminal')
 
     @property
