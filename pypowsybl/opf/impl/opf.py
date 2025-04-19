@@ -80,7 +80,7 @@ class NetworkCache:
         self._loads = self._network.get_loads(attributes=['bus_id', 'p0', 'q0'])
         self._shunts = self._network.get_shunt_compensators(attributes=['bus_id', 'g', 'b'])
         self._lines = self._network.get_lines(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'])
-        self._transformers = self._network.get_2_windings_transformers(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g', 'b', 'rho'])
+        self._transformers = self._network.get_2_windings_transformers(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g', 'b', 'rho', 'alpha'])
         self._branches = self._network.get_branches(attributes=['bus1_id', 'bus2_id'])
         self._slack_terminal = self._network.get_extensions('slackTerminal')
 
@@ -246,13 +246,13 @@ class OptimalPowerFlow:
             else:
                 raise PyPowsyblError("Only branches connected to both sides are supported")
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
-            r, x, g, b, rho = row.r, row.x, row.g, row.b, row.rho
+            r, x, g, b, rho, alpha = row.r, row.x, row.g, row.b, row.rho, row.alpha
             g1 = g / 2
             g2 = g / 2
             b1 = b / 2
             b2 = b / 2
             r1 = rho
-            a1 = 0  # TODO
+            a1 = alpha
 
             branch_num = len(network_cache.lines) + transfo_num
             p1_var = branch_p1_vars[branch_num]

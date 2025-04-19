@@ -51,6 +51,5 @@ def test_ieee118():
     run_opf_then_lf(pp.network.create_ieee118(), 1)
 
 
-@pytest.mark.skip
 def test_ieee300():
     run_opf_then_lf(pp.network.create_ieee300(), 1)
