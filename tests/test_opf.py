@@ -40,6 +40,18 @@ def test_ieee14():
     run_opf_then_lf(pp.network.create_ieee14(), 1)
 
 
+def test_ieee14_open_side_1_branch():
+    network = pp.network.create_ieee14()
+    network.update_lines(id=['L1-2-1'], connected1=[False])
+    run_opf_then_lf(network, 1)
+
+
+def test_ieee14_open_side_2_branch():
+    network = pp.network.create_ieee14()
+    network.update_lines(id=['L1-2-1'], connected2=[False])
+    run_opf_then_lf(network, 1)
+
+
 def test_ieee30():
     run_opf_then_lf(pp.network.create_ieee30(), 1)
 

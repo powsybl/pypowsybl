@@ -16,7 +16,7 @@ R2 = 1.0
 A2 = 0.0
 
 
-def branch_flow(vars, params):
+def closed_branch_flow(vars, params):
     y, ksi, g1, b1, g2, b2, r1, a1 = (
         params.y,
         params.ksi,
@@ -53,6 +53,60 @@ def branch_flow(vars, params):
     q2_eq = R2 * v2 * (-b2 * R2 * v2 - y * r1 * v1 * cos_theta2 + y * R2 * v2 * cos_ksi) - q2
 
     return [p1_eq, q1_eq, p2_eq, q2_eq]
+
+
+def open_side1_branch_flow(vars, params):
+    y, ksi, g1, b1, g2, b2 = (
+        params.y,
+        params.ksi,
+        params.g1,
+        params.b1,
+        params.g2,
+        params.b2,
+    )
+    v2, ph2, p2, q2 = (
+        vars.v2,
+        vars.ph2,
+        vars.p2,
+        vars.q2,
+    )
+
+    sin_ksi = nlfunc.sin(ksi)
+    cos_ksi = nlfunc.cos(ksi)
+
+    shunt = (g1 + y * sin_ksi) * (g1 + y * sin_ksi) + (-b1 + y * cos_ksi) * (-b1 + y * cos_ksi)
+    p2_eq = R2 * R2 * v2 * v2 * (g2 + y * y * g1 / shunt + (b1 * b1 + g1 * g1) * y * sin_ksi / shunt) - p2
+    q2_eq = -R2 * R2 * v2 * v2 * (b2 + y * y * b1 / shunt - (b1 * b1 + g1 * g1) * y * cos_ksi / shunt) - q2
+
+    return [p2_eq, q2_eq]
+
+
+def open_side2_branch_flow(vars, params):
+    y, ksi, g1, b1, g2, b2, r1, a1 = (
+        params.y,
+        params.ksi,
+        params.g1,
+        params.b1,
+        params.g2,
+        params.b2,
+        params.r1,
+        params.a1,
+    )
+    v1, ph1, p1, q1, = (
+        vars.v1,
+        vars.ph1,
+        vars.p1,
+        vars.q1,
+    )
+
+    sin_ksi = nlfunc.sin(ksi)
+    cos_ksi = nlfunc.cos(ksi)
+
+    shunt = (g2 + y * sin_ksi) * (g2 + y * sin_ksi) + (-b2 + y * cos_ksi) * (-b2 + y * cos_ksi)
+    p1_eq = r1 * r1 * v1 * v1 * (g1 + y * y * g2 / shunt + (b2 * b2 + g2 * g2) * y * sin_ksi / shunt) - p1
+    q1_eq = -r1 * r1 * v1 * v1 * (b1 + y * y * b2 / shunt - (b2 * b2 + g2 * g2) * y * cos_ksi / shunt) - q1
+
+    return [p1_eq, q1_eq]
 
 
 def shunt_flow(vars, params):
@@ -150,14 +204,14 @@ class OptimalPowerFlow:
     def __init__(self, network: Network) -> None:
         self._network = network
 
-    def add_branch_constraint(model, bf, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
-                              r, x, g1, b1, g2, b2, r1, a1):
+    def add_closed_branch_constraint(model, cbff, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
+                                     r, x, g1, b1, g2, b2, r1, a1):
         z = hypot(r, x)
         y = 1.0 / z
         ksi = atan2(r, x)
 
         model.add_nl_constraint(
-            bf,
+            cbff,
             vars=nlfunc.Vars(
                 v1=v1_var,
                 v2=v2_var,
@@ -181,10 +235,66 @@ class OptimalPowerFlow:
             eq=0.0,
         )
 
+    def add_open_side1_branch_constraint(model, o1bf, v2_var, ph2_var, p2_var, q2_var,
+                                         r, x, g1, b1, g2, b2):
+        z = hypot(r, x)
+        y = 1.0 / z
+        ksi = atan2(r, x)
+
+        model.add_nl_constraint(
+            o1bf,
+            vars=nlfunc.Vars(
+                v2=v2_var,
+                ph2=ph2_var,
+                p2=p2_var,
+                q2=q2_var
+            ),
+            params=nlfunc.Params(
+                y=y,
+                ksi=ksi,
+                g1=g1,
+                b1=b1,
+                g2=g2,
+                b2=b2,
+            ),
+            eq=0.0,
+        )
+
+
+    def add_open_side2_branch_constraint(model, o2bf, v1_var, ph1_var, p1_var, q1_var,
+                                         r, x, g1, b1, g2, b2, r1, a1):
+        z = hypot(r, x)
+        y = 1.0 / z
+        ksi = atan2(r, x)
+
+        model.add_nl_constraint(
+            o2bf,
+            vars=nlfunc.Vars(
+                v1=v1_var,
+                ph1=ph1_var,
+                p1=p1_var,
+                q1=q1_var
+            ),
+            params=nlfunc.Params(
+                y=y,
+                ksi=ksi,
+                g1=g1,
+                b1=b1,
+                g2=g2,
+                b2=b2,
+                a1=a1,
+                r1=r1,
+            ),
+            eq=0.0,
+        )
+
+
     def create_model(self, network_cache: NetworkCache):
         model = ipopt.Model()
-        bf = model.register_function(branch_flow)
-        sf = model.register_function(shunt_flow)
+        cbff = model.register_function(closed_branch_flow)
+        o1bff = model.register_function(open_side1_branch_flow)
+        o2bff = model.register_function(open_side2_branch_flow)
+        sff = model.register_function(shunt_flow)
 
         branch_count = len(network_cache.lines) + len(network_cache.transformers)
         bus_count = len(network_cache.buses)
@@ -239,11 +349,24 @@ class OptimalPowerFlow:
                 v2_var = v_vars[bus2_num]
                 ph1_var = ph_vars[bus1_num]
                 ph2_var = ph_vars[bus2_num]
-                OptimalPowerFlow.add_branch_constraint(model, bf,
-                                                       v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
-                                                       r, x, g1, b1, g2, b2, r1, a1)
-            else:
-                raise PyPowsyblError("Only branches connected to both sides are supported")
+                OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
+                                                              v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
+                                                              r, x, g1, b1, g2, b2, r1, a1)
+            elif row.bus2_id:
+                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
+                v2_var = v_vars[bus2_num]
+                ph2_var = ph_vars[bus2_num]
+                OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
+                                                                  v2_var, ph2_var, p2_var, q2_var,
+                                                                  r, x, g1, b1, g2, b2)
+            elif row.bus1_id:
+                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
+                v1_var = v_vars[bus1_num]
+                ph1_var = ph_vars[bus1_num]
+                OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
+                                                                  v1_var, ph1_var, p1_var, q1_var,
+                                                                  r, x, g1, b1, g2, b2, r1, a1)
+
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
             r, x, g, b, rho, alpha = row.r, row.x, row.g, row.b, row.rho, row.alpha
             g1 = g / 2
@@ -266,11 +389,23 @@ class OptimalPowerFlow:
                 v2_var = v_vars[bus2_num]
                 ph1_var = ph_vars[bus1_num]
                 ph2_var = ph_vars[bus2_num]
-                OptimalPowerFlow.add_branch_constraint(model, bf,
-                                                       v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
-                                                       r, x, g1, b1, g2, b2, r1, a1)
-            else:
-                raise PyPowsyblError("Only branches connected to both sides are supported")
+                OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
+                                                              v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
+                                                              r, x, g1, b1, g2, b2, r1, a1)
+            elif row.bus2_id:
+                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
+                v2_var = v_vars[bus2_num]
+                ph2_var = ph_vars[bus2_num]
+                OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
+                                                                  v2_var, ph2_var, p2_var, q2_var,
+                                                                  r, x, g1, b1, g2, b2)
+            elif row.bus1_id:
+                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
+                v1_var = v_vars[bus1_num]
+                ph1_var = ph_vars[bus1_num]
+                OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
+                                                                  v1_var, ph1_var, p1_var, q1_var,
+                                                                  r, x, g1, b1, g2, b2, r1, a1)
 
         # power balance constraints
         bus_p_gen = [[] for _ in range(bus_count)]
@@ -285,8 +420,14 @@ class OptimalPowerFlow:
                 bus_q_gen[bus1_num].append(branch_q1_vars[branch_num])
                 bus_p_gen[bus2_num].append(branch_p2_vars[branch_num])
                 bus_q_gen[bus2_num].append(branch_q2_vars[branch_num])
-            else:
-                raise PyPowsyblError("Only branches connected to both sides are supported")
+            elif row.bus2_id:
+                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
+                bus_p_gen[bus2_num].append(branch_p2_vars[branch_num])
+                bus_q_gen[bus2_num].append(branch_q2_vars[branch_num])
+            elif row.bus1_id:
+                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
+                bus_p_gen[bus1_num].append(branch_p1_vars[branch_num])
+                bus_q_gen[bus1_num].append(branch_q1_vars[branch_num])
         for num, row in enumerate(network_cache.generators.itertuples(index=False)):
             bus_id = row.bus_id
             if bus_id:
@@ -308,7 +449,7 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 v_var = v_vars[bus_num]
                 model.add_nl_constraint(
-                    sf,
+                    sff,
                     vars=nlfunc.Vars(
                         v=v_var,
                         p=p_var,
@@ -371,7 +512,8 @@ class OptimalPowerFlow:
                 gen_target_q.append(-q)
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 gen_target_v.append(model.get_value(variable_context.v_vars[bus_num]))
-                gen_voltage_regulator_on.append(True if q > row.min_q and q < row.max_q else False)
+                q_lim_eps = 0.01 # ?
+                gen_voltage_regulator_on.append(True if q > row.min_q + q_lim_eps and q < row.max_q - q_lim_eps else False)
         self._network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
                                         voltage_regulator_on=gen_voltage_regulator_on)
 
