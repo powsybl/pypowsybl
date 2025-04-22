@@ -21,7 +21,8 @@ def set_up():
 def run_opf_then_lf(network: pp.network.Network, iteration_count: int):
     assert pp.opf.run_ac(network)
 
-    lf_parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.PREVIOUS_VALUES)
+    lf_parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.PREVIOUS_VALUES,
+                                           provider_parameters={'plausibleActivePowerLimit': '10000.0'})
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
@@ -36,7 +37,7 @@ def test_ieee9():
 
 
 def test_ieee14():
-    run_opf_then_lf(pp.network.create_ieee14(), 2)
+    run_opf_then_lf(pp.network.create_ieee14(), 1)
 
 
 def test_ieee30():

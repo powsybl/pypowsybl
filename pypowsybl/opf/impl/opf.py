@@ -201,7 +201,7 @@ class OptimalPowerFlow:
 
         # voltage buses bounds
         for i in range(bus_count):
-            vmin, vmax = 0.90, 1.1  # FIXME get from voltage level dataframe
+            vmin, vmax = 0.9, 1.1  # FIXME get from voltage level dataframe
             model.set_variable_bounds(v_vars[i], vmin, vmax)
 
         # slack bus angle forced to 0
@@ -212,15 +212,14 @@ class OptimalPowerFlow:
         slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
         model.set_variable_bounds(ph_vars[slack_bus_num], 0.0, 0.0)
 
-        # generators reactive power bounds
+        # generator reactive power bounds
         gen_p_vars = model.add_variables(range(gen_count), name="gen_p")
         gen_q_vars = model.add_variables(range(gen_count), name="gen_q")
         shunt_p_vars = model.add_variables(range(gen_count), name="shunt_p")
         shunt_q_vars = model.add_variables(range(gen_count), name="shunt_q")
-        q_margin = 1.0 / self._network.nominal_apparent_power
         for gen_num, row in enumerate(network_cache.generators.itertuples(index=False)):
             model.set_variable_bounds(gen_p_vars[gen_num], row.min_p, row.max_p)
-            model.set_variable_bounds(gen_q_vars[gen_num], row.min_q + q_margin, row.max_q - q_margin)
+            model.set_variable_bounds(gen_q_vars[gen_num], row.min_q, row.max_q)
 
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
@@ -274,10 +273,10 @@ class OptimalPowerFlow:
                 raise PyPowsyblError("Only branches connected to both sides are supported")
 
         # power balance constraints
-        bus_p_gen = [[] for i in range(bus_count)]
-        bus_q_gen = [[] for i in range(bus_count)]
-        bus_p_load = [0.0 for i in range(bus_count)]
-        bus_q_load = [0.0 for i in range(bus_count)]
+        bus_p_gen = [[] for _ in range(bus_count)]
+        bus_q_gen = [[] for _ in range(bus_count)]
+        bus_p_load = [0.0 for _ in range(bus_count)]
+        bus_q_load = [0.0 for _ in range(bus_count)]
         for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
             if row.bus1_id and row.bus2_id:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
@@ -335,29 +334,46 @@ class OptimalPowerFlow:
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
         # cost function: minimize active power
+#        cost = OptimalPowerFlow.create_minimal_active_power_cost_function(gen_count, gen_p_vars)
+        cost = OptimalPowerFlow.create_minimal_losses_cost_function(branch_count, branch_p1_vars, branch_p2_vars)
+        model.set_objective(cost)
+
+        return model, VariableContext(gen_p_vars, gen_q_vars, ph_vars, v_vars)
+
+    @staticmethod
+    def create_minimal_active_power_cost_function(gen_count: int, gen_p_vars):
         cost = poi.ExprBuilder()
         for gen_num in range(gen_count):
             a, b, c = 0, 1.0, 0  # TODO
             cost += a * gen_p_vars[gen_num] * gen_p_vars[gen_num] + b * gen_p_vars[gen_num] + c
-        model.set_objective(cost)
+        return cost
 
-        return model, VariableContext(gen_p_vars, gen_q_vars, ph_vars, v_vars)
+    @staticmethod
+    def create_minimal_losses_cost_function(branch_count: int, branch_p1_vars, branch_p2_vars):
+        cost = poi.ExprBuilder()
+        for branch_num in range(branch_count):
+            cost += branch_p1_vars[branch_num] - branch_p2_vars[branch_num]
+        return cost
 
     def update_network(self, network_cache: NetworkCache, model, variable_context: VariableContext):
         gen_ids = []
         gen_target_p = []
         gen_target_q = []
         gen_target_v = []
+        gen_voltage_regulator_on = []
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
                 gen_ids.append(gen_id)
-                gen_target_p.append(-model.get_value(variable_context.gen_p_vars[gen_num]))
-                gen_target_q.append(-model.get_value(variable_context.gen_q_vars[gen_num]))
+                p = model.get_value(variable_context.gen_p_vars[gen_num])
+                gen_target_p.append(-p)
+                q = model.get_value(variable_context.gen_q_vars[gen_num])
+                gen_target_q.append(-q)
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 gen_target_v.append(model.get_value(variable_context.v_vars[bus_num]))
+                gen_voltage_regulator_on.append(True if q > row.min_q and q < row.max_q else False)
         self._network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
-                                        voltage_regulator_on=[True] * len(gen_ids))
+                                        voltage_regulator_on=gen_voltage_regulator_on)
 
         bus_ids = []
         bus_v_mag = []
