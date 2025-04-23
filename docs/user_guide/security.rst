@@ -41,6 +41,7 @@ It is also possible to get a JSON file with the full security analysis results, 
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
+
     >>> n = pp.network.create_eurostag_tutorial_example1_network()
     >>> sa = pp.security.create_analysis()
     >>> sa_result = sa.run_ac(n)
