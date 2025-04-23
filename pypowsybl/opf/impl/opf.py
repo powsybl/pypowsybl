@@ -439,10 +439,10 @@ class OptimalPowerFlow:
         variable_context = self.create_variable_context(network_cache, model)
 
         # voltage buses bounds
-        bus_count = len(network_cache.buses)
-        for i in range(bus_count):
+        for bus_num, row in enumerate(network_cache.buses.itertuples(index=True)):
             vmin, vmax = 0.9, 1.1  # FIXME get from voltage level dataframe
-            model.set_variable_bounds(variable_context.v_vars[i], vmin, vmax)
+            logger.debug(f"Add voltage magnitude bounds [{vmin}, {vmax}] to bus '{row.Index}' (num={bus_num})'")
+            model.set_variable_bounds(variable_context.v_vars[bus_num], vmin, vmax)
 
         # slack bus angle forced to 0
         if len(network_cache.slack_terminal) > 0:
@@ -451,10 +451,13 @@ class OptimalPowerFlow:
             slack_bus_id = network_cache.buses.iloc[0].name
         slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
         model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
+        logger.debug(f"Slack is at bus {slack_bus_num}")
 
         # generator reactive power bounds
-        for gen_num, row in enumerate(network_cache.generators.itertuples(index=False)):
+        for gen_num, row in enumerate(network_cache.generators.itertuples(index=True)):
+            logger.debug(f"Add active power bounds [{row.min_p}, {row.max_p}] to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], row.min_p, row.max_p)
+            logger.debug(f"Add reactive power bounds [{row.min_q}, {row.max_q}] to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_q_vars[gen_num], row.min_q, row.max_q)
 
         # branch flow nonlinear constraints
