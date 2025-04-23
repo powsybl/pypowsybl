@@ -302,10 +302,41 @@ class OptimalPowerFlow:
         shunt_count = len(network_cache.shunts)
 
         # create variables
-        branch_p1_vars = model.add_variables(range(branch_count), name='branch_p1')
-        branch_q1_vars = model.add_variables(range(branch_count), name='branch_q1')
-        branch_p2_vars = model.add_variables(range(branch_count), name='branch_p2')
-        branch_q2_vars = model.add_variables(range(branch_count), name='branch_q2')
+        closed_branch_nums = []
+        open_side1_branch_nums = []
+        open_side2_branch_nums = []
+        branch_num_2_index = [-1] * branch_count
+        for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
+            if row.bus1_id and row.bus2_id:
+                branch_num_2_index[branch_num] = len(closed_branch_nums)
+                closed_branch_nums.append(branch_num)
+            elif row.bus2_id:
+                branch_num_2_index[branch_num] = len(open_side1_branch_nums)
+                open_side1_branch_nums.append(branch_num)
+            elif row.bus1_id:
+                branch_num_2_index[branch_num] = len(open_side2_branch_nums)
+                open_side2_branch_nums.append(branch_num)
+
+        for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
+            branch_num = len(network_cache.lines) + transfo_num
+            if row.bus1_id and row.bus2_id:
+                branch_num_2_index[branch_num] = len(closed_branch_nums)
+                closed_branch_nums.append(branch_num)
+            elif row.bus2_id:
+                branch_num_2_index[branch_num] = len(open_side1_branch_nums)
+                open_side1_branch_nums.append(branch_num)
+            elif row.bus1_id:
+                branch_num_2_index[branch_num] = len(open_side2_branch_nums)
+                open_side2_branch_nums.append(branch_num)
+
+        closed_branch_p1_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_p1')
+        closed_branch_q1_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_q1')
+        closed_branch_p2_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_p2')
+        closed_branch_q2_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_q2')
+        open_side1_branch_p2_vars = model.add_variables(range(len(open_side1_branch_nums)), name='open_side1_branch_p2')
+        open_side1_branch_q2_vars = model.add_variables(range(len(open_side1_branch_nums)), name='open_side1_branch_q2')
+        open_side2_branch_p1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_p1')
+        open_side2_branch_q1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_q1')
         v_vars = model.add_variables(range(bus_count), name="v")
         ph_vars = model.add_variables(range(bus_count), name="ph")
 
@@ -337,10 +368,7 @@ class OptimalPowerFlow:
             r1 = 1.0
             a1 = 0.0
 
-            p1_var = branch_p1_vars[branch_num]
-            q1_var = branch_q1_vars[branch_num]
-            p2_var = branch_p2_vars[branch_num]
-            q2_var = branch_q2_vars[branch_num]
+            branch_index = branch_num_2_index[branch_num]
 
             if row.bus1_id and row.bus2_id:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
@@ -349,6 +377,10 @@ class OptimalPowerFlow:
                 v2_var = v_vars[bus2_num]
                 ph1_var = ph_vars[bus1_num]
                 ph2_var = ph_vars[bus2_num]
+                p1_var = closed_branch_p1_vars[branch_index]
+                q1_var = closed_branch_q1_vars[branch_index]
+                p2_var = closed_branch_p2_vars[branch_index]
+                q2_var = closed_branch_q2_vars[branch_index]
                 OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
                                                               v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
                                                               r, x, g1, b1, g2, b2, r1, a1)
@@ -356,6 +388,8 @@ class OptimalPowerFlow:
                 bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
                 v2_var = v_vars[bus2_num]
                 ph2_var = ph_vars[bus2_num]
+                p2_var = open_side1_branch_p2_vars[branch_index]
+                q2_var = open_side1_branch_q2_vars[branch_index]
                 OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
                                                                   v2_var, ph2_var, p2_var, q2_var,
                                                                   r, x, g1, b1, g2, b2)
@@ -363,6 +397,8 @@ class OptimalPowerFlow:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
                 v1_var = v_vars[bus1_num]
                 ph1_var = ph_vars[bus1_num]
+                p1_var = open_side2_branch_p1_vars[branch_index]
+                q1_var = open_side2_branch_q1_vars[branch_index]
                 OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
                                                                   v1_var, ph1_var, p1_var, q1_var,
                                                                   r, x, g1, b1, g2, b2, r1, a1)
@@ -377,10 +413,7 @@ class OptimalPowerFlow:
             a1 = alpha
 
             branch_num = len(network_cache.lines) + transfo_num
-            p1_var = branch_p1_vars[branch_num]
-            q1_var = branch_q1_vars[branch_num]
-            p2_var = branch_p2_vars[branch_num]
-            q2_var = branch_q2_vars[branch_num]
+            branch_index = branch_num_2_index[branch_num]
 
             if row.bus1_id and row.bus2_id:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
@@ -389,6 +422,10 @@ class OptimalPowerFlow:
                 v2_var = v_vars[bus2_num]
                 ph1_var = ph_vars[bus1_num]
                 ph2_var = ph_vars[bus2_num]
+                p1_var = closed_branch_p1_vars[branch_index]
+                q1_var = closed_branch_q1_vars[branch_index]
+                p2_var = closed_branch_p2_vars[branch_index]
+                q2_var = closed_branch_q2_vars[branch_index]
                 OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
                                                               v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
                                                               r, x, g1, b1, g2, b2, r1, a1)
@@ -396,6 +433,8 @@ class OptimalPowerFlow:
                 bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
                 v2_var = v_vars[bus2_num]
                 ph2_var = ph_vars[bus2_num]
+                p2_var = open_side1_branch_p2_vars[branch_index]
+                q2_var = open_side1_branch_q2_vars[branch_index]
                 OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
                                                                   v2_var, ph2_var, p2_var, q2_var,
                                                                   r, x, g1, b1, g2, b2)
@@ -403,6 +442,8 @@ class OptimalPowerFlow:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
                 v1_var = v_vars[bus1_num]
                 ph1_var = ph_vars[bus1_num]
+                p1_var = open_side2_branch_p1_vars[branch_index]
+                q1_var = open_side2_branch_q1_vars[branch_index]
                 OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
                                                                   v1_var, ph1_var, p1_var, q1_var,
                                                                   r, x, g1, b1, g2, b2, r1, a1)
@@ -413,21 +454,22 @@ class OptimalPowerFlow:
         bus_p_load = [0.0 for _ in range(bus_count)]
         bus_q_load = [0.0 for _ in range(bus_count)]
         for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
+            branch_index = branch_num_2_index[branch_num]
             if row.bus1_id and row.bus2_id:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
                 bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
-                bus_p_gen[bus1_num].append(branch_p1_vars[branch_num])
-                bus_q_gen[bus1_num].append(branch_q1_vars[branch_num])
-                bus_p_gen[bus2_num].append(branch_p2_vars[branch_num])
-                bus_q_gen[bus2_num].append(branch_q2_vars[branch_num])
+                bus_p_gen[bus1_num].append(closed_branch_p1_vars[branch_index])
+                bus_q_gen[bus1_num].append(closed_branch_q1_vars[branch_index])
+                bus_p_gen[bus2_num].append(closed_branch_p2_vars[branch_index])
+                bus_q_gen[bus2_num].append(closed_branch_q2_vars[branch_index])
             elif row.bus2_id:
                 bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
-                bus_p_gen[bus2_num].append(branch_p2_vars[branch_num])
-                bus_q_gen[bus2_num].append(branch_q2_vars[branch_num])
+                bus_p_gen[bus2_num].append(open_side1_branch_p2_vars[branch_index])
+                bus_q_gen[bus2_num].append(open_side1_branch_q2_vars[branch_index])
             elif row.bus1_id:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
-                bus_p_gen[bus1_num].append(branch_p1_vars[branch_num])
-                bus_q_gen[bus1_num].append(branch_q1_vars[branch_num])
+                bus_p_gen[bus1_num].append(open_side2_branch_p1_vars[branch_index])
+                bus_q_gen[bus1_num].append(open_side2_branch_q1_vars[branch_index])
         for num, row in enumerate(network_cache.generators.itertuples(index=False)):
             bus_id = row.bus_id
             if bus_id:
@@ -476,7 +518,7 @@ class OptimalPowerFlow:
 
         # cost function: minimize active power
 #        cost = OptimalPowerFlow.create_minimal_active_power_cost_function(gen_count, gen_p_vars)
-        cost = OptimalPowerFlow.create_minimal_losses_cost_function(branch_count, branch_p1_vars, branch_p2_vars)
+        cost = OptimalPowerFlow.create_minimal_losses_cost_function(closed_branch_p1_vars, closed_branch_p2_vars)
         model.set_objective(cost)
 
         return model, VariableContext(gen_p_vars, gen_q_vars, ph_vars, v_vars)
@@ -490,10 +532,10 @@ class OptimalPowerFlow:
         return cost
 
     @staticmethod
-    def create_minimal_losses_cost_function(branch_count: int, branch_p1_vars, branch_p2_vars):
+    def create_minimal_losses_cost_function(branch_p1_vars, branch_p2_vars):
         cost = poi.ExprBuilder()
-        for branch_num in range(branch_count):
-            cost += branch_p1_vars[branch_num] - branch_p2_vars[branch_num]
+        for branch_index in range(len(branch_p1_vars)):
+            cost += branch_p1_vars[branch_index] - branch_p2_vars[branch_index]
         return cost
 
     def update_network(self, network_cache: NetworkCache, model, variable_context: VariableContext):
