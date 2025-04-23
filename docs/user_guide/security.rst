@@ -37,6 +37,14 @@ the violations created by the contingency, they are collected by contingency in 
                       NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0  1477.824335  TWO
                       VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
 
+It is also possible to get a JSON file with the full security analysis results, just by using the `export_to_json` method, like in the example below :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+    >>> n = pp.network.create_eurostag_tutorial_example1_network()
+    >>> sa = pp.security.create_analysis()
+    >>> sa_result = sa.run_ac(n)
+    >>> sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))
 
 
 Adding monitored Elements
