@@ -130,7 +130,7 @@ class NetworkCache:
         self._network = network
         self._network.per_unit = True
         self._buses = self._network.get_buses(attributes=[])
-        self._generators = self._network.get_generators(attributes=['bus_id', 'min_p', 'max_p', 'min_q', 'max_q'])
+        self._generators = self._network.get_generators(attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p'])
         self._loads = self._network.get_loads(attributes=['bus_id', 'p0', 'q0'])
         self._shunts = self._network.get_shunt_compensators(attributes=['bus_id', 'g', 'b'])
         self._lines = self._network.get_lines(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'])
@@ -457,8 +457,10 @@ class OptimalPowerFlow:
         for gen_num, row in enumerate(network_cache.generators.itertuples(index=True)):
             logger.debug(f"Add active power bounds [{row.min_p}, {row.max_p}] to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], row.min_p, row.max_p)
-            logger.debug(f"Add reactive power bounds [{row.min_q}, {row.max_q}] to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], row.min_q, row.max_q)
+            min_q = row.min_q_at_target_p
+            max_q = row.max_q_at_target_p
+            logger.debug(f"Add reactive power bounds [{min_q}, {max_q}] to generator '{row.Index}' (num={gen_num})")
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], min_q, max_q)
 
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
@@ -524,7 +526,7 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 gen_target_v.append(model.get_value(variable_context.v_vars[bus_num]))
                 q_lim_eps = 0.01 # ?
-                gen_voltage_regulator_on.append(True if q > row.min_q + q_lim_eps and q < row.max_q - q_lim_eps else False)
+                gen_voltage_regulator_on.append(True if q > row.min_q_at_target_p + q_lim_eps and q < row.min_q_at_target_p - q_lim_eps else False)
         self._network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
                                         voltage_regulator_on=gen_voltage_regulator_on)
 
