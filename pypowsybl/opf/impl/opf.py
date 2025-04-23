@@ -288,6 +288,43 @@ class OptimalPowerFlow:
             eq=0.0,
         )
 
+    def add_branch_constraint(self, branch_index, bus1_id, bus2_id, network_cache: NetworkCache, model, cbff, o1bff, o2bff,
+                              r, x, g1, b1, g2, b2, r1, a1, v_vars, ph_vars, closed_branch_p1_vars,
+                              closed_branch_q1_vars, closed_branch_p2_vars, closed_branch_q2_vars, open_side1_branch_p2_vars,
+                              open_side1_branch_q2_vars, open_side2_branch_p1_vars, open_side2_branch_q1_vars):
+        if bus1_id and bus2_id:
+            bus1_num = network_cache.buses.index.get_loc(bus1_id)
+            bus2_num = network_cache.buses.index.get_loc(bus2_id)
+            v1_var = v_vars[bus1_num]
+            v2_var = v_vars[bus2_num]
+            ph1_var = ph_vars[bus1_num]
+            ph2_var = ph_vars[bus2_num]
+            p1_var = closed_branch_p1_vars[branch_index]
+            q1_var = closed_branch_q1_vars[branch_index]
+            p2_var = closed_branch_p2_vars[branch_index]
+            q2_var = closed_branch_q2_vars[branch_index]
+            OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
+                                                          v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var,
+                                                          q2_var,
+                                                          r, x, g1, b1, g2, b2, r1, a1)
+        elif bus2_id:
+            bus2_num = network_cache.buses.index.get_loc(bus2_id)
+            v2_var = v_vars[bus2_num]
+            ph2_var = ph_vars[bus2_num]
+            p2_var = open_side1_branch_p2_vars[branch_index]
+            q2_var = open_side1_branch_q2_vars[branch_index]
+            OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
+                                                              v2_var, ph2_var, p2_var, q2_var,
+                                                              r, x, g1, b1, g2, b2)
+        elif bus1_id:
+            bus1_num = network_cache.buses.index.get_loc(bus1_id)
+            v1_var = v_vars[bus1_num]
+            ph1_var = ph_vars[bus1_num]
+            p1_var = open_side2_branch_p1_vars[branch_index]
+            q1_var = open_side2_branch_q1_vars[branch_index]
+            OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
+                                                              v1_var, ph1_var, p1_var, q1_var,
+                                                              r, x, g1, b1, g2, b2, r1, a1)
 
     def create_model(self, network_cache: NetworkCache):
         model = ipopt.Model()
@@ -306,19 +343,7 @@ class OptimalPowerFlow:
         open_side1_branch_nums = []
         open_side2_branch_nums = []
         branch_num_2_index = [-1] * branch_count
-        for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
-            if row.bus1_id and row.bus2_id:
-                branch_num_2_index[branch_num] = len(closed_branch_nums)
-                closed_branch_nums.append(branch_num)
-            elif row.bus2_id:
-                branch_num_2_index[branch_num] = len(open_side1_branch_nums)
-                open_side1_branch_nums.append(branch_num)
-            elif row.bus1_id:
-                branch_num_2_index[branch_num] = len(open_side2_branch_nums)
-                open_side2_branch_nums.append(branch_num)
-
-        for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
-            branch_num = len(network_cache.lines) + transfo_num
+        for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
             if row.bus1_id and row.bus2_id:
                 branch_num_2_index[branch_num] = len(closed_branch_nums)
                 closed_branch_nums.append(branch_num)
@@ -367,41 +392,12 @@ class OptimalPowerFlow:
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
             r1 = 1.0
             a1 = 0.0
-
             branch_index = branch_num_2_index[branch_num]
-
-            if row.bus1_id and row.bus2_id:
-                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
-                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
-                v1_var = v_vars[bus1_num]
-                v2_var = v_vars[bus2_num]
-                ph1_var = ph_vars[bus1_num]
-                ph2_var = ph_vars[bus2_num]
-                p1_var = closed_branch_p1_vars[branch_index]
-                q1_var = closed_branch_q1_vars[branch_index]
-                p2_var = closed_branch_p2_vars[branch_index]
-                q2_var = closed_branch_q2_vars[branch_index]
-                OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
-                                                              v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
-                                                              r, x, g1, b1, g2, b2, r1, a1)
-            elif row.bus2_id:
-                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
-                v2_var = v_vars[bus2_num]
-                ph2_var = ph_vars[bus2_num]
-                p2_var = open_side1_branch_p2_vars[branch_index]
-                q2_var = open_side1_branch_q2_vars[branch_index]
-                OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
-                                                                  v2_var, ph2_var, p2_var, q2_var,
-                                                                  r, x, g1, b1, g2, b2)
-            elif row.bus1_id:
-                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
-                v1_var = v_vars[bus1_num]
-                ph1_var = ph_vars[bus1_num]
-                p1_var = open_side2_branch_p1_vars[branch_index]
-                q1_var = open_side2_branch_q1_vars[branch_index]
-                OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
-                                                                  v1_var, ph1_var, p1_var, q1_var,
-                                                                  r, x, g1, b1, g2, b2, r1, a1)
+            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model, cbff, o1bff, o2bff,
+                                       r, x, g1, b1, g2, b2, r1, a1, v_vars, ph_vars, closed_branch_p1_vars,
+                                       closed_branch_q1_vars, closed_branch_p2_vars, closed_branch_q2_vars,
+                                       open_side1_branch_p2_vars, open_side1_branch_q2_vars, open_side2_branch_p1_vars,
+                                       open_side2_branch_q1_vars)
 
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
             r, x, g, b, rho, alpha = row.r, row.x, row.g, row.b, row.rho, row.alpha
@@ -411,42 +407,13 @@ class OptimalPowerFlow:
             b2 = b / 2
             r1 = rho
             a1 = alpha
-
             branch_num = len(network_cache.lines) + transfo_num
             branch_index = branch_num_2_index[branch_num]
-
-            if row.bus1_id and row.bus2_id:
-                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
-                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
-                v1_var = v_vars[bus1_num]
-                v2_var = v_vars[bus2_num]
-                ph1_var = ph_vars[bus1_num]
-                ph2_var = ph_vars[bus2_num]
-                p1_var = closed_branch_p1_vars[branch_index]
-                q1_var = closed_branch_q1_vars[branch_index]
-                p2_var = closed_branch_p2_vars[branch_index]
-                q2_var = closed_branch_q2_vars[branch_index]
-                OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
-                                                              v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
-                                                              r, x, g1, b1, g2, b2, r1, a1)
-            elif row.bus2_id:
-                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
-                v2_var = v_vars[bus2_num]
-                ph2_var = ph_vars[bus2_num]
-                p2_var = open_side1_branch_p2_vars[branch_index]
-                q2_var = open_side1_branch_q2_vars[branch_index]
-                OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
-                                                                  v2_var, ph2_var, p2_var, q2_var,
-                                                                  r, x, g1, b1, g2, b2)
-            elif row.bus1_id:
-                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
-                v1_var = v_vars[bus1_num]
-                ph1_var = ph_vars[bus1_num]
-                p1_var = open_side2_branch_p1_vars[branch_index]
-                q1_var = open_side2_branch_q1_vars[branch_index]
-                OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
-                                                                  v1_var, ph1_var, p1_var, q1_var,
-                                                                  r, x, g1, b1, g2, b2, r1, a1)
+            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model, cbff, o1bff, o2bff,
+                                       r, x, g1, b1, g2, b2, r1, a1, v_vars, ph_vars, closed_branch_p1_vars,
+                                       closed_branch_q1_vars, closed_branch_p2_vars, closed_branch_q2_vars,
+                                       open_side1_branch_p2_vars, open_side1_branch_q2_vars, open_side2_branch_p1_vars,
+                                       open_side2_branch_q1_vars)
 
         # power balance constraints
         bus_p_gen = [[] for _ in range(bus_count)]
