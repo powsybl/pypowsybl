@@ -204,94 +204,14 @@ class OptimalPowerFlow:
     def __init__(self, network: Network) -> None:
         self._network = network
 
-    def add_closed_branch_constraint(model, cbff, v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var, q2_var,
-                                     r, x, g1, b1, g2, b2, r1, a1):
-        z = hypot(r, x)
-        y = 1.0 / z
-        ksi = atan2(r, x)
-
-        model.add_nl_constraint(
-            cbff,
-            vars=nlfunc.Vars(
-                v1=v1_var,
-                v2=v2_var,
-                ph1=ph1_var,
-                ph2=ph2_var,
-                p1=p1_var,
-                q1=q1_var,
-                p2=p2_var,
-                q2=q2_var
-            ),
-            params=nlfunc.Params(
-                y=y,
-                ksi=ksi,
-                g1=g1,
-                b1=b1,
-                g2=g2,
-                b2=b2,
-                r1=r1,
-                a1=a1
-            ),
-            eq=0.0,
-        )
-
-    def add_open_side1_branch_constraint(model, o1bf, v2_var, ph2_var, p2_var, q2_var,
-                                         r, x, g1, b1, g2, b2):
-        z = hypot(r, x)
-        y = 1.0 / z
-        ksi = atan2(r, x)
-
-        model.add_nl_constraint(
-            o1bf,
-            vars=nlfunc.Vars(
-                v2=v2_var,
-                ph2=ph2_var,
-                p2=p2_var,
-                q2=q2_var
-            ),
-            params=nlfunc.Params(
-                y=y,
-                ksi=ksi,
-                g1=g1,
-                b1=b1,
-                g2=g2,
-                b2=b2,
-            ),
-            eq=0.0,
-        )
-
-
-    def add_open_side2_branch_constraint(model, o2bf, v1_var, ph1_var, p1_var, q1_var,
-                                         r, x, g1, b1, g2, b2, r1, a1):
-        z = hypot(r, x)
-        y = 1.0 / z
-        ksi = atan2(r, x)
-
-        model.add_nl_constraint(
-            o2bf,
-            vars=nlfunc.Vars(
-                v1=v1_var,
-                ph1=ph1_var,
-                p1=p1_var,
-                q1=q1_var
-            ),
-            params=nlfunc.Params(
-                y=y,
-                ksi=ksi,
-                g1=g1,
-                b1=b1,
-                g2=g2,
-                b2=b2,
-                a1=a1,
-                r1=r1,
-            ),
-            eq=0.0,
-        )
-
     def add_branch_constraint(self, branch_index, bus1_id, bus2_id, network_cache: NetworkCache, model, cbff, o1bff, o2bff,
                               r, x, g1, b1, g2, b2, r1, a1, v_vars, ph_vars, closed_branch_p1_vars,
                               closed_branch_q1_vars, closed_branch_p2_vars, closed_branch_q2_vars, open_side1_branch_p2_vars,
                               open_side1_branch_q2_vars, open_side2_branch_p1_vars, open_side2_branch_q1_vars):
+        z = hypot(r, x)
+        y = 1.0 / z
+        ksi = atan2(r, x)
+
         if bus1_id and bus2_id:
             bus1_num = network_cache.buses.index.get_loc(bus1_id)
             bus2_num = network_cache.buses.index.get_loc(bus2_id)
@@ -303,28 +223,80 @@ class OptimalPowerFlow:
             q1_var = closed_branch_q1_vars[branch_index]
             p2_var = closed_branch_p2_vars[branch_index]
             q2_var = closed_branch_q2_vars[branch_index]
-            OptimalPowerFlow.add_closed_branch_constraint(model, cbff,
-                                                          v1_var, v2_var, ph1_var, ph2_var, p1_var, q1_var, p2_var,
-                                                          q2_var,
-                                                          r, x, g1, b1, g2, b2, r1, a1)
+            model.add_nl_constraint(
+                cbff,
+                vars=nlfunc.Vars(
+                    v1=v1_var,
+                    v2=v2_var,
+                    ph1=ph1_var,
+                    ph2=ph2_var,
+                    p1=p1_var,
+                    q1=q1_var,
+                    p2=p2_var,
+                    q2=q2_var
+                ),
+                params=nlfunc.Params(
+                    y=y,
+                    ksi=ksi,
+                    g1=g1,
+                    b1=b1,
+                    g2=g2,
+                    b2=b2,
+                    r1=r1,
+                    a1=a1
+                ),
+                eq=0.0,
+            )
         elif bus2_id:
             bus2_num = network_cache.buses.index.get_loc(bus2_id)
             v2_var = v_vars[bus2_num]
             ph2_var = ph_vars[bus2_num]
             p2_var = open_side1_branch_p2_vars[branch_index]
             q2_var = open_side1_branch_q2_vars[branch_index]
-            OptimalPowerFlow.add_open_side1_branch_constraint(model, o1bff,
-                                                              v2_var, ph2_var, p2_var, q2_var,
-                                                              r, x, g1, b1, g2, b2)
+            model.add_nl_constraint(
+                o1bff,
+                vars=nlfunc.Vars(
+                    v2=v2_var,
+                    ph2=ph2_var,
+                    p2=p2_var,
+                    q2=q2_var
+                ),
+                params=nlfunc.Params(
+                    y=y,
+                    ksi=ksi,
+                    g1=g1,
+                    b1=b1,
+                    g2=g2,
+                    b2=b2,
+                ),
+                eq=0.0,
+            )
         elif bus1_id:
             bus1_num = network_cache.buses.index.get_loc(bus1_id)
             v1_var = v_vars[bus1_num]
             ph1_var = ph_vars[bus1_num]
             p1_var = open_side2_branch_p1_vars[branch_index]
             q1_var = open_side2_branch_q1_vars[branch_index]
-            OptimalPowerFlow.add_open_side2_branch_constraint(model, o2bff,
-                                                              v1_var, ph1_var, p1_var, q1_var,
-                                                              r, x, g1, b1, g2, b2, r1, a1)
+            model.add_nl_constraint(
+                o2bff,
+                vars=nlfunc.Vars(
+                    v1=v1_var,
+                    ph1=ph1_var,
+                    p1=p1_var,
+                    q1=q1_var
+                ),
+                params=nlfunc.Params(
+                    y=y,
+                    ksi=ksi,
+                    g1=g1,
+                    b1=b1,
+                    g2=g2,
+                    b2=b2,
+                    a1=a1,
+                    r1=r1,
+                ),
+                eq=0.0,
+            )
 
     def create_model(self, network_cache: NetworkCache):
         model = ipopt.Model()
