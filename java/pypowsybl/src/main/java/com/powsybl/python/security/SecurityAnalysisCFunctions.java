@@ -11,6 +11,7 @@ import com.powsybl.action.*;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
+import com.powsybl.iidm.modification.scalable.Scalable;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SecurityAnalysisParametersPointer;
@@ -497,6 +498,19 @@ public final class SecurityAnalysisCFunctions {
             OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
                     ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
+        });
+    }
+
+    @CEntryPoint(name = "scaleGenerator")
+    public static double scaleGenerator(IsolateThread thread, ObjectHandle networkHandle,
+                                           double asked, CCharPointer generatorIdHandle,
+                                           double limitMin, double limitMax,
+                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String generatorId = CTypeUtil.toString(generatorIdHandle);
+            Scalable generator = Scalable.onGenerator(generatorId);
+            return generator.scale(network, asked);
         });
     }
 
