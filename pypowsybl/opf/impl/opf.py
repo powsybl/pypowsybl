@@ -1,14 +1,13 @@
+import logging
 from dataclasses import dataclass
 from math import hypot, atan2
 from typing import Any
-import logging
 
 import pyoptinterface as poi
 from pandas import DataFrame
 from pyoptinterface import nlfunc, ipopt
 from pyoptinterface._src.nleval_ext import FunctionIndex
 
-from pypowsybl import PyPowsyblError
 from pypowsybl.network import Network
 
 logger = logging.getLogger(__name__)
