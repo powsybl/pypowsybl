@@ -844,6 +844,8 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
 
+int scaleGenerator(pypowsybl::JavaHandle network, int asked, const std::string generator_id, const int limit_min, const int limit_max);
+
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
 std::vector<std::string> getShortCircuitAnalysisProviderNames();

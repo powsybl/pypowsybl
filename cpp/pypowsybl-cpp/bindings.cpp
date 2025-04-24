@@ -1113,6 +1113,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
 
+    m.def("scale_generator", &pypowsybl::scaleGenerator, "Scale the given network using Generator convention by default.",
+         py::arg("network"), py::arg("asked"), py::arg("generator_id"), py::arg("limit_min"), py::arg("limit_max"));
+
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
