@@ -536,7 +536,7 @@ class OptimalPowerFlow:
                 target_v = model.get_value(variable_context.v_vars[bus_num])
                 gen_target_v.append(target_v)
                 q_lim_eps = 0.01 # ?
-                voltage_regulator_on = True if q > row.min_q_at_target_p + q_lim_eps and q < row.min_q_at_target_p - q_lim_eps else False
+                voltage_regulator_on = True if q > row.min_q_at_target_p + q_lim_eps or q < row.min_q_at_target_p - q_lim_eps else False
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
                 gen_voltage_regulator_on.append(voltage_regulator_on)
 
