@@ -363,7 +363,7 @@ class OptimalPowerFlow:
                                branch_num_2_index)
 
     @staticmethod
-    def add_power_balance_constraint(network_cache: NetworkCache, model: ipopt.Model, sff: FunctionIndex,
+    def add_power_balance_constraint(network_cache: NetworkCache, model: ipopt.Model, sf_index: FunctionIndex,
                                      variable_context:VariableContext) -> None:
         bus_count = len(network_cache.buses)
         bus_p_gen = [[] for _ in range(bus_count)]
@@ -408,7 +408,7 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 v_var = variable_context.v_vars[bus_num]
                 model.add_nl_constraint(
-                    sff,
+                    sf_index,
                     vars=nlfunc.Vars(
                         v=v_var,
                         p=p_var,
@@ -475,7 +475,8 @@ class OptimalPowerFlow:
             r1 = 1.0
             a1 = 0.0
             branch_index = variable_context.branch_num_2_index[branch_num]
-            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model, cbf_index, o1bf_index, o2bf_index,
+            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model,
+                                       cbf_index, o1bf_index, o2bf_index,
                                        r, x, g1, b1, g2, b2, r1, a1, variable_context)
 
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
@@ -488,7 +489,8 @@ class OptimalPowerFlow:
             a1 = alpha
             branch_num = len(network_cache.lines) + transfo_num
             branch_index = variable_context.branch_num_2_index[branch_num]
-            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model, cbf_index, o1bf_index, o2bf_index,
+            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model,
+                                       cbf_index, o1bf_index, o2bf_index,
                                        r, x, g1, b1, g2, b2, r1, a1, variable_context)
 
         # power balance constraints
@@ -516,7 +518,7 @@ class OptimalPowerFlow:
             cost += variable_context.closed_branch_p1_vars[branch_index] - variable_context.closed_branch_p2_vars[branch_index]
         return cost
 
-    def update_network(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext) -> None:
+    def update_generators(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
         gen_ids = []
         gen_target_p = []
         gen_target_q = []
@@ -543,6 +545,7 @@ class OptimalPowerFlow:
         self._network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
                                         voltage_regulator_on=gen_voltage_regulator_on)
 
+    def update_buses(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
         bus_ids = []
         bus_v_mag = []
         bus_v_angle = []
@@ -553,7 +556,12 @@ class OptimalPowerFlow:
             angle = model.get_value(variable_context.ph_vars[bus_num])
             bus_v_angle.append(angle)
             logger.log(TRACE_LEVEL, f"Update bus '{bus_id}' (num={bus_num}): v={v}, angle={angle}")
+
         self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
+
+    def update_network(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext) -> None:
+        self.update_generators(network_cache, model, variable_context)
+        self.update_buses(network_cache, model, variable_context)
 
     def run(self) -> bool:
         network_cache = NetworkCache(self._network)
