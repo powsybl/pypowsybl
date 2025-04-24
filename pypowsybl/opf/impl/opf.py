@@ -433,7 +433,7 @@ class OptimalPowerFlow:
             bus_q_expr -= bus_q_load[bus_num]
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
-    def create_model(self, network_cache: NetworkCache) -> None:
+    def create_model(self, network_cache: NetworkCache) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
 
         # register functions
