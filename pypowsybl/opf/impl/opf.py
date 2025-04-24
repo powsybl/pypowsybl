@@ -446,9 +446,9 @@ class OptimalPowerFlow:
 
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples(index=True)):
-            vmin, vmax = 0.9, 1.1  # FIXME get from voltage level dataframe
-            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds [{vmin}, {vmax}] to bus '{row.Index}' (num={bus_num})'")
-            model.set_variable_bounds(variable_context.v_vars[bus_num], vmin, vmax)
+            v_min, v_max = 0.9, 1.1  # FIXME get from voltage level dataframe
+            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds [{v_min}, {v_max}] to bus '{row.Index}' (num={bus_num})'")
+            model.set_variable_bounds(variable_context.v_vars[bus_num], v_min, v_max)
 
         # slack bus angle forced to 0
         if len(network_cache.slack_terminal) > 0:
