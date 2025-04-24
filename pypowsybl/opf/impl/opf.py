@@ -445,7 +445,7 @@ class OptimalPowerFlow:
         variable_context = self.create_variable_context(network_cache, model)
 
         # voltage buses bounds
-        for bus_num, row in enumerate(network_cache.buses.itertuples(index=True)):
+        for bus_num, row in enumerate(network_cache.buses.itertuples()):
             v_min, v_max = 0.9, 1.1  # FIXME get from voltage level dataframe
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds [{v_min}, {v_max}] to bus '{row.Index}' (num={bus_num})'")
             model.set_variable_bounds(variable_context.v_vars[bus_num], v_min, v_max)
@@ -460,7 +460,7 @@ class OptimalPowerFlow:
         logger.log(TRACE_LEVEL, f"Angle reference is at bus '{slack_bus_id}' (num={slack_bus_num})")
 
         # generator reactive power bounds
-        for gen_num, row in enumerate(network_cache.generators.itertuples(index=True)):
+        for gen_num, row in enumerate(network_cache.generators.itertuples()):
             logger.log(TRACE_LEVEL, f"Add active power bounds [{row.min_p}, {row.max_p}] to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], row.min_p, row.max_p)
             min_q = row.min_q_at_target_p
