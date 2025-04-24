@@ -458,7 +458,7 @@ class OptimalPowerFlow:
             slack_bus_id = network_cache.buses.iloc[0].name
         slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
         model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
-        logger.log(TRACE_LEVEL, f"Slack is at bus {slack_bus_num}")
+        logger.log(TRACE_LEVEL, f"Angle reference is at bus '{slack_bus_id}' (num={slack_bus_num})")
 
         # generator reactive power bounds
         for gen_num, row in enumerate(network_cache.generators.itertuples(index=True)):
@@ -527,13 +527,19 @@ class OptimalPowerFlow:
             if bus_id:
                 gen_ids.append(gen_id)
                 p = model.get_value(variable_context.gen_p_vars[gen_num])
-                gen_target_p.append(-p)
+                target_p = -p
+                gen_target_p.append(target_p)
                 q = model.get_value(variable_context.gen_q_vars[gen_num])
-                gen_target_q.append(-q)
+                target_q = -q
+                gen_target_q.append(target_q)
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                gen_target_v.append(model.get_value(variable_context.v_vars[bus_num]))
+                target_v = model.get_value(variable_context.v_vars[bus_num])
+                gen_target_v.append(target_v)
                 q_lim_eps = 0.01 # ?
-                gen_voltage_regulator_on.append(True if q > row.min_q_at_target_p + q_lim_eps and q < row.min_q_at_target_p - q_lim_eps else False)
+                voltage_regulator_on = True if q > row.min_q_at_target_p + q_lim_eps and q < row.min_q_at_target_p - q_lim_eps else False
+                logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
+                gen_voltage_regulator_on.append(voltage_regulator_on)
+
         self._network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
                                         voltage_regulator_on=gen_voltage_regulator_on)
 
@@ -542,8 +548,11 @@ class OptimalPowerFlow:
         bus_v_angle = []
         for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
             bus_ids.append(bus_id)
-            bus_v_mag.append(model.get_value(variable_context.v_vars[bus_num]))
-            bus_v_angle.append(model.get_value(variable_context.ph_vars[bus_num]))
+            v = model.get_value(variable_context.v_vars[bus_num])
+            bus_v_mag.append(v)
+            angle = model.get_value(variable_context.ph_vars[bus_num])
+            bus_v_angle.append(angle)
+            logger.log(TRACE_LEVEL, f"Update bus '{bus_id}' (num={bus_num}): v={v}, angle={angle}")
         self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
 
     def run(self) -> bool:
