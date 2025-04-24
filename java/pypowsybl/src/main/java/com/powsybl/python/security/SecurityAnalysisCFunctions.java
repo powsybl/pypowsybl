@@ -502,7 +502,7 @@ public final class SecurityAnalysisCFunctions {
     }
 
     @CEntryPoint(name = "scaleGenerator")
-    public static double scaleGenerator(IsolateThread thread, ObjectHandle networkHandle,
+    public static int scaleGenerator(IsolateThread thread, ObjectHandle networkHandle,
                                            double asked, CCharPointer generatorIdHandle,
                                            double limitMin, double limitMax,
                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -510,7 +510,7 @@ public final class SecurityAnalysisCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String generatorId = CTypeUtil.toString(generatorIdHandle);
             Scalable generator = Scalable.onGenerator(generatorId);
-            return generator.scale(network, asked);
+            return (int) generator.scale(network, asked);
         });
     }
 
