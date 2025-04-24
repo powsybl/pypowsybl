@@ -11,6 +11,9 @@ from pypowsybl.network import Network
 
 logger = logging.getLogger(__name__)
 
+TRACE_LEVEL = 5
+logging.addLevelName(TRACE_LEVEL, "TRACE")
+
 
 R2 = 1.0
 A2 = 0.0
@@ -441,7 +444,7 @@ class OptimalPowerFlow:
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples(index=True)):
             vmin, vmax = 0.9, 1.1  # FIXME get from voltage level dataframe
-            logger.debug(f"Add voltage magnitude bounds [{vmin}, {vmax}] to bus '{row.Index}' (num={bus_num})'")
+            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds [{vmin}, {vmax}] to bus '{row.Index}' (num={bus_num})'")
             model.set_variable_bounds(variable_context.v_vars[bus_num], vmin, vmax)
 
         # slack bus angle forced to 0
@@ -451,15 +454,15 @@ class OptimalPowerFlow:
             slack_bus_id = network_cache.buses.iloc[0].name
         slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
         model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
-        logger.debug(f"Slack is at bus {slack_bus_num}")
+        logger.log(TRACE_LEVEL, f"Slack is at bus {slack_bus_num}")
 
         # generator reactive power bounds
         for gen_num, row in enumerate(network_cache.generators.itertuples(index=True)):
-            logger.debug(f"Add active power bounds [{row.min_p}, {row.max_p}] to generator '{row.Index}' (num={gen_num})")
+            logger.log(TRACE_LEVEL, f"Add active power bounds [{row.min_p}, {row.max_p}] to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], row.min_p, row.max_p)
             min_q = row.min_q_at_target_p
             max_q = row.max_q_at_target_p
-            logger.debug(f"Add reactive power bounds [{min_q}, {max_q}] to generator '{row.Index}' (num={gen_num})")
+            logger.log(TRACE_LEVEL, f"Add reactive power bounds [{min_q}, {max_q}] to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_q_vars[gen_num], min_q, max_q)
 
         # branch flow nonlinear constraints
@@ -546,7 +549,7 @@ class OptimalPowerFlow:
         model.optimize()
 
         status = model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
-        logger.info(f"Optimizer end with status {status}")
+        logger.info(f"Optimizer ends with status {status}")
 
         self.update_network(network_cache, model, variable_context)
 
