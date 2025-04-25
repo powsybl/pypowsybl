@@ -31,6 +31,8 @@ import static java.util.stream.Collectors.toList;
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class SecondaryVoltageControlDataframeProvider implements NetworkExtensionDataframeProvider {
 
+    private static final String NO_EXTENSION_MESSAGE = "No SecondaryVoltageControl extension found on network ";
+
     @Override
     public String getExtensionName() {
         return SecondaryVoltageControl.NAME;
@@ -49,14 +51,20 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
     }
 
     private Stream<ControlZone> zonesStream(Network network) {
-        return network.getExtension(SecondaryVoltageControl.class)
-                .getControlZones().stream();
+        SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
+        if (ext == null) {
+            throw new PowsyblException(NO_EXTENSION_MESSAGE + network.getId());
+        }
+        return ext.getControlZones().stream();
     }
 
     private Stream<ControlUnitWithZone> unitsStream(Network network) {
         List<ControlUnitWithZone> units = new ArrayList<>();
-        network.getExtension(SecondaryVoltageControl.class)
-                .getControlZones()
+        SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
+        if (ext == null) {
+            throw new PowsyblException(NO_EXTENSION_MESSAGE + network.getId());
+        }
+        ext.getControlZones()
                 .forEach(zone -> {
                     units.addAll(zone.getControlUnits()
                             .stream()
@@ -73,7 +81,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         public ControlZone getItem(Network network, UpdatingDataframe updatingDataframe, int lineNumber) {
             SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
             if (ext == null) {
-                throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
+                throw new PowsyblException(NO_EXTENSION_MESSAGE + network.getId());
             }
             String name = updatingDataframe.getStringValue("name", lineNumber).orElse(null);
             ControlZone zone = ext.getControlZones().stream()
@@ -95,7 +103,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         public ControlUnitWithZone getItem(Network network, UpdatingDataframe updatingDataframe, int lineNumber) {
             SecondaryVoltageControl ext = network.getExtension(SecondaryVoltageControl.class);
             if (ext == null) {
-                throw new PowsyblException("Network " + network.getId() + " has no SecondaryVoltageControl extension.");
+                throw new PowsyblException(NO_EXTENSION_MESSAGE + network.getId());
             }
             String id = updatingDataframe.getStringValue("unit_id", lineNumber).orElse(null);
 

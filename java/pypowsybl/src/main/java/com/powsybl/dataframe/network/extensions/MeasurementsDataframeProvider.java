@@ -44,7 +44,7 @@ public class MeasurementsDataframeProvider extends AbstractSingleDataframeNetwor
 
     @Override
     public ExtensionInformation getExtensionInformation() {
-        return new ExtensionInformation(Measurements.NAME, "Provides measurement about a specific equipment",
+        return new ExtensionInformation(Measurements.NAME, "Provides measurements about a specific equipment",
                 "index : element_id (str),id (str), type (str), standard_deviation (float), value (float), valid (bool)");
     }
 

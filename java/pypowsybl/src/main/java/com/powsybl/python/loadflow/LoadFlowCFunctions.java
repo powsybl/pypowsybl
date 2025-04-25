@@ -37,7 +37,8 @@ import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.freeArrayPointer;
-import static com.powsybl.python.commons.Util.*;
+import static com.powsybl.python.commons.Util.createCharPtrArray;
+import static com.powsybl.python.commons.Util.doCatch;
 
 /**
  * C functions related to loadflow.
@@ -198,7 +199,7 @@ public final class LoadFlowCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerName = CTypeUtil.toString(providerNamePtr);
             LoadFlowProvider provider = LoadFlowCUtils.getLoadFlowProvider(providerName);
-            return Dataframes.createCDataframe(SPECIFIC_PARAMETERS_MAPPER, provider.getSpecificParameters());
+            return Dataframes.createCDataframe(Util.SPECIFIC_PARAMETERS_MAPPER, provider.getSpecificParameters());
         });
     }
 

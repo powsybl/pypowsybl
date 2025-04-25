@@ -205,7 +205,7 @@ void dynamicSimulationBindings(py::module_& m) {
         .value("BASE_BUS", DynamicMappingType::BASE_BUS)
         .value("INFINITE_BUS", DynamicMappingType::INFINITE_BUS)
         .value("OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::OVERLOAD_MANAGEMENT_SYSTEM)
-        .value("TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVELS_OVERLOAD_MANAGEMENT_SYSTEM)
+        .value("TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM", DynamicMappingType::TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM)
         .value("UNDER_VOLTAGE", DynamicMappingType::UNDER_VOLTAGE)
         .value("PHASE_SHIFTER_I", DynamicMappingType::PHASE_SHIFTER_I)
         .value("PHASE_SHIFTER_P", DynamicMappingType::PHASE_SHIFTER_P)
@@ -671,7 +671,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
-        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed);
+        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
+        .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
@@ -692,13 +693,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
           py::arg("network"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("voltage_level_ids"),
-          py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"));
+          py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
+          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"),
+          py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"));
           
     m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
-          py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"));
+          py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
+          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
 
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
@@ -707,6 +711,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
           py::arg("analysis_context"), py::arg("contingency_id"), py::arg("elements_ids"));
+
+    m.def("add_contingency_from_json_file", &pypowsybl::addContingencyFromJsonFile, "Add contingencies from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
 
     m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
@@ -728,6 +735,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("add_shunt_compensator_position_action", &pypowsybl::addShuntCompensatorPositionAction, "Add a shunt compensator position action",
               py::arg("analysis_context"), py::arg("action_id"), py::arg("shunt_id"), py::arg("section_count"));
+
+    m.def("add_terminals_connection_action", &pypowsybl::addTerminalsConnectionAction, "Add a terminals connection action",
+                  py::arg("analysis_context"), py::arg("action_id"), py::arg("element_id"), py::arg("side"), py::arg("open"));
 
     m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
           py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
@@ -1109,6 +1119,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
+    m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
+          py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
+
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
@@ -1188,18 +1201,23 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("LOAD_P", Grid2opDoubleValueType::LOAD_P)
             .value("LOAD_Q", Grid2opDoubleValueType::LOAD_Q)
             .value("LOAD_V", Grid2opDoubleValueType::LOAD_V)
+            .value("LOAD_ANGLE", Grid2opDoubleValueType::LOAD_ANGLE)
             .value("GENERATOR_P", Grid2opDoubleValueType::GENERATOR_P)
             .value("GENERATOR_Q", Grid2opDoubleValueType::GENERATOR_Q)
             .value("GENERATOR_V", Grid2opDoubleValueType::GENERATOR_V)
+            .value("GENERATOR_ANGLE", Grid2opDoubleValueType::GENERATOR_ANGLE)
             .value("SHUNT_P", Grid2opDoubleValueType::SHUNT_P)
             .value("SHUNT_Q", Grid2opDoubleValueType::SHUNT_Q)
             .value("SHUNT_V", Grid2opDoubleValueType::SHUNT_V)
+            .value("SHUNT_ANGLE", Grid2opDoubleValueType::SHUNT_ANGLE)
             .value("BRANCH_P1", Grid2opDoubleValueType::BRANCH_P1)
             .value("BRANCH_P2", Grid2opDoubleValueType::BRANCH_P2)
             .value("BRANCH_Q1", Grid2opDoubleValueType::BRANCH_Q1)
             .value("BRANCH_Q2", Grid2opDoubleValueType::BRANCH_Q2)
             .value("BRANCH_V1", Grid2opDoubleValueType::BRANCH_V1)
             .value("BRANCH_V2", Grid2opDoubleValueType::BRANCH_V2)
+            .value("BRANCH_ANGLE1", Grid2opDoubleValueType::BRANCH_ANGLE1)
+            .value("BRANCH_ANGLE2", Grid2opDoubleValueType::BRANCH_ANGLE2)
             .value("BRANCH_I1", Grid2opDoubleValueType::BRANCH_I1)
             .value("BRANCH_I2", Grid2opDoubleValueType::BRANCH_I2)
             .value("BRANCH_PERMANENT_LIMIT_A", Grid2opDoubleValueType::BRANCH_PERMANENT_LIMIT_A);
@@ -1218,7 +1236,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("UPDATE_BRANCH_BUS2", Grid2opUpdateIntegerValueType::UPDATE_BRANCH_BUS2);
 
     m.def("create_grid2op_backend", &pypowsybl::createGrid2opBackend, "Create a Grid2op backend", py::arg("network"),
-          py::arg("consider_open_branch_reactive_flow"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
+          py::arg("consider_open_branch_reactive_flow"), py::arg("check_isolated_and_disconnected_injections"), py::arg("buses_per_voltage_level"), py::arg("connect_all_elements_to_first_bus"));
     m.def("free_grid2op_backend", &pypowsybl::freeGrid2opBackend, "Free a Grid2op backend", py::arg("backend"));
     m.def("get_grid2op_string_value", &pypowsybl::getGrid2opStringValue, "From a Grid2op backend get a string value vector", py::arg("backend"), py::arg("value_type"));
     m.def("get_grid2op_integer_value", &::pyGetGrid2opIntegerValue, "From a Grid2op backend get a integer value vector", py::arg("backend"), py::arg("value_type"));
