@@ -466,6 +466,8 @@ class OptimalPowerFlow:
             min_q = row.min_q_at_target_p
             max_q = row.max_q_at_target_p
             logger.log(TRACE_LEVEL, f"Add reactive power bounds [{min_q}, {max_q}] to generator '{row.Index}' (num={gen_num})")
+            if abs(max_q - min_q) < 1.0 / network_cache.network.nominal_apparent_power:
+                logger.error(f"Too small reactive power bounds [{min_q}, {max_q}] for generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_q_vars[gen_num], min_q, max_q)
 
         # branch flow nonlinear constraints
