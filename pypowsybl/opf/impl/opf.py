@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from math import hypot, atan2
 from typing import Any
 
+import pandas as pd
 import pyoptinterface as poi
 from pandas import DataFrame
 from pyoptinterface import nlfunc, ipopt
@@ -18,7 +19,7 @@ logging.addLevelName(TRACE_LEVEL, "TRACE")
 
 R2 = 1.0
 A2 = 0.0
-
+DEFAULT_V_RANGE = 0.9, 1.1
 
 def closed_branch_flow(vars, params):
     y, ksi, g1, b1, g2, b2, r1, a1 = (
@@ -133,7 +134,8 @@ class NetworkCache:
     def __init__(self, network: Network) -> None:
         self._network = network
         self._network.per_unit = True
-        self._buses = self._network.get_buses(attributes=[])
+        self._voltage_levels = self._network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit'])
+        self._buses = pd.merge(self._network.get_buses(attributes=['voltage_level_id']), self._voltage_levels, left_on='voltage_level_id', right_index=True, how='left')
         self._generators = self._network.get_generators(attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p'])
         self._loads = self._network.get_loads(attributes=['bus_id', 'p0', 'q0'])
         self._shunts = self._network.get_shunt_compensators(attributes=['bus_id', 'g', 'b'])
@@ -436,6 +438,10 @@ class OptimalPowerFlow:
             bus_q_expr -= bus_q_load[bus_num]
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
+    @staticmethod
+    def get_voltage_range(low_voltage_limit: float, high_voltage_limit: float):
+        return DEFAULT_V_RANGE  # FIXME get from voltage level dataframe
+
     def create_model(self, network_cache: NetworkCache) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
 
@@ -450,9 +456,10 @@ class OptimalPowerFlow:
 
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
-            v_min, v_max = 0.9, 1.1  # FIXME get from voltage level dataframe
+            v_min, v_max = self.get_voltage_range(row.low_voltage_limit, row.high_voltage_limit)
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds [{v_min}, {v_max}] to bus '{row.Index}' (num={bus_num})'")
             model.set_variable_bounds(variable_context.v_vars[bus_num], v_min, v_max)
+            model.set_variable_start(variable_context.v_vars[bus_num], 1.0)
 
         # slack bus angle forced to 0
         if len(network_cache.slack_terminal) > 0:
@@ -568,6 +575,28 @@ class OptimalPowerFlow:
         self.update_generators(network_cache, model, variable_context)
         self.update_buses(network_cache, model, variable_context)
 
+    @staticmethod
+    def analyze_violations(network_cache: NetworkCache, model: ipopt.Model,
+                           variable_context: VariableContext) -> None:
+        # check voltage bounds
+        for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
+            v = model.get_value(variable_context.v_vars[bus_num])
+            v_min, v_max = OptimalPowerFlow.get_voltage_range(row.low_voltage_limit, row.high_voltage_limit)
+            if v < v_min or v > v_max:
+                logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in [{v_min}, {v_max}]")
+
+        # check generator limits
+        for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
+            if row.bus_id:
+                p = model.get_value(variable_context.gen_p_vars[gen_num])
+                q = model.get_value(variable_context.gen_q_vars[gen_num])
+
+                if p < row.min_p or p > row.max_p:
+                    logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{row.min_p}, {row.max_p}]")
+
+                if q < row.min_q_at_target_p or q > row.max_q_at_target_p:
+                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in [{row.min_q_at_target_p}, {row.max_q_at_target_p}]")
+
     def run(self, _parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
 
@@ -576,6 +605,8 @@ class OptimalPowerFlow:
 
         status = model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
         logger.info(f"Optimizer ends with status {status}")
+
+        self.analyze_violations(network_cache, model, variable_context)
 
         self.update_network(network_cache, model, variable_context)
 
