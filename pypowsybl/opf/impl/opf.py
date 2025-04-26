@@ -470,16 +470,16 @@ class OptimalPowerFlow:
         model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
         logger.log(TRACE_LEVEL, f"Angle reference is at bus '{slack_bus_id}' (num={slack_bus_num})")
 
-        # generator reactive power bounds
+        # generator active and reactive power bounds
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
             logger.log(TRACE_LEVEL, f"Add active power bounds [{row.min_p}, {row.max_p}] to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], row.min_p, row.max_p)
+            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], -row.max_p, -row.min_p)
             min_q = row.min_q_at_target_p
             max_q = row.max_q_at_target_p
             logger.log(TRACE_LEVEL, f"Add reactive power bounds [{min_q}, {max_q}] to generator '{row.Index}' (num={gen_num})")
             if abs(max_q - min_q) < 1.0 / network_cache.network.nominal_apparent_power:
                 logger.error(f"Too small reactive power bounds [{min_q}, {max_q}] for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], min_q, max_q)
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], -max_q, -min_q)
 
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
@@ -592,10 +592,10 @@ class OptimalPowerFlow:
                 q = model.get_value(variable_context.gen_q_vars[gen_num])
 
                 if p < row.min_p or p > row.max_p:
-                    logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{row.min_p}, {row.max_p}]")
+                    logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {-p} not in [{row.min_p}, {row.max_p}]")
 
                 if q < row.min_q_at_target_p or q > row.max_q_at_target_p:
-                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in [{row.min_q_at_target_p}, {row.max_q_at_target_p}]")
+                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {-q} not in [{row.min_q_at_target_p}, {row.max_q_at_target_p}]")
 
     def run(self, _parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)

@@ -9,17 +9,19 @@ import logging
 import pytest
 
 import pypowsybl as pp
+from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
 
 
 @pytest.fixture(autouse=True)
 def set_up():
     pp.set_config_read(False)
     logging.basicConfig(level=logging.DEBUG)
-    logging.getLogger('powsybl').setLevel(logging.DEBUG)
+    logging.getLogger('powsybl').setLevel(logging.INFO)
 
 
 def run_opf_then_lf(network: pp.network.Network, iteration_count: int):
-    assert pp.opf.run_ac(network)
+    opf_parameters = OptimalPowerFlowParameters()
+    assert pp.opf.run_ac(network, opf_parameters)
 
     lf_parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.PREVIOUS_VALUES,
                                            provider_parameters={'plausibleActivePowerLimit': '10000.0'})
@@ -37,32 +39,32 @@ def test_ieee9():
 
 
 def test_ieee14():
-    run_opf_then_lf(pp.network.create_ieee14(), 1)
+    run_opf_then_lf(pp.network.create_ieee14(), 2)
 
 
 def test_ieee14_open_side_1_branch():
     network = pp.network.create_ieee14()
     network.update_lines(id=['L1-2-1'], connected1=[False])
-    run_opf_then_lf(network, 1)
+    run_opf_then_lf(network, 2)
 
 
 def test_ieee14_open_side_2_branch():
     network = pp.network.create_ieee14()
     network.update_lines(id=['L1-2-1'], connected2=[False])
-    run_opf_then_lf(network, 1)
+    run_opf_then_lf(network, 2)
 
 
 def test_ieee30():
-    run_opf_then_lf(pp.network.create_ieee30(), 1)
+    run_opf_then_lf(pp.network.create_ieee30(), 2)
 
 
 def test_ieee57():
-    run_opf_then_lf(pp.network.create_ieee57(), 1)
+    run_opf_then_lf(pp.network.create_ieee57(), 2)
 
 
 def test_ieee118():
-    run_opf_then_lf(pp.network.create_ieee118(), 1)
+    run_opf_then_lf(pp.network.create_ieee118(), 11)
 
 
 def test_ieee300():
-    run_opf_then_lf(pp.network.create_ieee300(), 1)
+    run_opf_then_lf(pp.network.create_ieee300(), 14)
