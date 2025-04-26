@@ -198,6 +198,10 @@ class VariableContext:
     branch_num_2_index: list[int]
 
 
+class OptimalPowerFlowParameters:
+    def __init__(self) -> None:
+        pass
+
 # pip install pyoptinterface llvmlite tccbox
 #
 # git clone https://github.com/coin-or-tools/ThirdParty-Mumps.git
@@ -564,7 +568,7 @@ class OptimalPowerFlow:
         self.update_generators(network_cache, model, variable_context)
         self.update_buses(network_cache, model, variable_context)
 
-    def run(self) -> bool:
+    def run(self, _parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
 
         model, variable_context = self.create_model(network_cache)
@@ -578,6 +582,6 @@ class OptimalPowerFlow:
         return status == poi.TerminationStatusCode.LOCALLY_SOLVED
 
 
-def run_ac(network: Network) -> bool:
+def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
     opf = OptimalPowerFlow(network)
-    return opf.run()
+    return opf.run(parameters)
