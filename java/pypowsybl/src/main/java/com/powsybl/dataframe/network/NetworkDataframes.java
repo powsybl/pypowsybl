@@ -582,6 +582,7 @@ public final class NetworkDataframes {
                 .strings("selected_limits_group_2", twt -> twt.getSelectedOperationalLimitsGroupId2().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup2, false)
                 .doubles("rho", (twt, context) -> perUnitRho(context, twt, NetworkDataframes.computeRho(twt)), false)
+                .doubles("alpha", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt)), false)
                 .addProperties()
                 .build();
     }
@@ -610,6 +611,7 @@ public final class NetworkDataframes {
                 .strings("selected_limits_group_1", twt -> twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg1().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho1", (twt, context) -> perUnitRho(context, twt, ThreeSides.ONE, NetworkDataframes.computeRho(twt, ThreeSides.ONE)), false)
+                .doubles("alpha1", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.ONE)), false)
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
                 .doubles("x2", (twt, context) -> perUnitRX(context, twt.getLeg2().getX(), twt), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
                 .doubles("g2", (twt, context) -> perUnitBG(context, twt.getLeg2().getG(), twt), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitBG(context, twt, g2)))
@@ -629,6 +631,7 @@ public final class NetworkDataframes {
                 .strings("selected_limits_group_2", twt -> twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg2().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho2", (twt, context) -> perUnitRho(context, twt, ThreeSides.TWO, NetworkDataframes.computeRho(twt, ThreeSides.TWO)), false)
+                .doubles("alpha2", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.TWO)), false)
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
                 .doubles("x3", (twt, context) -> perUnitRX(context, twt.getLeg3().getX(), twt), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
                 .doubles("g3", (twt, context) -> perUnitBG(context, twt.getLeg3().getG(), twt), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitBG(context, twt, g3)))
@@ -648,6 +651,7 @@ public final class NetworkDataframes {
                 .strings("selected_limits_group_3", twt -> twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
                         (twt, groupId) -> twt.getLeg3().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho3", (twt, context) -> perUnitRho(context, twt, ThreeSides.THREE, NetworkDataframes.computeRho(twt, ThreeSides.THREE)), false)
+                .doubles("alpha3", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.THREE)), false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1320,10 +1324,10 @@ public final class NetworkDataframes {
         rtc.setRegulationTerminal(transformer.getTerminal(ThreeSides.valueOf(regulatedSide)));
     }
 
-    private static double computeRho(TwoWindingsTransformer twoWindingsTransformer) {
-        return twoWindingsTransformer.getRatedU2() / twoWindingsTransformer.getRatedU1()
-                * (twoWindingsTransformer.getRatioTapChanger() != null ? twoWindingsTransformer.getRatioTapChanger().getCurrentStep().getRho() : 1)
-                * (twoWindingsTransformer.getPhaseTapChanger() != null ? twoWindingsTransformer.getPhaseTapChanger().getCurrentStep().getRho() : 1);
+    private static double computeRho(TwoWindingsTransformer twt) {
+        return twt.getRatedU2() / twt.getRatedU1()
+                * (twt.getRatioTapChanger() != null ? twt.getRatioTapChanger().getCurrentStep().getRho() : 1)
+                * (twt.getPhaseTapChanger() != null ? twt.getPhaseTapChanger().getCurrentStep().getRho() : 1);
     }
 
     private static double computeRho(ThreeWindingsTransformer twt, ThreeSides side) {
@@ -1331,6 +1335,15 @@ public final class NetworkDataframes {
         return twt.getRatedU0() / leg.getRatedU()
                 * (leg.getRatioTapChanger() != null ? leg.getRatioTapChanger().getCurrentStep().getRho() : 1)
                 * (leg.getPhaseTapChanger() != null ? leg.getPhaseTapChanger().getCurrentStep().getRho() : 1);
+    }
+
+    private static double computeAlpha(TwoWindingsTransformer twt) {
+        return twt.getPhaseTapChanger() != null ? twt.getPhaseTapChanger().getCurrentStep().getAlpha() : 0;
+    }
+
+    private static double computeAlpha(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getPhaseTapChanger() != null ? leg.getPhaseTapChanger().getCurrentStep().getAlpha() : 0;
     }
 
     private static NetworkDataframeMapper ptcs() {
