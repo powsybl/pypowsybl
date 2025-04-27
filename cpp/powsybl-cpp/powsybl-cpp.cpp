@@ -89,18 +89,22 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
     PowsyblCaller::get()->setPostProcessingJavaCall(postJavaCall);
 
     readArgvFromEnv();
+
+    graal_create_isolate_params_t* params_ptr = nullptr;
     int argc = argv.size();
+    if (argc > 1) {
+        graal_create_isolate_params_t params;
+        params.version = 4;
+        // theses fields are not part of the public API, so on are named reserved
+        // this might fail in a coming release of GraalVM
+        params._reserved_1 = argc; // argc
+        params._reserved_2 = &argv[0]; // argv
+        params._reserved_3 = false; // ignoreUnrecognizedArguments
+        params._reserved_4 = true;  // exitWhenArgumentParsingFails
+        params_ptr = &params;
+    }
 
-    graal_create_isolate_params_t params;
-    params.version = 4;
-    // theses fields are not part of the public API, so on are named reserved
-    // this might fail in a coming release of GraalVM
-    params._reserved_1 = argc; // argc
-    params._reserved_2 = &argv[0]; // argv
-    params._reserved_3 = false; // ignoreUnrecognizedArguments
-    params._reserved_4 = true;  // exitWhenArgumentParsingFails
-
-    int c = graal_create_isolate(&params, &isolate, &thread);
+    int c = graal_create_isolate(params_ptr, &isolate, &thread);
     if (c != 0) {
         throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
     }
