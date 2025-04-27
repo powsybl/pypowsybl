@@ -93,14 +93,12 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
 
     graal_create_isolate_params_t params;
     params.version = 4;
-    if (argc > 1) {
-        // theses fields are not part of the public API, so on are named reserved
-        // this might fail in a coming release of GraalVM
-        params._reserved_1 = argc; // argc
-        params._reserved_2 = &argv[0]; // argv
-        params._reserved_3 = false; // ignoreUnrecognizedArguments
-        params._reserved_4 = true;  // exitWhenArgumentParsingFails
-    }
+    // theses fields are not part of the public API, so on are named reserved
+    // this might fail in a coming release of GraalVM
+    params._reserved_1 = argc; // argc
+    params._reserved_2 = &argv[0]; // argv
+    params._reserved_3 = false; // ignoreUnrecognizedArguments
+    params._reserved_4 = true;  // exitWhenArgumentParsingFails
 
     int c = graal_create_isolate(&params, &isolate, &thread);
     if (c != 0) {
