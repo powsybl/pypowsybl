@@ -550,7 +550,7 @@ class OptimalPowerFlow:
                 target_v = model.get_value(variable_context.v_vars[bus_num])
                 gen_target_v.append(target_v)
                 q_lim_eps = 0.01 # ?
-                voltage_regulator_on = True if q > row.min_q_at_target_p + q_lim_eps or q < row.min_q_at_target_p - q_lim_eps else False
+                voltage_regulator_on = True if q > -row.max_q_at_target_p + q_lim_eps or q < -row.max_q_at_target_p - q_lim_eps else False
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
                 gen_voltage_regulator_on.append(voltage_regulator_on)
 
@@ -591,10 +591,10 @@ class OptimalPowerFlow:
                 p = model.get_value(variable_context.gen_p_vars[gen_num])
                 q = model.get_value(variable_context.gen_q_vars[gen_num])
 
-                if p < row.min_p or p > row.max_p:
+                if p < -row.max_p or p > -row.min_p:
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {-p} not in [{row.min_p}, {row.max_p}]")
 
-                if q < row.min_q_at_target_p or q > row.max_q_at_target_p:
+                if q < -row.max_q_at_target_p or q > -row.min_q_at_target_p:
                     logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {-q} not in [{row.min_q_at_target_p}, {row.max_q_at_target_p}]")
 
     def run(self, _parameters: OptimalPowerFlowParameters) -> bool:
