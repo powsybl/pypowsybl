@@ -40,16 +40,28 @@ public final class DynamicSimulationParametersCUtils {
         return isReadConfig() ? DynamicSimulationParameters.load() : new DynamicSimulationParameters();
     }
 
+    public static DynawoSimulationParameters createSpecificDynamicSimulationParameters(DynamicSimulationParameters parameters) {
+        DynawoSimulationParameters specificParameters = parameters.getExtension(DynawoSimulationParameters.class);
+        if (specificParameters == null) {
+            specificParameters = isReadConfig() ? DynawoSimulationParameters.load() : new DynawoSimulationParameters();
+            parameters.addExtension(DynawoSimulationParameters.class, specificParameters);
+        }
+        return specificParameters;
+    }
+
     public static List<Parameter> getSpecificParametersInfo() {
         return getDynamicSimulationProvider().getSpecificParameters();
     }
 
-    //TODO check how to handle parameterSet
     public static DynamicSimulationParameters createDynamicSimulationParameters(DynamicSimulationParametersPointer parametersPointer) {
         DynamicSimulationParameters parameters = createDynamicSimulationParameters()
                 .setStartTime(parametersPointer.getStartTime())
                 .setStopTime(parametersPointer.getStopTime());
-        DynawoSimulationParameters.load(parameters).update(getSpecificParameters(parametersPointer));
+        DynawoSimulationParameters specificParameters = createSpecificDynamicSimulationParameters(parameters);
+        Map<String, String> specificParametersMap = getSpecificParameters(parametersPointer);
+        if (!specificParametersMap.isEmpty()) {
+            specificParameters.update(specificParametersMap);
+        }
         return parameters;
     }
 

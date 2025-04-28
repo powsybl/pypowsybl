@@ -291,6 +291,11 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-commons</artifactId>
+            <version>${powsybl-dynawo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-simulation</artifactId>
             <version>${powsybl-dynawo.version}</version>
         </dependency>
