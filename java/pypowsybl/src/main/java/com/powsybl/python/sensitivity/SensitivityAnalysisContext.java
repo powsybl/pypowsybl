@@ -157,6 +157,19 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
             return SensitivityVariableType.INJECTION_ACTIVE_POWER;
         } else if (identifiable instanceof TwoWindingsTransformer) {
             return SensitivityVariableType.TRANSFORMER_PHASE;
+        } else if (identifiable instanceof ThreeWindingsTransformer twt) {
+            ThreeWindingsTransformer.Leg phaseTapChangerLeg = twt.getLegStream()
+                    .filter(PhaseTapChangerHolder::hasPhaseTapChanger)
+                    .findFirst()
+                    .orElse(null);
+            if (phaseTapChangerLeg != null) {
+                return switch(phaseTapChangerLeg.getSide()) {
+                    case ONE -> SensitivityVariableType.TRANSFORMER_PHASE_1;
+                    case TWO -> SensitivityVariableType.TRANSFORMER_PHASE_2;
+                    case THREE -> SensitivityVariableType.TRANSFORMER_PHASE_3;
+                };
+            }
+            return null;
         } else if (identifiable instanceof HvdcLine) {
             return SensitivityVariableType.HVDC_LINE_ACTIVE_POWER;
         } else {
