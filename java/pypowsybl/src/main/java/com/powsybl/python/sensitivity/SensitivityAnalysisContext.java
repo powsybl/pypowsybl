@@ -163,7 +163,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                     .findFirst()
                     .orElse(null);
             if (phaseTapChangerLeg != null) {
-                return switch(phaseTapChangerLeg.getSide()) {
+                return switch (phaseTapChangerLeg.getSide()) {
                     case ONE -> SensitivityVariableType.TRANSFORMER_PHASE_1;
                     case TWO -> SensitivityVariableType.TRANSFORMER_PHASE_2;
                     case THREE -> SensitivityVariableType.TRANSFORMER_PHASE_3;
