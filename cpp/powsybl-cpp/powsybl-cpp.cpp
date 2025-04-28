@@ -90,8 +90,8 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
 
     readArgvFromEnv();
 
-    graal_create_isolate_params_t* params_ptr = nullptr;
     int argc = argv.size();
+    int c;
     if (argc > 1) {
         graal_create_isolate_params_t params;
         params.version = 4;
@@ -101,10 +101,11 @@ void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJ
         params._reserved_2 = &argv[0]; // argv
         params._reserved_3 = false; // ignoreUnrecognizedArguments
         params._reserved_4 = true;  // exitWhenArgumentParsingFails
-        params_ptr = &params;
+        c = graal_create_isolate(&params, &isolate, &thread);
+    } else {
+        c = graal_create_isolate(nullptr, &isolate, &thread);
     }
 
-    int c = graal_create_isolate(params_ptr, &isolate, &thread);
     if (c != 0) {
         throw std::runtime_error("graal_create_isolate error: " + std::to_string(c));
     }

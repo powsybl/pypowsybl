@@ -43,6 +43,7 @@ public final class CommonCFunctions {
         doCatch(exceptionHandlerPtr, () -> LoggerFactory.getLogger(CommonCFunctions.class).debug("Max heap is {}", Runtime.getRuntime().maxMemory() / (1024 * 1024) + " MB"));
     }
 
+
     @CEntryPoint(name = "setConfigRead")
     public static void setConfigRead(IsolateThread thread, boolean read, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> PyPowsyblConfiguration.setReadConfig(read));
