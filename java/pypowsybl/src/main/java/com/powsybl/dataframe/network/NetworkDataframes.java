@@ -45,6 +45,10 @@ public final class NetworkDataframes {
     private static final Map<ExtensionDataframeKey, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
 
     private static final String DEFAULT_OPERATIONAL_LIMIT_GROUP_ID = "DEFAULT";
+    private static final String MIN_Q_AT_TARGET_P = "min_q_at_target_p";
+    private static final String MAX_Q_AT_TARGET_P = "max_q_at_target_p";
+    private static final String MIN_Q_AT_P = "min_q_at_p";
+    private static final String MAX_Q_AT_P = "max_q_at_p";
 
     private NetworkDataframes() {
     }
@@ -280,10 +284,10 @@ public final class NetworkDataframes {
                     setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ),
                     setPerUnitMaxQ())
-                .doubles("min_q_at_target_p", getPerUnitMinQ(Generator::getTargetP), false)
-                .doubles("max_q_at_target_p", getPerUnitMaxQ(Generator::getTargetP), false)
-                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
-                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
+                .doubles(MIN_Q_AT_TARGET_P, getPerUnitMinQ(Generator::getTargetP), false)
+                .doubles(MAX_Q_AT_TARGET_P, getPerUnitMaxQ(Generator::getTargetP), false)
+                .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
+                .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
@@ -377,10 +381,10 @@ public final class NetworkDataframes {
                     setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ),
                     setPerUnitMaxQ())
-                .doubles("min_q_at_target_p", getPerUnitMinQ(Battery::getTargetP), false)
-                .doubles("max_q_at_target_p", getPerUnitMaxQ(Battery::getTargetP), false)
-                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
-                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
+                .doubles(MIN_Q_AT_TARGET_P, getPerUnitMinQ(Battery::getTargetP), false)
+                .doubles(MAX_Q_AT_TARGET_P, getPerUnitMaxQ(Battery::getTargetP), false)
+                .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
+                .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_p", (b, context) -> perUnitPQ(context, b.getTargetP()), (b, targetP, context) -> b.setTargetP(unPerUnitPQ(context, targetP)))
                 .doubles("target_q", (b, context) -> perUnitPQ(context, b.getTargetQ()), (b, targetQ, context) -> b.setTargetQ(unPerUnitPQ(context, targetQ)))
@@ -749,10 +753,10 @@ public final class NetworkDataframes {
                 .doubles("loss_factor", (vsc, context) -> vsc.getLossFactor(), (vscConverterStation, lf, context) -> vscConverterStation.setLossFactor((float) lf))
                 .doubles("min_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setPerUnitMaxQ())
-                .doubles("min_q_at_target_p", getPerUnitMinQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
-                .doubles("max_q_at_target_p", getPerUnitMaxQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
-                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
-                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
+                .doubles(MIN_Q_AT_TARGET_P, getPerUnitMinQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
+                .doubles(MAX_Q_AT_TARGET_P, getPerUnitMaxQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
+                .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
+                .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
                     (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, vsc.getRegulatingTerminal(), vsc.getTerminal())))
