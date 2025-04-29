@@ -1502,3 +1502,7 @@ def test_split_or_merge_transformers():
     pp.network.replace_3_2_windings_transformers_with_3_windings_transformers(n)
     assert len(n.get_3_windings_transformers()) == 1
     assert len(n.get_2_windings_transformers()) == 3
+
+def test_scale_generator():
+    n = pp.network.create_micro_grid_be_network()
+
