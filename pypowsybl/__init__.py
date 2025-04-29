@@ -57,6 +57,8 @@ _pypowsybl.set_logger(powsyblLogger)
 # register closing of pypowsybl resources (computation manager...)
 _atexit.register(_pypowsybl.close)
 
+# log substratvm max heap size
+_pypowsybl.log_max_memory()
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not
