@@ -469,6 +469,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_exporter_parameters_series_array", &pypowsybl::createExporterParametersSeriesArray, "Create a parameters series array for a given export format",
           py::arg("format"));
 
+    m.def("is_network_loadable", &pypowsybl::isNetworkLoadable, "Check if a file is a loadable network", py::call_guard<py::gil_scoped_release>(),
+          py::arg("file"));
+
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
           py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
