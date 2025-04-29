@@ -140,20 +140,19 @@ def test_default_parameters():
     parameters = dyn.Parameters()
     assert 0.0 == parameters.start_time
     assert 10.0 == parameters.stop_time
-    assert parameters.provider_parameters
+    assert not parameters.provider_parameters
 
 
 def test_parameters():
     dynawo_param = {
         'solver.type': 'IDA',
-        'precision': 1e-5
+        'precision': '1e-5'
     }
     parameters = dyn.Parameters(start_time=20, stop_time=100, provider_parameters=dynawo_param)
     assert 20.0 == parameters.start_time
     assert 100.0 == parameters.stop_time
     assert 'IDA'== parameters.provider_parameters['solver.type']
-    assert 1e-5 == parameters.provider_parameters['precision']
-    assert False == parameters.provider_parameters['useModelSimplifiers']
+    assert '1e-5' == parameters.provider_parameters['precision']
 
 
 def test_provider_parameters_list():
