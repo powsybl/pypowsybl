@@ -375,6 +375,8 @@ class OptimalPowerFlow:
         bus_q_gen = [[] for _ in range(bus_count)]
         bus_p_load = [0.0 for _ in range(bus_count)]
         bus_q_load = [0.0 for _ in range(bus_count)]
+
+        # branches
         for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
             branch_index = variable_context.branch_num_2_index[branch_num]
             if row.bus1_id and row.bus2_id:
@@ -392,12 +394,16 @@ class OptimalPowerFlow:
                 bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
                 bus_p_gen[bus1_num].append(variable_context.open_side2_branch_p1_vars[branch_index])
                 bus_q_gen[bus1_num].append(variable_context.open_side2_branch_q1_vars[branch_index])
+
+        # generators
         for num, row in enumerate(network_cache.generators.itertuples(index=False)):
             bus_id = row.bus_id
             if bus_id:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 bus_p_gen[bus_num].append(variable_context.gen_p_vars[num])
                 bus_q_gen[bus_num].append(variable_context.gen_q_vars[num])
+
+        # aggregated loads
         loads_sum = network_cache.loads.groupby("bus_id", as_index=False).agg({"p0": "sum", "q0": "sum"})
         for row in loads_sum.itertuples(index=False):
             bus_id = row.bus_id
@@ -405,28 +411,15 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 bus_p_load[bus_num] -= row.p0
                 bus_q_load[bus_num] -= row.q0
+
+        # shunts
         for num, row in enumerate(network_cache.shunts.itertuples(index=False)):
-            g, b, bus_id = row.g, row.b, row.bus_id
+            bus_id = row.bus_id
             if bus_id:
-                p_var = variable_context.shunt_p_vars[num]
-                q_var = variable_context.shunt_q_vars[num]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                v_var = variable_context.v_vars[bus_num]
-                model.add_nl_constraint(
-                    sf_index,
-                    vars=nlfunc.Vars(
-                        v=v_var,
-                        p=p_var,
-                        q=q_var,
-                    ),
-                    params=nlfunc.Params(
-                        g=g,
-                        b=b,
-                    ),
-                    eq=0.0,
-                )
-                bus_p_gen[bus_num].append(p_var)
-                bus_q_gen[bus_num].append(q_var)
+                bus_p_gen[bus_num].append(variable_context.shunt_p_vars[num])
+                bus_q_gen[bus_num].append(variable_context.shunt_q_vars[num])
+
         for bus_num in range(bus_count):
             bus_p_expr = poi.ExprBuilder()
             bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
@@ -504,6 +497,28 @@ class OptimalPowerFlow:
             self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model,
                                        cbf_index, o1bf_index, o2bf_index,
                                        r, x, g1, b1, g2, b2, r1, a1, variable_context)
+
+        # shunt flow nonlinear constraints
+        for num, row in enumerate(network_cache.shunts.itertuples(index=False)):
+            g, b, bus_id = row.g, row.b, row.bus_id
+            if bus_id:
+                p_var = variable_context.shunt_p_vars[num]
+                q_var = variable_context.shunt_q_vars[num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                v_var = variable_context.v_vars[bus_num]
+                model.add_nl_constraint(
+                    sf_index,
+                    vars=nlfunc.Vars(
+                        v=v_var,
+                        p=p_var,
+                        q=q_var,
+                    ),
+                    params=nlfunc.Params(
+                        g=g,
+                        b=b,
+                    ),
+                    eq=0.0,
+                )
 
         # power balance constraints
         self.add_power_balance_constraint(network_cache, model, sf_index, variable_context)
