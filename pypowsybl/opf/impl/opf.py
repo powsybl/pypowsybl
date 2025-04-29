@@ -202,7 +202,12 @@ class VariableContext:
 
 class OptimalPowerFlowParameters:
     def __init__(self) -> None:
-        pass
+        self._reactive_bounds_reduction = 0.1
+
+    @property
+    def reactive_bounds_reduction(self) -> float:
+        return self._reactive_bounds_reduction
+
 
 # pip install pyoptinterface llvmlite tccbox
 #
@@ -435,7 +440,7 @@ class OptimalPowerFlow:
     def get_voltage_range(low_voltage_limit: float, high_voltage_limit: float):
         return DEFAULT_V_RANGE  # FIXME get from voltage level dataframe
 
-    def create_model(self, network_cache: NetworkCache) -> tuple[ipopt.Model, VariableContext]:
+    def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
 
         # register functions
@@ -469,10 +474,12 @@ class OptimalPowerFlow:
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], -row.max_p, -row.min_p)
             min_q = row.min_q_at_target_p
             max_q = row.max_q_at_target_p
-            logger.log(TRACE_LEVEL, f"Add reactive power bounds [{min_q}, {max_q}] to generator '{row.Index}' (num={gen_num})")
-            if abs(max_q - min_q) < 1.0 / network_cache.network.nominal_apparent_power:
-                logger.error(f"Too small reactive power bounds [{min_q}, {max_q}] for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], -max_q, -min_q)
+            reduced_min_q = min_q * (1.0 + parameters.reactive_bounds_reduction)
+            reduced_max_q = max_q * (1.0 - parameters.reactive_bounds_reduction)
+            logger.log(TRACE_LEVEL, f"Add reactive power bounds [{reduced_min_q}, {reduced_max_q}] to generator '{row.Index}' (num={gen_num})")
+            if abs(reduced_max_q - reduced_min_q) < 1.0 / network_cache.network.nominal_apparent_power:
+                logger.error(f"Too small reactive power bounds [{reduced_min_q}, {reduced_max_q}] for generator '{row.Index}' (num={gen_num})")
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], -reduced_max_q, -reduced_min_q)
 
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
@@ -612,10 +619,10 @@ class OptimalPowerFlow:
                 if q < -row.max_q_at_target_p or q > -row.min_q_at_target_p:
                     logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {-q} not in [{row.min_q_at_target_p}, {row.max_q_at_target_p}]")
 
-    def run(self, _parameters: OptimalPowerFlowParameters) -> bool:
+    def run(self, parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
 
-        model, variable_context = self.create_model(network_cache)
+        model, variable_context = self.create_model(network_cache, parameters)
         model.optimize()
 
         status = model.get_model_attribute(poi.ModelAttribute.TerminationStatus)

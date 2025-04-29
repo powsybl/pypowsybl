@@ -67,4 +67,4 @@ def test_ieee118():
 
 
 def test_ieee300():
-    run_opf_then_lf(pp.network.create_ieee300(), 14)
+    run_opf_then_lf(pp.network.create_ieee300(), 1)
