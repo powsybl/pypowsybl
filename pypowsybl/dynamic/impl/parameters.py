@@ -15,10 +15,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
     All parameters are first read from you configuration file, then overridden with
     the constructor arguments.
 
-    Please note that dynamic simulation providers may not honor all parameters, according to their capabilities.
-    The exact behaviour of some parameters may also depend on your provider.
-    Please check the documentation of your provider for that information.
-
     .. currentmodule:: pypowsybl.dynamic
 
     Args:

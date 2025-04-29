@@ -58,6 +58,15 @@ OutputVariableMapping
     OutputVariableMapping.add_dynamic_model_final_state_values
     OutputVariableMapping.add_standard_model_final_state_values
 
+Parameters
+----------
+.. autosummary::
+    :toctree: api/
+
+    Parameters
+    Simulation.get_provider_parameters
+    Simulation.get_provider_parameters_names
+
 Simulation
 ----------
 .. autosummary::
