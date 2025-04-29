@@ -1442,7 +1442,7 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
 }
 
 int scaleGenerator(pypowsybl::JavaHandle network, int asked, const std::string generator_id, const int limit_min, const int limit_max) {
-    return pypowsybl::PowsyblCaller::get()->callJava<int>(::scaleGenerator, network, asked, generator_id, limit_min, limit_max);
+    return pypowsybl::PowsyblCaller::get()->callJava<int>(::scaleGenerator, network, asked, (char*) generator_id, limit_min, limit_max);
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
