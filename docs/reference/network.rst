@@ -18,6 +18,7 @@ Following methods may be used to create a new network instance:
    :toctree: api/
    :nosignatures:
 
+   is_loadable
    load
    load_from_string
    load_from_binary_buffer

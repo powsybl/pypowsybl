@@ -2683,5 +2683,37 @@ def test_enconding_issue():
     assert '<iidm:substation id="Bürs"/>' in network.save_to_string(parameters={'iidm.export.xml.indent': 'false'})
 
 
+def test_is_loadable():
+    assert pp.network.is_loadable(DATA_DIR.joinpath('ieee14.dgs'))
+    assert pp.network.is_loadable(DATA_DIR.joinpath('19700101_0000_FO4_UX1.uct'))
+    assert pp.network.is_loadable(DATA_DIR.joinpath('CGMES_Full.zip'))
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        file = pathlib.Path(tmp_dir_name) / 'foo.xiidm'
+        file.touch()
+        assert not pp.network.is_loadable(file)
+
+        
+def test_alpha_rho_transfo2():
+    network = pp.network.create_micro_grid_be_network()
+    transfo2 = network.get_2_windings_transformers(attributes=['rho', 'alpha'])
+    expected_transfo2 = pd.DataFrame(index=pd.Series(name='id',
+                                                     data=['a708c3bc-465d-4fe7-b6ef-6fa6408a62b0', 'b94318f6-6d24-4f56-96b9-df2531ad6543', 'e482b89a-fa84-4ea9-8e70-a83d44790957']),
+                                     columns=['rho', 'alpha'],
+                                     data=[[0.274807, 2.147585],
+                                           [0.519481, 0.0],
+                                           [0.092873, 0.0]])
+    pd.testing.assert_frame_equal(expected_transfo2, transfo2, check_dtype=False, atol=1e-6)
+
+
+def test_alpha_rho_transfo3():
+    network = pp.network.create_micro_grid_be_network()
+    transfo3 = network.get_3_windings_transformers(attributes=['rho1', 'alpha1', 'rho2', 'alpha2', 'rho3', 'alpha3'])
+    expected_transfo3 = pd.DataFrame(index=pd.Series(name='id',
+                                                     data=['84ed55f4-61f5-4d9d-8755-bba7b877a246']),
+                                     columns=['rho1', 'alpha1', 'rho2', 'alpha2', 'rho3', 'alpha3'],
+                                     data=[[1.0, 0.0, 1.818182, 0.0, 19.047619, 0.0]])
+    pd.testing.assert_frame_equal(expected_transfo3, transfo3, check_dtype=False, atol=1e-6)
+
+
 if __name__ == '__main__':
     unittest.main()
