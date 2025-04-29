@@ -482,6 +482,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
           std::function <void()> postJavaCallls);
 
+void logMaxMemory();
+
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
 void setConfigRead(bool configRead);
