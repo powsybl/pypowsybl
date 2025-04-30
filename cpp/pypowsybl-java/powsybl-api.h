@@ -263,6 +263,15 @@ typedef enum {
     REMOVE_HVDC_LINE,
 } remove_modification_type;
 
+typedef enum {
+    PROPORTIONAL_TO_TARGETP = 0,
+    PROPORTIONAL_TO_PMAX,
+    PROPORTIONAL_TO_DIFF_PMAX_TARGETP,
+    PROPORTIONAL_TO_DIFF_TARGETP_PMIN,
+    PROPORTIONAL_TO_P0,
+    UNIFORM_DISTRIBUTION
+} distribution_mode;
+
 typedef struct matrix_struct {
     int row_count;
     int column_count;

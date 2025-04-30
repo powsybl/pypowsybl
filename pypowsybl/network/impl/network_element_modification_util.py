@@ -1058,18 +1058,18 @@ def replace_3_2_windings_transformers_with_3_windings_transformers(network: Netw
                                     None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
 
-def scale_generator(network: Network, asked: int, generator_id: str, limit_min: int, limit_max: int) -> int:
+def scale_proportional(network: Network, asked: int, injections_ids: List[str], limit_min: int, limit_max: int) -> int:
     """
     Creates a generator scalable on the network
 
     Args:
-        network: the network to create the generator scalable on
+        network: the network to create the injections and scale them on
         asked: the value asked to adjust the scalable active power
-        generator_id: the id of the generator
-        limit_min : the lower limit of the generator
-        limit_max: the upper limit of the generator
+        injections_ids: the ids of the injections
+        limit_min : the lower limit of the injections (optional)
+        limit_max: the upper limit of the generator (optional)
 
     Return:
-        The actual value of the scalable active power adjustment
+        The actual value of the scalable active power adjustment.
     """
-    return _pp.scale_generator(network._handle, asked, generator_id, limit_min, limit_max)
+    return _pp.scale_generator(network._handle, asked, injections_ids, limit_min, limit_max)

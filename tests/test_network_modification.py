@@ -1505,4 +1505,3 @@ def test_split_or_merge_transformers():
 
 def test_scale_generator():
     n = pp.network.create_micro_grid_be_network()
-
