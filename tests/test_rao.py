@@ -18,7 +18,7 @@ DATA_DIR = TEST_DIR.parent / 'data'
 def test_default_rao_parameters():
     parameters = RaoParameters()
     json_param = parameters.to_json()
-    assert json_param['version'] == '3.0'
+    assert json_param['version'] == '3.1'
     assert json_param['objective-function']['type'] == 'SECURE_FLOW'
 
 def test_rao_parameters():
