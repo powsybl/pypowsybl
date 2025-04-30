@@ -43,7 +43,6 @@ import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
-import static com.powsybl.python.network.NetworkCFunctions.getNetworkExportFormats;
 
 /**
  * Defines the C functions for network modifications.
