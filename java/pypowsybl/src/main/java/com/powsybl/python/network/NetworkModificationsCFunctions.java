@@ -14,10 +14,13 @@ import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.Replace3TwoWindingsTransformersByThreeWindingsTransformers;
 import com.powsybl.iidm.modification.ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers;
+import com.powsybl.iidm.modification.scalable.ProportionalScalable;
+import com.powsybl.iidm.modification.scalable.Scalable;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.BusbarSection;
+import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
@@ -176,6 +179,25 @@ public final class NetworkModificationsCFunctions {
                 }
                 modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
             }
+        });
+    }
+
+    @CEntryPoint(name = "scaleProportional")
+    public static int scaleProportional(IsolateThread thread, ObjectHandle networkHandle,
+                                        double asked,
+                                        CCharPointerPointer injectionsIds, int injectionCount,
+                                        ObjectHandle distributionModeHandle,
+                                        double limitMin, double limitMax,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> injectionsIdsStringList = toStringList(injectionsIds, injectionCount);
+            List<Injection<?>> injections = new ArrayList<>();
+            injectionsIdsStringList.forEach(injection ->
+                    injections.add((Injection<?>) network.getConnectable(injection)));
+            ProportionalScalable.DistributionMode distributionMode = ObjectHandles.getGlobal().get(distributionModeHandle);
+            ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
+            return (int) proportionalScalable.scale(network, asked);
         });
     }
 }
