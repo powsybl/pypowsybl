@@ -47,7 +47,15 @@ typedef struct loadflow_component_result_struct {
     double distributed_active_power;
 } loadflow_component_result;
 
+typedef struct provider_parameters_struct {
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} provider_parameters;
+
 typedef struct loadflow_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
     unsigned char use_reactive_limits;
@@ -63,10 +71,6 @@ typedef struct loadflow_parameters_struct {
     int countries_to_balance_count;
     int connected_component_mode;
     double dc_power_factor;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } loadflow_parameters;
 
 typedef struct loadflow_validation_parameters_struct {
@@ -84,24 +88,18 @@ typedef struct loadflow_validation_parameters_struct {
 } loadflow_validation_parameters;
 
 typedef struct security_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } sensitivity_analysis_parameters;
 
 typedef struct limit_violation_struct {
@@ -425,6 +423,7 @@ typedef enum {
 } ThreeSide;
 
 typedef struct shortcircuit_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     unsigned char with_voltage_result;
     unsigned char with_feeder_result;
     unsigned char with_limit_violations;
@@ -432,10 +431,6 @@ typedef struct shortcircuit_analysis_parameters_struct {
     unsigned char with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
     int initial_voltage_profile_mode;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } shortcircuit_analysis_parameters;
 
 typedef enum {
@@ -532,3 +527,48 @@ typedef enum {
     UPDATE_BRANCH_BUS1,
     UPDATE_BRANCH_BUS2,
 } Grid2opUpdateIntegerValueType;
+
+typedef struct rao_parameters_struct {
+  struct provider_parameters_struct provider_parameters;
+  int objective_function_type; // Objective function parameters
+  unsigned char enforce_curative_security;
+  int unit; // Objective function parameters
+  double curative_min_obj_improvement;
+
+  // range action solver
+  int solver;
+  double relative_mip_gap;
+  char* solver_specific_parameters;
+
+  double pst_ra_min_impact_threshold;
+  double hvdc_ra_min_impact_threshold;
+  double injection_ra_min_impact_threshold;
+  int max_mip_iterations; // range action optimization parameters
+  double pst_sensitivity_threshold;
+  double hvdc_sensitivity_threshold;
+  double injection_ra_sensitivity_threshold;
+  int pst_model;
+  int ra_range_shrinking;
+
+  int max_preventive_search_tree_depth; // topo optimization parameters
+  int max_auto_search_tree_depth;
+  int max_curative_search_tree_depth;
+  double relative_min_impact_threshold;
+  double absolute_min_impact_threshold;
+  array predefined_combinations;
+  unsigned char skip_actions_far_from_most_limiting_element;
+  int max_number_of_boundaries_for_skipping_actions;
+
+  int available_cpus; // Multithreading parameters
+
+  int execution_condition;  // Second preventive rao parameters
+  unsigned char re_optimize_curative_range_actions;
+  unsigned char hint_from_first_preventive_rao;
+
+  unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters
+
+  char* load_flow_provider;  // Load flow and sensitivity parameters
+  char* sensitivity_provider;
+  struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
+  double sensitivity_failure_overcost;
+} rao_parameters;
