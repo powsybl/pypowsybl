@@ -67,6 +67,12 @@ You can define operator strategies and remedial actions with the following metho
     SecurityAnalysis.add_generator_active_power_action
     SecurityAnalysis.add_switch_action
     SecurityAnalysis.add_operator_strategy
+    SecurityAnalysis.add_dangling_line_active_power_action
+    SecurityAnalysis.add_dangling_line_reactive_power_action
+    SecurityAnalysis.add_phase_tap_changer_position_action
+    SecurityAnalysis.add_ratio_tap_changer_position_action
+    SecurityAnalysis.add_shunt_compensator_position_action
+    SecurityAnalysis.add_terminals_connection_action
 
 Results
 -------
