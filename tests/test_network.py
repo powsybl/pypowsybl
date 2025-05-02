@@ -2715,5 +2715,28 @@ def test_alpha_rho_transfo3():
     pd.testing.assert_frame_equal(expected_transfo3, transfo3, check_dtype=False, atol=1e-6)
 
 
+def test_q_min_max_at_target_p():
+    network  = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(network)
+    attributes = ['min_q', 'max_q', 'min_q_at_p', 'max_q_at_p', 'min_q_at_target_p', 'max_q_at_target_p']
+    generators = network.get_generators(attributes=attributes).tail(1)
+    expected_generators = pd.DataFrame(index=pd.Series(name='id', data=['GTH2']),
+                                       columns=attributes,
+                                       data=[[nan, nan, -172.607678, 185.036696, -172.594302, 185.097207]])
+    pd.testing.assert_frame_equal(expected_generators, generators, check_dtype=False)
+    vscs = network.get_vsc_converter_stations(attributes=attributes).tail(1)
+    expected_vscs = pd.DataFrame(index=pd.Series(name='id', data=['VSC2']),
+                                 columns=attributes,
+                                 data=[[-400.0, 500.0, -400.0, 500.0, -400.0, 500.0]])
+    pd.testing.assert_frame_equal(expected_vscs, vscs, check_dtype=False)
+
+    network_with_batteries = pp.network.load(TEST_DIR.joinpath('battery.xiidm'))
+    batteries = network_with_batteries.get_batteries(attributes=attributes).head(1)
+    expected_batteries = pd.DataFrame(index=pd.Series(name='id', data=['BAT']),
+                                      columns=attributes,
+                                      data=[[-9999.99, 9999.99, -9999.99, 9999.99, -9999.99, 9999.99]])
+    pd.testing.assert_frame_equal(expected_batteries, batteries, check_dtype=False)
+
+
 if __name__ == '__main__':
     unittest.main()
