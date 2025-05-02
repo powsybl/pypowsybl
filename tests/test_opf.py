@@ -10,7 +10,7 @@ import pytest
 
 import pypowsybl as pp
 from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
-from pypowsybl.opf.impl.injection_bounds import InjectionBounds
+from pypowsybl.opf.impl.bounds import Bounds
 
 
 @pytest.fixture(autouse=True)
@@ -21,28 +21,28 @@ def set_up():
 
 
 def test_reactive_range():
-    rb = InjectionBounds(10, 20)
-    assert rb.min_value == 10
-    assert rb.max_value == 20
-    assert str(rb) == "[10, 20]"
-    assert rb.mirror().min_value == -20
-    assert rb.mirror().max_value == -10
-    assert rb.mirror().min_value_with_margin == -20.000001
-    assert rb.mirror().max_value_with_margin == -9.999999
-    assert rb.contains(10)
-    assert rb.contains(20)
-    assert not rb.contains(5)
-    assert not rb.contains(21)
-    assert rb.contains(9.99999999)
-    assert not rb.contains(9.999)
-    assert rb.contains(20.00000001)
-    assert not rb.contains(20.001)
-    assert rb.reduce(0.1).min_value == 11.0
-    assert rb.reduce(0.1).max_value == 18.0
-    assert rb.mirror().reduce(0.1).min_value == -18.0
-    assert rb.mirror().reduce(0.1).max_value == -11.0
-    assert rb.mirror().reduce(0.1).min_value_with_margin == -18.000001
-    assert rb.mirror().reduce(0.1).max_value_with_margin == -10.999999
+    b = Bounds(10, 20)
+    assert b.min_value == 10
+    assert b.max_value == 20
+    assert str(b) == "[10, 20]"
+    assert b.mirror().min_value == -20
+    assert b.mirror().max_value == -10
+    assert b.mirror().min_value_with_margin == -20.000001
+    assert b.mirror().max_value_with_margin == -9.999999
+    assert b.contains(10)
+    assert b.contains(20)
+    assert not b.contains(5)
+    assert not b.contains(21)
+    assert b.contains(9.99999999)
+    assert not b.contains(9.999)
+    assert b.contains(20.00000001)
+    assert not b.contains(20.001)
+    assert b.reduce(0.1).min_value == 11.0
+    assert b.reduce(0.1).max_value == 18.0
+    assert b.mirror().reduce(0.1).min_value == -18.0
+    assert b.mirror().reduce(0.1).max_value == -11.0
+    assert b.mirror().reduce(0.1).min_value_with_margin == -18.000001
+    assert b.mirror().reduce(0.1).max_value_with_margin == -10.999999
 
 
 def run_opf_then_lf(network: pp.network.Network, iteration_count: int):

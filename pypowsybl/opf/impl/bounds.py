@@ -1,4 +1,4 @@
-class InjectionBounds:
+class Bounds:
     def __init__(self, min_value: float, max_value: float, margin: float = 1e-6):
         self._min_value = min_value
         self._max_value = max_value
@@ -23,13 +23,13 @@ class InjectionBounds:
     def contains(self, value: float) -> bool:
         return self.min_value_with_margin <= value <= self.max_value_with_margin
 
-    def reduce(self, reduction: float) -> 'InjectionBounds':
+    def reduce(self, reduction: float) -> 'Bounds':
         min_sign = 1 if self._min_value >= 0 else -1
         max_sign = 1 if self._max_value >= 0 else -1
-        return InjectionBounds(self._min_value * (1 + min_sign * reduction), self._max_value * (1 - max_sign * reduction))
+        return Bounds(self._min_value * (1 + min_sign * reduction), self._max_value * (1 - max_sign * reduction))
 
-    def mirror(self) -> 'InjectionBounds':
-        return InjectionBounds(-self._max_value, -self._min_value)
+    def mirror(self) -> 'Bounds':
+        return Bounds(-self._max_value, -self._min_value)
 
     def __repr__(self) -> str:
         return f"[{self._min_value}, {self._max_value}]"

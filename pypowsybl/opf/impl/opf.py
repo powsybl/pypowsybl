@@ -10,7 +10,7 @@ from pyoptinterface import nlfunc, ipopt
 from pyoptinterface._src.nleval_ext import FunctionIndex
 
 from pypowsybl.network import Network
-from pypowsybl.opf.impl.injection_bounds import InjectionBounds
+from pypowsybl.opf.impl.bounds import Bounds
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ logging.addLevelName(TRACE_LEVEL, "TRACE")
 
 R2 = 1.0
 A2 = 0.0
-DEFAULT_V_RANGE = 0.9, 1.1
+DEFAULT_V_BOUNDS = Bounds(0.9, 1.1)
 
 def closed_branch_flow(vars, params):
     y, ksi, g1, b1, g2, b2, r1, a1 = (
@@ -438,8 +438,8 @@ class OptimalPowerFlow:
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
     @staticmethod
-    def get_voltage_range(low_voltage_limit: float, high_voltage_limit: float):
-        return DEFAULT_V_RANGE  # FIXME get from voltage level dataframe
+    def get_voltage_bounds(low_voltage_limit: float, high_voltage_limit: float):
+        return DEFAULT_V_BOUNDS  # FIXME get from voltage level dataframe
 
     def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
@@ -455,9 +455,9 @@ class OptimalPowerFlow:
 
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
-            v_min, v_max = self.get_voltage_range(row.low_voltage_limit, row.high_voltage_limit)
-            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds [{v_min}, {v_max}] to bus '{row.Index}' (num={bus_num})'")
-            model.set_variable_bounds(variable_context.v_vars[bus_num], v_min, v_max)
+            v_bounds = self.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to bus '{row.Index}' (num={bus_num})'")
+            model.set_variable_bounds(variable_context.v_vars[bus_num], v_bounds.min_value, v_bounds.max_value)
             model.set_variable_start(variable_context.v_vars[bus_num], 1.0)
 
         # slack bus angle forced to 0
@@ -471,14 +471,14 @@ class OptimalPowerFlow:
 
         # generator active and reactive power bounds
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
-            ab = InjectionBounds(row.min_p, row.max_p).mirror()
-            logger.log(TRACE_LEVEL, f"Add active power bounds {ab} to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], ab.min_value, ab.max_value)
-            rb = InjectionBounds(row.min_q_at_target_p, row.max_q_at_target_p).reduce(parameters.reactive_bounds_reduction).mirror()
-            logger.log(TRACE_LEVEL, f"Add reactive power bounds {rb} to generator '{row.Index}' (num={gen_num})")
-            if abs(rb.max_value - rb.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
-                logger.error(f"Too small reactive power bounds {rb} for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], rb.min_value, rb.max_value)
+            p_bounds = Bounds(row.min_p, row.max_p).mirror()
+            logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
+            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], p_bounds.min_value, p_bounds.max_value)
+            q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).reduce(parameters.reactive_bounds_reduction).mirror()
+            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
+            if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
+                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], q_bounds.min_value, q_bounds.max_value)
 
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
@@ -570,8 +570,8 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 target_v = model.get_value(variable_context.v_vars[bus_num])
                 gen_target_v.append(target_v)
-                rb = InjectionBounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
-                voltage_regulator_on = rb.contains(q)
+                q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
+                voltage_regulator_on = q_bounds.contains(q)
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
                 gen_voltage_regulator_on.append(voltage_regulator_on)
 
@@ -602,9 +602,9 @@ class OptimalPowerFlow:
         # check voltage bounds
         for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
             v = model.get_value(variable_context.v_vars[bus_num])
-            v_min, v_max = OptimalPowerFlow.get_voltage_range(row.low_voltage_limit, row.high_voltage_limit)
-            if v < v_min or v > v_max:
-                logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in [{v_min}, {v_max}]")
+            v_bounds = OptimalPowerFlow.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            if not v_bounds.contains(v):
+                logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in {v_bounds}")
 
         # check generator limits
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
@@ -612,13 +612,13 @@ class OptimalPowerFlow:
                 p = model.get_value(variable_context.gen_p_vars[gen_num])
                 q = model.get_value(variable_context.gen_q_vars[gen_num])
 
-                ab = InjectionBounds(row.min_p, row.max_p).mirror()
-                if not ab.contains(p):
+                p_bounds = Bounds(row.min_p, row.max_p).mirror()
+                if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
-                rb = InjectionBounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
-                if not rb.contains(q):
-                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {rb}")
+                q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
+                if not q_bounds.contains(q):
+                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
