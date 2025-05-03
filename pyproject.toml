@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools", "pybind11[global]==2.13.6", "cmake>=3.14"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+
+[tool.setuptools.package-data]
+pypowsybl = ["py.typed", "*.pyi"]
+
+[project]
+name = "pypowsybl"
+dynamic = ["version"]
+requires-python = ">=3.8"
+dependencies = [
+    "prettytable>=2.0.0",
+    "pandas>=2.2.2; python_version >= '3.9'",
+    "pandas>=2.0.3; python_version <= '3.8'",
+    "networkx"
+]
+authors = [
+    {name = "Geoffroy Jamgotchian", email = "geoffroy.jamgotchian@gmail.com" }
+]
+description = "A PowSyBl Python API"
+readme = { file = "README.md", content-type = "text/markdown"}
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    #"Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows"
+]
+
+[project.urls]
+"Source" = "https://github.com/powsybl/pypowsybl"
+"Documentation" = "https://powsybl.readthedocs.io/projects/pypowsybl/en/stable/"
+
+[project.optional-dependencies]
+pandapower = ["pandapower>=2.4.11"]
+
+[tool.setuptools.dynamic]
+version = {attr = "pypowsybl.__version__"}

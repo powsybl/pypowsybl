@@ -324,7 +324,7 @@ jobs:
         working-directory: ./pypowsybl
 
       - name: Build wheel
-        run: python3 setup.py bdist_wheel
+        run: python3 -m build --wheel
         working-directory: ./pypowsybl
 
       - name: Install wheel
