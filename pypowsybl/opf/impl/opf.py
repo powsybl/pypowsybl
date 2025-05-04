@@ -392,18 +392,8 @@ class OptimalPowerFlow:
     def get_voltage_bounds(low_voltage_limit: float, high_voltage_limit: float):
         return DEFAULT_V_BOUNDS  # FIXME get from voltage level dataframe
 
-    def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
-        model = ipopt.Model()
-
-        # register functions
-        cbf_index = model.register_function(closed_branch_flow)
-        o1bf_index = model.register_function(open_side1_branch_flow)
-        o2bf_index = model.register_function(open_side2_branch_flow)
-        sf_index = model.register_function(shunt_flow)
-
-        # create variables
-        variable_context = self.create_variable_context(network_cache, model)
-
+    def set_variables_bounds(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
+                             parameters: OptimalPowerFlowParameters):
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
             v_bounds = self.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
@@ -431,6 +421,8 @@ class OptimalPowerFlow:
                 logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_q_vars[gen_num], q_bounds.min_value, q_bounds.max_value)
 
+    def set_constraints(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
+                        cbf_index: FunctionIndex, o1bf_index: FunctionIndex, o2bf_index: FunctionIndex, sf_index: FunctionIndex):
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
@@ -480,7 +472,25 @@ class OptimalPowerFlow:
         # power balance constraints
         self.add_power_balance_constraint(network_cache, model, sf_index, variable_context)
 
-        # cost function: minimize active power
+    def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
+        model = ipopt.Model()
+
+        # register functions
+        cbf_index = model.register_function(closed_branch_flow)
+        o1bf_index = model.register_function(open_side1_branch_flow)
+        o2bf_index = model.register_function(open_side2_branch_flow)
+        sf_index = model.register_function(shunt_flow)
+
+        # create variables
+        variable_context = self.create_variable_context(network_cache, model)
+
+        # variable bounds
+        self.set_variables_bounds(network_cache, model, variable_context, parameters)
+
+        # constraints
+        self.set_constraints(network_cache, model, variable_context, cbf_index, o1bf_index, o2bf_index, sf_index)
+
+        # cost function
 #        cost = self.create_minimal_active_power_cost_function(variable_context)
         cost = self.create_minimal_losses_cost_function(variable_context)
         model.set_objective(cost)
