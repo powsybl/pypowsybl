@@ -4,13 +4,14 @@ from math import hypot, atan2
 from typing import Any
 
 import pyoptinterface as poi
-from pyoptinterface import nlfunc, ipopt, ExprBuilder
+from pyoptinterface import nlfunc, ipopt
 from pyoptinterface._src.nleval_ext import FunctionIndex
 
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds import Bounds
 from pypowsybl.opf.impl.network_cache import NetworkCache
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.variable_context import VariableContext
 
 logger = logging.getLogger(__name__)
 
@@ -130,25 +131,6 @@ def shunt_flow(vars, params):
     q_eq = -b * v * v - q
 
     return [p_eq, q_eq]
-
-
-@dataclass
-class VariableContext:
-    ph_vars: Any
-    v_vars: Any
-    gen_p_vars: Any
-    gen_q_vars: Any
-    shunt_p_vars: Any
-    shunt_q_vars: Any
-    closed_branch_p1_vars: Any
-    closed_branch_q1_vars: Any
-    closed_branch_p2_vars: Any
-    closed_branch_q2_vars: Any
-    open_side1_branch_p2_vars: Any
-    open_side1_branch_q2_vars: Any
-    open_side2_branch_p1_vars: Any
-    open_side2_branch_q1_vars: Any
-    branch_num_2_index: list[int]
 
 
 @dataclass
@@ -479,21 +461,6 @@ class OptimalPowerFlow:
         # power balance constraints
         self.add_power_balance_constraint(network_cache, model, variable_context)
 
-    @staticmethod
-    def create_minimal_active_power_cost_function(variable_context: VariableContext) -> ExprBuilder:
-        cost = poi.ExprBuilder()
-        for gen_num in range(len(variable_context.gen_p_vars)):
-            a, b, c = 0, 1.0, 0  # TODO
-            cost += a * variable_context.gen_p_vars[gen_num] * variable_context.gen_p_vars[gen_num] + b * variable_context.gen_p_vars[gen_num] + c
-        return cost
-
-    @staticmethod
-    def create_minimal_losses_cost_function(variable_context: VariableContext) -> ExprBuilder:
-        cost = poi.ExprBuilder()
-        for branch_index in range(len(variable_context.closed_branch_p1_vars)):
-            cost += variable_context.closed_branch_p1_vars[branch_index] - variable_context.closed_branch_p2_vars[branch_index]
-        return cost
-
     def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
 
@@ -510,8 +477,7 @@ class OptimalPowerFlow:
         self.set_constraints(network_cache, model, variable_context, function_context)
 
         # cost function
-#        cost = self.create_minimal_active_power_cost_function(variable_context)
-        cost = self.create_minimal_losses_cost_function(variable_context)
+        cost = parameters.cost_function.create(network_cache, variable_context)
         model.set_objective(cost)
 
         return model, variable_context
