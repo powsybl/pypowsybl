@@ -579,6 +579,10 @@ public final class NetworkDataframes {
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup2, false)
                 .doubles("rho", (twt, context) -> perUnitRho(context, twt, NetworkDataframes.computeRho(twt)), false)
                 .doubles("alpha", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt)), false)
+                .doubles("r_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeR(twt), twt), false)
+                .doubles("x_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeX(twt), twt), false)
+                .doubles("g_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeG(twt), twt), false)
+                .doubles("b_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeB(twt), twt), false)
                 .addProperties()
                 .build();
     }
@@ -1338,6 +1342,30 @@ public final class NetworkDataframes {
     private static double computeAlpha(ThreeWindingsTransformer twt, ThreeSides side) {
         ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
         return leg.getPhaseTapChanger() != null ? leg.getPhaseTapChanger().getCurrentStep().getAlpha() : 0;
+    }
+
+    private static double computeR(TwoWindingsTransformer twt) {
+        return twt.getR()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getR() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getR() / 100.0) : 1);
+    }
+
+    private static double computeX(TwoWindingsTransformer twt) {
+        return twt.getX()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getX() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getX() / 100.0) : 1);
+    }
+
+    private static double computeG(TwoWindingsTransformer twt) {
+        return twt.getG()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getG() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getG() / 100.0) : 1);
+    }
+
+    private static double computeB(TwoWindingsTransformer twt) {
+        return twt.getB()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getB() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getB() / 100.0) : 1);
     }
 
     private static NetworkDataframeMapper ptcs() {

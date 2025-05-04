@@ -225,13 +225,20 @@ class OptimalPowerFlow:
     def get_reactive_power_bounds(row: Any) -> Bounds:
         return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
 
+    @staticmethod
+    def check_bounds(id:str, lb: float, ub: float) -> tuple[float, float]:
+        if lb > ub:
+            logger.warning(f"{id}, lower bound {lb} is greater than upper bound {ub}")
+            return ub, lb
+        return lb, ub
+
     def set_variables_bounds(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
                              parameters: OptimalPowerFlowParameters):
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
             v_bounds = self.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to bus '{row.Index}' (num={bus_num})'")
-            model.set_variable_bounds(variable_context.v_vars[bus_num], v_bounds.min_value, v_bounds.max_value)
+            model.set_variable_bounds(variable_context.v_vars[bus_num], *self.check_bounds(row.Index, v_bounds.min_value, v_bounds.max_value))
             model.set_variable_start(variable_context.v_vars[bus_num], 1.0)
 
         # slack bus angle forced to 0
@@ -244,13 +251,13 @@ class OptimalPowerFlow:
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
             p_bounds = Bounds(row.min_p, row.max_p).mirror()
             logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], p_bounds.min_value, p_bounds.max_value)
+            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *self.check_bounds(row.Index, p_bounds.min_value, p_bounds.max_value))
 
             q_bounds = self.get_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
             logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
             if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
                 logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], q_bounds.min_value, q_bounds.max_value)
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], *self.check_bounds(row.Index, q_bounds.min_value, q_bounds.max_value))
 
     @staticmethod
     def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
@@ -423,7 +430,7 @@ class OptimalPowerFlow:
                                        variable_context, function_context)
 
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
-            r, x, g, b, rho, alpha = row.r, row.x, row.g, row.b, row.rho, row.alpha
+            r, x, g, b, rho, alpha = row.r_tap, row.x_tap, row.g_tap, row.b_tap, row.rho, row.alpha
             g1 = g / 2
             g2 = g / 2
             b1 = b / 2

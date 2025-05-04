@@ -14,7 +14,7 @@ class NetworkCache:
         self._loads = self._network.get_loads(attributes=['bus_id', 'p0', 'q0'])
         self._shunts = self._network.get_shunt_compensators(attributes=['bus_id', 'g', 'b'])
         self._lines = self._network.get_lines(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'])
-        self._transformers = self._network.get_2_windings_transformers(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g', 'b', 'rho', 'alpha'])
+        self._transformers = self._network.get_2_windings_transformers(attributes=['bus1_id', 'bus2_id', 'rho', 'alpha', 'r_tap', 'x_tap', 'g_tap', 'b_tap'])
         self._branches = self._network.get_branches(attributes=['bus1_id', 'bus2_id'])
         self._slack_terminal = self._network.get_extensions('slackTerminal')
 

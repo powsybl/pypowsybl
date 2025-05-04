@@ -442,7 +442,7 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
                         "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1", "bus2_id", "bus_breaker_bus2_id", "node2",
-                        "connected1", "connected2", "fictitious", "selected_limits_group_1", "selected_limits_group_2", "rho", "alpha");
+                        "connected1", "connected2", "fictitious", "selected_limits_group_1", "selected_limits_group_2", "rho", "alpha", "r_tap", "x_tap", "g_tap", "b_tap");
     }
 
     @Test
