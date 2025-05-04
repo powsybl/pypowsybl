@@ -43,9 +43,9 @@ class MinimalLossesCostFunction(CostFunction):
         return cost
 
 
-class ReferenceCostFunction(CostFunction):
+class MinimizeAgainstReferenceCostFunction(CostFunction):
     def __init__(self):
-        super().__init__('Reference')
+        super().__init__('Minimize against reference')
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()

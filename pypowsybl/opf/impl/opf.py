@@ -477,6 +477,7 @@ class OptimalPowerFlow:
         self.set_constraints(network_cache, model, variable_context, function_context)
 
         # cost function
+        logger.debug(f"Using cost function: '{parameters.cost_function.name}'")
         cost = parameters.cost_function.create(network_cache, variable_context)
         model.set_objective(cost)
 
