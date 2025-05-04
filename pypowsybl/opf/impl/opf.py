@@ -3,9 +3,7 @@ from dataclasses import dataclass
 from math import hypot, atan2
 from typing import Any
 
-import pandas as pd
 import pyoptinterface as poi
-from pandas import DataFrame
 from pyoptinterface import nlfunc, ipopt, ExprBuilder
 from pyoptinterface._src.nleval_ext import FunctionIndex
 
@@ -246,8 +244,12 @@ class OptimalPowerFlow:
         return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index)
 
     @staticmethod
-    def get_voltage_bounds(low_voltage_limit: float, high_voltage_limit: float):
+    def get_voltage_bounds(_low_voltage_limit: float, _high_voltage_limit: float):
         return DEFAULT_V_BOUNDS  # FIXME get from voltage level dataframe
+
+    @staticmethod
+    def get_reactive_power_bounds(row: Any) -> Bounds:
+        return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
 
     def set_variables_bounds(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
                              parameters: OptimalPowerFlowParameters):
@@ -273,7 +275,7 @@ class OptimalPowerFlow:
             logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], p_bounds.min_value, p_bounds.max_value)
 
-            q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).reduce(parameters.reactive_bounds_reduction).mirror()
+            q_bounds = self.get_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
             logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
             if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
                 logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
@@ -525,8 +527,8 @@ class OptimalPowerFlow:
 
         return model, variable_context
 
-    @staticmethod
-    def analyze_violations(network_cache: NetworkCache, model: ipopt.Model,
+    @classmethod
+    def analyze_violations(cls, network_cache: NetworkCache, model: ipopt.Model,
                            variable_context: VariableContext) -> None:
         # check voltage bounds
         for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
@@ -545,7 +547,7 @@ class OptimalPowerFlow:
                 if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
-                q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
+                q_bounds = cls.get_reactive_power_bounds(row).mirror()
                 if not q_bounds.contains(q):
                     logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
@@ -568,7 +570,7 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 target_v = model.get_value(variable_context.v_vars[bus_num])
                 gen_target_v.append(target_v)
-                q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
+                q_bounds = self.get_reactive_power_bounds(row).mirror()
                 voltage_regulator_on = q_bounds.contains(q)
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
                 gen_voltage_regulator_on.append(voltage_regulator_on)
