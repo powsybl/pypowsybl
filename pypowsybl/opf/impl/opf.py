@@ -10,6 +10,7 @@ from pyoptinterface._src.nleval_ext import FunctionIndex
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds import Bounds
 from pypowsybl.opf.impl.network_cache import NetworkCache
+from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters
 
 logger = logging.getLogger(__name__)
 
@@ -156,15 +157,6 @@ class FunctionContext:
     o1bf_index: FunctionIndex
     o2bf_index: FunctionIndex
     sf_index: FunctionIndex
-
-
-class OptimalPowerFlowParameters:
-    def __init__(self) -> None:
-        self._reactive_bounds_reduction = 0.1
-
-    @property
-    def reactive_bounds_reduction(self) -> float:
-        return self._reactive_bounds_reduction
 
 
 # pip install pyoptinterface llvmlite tccbox
