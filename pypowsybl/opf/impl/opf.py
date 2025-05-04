@@ -6,7 +6,7 @@ from typing import Any
 import pandas as pd
 import pyoptinterface as poi
 from pandas import DataFrame
-from pyoptinterface import nlfunc, ipopt
+from pyoptinterface import nlfunc, ipopt, ExprBuilder
 from pyoptinterface._src.nleval_ext import FunctionIndex
 
 from pypowsybl.network import Network
@@ -152,6 +152,14 @@ class VariableContext:
     branch_num_2_index: list[int]
 
 
+@dataclass
+class FunctionContext:
+    cbf_index: FunctionIndex
+    o1bf_index: FunctionIndex
+    o2bf_index: FunctionIndex
+    sf_index: FunctionIndex
+
+
 class OptimalPowerFlowParameters:
     def __init__(self) -> None:
         self._reactive_bounds_reduction = 0.1
@@ -181,101 +189,6 @@ class OptimalPowerFlowParameters:
 class OptimalPowerFlow:
     def __init__(self, network: Network) -> None:
         self._network = network
-
-    @staticmethod
-    def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
-                              cbf_index: FunctionIndex, o1bf_index: FunctionIndex, o2bf_index: FunctionIndex,
-                              r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
-                              variable_context: VariableContext):
-        z = hypot(r, x)
-        y = 1.0 / z
-        ksi = atan2(r, x)
-
-        if bus1_id and bus2_id:
-            bus1_num = network_cache.buses.index.get_loc(bus1_id)
-            bus2_num = network_cache.buses.index.get_loc(bus2_id)
-            v1_var = variable_context.v_vars[bus1_num]
-            v2_var = variable_context.v_vars[bus2_num]
-            ph1_var = variable_context.ph_vars[bus1_num]
-            ph2_var = variable_context.ph_vars[bus2_num]
-            p1_var = variable_context.closed_branch_p1_vars[branch_index]
-            q1_var = variable_context.closed_branch_q1_vars[branch_index]
-            p2_var = variable_context.closed_branch_p2_vars[branch_index]
-            q2_var = variable_context.closed_branch_q2_vars[branch_index]
-            model.add_nl_constraint(
-                cbf_index,
-                vars=nlfunc.Vars(
-                    v1=v1_var,
-                    v2=v2_var,
-                    ph1=ph1_var,
-                    ph2=ph2_var,
-                    p1=p1_var,
-                    q1=q1_var,
-                    p2=p2_var,
-                    q2=q2_var
-                ),
-                params=nlfunc.Params(
-                    y=y,
-                    ksi=ksi,
-                    g1=g1,
-                    b1=b1,
-                    g2=g2,
-                    b2=b2,
-                    r1=r1,
-                    a1=a1
-                ),
-                eq=0.0,
-            )
-        elif bus2_id:
-            bus2_num = network_cache.buses.index.get_loc(bus2_id)
-            v2_var = variable_context.v_vars[bus2_num]
-            ph2_var = variable_context.ph_vars[bus2_num]
-            p2_var = variable_context.open_side1_branch_p2_vars[branch_index]
-            q2_var = variable_context.open_side1_branch_q2_vars[branch_index]
-            model.add_nl_constraint(
-                o1bf_index,
-                vars=nlfunc.Vars(
-                    v2=v2_var,
-                    ph2=ph2_var,
-                    p2=p2_var,
-                    q2=q2_var
-                ),
-                params=nlfunc.Params(
-                    y=y,
-                    ksi=ksi,
-                    g1=g1,
-                    b1=b1,
-                    g2=g2,
-                    b2=b2,
-                ),
-                eq=0.0,
-            )
-        elif bus1_id:
-            bus1_num = network_cache.buses.index.get_loc(bus1_id)
-            v1_var = variable_context.v_vars[bus1_num]
-            ph1_var = variable_context.ph_vars[bus1_num]
-            p1_var = variable_context.open_side2_branch_p1_vars[branch_index]
-            q1_var = variable_context.open_side2_branch_q1_vars[branch_index]
-            model.add_nl_constraint(
-                o2bf_index,
-                vars=nlfunc.Vars(
-                    v1=v1_var,
-                    ph1=ph1_var,
-                    p1=p1_var,
-                    q1=q1_var
-                ),
-                params=nlfunc.Params(
-                    y=y,
-                    ksi=ksi,
-                    g1=g1,
-                    b1=b1,
-                    g2=g2,
-                    b2=b2,
-                    a1=a1,
-                    r1=r1,
-                ),
-                eq=0.0,
-            )
 
     @staticmethod
     def create_variable_context(network_cache: NetworkCache, model: ipopt.Model) -> VariableContext:
@@ -325,7 +238,143 @@ class OptimalPowerFlow:
                                branch_num_2_index)
 
     @staticmethod
-    def add_power_balance_constraint(network_cache: NetworkCache, model: ipopt.Model, sf_index: FunctionIndex,
+    def register_functions(model: ipopt.Model) -> FunctionContext:
+        cbf_index = model.register_function(closed_branch_flow)
+        o1bf_index = model.register_function(open_side1_branch_flow)
+        o2bf_index = model.register_function(open_side2_branch_flow)
+        sf_index = model.register_function(shunt_flow)
+        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index)
+
+    @staticmethod
+    def get_voltage_bounds(low_voltage_limit: float, high_voltage_limit: float):
+        return DEFAULT_V_BOUNDS  # FIXME get from voltage level dataframe
+
+    def set_variables_bounds(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
+                             parameters: OptimalPowerFlowParameters):
+        # voltage buses bounds
+        for bus_num, row in enumerate(network_cache.buses.itertuples()):
+            v_bounds = self.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to bus '{row.Index}' (num={bus_num})'")
+            model.set_variable_bounds(variable_context.v_vars[bus_num], v_bounds.min_value, v_bounds.max_value)
+            model.set_variable_start(variable_context.v_vars[bus_num], 1.0)
+
+        # slack bus angle forced to 0
+        if len(network_cache.slack_terminal) > 0:
+            slack_bus_id = network_cache.slack_terminal.iloc[0].bus_id
+        else:
+            slack_bus_id = network_cache.buses.iloc[0].name
+        slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
+        model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
+        logger.log(TRACE_LEVEL, f"Angle reference is at bus '{slack_bus_id}' (num={slack_bus_num})")
+
+        # generator active and reactive power bounds
+        for gen_num, row in enumerate(network_cache.generators.itertuples()):
+            p_bounds = Bounds(row.min_p, row.max_p).mirror()
+            logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
+            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], p_bounds.min_value, p_bounds.max_value)
+
+            q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).reduce(parameters.reactive_bounds_reduction).mirror()
+            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
+            if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
+                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], q_bounds.min_value, q_bounds.max_value)
+
+    @staticmethod
+    def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
+                              r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
+                              variable_context: VariableContext, function_context: FunctionContext):
+        z = hypot(r, x)
+        y = 1.0 / z
+        ksi = atan2(r, x)
+
+        if bus1_id and bus2_id:
+            bus1_num = network_cache.buses.index.get_loc(bus1_id)
+            bus2_num = network_cache.buses.index.get_loc(bus2_id)
+            v1_var = variable_context.v_vars[bus1_num]
+            v2_var = variable_context.v_vars[bus2_num]
+            ph1_var = variable_context.ph_vars[bus1_num]
+            ph2_var = variable_context.ph_vars[bus2_num]
+            p1_var = variable_context.closed_branch_p1_vars[branch_index]
+            q1_var = variable_context.closed_branch_q1_vars[branch_index]
+            p2_var = variable_context.closed_branch_p2_vars[branch_index]
+            q2_var = variable_context.closed_branch_q2_vars[branch_index]
+            model.add_nl_constraint(
+                function_context.cbf_index,
+                vars=nlfunc.Vars(
+                    v1=v1_var,
+                    v2=v2_var,
+                    ph1=ph1_var,
+                    ph2=ph2_var,
+                    p1=p1_var,
+                    q1=q1_var,
+                    p2=p2_var,
+                    q2=q2_var
+                ),
+                params=nlfunc.Params(
+                    y=y,
+                    ksi=ksi,
+                    g1=g1,
+                    b1=b1,
+                    g2=g2,
+                    b2=b2,
+                    r1=r1,
+                    a1=a1
+                ),
+                eq=0.0,
+            )
+        elif bus2_id:
+            bus2_num = network_cache.buses.index.get_loc(bus2_id)
+            v2_var = variable_context.v_vars[bus2_num]
+            ph2_var = variable_context.ph_vars[bus2_num]
+            p2_var = variable_context.open_side1_branch_p2_vars[branch_index]
+            q2_var = variable_context.open_side1_branch_q2_vars[branch_index]
+            model.add_nl_constraint(
+                function_context.o1bf_index,
+                vars=nlfunc.Vars(
+                    v2=v2_var,
+                    ph2=ph2_var,
+                    p2=p2_var,
+                    q2=q2_var
+                ),
+                params=nlfunc.Params(
+                    y=y,
+                    ksi=ksi,
+                    g1=g1,
+                    b1=b1,
+                    g2=g2,
+                    b2=b2,
+                ),
+                eq=0.0,
+            )
+        elif bus1_id:
+            bus1_num = network_cache.buses.index.get_loc(bus1_id)
+            v1_var = variable_context.v_vars[bus1_num]
+            ph1_var = variable_context.ph_vars[bus1_num]
+            p1_var = variable_context.open_side2_branch_p1_vars[branch_index]
+            q1_var = variable_context.open_side2_branch_q1_vars[branch_index]
+            model.add_nl_constraint(
+                function_context.o2bf_index,
+                vars=nlfunc.Vars(
+                    v1=v1_var,
+                    ph1=ph1_var,
+                    p1=p1_var,
+                    q1=q1_var
+                ),
+                params=nlfunc.Params(
+                    y=y,
+                    ksi=ksi,
+                    g1=g1,
+                    b1=b1,
+                    g2=g2,
+                    b2=b2,
+                    a1=a1,
+                    r1=r1,
+                ),
+                eq=0.0,
+            )
+
+    @staticmethod
+    def add_power_balance_constraint(network_cache: NetworkCache, model: ipopt.Model,
                                      variable_context:VariableContext) -> None:
         bus_count = len(network_cache.buses)
         bus_p_gen = [[] for _ in range(bus_count)]
@@ -388,41 +437,8 @@ class OptimalPowerFlow:
             bus_q_expr -= bus_q_load[bus_num]
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
-    @staticmethod
-    def get_voltage_bounds(low_voltage_limit: float, high_voltage_limit: float):
-        return DEFAULT_V_BOUNDS  # FIXME get from voltage level dataframe
-
-    def set_variables_bounds(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
-                             parameters: OptimalPowerFlowParameters):
-        # voltage buses bounds
-        for bus_num, row in enumerate(network_cache.buses.itertuples()):
-            v_bounds = self.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
-            logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to bus '{row.Index}' (num={bus_num})'")
-            model.set_variable_bounds(variable_context.v_vars[bus_num], v_bounds.min_value, v_bounds.max_value)
-            model.set_variable_start(variable_context.v_vars[bus_num], 1.0)
-
-        # slack bus angle forced to 0
-        if len(network_cache.slack_terminal) > 0:
-            slack_bus_id = network_cache.slack_terminal.iloc[0].bus_id
-        else:
-            slack_bus_id = network_cache.buses.iloc[0].name
-        slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)
-        model.set_variable_bounds(variable_context.ph_vars[slack_bus_num], 0.0, 0.0)
-        logger.log(TRACE_LEVEL, f"Angle reference is at bus '{slack_bus_id}' (num={slack_bus_num})")
-
-        # generator active and reactive power bounds
-        for gen_num, row in enumerate(network_cache.generators.itertuples()):
-            p_bounds = Bounds(row.min_p, row.max_p).mirror()
-            logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], p_bounds.min_value, p_bounds.max_value)
-            q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).reduce(parameters.reactive_bounds_reduction).mirror()
-            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
-            if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
-                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], q_bounds.min_value, q_bounds.max_value)
-
     def set_constraints(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
-                        cbf_index: FunctionIndex, o1bf_index: FunctionIndex, o2bf_index: FunctionIndex, sf_index: FunctionIndex):
+                        function_context: FunctionContext):
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
@@ -430,8 +446,8 @@ class OptimalPowerFlow:
             a1 = 0.0
             branch_index = variable_context.branch_num_2_index[branch_num]
             self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model,
-                                       cbf_index, o1bf_index, o2bf_index,
-                                       r, x, g1, b1, g2, b2, r1, a1, variable_context)
+                                       r, x, g1, b1, g2, b2, r1, a1,
+                                       variable_context, function_context)
 
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
             r, x, g, b, rho, alpha = row.r, row.x, row.g, row.b, row.rho, row.alpha
@@ -444,8 +460,8 @@ class OptimalPowerFlow:
             branch_num = len(network_cache.lines) + transfo_num
             branch_index = variable_context.branch_num_2_index[branch_num]
             self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model,
-                                       cbf_index, o1bf_index, o2bf_index,
-                                       r, x, g1, b1, g2, b2, r1, a1, variable_context)
+                                       r, x, g1, b1, g2, b2, r1, a1,
+                                       variable_context, function_context)
 
         # shunt flow nonlinear constraints
         for num, row in enumerate(network_cache.shunts.itertuples(index=False)):
@@ -456,7 +472,7 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 v_var = variable_context.v_vars[bus_num]
                 model.add_nl_constraint(
-                    sf_index,
+                    function_context.sf_index,
                     vars=nlfunc.Vars(
                         v=v_var,
                         p=p_var,
@@ -470,16 +486,28 @@ class OptimalPowerFlow:
                 )
 
         # power balance constraints
-        self.add_power_balance_constraint(network_cache, model, sf_index, variable_context)
+        self.add_power_balance_constraint(network_cache, model, variable_context)
+
+    @staticmethod
+    def create_minimal_active_power_cost_function(variable_context: VariableContext) -> ExprBuilder:
+        cost = poi.ExprBuilder()
+        for gen_num in range(len(variable_context.gen_p_vars)):
+            a, b, c = 0, 1.0, 0  # TODO
+            cost += a * variable_context.gen_p_vars[gen_num] * variable_context.gen_p_vars[gen_num] + b * variable_context.gen_p_vars[gen_num] + c
+        return cost
+
+    @staticmethod
+    def create_minimal_losses_cost_function(variable_context: VariableContext) -> ExprBuilder:
+        cost = poi.ExprBuilder()
+        for branch_index in range(len(variable_context.closed_branch_p1_vars)):
+            cost += variable_context.closed_branch_p1_vars[branch_index] - variable_context.closed_branch_p2_vars[branch_index]
+        return cost
 
     def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
 
         # register functions
-        cbf_index = model.register_function(closed_branch_flow)
-        o1bf_index = model.register_function(open_side1_branch_flow)
-        o2bf_index = model.register_function(open_side2_branch_flow)
-        sf_index = model.register_function(shunt_flow)
+        function_context = self.register_functions(model)
 
         # create variables
         variable_context = self.create_variable_context(network_cache, model)
@@ -488,7 +516,7 @@ class OptimalPowerFlow:
         self.set_variables_bounds(network_cache, model, variable_context, parameters)
 
         # constraints
-        self.set_constraints(network_cache, model, variable_context, cbf_index, o1bf_index, o2bf_index, sf_index)
+        self.set_constraints(network_cache, model, variable_context, function_context)
 
         # cost function
 #        cost = self.create_minimal_active_power_cost_function(variable_context)
@@ -498,19 +526,28 @@ class OptimalPowerFlow:
         return model, variable_context
 
     @staticmethod
-    def create_minimal_active_power_cost_function(variable_context: VariableContext):
-        cost = poi.ExprBuilder()
-        for gen_num in range(len(variable_context.gen_p_vars)):
-            a, b, c = 0, 1.0, 0  # TODO
-            cost += a * variable_context.gen_p_vars[gen_num] * variable_context.gen_p_vars[gen_num] + b * variable_context.gen_p_vars[gen_num] + c
-        return cost
+    def analyze_violations(network_cache: NetworkCache, model: ipopt.Model,
+                           variable_context: VariableContext) -> None:
+        # check voltage bounds
+        for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
+            v = model.get_value(variable_context.v_vars[bus_num])
+            v_bounds = OptimalPowerFlow.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            if not v_bounds.contains(v):
+                logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in {v_bounds}")
 
-    @staticmethod
-    def create_minimal_losses_cost_function(variable_context: VariableContext) -> None:
-        cost = poi.ExprBuilder()
-        for branch_index in range(len(variable_context.closed_branch_p1_vars)):
-            cost += variable_context.closed_branch_p1_vars[branch_index] - variable_context.closed_branch_p2_vars[branch_index]
-        return cost
+        # check generator limits
+        for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
+            if row.bus_id:
+                p = model.get_value(variable_context.gen_p_vars[gen_num])
+                q = model.get_value(variable_context.gen_q_vars[gen_num])
+
+                p_bounds = Bounds(row.min_p, row.max_p).mirror()
+                if not p_bounds.contains(p):
+                    logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
+
+                q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
+                if not q_bounds.contains(q):
+                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
     def update_generators(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
         gen_ids = []
@@ -556,30 +593,6 @@ class OptimalPowerFlow:
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext) -> None:
         self.update_generators(network_cache, model, variable_context)
         self.update_buses(network_cache, model, variable_context)
-
-    @staticmethod
-    def analyze_violations(network_cache: NetworkCache, model: ipopt.Model,
-                           variable_context: VariableContext) -> None:
-        # check voltage bounds
-        for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
-            v = model.get_value(variable_context.v_vars[bus_num])
-            v_bounds = OptimalPowerFlow.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
-            if not v_bounds.contains(v):
-                logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in {v_bounds}")
-
-        # check generator limits
-        for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
-            if row.bus_id:
-                p = model.get_value(variable_context.gen_p_vars[gen_num])
-                q = model.get_value(variable_context.gen_q_vars[gen_num])
-
-                p_bounds = Bounds(row.min_p, row.max_p).mirror()
-                if not p_bounds.contains(p):
-                    logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
-
-                q_bounds = Bounds(row.min_q_at_target_p, row.max_q_at_target_p).mirror()
-                if not q_bounds.contains(q):
-                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
