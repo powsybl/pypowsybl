@@ -324,11 +324,13 @@ class OptimalPowerFlow:
         network_cache = NetworkCache(self._network)
 
         model, variable_context = self._create_model(network_cache, parameters)
+
+        logger.info("Starting optimization...")
         model.optimize()
-
         status = model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
-        logger.info(f"Optimizer ends with status {status}")
+        logger.info(f"Optimization ends with status {status}")
 
+        # for debugging
         self._analyze_violations(network_cache, model, variable_context)
 
         # update network
