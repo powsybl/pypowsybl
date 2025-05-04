@@ -1,144 +1,19 @@
 import logging
-from dataclasses import dataclass
 from math import hypot, atan2
 from typing import Any
 
 import pyoptinterface as poi
 from pyoptinterface import nlfunc, ipopt
-from pyoptinterface._src.nleval_ext import FunctionIndex
 
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds import Bounds
+from pypowsybl.opf.impl.function_context import FunctionContext
 from pypowsybl.opf.impl.network_cache import NetworkCache
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.util import TRACE_LEVEL
 from pypowsybl.opf.impl.variable_context import VariableContext
 
 logger = logging.getLogger(__name__)
-
-TRACE_LEVEL = 5
-logging.addLevelName(TRACE_LEVEL, "TRACE")
-
-
-R2 = 1.0
-A2 = 0.0
-DEFAULT_V_BOUNDS = Bounds(0.9, 1.1)
-
-def closed_branch_flow(vars, params):
-    y, ksi, g1, b1, g2, b2, r1, a1 = (
-        params.y,
-        params.ksi,
-        params.g1,
-        params.b1,
-        params.g2,
-        params.b2,
-        params.r1,
-        params.a1
-    )
-    v1, v2, ph1, ph2, p1, q1, p2, q2 = (
-        vars.v1,
-        vars.v2,
-        vars.ph1,
-        vars.ph2,
-        vars.p1,
-        vars.q1,
-        vars.p2,
-        vars.q2,
-    )
-
-    sin_ksi = nlfunc.sin(ksi)
-    cos_ksi = nlfunc.cos(ksi)
-    theta1 = ksi - a1 + A2 - ph1 + ph2
-    theta2 = ksi + a1 - A2 + ph1 - ph2
-    sin_theta1 = nlfunc.sin(theta1)
-    cos_theta1 = nlfunc.cos(theta1)
-    sin_theta2 = nlfunc.sin(theta2)
-    cos_theta2 = nlfunc.cos(theta2)
-
-    p1_eq = r1 * v1 * (g1 * r1 * v1 + y * r1 * v1 * sin_ksi - y * R2 * v2 * sin_theta1) - p1
-    q1_eq = r1 * v1 * (-b1 * r1 * v1 + y * r1 * v1 * cos_ksi - y * R2 * v2 * cos_theta1) - q1
-    p2_eq = R2 * v2 * (g2 * R2 * v2 - y * r1 * v1 * sin_theta2 + y * R2 * v2 * sin_ksi) - p2
-    q2_eq = R2 * v2 * (-b2 * R2 * v2 - y * r1 * v1 * cos_theta2 + y * R2 * v2 * cos_ksi) - q2
-
-    return [p1_eq, q1_eq, p2_eq, q2_eq]
-
-
-def open_side1_branch_flow(vars, params):
-    y, ksi, g1, b1, g2, b2 = (
-        params.y,
-        params.ksi,
-        params.g1,
-        params.b1,
-        params.g2,
-        params.b2,
-    )
-    v2, ph2, p2, q2 = (
-        vars.v2,
-        vars.ph2,
-        vars.p2,
-        vars.q2,
-    )
-
-    sin_ksi = nlfunc.sin(ksi)
-    cos_ksi = nlfunc.cos(ksi)
-
-    shunt = (g1 + y * sin_ksi) * (g1 + y * sin_ksi) + (-b1 + y * cos_ksi) * (-b1 + y * cos_ksi)
-    p2_eq = R2 * R2 * v2 * v2 * (g2 + y * y * g1 / shunt + (b1 * b1 + g1 * g1) * y * sin_ksi / shunt) - p2
-    q2_eq = -R2 * R2 * v2 * v2 * (b2 + y * y * b1 / shunt - (b1 * b1 + g1 * g1) * y * cos_ksi / shunt) - q2
-
-    return [p2_eq, q2_eq]
-
-
-def open_side2_branch_flow(vars, params):
-    y, ksi, g1, b1, g2, b2, r1, a1 = (
-        params.y,
-        params.ksi,
-        params.g1,
-        params.b1,
-        params.g2,
-        params.b2,
-        params.r1,
-        params.a1,
-    )
-    v1, ph1, p1, q1, = (
-        vars.v1,
-        vars.ph1,
-        vars.p1,
-        vars.q1,
-    )
-
-    sin_ksi = nlfunc.sin(ksi)
-    cos_ksi = nlfunc.cos(ksi)
-
-    shunt = (g2 + y * sin_ksi) * (g2 + y * sin_ksi) + (-b2 + y * cos_ksi) * (-b2 + y * cos_ksi)
-    p1_eq = r1 * r1 * v1 * v1 * (g1 + y * y * g2 / shunt + (b2 * b2 + g2 * g2) * y * sin_ksi / shunt) - p1
-    q1_eq = -r1 * r1 * v1 * v1 * (b1 + y * y * b2 / shunt - (b2 * b2 + g2 * g2) * y * cos_ksi / shunt) - q1
-
-    return [p1_eq, q1_eq]
-
-
-def shunt_flow(vars, params):
-    g, b = (
-        params.g,
-        params.b
-    )
-    v, p, q = (
-        vars.v,
-        vars.p,
-        vars.q
-    )
-
-    p_eq = -g * v * v - p
-    q_eq = -b * v * v - q
-
-    return [p_eq, q_eq]
-
-
-@dataclass
-class FunctionContext:
-    cbf_index: FunctionIndex
-    o1bf_index: FunctionIndex
-    o2bf_index: FunctionIndex
-    sf_index: FunctionIndex
 
 
 # pip install pyoptinterface llvmlite tccbox
@@ -163,82 +38,13 @@ class OptimalPowerFlow:
         self._network = network
 
     @staticmethod
-    def create_variables(network_cache: NetworkCache, model: ipopt.Model) -> VariableContext:
-        branch_count = len(network_cache.lines) + len(network_cache.transformers)
-        bus_count = len(network_cache.buses)
-        gen_count = len(network_cache.generators)
-
-        v_vars = model.add_variables(range(bus_count), name="v")
-        ph_vars = model.add_variables(range(bus_count), name="ph")
-
-        gen_p_vars = model.add_variables(range(gen_count), name="gen_p")
-        gen_q_vars = model.add_variables(range(gen_count), name="gen_q")
-
-        shunt_p_vars = model.add_variables(range(gen_count), name="shunt_p")
-        shunt_q_vars = model.add_variables(range(gen_count), name="shunt_q")
-
-        closed_branch_nums = []
-        open_side1_branch_nums = []
-        open_side2_branch_nums = []
-        branch_num_2_index = [-1] * branch_count
-        for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
-            if row.bus1_id and row.bus2_id:
-                branch_num_2_index[branch_num] = len(closed_branch_nums)
-                closed_branch_nums.append(branch_num)
-            elif row.bus2_id:
-                branch_num_2_index[branch_num] = len(open_side1_branch_nums)
-                open_side1_branch_nums.append(branch_num)
-            elif row.bus1_id:
-                branch_num_2_index[branch_num] = len(open_side2_branch_nums)
-                open_side2_branch_nums.append(branch_num)
-        closed_branch_p1_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_p1')
-        closed_branch_q1_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_q1')
-        closed_branch_p2_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_p2')
-        closed_branch_q2_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_q2')
-        open_side1_branch_p2_vars = model.add_variables(range(len(open_side1_branch_nums)), name='open_side1_branch_p2')
-        open_side1_branch_q2_vars = model.add_variables(range(len(open_side1_branch_nums)), name='open_side1_branch_q2')
-        open_side2_branch_p1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_p1')
-        open_side2_branch_q1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_q1')
-
-        return VariableContext(ph_vars, v_vars,
-                               gen_p_vars, gen_q_vars,
-                               shunt_p_vars, shunt_q_vars,
-                               closed_branch_p1_vars, closed_branch_q1_vars,
-                               closed_branch_p2_vars, closed_branch_q2_vars,
-                               open_side1_branch_p2_vars, open_side1_branch_q2_vars,
-                               open_side2_branch_p1_vars, open_side2_branch_q1_vars,
-                               branch_num_2_index)
-
-    @staticmethod
-    def register_functions(model: ipopt.Model) -> FunctionContext:
-        cbf_index = model.register_function(closed_branch_flow)
-        o1bf_index = model.register_function(open_side1_branch_flow)
-        o2bf_index = model.register_function(open_side2_branch_flow)
-        sf_index = model.register_function(shunt_flow)
-        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index)
-
-    @staticmethod
-    def get_voltage_bounds(_low_voltage_limit: float, _high_voltage_limit: float):
-        return DEFAULT_V_BOUNDS  # FIXME get from voltage level dataframe
-
-    @staticmethod
-    def get_reactive_power_bounds(row: Any) -> Bounds:
-        return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
-
-    @staticmethod
-    def check_bounds(id:str, lb: float, ub: float) -> tuple[float, float]:
-        if lb > ub:
-            logger.warning(f"{id}, lower bound {lb} is greater than upper bound {ub}")
-            return ub, lb
-        return lb, ub
-
-    def set_variables_bounds(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
+    def set_variables_bounds(network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
                              parameters: OptimalPowerFlowParameters):
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
-            v_bounds = self.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to bus '{row.Index}' (num={bus_num})'")
-            model.set_variable_bounds(variable_context.v_vars[bus_num], *self.check_bounds(row.Index, v_bounds.min_value, v_bounds.max_value))
+            model.set_variable_bounds(variable_context.v_vars[bus_num], *Bounds.fix(row.Index, v_bounds.min_value, v_bounds.max_value))
             model.set_variable_start(variable_context.v_vars[bus_num], 1.0)
 
         # slack bus angle forced to 0
@@ -251,13 +57,13 @@ class OptimalPowerFlow:
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
             p_bounds = Bounds(row.min_p, row.max_p).mirror()
             logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *self.check_bounds(row.Index, p_bounds.min_value, p_bounds.max_value))
+            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-            q_bounds = self.get_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
+            q_bounds = Bounds.get_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
             logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
             if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
                 logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], *self.check_bounds(row.Index, q_bounds.min_value, q_bounds.max_value))
+            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
     @staticmethod
     def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
@@ -472,13 +278,13 @@ class OptimalPowerFlow:
         model = ipopt.Model()
 
         # create variables
-        variable_context = self.create_variables(network_cache, model)
+        variable_context = VariableContext.build(network_cache, model)
 
         # variable bounds
         self.set_variables_bounds(network_cache, model, variable_context, parameters)
 
         # register functions
-        function_context = self.register_functions(model)
+        function_context = FunctionContext.build(model)
 
         # constraints
         self.set_constraints(network_cache, model, variable_context, function_context)
@@ -490,13 +296,13 @@ class OptimalPowerFlow:
 
         return model, variable_context
 
-    @classmethod
-    def analyze_violations(cls, network_cache: NetworkCache, model: ipopt.Model,
+    @staticmethod
+    def analyze_violations(network_cache: NetworkCache, model: ipopt.Model,
                            variable_context: VariableContext) -> None:
         # check voltage bounds
         for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
             v = model.get_value(variable_context.v_vars[bus_num])
-            v_bounds = OptimalPowerFlow.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
             if not v_bounds.contains(v):
                 logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in {v_bounds}")
 
@@ -510,54 +316,9 @@ class OptimalPowerFlow:
                 if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
-                q_bounds = cls.get_reactive_power_bounds(row).mirror()
+                q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                 if not q_bounds.contains(q):
                     logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
-
-    def update_generators(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
-        gen_ids = []
-        gen_target_p = []
-        gen_target_q = []
-        gen_target_v = []
-        gen_voltage_regulator_on = []
-        for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
-            bus_id = row.bus_id
-            if bus_id:
-                gen_ids.append(gen_id)
-                p = model.get_value(variable_context.gen_p_vars[gen_num])
-                target_p = -p
-                gen_target_p.append(target_p)
-                q = model.get_value(variable_context.gen_q_vars[gen_num])
-                target_q = -q
-                gen_target_q.append(target_q)
-                bus_num = network_cache.buses.index.get_loc(bus_id)
-                target_v = model.get_value(variable_context.v_vars[bus_num])
-                gen_target_v.append(target_v)
-                q_bounds = self.get_reactive_power_bounds(row).mirror()
-                voltage_regulator_on = q_bounds.contains(q)
-                logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
-                gen_voltage_regulator_on.append(voltage_regulator_on)
-
-        self._network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
-                                        voltage_regulator_on=gen_voltage_regulator_on)
-
-    def update_buses(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
-        bus_ids = []
-        bus_v_mag = []
-        bus_v_angle = []
-        for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
-            bus_ids.append(bus_id)
-            v = model.get_value(variable_context.v_vars[bus_num])
-            bus_v_mag.append(v)
-            angle = model.get_value(variable_context.ph_vars[bus_num])
-            bus_v_angle.append(angle)
-            logger.log(TRACE_LEVEL, f"Update bus '{bus_id}' (num={bus_num}): v={v}, angle={angle}")
-
-        self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
-
-    def update_network(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext) -> None:
-        self.update_generators(network_cache, model, variable_context)
-        self.update_buses(network_cache, model, variable_context)
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
@@ -570,7 +331,8 @@ class OptimalPowerFlow:
 
         self.analyze_violations(network_cache, model, variable_context)
 
-        self.update_network(network_cache, model, variable_context)
+        # update network
+        variable_context.update_network(network_cache, model)
 
         return status == poi.TerminationStatusCode.LOCALLY_SOLVED
 

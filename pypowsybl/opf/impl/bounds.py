@@ -1,3 +1,9 @@
+import logging
+from typing import Any
+
+logger = logging.getLogger(__name__)
+
+
 class Bounds:
     def __init__(self, min_value: float, max_value: float, margin: float = 1e-6):
         self._min_value = min_value
@@ -33,3 +39,18 @@ class Bounds:
 
     def __repr__(self) -> str:
         return f"[{self._min_value}, {self._max_value}]"
+
+    @staticmethod
+    def get_voltage_bounds(_low_voltage_limit: float, _high_voltage_limit: float):
+        return Bounds(0.9, 1.1)  # FIXME get from voltage level dataframe
+
+    @staticmethod
+    def get_reactive_power_bounds(row: Any) -> 'Bounds':
+        return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
+
+    @staticmethod
+    def fix(id:str, lb: float, ub: float) -> tuple[float, float]:
+        if lb > ub:
+            logger.warning(f"{id}, lower bound {lb} is greater than upper bound {ub}")
+            return ub, lb
+        return lb, ub
