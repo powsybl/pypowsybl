@@ -181,7 +181,7 @@ class OptimalPowerFlow:
         self._network = network
 
     @staticmethod
-    def create_variable_context(network_cache: NetworkCache, model: ipopt.Model) -> VariableContext:
+    def create_variables(network_cache: NetworkCache, model: ipopt.Model) -> VariableContext:
         branch_count = len(network_cache.lines) + len(network_cache.transformers)
         bus_count = len(network_cache.buses)
         gen_count = len(network_cache.generators)
@@ -497,14 +497,14 @@ class OptimalPowerFlow:
     def create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
         model = ipopt.Model()
 
-        # register functions
-        function_context = self.register_functions(model)
-
         # create variables
-        variable_context = self.create_variable_context(network_cache, model)
+        variable_context = self.create_variables(network_cache, model)
 
         # variable bounds
         self.set_variables_bounds(network_cache, model, variable_context, parameters)
+
+        # register functions
+        function_context = self.register_functions(model)
 
         # constraints
         self.set_constraints(network_cache, model, variable_context, function_context)
