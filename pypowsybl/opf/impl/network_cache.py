@@ -13,6 +13,7 @@ class NetworkCache:
         self._generators = self._build_generators(network, self.buses)
         self._loads = self._build_loads(network, self.buses)
         self._shunts = self._build_shunt_compensators(network, self.buses)
+        self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
         self._lines = self._build_lines(network, self.buses)
         self._transformers = self._build_2_windings_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
@@ -60,6 +61,11 @@ class NetworkCache:
         return NetworkCache._filter_injections(shunts, buses)
 
     @staticmethod
+    def _build_static_var_compensators(network: Network, buses: DataFrame):
+        svcs = network.get_static_var_compensators(attributes=['voltage_level_id', 'bus_id', 'b_min', 'b_max'])
+        return NetworkCache._filter_injections(svcs, buses)
+
+    @staticmethod
     def _build_loads(network: Network, buses: DataFrame):
         loads = network.get_loads(attributes=['bus_id', 'p0', 'q0'])
         return NetworkCache._filter_injections(loads, buses)
@@ -78,7 +84,7 @@ class NetworkCache:
 
     @staticmethod
     def _build_voltage_levels(network: Network) -> DataFrame:
-        return network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit'])
+        return network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit', 'nominal_v'])
 
     @property
     def network(self) -> Network:
@@ -99,6 +105,10 @@ class NetworkCache:
     @property
     def shunts(self) -> DataFrame:
         return self._shunts
+
+    @property
+    def static_var_compensators(self) -> DataFrame:
+        return self._static_var_compensators
 
     @property
     def lines(self) -> DataFrame:

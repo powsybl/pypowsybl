@@ -65,6 +65,13 @@ class OptimalPowerFlow:
                 logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_q_vars[gen_num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
+        # static var compensator reactive power bounds
+        for num, row in enumerate(network_cache.static_var_compensators.itertuples()):
+            nominal_v_square = row.nominal_v ** 2
+            q_bounds = Bounds(row.b_min * nominal_v_square, row.b_max * nominal_v_square).mirror()
+            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to SVC '{row.Index}' (num={num})")
+            model.set_variable_bounds(variable_context.svc_q_vars[num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+
     @staticmethod
     def _add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
                                r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
@@ -194,6 +201,13 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 bus_p_gen[bus_num].append(variable_context.gen_p_vars[num])
                 bus_q_gen[bus_num].append(variable_context.gen_q_vars[num])
+
+        # static var compensators
+        for num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
+            bus_id = row.bus_id
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                bus_q_gen[bus_num].append(variable_context.svc_q_vars[num])
 
         # aggregated loads
         loads_sum = network_cache.loads.groupby("bus_id", as_index=False).agg({"p0": "sum", "q0": "sum"})

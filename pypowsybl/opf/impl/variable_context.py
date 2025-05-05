@@ -19,6 +19,7 @@ class VariableContext:
     gen_q_vars: Any
     shunt_p_vars: Any
     shunt_q_vars: Any
+    svc_q_vars: Any
     closed_branch_p1_vars: Any
     closed_branch_q1_vars: Any
     closed_branch_p2_vars: Any
@@ -43,6 +44,8 @@ class VariableContext:
 
         shunt_p_vars = model.add_variables(range(gen_count), name="shunt_p")
         shunt_q_vars = model.add_variables(range(gen_count), name="shunt_q")
+
+        svc_q_vars = model.add_variables(range(gen_count), name="svc_q")
 
         closed_branch_nums = []
         open_side1_branch_nums = []
@@ -70,6 +73,7 @@ class VariableContext:
         return VariableContext(ph_vars, v_vars,
                                gen_p_vars, gen_q_vars,
                                shunt_p_vars, shunt_q_vars,
+                               svc_q_vars,
                                closed_branch_p1_vars, closed_branch_q1_vars,
                                closed_branch_p2_vars, closed_branch_q2_vars,
                                open_side1_branch_p2_vars, open_side1_branch_q2_vars,
