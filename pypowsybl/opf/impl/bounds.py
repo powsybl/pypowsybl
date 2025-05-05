@@ -42,11 +42,16 @@ class Bounds:
 
     @staticmethod
     def get_voltage_bounds(_low_voltage_limit: float, _high_voltage_limit: float):
-        return Bounds(0.9, 1.1)  # FIXME get from voltage level dataframe
+        return Bounds(0.8, 1.1)  # FIXME get from voltage level dataframe
 
     @staticmethod
-    def get_reactive_power_bounds(row: Any) -> 'Bounds':
+    def get_generator_reactive_power_bounds(row: Any) -> 'Bounds':
         return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
+
+    @staticmethod
+    def get_svc_reactive_power_bounds(row: Any) -> 'Bounds':
+        nominal_v_square = row.nominal_v ** 2
+        return Bounds(row.b_min * nominal_v_square, row.b_max * nominal_v_square)
 
     @staticmethod
     def fix(id:str, lb: float, ub: float) -> tuple[float, float]:

@@ -59,7 +59,7 @@ class OptimalPowerFlow:
             logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-            q_bounds = Bounds.get_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
+            q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
             logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
             if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
                 logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
@@ -67,8 +67,7 @@ class OptimalPowerFlow:
 
         # static var compensator reactive power bounds
         for num, row in enumerate(network_cache.static_var_compensators.itertuples()):
-            nominal_v_square = row.nominal_v ** 2
-            q_bounds = Bounds(row.b_min * nominal_v_square, row.b_max * nominal_v_square).mirror()
+            q_bounds = Bounds.get_svc_reactive_power_bounds(row).mirror()
             logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to SVC '{row.Index}' (num={num})")
             model.set_variable_bounds(variable_context.svc_q_vars[num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
@@ -330,7 +329,7 @@ class OptimalPowerFlow:
                 if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
-                q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
+                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
                 if not q_bounds.contains(q):
                     logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 

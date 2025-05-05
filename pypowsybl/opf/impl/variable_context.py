@@ -90,22 +90,52 @@ class VariableContext:
             bus_id = row.bus_id
             if bus_id:
                 gen_ids.append(gen_id)
+
                 p = model.get_value(self.gen_p_vars[gen_num])
                 target_p = -p
                 gen_target_p.append(target_p)
+
                 q = model.get_value(self.gen_q_vars[gen_num])
                 target_q = -q
                 gen_target_q.append(target_q)
+
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 target_v = model.get_value(self.v_vars[bus_num])
                 gen_target_v.append(target_v)
-                q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
+
+                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
                 voltage_regulator_on = q_bounds.contains(q)
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
                 gen_voltage_regulator_on.append(voltage_regulator_on)
 
         network_cache.network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
                                         voltage_regulator_on=gen_voltage_regulator_on)
+
+    def _update_static_var_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
+        svc_ids = []
+        svc_target_q = []
+        svc_target_v = []
+        svc_regulation_mode = []
+        for gen_num, (svc_id, row) in enumerate(network_cache.static_var_compensators.iterrows()):
+            bus_id = row.bus_id
+            if bus_id:
+                svc_ids.append(svc_id)
+
+                q = model.get_value(self.svc_q_vars[gen_num])
+                target_q = -q
+                svc_target_q.append(target_q)
+
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                target_v = model.get_value(self.v_vars[bus_num])
+                svc_target_v.append(target_v)
+
+                q_bounds = Bounds.get_svc_reactive_power_bounds(row).mirror()
+                regulation_mode = 'VOLTAGE' if q_bounds.contains(q) else 'REACTIVE_POWER'
+                logger.log(TRACE_LEVEL, f"Update SVC '{svc_id}' (num={gen_num}): target_q={target_q}, target_v={target_v}, regulation_mode={regulation_mode}")
+                svc_regulation_mode.append(regulation_mode)
+
+        network_cache.network.update_static_var_compensators(id=svc_ids, target_q=svc_target_q, target_v=svc_target_v,
+                                                             regulation_mode=svc_regulation_mode)
 
     def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
         bus_ids = []
@@ -123,4 +153,5 @@ class VariableContext:
 
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)
+        self._update_static_var_compensators(network_cache, model)
         self._update_buses(network_cache, model)
