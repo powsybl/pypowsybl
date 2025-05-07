@@ -14,6 +14,7 @@ class NetworkCache:
         self._loads = self._build_loads(network, self.buses)
         self._shunts = self._build_shunt_compensators(network, self.buses)
         self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
+        self._vsc_converter_stations = self._build_vsc_converter_stations(network, self.buses)
         self._lines = self._build_lines(network, self.buses)
         self._transformers = self._build_2_windings_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
@@ -62,8 +63,16 @@ class NetworkCache:
 
     @staticmethod
     def _build_static_var_compensators(network: Network, buses: DataFrame):
-        svcs = network.get_static_var_compensators(attributes=['voltage_level_id', 'bus_id', 'b_min', 'b_max'])
+        svcs = network.get_static_var_compensators(attributes=['bus_id', 'b_min', 'b_max'])
         return NetworkCache._filter_injections(svcs, buses)
+
+    @staticmethod
+    def _build_vsc_converter_stations(network: Network, buses: DataFrame):
+        stations = network.get_vsc_converter_stations(attributes=['bus_id', 'loss_factor', 'min_q_at_target_p', 'max_q_at_target_p',
+                                                                  'target_v', 'target_q', 'voltage_regulator_on', 'hvdc_line_id'])
+        hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p', 'nominal_v', 'r'])
+        stations_and_hvdc_lines = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
+        return NetworkCache._filter_injections(stations_and_hvdc_lines, buses)
 
     @staticmethod
     def _build_loads(network: Network, buses: DataFrame):
@@ -109,6 +118,10 @@ class NetworkCache:
     @property
     def static_var_compensators(self) -> DataFrame:
         return self._static_var_compensators
+
+    @property
+    def vsc_converter_stations(self) -> DataFrame:
+        return self._vsc_converter_stations
 
     @property
     def lines(self) -> DataFrame:

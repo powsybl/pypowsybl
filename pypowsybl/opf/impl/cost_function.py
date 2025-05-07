@@ -54,4 +54,12 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
             gen_p_expr += variable_context.gen_p_vars[gen_num]
             gen_p_expr += row.target_p
             cost += gen_p_expr * gen_p_expr
+        for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples(index=False)):
+            vsc_cs_p_expr = poi.ExprBuilder()
+            vsc_cs_p_expr += variable_context.vsc_cs_p_vars[vsc_cs_num]
+            if row.converters_mode == 'SIDE_1_INVERTER_SIDE_2_RECTIFIER':
+                vsc_cs_p_expr -= row.target_p
+            else:
+                vsc_cs_p_expr += row.target_p
+            cost += vsc_cs_p_expr * vsc_cs_p_expr
         return cost

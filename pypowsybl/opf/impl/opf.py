@@ -71,6 +71,18 @@ class OptimalPowerFlow:
             logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to SVC '{row.Index}' (num={num})")
             model.set_variable_bounds(variable_context.svc_q_vars[num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
+        # VSC converter station active and reactive power bounds
+        for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
+            p_bounds = Bounds(-row.max_p, row.max_p).mirror()
+            logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
+            model.set_variable_bounds(variable_context.vsc_cs_p_vars[vsc_cs_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
+
+            q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
+            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
+            if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
+                logger.error(f"Too small reactive power bounds {q_bounds} for VSC converter station '{row.Index}' (num={vsc_cs_num})")
+            model.set_variable_bounds(variable_context.vsc_cs_q_vars[vsc_cs_num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+
     @staticmethod
     def _add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
                                r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
@@ -224,6 +236,14 @@ class OptimalPowerFlow:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 bus_p_gen[bus_num].append(variable_context.shunt_p_vars[num])
                 bus_q_gen[bus_num].append(variable_context.shunt_q_vars[num])
+
+        # VSC converter stations
+        for num, row in enumerate(network_cache.vsc_converter_stations.itertuples(index=False)):
+            bus_id = row.bus_id
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                bus_p_gen[bus_num].append(variable_context.vsc_cs_p_vars[num])
+                bus_q_gen[bus_num].append(variable_context.vsc_cs_q_vars[num])
 
         for bus_num in range(bus_count):
             bus_p_expr = poi.ExprBuilder()

@@ -746,6 +746,7 @@ public final class NetworkDataframes {
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("hvdc_line_id", station -> station.getHvdcLine().getId(), false)
                 .addProperties()
                 .build();
     }
@@ -778,6 +779,7 @@ public final class NetworkDataframes {
                 .ints("node", st -> getNode(st.getTerminal()), false)
                 .booleans("connected", st -> st.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .strings("hvdc_line_id", station -> station.getHvdcLine().getId(), false)
                 .addProperties()
                 .build();
     }
