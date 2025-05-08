@@ -126,20 +126,10 @@ class VariableContext:
         vsc_cs_target_q = []
         vsc_cs_target_v = []
         vsc_cs_voltage_regulator_on = []
-        hvdc_line_ids = []
-        hvdc_line_target_p = []
-        hvdc_line_converters_mode = []
         for vsc_cs_num, (vsc_cs_id, row) in enumerate(network_cache.vsc_converter_stations.iterrows()):
             bus_id = row.bus_id
             if bus_id:
                 vsc_cs_ids.append(vsc_cs_id)
-                hvdc_line_ids.append(row.hvdc_line_id)
-
-                p = model.get_value(self.vsc_cs_p_vars[vsc_cs_num])
-                target_p = abs(p)
-                hvdc_line_target_p.append(target_p)
-                converters_mode = 'SIDE_1_RECTIFIER_SIDE_2_INVERTER' if p >= 0 else 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'
-                hvdc_line_converters_mode.append(converters_mode)
 
                 q = model.get_value(self.vsc_cs_q_vars[vsc_cs_num])
                 target_q = -q
@@ -154,10 +144,25 @@ class VariableContext:
                 vsc_cs_voltage_regulator_on.append(voltage_regulator_on)
 
                 logger.log(TRACE_LEVEL, f"Update VSC converter station '{vsc_cs_id}' (num={vsc_cs_num}): target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
-                logger.log(TRACE_LEVEL, f"Update HVDC line '{row.hvdc_line_id}': target_p={target_p}, converters_mode={converters_mode}")
 
         network_cache.network.update_vsc_converter_stations(id=vsc_cs_ids, target_q=vsc_cs_target_q, target_v=vsc_cs_target_v,
                                                             voltage_regulator_on=vsc_cs_voltage_regulator_on)
+
+    def _update_hvdc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
+        hvdc_line_ids = []
+        hvdc_line_target_p = []
+        hvdc_line_converters_mode = []
+        for hvdc_line_num, (hvdc_line_id, row) in enumerate(network_cache.hvdc_lines.iterrows()):
+            hvdc_line_ids.append(hvdc_line_id)
+            vsc_cs1_num = network_cache.vsc_converter_stations.index.get_loc(row.converter_station1_id)
+            p1 = model.get_value(self.vsc_cs_p_vars[vsc_cs1_num])
+            target_p = abs(p1)
+            hvdc_line_target_p.append(target_p)
+            converters_mode = 'SIDE_1_RECTIFIER_SIDE_2_INVERTER' if p1 >= 0 else 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'
+            hvdc_line_converters_mode.append(converters_mode)
+
+            logger.log(TRACE_LEVEL, f"Update HVDC line '{hvdc_line_id}': target_p={target_p}, converters_mode={converters_mode}")
+
         network_cache.network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p,
                                                 converters_mode=hvdc_line_converters_mode)
 
@@ -206,5 +211,6 @@ class VariableContext:
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)
         self._update_vsc_converter_stations(network_cache, model)
+        self._update_hvdc_lines(network_cache, model)
         self._update_static_var_compensators(network_cache, model)
         self._update_buses(network_cache, model)
