@@ -15,6 +15,8 @@ class NetworkCache:
         self._shunts = self._build_shunt_compensators(network, self.buses)
         self._static_var_compensators = self._build_static_var_compensators(network, self.buses)
         self._vsc_converter_stations = self._build_vsc_converter_stations(network, self.buses)
+        self._lcc_converter_stations = self._build_lcc_converter_stations(network, self.buses)
+        self._hvdc_lines = self._build_hvdc_lines(network, self._vsc_converter_stations, self._lcc_converter_stations, self.buses)
         self._lines = self._build_lines(network, self.buses)
         self._transformers = self._build_2_windings_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
@@ -67,12 +69,45 @@ class NetworkCache:
         return NetworkCache._filter_injections(svcs, buses)
 
     @staticmethod
+    def _filter_hvdc_lines(hvdc_lines: DataFrame, vsc_converter_stations: DataFrame,
+                           lcc_converter_stations: DataFrame, buses: DataFrame) -> DataFrame:
+        if len(hvdc_lines) == 0:
+            return hvdc_lines
+        converter_stations = pd.concat([vsc_converter_stations[['bus_id']], lcc_converter_stations[['bus_id']]])
+        hvdc_lines_and_buses = pd.merge(hvdc_lines, converter_stations, left_on='converter_station1_id',
+                                        right_index=True, how='left')
+        hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, converter_stations, left_on='converter_station2_id',
+                                        right_index=True, suffixes=('', '_2'), how='left')
+        hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, buses, left_on='bus_id', right_index=True, how='left')
+        hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, buses, left_on='bus_id_2', right_index=True,
+                                        suffixes=('', '_2'), how='left')
+        return hvdc_lines_and_buses[
+            (hvdc_lines_and_buses['connected_component'] == 0) & (hvdc_lines_and_buses['synchronous_component'] == 0) & (
+                    hvdc_lines_and_buses['connected_component_2'] == 0) & (
+                    hvdc_lines_and_buses['synchronous_component_2'] == 0)]
+
+    @staticmethod
+    def _build_hvdc_lines(network: Network, vsc_converter_stations: DataFrame, lcc_converter_stations: DataFrame,
+                          buses: DataFrame):
+        hvdc_lines = network.get_hvdc_lines(attributes=['converter_station1_id', 'converter_station2_id', 'converters_mode', 'nominal_v', 'r'])
+        return NetworkCache._filter_hvdc_lines(hvdc_lines, vsc_converter_stations, lcc_converter_stations, buses)
+
+    @staticmethod
     def _build_vsc_converter_stations(network: Network, buses: DataFrame):
         stations = network.get_vsc_converter_stations(attributes=['bus_id', 'loss_factor', 'min_q_at_target_p', 'max_q_at_target_p',
                                                                   'target_v', 'target_q', 'voltage_regulator_on', 'hvdc_line_id'])
-        hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p', 'nominal_v', 'r'])
-        stations_and_hvdc_lines = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
-        return NetworkCache._filter_injections(stations_and_hvdc_lines, buses)
+        if len(stations) > 0:
+            hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p'])
+            stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
+        return NetworkCache._filter_injections(stations, buses)
+
+    @staticmethod
+    def _build_lcc_converter_stations(network: Network, buses: DataFrame):
+        stations = network.get_lcc_converter_stations(attributes=['bus_id', 'loss_factor', 'power_factor', 'hvdc_line_id'])
+        if len(stations) > 0:
+            hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p'])
+            stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
+        return NetworkCache._filter_injections(stations, buses)
 
     @staticmethod
     def _build_loads(network: Network, buses: DataFrame):
@@ -124,6 +159,10 @@ class NetworkCache:
         return self._vsc_converter_stations
 
     @property
+    def lcc_converter_stations(self) -> DataFrame:
+        return self._lcc_converter_stations
+
+    @property
     def lines(self) -> DataFrame:
         return self._lines
 
@@ -134,6 +173,10 @@ class NetworkCache:
     @property
     def branches(self) -> DataFrame:
         return self._branches
+
+    @property
+    def hvdc_lines(self) -> DataFrame:
+        return self._hvdc_lines
 
     @property
     def slack_terminal(self) -> DataFrame:
