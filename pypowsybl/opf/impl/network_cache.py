@@ -97,7 +97,7 @@ class NetworkCache:
         stations = network.get_vsc_converter_stations(attributes=['bus_id', 'loss_factor', 'min_q_at_target_p', 'max_q_at_target_p',
                                                                   'target_v', 'target_q', 'voltage_regulator_on', 'hvdc_line_id'])
         if len(stations) > 0:
-            hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p'])
+            hvdc_lines = network.get_hvdc_lines(attributes=['converter_station1_id', 'converter_station2_id', 'converters_mode', 'target_p', 'max_p'])
             stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
         return NetworkCache._filter_injections(stations, buses)
 
@@ -181,3 +181,8 @@ class NetworkCache:
     @property
     def slack_terminal(self) -> DataFrame:
         return self._slack_terminal
+
+    @staticmethod
+    def is_rectifier(vsc_cs_row) -> bool:
+        return ((vsc_cs_row.Index == vsc_cs_row.converter_station1_id and vsc_cs_row.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER')
+                or (vsc_cs_row.Index == vsc_cs_row.converter_station2_id and vsc_cs_row.converters_mode == 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'))
