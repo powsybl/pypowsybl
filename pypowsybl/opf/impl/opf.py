@@ -305,15 +305,29 @@ class OptimalPowerFlow:
                 )
 
         # HVDC line constraints
-        for num, row in enumerate(network_cache.hvdc_lines.itertuples(index=False)):
-            cs1_id, cs2_id = row.converter_station1_id, row.converter_station2_id
+        for row in network_cache.hvdc_lines.itertuples(index=False):
+            cs1_id, cs2_id, r, nominal_v = row.converter_station1_id, row.converter_station2_id, row.r, row.nominal_v
             cs1_num = network_cache.vsc_converter_stations.index.get_loc(cs1_id)
             cs2_num = network_cache.vsc_converter_stations.index.get_loc(cs2_id)
-            hvdc_line_p_expr = poi.ExprBuilder()
-            # TODO add losses
-            hvdc_line_p_expr += variable_context.vsc_cs_p_vars[cs1_num]
-            hvdc_line_p_expr -= variable_context.vsc_cs_p_vars[cs2_num]
-            model.add_linear_constraint(hvdc_line_p_expr, poi.Eq, 0.0)
+            row_cs1 = network_cache.vsc_converter_stations.loc[cs1_id]
+            row_cs2 = network_cache.vsc_converter_stations.loc[cs2_id]
+            p1_var = variable_context.vsc_cs_p_vars[cs1_num]
+            p2_var = variable_context.vsc_cs_p_vars[cs2_num]
+            model.add_nl_constraint(
+                function_context.dclf_index,
+                vars=nlfunc.Vars(
+                    p1=p1_var,
+                    p2=p2_var,
+                ),
+                params=nlfunc.Params(
+                    r=r,
+                    nominal_v=nominal_v,
+                    loss_factor1=row_cs1.loss_factor,
+                    loss_factor2=row_cs2.loss_factor,
+                    sb=network_cache.network.nominal_apparent_power
+                ),
+                eq=0.0,
+            )
 
         # power balance constraints
         self._add_power_balance_constraint(network_cache, model, variable_context)

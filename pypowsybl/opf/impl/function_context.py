@@ -117,12 +117,39 @@ def shunt_flow(vars, params):
     return [p_eq, q_eq]
 
 
+def hvdc_line_losses(p, r, nominal_v, sb):
+    return r * p * p / (nominal_v * nominal_v) / sb
+
+
+def add_converter_losses(p, loss_factor):
+    return p * (100.0 - loss_factor) / 100.0
+
+
+def dc_line_flow(vars, params):
+    r, nominal_v, loss_factor1, loss_factor2, sb = (
+        params.r,
+        params.nominal_v,
+        params.loss_factor1,
+        params.loss_factor2,
+        params.sb
+    )
+    p1, p2 = (
+        vars.p1,
+        vars.p2
+    )
+
+    p_eq = add_converter_losses(add_converter_losses(p1, loss_factor1) - hvdc_line_losses(p1, r, nominal_v, sb), loss_factor2) + p2
+
+    return [p_eq]
+
+
 @dataclass
 class FunctionContext:
     cbf_index: FunctionIndex
     o1bf_index: FunctionIndex
     o2bf_index: FunctionIndex
     sf_index: FunctionIndex
+    dclf_index: FunctionIndex
 
     @staticmethod
     def build(model: ipopt.Model) -> 'FunctionContext':
@@ -130,4 +157,5 @@ class FunctionContext:
         o1bf_index = model.register_function(open_side1_branch_flow)
         o2bf_index = model.register_function(open_side2_branch_flow)
         sf_index = model.register_function(shunt_flow)
-        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index)
+        dclf_index = model.register_function(dc_line_flow)
+        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index, dclf_index)

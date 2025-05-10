@@ -155,7 +155,9 @@ class VariableContext:
         for hvdc_line_num, (hvdc_line_id, row) in enumerate(network_cache.hvdc_lines.iterrows()):
             hvdc_line_ids.append(hvdc_line_id)
             vsc_cs1_num = network_cache.vsc_converter_stations.index.get_loc(row.converter_station1_id)
+            vsc_cs2_num = network_cache.vsc_converter_stations.index.get_loc(row.converter_station2_id)
             p1 = model.get_value(self.vsc_cs_p_vars[vsc_cs1_num])
+            _p2 = model.get_value(self.vsc_cs_p_vars[vsc_cs2_num])
             target_p = abs(p1)
             hvdc_line_target_p.append(target_p)
             converters_mode = 'SIDE_1_RECTIFIER_SIDE_2_INVERTER' if p1 >= 0 else 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'
