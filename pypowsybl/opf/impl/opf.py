@@ -1,6 +1,5 @@
 import logging
 from math import hypot, atan2
-from typing import Any
 
 import pyoptinterface as poi
 from pyoptinterface import nlfunc, ipopt
@@ -59,11 +58,12 @@ class OptimalPowerFlow:
             logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-            q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
-            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
-            if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
-                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_q_vars[gen_num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+            q_raw_bounds = Bounds.get_generator_reactive_power_bounds(row)
+            if not network_cache.is_too_small_reactive_power_bounds(q_raw_bounds):
+                q_bounds = q_raw_bounds.reduce(parameters.reactive_bounds_reduction).mirror()
+                logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
+                gen_index = variable_context.gen_q_num_2_index[gen_num]
+                model.set_variable_bounds(variable_context.gen_q_vars[gen_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
         # static var compensator reactive power bounds
         for num, row in enumerate(network_cache.static_var_compensators.itertuples()):
@@ -206,12 +206,17 @@ class OptimalPowerFlow:
                 bus_q_gen[bus1_num].append(variable_context.open_side2_branch_q1_vars[branch_index])
 
         # generators
-        for num, row in enumerate(network_cache.generators.itertuples(index=False)):
-            bus_id = row.bus_id
+        for gen_num, gen_row in enumerate(network_cache.generators.itertuples(index=False)):
+            bus_id = gen_row.bus_id
             if bus_id:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                bus_p_gen[bus_num].append(variable_context.gen_p_vars[num])
-                bus_q_gen[bus_num].append(variable_context.gen_q_vars[num])
+                bus_p_gen[bus_num].append(variable_context.gen_p_vars[gen_num])
+                q_raw_bounds = Bounds.get_generator_reactive_power_bounds(gen_row)
+                if network_cache.is_too_small_reactive_power_bounds(q_raw_bounds):
+                    bus_q_load[bus_num] += gen_row.target_q
+                else:
+                    gen_q_index = variable_context.gen_q_num_2_index[gen_num]
+                    bus_q_gen[bus_num].append(variable_context.gen_q_vars[gen_q_index])
 
         # static var compensators
         for num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
@@ -368,15 +373,17 @@ class OptimalPowerFlow:
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
             if row.bus_id:
                 p = model.get_value(variable_context.gen_p_vars[gen_num])
-                q = model.get_value(variable_context.gen_q_vars[gen_num])
 
                 p_bounds = Bounds(row.min_p, row.max_p).mirror()
                 if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
                 q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
-                if not q_bounds.contains(q):
-                    logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
+                if not network_cache.is_too_small_reactive_power_bounds(q_bounds):
+                    gen_index = variable_context.gen_q_num_2_index[gen_num]
+                    q = model.get_value(variable_context.gen_q_vars[gen_index])
+                    if not q_bounds.contains(q):
+                        logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)

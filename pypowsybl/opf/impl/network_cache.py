@@ -2,6 +2,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from pypowsybl.network import Network
+from pypowsybl.opf.impl.bounds import Bounds
 
 
 class NetworkCache:
@@ -117,7 +118,7 @@ class NetworkCache:
     @staticmethod
     def _build_generators(network: Network, buses: DataFrame):
         generators = network.get_generators(
-            attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p'])
+            attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q'])
         return NetworkCache._filter_injections(generators, buses)
 
     @staticmethod
@@ -186,3 +187,6 @@ class NetworkCache:
     def is_rectifier(vsc_cs_row) -> bool:
         return ((vsc_cs_row.Index == vsc_cs_row.converter_station1_id and vsc_cs_row.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER')
                 or (vsc_cs_row.Index == vsc_cs_row.converter_station2_id and vsc_cs_row.converters_mode == 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'))
+
+    def is_too_small_reactive_power_bounds(self, q_bounds: Bounds):
+        return abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / self._network.nominal_apparent_power
