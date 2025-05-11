@@ -95,6 +95,8 @@ class VariableContext:
         gen_target_q = []
         gen_target_v = []
         gen_voltage_regulator_on = []
+        gen_p = []
+        gen_q = []
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
@@ -103,10 +105,12 @@ class VariableContext:
                 p = model.get_value(self.gen_p_vars[gen_num])
                 target_p = -p
                 gen_target_p.append(target_p)
+                gen_p.append(p)
 
                 q = model.get_value(self.gen_q_vars[gen_num])
                 target_q = -q
                 gen_target_q.append(target_q)
+                gen_q.append(q)
 
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 target_v = model.get_value(self.v_vars[bus_num])
@@ -119,21 +123,26 @@ class VariableContext:
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
 
         network_cache.network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
-                                        voltage_regulator_on=gen_voltage_regulator_on)
+                                        voltage_regulator_on=gen_voltage_regulator_on, p=gen_p, q=gen_q)
 
     def _update_vsc_converter_stations(self, network_cache: NetworkCache, model: ipopt.Model):
         vsc_cs_ids = []
         vsc_cs_target_q = []
         vsc_cs_target_v = []
         vsc_cs_voltage_regulator_on = []
+        vsc_cs_p = []
+        vsc_cs_q = []
         for vsc_cs_num, (vsc_cs_id, row) in enumerate(network_cache.vsc_converter_stations.iterrows()):
             bus_id = row.bus_id
             if bus_id:
                 vsc_cs_ids.append(vsc_cs_id)
 
+                vsc_cs_p.append(0.0)
+
                 q = model.get_value(self.vsc_cs_q_vars[vsc_cs_num])
                 target_q = -q
                 vsc_cs_target_q.append(target_q)
+                vsc_cs_q.append(q)
 
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 target_v = model.get_value(self.v_vars[bus_num])
@@ -146,7 +155,7 @@ class VariableContext:
                 logger.log(TRACE_LEVEL, f"Update VSC converter station '{vsc_cs_id}' (num={vsc_cs_num}): target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
 
         network_cache.network.update_vsc_converter_stations(id=vsc_cs_ids, target_q=vsc_cs_target_q, target_v=vsc_cs_target_v,
-                                                            voltage_regulator_on=vsc_cs_voltage_regulator_on)
+                                                            voltage_regulator_on=vsc_cs_voltage_regulator_on, p=vsc_cs_p, q=vsc_cs_q)
 
     def _update_hvdc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
         hvdc_line_ids = []
@@ -173,14 +182,19 @@ class VariableContext:
         svc_target_q = []
         svc_target_v = []
         svc_regulation_mode = []
+        svc_p = []
+        svc_q = []
         for gen_num, (svc_id, row) in enumerate(network_cache.static_var_compensators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
                 svc_ids.append(svc_id)
 
+                svc_p.append(0.0)
+
                 q = model.get_value(self.svc_q_vars[gen_num])
                 target_q = -q
                 svc_target_q.append(target_q)
+                svc_q.append(q)
 
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 target_v = model.get_value(self.v_vars[bus_num])
@@ -193,7 +207,7 @@ class VariableContext:
                 logger.log(TRACE_LEVEL, f"Update SVC '{svc_id}' (num={gen_num}): target_q={target_q}, target_v={target_v}, regulation_mode={regulation_mode}")
 
         network_cache.network.update_static_var_compensators(id=svc_ids, target_q=svc_target_q, target_v=svc_target_v,
-                                                             regulation_mode=svc_regulation_mode)
+                                                             regulation_mode=svc_regulation_mode, p=svc_p, q=svc_q)
 
     def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
         bus_ids = []
