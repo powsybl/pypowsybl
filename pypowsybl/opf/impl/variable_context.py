@@ -1,4 +1,5 @@
 import logging
+import math
 from dataclasses import dataclass
 from typing import Any
 
@@ -224,6 +225,45 @@ class VariableContext:
         network_cache.network.update_static_var_compensators(id=svc_ids, target_q=svc_target_q, target_v=svc_target_v,
                                                              regulation_mode=svc_regulation_mode, p=svc_p, q=svc_q)
 
+    def _update_branches(self, network_cache: NetworkCache, model: ipopt.Model):
+        branch_ids = []
+        branch_p1 = []
+        branch_p2 = []
+        branch_q1 = []
+        branch_q2 = []
+        for branch_num, (branch_id, row) in enumerate(network_cache.branches.iterrows()):
+            branch_index = self.branch_num_2_index[branch_num]
+            branch_ids.append(branch_id)
+            if row.bus1_id and row.bus2_id:
+                p1 = model.get_value(self.closed_branch_p1_vars[branch_index])
+                p2 = model.get_value(self.closed_branch_p2_vars[branch_index])
+                q1 = model.get_value(self.closed_branch_q1_vars[branch_index])
+                q2 = model.get_value(self.closed_branch_q2_vars[branch_index])
+            elif row.bus2_id:
+                p1 = math.nan
+                p2 = model.get_value(self.open_side1_branch_p2_vars[branch_index])
+                q1 = math.nan
+                q2 = model.get_value(self.open_side1_branch_q2_vars[branch_index])
+            elif row.bus1_id:
+                p1 = model.get_value(self.open_side2_branch_p1_vars[branch_index])
+                p2 = math.nan
+                q1 = model.get_value(self.open_side2_branch_q1_vars[branch_index])
+                q2 = math.nan
+            else:
+                p1 = math.nan
+                p2 = math.nan
+                q1 = math.nan
+                q2 = math.nan
+
+            branch_p1.append(p1)
+            branch_p2.append(p2)
+            branch_q1.append(q1)
+            branch_q2.append(q2)
+
+            logger.log(TRACE_LEVEL, f"Update branch '{branch_id}': p1={p1} p2={p2} q1={q1} q2={q2}")
+
+        network_cache.network.update_branches(id=branch_ids, p1=branch_p1, p2=branch_p2, q1=branch_q1, q2=branch_q2)
+
     def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
         bus_ids = []
         bus_v_mag = []
@@ -244,4 +284,5 @@ class VariableContext:
         self._update_vsc_converter_stations(network_cache, model)
         self._update_hvdc_lines(network_cache, model)
         self._update_static_var_compensators(network_cache, model)
+        self._update_branches(network_cache, model)
         self._update_buses(network_cache, model)
