@@ -47,11 +47,11 @@ class VariableContext:
         gen_q_num_2_index = [-1] * gen_count
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
             q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
-            if not network_cache.is_too_small_reactive_power_bounds(q_bounds):
+            if network_cache.is_too_small_reactive_power_bounds(q_bounds):
+                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
+            else:
                 gen_q_num_2_index[gen_num] = len(valid_gen_q_nums)
                 valid_gen_q_nums.append(gen_num)
-            else:
-                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
         gen_q_vars = model.add_variables(range(len(valid_gen_q_nums)), name="gen_q")
 
         shunt_count = len(network_cache.shunts)
@@ -118,12 +118,11 @@ class VariableContext:
                 gen_target_p.append(target_p)
                 gen_p.append(p)
 
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
-                if network_cache.is_too_small_reactive_power_bounds(q_bounds):
+                gen_index = self.gen_q_num_2_index[gen_num]
+                if gen_index == -1:
                     gen_target_q.append(row.target_q)
                     gen_q.append(-row.target_q)
                 else:
-                    gen_index = self.gen_q_num_2_index[gen_num]
                     q = model.get_value(self.gen_q_vars[gen_index])
                     target_q = -q
                     gen_target_q.append(target_q)
@@ -133,6 +132,7 @@ class VariableContext:
                 target_v = model.get_value(self.v_vars[bus_num])
                 gen_target_v.append(target_v)
 
+                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
                 voltage_regulator_on = q_bounds.contains(q)
                 gen_voltage_regulator_on.append(voltage_regulator_on)
 

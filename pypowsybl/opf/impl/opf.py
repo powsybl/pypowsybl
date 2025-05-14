@@ -58,11 +58,10 @@ class OptimalPowerFlow:
             logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
             model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-            q_raw_bounds = Bounds.get_generator_reactive_power_bounds(row)
-            if not network_cache.is_too_small_reactive_power_bounds(q_raw_bounds):
-                q_bounds = q_raw_bounds.reduce(parameters.reactive_bounds_reduction).mirror()
+            gen_index = variable_context.gen_q_num_2_index[gen_num]
+            if gen_index != -1:
+                q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
                 logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
-                gen_index = variable_context.gen_q_num_2_index[gen_num]
                 model.set_variable_bounds(variable_context.gen_q_vars[gen_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
         # static var compensator reactive power bounds
@@ -211,11 +210,10 @@ class OptimalPowerFlow:
             if bus_id:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 bus_p_gen[bus_num].append(variable_context.gen_p_vars[gen_num])
-                q_raw_bounds = Bounds.get_generator_reactive_power_bounds(gen_row)
-                if network_cache.is_too_small_reactive_power_bounds(q_raw_bounds):
+                gen_q_index = variable_context.gen_q_num_2_index[gen_num]
+                if gen_q_index == -1:
                     bus_q_load[bus_num] += gen_row.target_q
                 else:
-                    gen_q_index = variable_context.gen_q_num_2_index[gen_num]
                     bus_q_gen[bus_num].append(variable_context.gen_q_vars[gen_q_index])
 
         # static var compensators
@@ -384,10 +382,10 @@ class OptimalPowerFlow:
                 if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
-                if not network_cache.is_too_small_reactive_power_bounds(q_bounds):
-                    gen_index = variable_context.gen_q_num_2_index[gen_num]
+                gen_index = variable_context.gen_q_num_2_index[gen_num]
+                if gen_index != -1:
                     q = model.get_value(variable_context.gen_q_vars[gen_index])
+                    q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
                     if not q_bounds.contains(q):
                         logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
