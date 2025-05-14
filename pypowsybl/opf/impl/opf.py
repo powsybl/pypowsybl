@@ -261,8 +261,8 @@ class OptimalPowerFlow:
             bus_q_expr -= bus_q_load[bus_num]
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
-    def _add_constraints(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
-                         function_context: FunctionContext):
+    def _add_constraints(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters,
+                         model: ipopt.Model, variable_context: VariableContext, function_context: FunctionContext):
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
@@ -275,10 +275,16 @@ class OptimalPowerFlow:
 
         for transfo_num, row in enumerate(network_cache.transformers.itertuples(index=False)):
             r, x, g, b, rho, alpha = row.r_tap, row.x_tap, row.g_tap, row.b_tap, row.rho, row.alpha
-            g1 = g / 2
-            g2 = g / 2
-            b1 = b / 2
-            b2 = b / 2
+            if parameters.twt_split_shunt_admittance:
+                g1 = g / 2
+                g2 = g / 2
+                b1 = b / 2
+                b2 = b / 2
+            else:
+                g1 = g
+                g2 = 0
+                b1 = b
+                b2 = 0
             r1 = rho
             a1 = alpha
             branch_num = len(network_cache.lines) + transfo_num
@@ -350,7 +356,7 @@ class OptimalPowerFlow:
         function_context = FunctionContext.build(model)
 
         # constraints
-        self._add_constraints(network_cache, model, variable_context, function_context)
+        self._add_constraints(network_cache, parameters, model, variable_context, function_context)
 
         # cost function
         logger.debug(f"Using cost function: '{parameters.cost_function.name}'")
