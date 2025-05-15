@@ -24,6 +24,9 @@ import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.powsybl.python.commons.Util.freeCharPtrArray;
+import static com.powsybl.python.commons.Util.getStringListAsPtr;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
@@ -145,8 +148,8 @@ public final class CTypeUtil {
             keys.add(key);
             values.add(value);
         });
-        mapPtr.setKeys(Util.getStringListAsPtr(keys));
-        mapPtr.setValues(Util.getStringListAsPtr(values));
+        mapPtr.setKeys(getStringListAsPtr(keys));
+        mapPtr.setValues(getStringListAsPtr(values));
         return mapPtr;
     }
 
@@ -170,5 +173,33 @@ public final class CTypeUtil {
         }
         cMetadata.setAttributesCount(metadata.size());
         cMetadata.setAttributesMetadata(seriesMetadataPtr);
+    }
+
+    public static void stringListListToArrayPointer(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer>> arrayPtr, List<List<String>> stringListList) {
+        arrayPtr.setPtr(UnmanagedMemory.calloc(stringListList.size() * SizeOf.get(PyPowsyblApiHeader.ArrayPointer.class)));
+        for (int i = 0; i < stringListList.size(); ++i) {
+            List<String> subList = stringListList.get(i);
+            CCharPointerPointer sublistPtr = getStringListAsPtr(subList);
+            PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> subListArrayPtr = arrayPtr.getPtr().addressOf(i);
+            subListArrayPtr.setPtr(sublistPtr);
+            subListArrayPtr.setLength(subList.size());
+        }
+        arrayPtr.setLength(stringListList.size());
+    }
+
+    public static List<List<String>> arrayPointerToStringListList(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer>> arrayPtr) {
+        List<List<String>> mainList = new ArrayList<>();
+        for (int i = 0; i < arrayPtr.getLength(); ++i) {
+            PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> subListPtr = arrayPtr.getPtr().addressOf(i);
+            mainList.add(toStringList(subListPtr.getPtr(), subListPtr.getLength()));
+        }
+        return mainList;
+    }
+
+    public static void freeNestedArrayPointer(PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer>> arrayPtr) {
+        for (int i = 0; i < arrayPtr.getLength(); ++i) {
+            freeCharPtrArray(arrayPtr.getPtr().addressOf(i));
+        }
+        UnmanagedMemory.free(arrayPtr.getPtr());
     }
 }
