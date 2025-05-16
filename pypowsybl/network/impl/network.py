@@ -1521,6 +1521,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the LCC converter station is connected to a bus
               - **fictitious** (optional): ``True`` if the LCC converter is part of the model and not of the actual network
+              - **hvdc_line_id**: ID of the HVDC line where the LCC converter station is connected, empty string if not connected
 
             This dataframe is indexed by the id of the LCC converter
 
@@ -1533,13 +1534,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ============ ===========  ====== === === ================ ======= =========
-                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
-            ======== ============ ===========  ====== === === ================ ======= =========
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
+                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected hvdc_line_id
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
             id
-                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
-                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
-            ======== ============ ===========  ====== === === ================ ======= =========
+                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True        HVDC2
+                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True        HVDC2
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -1548,13 +1549,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ============ ===========  ====== === === ================ ======= =========
-                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
-            ======== ============ ===========  ====== === === ================ ======= =========
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
+                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected hvdc_line_id
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
             id
-                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
-                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
-            ======== ============ ===========  ====== === === ================ ======= =========
+                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True        HVDC2
+                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True        HVDC2
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -1609,6 +1610,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the VSC converter station is connected to a bus
               - **fictitious** (optional): ``True`` if the VSC converter is part of the model and not of the actual network
+              - **hvdc_line_id**: ID of the HVDC line where the VSC converter station is connected, empty string if not connected
 
             This dataframe is indexed by the id of the VSC converter
 
@@ -1621,13 +1623,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected hvdc_line_id
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
             id
-                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True        HVDC1
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True        HVDC1
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -1636,13 +1638,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
+            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected hvdc_line_id
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
             id
-                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True       HVDC1
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True       HVDC1
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
 
             .. code-block:: python
 
