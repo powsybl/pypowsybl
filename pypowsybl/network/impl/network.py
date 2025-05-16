@@ -985,6 +985,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_p**: the minimum active value for the battery  (MW)
               - **min_q**: the maximum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
               - **max_q**: the minimum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the battery for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the battery for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the battery at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the battery at current p (MVar)
               - **target_p**: The active power setpoint  (MW)
               - **target_q**: The reactive power setpoint  (MVAr)
               - **p**: the result active battery consumption, it is ``NaN`` is not loadflow has been computed (MW)
@@ -1593,11 +1597,13 @@ class Network:  # pylint: disable=too-many-public-methods
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
-              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
-              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
-              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
-              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
-              - **reactive_limits_kind**: type of the reactive limit of the vsc converter station (can be MIN_MAX, CURVE or NONE)
+              - **max_q**: the maximum reactive value for the VSC converter station only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the VSC converter station only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the VSC converter station for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the VSC converter station for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the VSC converter station at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the VSC converter station at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the VSC converter station (can be MIN_MAX, CURVE or NONE)
               - **voltage_regulator_on**: The voltage regulator status
               - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
