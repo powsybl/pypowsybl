@@ -1537,12 +1537,32 @@ public final class NetworkDataframes {
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
                 .enums("type", LimitType.class, TemporaryLimitData::getType)
-                .doubles("value", TemporaryLimitData::getValue)
+                .doubles("value", (limit, context) -> perUnitLimitValue(context, limit))
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
                 .strings("group_name", TemporaryLimitData::getGroupId, false)
                 .booleans("selected", TemporaryLimitData::isSelected, false)
                 .build();
+    }
+
+    private static double perUnitLimitValue(NetworkDataframeContext context, TemporaryLimitData limit) {
+        switch (limit.getType()) {
+            case CURRENT -> {
+                return perUnitI(context, limit.getValue(), limit.getPerUnitingNominalV());
+            }
+            case ACTIVE_POWER, APPARENT_POWER -> {
+                return perUnitPQ(context, limit.getValue());
+            }
+            case VOLTAGE -> {
+                return perUnitV(context, limit.getValue(), limit.getPerUnitingNominalV());
+            }
+            case VOLTAGE_ANGLE -> {
+                return perUnitAngle(context, limit.getValue());
+            }
+            default -> {
+                return 0.0;
+            }
+        }
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
