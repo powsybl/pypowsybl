@@ -1243,6 +1243,12 @@ def test_nad_profile():
     assert re.search('.*<svg.*', nad_three_wt.svg)
     assert len(nad_three_wt.metadata) > 0
 
+    default_profile = n_three_wt.get_default_nad_profile()
+    assert list(default_profile.branch_labels.columns) == ['side1', 'middle', 'side2', 'arrow1', 'arrow2']
+    assert list(default_profile.three_wt_labels) == ['side1', 'side2', 'side3', 'arrow1', 'arrow2', 'arrow3']
+    assert list(default_profile.bus_descriptions) == ['description']
+    assert list(default_profile.vl_descriptions) == ['type', 'description']
+
 
 def test_current_limits():
     network = pp.network.create_eurostag_tutorial_example1_network()
