@@ -7,7 +7,7 @@ from pypowsybl.opf.impl.network_cache import NetworkCache
 from pypowsybl.opf.impl.ac_variable_context import AcVariableContext
 
 
-class CostFunction(ABC):
+class AcCostFunction(ABC):
     def __init__(self, name):
         self._name = name
 
@@ -20,7 +20,7 @@ class CostFunction(ABC):
         pass
 
 
-class MinimalActivePowerCostFunction(CostFunction):
+class MinimalActivePowerCostFunction(AcCostFunction):
     def __init__(self):
         super().__init__('Minimal active power')
 
@@ -32,7 +32,7 @@ class MinimalActivePowerCostFunction(CostFunction):
         return cost
 
 
-class MinimalLossesCostFunction(CostFunction):
+class MinimalLossesCostFunction(AcCostFunction):
     def __init__(self):
         super().__init__('Minimal losses power')
 
@@ -43,7 +43,7 @@ class MinimalLossesCostFunction(CostFunction):
         return cost
 
 
-class MinimizeAgainstReferenceCostFunction(CostFunction):
+class MinimizeAgainstReferenceCostFunction(AcCostFunction):
     def __init__(self):
         super().__init__('Minimize against reference')
 
