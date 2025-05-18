@@ -3,19 +3,19 @@ import logging
 import pyoptinterface as poi
 
 from pypowsybl.network import Network
-from pypowsybl.opf.impl.ac_branch_flow_constraints import AcBranchFlowConstraints
-from pypowsybl.opf.impl.ac_generator_power_bounds import AcGeneratorPowerBounds
-from pypowsybl.opf.impl.ac_hvdc_line_constraints import AcHvdcLineConstraints
-from pypowsybl.opf.impl.ac_model import AcModel
-from pypowsybl.opf.impl.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.ac_power_balance_constraints import AcPowerBalanceConstraints
-from pypowsybl.opf.impl.ac_vsc_cs_power_bounds import AcVscCsPowerBounds
-from pypowsybl.opf.impl.bus_voltage_bounds import BusVoltageBounds
-from pypowsybl.opf.impl.network_cache import NetworkCache
-from pypowsybl.opf.impl.shunt_flow_constraints import ShuntFlowConstraints
-from pypowsybl.opf.impl.slack_bus_angle_bounds import SlackBusAngleBounds
-from pypowsybl.opf.impl.static_var_compensator_reactive_limits_constraints import \
+from pypowsybl.opf.impl.bounds.ac_vsc_cs_power_bounds import AcVscCsPowerBounds
+from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
+from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
+from pypowsybl.opf.impl.constraints.ac_branch_flow_constraints import AcBranchFlowConstraints
+from pypowsybl.opf.impl.constraints.ac_generator_power_bounds import AcGeneratorPowerBounds
+from pypowsybl.opf.impl.constraints.ac_hvdc_line_constraints import AcHvdcLineConstraints
+from pypowsybl.opf.impl.constraints.ac_power_balance_constraints import AcPowerBalanceConstraints
+from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
+from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
+from pypowsybl.opf.impl.model.ac_model import AcModel
+from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 logger = logging.getLogger(__name__)
 

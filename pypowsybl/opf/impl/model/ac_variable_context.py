@@ -1,12 +1,11 @@
 import logging
-import math
 from dataclasses import dataclass
 from typing import Any
 
 from pyoptinterface import ipopt
 
-from pypowsybl.opf.impl.bounds import Bounds
-from pypowsybl.opf.impl.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.bounds import Bounds
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.util import TRACE_LEVEL
 
 logger = logging.getLogger(__name__)

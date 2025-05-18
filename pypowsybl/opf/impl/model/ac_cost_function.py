@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 import pyoptinterface as poi
 from pyoptinterface import ExprBuilder
 
-from pypowsybl.opf.impl.network_cache import NetworkCache
-from pypowsybl.opf.impl.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
 
 
 class AcCostFunction(ABC):

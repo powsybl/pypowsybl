@@ -1,4 +1,4 @@
-from pypowsybl.opf.impl.ac_cost_function import MinimizeAgainstReferenceCostFunction, AcCostFunction
+from pypowsybl.opf.impl.model.ac_cost_function import MinimizeAgainstReferenceCostFunction, AcCostFunction
 
 
 class AcOptimalPowerFlowParameters:

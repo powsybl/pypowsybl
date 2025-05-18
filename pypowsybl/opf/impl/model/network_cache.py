@@ -2,7 +2,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from pypowsybl.network import Network
-from pypowsybl.opf.impl.bounds import Bounds
+from pypowsybl.opf.impl.model.bounds import Bounds
 
 
 class NetworkCache:

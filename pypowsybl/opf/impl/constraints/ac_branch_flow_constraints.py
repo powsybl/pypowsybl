@@ -2,11 +2,11 @@ from math import hypot, atan2
 
 from pyoptinterface import ipopt, nlfunc
 
-from pypowsybl.opf.impl.ac_constraints import AcConstraints
-from pypowsybl.opf.impl.ac_function_context import AcFunctionContext
-from pypowsybl.opf.impl.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.ac_variable_context import AcVariableContext
-from pypowsybl.opf.impl.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.ac_constraints import AcConstraints
+from pypowsybl.opf.impl.model.ac_function_context import AcFunctionContext
+from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 
 class AcBranchFlowConstraints(AcConstraints):
