@@ -49,11 +49,6 @@ class Bounds:
         return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
 
     @staticmethod
-    def get_svc_reactive_power_bounds(row: Any) -> 'Bounds':
-        nominal_v_square = row.nominal_v ** 2
-        return Bounds(row.b_min * nominal_v_square, row.b_max * nominal_v_square)
-
-    @staticmethod
     def fix(id:str, lb: float, ub: float) -> tuple[float, float]:
         if lb > ub:
             logger.warning(f"{id}, lower bound {lb} is greater than upper bound {ub}")

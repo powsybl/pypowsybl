@@ -54,33 +54,29 @@ class OptimalPowerFlow:
 
         # generator active and reactive power bounds
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
-            p_bounds = Bounds(row.min_p, row.max_p).mirror()
-            logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
-            model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
+            if row.bus_id:
+                p_bounds = Bounds(row.min_p, row.max_p).mirror()
+                logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
+                model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-            gen_index = variable_context.gen_q_num_2_index[gen_num]
-            if gen_index != -1:
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
-                logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
-                model.set_variable_bounds(variable_context.gen_q_vars[gen_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
-
-        # static var compensator reactive power bounds
-        for num, row in enumerate(network_cache.static_var_compensators.itertuples()):
-            q_bounds = Bounds.get_svc_reactive_power_bounds(row).mirror()
-            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to SVC '{row.Index}' (num={num})")
-            model.set_variable_bounds(variable_context.svc_q_vars[num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+                gen_index = variable_context.gen_q_num_2_index[gen_num]
+                if gen_index != -1:
+                    q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
+                    logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
+                    model.set_variable_bounds(variable_context.gen_q_vars[gen_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
         # VSC converter station active and reactive power bounds
         for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
-            p_bounds = Bounds(-row.max_p, row.max_p).mirror()
-            logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
-            model.set_variable_bounds(variable_context.vsc_cs_p_vars[vsc_cs_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
+            if row.bus_id:
+                p_bounds = Bounds(-row.max_p, row.max_p).mirror()
+                logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
+                model.set_variable_bounds(variable_context.vsc_cs_p_vars[vsc_cs_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-            q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
-            logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
-            if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
-                logger.error(f"Too small reactive power bounds {q_bounds} for VSC converter station '{row.Index}' (num={vsc_cs_num})")
-            model.set_variable_bounds(variable_context.vsc_cs_q_vars[vsc_cs_num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+                q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
+                logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
+                if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
+                    logger.error(f"Too small reactive power bounds {q_bounds} for VSC converter station '{row.Index}' (num={vsc_cs_num})")
+                model.set_variable_bounds(variable_context.vsc_cs_q_vars[vsc_cs_num], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
     @staticmethod
     def _add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
@@ -312,6 +308,22 @@ class OptimalPowerFlow:
                     ),
                     eq=0.0,
                 )
+
+        # static var compensator reactive limits quadratic constraints
+        for num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
+            b_min, b_max, bus_id = row.b_min, row.b_max, row.bus_id
+            if bus_id:
+                q_var = variable_context.svc_q_vars[num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                v_var = variable_context.v_vars[bus_num]
+                q_min_expr = poi.ExprBuilder()
+                q_min_expr += b_min * v_var * v_var
+                q_min_expr -= q_var
+                model.add_quadratic_constraint(q_min_expr, poi.Leq, 0.0)
+                q_max_expr = poi.ExprBuilder()
+                q_max_expr += b_max * v_var * v_var
+                q_max_expr -= q_var
+                model.add_quadratic_constraint(q_max_expr, poi.Geq, 0.0)
 
         # HVDC line constraints
         for row in network_cache.hvdc_lines.itertuples(index=False):

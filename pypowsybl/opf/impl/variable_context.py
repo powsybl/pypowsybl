@@ -33,6 +33,7 @@ class VariableContext:
     open_side2_branch_p1_vars: Any
     open_side2_branch_q1_vars: Any
     branch_num_2_index: list[int]
+    gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
 
     @staticmethod
@@ -42,17 +43,23 @@ class VariableContext:
         ph_vars = model.add_variables(range(bus_count), name="ph")
 
         gen_count = len(network_cache.generators)
-        gen_p_vars = model.add_variables(range(gen_count), name="gen_p")
-        valid_gen_q_nums = []
+        gen_p_nums = []
+        gen_q_nums = []
+        gen_p_num_2_index = [-1] * gen_count
         gen_q_num_2_index = [-1] * gen_count
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
-            q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
-            if network_cache.is_too_small_reactive_power_bounds(q_bounds):
-                logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
-            else:
-                gen_q_num_2_index[gen_num] = len(valid_gen_q_nums)
-                valid_gen_q_nums.append(gen_num)
-        gen_q_vars = model.add_variables(range(len(valid_gen_q_nums)), name="gen_q")
+            if row.bus_id:
+                gen_p_num_2_index[gen_num] = len(gen_p_nums)
+                gen_p_nums.append(gen_num)
+
+                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
+                if network_cache.is_too_small_reactive_power_bounds(q_bounds):
+                    logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
+                else:
+                    gen_q_num_2_index[gen_num] = len(gen_q_nums)
+                    gen_q_nums.append(gen_num)
+        gen_p_vars = model.add_variables(range(len(gen_p_nums)), name="gen_p")
+        gen_q_vars = model.add_variables(range(len(gen_q_nums)), name="gen_q")
 
         shunt_count = len(network_cache.shunts)
         shunt_p_vars = model.add_variables(range(shunt_count), name="shunt_p")
@@ -98,7 +105,7 @@ class VariableContext:
                                closed_branch_p2_vars, closed_branch_q2_vars,
                                open_side1_branch_p2_vars, open_side1_branch_q2_vars,
                                open_side2_branch_p1_vars, open_side2_branch_q1_vars,
-                               branch_num_2_index, gen_q_num_2_index)
+                               branch_num_2_index, gen_p_num_2_index, gen_q_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
         gen_ids = []
@@ -113,28 +120,32 @@ class VariableContext:
             if bus_id:
                 gen_ids.append(gen_id)
 
-                p = model.get_value(self.gen_p_vars[gen_num])
+                gen_p_index = self.gen_p_num_2_index[gen_num]
+                gen_q_index = self.gen_q_num_2_index[gen_num]
+
+                p = model.get_value(self.gen_p_vars[gen_p_index])
                 target_p = -p
                 gen_target_p.append(target_p)
                 gen_p.append(p)
 
-                gen_index = self.gen_q_num_2_index[gen_num]
-                if gen_index == -1:
+                if gen_q_index == -1:
                     gen_target_q.append(row.target_q)
                     gen_q.append(-row.target_q)
+                    gen_target_v.append(row.target_v)
+                    gen_voltage_regulator_on.append(False)
                 else:
-                    q = model.get_value(self.gen_q_vars[gen_index])
+                    q = model.get_value(self.gen_q_vars[gen_q_index])
                     target_q = -q
                     gen_target_q.append(target_q)
                     gen_q.append(q)
 
-                bus_num = network_cache.buses.index.get_loc(bus_id)
-                target_v = model.get_value(self.v_vars[bus_num])
-                gen_target_v.append(target_v)
+                    bus_num = network_cache.buses.index.get_loc(bus_id)
+                    target_v = model.get_value(self.v_vars[bus_num])
+                    gen_target_v.append(target_v)
 
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
-                voltage_regulator_on = q_bounds.contains(q)
-                gen_voltage_regulator_on.append(voltage_regulator_on)
+                    q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
+                    voltage_regulator_on = q_bounds.contains(q)
+                    gen_voltage_regulator_on.append(voltage_regulator_on)
 
                 logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
 
@@ -213,10 +224,11 @@ class VariableContext:
                 svc_q.append(q)
 
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                target_v = model.get_value(self.v_vars[bus_num])
+                v = model.get_value(self.v_vars[bus_num])
+                target_v = v
                 svc_target_v.append(target_v)
 
-                q_bounds = Bounds.get_svc_reactive_power_bounds(row).mirror()
+                q_bounds = Bounds(row.b_min * v * v, row.b_max * v * v)
                 regulation_mode = 'VOLTAGE' if q_bounds.contains(q) else 'REACTIVE_POWER'
                 svc_regulation_mode.append(regulation_mode)
 

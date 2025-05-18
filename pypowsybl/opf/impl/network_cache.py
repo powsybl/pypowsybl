@@ -118,7 +118,7 @@ class NetworkCache:
     @staticmethod
     def _build_generators(network: Network, buses: DataFrame):
         generators = network.get_generators(
-            attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q'])
+            attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q', 'target_v'])
         return NetworkCache._filter_injections(generators, buses)
 
     @staticmethod

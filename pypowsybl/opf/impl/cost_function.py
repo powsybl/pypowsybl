@@ -50,14 +50,16 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
         for gen_num, row in enumerate(network_cache.generators.itertuples(index=False)):
-            gen_p_expr = poi.ExprBuilder()
-            gen_p_expr += variable_context.gen_p_vars[gen_num]
-            gen_p_expr += row.target_p
-            cost += gen_p_expr * gen_p_expr
+            if row.bus_id:
+                gen_p_expr = poi.ExprBuilder()
+                gen_p_expr += variable_context.gen_p_vars[gen_num]
+                gen_p_expr += row.target_p
+                cost += gen_p_expr * gen_p_expr
         for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
-            if NetworkCache.is_rectifier(row):
-                vsc_cs_p_expr = poi.ExprBuilder()
-                vsc_cs_p_expr += variable_context.vsc_cs_p_vars[vsc_cs_num]
-                vsc_cs_p_expr -= row.target_p
-                cost += vsc_cs_p_expr * vsc_cs_p_expr
+            if row.bus_id:
+                if NetworkCache.is_rectifier(row):
+                    vsc_cs_p_expr = poi.ExprBuilder()
+                    vsc_cs_p_expr += variable_context.vsc_cs_p_vars[vsc_cs_num]
+                    vsc_cs_p_expr -= row.target_p
+                    cost += vsc_cs_p_expr * vsc_cs_p_expr
         return cost
