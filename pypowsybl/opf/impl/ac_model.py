@@ -2,21 +2,13 @@ import logging
 
 from pyoptinterface import ipopt
 
-from pypowsybl.opf.impl.ac_branch_flow_constraints import AcBranchFlowConstraints
+from pypowsybl.opf.impl.ac_constraints import AcConstraints
 from pypowsybl.opf.impl.ac_function_context import AcFunctionContext
-from pypowsybl.opf.impl.ac_generator_power_bounds import AcGeneratorPowerBounds
-from pypowsybl.opf.impl.ac_hvdc_line_constraints import AcHvdcLineConstraints
 from pypowsybl.opf.impl.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.ac_power_balance_constraints import AcPowerBalanceConstraints
+from pypowsybl.opf.impl.ac_variable_bounds import AcVariableBounds
 from pypowsybl.opf.impl.ac_variable_context import AcVariableContext
-from pypowsybl.opf.impl.ac_vsc_cs_power_bounds import AcVscCsPowerBounds
 from pypowsybl.opf.impl.bounds import Bounds
-from pypowsybl.opf.impl.bus_voltage_bounds import BusVoltageBounds
 from pypowsybl.opf.impl.network_cache import NetworkCache
-from pypowsybl.opf.impl.shunt_flow_constraints import ShuntFlowConstraints
-from pypowsybl.opf.impl.slack_bus_angle_bounds import SlackBusAngleBounds
-from pypowsybl.opf.impl.static_var_compensator_reactive_limits_constraints import \
-    StaticVarCompensatorReactiveLimitsConstraints
 
 logger = logging.getLogger(__name__)
 
@@ -39,17 +31,14 @@ class AcModel:
         return self._variable_context
 
     @classmethod
-    def build(cls, network_cache: NetworkCache, parameters: AcOptimalPowerFlowParameters) -> 'AcModel':
+    def build(cls, network_cache: NetworkCache, parameters: AcOptimalPowerFlowParameters,
+              variable_bounds: list[AcVariableBounds], constraints: list[AcConstraints]) -> 'AcModel':
         model = ipopt.Model()
 
         # create variables
         variable_context = AcVariableContext.build(network_cache, model)
 
         # variable bounds
-        variable_bounds = [BusVoltageBounds(),
-                           SlackBusAngleBounds(),
-                           AcGeneratorPowerBounds(),
-                           AcVscCsPowerBounds()]
         for variable_bounds in variable_bounds:
             variable_bounds.add(parameters, network_cache, variable_context, model)
 
@@ -57,11 +46,6 @@ class AcModel:
         function_context = AcFunctionContext.build(model)
 
         # constraints
-        constraints = [AcBranchFlowConstraints(),
-                       ShuntFlowConstraints(),
-                       StaticVarCompensatorReactiveLimitsConstraints(),
-                       AcHvdcLineConstraints(),
-                       AcPowerBalanceConstraints()]
         for constraint in constraints:
             constraint.add(parameters, network_cache, variable_context, function_context, model)
 

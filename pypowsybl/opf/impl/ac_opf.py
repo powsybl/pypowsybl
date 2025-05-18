@@ -3,9 +3,19 @@ import logging
 import pyoptinterface as poi
 
 from pypowsybl.network import Network
+from pypowsybl.opf.impl.ac_branch_flow_constraints import AcBranchFlowConstraints
+from pypowsybl.opf.impl.ac_generator_power_bounds import AcGeneratorPowerBounds
+from pypowsybl.opf.impl.ac_hvdc_line_constraints import AcHvdcLineConstraints
 from pypowsybl.opf.impl.ac_model import AcModel
 from pypowsybl.opf.impl.ac_parameters import AcOptimalPowerFlowParameters
+from pypowsybl.opf.impl.ac_power_balance_constraints import AcPowerBalanceConstraints
+from pypowsybl.opf.impl.ac_vsc_cs_power_bounds import AcVscCsPowerBounds
+from pypowsybl.opf.impl.bus_voltage_bounds import BusVoltageBounds
 from pypowsybl.opf.impl.network_cache import NetworkCache
+from pypowsybl.opf.impl.shunt_flow_constraints import ShuntFlowConstraints
+from pypowsybl.opf.impl.slack_bus_angle_bounds import SlackBusAngleBounds
+from pypowsybl.opf.impl.static_var_compensator_reactive_limits_constraints import \
+    StaticVarCompensatorReactiveLimitsConstraints
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +44,16 @@ class AcOptimalPowerFlow:
     def run(self, parameters: AcOptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
 
-        ac_model = AcModel.build(network_cache, parameters)
+        variable_bounds = [BusVoltageBounds(),
+                           SlackBusAngleBounds(),
+                           AcGeneratorPowerBounds(),
+                           AcVscCsPowerBounds()]
+        constraints = [AcBranchFlowConstraints(),
+                       ShuntFlowConstraints(),
+                       StaticVarCompensatorReactiveLimitsConstraints(),
+                       AcHvdcLineConstraints(),
+                       AcPowerBalanceConstraints()]
+        ac_model = AcModel.build(network_cache, parameters, variable_bounds, constraints)
 
         logger.info("Starting optimization...")
         ac_model.model.optimize()
