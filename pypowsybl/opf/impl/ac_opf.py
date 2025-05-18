@@ -6,11 +6,11 @@ from pyoptinterface import nlfunc, ipopt
 
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds import Bounds
-from pypowsybl.opf.impl.function_context import FunctionContext
+from pypowsybl.opf.impl.ac_function_context import AcFunctionContext
 from pypowsybl.opf.impl.network_cache import NetworkCache
-from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.ac_parameters import AcOptimalPowerFlowParameters
 from pypowsybl.opf.impl.util import TRACE_LEVEL
-from pypowsybl.opf.impl.variable_context import VariableContext
+from pypowsybl.opf.impl.ac_variable_context import AcVariableContext
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +32,13 @@ logger = logging.getLogger(__name__)
 #
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/mumps/lib:$HOME/ipopt/lib
 #
-class OptimalPowerFlow:
+class AcOptimalPowerFlow:
     def __init__(self, network: Network) -> None:
         self._network = network
 
     @staticmethod
-    def _add_variables_bounds(network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext,
-                              parameters: OptimalPowerFlowParameters):
+    def _add_variables_bounds(network_cache: NetworkCache, model: ipopt.Model, variable_context: AcVariableContext,
+                              parameters: AcOptimalPowerFlowParameters):
         # voltage buses bounds
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
             v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
@@ -82,7 +82,7 @@ class OptimalPowerFlow:
     @staticmethod
     def _add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
                                r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
-                               variable_context: VariableContext, function_context: FunctionContext):
+                               variable_context: AcVariableContext, function_context: AcFunctionContext):
         z = hypot(r, x)
         y = 1.0 / z
         ksi = atan2(r, x)
@@ -175,7 +175,7 @@ class OptimalPowerFlow:
 
     @staticmethod
     def _add_power_balance_constraint(network_cache: NetworkCache, model: ipopt.Model,
-                                      variable_context:VariableContext) -> None:
+                                      variable_context:AcVariableContext) -> None:
         bus_count = len(network_cache.buses)
         bus_p_gen = [[] for _ in range(bus_count)]
         bus_q_gen = [[] for _ in range(bus_count)]
@@ -260,8 +260,8 @@ class OptimalPowerFlow:
             bus_q_expr -= bus_q_load[bus_num]
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
 
-    def _add_constraints(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters,
-                         model: ipopt.Model, variable_context: VariableContext, function_context: FunctionContext):
+    def _add_constraints(self, network_cache: NetworkCache, parameters: AcOptimalPowerFlowParameters,
+                         model: ipopt.Model, variable_context: AcVariableContext, function_context: AcFunctionContext):
         # branch flow nonlinear constraints
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
@@ -362,17 +362,17 @@ class OptimalPowerFlow:
         # power balance constraints
         self._add_power_balance_constraint(network_cache, model, variable_context)
 
-    def _create_model(self, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters) -> tuple[ipopt.Model, VariableContext]:
+    def _create_model(self, network_cache: NetworkCache, parameters: AcOptimalPowerFlowParameters) -> tuple[ipopt.Model, AcVariableContext]:
         model = ipopt.Model()
 
         # create variables
-        variable_context = VariableContext.build(network_cache, model)
+        variable_context = AcVariableContext.build(network_cache, model)
 
         # variable bounds
         self._add_variables_bounds(network_cache, model, variable_context, parameters)
 
         # register functions
-        function_context = FunctionContext.build(model)
+        function_context = AcFunctionContext.build(model)
 
         # constraints
         self._add_constraints(network_cache, parameters, model, variable_context, function_context)
@@ -386,7 +386,7 @@ class OptimalPowerFlow:
 
     @staticmethod
     def _analyze_violations(network_cache: NetworkCache, model: ipopt.Model,
-                            variable_context: VariableContext) -> None:
+                            variable_context: AcVariableContext) -> None:
         # check voltage bounds
         for bus_num, (bus_id, row) in enumerate(network_cache.buses.iterrows()):
             v = model.get_value(variable_context.v_vars[bus_num])
@@ -411,7 +411,7 @@ class OptimalPowerFlow:
                     if not q_bounds.contains(q):
                         logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")
 
-    def run(self, parameters: OptimalPowerFlowParameters) -> bool:
+    def run(self, parameters: AcOptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
 
         model, variable_context = self._create_model(network_cache, parameters)
@@ -432,6 +432,6 @@ class OptimalPowerFlow:
         return status == poi.TerminationStatusCode.LOCALLY_SOLVED
 
 
-def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
-    opf = OptimalPowerFlow(network)
+def run_ac(network: Network, parameters: AcOptimalPowerFlowParameters = AcOptimalPowerFlowParameters()) -> bool:
+    opf = AcOptimalPowerFlow(network)
     return opf.run(parameters)

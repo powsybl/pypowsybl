@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class VariableContext:
+class AcVariableContext:
     ph_vars: Any
     v_vars: Any
     gen_p_vars: Any
@@ -40,7 +40,7 @@ class VariableContext:
     vsc_cs_num_2_index: list[int]
 
     @staticmethod
-    def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
+    def build(network_cache: NetworkCache, model: ipopt.Model) -> 'AcVariableContext':
         bus_count = len(network_cache.buses)
         v_vars = model.add_variables(range(bus_count), name="v")
         ph_vars = model.add_variables(range(bus_count), name="ph")
@@ -117,20 +117,20 @@ class VariableContext:
         open_side2_branch_p1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_p1')
         open_side2_branch_q1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_q1')
 
-        return VariableContext(ph_vars, v_vars,
-                               gen_p_vars, gen_q_vars,
-                               shunt_p_vars, shunt_q_vars,
-                               svc_q_vars,
-                               vsc_cs_p_vars, vsc_cs_q_vars,
-                               closed_branch_p1_vars, closed_branch_q1_vars,
-                               closed_branch_p2_vars, closed_branch_q2_vars,
-                               open_side1_branch_p2_vars, open_side1_branch_q2_vars,
-                               open_side2_branch_p1_vars, open_side2_branch_q1_vars,
-                               branch_num_2_index,
-                               gen_p_num_2_index, gen_q_num_2_index,
-                               shunt_num_2_index,
-                               svc_num_2_index,
-                               vsc_cs_num_2_index)
+        return AcVariableContext(ph_vars, v_vars,
+                                 gen_p_vars, gen_q_vars,
+                                 shunt_p_vars, shunt_q_vars,
+                                 svc_q_vars,
+                                 vsc_cs_p_vars, vsc_cs_q_vars,
+                                 closed_branch_p1_vars, closed_branch_q1_vars,
+                                 closed_branch_p2_vars, closed_branch_q2_vars,
+                                 open_side1_branch_p2_vars, open_side1_branch_q2_vars,
+                                 open_side2_branch_p1_vars, open_side2_branch_q1_vars,
+                                 branch_num_2_index,
+                                 gen_p_num_2_index, gen_q_num_2_index,
+                                 shunt_num_2_index,
+                                 svc_num_2_index,
+                                 vsc_cs_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
         gen_ids = []

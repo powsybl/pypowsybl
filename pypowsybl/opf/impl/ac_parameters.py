@@ -1,7 +1,7 @@
 from pypowsybl.opf.impl.cost_function import MinimizeAgainstReferenceCostFunction, CostFunction
 
 
-class OptimalPowerFlowParameters:
+class AcOptimalPowerFlowParameters:
     def __init__(self) -> None:
         self._reactive_bounds_reduction = 0.1
         self._cost_function = MinimizeAgainstReferenceCostFunction()
