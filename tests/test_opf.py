@@ -45,52 +45,67 @@ def test_reactive_range():
     assert b.mirror().reduce(0.1).max_value_with_margin == -10.999999
 
 
-def run_opf_then_lf(network: pp.network.Network, iteration_count: int):
+def run_opf_then_lf(network: pp.network.Network, iteration_count: int = 1):
+    lf_parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES,
+                                           provider_parameters={'plausibleActivePowerLimit': '10000.0'})
+    lf_result = pp.loadflow.run_ac(network, lf_parameters)
+    assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
+
     opf_parameters = OptimalPowerFlowParameters()
     assert pp.opf.run_ac(network, opf_parameters)
 
-    lf_parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.PREVIOUS_VALUES,
-                                           provider_parameters={'plausibleActivePowerLimit': '10000.0'})
+    lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
 
 
 def test_esg_tuto1():
-    run_opf_then_lf(pp.network.create_eurostag_tutorial_example1_network(), 1)
+    run_opf_then_lf(pp.network.create_eurostag_tutorial_example1_network())
 
 
 def test_ieee9():
-    run_opf_then_lf(pp.network.create_ieee9(), 1)
+    run_opf_then_lf(pp.network.create_ieee9())
 
 
 def test_ieee14():
-    run_opf_then_lf(pp.network.create_ieee14(), 1)
+    run_opf_then_lf(pp.network.create_ieee14())
 
 
 def test_ieee14_open_side_1_branch():
     network = pp.network.create_ieee14()
-    network.update_lines(id=['L1-2-1'], connected1=[False])
-    run_opf_then_lf(network, 1)
+    network.update_lines(id=['L3-4-1'], connected1=[False])
+    run_opf_then_lf(network)
+    row = network.get_branches(id=['L3-4-1'], attributes=['p1', 'q1', 'p2', 'q2' ]).head(1)
+    assert row.p1.values[0] == 0
+    assert row.q1.values[0] == 0
+    assert row.p2.values[0] != 0
+    assert row.q2.values[0] != 0
 
 
 def test_ieee14_open_side_2_branch():
     network = pp.network.create_ieee14()
-    network.update_lines(id=['L1-2-1'], connected2=[False])
-    run_opf_then_lf(network, 1)
+    network.update_lines(id=['L3-4-1'], connected2=[False])
+    run_opf_then_lf(network)
+    row = network.get_branches(id=['L3-4-1'], attributes=['p1', 'q1', 'p2', 'q2' ]).head(1)
+    assert row.p1.values[0] != 0
+    assert row.q1.values[0] != 0
+    assert row.p2.values[0] == 0
+    assert row.q2.values[0] == 0
 
 
 def test_ieee30():
-    run_opf_then_lf(pp.network.create_ieee30(), 1)
+    run_opf_then_lf(pp.network.create_ieee30())
 
 
 def test_ieee57():
-    run_opf_then_lf(pp.network.create_ieee57(), 1)
+    run_opf_then_lf(pp.network.create_ieee57())
 
 
 def test_ieee118():
-    run_opf_then_lf(pp.network.create_ieee118(), 1)
+    run_opf_then_lf(pp.network.create_ieee118())
 
 
 def test_ieee300():
-    run_opf_then_lf(pp.network.create_ieee300(), 1)
+    run_opf_then_lf(pp.network.create_ieee300())
+

@@ -405,6 +405,8 @@ class OptimalPowerFlow:
         # update network
         variable_context.update_network(network_cache, model)
 
+        network_cache.network.per_unit = False
+
         return status == poi.TerminationStatusCode.LOCALLY_SOLVED
 
 

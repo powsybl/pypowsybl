@@ -200,14 +200,14 @@ class VariableContext:
         svc_regulation_mode = []
         svc_p = []
         svc_q = []
-        for gen_num, (svc_id, row) in enumerate(network_cache.static_var_compensators.iterrows()):
+        for svc_num, (svc_id, row) in enumerate(network_cache.static_var_compensators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
                 svc_ids.append(svc_id)
 
                 svc_p.append(0.0)
 
-                q = model.get_value(self.svc_q_vars[gen_num])
+                q = model.get_value(self.svc_q_vars[svc_num])
                 target_q = -q
                 svc_target_q.append(target_q)
                 svc_q.append(q)
@@ -220,10 +220,31 @@ class VariableContext:
                 regulation_mode = 'VOLTAGE' if q_bounds.contains(q) else 'REACTIVE_POWER'
                 svc_regulation_mode.append(regulation_mode)
 
-                logger.log(TRACE_LEVEL, f"Update SVC '{svc_id}' (num={gen_num}): target_q={target_q}, target_v={target_v}, regulation_mode={regulation_mode}")
+                logger.log(TRACE_LEVEL, f"Update SVC '{svc_id}' (num={svc_num}): target_q={target_q}, target_v={target_v}, regulation_mode={regulation_mode}")
 
         network_cache.network.update_static_var_compensators(id=svc_ids, target_q=svc_target_q, target_v=svc_target_v,
                                                              regulation_mode=svc_regulation_mode, p=svc_p, q=svc_q)
+
+    def _update_shunt_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
+        shunt_ids = []
+        shunt_p = []
+        shunt_q = []
+        for shunt_num, (shunt_id, row) in enumerate(network_cache.shunts.iterrows()):
+            bus_id = row.bus_id
+            if bus_id:
+                p = model.get_value(self.shunt_p_vars[shunt_num])
+                q = -model.get_value(self.shunt_q_vars[shunt_num])
+            else:
+                p = 0.0
+                q = 0.0
+            shunt_ids.append(shunt_id)
+            shunt_p.append(p)
+            shunt_q.append(q)
+
+            logger.log(TRACE_LEVEL,
+                           f"Update shunt '{shunt_id}' (num={shunt_num}): p={p} q={q}")
+
+        network_cache.network.update_shunt_compensators(id=shunt_ids, p=shunt_p, q=shunt_q)
 
     def _update_branches(self, network_cache: NetworkCache, model: ipopt.Model):
         branch_ids = []
@@ -240,20 +261,20 @@ class VariableContext:
                 q1 = model.get_value(self.closed_branch_q1_vars[branch_index])
                 q2 = model.get_value(self.closed_branch_q2_vars[branch_index])
             elif row.bus2_id:
-                p1 = math.nan
+                p1 = 0.0
                 p2 = model.get_value(self.open_side1_branch_p2_vars[branch_index])
-                q1 = math.nan
+                q1 = 0.0
                 q2 = model.get_value(self.open_side1_branch_q2_vars[branch_index])
             elif row.bus1_id:
                 p1 = model.get_value(self.open_side2_branch_p1_vars[branch_index])
-                p2 = math.nan
+                p2 = 0.0
                 q1 = model.get_value(self.open_side2_branch_q1_vars[branch_index])
-                q2 = math.nan
+                q2 = 0.0
             else:
-                p1 = math.nan
-                p2 = math.nan
-                q1 = math.nan
-                q2 = math.nan
+                p1 = 0.0
+                p2 = 0.0
+                q1 = 0.0
+                q2 = 0.0
 
             branch_p1.append(p1)
             branch_p2.append(p2)
@@ -284,5 +305,6 @@ class VariableContext:
         self._update_vsc_converter_stations(network_cache, model)
         self._update_hvdc_lines(network_cache, model)
         self._update_static_var_compensators(network_cache, model)
+        self._update_shunt_compensators(network_cache, model)
         self._update_branches(network_cache, model)
         self._update_buses(network_cache, model)
