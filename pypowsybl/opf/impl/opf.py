@@ -57,13 +57,14 @@ class OptimalPowerFlow:
             if row.bus_id:
                 p_bounds = Bounds(row.min_p, row.max_p).mirror()
                 logger.log(TRACE_LEVEL, f"Add active power bounds {p_bounds} to generator '{row.Index}' (num={gen_num})")
-                model.set_variable_bounds(variable_context.gen_p_vars[gen_num], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
+                gen_p_index = variable_context.gen_p_num_2_index[gen_num]
+                model.set_variable_bounds(variable_context.gen_p_vars[gen_p_index], *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-                gen_index = variable_context.gen_q_num_2_index[gen_num]
-                if gen_index != -1:
+                gen_q_index = variable_context.gen_q_num_2_index[gen_num]
+                if gen_q_index != -1: # valid
                     q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
                     logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
-                    model.set_variable_bounds(variable_context.gen_q_vars[gen_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+                    model.set_variable_bounds(variable_context.gen_q_vars[gen_q_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
 
         # VSC converter station active and reactive power bounds
         for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
@@ -205,19 +206,21 @@ class OptimalPowerFlow:
             bus_id = gen_row.bus_id
             if bus_id:
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                bus_p_gen[bus_num].append(variable_context.gen_p_vars[gen_num])
+                gen_p_index = variable_context.gen_p_num_2_index[gen_num]
                 gen_q_index = variable_context.gen_q_num_2_index[gen_num]
-                if gen_q_index == -1:
+                bus_p_gen[bus_num].append(variable_context.gen_p_vars[gen_p_index])
+                if gen_q_index == -1: # invalid
                     bus_q_load[bus_num] += gen_row.target_q
                 else:
                     bus_q_gen[bus_num].append(variable_context.gen_q_vars[gen_q_index])
 
         # static var compensators
-        for num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
+        for svc_num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
             bus_id = row.bus_id
             if bus_id:
+                svc_index = variable_context.svc_num_2_index[svc_num]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                bus_q_gen[bus_num].append(variable_context.svc_q_vars[num])
+                bus_q_gen[bus_num].append(variable_context.svc_q_vars[svc_index])
 
         # aggregated loads
         loads_sum = network_cache.loads.groupby("bus_id", as_index=False).agg({"p0": "sum", "q0": "sum"})
@@ -229,20 +232,22 @@ class OptimalPowerFlow:
                 bus_q_load[bus_num] -= row.q0
 
         # shunts
-        for num, row in enumerate(network_cache.shunts.itertuples(index=False)):
+        for shunt_num, row in enumerate(network_cache.shunts.itertuples(index=False)):
             bus_id = row.bus_id
             if bus_id:
+                shunt_index = variable_context.shunt_num_2_index[shunt_num]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                bus_p_gen[bus_num].append(variable_context.shunt_p_vars[num])
-                bus_q_gen[bus_num].append(variable_context.shunt_q_vars[num])
+                bus_p_gen[bus_num].append(variable_context.shunt_p_vars[shunt_index])
+                bus_q_gen[bus_num].append(variable_context.shunt_q_vars[shunt_index])
 
         # VSC converter stations
-        for num, row in enumerate(network_cache.vsc_converter_stations.itertuples(index=False)):
+        for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples(index=False)):
             bus_id = row.bus_id
             if bus_id:
+                vsc_cs_index = variable_context.vsc_cs_num_2_index[vsc_cs_num]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                bus_p_gen[bus_num].append(variable_context.vsc_cs_p_vars[num])
-                bus_q_gen[bus_num].append(variable_context.vsc_cs_q_vars[num])
+                bus_p_gen[bus_num].append(variable_context.vsc_cs_p_vars[vsc_cs_index])
+                bus_q_gen[bus_num].append(variable_context.vsc_cs_q_vars[vsc_cs_index])
 
         for bus_num in range(bus_count):
             bus_p_expr = poi.ExprBuilder()
@@ -288,11 +293,12 @@ class OptimalPowerFlow:
                                         variable_context, function_context)
 
         # shunt flow nonlinear constraints
-        for num, row in enumerate(network_cache.shunts.itertuples(index=False)):
+        for shunt_num, row in enumerate(network_cache.shunts.itertuples(index=False)):
             g, b, bus_id = row.g, row.b, row.bus_id
             if bus_id:
-                p_var = variable_context.shunt_p_vars[num]
-                q_var = variable_context.shunt_q_vars[num]
+                shunt_index = variable_context.shunt_num_2_index[shunt_num]
+                p_var = variable_context.shunt_p_vars[shunt_index]
+                q_var = variable_context.shunt_q_vars[shunt_index]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 v_var = variable_context.v_vars[bus_num]
                 model.add_nl_constraint(
@@ -310,10 +316,11 @@ class OptimalPowerFlow:
                 )
 
         # static var compensator reactive limits quadratic constraints
-        for num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
+        for svc_num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
             b_min, b_max, bus_id = row.b_min, row.b_max, row.bus_id
             if bus_id:
-                q_var = variable_context.svc_q_vars[num]
+                svc_index = variable_context.svc_num_2_index[svc_num]
+                q_var = variable_context.svc_q_vars[svc_index]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
                 v_var = variable_context.v_vars[bus_num]
                 q_min_expr = poi.ExprBuilder()
@@ -332,8 +339,10 @@ class OptimalPowerFlow:
             cs2_num = network_cache.vsc_converter_stations.index.get_loc(cs2_id)
             row_cs1 = network_cache.vsc_converter_stations.loc[cs1_id]
             row_cs2 = network_cache.vsc_converter_stations.loc[cs2_id]
-            p1_var = variable_context.vsc_cs_p_vars[cs1_num]
-            p2_var = variable_context.vsc_cs_p_vars[cs2_num]
+            cs1_index = variable_context.vsc_cs_num_2_index[cs1_num]
+            cs2_index = variable_context.vsc_cs_num_2_index[cs2_num]
+            p1_var = variable_context.vsc_cs_p_vars[cs1_index]
+            p2_var = variable_context.vsc_cs_p_vars[cs2_index]
             model.add_nl_constraint(
                 function_context.dclf_index,
                 vars=nlfunc.Vars(
@@ -388,15 +397,16 @@ class OptimalPowerFlow:
         # check generator limits
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
             if row.bus_id:
-                p = model.get_value(variable_context.gen_p_vars[gen_num])
+                gen_p_index = variable_context.gen_p_num_2_index[gen_num]
+                p = model.get_value(variable_context.gen_p_vars[gen_p_index])
 
                 p_bounds = Bounds(row.min_p, row.max_p).mirror()
                 if not p_bounds.contains(p):
                     logger.error(f"Generator active power violation: generator '{gen_id}' (num={gen_num}) {p} not in [{-row.max_p}, {-row.min_p}]")
 
-                gen_index = variable_context.gen_q_num_2_index[gen_num]
-                if gen_index != -1:
-                    q = model.get_value(variable_context.gen_q_vars[gen_index])
+                gen_q_index = variable_context.gen_q_num_2_index[gen_num]
+                if gen_q_index != -1: # valid
+                    q = model.get_value(variable_context.gen_q_vars[gen_q_index])
                     q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
                     if not q_bounds.contains(q):
                         logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")

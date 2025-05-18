@@ -35,6 +35,9 @@ class VariableContext:
     branch_num_2_index: list[int]
     gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
+    shunt_num_2_index: list[int]
+    svc_num_2_index: list[int]
+    vsc_cs_num_2_index: list[int]
 
     @staticmethod
     def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
@@ -61,16 +64,34 @@ class VariableContext:
         gen_p_vars = model.add_variables(range(len(gen_p_nums)), name="gen_p")
         gen_q_vars = model.add_variables(range(len(gen_q_nums)), name="gen_q")
 
+        shunt_nums = []
         shunt_count = len(network_cache.shunts)
-        shunt_p_vars = model.add_variables(range(shunt_count), name="shunt_p")
-        shunt_q_vars = model.add_variables(range(shunt_count), name="shunt_q")
+        shunt_num_2_index = [-1] * shunt_count
+        for shunt_num, row in enumerate(network_cache.shunts.itertuples()):
+            if row.bus_id:
+                shunt_num_2_index[shunt_num] = len(shunt_nums)
+                shunt_nums.append(shunt_num)
+        shunt_p_vars = model.add_variables(range(len(shunt_nums)), name="shunt_p")
+        shunt_q_vars = model.add_variables(range(len(shunt_nums)), name="shunt_q")
 
+        svc_nums = []
         svc_count = len(network_cache.static_var_compensators)
-        svc_q_vars = model.add_variables(range(svc_count), name="svc_q")
+        svc_num_2_index = [-1] * svc_count
+        for svc_num, row in enumerate(network_cache.static_var_compensators.itertuples()):
+            if row.bus_id:
+                svc_num_2_index[svc_num] = len(svc_nums)
+                svc_nums.append(svc_num)
+        svc_q_vars = model.add_variables(range(len(svc_nums)), name="svc_q")
 
+        vsc_cs_nums = []
         vsc_cs_count = len(network_cache.vsc_converter_stations)
-        vsc_cs_p_vars = model.add_variables(range(vsc_cs_count), name="vsc_cs_p_vars")
-        vsc_cs_q_vars = model.add_variables(range(vsc_cs_count), name="vsc_cs_q_vars")
+        vsc_cs_num_2_index = [-1] * vsc_cs_count
+        for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
+            if row.bus_id:
+                vsc_cs_num_2_index[vsc_cs_num] = len(vsc_cs_nums)
+                vsc_cs_nums.append(vsc_cs_num)
+        vsc_cs_p_vars = model.add_variables(range(len(vsc_cs_nums)), name="vsc_cs_p_vars")
+        vsc_cs_q_vars = model.add_variables(range(len(vsc_cs_nums)), name="vsc_cs_q_vars")
 
         closed_branch_nums = []
         open_side1_branch_nums = []
@@ -105,7 +126,11 @@ class VariableContext:
                                closed_branch_p2_vars, closed_branch_q2_vars,
                                open_side1_branch_p2_vars, open_side1_branch_q2_vars,
                                open_side2_branch_p1_vars, open_side2_branch_q1_vars,
-                               branch_num_2_index, gen_p_num_2_index, gen_q_num_2_index)
+                               branch_num_2_index,
+                               gen_p_num_2_index, gen_q_num_2_index,
+                               shunt_num_2_index,
+                               svc_num_2_index,
+                               vsc_cs_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
         gen_ids = []
@@ -166,7 +191,8 @@ class VariableContext:
 
                 vsc_cs_p.append(0.0)
 
-                q = model.get_value(self.vsc_cs_q_vars[vsc_cs_num])
+                vsc_cs_index = self.vsc_cs_num_2_index[vsc_cs_num]
+                q = model.get_value(self.vsc_cs_q_vars[vsc_cs_index])
                 target_q = -q
                 vsc_cs_target_q.append(target_q)
                 vsc_cs_q.append(q)
@@ -218,7 +244,8 @@ class VariableContext:
 
                 svc_p.append(0.0)
 
-                q = model.get_value(self.svc_q_vars[svc_num])
+                svc_index = self.svc_num_2_index[svc_num]
+                q = model.get_value(self.svc_q_vars[svc_index])
                 target_q = -q
                 svc_target_q.append(target_q)
                 svc_q.append(q)
@@ -244,8 +271,9 @@ class VariableContext:
         for shunt_num, (shunt_id, row) in enumerate(network_cache.shunts.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                p = model.get_value(self.shunt_p_vars[shunt_num])
-                q = -model.get_value(self.shunt_q_vars[shunt_num])
+                shunt_index = self.shunt_num_2_index[shunt_num]
+                p = -model.get_value(self.shunt_p_vars[shunt_index])
+                q = -model.get_value(self.shunt_q_vars[shunt_index])
             else:
                 p = 0.0
                 q = 0.0

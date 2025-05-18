@@ -114,7 +114,25 @@ def test_metrix_tutorial_six_buses():
     run_opf_then_lf(pp.network.create_metrix_tutorial_six_buses_network())
 
 
-@pytest.mark.skip
 def test_micro_grid_be():
     run_opf_then_lf(pp.network.create_micro_grid_be_network())
 
+
+def test_lille():
+    run_opf_then_lf(pp.network.load('/Users/geo/cases/LILLE.xiidm'))
+
+
+def test_tht_ht():
+    n = pp.network.load('/Users/geo/cases/recollement-auto-20190124-2110-enrichi.xiidm')
+    for extension_name in ['hvdcAngleDroopActivePowerControl', 'hvdcOperatorActivePowerRange', 'standbyAutomaton']:
+        ids = n.get_extensions(extension_name).index.tolist()
+        n.remove_extensions(extension_name=extension_name, ids=ids)
+    n.remove_elements(elements_ids=['BAIXA9.STLL1', 'BAIXA9.STLL2', '.S.LL 7_.STLL_TER_1', '.S.LL 7_.STLL_TER_2', 'BAIXAP7_BAIXA_TER_1', 'BAIXAP7_BAIXA_TER_2'])
+    run_opf_then_lf(n, 4)
+    n.save('/tmp/toto.xiidm')
+    validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True)
+    r = pp.loadflow.run_validation(n, [pp.loadflow.ValidationType.BUSES], validation_parameters)
+    import pandas as pd
+    pd.options.display.max_columns = None
+    pd.options.display.expand_frame_repr = False
+    print(r.buses[r.buses['validated'] == False])
