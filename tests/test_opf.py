@@ -109,3 +109,12 @@ def test_ieee118():
 def test_ieee300():
     run_opf_then_lf(pp.network.create_ieee300())
 
+
+def test_metrix_tutorial_six_buses():
+    run_opf_then_lf(pp.network.create_metrix_tutorial_six_buses_network())
+
+
+@pytest.mark.skip
+def test_micro_grid_be():
+    run_opf_then_lf(pp.network.create_micro_grid_be_network())
+
