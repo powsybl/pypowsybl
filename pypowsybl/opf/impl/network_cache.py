@@ -21,6 +21,7 @@ class NetworkCache:
         self._lines = self._build_lines(network, self.buses)
         self._transformers = self._build_2_windings_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
+        self._dangling_lines = self._build_dangling_lines(network, self.buses)
         self._slack_terminal = self._network.get_extensions('slackTerminal')
 
     @staticmethod
@@ -131,6 +132,11 @@ class NetworkCache:
     def _build_voltage_levels(network: Network) -> DataFrame:
         return network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit', 'nominal_v'])
 
+    @staticmethod
+    def _build_dangling_lines(network: Network, buses: DataFrame):
+        dangling_lines = network.get_dangling_lines(attributes=['bus_id', 'r', 'x', 'g', 'b', 'p0', 'q0', 'paired'])
+        return NetworkCache._filter_injections(dangling_lines, buses)
+
     @property
     def network(self) -> Network:
         return self._network
@@ -178,6 +184,10 @@ class NetworkCache:
     @property
     def hvdc_lines(self) -> DataFrame:
         return self._hvdc_lines
+
+    @property
+    def dangling_lines(self) -> DataFrame:
+        return self._dangling_lines
 
     @property
     def slack_terminal(self) -> DataFrame:
