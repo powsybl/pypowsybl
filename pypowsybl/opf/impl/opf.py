@@ -56,6 +56,7 @@ class OptimalPowerFlow:
         model = Model.build(network_cache, parameters, variable_bounds, constraints)
 
         logger.info("Starting optimization...")
+        model.model.set_model_attribute(poi.ModelAttribute.Silent, True)
         model.model.optimize()
         status = model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
         logger.info(f"Optimization ends with status {status}")

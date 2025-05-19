@@ -33,6 +33,8 @@ class Model:
     @classmethod
     def build(cls, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters,
               variable_bounds: list[VariableBounds], constraints: list[Constraints]) -> 'Model':
+        logger.info("Building model...")
+
         model = ipopt.Model()
 
         # create variables

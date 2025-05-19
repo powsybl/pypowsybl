@@ -49,6 +49,7 @@ class VariableContext:
         gen_q_nums = []
         gen_p_num_2_index = [-1] * gen_count
         gen_q_num_2_index = [-1] * gen_count
+        too_small_q_bounds_generator_ids = []
         for gen_num, row in enumerate(network_cache.generators.itertuples()):
             if row.bus_id:
                 gen_p_num_2_index[gen_num] = len(gen_p_nums)
@@ -56,10 +57,15 @@ class VariableContext:
 
                 q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
                 if network_cache.is_too_small_reactive_power_bounds(q_bounds):
-                    logger.error(f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
+                    too_small_q_bounds_generator_ids.append(row.Index)
+                    logger.log(TRACE_LEVEL, f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
                 else:
                     gen_q_num_2_index[gen_num] = len(gen_q_nums)
                     gen_q_nums.append(gen_num)
+
+        if too_small_q_bounds_generator_ids:
+            logger.warning(f"{len(too_small_q_bounds_generator_ids)} generators have too small reactive power bounds")
+
         gen_p_vars = model.add_variables(range(len(gen_p_nums)), name="gen_p")
         gen_q_vars = model.add_variables(range(len(gen_q_nums)), name="gen_q")
 
