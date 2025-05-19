@@ -10,6 +10,7 @@ import warnings
 import pandas as pd
 from pandas import DataFrame
 from numpy.typing import ArrayLike
+from pypowsybl._pypowsybl import DistributionMode
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
@@ -1058,13 +1059,14 @@ def replace_3_2_windings_transformers_with_3_windings_transformers(network: Netw
                                     None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
 
-def scale_proportional(network: Network, asked: int, injections_ids: List[str], limit_min: int, limit_max: int) -> int:
+def scale_proportional(network: Network, asked: int, distribution_mode: DistributionMode, injections_ids: List[str], limit_min: int, limit_max: int) -> int:
     """
     Creates a generator scalable on the network
 
     Args:
         network: the network to create the injections and scale them on
         asked: the value asked to adjust the scalable active power
+        distribution_mode: parameters
         injections_ids: the ids of the injections
         limit_min : the lower limit of the injections (optional)
         limit_max: the upper limit of the generator (optional)
@@ -1072,4 +1074,4 @@ def scale_proportional(network: Network, asked: int, injections_ids: List[str], 
     Return:
         The actual value of the scalable active power adjustment.
     """
-    return _pp.scale_generator(network._handle, asked, injections_ids, limit_min, limit_max)
+    return _pp.scale_generator(network._handle, asked, distribution_mode, injections_ids, limit_min, limit_max)

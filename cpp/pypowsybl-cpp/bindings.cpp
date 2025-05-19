@@ -1123,7 +1123,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
 
     m.def("scale_proportional", &pypowsybl::scaleProportional, "Scale the given network proportionally.",
-         py::arg("network"), py::arg("asked"), py::arg("injections_ids"), py::arg("limit_min"), py::arg("limit_max"));
+         py::arg("network"), py::arg("asked"), py::arg("distribution_mode"), py::arg("injections_ids"), py::arg("limit_min"), py::arg("limit_max"));
 
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
