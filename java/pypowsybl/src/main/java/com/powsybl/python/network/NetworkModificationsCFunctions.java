@@ -185,13 +185,13 @@ public final class NetworkModificationsCFunctions {
     @CEntryPoint(name = "scaleProportional")
     public static int scaleProportional(IsolateThread thread, ObjectHandle networkHandle,
                                         double asked,
-                                        CCharPointerPointer injectionsIds, int injectionCount,
+                                        CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
                                         ObjectHandle distributionModeHandle,
                                         double limitMin, double limitMax,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> injectionsIdsStringList = toStringList(injectionsIds, injectionCount);
+            List<String> injectionsIdsStringList = toStringList(injectionsIdsPtrPtr, injectionCount);
             List<Injection<?>> injections = new ArrayList<>();
             injectionsIdsStringList.forEach(injection ->
                     injections.add((Injection<?>) network.getConnectable(injection)));
