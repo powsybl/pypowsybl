@@ -405,7 +405,7 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id", "connected", "hvdc_line_id");
         List<Series> allAttributeSeries = createDataFrame(LCC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
@@ -421,7 +421,7 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "loss_factor", "min_q", "max_q", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
-                        "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                        "p", "q", "i", "voltage_level_id", "bus_id", "connected", "hvdc_line_id");
         List<Series> allAttributeSeries = createDataFrame(VSC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)

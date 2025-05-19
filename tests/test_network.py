@@ -325,14 +325,11 @@ def test_vsc_data_frame():
                             columns=['name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v',
                                      'target_q', 'voltage_regulator_on',
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id',
-                                     'connected'],
+                                     'bus_id', 'connected', 'hvdc_line_id'],
                             data=[['VSC1', 1.1, nan, nan, 'CURVE', 400, 500, True, 'VSC1', 10.11, -512.081, 739.27,
-                                   'S1VL2', 'S1VL2_0',
-                                   True],
+                                   'S1VL2', 'S1VL2_0', True, 'HVDC1'],
                                   ['VSC2', 1.1, -400, 500, 'MIN_MAX', 0, 120, False, 'VSC2', -9.89, -120, 170.032,
-                                   'S2VL1', 'S2VL1_0',
-                                   True]])
+                                   'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
 
     stations2 = pd.DataFrame(data=[[300.0, 400.0, 'VSC2'], [1.0, 2.0, 'VSC1']],
@@ -347,13 +344,11 @@ def test_vsc_data_frame():
                                      'target_q', 'voltage_regulator_on',
                                      'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
-                                     'connected'],
+                                     'connected', 'hvdc_line_id'],
                             data=[['VSC1', 1.1, nan, nan, 'CURVE', 300, 400, True, 'VSC2', 10.11, -512.081, 739.27,
-                                   'S1VL2', 'S1VL2_0',
-                                   True],
+                                   'S1VL2', 'S1VL2_0', True, 'HVDC1'],
                                   ['VSC2', 1.1, -350, 400, 'MIN_MAX', 1, 2, False, 'VSC1', -9.89, -120, 170.032,
-                                   'S2VL1', 'S2VL1_0',
-                                   True]])
+                                   'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False, atol=1e-2)
     stations = n.get_vsc_converter_stations(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
@@ -372,9 +367,9 @@ def test_lcc_data_frame():
     stations = n.get_lcc_converter_stations()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id', 'connected'],
-                            data=[['LCC1', 0.6, 1.1, 80.88, nan, nan, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, - 79.12, nan, nan, 'S3VL1', 'S3VL1_0', True]])
+                                     'bus_id', 'connected', 'hvdc_line_id'],
+                            data=[['LCC1', 0.6, 1.1, 80.88, nan, nan, 'S1VL2', 'S1VL2_0', True, 'HVDC2'],
+                                  ['LCC2', 0.6, 1.1, - 79.12, nan, nan, 'S3VL1', 'S3VL1_0', True, 'HVDC2']])
     pd.testing.assert_frame_equal(expected, stations, check_dtype=False)
     n.update_lcc_converter_stations(
         pd.DataFrame(index=['LCC1'],
@@ -383,9 +378,9 @@ def test_lcc_data_frame():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id',
-                                     'bus_id', 'connected'],
-                            data=[['LCC1', 0.7, 1.2, 82, 69, 154.68, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, - 79.12, nan, nan, 'S3VL1', 'S3VL1_0', True]])
+                                     'bus_id', 'connected', 'hvdc_line_id'],
+                            data=[['LCC1', 0.7, 1.2, 82, 69, 154.68, 'S1VL2', 'S1VL2_0', True, 'HVDC2'],
+                                  ['LCC2', 0.6, 1.1, - 79.12, nan, nan, 'S3VL1', 'S3VL1_0', True, 'HVDC2']])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
