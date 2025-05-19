@@ -3,18 +3,18 @@ import logging
 import pyoptinterface as poi
 
 from pypowsybl.network import Network
-from pypowsybl.opf.impl.bounds.ac_vsc_cs_power_bounds import AcVscCsPowerBounds
+from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
 from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
-from pypowsybl.opf.impl.constraints.ac_branch_flow_constraints import AcBranchFlowConstraints
-from pypowsybl.opf.impl.constraints.ac_generator_power_bounds import AcGeneratorPowerBounds
-from pypowsybl.opf.impl.constraints.ac_hvdc_line_constraints import AcHvdcLineConstraints
-from pypowsybl.opf.impl.constraints.ac_power_balance_constraints import AcPowerBalanceConstraints
+from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
+from pypowsybl.opf.impl.constraints.generator_power_bounds import GeneratorPowerBounds
+from pypowsybl.opf.impl.constraints.hvdc_line_constraints import HvdcLineConstraints
+from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
 from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
 from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
-from pypowsybl.opf.impl.model.ac_model import AcModel
-from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 logger = logging.getLogger(__name__)
@@ -37,40 +37,40 @@ logger = logging.getLogger(__name__)
 #
 # export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/mumps/lib:$HOME/ipopt/lib
 #
-class AcOptimalPowerFlow:
+class OptimalPowerFlow:
     def __init__(self, network: Network) -> None:
         self._network = network
 
-    def run(self, parameters: AcOptimalPowerFlowParameters) -> bool:
+    def run(self, parameters: OptimalPowerFlowParameters) -> bool:
         network_cache = NetworkCache(self._network)
 
         variable_bounds = [BusVoltageBounds(),
                            SlackBusAngleBounds(),
-                           AcGeneratorPowerBounds(),
-                           AcVscCsPowerBounds()]
-        constraints = [AcBranchFlowConstraints(),
+                           GeneratorPowerBounds(),
+                           VscCsPowerBounds()]
+        constraints = [BranchFlowConstraints(),
                        ShuntFlowConstraints(),
                        StaticVarCompensatorReactiveLimitsConstraints(),
-                       AcHvdcLineConstraints(),
-                       AcPowerBalanceConstraints()]
-        ac_model = AcModel.build(network_cache, parameters, variable_bounds, constraints)
+                       HvdcLineConstraints(),
+                       PowerBalanceConstraints()]
+        model = Model.build(network_cache, parameters, variable_bounds, constraints)
 
         logger.info("Starting optimization...")
-        ac_model.model.optimize()
-        status = ac_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
+        model.model.optimize()
+        status = model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
         logger.info(f"Optimization ends with status {status}")
 
         # for debugging
-        ac_model.analyze_violations()
+        model.analyze_violations()
 
         # update network
-        ac_model.update_network()
+        model.update_network()
 
         network_cache.network.per_unit = False # FIXME design to improve
 
         return status == poi.TerminationStatusCode.LOCALLY_SOLVED
 
 
-def run_ac(network: Network, parameters: AcOptimalPowerFlowParameters = AcOptimalPowerFlowParameters()) -> bool:
-    opf = AcOptimalPowerFlow(network)
+def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
+    opf = OptimalPowerFlow(network)
     return opf.run(parameters)

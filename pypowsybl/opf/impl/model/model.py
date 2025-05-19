@@ -2,18 +2,18 @@ import logging
 
 from pyoptinterface import ipopt
 
-from pypowsybl.opf.impl.model.ac_constraints import AcConstraints
-from pypowsybl.opf.impl.model.ac_function_context import AcFunctionContext
-from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.model.ac_variable_bounds import AcVariableBounds
-from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.function_context import FunctionContext
+from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 logger = logging.getLogger(__name__)
 
-class AcModel:
-    def __init__(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: AcVariableContext):
+class Model:
+    def __init__(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
         self._network_cache = network_cache
         self._model = model
         self._variable_context = variable_context
@@ -27,23 +27,23 @@ class AcModel:
         return self._model
 
     @property
-    def variable_context(self) -> AcVariableContext:
+    def variable_context(self) -> VariableContext:
         return self._variable_context
 
     @classmethod
-    def build(cls, network_cache: NetworkCache, parameters: AcOptimalPowerFlowParameters,
-              variable_bounds: list[AcVariableBounds], constraints: list[AcConstraints]) -> 'AcModel':
+    def build(cls, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters,
+              variable_bounds: list[VariableBounds], constraints: list[Constraints]) -> 'Model':
         model = ipopt.Model()
 
         # create variables
-        variable_context = AcVariableContext.build(network_cache, model)
+        variable_context = VariableContext.build(network_cache, model)
 
         # variable bounds
         for variable_bounds in variable_bounds:
             variable_bounds.add(parameters, network_cache, variable_context, model)
 
         # register functions
-        function_context = AcFunctionContext.build(model)
+        function_context = FunctionContext.build(model)
 
         # constraints
         for constraint in constraints:
@@ -54,7 +54,7 @@ class AcModel:
         cost = parameters.cost_function.create(network_cache, variable_context)
         model.set_objective(cost)
 
-        return AcModel(network_cache, model, variable_context)
+        return Model(network_cache, model, variable_context)
 
     def update_network(self):
         self.variable_context.update_network(self.network_cache, self.model)

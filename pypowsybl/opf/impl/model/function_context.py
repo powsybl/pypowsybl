@@ -144,7 +144,7 @@ def dc_line_flow(vars, params):
 
 
 @dataclass
-class AcFunctionContext:
+class FunctionContext:
     cbf_index: FunctionIndex
     o1bf_index: FunctionIndex
     o2bf_index: FunctionIndex
@@ -152,10 +152,10 @@ class AcFunctionContext:
     dclf_index: FunctionIndex
 
     @staticmethod
-    def build(model: ipopt.Model) -> 'AcFunctionContext':
+    def build(model: ipopt.Model) -> 'FunctionContext':
         cbf_index = model.register_function(closed_branch_flow)
         o1bf_index = model.register_function(open_side1_branch_flow)
         o2bf_index = model.register_function(open_side2_branch_flow)
         sf_index = model.register_function(shunt_flow)
         dclf_index = model.register_function(dc_line_flow)
-        return AcFunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index, dclf_index)
+        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index, dclf_index)

@@ -4,10 +4,10 @@ import pyoptinterface as poi
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
-from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 
-class AcCostFunction(ABC):
+class CostFunction(ABC):
     def __init__(self, name):
         self._name = name
 
@@ -16,15 +16,15 @@ class AcCostFunction(ABC):
         return self._name
 
     @abstractmethod
-    def create(self, network_cache: NetworkCache, variable_context: AcVariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         pass
 
 
-class MinimalActivePowerCostFunction(AcCostFunction):
+class MinimalActivePowerCostFunction(CostFunction):
     def __init__(self):
         super().__init__('Minimal active power')
 
-    def create(self, network_cache: NetworkCache, variable_context: AcVariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
         for gen_num in range(len(variable_context.gen_p_vars)):
             a, b, c = 0, 1.0, 0  # TODO
@@ -32,22 +32,22 @@ class MinimalActivePowerCostFunction(AcCostFunction):
         return cost
 
 
-class MinimalLossesCostFunction(AcCostFunction):
+class MinimalLossesCostFunction(CostFunction):
     def __init__(self):
         super().__init__('Minimal losses power')
 
-    def create(self, network_cache: NetworkCache, variable_context: AcVariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
         for branch_index in range(len(variable_context.closed_branch_p1_vars)):
             cost += variable_context.closed_branch_p1_vars[branch_index] - variable_context.closed_branch_p2_vars[branch_index]
         return cost
 
 
-class MinimizeAgainstReferenceCostFunction(AcCostFunction):
+class MinimizeAgainstReferenceCostFunction(CostFunction):
     def __init__(self):
         super().__init__('Minimize against reference')
 
-    def create(self, network_cache: NetworkCache, variable_context: AcVariableContext) -> ExprBuilder:
+    def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
         for gen_num, row in enumerate(network_cache.generators.itertuples(index=False)):
             if row.bus_id:

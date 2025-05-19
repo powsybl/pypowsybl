@@ -2,18 +2,18 @@ import logging
 
 from pyoptinterface import ipopt
 
-from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.model.ac_variable_bounds import AcVariableBounds
-from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.util import TRACE_LEVEL
 
 logger = logging.getLogger(__name__)
 
-class AcVscCsPowerBounds(AcVariableBounds):
-    def add(self, parameters: AcOptimalPowerFlowParameters, network_cache: NetworkCache,
-            variable_context: AcVariableContext, model: ipopt.Model):
+class VscCsPowerBounds(VariableBounds):
+    def add(self, parameters: OptimalPowerFlowParameters, network_cache: NetworkCache,
+            variable_context: VariableContext, model: ipopt.Model):
         # VSC converter station active and reactive power bounds
         for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
             if row.bus_id:

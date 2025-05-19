@@ -2,18 +2,18 @@ from math import hypot, atan2
 
 from pyoptinterface import ipopt, nlfunc
 
-from pypowsybl.opf.impl.model.ac_constraints import AcConstraints
-from pypowsybl.opf.impl.model.ac_function_context import AcFunctionContext
-from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.function_context import FunctionContext
+from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 
-class AcBranchFlowConstraints(AcConstraints):
+class BranchFlowConstraints(Constraints):
     @staticmethod
     def _add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
                                r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
-                               variable_context: AcVariableContext, function_context: AcFunctionContext) -> None:
+                               variable_context: VariableContext, function_context: FunctionContext) -> None:
         z = hypot(r, x)
         y = 1.0 / z
         ksi = atan2(r, x)
@@ -104,8 +104,8 @@ class AcBranchFlowConstraints(AcConstraints):
                 eq=0.0,
             )
 
-    def add(self, parameters: AcOptimalPowerFlowParameters, network_cache: NetworkCache,
-            variable_context: AcVariableContext, function_context: AcFunctionContext,
+    def add(self, parameters: OptimalPowerFlowParameters, network_cache: NetworkCache,
+            variable_context: VariableContext, function_context: FunctionContext,
             model: ipopt.Model) -> None:
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2

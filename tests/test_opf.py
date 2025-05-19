@@ -9,8 +9,8 @@ import logging
 import pytest
 
 import pypowsybl as pp
-from pypowsybl.opf.impl.ac_opf import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.bounds import Bounds
+from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.bounds import Bounds
 
 
 @pytest.fixture(autouse=True)
@@ -51,7 +51,7 @@ def run_opf_then_lf(network: pp.network.Network, iteration_count: int = 1):
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
 
-    opf_parameters = AcOptimalPowerFlowParameters()
+    opf_parameters = OptimalPowerFlowParameters()
     assert pp.opf.run_ac(network, opf_parameters)
 
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES

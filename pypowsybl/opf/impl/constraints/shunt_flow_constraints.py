@@ -1,15 +1,15 @@
 from pyoptinterface import ipopt, nlfunc
 
-from pypowsybl.opf.impl.model.ac_constraints import AcConstraints
-from pypowsybl.opf.impl.model.ac_function_context import AcFunctionContext
-from pypowsybl.opf.impl.model.ac_parameters import AcOptimalPowerFlowParameters
-from pypowsybl.opf.impl.model.ac_variable_context import AcVariableContext
+from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.function_context import FunctionContext
+from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 
-class ShuntFlowConstraints(AcConstraints):
-    def add(self, parameters: AcOptimalPowerFlowParameters, network_cache: NetworkCache,
-            variable_context: AcVariableContext, function_context: AcFunctionContext, model: ipopt.Model) -> None:
+class ShuntFlowConstraints(Constraints):
+    def add(self, parameters: OptimalPowerFlowParameters, network_cache: NetworkCache,
+            variable_context: VariableContext, function_context: FunctionContext, model: ipopt.Model) -> None:
         for shunt_num, row in enumerate(network_cache.shunts.itertuples(index=False)):
             g, b, bus_id = row.g, row.b, row.bus_id
             if bus_id:

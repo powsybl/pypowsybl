@@ -1,1 +1,1 @@
-from .impl.ac_opf import AcOptimalPowerFlow, run_ac
+from .impl.opf import OptimalPowerFlow, run_ac
