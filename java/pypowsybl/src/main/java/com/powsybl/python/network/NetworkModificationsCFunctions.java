@@ -186,7 +186,7 @@ public final class NetworkModificationsCFunctions {
     public static int scaleProportional(IsolateThread thread, ObjectHandle networkHandle,
                                         double asked,
                                         CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
-                                        ObjectHandle distributionModeHandle,
+                                        ProportionalScalable.DistributionMode distributionMode,
                                         double limitMin, double limitMax,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -195,7 +195,6 @@ public final class NetworkModificationsCFunctions {
             List<Injection<?>> injections = new ArrayList<>();
             injectionsIdsStringList.forEach(injection ->
                     injections.add((Injection<?>) network.getConnectable(injection)));
-            ProportionalScalable.DistributionMode distributionMode = ObjectHandles.getGlobal().get(distributionModeHandle);
             ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
             return (int) proportionalScalable.scale(network, asked);
         });

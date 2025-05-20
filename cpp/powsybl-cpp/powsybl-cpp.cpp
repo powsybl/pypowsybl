@@ -1443,7 +1443,7 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
 
 int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, std::vector<std::string>& injectionsIds, const int limitMin, const int limitMax) {
     ToCharPtrPtr injectionsIdsPtr(injectionsIds);
-    return pypowsybl::PowsyblCaller::get()->callJava<int>(::scaleProportional, network, asked, distributionMode, injectionsIdsPtr.get(), limitMin, limitMax);
+    return pypowsybl::PowsyblCaller::get()->callJava<int>(::scaleProportional, network, asked, distributionMode, injectionsIdsPtr.get(), injectionsIds.size(), limitMin, limitMax);
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
