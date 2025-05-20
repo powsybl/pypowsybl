@@ -12,7 +12,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 logger = logging.getLogger(__name__)
 
-class Model:
+class OpfModel:
     def __init__(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
         self._network_cache = network_cache
         self._model = model
@@ -32,7 +32,7 @@ class Model:
 
     @classmethod
     def build(cls, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters,
-              variable_bounds: list[VariableBounds], constraints: list[Constraints]) -> 'Model':
+              variable_bounds: list[VariableBounds], constraints: list[Constraints]) -> 'OpfModel':
         logger.info("Building model...")
 
         model = ipopt.Model()
@@ -56,7 +56,7 @@ class Model:
         cost = parameters.cost_function.create(network_cache, variable_context)
         model.set_objective(cost)
 
-        return Model(network_cache, model, variable_context)
+        return OpfModel(network_cache, model, variable_context)
 
     def update_network(self):
         self.variable_context.update_network(self.network_cache, self.model)

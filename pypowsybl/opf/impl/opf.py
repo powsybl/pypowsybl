@@ -13,7 +13,7 @@ from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanc
 from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
 from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
-from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
@@ -53,19 +53,19 @@ class OptimalPowerFlow:
                        StaticVarCompensatorReactiveLimitsConstraints(),
                        HvdcLineConstraints(),
                        PowerBalanceConstraints()]
-        model = Model.build(network_cache, parameters, variable_bounds, constraints)
+        opf_model = OpfModel.build(network_cache, parameters, variable_bounds, constraints)
 
         logger.info("Starting optimization...")
-        model.model.set_model_attribute(poi.ModelAttribute.Silent, True)
-        model.model.optimize()
-        status = model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
+        opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, True)
+        opf_model.model.optimize()
+        status = opf_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
         logger.info(f"Optimization ends with status {status}")
 
         # for debugging
-        model.analyze_violations()
+        opf_model.analyze_violations()
 
         # update network
-        model.update_network()
+        opf_model.update_network()
 
         network_cache.network.per_unit = False # FIXME design to improve
 
