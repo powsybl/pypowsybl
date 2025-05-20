@@ -1546,23 +1546,16 @@ public final class NetworkDataframes {
     }
 
     private static double perUnitLimitValue(NetworkDataframeContext context, TemporaryLimitData limit) {
-        switch (limit.getType()) {
-            case CURRENT -> {
-                return perUnitI(context, limit.getValue(), limit.getPerUnitingNominalV());
-            }
-            case ACTIVE_POWER, APPARENT_POWER -> {
-                return perUnitPQ(context, limit.getValue());
-            }
-            case VOLTAGE -> {
-                return perUnitV(context, limit.getValue(), limit.getPerUnitingNominalV());
-            }
-            case VOLTAGE_ANGLE -> {
-                return perUnitAngle(context, limit.getValue());
-            }
-            default -> {
-                return 0.0;
-            }
-        }
+        return switch (limit.getType()) {
+            case CURRENT ->
+                perUnitI(context, limit.getValue(), limit.getPerUnitingNominalV());
+            case ACTIVE_POWER, APPARENT_POWER ->
+                perUnitPQ(context, limit.getValue());
+            case VOLTAGE ->
+                perUnitV(context, limit.getValue(), limit.getPerUnitingNominalV());
+            case VOLTAGE_ANGLE ->
+                perUnitAngle(context, limit.getValue());
+        };
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
