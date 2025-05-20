@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class VariableContext:
-    ph_vars: Any
     v_vars: Any
+    ph_vars: Any
     gen_p_vars: Any
     gen_q_vars: Any
     shunt_p_vars: Any
@@ -31,12 +31,19 @@ class VariableContext:
     open_side1_branch_q2_vars: Any
     open_side2_branch_p1_vars: Any
     open_side2_branch_q1_vars: Any
+    dl_v_vars: Any
+    dl_ph_vars: Any
+    dl_branch_p1_vars: Any
+    dl_branch_p2_vars: Any
+    dl_branch_q1_vars: Any
+    dl_branch_q2_vars: Any
     branch_num_2_index: list[int]
     gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
     shunt_num_2_index: list[int]
     svc_num_2_index: list[int]
     vsc_cs_num_2_index: list[int]
+    dl_num_2_index: list[int]
 
     @staticmethod
     def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
@@ -122,7 +129,22 @@ class VariableContext:
         open_side2_branch_p1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_p1')
         open_side2_branch_q1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_q1')
 
-        return VariableContext(ph_vars, v_vars,
+        dl_count = len(network_cache.dangling_lines)
+        dl_nums = []
+        dl_num_2_index = [-1] * dl_count
+        for dl_num, row in enumerate(network_cache.dangling_lines.itertuples()):
+            if row.bus_id:
+                dl_num_2_index[dl_num] = len(dl_nums)
+                dl_nums.append(dl_num)
+
+        dl_v_vars = model.add_variables(range(len(dl_nums)), name="dl_v")
+        dl_ph_vars = model.add_variables(range(len(dl_nums)), name="dl_ph")
+        dl_branch_p1_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_p1")
+        dl_branch_p2_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_p2")
+        dl_branch_q1_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_q1")
+        dl_branch_q2_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_q2")
+
+        return VariableContext(v_vars, ph_vars,
                                gen_p_vars, gen_q_vars,
                                shunt_p_vars, shunt_q_vars,
                                svc_q_vars,
@@ -131,11 +153,15 @@ class VariableContext:
                                closed_branch_p2_vars, closed_branch_q2_vars,
                                open_side1_branch_p2_vars, open_side1_branch_q2_vars,
                                open_side2_branch_p1_vars, open_side2_branch_q1_vars,
+                               dl_v_vars, dl_ph_vars,
+                               dl_branch_p1_vars, dl_branch_p2_vars,
+                               dl_branch_q1_vars, dl_branch_q2_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
                                shunt_num_2_index,
                                svc_num_2_index,
-                               vsc_cs_num_2_index)
+                               vsc_cs_num_2_index,
+                               dl_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
         gen_ids = []

@@ -4,9 +4,11 @@ import pyoptinterface as poi
 
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
+from pypowsybl.opf.impl.bounds.dangling_line_voltage_bounds import DanglingLineVoltageBounds
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
+from pypowsybl.opf.impl.constraints.dangling_line_flow_constraints import DanglingLineFlowConstraints
 from pypowsybl.opf.impl.constraints.generator_power_bounds import GeneratorPowerBounds
 from pypowsybl.opf.impl.constraints.hvdc_line_constraints import HvdcLineConstraints
 from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
@@ -49,19 +51,21 @@ class OptimalPowerFlow:
         variable_bounds = [BusVoltageBounds(),
                            SlackBusAngleBounds(),
                            GeneratorPowerBounds(),
-                           VscCsPowerBounds()]
+                           VscCsPowerBounds(),
+                           DanglingLineVoltageBounds()]
         constraints = [BranchFlowConstraints(),
                        ShuntFlowConstraints(),
                        StaticVarCompensatorReactiveLimitsConstraints(),
                        HvdcLineConstraints(),
-                       PowerBalanceConstraints()]
+                       PowerBalanceConstraints(),
+                       DanglingLineFlowConstraints()]
         cost_function = MinimizeAgainstReferenceCostFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                            parameters.twt_split_shunt_admittance)
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
         logger.info("Starting optimization...")
-        opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, True)
+        opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, False)
         opf_model.model.optimize()
         status = opf_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
         logger.info(f"Optimization ends with status {status}")

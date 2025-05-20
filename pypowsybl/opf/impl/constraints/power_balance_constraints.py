@@ -84,6 +84,24 @@ class PowerBalanceConstraints(Constraints):
                 bus_p_gen[bus_num].append(variable_context.vsc_cs_p_vars[vsc_cs_index])
                 bus_q_gen[bus_num].append(variable_context.vsc_cs_q_vars[vsc_cs_index])
 
+        # dangling lines
+        dl_count = len(variable_context.dl_v_vars)
+        dl_bus_p_gen = [[] for _ in range(dl_count)]
+        dl_bus_q_gen = [[] for _ in range(dl_count)]
+        dl_bus_p_load = [0.0 for _ in range(dl_count)]
+        dl_bus_q_load = [0.0 for _ in range(dl_count)]
+        for dl_num, row in enumerate(network_cache.dangling_lines.itertuples(index=False)):
+            bus_id = row.bus_id
+            if bus_id:
+                dl_index = variable_context.dl_num_2_index[dl_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                bus_p_gen[bus_num].append(variable_context.dl_branch_p1_vars[dl_index])
+                bus_q_gen[bus_num].append(variable_context.dl_branch_q1_vars[dl_index])
+                dl_bus_p_gen[dl_index].append(variable_context.dl_branch_p2_vars[dl_index])
+                dl_bus_q_gen[dl_index].append(variable_context.dl_branch_q2_vars[dl_index])
+                dl_bus_p_load[dl_index] -= row.p0
+                dl_bus_q_load[dl_index] -= row.q0
+
         for bus_num in range(bus_count):
             bus_p_expr = poi.ExprBuilder()
             bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
@@ -93,4 +111,15 @@ class PowerBalanceConstraints(Constraints):
             bus_q_expr = poi.ExprBuilder()
             bus_q_expr += poi.quicksum(bus_q_gen[bus_num])
             bus_q_expr -= bus_q_load[bus_num]
+            model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
+
+        for dl_index in range(dl_count):
+            bus_p_expr = poi.ExprBuilder()
+            bus_p_expr += poi.quicksum(dl_bus_p_gen[dl_index])
+            bus_p_expr -= dl_bus_p_load[dl_index]
+            model.add_quadratic_constraint(bus_p_expr, poi.Eq, 0.0)
+
+            bus_q_expr = poi.ExprBuilder()
+            bus_q_expr += poi.quicksum(dl_bus_q_gen[dl_index])
+            bus_q_expr -= dl_bus_q_load[dl_index]
             model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
