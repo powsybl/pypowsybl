@@ -5458,9 +5458,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 >>> network.add_elements_properties(id='GENERATOR-1', prop1='value1', prop2='value2')
                 >>> network.get_generators(attributes=['prop1', 'prop2'], id='GENERATOR-1')
-                         toto
+                              prop1  prop2
                 id
-                VLEJUP7  tutu
+                GENERATOR-1  value1 value2
 
             You can also update multiple elements at once, for example with a dataframe:
 
