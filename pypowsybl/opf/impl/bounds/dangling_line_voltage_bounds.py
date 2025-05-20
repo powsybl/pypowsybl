@@ -22,4 +22,4 @@ class DanglingLineVoltageBounds(VariableBounds):
                 dl_index = variable_context.dl_num_2_index[dl_num]
                 model.set_variable_bounds(variable_context.dl_v_vars[dl_index],
                                           *Bounds.fix(row.Index, v_bounds.min_value, v_bounds.max_value))
-                model.set_variable_start(variable_context.dl_ph_vars[dl_index], 1.0)
+                model.set_variable_start(variable_context.dl_v_vars[dl_index], 1.0)
