@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(pypowsybl)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -37,6 +37,7 @@ endif()
 
 if(BUILD_PYTHON_BINDINGS)
   #Build pythin bindings
-  add_subdirectory(lib/pybind11)
+  set(PYBIND11_FINDPYTHON ON)
+  find_package(pybind11 CONFIG REQUIRED)
   add_subdirectory(pypowsybl-cpp)
 endif()

@@ -4,6 +4,7 @@ on:
   release:
     types:
       - created
+      - released
 
 permissions:
   contents: write
@@ -80,7 +81,13 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-12,
+            os: macos-13,
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-14,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
           }
           - {
             name: windows,

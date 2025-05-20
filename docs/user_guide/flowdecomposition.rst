@@ -116,10 +116,10 @@ As we cannot set a PST on an interconnection, we set an equivalent null load cal
     id                                                                                                                                                                                        
     BLOAD 11 BLOAD 12 2       0.5  1.5  0.0002  0.00015     400.0     400.0      NaN NaN NaN NaN NaN NaN NaN           BLOAD 1           BLOAD 1  BLOAD 1_1  BLOAD 1_0        True        True
     >>> network.get_phase_tap_changers()
-                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
-    id                                                                                                                                      
-    BLOAD 11 BLOAD 12 2    0      -16        16          33       False       FIXED_TAP               NaN              NaN
-    
+                        side  tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
+    id
+    BLOAD 11 BLOAD 12 2         0      -16        16          33       False       FIXED_TAP               NaN              NaN
+
 Neutral tap position
 ^^^^^^^^^^^^^^^^^^^^
 
@@ -154,9 +154,9 @@ Here are the results with non-neutral tap position.
     >>> network = pp.network.load(str(DATA_DIR.joinpath('NETWORK_PST_FLOW_WITH_COUNTRIES.uct')))
     >>> network.update_phase_tap_changers(id="BLOAD 11 BLOAD 12 2", tap=1)
     >>> network.get_phase_tap_changers()
-                             tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
-    id                                                                                                                                      
-    BLOAD 11 BLOAD 12 2    1      -16        16          33       False       FIXED_TAP               NaN              NaN
+                        side  tap  low_tap  high_tap  step_count  regulating regulation_mode  regulation_value  target_deadband regulating_bus_id
+    id
+    BLOAD 11 BLOAD 12 2         1      -16        16          33       False       FIXED_TAP               NaN              NaN
     >>> flow_decomposition = pp.flowdecomposition.create_decomposition().add_monitored_elements(['FGEN  11 BLOAD 11 1', 'FGEN  11 BLOAD 12 1'])
     >>> flow_decomposition_dataframe = flow_decomposition.run(network)
     >>> flow_decomposition_dataframe
@@ -337,10 +337,10 @@ You can mix everything together as you like.
                                                                   branch_id                           contingency_id country1 country2  ac_reference_flow1  ac_reference_flow2  dc_reference_flow  commercial_flow  x_node_flow  pst_flow  internal_flow  loop_flow_from_be  loop_flow_from_fr
     xnec_id
     BLOAD 11 BLOAD 12 2                                 BLOAD 11 BLOAD 12 2                                                BE       BE            3.005666           28.997253              -25.0        28.999015          0.0      -0.0      -1.999508           0.000000          -1.999508
-    BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 11 1             BLOAD 11 BLOAD 12 2                      FGEN  11 BLOAD 11 1       BE       BE           32.000000            0.000000               -0.0         0.000000          0.0      -0.0       0.000000           0.000000           0.000000
+    BLOAD 11 BLOAD 12 2_FGEN  11 BLOAD 11 1             BLOAD 11 BLOAD 12 2                      FGEN  11 BLOAD 11 1       BE       BE           32.000000            0.000000               -0.0         0.000000          0.0       0.0       0.000000           0.000000          -0.000000
     FGEN  11 BLOAD 11 1                                 FGEN  11 BLOAD 11 1                                                FR       BE           29.003009          -28.997170               25.0        28.999015          0.0      -0.0       0.000000          -1.999508          -1.999508
     FGEN  11 BLOAD 12 1                                 FGEN  11 BLOAD 12 1                                                FR       BE           87.009112          -86.982833               75.0        86.997046          0.0       0.0       0.000000          -5.998523          -5.998523
-    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1             FGEN  11 BLOAD 12 1                      FGEN  11 BLOAD 11 1       FR       BE          116.016179         -115.969462              100.0       115.996062          0.0      -0.0       0.000000          -7.998031          -7.998031
+    FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1             FGEN  11 BLOAD 12 1                      FGEN  11 BLOAD 11 1       FR       BE          116.016179         -115.969462              100.0       115.996062          0.0       0.0       0.000000          -7.998031          -7.998031
     FGEN  11 BLOAD 12 1_FGEN  11 BLOAD 11 1_BLOAD 1...  FGEN  11 BLOAD 12 1  FGEN  11 BLOAD 11 1_BLOAD 11 BLOAD 12 2       FR       BE          100.034531          -99.999797              100.0       115.996062          0.0       0.0       0.000000          -7.998031          -7.998031
 
 Note: if one of our xnec is missing, it might be caused by a zero MW DC reference flow, you can show them by reducing the sensitivity-epsilon as bone before.  

@@ -53,7 +53,8 @@ class NodeBreakerTopology:
 
         The dataframe includes the following columns:
 
-        - **connectable_id**: Connected element, if any.
+        - **connectable_id**: Connected element ID, if any.
+        - **connectable_type**: Connected element type, if any.
 
         This dataframe is indexed by the id of the nodes.
         """
@@ -76,7 +77,10 @@ class NodeBreakerTopology:
         Representation of the topology as a networkx graph.
         """
         graph = _nx.Graph()
-        graph.add_nodes_from(self._nodes.index.tolist())
-        graph.add_edges_from(self._switchs[['node1', 'node2']].values.tolist())
+        for (index, row) in self.nodes.iterrows():
+            graph.add_node(index, connectable_id=row['connectable_id'], connectable_type=row['connectable_type'])
+        for (index, row) in self._switchs.iterrows():
+            graph.add_edge(row['node1'], row['node2'], id=index, name=row['name'], kind=row['kind'],
+                           open=row['open'], retained=row['retained'])
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
         return graph

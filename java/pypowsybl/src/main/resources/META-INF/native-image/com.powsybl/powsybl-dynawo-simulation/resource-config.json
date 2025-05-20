@@ -1,0 +1,8 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\QMETA-INF/services/com.powsybl.dynamicsimulation.DynamicSimulationProvider\\E"},
+    {"pattern":"\\QMETA-INF/services/com.powsybl.dynawo.builders.ModelConfigLoader\\E"},
+    {"pattern":"\\Qmodels.json\\E"}
+  ]}
+}

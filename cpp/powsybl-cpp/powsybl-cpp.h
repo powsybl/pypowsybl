@@ -361,6 +361,7 @@ class SensitivityAnalysisParameters {
 public:
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
+    void load_to_c_struct(sensitivity_analysis_parameters& params) const;
 
     LoadFlowParameters loadflow_parameters;
     std::vector<std::string> provider_parameters_keys;
@@ -436,6 +437,7 @@ public:
     int scaling_factor;
     double radius_factor;
     EdgeInfoType edge_info_displayed;
+    bool voltage_level_details;
 };
 
 //=======short-circuit analysis==========
@@ -469,6 +471,109 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+// RAO
+enum ObjectiveFunctionType {
+    SECURE_FLOW = 0,
+    MAX_MIN_MARGIN,
+    MAX_MIN_RELATIVE_MARGIN,
+    MIN_COST
+};
+
+enum Unit {
+    AMPERE = 0,
+    DEGREE,
+    MEGAWATT,
+    KILOVOLT,
+    PERCENT_IMAX,
+    TAP,
+    SECTION_COUNT
+};
+
+enum Solver {
+    CBC,
+    SCIP,
+    XPRESS
+};
+
+enum PstModel {
+    CONTINUOUS,
+    APPROXIMATED_INTEGERS
+};
+
+enum class RaRangeShrinking {
+    DISABLED,
+    ENABLED,
+    ENABLED_IN_FIRST_PRAO_AND_CRAO
+};
+
+enum class ExecutionCondition {
+    DISABLED,
+    POSSIBLE_CURATIVE_IMPROVEMENT,
+    COST_INCREASE
+};
+
+class RaoParameters {
+public:
+    RaoParameters(rao_parameters* src);
+    std::shared_ptr<rao_parameters> to_c_struct() const;
+    void load_to_c_struct(rao_parameters& params) const;
+
+    // Objective function parameters
+    ObjectiveFunctionType objective_function_type;
+    Unit unit;
+    bool enforce_curative_security;
+    double curative_min_obj_improvement;
+
+    // range action solver
+    Solver solver;
+    double relative_mip_gap;
+    std::string solver_specific_parameters;
+
+    // range action optimization parameters
+    double pst_ra_min_impact_threshold;
+    double hvdc_ra_min_impact_threshold;
+    double injection_ra_min_impact_threshold;
+    int max_mip_iterations;
+    double pst_sensitivity_threshold;
+    double hvdc_sensitivity_threshold;
+    double injection_ra_sensitivity_threshold;
+    PstModel pst_model;
+    RaRangeShrinking ra_range_shrinking;
+
+    // topo optimization parameters
+    int max_preventive_search_tree_depth;
+    int max_auto_search_tree_depth;
+    int max_curative_search_tree_depth;
+    std::vector<std::vector<std::string>> predefined_combinations;
+    // Missing predefinedCombinations (list of list of string..)
+    double relative_min_impact_threshold;
+    double absolute_min_impact_threshold;
+    bool skip_actions_far_from_most_limiting_element;
+    int max_number_of_boundaries_for_skipping_actions;
+
+    // Multithreading parameters
+    int available_cpus;
+
+    // Second preventive rao parameters
+    ExecutionCondition execution_condition;
+    bool re_optimize_curative_range_actions;
+    bool hint_from_first_preventive_rao;
+
+    // Not optimized cnec parameters
+    bool do_not_optimize_curative_cnecs_for_tsos_without_cras;
+
+    // Load flow and sensitivity parameters
+    std::string load_flow_provider;
+    SensitivityAnalysisParameters sensitivity_parameters;
+    std::string sensitivity_provider;
+    double sensitivity_failure_overcost;
+
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
+RaoParameters* createRaoParameters();
+
 char* copyStringToCharPtr(const std::string& str);
 char** copyVectorStringToCharPtrPtr(const std::vector<std::string>& strings);
 int* copyVectorInt(const std::vector<int>& ints);
@@ -480,6 +585,8 @@ void deleteCharPtrPtr(char** charPtrPtr, int length);
 
 void init(std::function <void(GraalVmGuard* guard, exception_handler* exc)> preJavaCall,
           std::function <void()> postJavaCallls);
+
+void logMaxMemory();
 
 void setJavaLibraryPath(const std::string& javaLibraryPath);
 
@@ -537,6 +644,8 @@ SeriesArray* createExporterParametersSeriesArray(const std::string& format);
 
 std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
+bool isNetworkLoadable(const std::string& file);
+
 JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
@@ -556,6 +665,8 @@ SecurityAnalysisParameters* createSecurityAnalysisParameters();
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider);
 
 SensitivityAnalysisParameters* createSensitivityAnalysisParameters();
+
+SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(sensitivity_analysis_parameters* parameters_ptr);
 
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 
@@ -579,17 +690,21 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
-void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles);
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
 
-std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters);
+std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
 
 JavaHandle createSecurityAnalysis();
 
 void addContingency(const JavaHandle& analysisContext, const std::string& contingencyId, const std::vector<std::string>& elementsIds);
+
+void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
 
@@ -608,6 +723,9 @@ void addPhaseTapChangerPositionAction(const JavaHandle& analysisContext, const s
 void addRatioTapChangerPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& transformerId, bool isRelative, int tapPosition, ThreeSide side);
 
 void addShuntCompensatorPositionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& shuntId, int sectionCount);
+
+void addTerminalsConnectionAction(const JavaHandle& analysisContext, const std::string& actionId, const std::string& elementId,
+                                       ThreeSide side, bool opening);
 
 void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
                          condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
@@ -766,22 +884,27 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop);
+JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle* reportNode);
 
-// timeseries/curves mapping
-void addCurve(JavaHandle curveMappingHandle, std::string dynamicId, std::string variable);
+// timeseries mapping
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
 
 // events mapping
-void addEventDisconnection(const JavaHandle& eventMappingHandle, const std::string& staticId, double eventTime, int disconnectOnly);
+void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
 
 // dynamic model mapping
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes);
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType);
+std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 
 // results
-std::string getDynamicSimulationResultsStatus(JavaHandle dynamicSimulationResultsHandle);
+DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
+std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
 SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
 std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getFinalStateValues(JavaHandle resultHandle);
+SeriesArray* getTimeline(JavaHandle resultHandle);
 
 //=======END OF dynamic modeling for dynawo package==========
 
@@ -829,6 +952,8 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
+void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
+
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
 std::vector<std::string> getShortCircuitAnalysisProviderNames();
@@ -842,6 +967,25 @@ SeriesArray* getFaultResults(const JavaHandle& shortCircuitAnalysisResult, bool 
 SeriesArray* getFeederResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
 SeriesArray* getShortCircuitLimitViolations(const JavaHandle& shortCircuitAnalysisResult);
 SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisResult, bool withFortescueResult);
+
+// OpenRao
+JavaHandle createRao();
+JavaHandle getCrac(const JavaHandle& raoContext);
+RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
+JavaHandle createDefaultRaoParameters();
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters);
+JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
+JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
+
+JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, bool checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
+void freeGrid2opBackend(const JavaHandle& backendHandle);
+std::vector<std::string> getGrid2opStringValue(const JavaHandle& backendHandle, Grid2opStringValueType valueType);
+array* getGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opIntegerValueType valueType);
+array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValueType valueType);
+void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
+void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
+bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
 
 }
 #endif //PYPOWSYBL_H

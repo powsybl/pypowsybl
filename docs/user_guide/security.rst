@@ -99,9 +99,22 @@ Operator strategies and remedial actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pypowsybl security analysis support operator strategies and remedial actions definition.
+
 You can define several types of actions by calling the add_XXX_action API.
 All actions need a unique id to be referenced later at the operator strategy creation stage.
-The following example define a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
+
+The supported actions in PyPowsybl are listed here:
+
+- `switch`, to open or close a switch
+- `phase_tap_changer_position`, to change the tap position of a phase tap changer
+- `ratio_tap_changer_position`, to change the tap position of a ratio tap changer
+- `load_active_power`, to change the active power of a load
+- `load_reactive_power`, to change the reactive power of a load
+- `shunt_compensator_position`, to change the section of a shunt compensator
+- `generator_active_power`, to modify the generator active power
+- `terminals_connection`, to connect/disconnect one or multiple sides of a network element
+
+The following example defines a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -131,3 +144,34 @@ The following operator strategy define the application of the switch action 'Swi
     240.00360040333226
 
 Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.
+
+Adding input data from JSON files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is possible to add the input data of a security analysis using JSON files.
+For now, only the contingencies can be added this way, using the `add_contingencies_from_json_file` method.
+An example of a valid JSON contingency file is the following :
+
+.. code-block:: JSON
+
+    {
+      "type" : "default",
+      "version" : "1.0",
+      "name" : "list",
+      "contingencies" : [ {
+        "id" : "contingency",
+        "elements" : [ {
+          "id" : "NHV1_NHV2_1",
+          "type" : "BRANCH"
+        }, {
+          "id" : "NHV1_NHV2_2",
+          "type" : "BRANCH"
+        } ]
+      }, {
+        "id" : "contingency2",
+        "elements" : [ {
+          "id" : "GEN",
+          "type" : "GENERATOR"
+        } ]
+      } ]
+    }

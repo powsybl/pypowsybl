@@ -6,10 +6,11 @@
 #
 from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
+from pypowsybl.report import ReportNode
 from .event_mapping import EventMapping
 from .model_mapping import ModelMapping
 from .simulation_result import SimulationResult
-from .curve_mapping import CurveMapping
+from .output_variable_mapping import OutputVariableMapping
 
 
 class Simulation:  # pylint: disable=too-few-public-methods
@@ -20,9 +21,10 @@ class Simulation:  # pylint: disable=too-few-public-methods
             network: Network,
             model_mapping: ModelMapping,
             event_mapping: EventMapping,
-            timeseries_mapping: CurveMapping,
+            timeseries_mapping: OutputVariableMapping,
             start: int,
             stop: int,
+            report_node: ReportNode = None
             ) -> SimulationResult:
         """Run the dynawo simulation"""
         return SimulationResult(
@@ -32,5 +34,7 @@ class Simulation:  # pylint: disable=too-few-public-methods
                 model_mapping._handle, # pylint: disable=protected-access
                 event_mapping._handle, # pylint: disable=protected-access
                 timeseries_mapping._handle, # pylint: disable=protected-access
-                start, stop)
+                start,
+                stop,
+                None if report_node is None else report_node._report_node) # pylint: disable=protected-access
         )

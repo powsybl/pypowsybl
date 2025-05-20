@@ -527,16 +527,16 @@ def test_add_non_linear_shunt_bay():
     assert shunt.b == 2
 
     model1 = n.get_non_linear_shunt_compensator_sections().loc['shunt1']
-    section1 = model1.loc[0]
-    section2 = model1.loc[1]
+    section1 = model1.loc[1]
+    section2 = model1.loc[2]
     assert section1.g == 1
     assert section1.b == 2
     assert section2.g == 3
     assert section2.b == 4
 
     model2 = n.get_non_linear_shunt_compensator_sections().loc['shunt2']
-    section1 = model2.loc[0]
-    section2 = model2.loc[1]
+    section1 = model2.loc[1]
+    section2 = model2.loc[2]
     assert section1.g == 5
     assert section1.b == 6
     assert section2.g == 7
@@ -581,16 +581,16 @@ def test_add_non_linear_shunt_bay_bus_breaker():
     assert shunt.b == 2
 
     model1 = n.get_non_linear_shunt_compensator_sections().loc['shunt1']
-    section1 = model1.loc[0]
-    section2 = model1.loc[1]
+    section1 = model1.loc[1]
+    section2 = model1.loc[2]
     assert section1.g == 1
     assert section1.b == 2
     assert section2.g == 3
     assert section2.b == 4
 
     model2 = n.get_non_linear_shunt_compensator_sections().loc['shunt2']
-    section1 = model2.loc[0]
-    section2 = model2.loc[1]
+    section1 = model2.loc[1]
+    section2 = model2.loc[2]
     assert section1.g == 5
     assert section1.b == 6
     assert section2.g == 7
@@ -1481,3 +1481,24 @@ def test_empty_load_bay_segv():
                       data=[])
     pp.network.create_load_bay(network=n, df=df, raise_exception=True)
     assert len(n.get_loads()) == 6 # no crash and no network change
+
+def test_split_or_merge_transformers():
+    n = pp.network.create_micro_grid_be_network()
+    assert len(n.get_3_windings_transformers()) == 1
+    assert len(n.get_2_windings_transformers()) == 3
+
+    #Modify only specified
+    pp.network.replace_3_windings_transformers_with_3_2_windings_transformers(n, "84ed55f4-61f5-4d9d-8755-bba7b877a246")
+    assert len(n.get_3_windings_transformers()) == 0
+    assert len(n.get_2_windings_transformers()) == 6
+    pp.network.replace_3_2_windings_transformers_with_3_windings_transformers(n, "84ed55f4-61f5-4d9d-8755-bba7b877a246-Leg1")
+    assert len(n.get_3_windings_transformers()) == 1
+    assert len(n.get_2_windings_transformers()) == 3
+
+    #Modify all
+    pp.network.replace_3_windings_transformers_with_3_2_windings_transformers(n)
+    assert len(n.get_3_windings_transformers()) == 0
+    assert len(n.get_2_windings_transformers()) == 6
+    pp.network.replace_3_2_windings_transformers_with_3_windings_transformers(n)
+    assert len(n.get_3_windings_transformers()) == 1
+    assert len(n.get_2_windings_transformers()) == 3

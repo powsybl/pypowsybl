@@ -18,6 +18,7 @@ Following methods may be used to create a new network instance:
    :toctree: api/
    :nosignatures:
 
+   is_loadable
    load
    load_from_string
    load_from_binary_buffer
@@ -160,6 +161,7 @@ Network elements can be modified using dataframes:
    Network.update_switches
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.get_elements_properties
    Network.add_elements_properties
    Network.remove_elements_properties
    Network.add_aliases

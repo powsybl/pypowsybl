@@ -43,6 +43,7 @@ from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
 from .nad_parameters import NadParameters
+from .nad_profile import NadProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
@@ -368,7 +369,9 @@ class Network:  # pylint: disable=too-many-public-methods
                                    depth: int = 0, high_nominal_voltage_bound: float = -1,
                                    low_nominal_voltage_bound: float = -1,
                                    nad_parameters: NadParameters = None,
-                                   metadata_file: PathOrStr = None) -> None:
+                                   metadata_file: PathOrStr = None,
+                                   fixed_positions: Optional[DataFrame] = None,
+                                   nad_profile: NadProfile = None) -> None:
         """
         Create a network area diagram in SVG format and write it to a file.
 
@@ -380,6 +383,8 @@ class Network:  # pylint: disable=too-many-public-methods
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
+            fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
+            nad_profile: parameters to customize the network area diagram
         """
         svg_file = path_to_str(svg_file)
         if voltage_level_ids is None:
@@ -388,11 +393,30 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = [voltage_level_ids]
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters()  # pylint: disable=protected-access
         _pp.write_network_area_diagram_svg(self._handle, svg_file, '' if metadata_file is None else path_to_str(metadata_file),
-                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p)
+                                           voltage_level_ids, depth, high_nominal_voltage_bound, low_nominal_voltage_bound, nad_p,
+                                           None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
+                                           None if nad_profile is None else nad_profile._create_nad_branch_labels_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_three_wt_labels_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_bus_descriptions_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_bus_node_styles_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_edge_styles_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_three_wt_styles_c_dataframe()) # pylint: disable=protected-access
+
+    def _create_nad_positions_c_dataframe(self, df: DataFrame) -> _pp.Dataframe:
+        nad_positions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('x',1,False,False,False),
+                  _pp.SeriesMetadata('y',1,False,False,False),
+                  _pp.SeriesMetadata('legend_shift_x',1,False,False,False),
+                  _pp.SeriesMetadata('legend_shift_y',1,False,False,False),
+                  _pp.SeriesMetadata('legend_connection_shift_x',1,False,False,False),
+                  _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False)]
+        return _create_c_dataframe(df, nad_positions_metadata)
 
     def get_network_area_diagram(self, voltage_level_ids: Union[str, List[str]] = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
-                                 nad_parameters: NadParameters = None) -> Svg:
+                                 nad_parameters: NadParameters = None, fixed_positions: Optional[DataFrame] = None,
+                                 nad_profile: NadProfile = None) -> Svg:
         """
         Create a network area diagram.
 
@@ -402,6 +426,8 @@ class Network:  # pylint: disable=too-many-public-methods
             high_nominal_voltage_bound: high bound to filter voltage level according to nominal voltage
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             nad_parameters: parameters for network area diagram
+            fixed_positions: optional dataframe used to set fixed coordinates for diagram elements. Positions for elements not specified in the dataframe will be computed using the current layout.
+            nad_profile: parameters to customize the network area diagram
 
         Returns:
             the network area diagram
@@ -413,7 +439,14 @@ class Network:  # pylint: disable=too-many-public-methods
         nad_p = nad_parameters._to_c_parameters() if nad_parameters is not None else _pp.NadParameters() # pylint: disable=protected-access
         svg_and_metadata: List[str] = _pp.get_network_area_diagram_svg_and_metadata(self._handle, voltage_level_ids, depth,
                                                     high_nominal_voltage_bound, low_nominal_voltage_bound,
-                                                    nad_p)
+                                                    nad_p, None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
+                                                    None if nad_profile is None else nad_profile._create_nad_branch_labels_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_three_wt_labels_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_bus_descriptions_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_bus_node_styles_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_edge_styles_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_three_wt_styles_c_dataframe()) # pylint: disable=protected-access
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
@@ -720,6 +753,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **bus_id**: bus where this generator is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this generator is connected
               - **node**  (optional): node where this generator is connected, in node-breaker voltage levels
+              - **condenser** (optional): ``True`` if the generator is a condenser
               - **connected**: ``True`` if the generator is connected to a bus
               - **fictitious** (optional): ``True`` if the generator is part of the model and not of the actual network
 
@@ -1330,6 +1364,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
               - **boundary_p** (optional): active flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
               - **boundary_q** (optional): reactive flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_i** (optional): current on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in A)
               - **boundary_v_mag** (optional): voltage magnitude of the boundary bus, ``NaN`` if no loadflow has been computed (in kV)
               - **boundary_v_angle** (optional): voltage angle of the boundary bus, ``NaN`` if no loadflow has been computed (in degree)
               - **voltage_level_id**: at which substation the dangling line is connected
@@ -1339,7 +1374,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **connected**: ``True`` if the dangling line is connected to a bus
               - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
               - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
-              - **ucte-xnode-code**: deprecated for pairing key.
+              - **ucte_xnode_code**: deprecated for pairing_key.
               - **paired**: if the dangling line is paired with a tie line
               - **tie_line_id**: the ID of the tie line if the dangling line is paired
 
@@ -1388,6 +1423,18 @@ class Network:  # pylint: disable=too-many-public-methods
             id
             DL NaN NaN NaN               VL   VL_0      True
             == === === === ================ ====== =========
+
+        .. note::
+
+            This note applies only if you are using the per-unit mode in your network (i.e., network.per_unit=True).
+
+            If two dangling lines are paired in a tie-line and have different nominal voltages, the per-unit values
+            for `boundary_i` and `boundary_v_mag` will differ between the two dangling lines.
+
+            Currently, PowSyBl network model does not support the concept of nominal voltage for the boundary
+            fictitious bus. Therefore, the nominal voltage at the dangling line network side is used for
+            per-unit calculations. While this is generally not an issue, this produces counterintuitive results
+            in the case of dangling lines of different nominal voltages.
         """
         return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
 
@@ -1474,6 +1521,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the LCC converter station is connected to a bus
               - **fictitious** (optional): ``True`` if the LCC converter is part of the model and not of the actual network
+              - **hvdc_line_id**: ID of the HVDC line where the LCC converter station is connected, empty string if not connected
 
             This dataframe is indexed by the id of the LCC converter
 
@@ -1486,13 +1534,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ============ ===========  ====== === === ================ ======= =========
-                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
-            ======== ============ ===========  ====== === === ================ ======= =========
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
+                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected hvdc_line_id
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
             id
-                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
-                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
-            ======== ============ ===========  ====== === === ================ ======= =========
+                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True        HVDC2
+                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True        HVDC2
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -1501,13 +1549,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== ============ ===========  ====== === === ================ ======= =========
-                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected
-            ======== ============ ===========  ====== === === ================ ======= =========
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
+                .    power_factor loss_factor       p   q   i voltage_level_id  bus_id connected hvdc_line_id
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
             id
-                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True
-                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True
-            ======== ============ ===========  ====== === === ================ ======= =========
+                LCC1          0.6         1.1   80.88 NaN NaN            S1VL2 S1VL2_0      True        HVDC2
+                LCC2          0.6         1.1  -79.12 NaN NaN            S3VL1 S3VL1_0      True        HVDC2
+            ======== ============ ===========  ====== === === ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -1562,6 +1610,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **node**  (optional): node where this station is connected, in node-breaker voltage levels
               - **connected**: ``True`` if the VSC converter station is connected to a bus
               - **fictitious** (optional): ``True`` if the VSC converter is part of the model and not of the actual network
+              - **hvdc_line_id**: ID of the HVDC line where the VSC converter station is connected, empty string if not connected
 
             This dataframe is indexed by the id of the VSC converter
 
@@ -1574,13 +1623,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
+            \        loss_factor voltage_setpoint reactive_power_setpoint voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected hvdc_line_id
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
             id
-                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True        HVDC1
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True        HVDC1
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -1589,13 +1638,13 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
-            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
+            \        loss_factor         target_v                target_q voltage_regulator_on regulated_element_id      p         q          i voltage_level_id  bus_id connected hvdc_line_id
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
             id
-                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True
-                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True
-            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= =========
+                VSC1         1.1            400.0                   500.0                 True                 VSC1  10.11 -512.0814 739.269871            S1VL2 S1VL2_0      True       HVDC1
+                VSC2         1.1              0.0                   120.0                False                 VSC2  -9.89 -120.0000 170.031658            S2VL1 S2VL1_0      True       HVDC1
+            ======== =========== ================ ======================= ==================== ==================== ====== ========= ========== ================ ======= ========= ============
 
             .. code-block:: python
 
@@ -2090,6 +2139,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the ratio tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
               - **r**: The resistance deviation in percent of nominal value (%)
               - **x**: The reactance deviation in percent of nominal value (%)
@@ -2106,14 +2156,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ======== ======== === === === ===
-            \                        rho   r   x   g   b
-            ========== ======== ======== === === === ===
+            ========== ======== ===== ======== === === === ===
+            \                    side      rho   r   x   g   b
+            ========== ======== ===== ======== === === === ===
             id         position
-            NHV2_NLOAD        0 0.850567 0.0 0.0 0.0 0.0
-            \                 1 1.000667 0.0 0.0 0.0 0.0
-            \                 2 1.150767 0.0 0.0 0.0 0.0
-            ========== ======== ======== === === === ===
+            NHV2_NLOAD        0       0.850567 0.0 0.0 0.0 0.0
+            \                 1       1.000667 0.0 0.0 0.0 0.0
+            \                 2       1.150767 0.0 0.0 0.0 0.0
+            ========== ======== ===== ======== === === === ===
 
             .. code-block:: python
 
@@ -2122,14 +2172,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ======== ======== === === === ===
-            \                        rho   r   x   g   b
-            ========== ======== ======== === === === ===
+            ========== ======== ===== ======== === === === ===
+            \                    side      rho   r   x   g   b
+            ========== ======== ===== ======== === === === ===
             id         position
-            NHV2_NLOAD        0 0.850567 0.0 0.0 0.0 0.0
-            \                 1 1.000667 0.0 0.0 0.0 0.0
-            \                 2 1.150767 0.0 0.0 0.0 0.0
-            ========== ======== ======== === === === ===
+            NHV2_NLOAD        0       0.850567 0.0 0.0 0.0 0.0
+            \                 1       1.000667 0.0 0.0 0.0 0.0
+            \                 2       1.150767 0.0 0.0 0.0 0.0
+            ========== ======== ===== ======== === === === ===
 
             .. code-block:: python
 
@@ -2138,14 +2188,14 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ======== ======== === ===
-            \                        rho   r   x
-            ========== ======== ======== === ===
+            ========== ======== ===== ======== === ===
+            \                    side      rho   r   x
+            ========== ======== ===== ======== === ===
             id         position
-            NHV2_NLOAD        0 0.850567 0.0 0.0
-            \                 1 1.000667 0.0 0.0
-            \                 2 1.150767 0.0 0.0
-            ========== ======== ======== === ===
+            NHV2_NLOAD        0       0.850567 0.0 0.0
+            \                 1       1.000667 0.0 0.0
+            \                 2       1.150767 0.0 0.0
+            ========== ======== ===== ======== === ===
         """
         return self.get_elements(ElementType.RATIO_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
@@ -2166,6 +2216,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the phase tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **rho**: The voltage ratio in per unit of the rated voltages (in per unit)
               - **alpha**: the angle difference (in degree)
               - **r**: The resistance deviation in percent of nominal value (%)
@@ -2183,15 +2234,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ======== ==== ====== ========= ========= === ===
-            \             rho  alpha         r         x   g   b
-            === ======== ==== ====== ========= ========= === ===
+            === ======== ===== ==== ====== ========= ========= === ===
+            \             side  rho  alpha         r         x   g   b
+            === ======== ===== ==== ====== ========= ========= === ===
             id  position
-            TWT        0  1.0 -42.80 39.784730 29.784725 0.0 0.0
-            \          1  1.0 -40.18 31.720245 21.720242 0.0 0.0
-            \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
-            ...      ...  ...    ...       ...       ... ... ...
-            === ======== ==== ====== ========= ========= === ===
+            TWT        0        1.0 -42.80 39.784730 29.784725 0.0 0.0
+            \          1        1.0 -40.18 31.720245 21.720242 0.0 0.0
+            \          2        1.0 -37.54 23.655737 13.655735 0.0 0.0
+            ...      ...   ...  ...    ...       ...       ... ... ...
+            === ======== ===== ==== ====== ========= ========= === ===
 
             .. code-block:: python
 
@@ -2200,15 +2251,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ======== ==== ====== ========= ========= === ===
-            \             rho  alpha         r         x   g   b
-            === ======== ==== ====== ========= ========= === ===
+            === ======== ===== ==== ====== ========= ========= === ===
+            \             side  rho  alpha         r         x   g   b
+            === ======== ===== ==== ====== ========= ========= === ===
             id  position
-            TWT        0  1.0 -42.80 39.784730 29.784725 0.0 0.0
-            \          1  1.0 -40.18 31.720245 21.720242 0.0 0.0
-            \          2  1.0 -37.54 23.655737 13.655735 0.0 0.0
-            ...      ...  ...    ...       ...       ... ... ...
-            === ======== ==== ====== ========= ========= === ===
+            TWT        0        1.0 -42.80 39.784730 29.784725 0.0 0.0
+            \          1        1.0 -40.18 31.720245 21.720242 0.0 0.0
+            \          2        1.0 -37.54 23.655737 13.655735 0.0 0.0
+            ...      ...   ...  ...    ...       ...       ... ... ...
+            === ======== ===== ==== ====== ========= ========= === ===
 
             .. code-block:: python
 
@@ -2217,15 +2268,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ======== ==== ========= =========
-            \             rho         r         x
-            === ======== ==== ========= =========
+            === ======== ===== ==== ========= =========
+            \             side  rho         r         x
+            === ======== ===== ==== ========= =========
             id  position
-            TWT        0  1.0 39.784730 29.784725
-            \          1  1.0 31.720245 21.720242
-            \          2  1.0 23.655737 13.655735
-            ...      ...  ...       ...       ...
-            === ======== ==== ========= =========
+            TWT        0        1.0 39.784730 29.784725
+            \          1        1.0 31.720245 21.720242
+            \          2        1.0 23.655737 13.655735
+            ...      ...   ...  ...       ...       ...
+            === ======== ===== ==== ========= =========
         """
         return self.get_elements(ElementType.PHASE_TAP_CHANGER_STEP, all_attributes, attributes, **kwargs)
 
@@ -2246,6 +2297,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the ratio tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **tap**: the current tap position
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
@@ -2256,7 +2308,6 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_deadband**: the regulation deadband around the target voltage, in kV
               - **regulating_bus_id**: the bus where the tap changer regulates voltage
               - **regulated_side** (optional): the side where the tap changer regulates voltage (redundant with regulating_bus_id)
-              - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
 
@@ -2268,12 +2319,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
             id
-            NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
 
             .. code-block:: python
 
@@ -2282,12 +2333,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
             id
-            NHV2_NLOAD   1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
 
             .. code-block:: python
 
@@ -2296,12 +2347,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== === ======= ======== ========== ======== =================
-            \          tap low_tap high_tap step_count target_v regulating_bus_id
-            ========== === ======= ======== ========== ======== =================
+            ========== ==== === ======= ======== ========== ======== =================
+            \          side tap low_tap high_tap step_count target_v regulating_bus_id
+            ========== ==== === ======= ======== ========== ======== =================
             id
-            NHV2_NLOAD   1       0        2          3    158.0          VLLOAD_0
-            ========== === ======= ======== ========== ======== =================
+            NHV2_NLOAD        1       0        2          3    158.0          VLLOAD_0
+            ========== ==== === ======= ======== ========== ======== =================
         """
         return self.get_elements(ElementType.RATIO_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
@@ -2322,6 +2373,7 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
+              - **side**: the phase tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
               - **tap**: the current tap position
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
@@ -2332,7 +2384,6 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_deadband**: the regulation deadband around the target value
               - **regulating_bus_id**: the bus where the phase shifter regulates
               - **regulated_side** (optional): the side bus where the phase shifter regulates current or active power
-              - **fictitious** (optional): ``True`` if the tap changer is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the transformer
 
@@ -2344,12 +2395,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === === ======= ======== ========== ========== =============== ================ =============== =================
-            \   tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
             id
-            TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
 
             .. code-block:: python
 
@@ -2358,12 +2409,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === === ======= ======== ========== ========== =============== ================ =============== =================
-            \   tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
             id
-            TWT  15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
+            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
 
             .. code-block:: python
 
@@ -2372,12 +2423,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === === ======= ======== ========== =================
-            \   tap low_tap high_tap step_count regulating_bus_id
-            === === ======= ======== ========== =================
+            === ==== === ======= ======== ========== =================
+            \   side tap low_tap high_tap step_count regulating_bus_id
+            === ==== === ======= ======== ========== =================
             id
-            TWT  15       0       32         33           S1VL1_0
-            === === ======= ======== ========== =================
+            TWT       15       0       32         33           S1VL1_0
+            === ==== === ======= ======== ========== =================
         """
         return self.get_elements(ElementType.PHASE_TAP_CHANGER, all_attributes, attributes, **kwargs)
 
@@ -2419,6 +2470,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of aliases
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the network element (network, line, generator, load, ...)
+              - **alias**: alias value
+              - **alias_type**: alias type
+
+            This dataframe is indexed on the network element ID.
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
@@ -3279,7 +3339,6 @@ class Network:  # pylint: disable=too-many-public-methods
             - `regulated_side`,
             - `target_v`
             - `target_deadband`
-            - `fictitious`
 
         See Also:
             :meth:`get_ratio_tap_changers`
@@ -3723,7 +3782,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Args:
             extension_name: name of the extension
-            dfs: the data to be created
+            df: the data to be created
                  A single dataframe or a list of dataframes can be given as arguments
             kwargs: the data to be created, as named arguments.
                     Arguments can be single values or any type of sequence.
@@ -3833,7 +3892,7 @@ class Network:  # pylint: disable=too-many-public-methods
             all_attributes: flag for including all attributes in the dataframe, default is false
             attributes:     attributes to include in the dataframe. The 2 parameters are mutually
                             exclusive. If no parameter is specified, the dataframe will include the default attributes.
-            only_selected_sets: flag to choose whether inactive limit sets should also be included in the dataframe
+            show_inactive_sets: flag to choose whether inactive limit sets should also be included in the dataframe
 
         Returns:
             All limits on the network
@@ -3960,6 +4019,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **node**: the node where the new generator will be connected,
               if the voltage level has a node-breaker topology kind.
             - **energy_source**: the type of energy source (HYDRO, NUCLEAR, ...)
+            - **condenser**: define if the generator is a condenser (boolean)
             - **max_p**: maximum active power in MW
             - **min_p**: minimum active power in MW
             - **target_p**: target active power in MW
@@ -4192,8 +4252,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
-            - **pairing-key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
-            - **ucte-x-node-code**: deprecated, use pairing-key instead.
+            - **pairing_key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
+            - **ucte_xnode_code**: deprecated, use pairing_key instead.
 
             Dangling line generation information must be provided as a dataframe.
             Valid attributes are:
@@ -4394,7 +4454,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 network.create_lines(id='LINE-1', voltage_level1_id='VL1', bus1_id='B1',
                                      voltage_level2_id='VL2', bus2_id='B2',
-                                     b1=1e-6, b2=1e-6, g1=0, , g2=0, r=0.5, x=10)
+                                     b1=1e-6, b2=1e-6, g1=0, g2=0, r=0.5, x=10)
         """
         return self._create_elements(ElementType.LINE, [df], **kwargs)
 
@@ -4874,7 +4934,6 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **element_id**: the ID of the network element on which we want to create new limits
-              THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
             - **side**: the side of the network element where we want to create new limits (ONE, TWO, THREE)
             - **name**: the name of the limit
             - **type**: the type of limit to be created (CURRENT, APPARENT_POWER, ACTIVE_POWER)
@@ -5357,6 +5416,27 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         warnings.warn("get_extension is deprecated, use get_extensions instead", DeprecationWarning)
         return self.get_extensions(extension_name)
+
+    def get_elements_properties(self, all_attributes: bool = False, attributes: List[str] = None,
+                                **kwargs: ArrayLike) -> DataFrame:
+        """
+        Get a dataframe of properties of all network elements.
+
+        Args:
+
+        Returns:
+            A dataframe of properties
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **type**: the type of the network element (network, line, generator, load, ...)
+              - **key**: property key
+              - **value**: property value
+
+            This dataframe is indexed on the network element ID.
+        """
+        return self.get_elements(ElementType.PROPERTIES, all_attributes, attributes, **kwargs)
 
     def add_elements_properties(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
