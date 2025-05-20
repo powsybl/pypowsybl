@@ -11,13 +11,11 @@ import com.powsybl.commons.datasource.CompressionFormat;
 import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.parameters.ParameterType;
 import com.powsybl.contingency.ContingencyContextType;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.DataframeMapper;
-import com.powsybl.dataframe.DataframeMapperBuilder;
-import com.powsybl.dataframe.SeriesDataType;
+import com.powsybl.dataframe.*;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.OutputVariable;
+import com.powsybl.iidm.modification.scalable.ProportionalScalable;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
@@ -39,6 +37,7 @@ import org.graalvm.word.WordBase;
 import org.graalvm.word.WordFactory;
 import org.slf4j.LoggerFactory;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -290,6 +289,17 @@ public final class Util {
             case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
             case INTERNAL_CONNECTION -> DataframeElementType.INTERNAL_CONNECTION;
             case PROPERTIES -> DataframeElementType.PROPERTIES;
+        };
+    }
+
+    public static ProportionalScalable.DistributionMode convert(PyPowsyblApiHeader.DistributionMode type) {
+        return switch (type) {
+            case PROPORTIONAL_TO_TARGETP -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_TARGETP;
+            case PROPORTIONAL_TO_PMAX -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_PMAX;
+            case PROPORTIONAL_TO_DIFF_PMAX_TARGETP -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_DIFF_PMAX_TARGETP;
+            case PROPORTIONAL_TO_DIFF_TARGETP_PMIN -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_DIFF_TARGETP_PMIN;
+            case PROPORTIONAL_TO_P0 -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_P0;
+            case UNIFORM_DISTRIBUTION -> ProportionalScalable.DistributionMode.UNIFORM_DISTRIBUTION;
         };
     }
 

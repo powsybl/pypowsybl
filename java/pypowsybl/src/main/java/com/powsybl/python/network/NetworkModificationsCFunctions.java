@@ -8,6 +8,8 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dataframe.DataframeDistributionMode;
+import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
@@ -186,7 +188,7 @@ public final class NetworkModificationsCFunctions {
     public static int scaleProportional(IsolateThread thread, ObjectHandle networkHandle,
                                         double asked,
                                         CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
-                                        ProportionalScalable.DistributionMode distributionMode,
+                                        PyPowsyblApiHeader.DistributionMode distributionModeHandle,
                                         double limitMin, double limitMax,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -195,6 +197,7 @@ public final class NetworkModificationsCFunctions {
             List<Injection<?>> injections = new ArrayList<>();
             injectionsIdsStringList.forEach(injection ->
                     injections.add((Injection<?>) network.getConnectable(injection)));
+            ProportionalScalable.DistributionMode distributionMode = convert(distributionModeHandle);
             ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
             return (int) proportionalScalable.scale(network, asked);
         });
