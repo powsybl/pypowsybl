@@ -113,6 +113,8 @@ The supported actions in PyPowsybl are listed here:
 - `shunt_compensator_position`, to change the section of a shunt compensator
 - `generator_active_power`, to modify the generator active power
 - `terminals_connection`, to connect/disconnect one or multiple sides of a network element
+- `dangling_line_active_power`, to change the active power of a dangling line
+- `dangling_line_reactive_power`, to change the reactive power of a dangling line
 
 The following example defines a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
 
@@ -126,7 +128,7 @@ The following example defines a switch closing action with id 'SwitchAction' on 
 To enable the application of the action you need to define an operator strategy and add the action to it.
 An operator strategy is a set of actions to be applied after the simulation of a contingency.
 It is defined with an unique id, a reference to the id of the contingency, a list action ids and a condition.
-The following operator strategy define the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied):
+The following operator strategy defines the application of the switch action 'SwitchAction' after 'Breaker contingency' with the 'True' condition (always applied):
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
