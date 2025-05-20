@@ -2,13 +2,13 @@ from pyoptinterface import ipopt, nlfunc
 
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.function_context import FunctionContext
-from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 
 class HvdcLineConstraints(Constraints):
-    def add(self, parameters: OptimalPowerFlowParameters, network_cache: NetworkCache,
+    def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, function_context: FunctionContext, model: ipopt.Model) -> None:
         for row in network_cache.hvdc_lines.itertuples(index=False):
             cs1_id, cs2_id, r, nominal_v = row.converter_station1_id, row.converter_station2_id, row.r, row.nominal_v

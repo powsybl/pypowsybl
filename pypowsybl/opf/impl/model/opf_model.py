@@ -3,8 +3,9 @@ import logging
 from pyoptinterface import ipopt
 
 from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.cost_function import CostFunction
 from pypowsybl.opf.impl.model.function_context import FunctionContext
-from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
@@ -31,8 +32,9 @@ class OpfModel:
         return self._variable_context
 
     @classmethod
-    def build(cls, network_cache: NetworkCache, parameters: OptimalPowerFlowParameters,
-              variable_bounds: list[VariableBounds], constraints: list[Constraints]) -> 'OpfModel':
+    def build(cls, network_cache: NetworkCache, parameters: ModelParameters,
+              variable_bounds: list[VariableBounds], constraints: list[Constraints],
+              cost_function: CostFunction) -> 'OpfModel':
         logger.info("Building model...")
 
         model = ipopt.Model()
@@ -52,8 +54,8 @@ class OpfModel:
             constraint.add(parameters, network_cache, variable_context, function_context, model)
 
         # cost function
-        logger.debug(f"Using cost function: '{parameters.cost_function.name}'")
-        cost = parameters.cost_function.create(network_cache, variable_context)
+        logger.debug(f"Using cost function: '{cost_function.name}'")
+        cost = cost_function.create(network_cache, variable_context)
         model.set_objective(cost)
 
         return OpfModel(network_cache, model, variable_context)

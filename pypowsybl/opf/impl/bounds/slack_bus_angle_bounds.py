@@ -2,7 +2,7 @@ import logging
 
 from pyoptinterface import ipopt
 
-from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -11,7 +11,7 @@ from pypowsybl.opf.impl.util import TRACE_LEVEL
 logger = logging.getLogger(__name__)
 
 class SlackBusAngleBounds(VariableBounds):
-    def add(self, parameters: OptimalPowerFlowParameters, network_cache: NetworkCache,
+    def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: ipopt.Model):
         # slack bus angle forced to 0
         slack_bus_id = network_cache.slack_terminal.iloc[0].bus_id if len(network_cache.slack_terminal) > 0 else network_cache.buses.iloc[0].name

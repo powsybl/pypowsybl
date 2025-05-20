@@ -2,7 +2,7 @@ import logging
 
 from pyoptinterface import ipopt
 
-from pypowsybl.opf.impl.model.parameters import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class BusVoltageBounds(VariableBounds):
-    def add(self, parameters: OptimalPowerFlowParameters, network_cache: NetworkCache,
+    def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: ipopt.Model):
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
             v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
