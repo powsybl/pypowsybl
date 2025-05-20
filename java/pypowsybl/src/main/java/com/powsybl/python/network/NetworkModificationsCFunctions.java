@@ -8,8 +8,6 @@
 package com.powsybl.python.network;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dataframe.DataframeDistributionMode;
-import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
 import com.powsybl.dataframe.network.modifications.NetworkModifications;
