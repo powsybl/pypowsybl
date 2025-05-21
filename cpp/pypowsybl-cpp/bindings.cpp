@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
+#include <iostream>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
@@ -32,6 +33,9 @@ pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& paramete
 
 py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
+
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const pypowsybl::LoadFlowParameters& parameters,
+                            const std::string& provider, pypowsybl::JavaHandle* reportNode, py::object resultsFuture);
 
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
@@ -627,6 +631,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
+
+    m.def("run_loadflow_async", &runLoadFlowAsyncPython, "Run a load flow asynchronously", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"),
+          py::arg("results_future"));
 
     m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
           py::arg("validation_type"), py::arg("validation_parameters"));
@@ -1313,6 +1321,36 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("check_grid2op_isolated_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
     m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
+}
+
+py::object toto = py::none();
+
+void onLoadFlowResult(array* resultsPtr) {
+    try {
+        py::gil_scoped_acquire acquire;
+        std::cout << "AAA " << py::str(toto).cast<std::string>() << std::endl;
+        new pypowsybl::LoadFlowComponentResultArray(resultsPtr);
+        //toto.attr("set_result")();
+    } catch (const py::error_already_set& e) {
+        std::cout << "Erreur lors de l'affichage: " << e.what() << std::endl;
+    }
+}
+
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const pypowsybl::LoadFlowParameters& parameters,
+                            const std::string& provider, pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
+    auto c_parameters = parameters.to_c_struct();
+    auto onLoadFlowResultPtr = &onLoadFlowResult;
+
+    toto = resultsFuture;
+    //auto boundOnLoadFlowResultPtr = std::bind(onLoadFlowResultPtr, std::placeholders::_1, resultsFuture);
+
+    pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
+                                              network,
+                                              dc,
+                                              c_parameters.get(),
+                                              (char *) provider.data(),
+                                              (reportNode == nullptr) ? nullptr : *reportNode,
+                                              reinterpret_cast<void *&>(onLoadFlowResultPtr));
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {

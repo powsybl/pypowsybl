@@ -4,7 +4,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import asyncio
 import warnings
+from asyncio import Future
 from typing import List
 from pandas import DataFrame
 from pypowsybl import _pypowsybl
@@ -53,6 +55,33 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
+
+
+def run_ac_async(network: Network, parameters: Parameters = None, provider: str = '', report_node: ReportNode = None) -> Future:  # pylint: disable=protected-access
+    """
+    Run an AC load flow on a network asynchronously.
+
+    Args:
+        network: a network
+        parameters: the load flow parameters
+        provider: the load flow implementation provider, default is the default load flow provider
+        report_node:   the reporter to be used to create an execution report, default is None (no report)
+
+    Returns:
+        A future list of component results, one for each component of the network.
+    """
+    c_parameters = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    loop = asyncio.get_running_loop()
+    results_future = loop.create_future()
+    # TODO pass the future to the c++ part
+    _pypowsybl.run_loadflow_async(network._handle,
+                                  False,
+                                  c_parameters,
+                                  provider,
+                                  None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                  results_future)
+    results_future.set_result(None)
+    return results_future
 
 
 def run_dc(network: Network, parameters: Parameters = None, provider: str = '', reporter: ReportNode = None,
