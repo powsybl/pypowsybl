@@ -422,7 +422,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PROPORTIONAL_TO_DIFF_PMAX_TARGETP", distribution_mode::PROPORTIONAL_TO_DIFF_PMAX_TARGETP)
             .value("PROPORTIONAL_TO_DIFF_TARGETP_PMIN", distribution_mode::PROPORTIONAL_TO_DIFF_TARGETP_PMIN)
             .value("PROPORTIONAL_TO_P0", distribution_mode::PROPORTIONAL_TO_P0)
-            .value("UNIFORM_DISTRIBUTION", distribution_mode::UNIFORM_DISTRIBUTION)
+            .value("UNIFORM_DISTRIBUTION", distribution_mode::UNIFORM_DISTRIBUTION);
 
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
