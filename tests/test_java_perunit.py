@@ -165,18 +165,18 @@ def test_lcc_converter_stations_per_unit():
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                     'connected'],
-                            data=[['LCC1', 0.6, 1.1, 0.8, 1.07, 1.33, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, -0.78, 1.04, 1.30, 'S3VL1', 'S3VL1_0', True]])
+                                     'connected', 'hvdc_line_id'],
+                            data=[['LCC1', 0.6, 1.1, 0.8, 1.07, 1.33, 'S1VL2', 'S1VL2_0', True , 'HVDC2'],
+                                  ['LCC2', 0.6, 1.1, -0.78, 1.04, 1.30, 'S3VL1', 'S3VL1_0', True, 'HVDC2']])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
     n.update_lcc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                  columns=['p', 'q'],
                                                  index=['LCC1', 'LCC2']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                     'connected'],
-                            data=[['LCC1', 0.6, 1.1, 3.0, 4.0, 5.0, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, 1.0, 2.0, 2.24, 'S3VL1', 'S3VL1_0', True]])
+                                     'connected', 'hvdc_line_id'],
+                            data=[['LCC1', 0.6, 1.1, 3.0, 4.0, 5.0, 'S1VL2', 'S1VL2_0', True, 'HVDC2'],
+                                  ['LCC2', 0.6, 1.1, 1.0, 2.0, 2.24, 'S3VL1', 'S3VL1_0', True, 'HVDC2']])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
@@ -188,11 +188,11 @@ def test_vsc_converter_stations_per_unit():
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q',
                  'voltage_regulator_on',
                  'regulated_element_id',
-                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected', 'hvdc_line_id'],
 
-        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
+        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
               ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 0, 1.2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0',
-               True]])
+               True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=1e-2)
     n.update_vsc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                  columns=['target_v', 'target_q'],
@@ -201,9 +201,9 @@ def test_vsc_converter_stations_per_unit():
         index='id',
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q',
                  'voltage_regulator_on', 'regulated_element_id',
-                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
-              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
+                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected', 'hvdc_line_id'],
+        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
+              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
