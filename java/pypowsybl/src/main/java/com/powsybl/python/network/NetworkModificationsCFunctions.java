@@ -185,8 +185,8 @@ public final class NetworkModificationsCFunctions {
     @CEntryPoint(name = "scaleProportional")
     public static int scaleProportional(IsolateThread thread, ObjectHandle networkHandle,
                                         double asked,
-                                        CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
                                         PyPowsyblApiHeader.DistributionMode distributionModeHandle,
+                                        CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
                                         double limitMin, double limitMax,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
