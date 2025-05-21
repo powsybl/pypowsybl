@@ -1441,7 +1441,7 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
     pypowsybl::PowsyblCaller::get()->callJava(::splitOrMergeTransformers, network, transformerIdsPtr.get(), transformerIds.size(), merge, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, std::vector<std::string>& injectionsIds, const int limitMin, const int limitMax) {
+int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, const std::vector<std::string>& injectionsIds, const int limitMin, const int limitMax) {
     ToCharPtrPtr injectionsIdsPtr(injectionsIds);
     return pypowsybl::PowsyblCaller::get()->callJava<int>(::scaleProportional, network, asked, distributionMode, injectionsIdsPtr.get(), injectionsIds.size(), limitMin, limitMax);
 }
