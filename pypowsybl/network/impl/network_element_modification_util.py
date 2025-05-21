@@ -1068,8 +1068,8 @@ def scale_proportional(network: Network, asked: int, distribution_mode: Distribu
         asked: the value asked to adjust the scalable active power
         distribution_mode: parameters
         injections_ids: the ids of the injections
-        limit_min : the lower limit of the injections (optional)
-        limit_max: the upper limit of the generator (optional)
+        limit_min : the lower limit of the injections
+        limit_max: the upper limit of the generator
 
     Return:
         The actual value of the scalable active power adjustment.

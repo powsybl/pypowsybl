@@ -6,6 +6,7 @@
 #
 from pypowsybl._pypowsybl import ValidationLevel
 from pypowsybl._pypowsybl import ElementType
+from pypowsybl._pypowsybl import DistributionMode
 from .impl.network import (
     Network,
 )
@@ -76,7 +77,8 @@ from .impl.network_element_modification_util import (
     create_2_windings_transformer_bays,
     remove_feeder_bays,
     replace_3_windings_transformers_with_3_2_windings_transformers,
-    replace_3_2_windings_transformers_with_3_windings_transformers
+    replace_3_2_windings_transformers_with_3_windings_transformers,
+    scale_proportional
 )
 from .impl.perunit import (PerUnitView, per_unit_view)
 from .impl.pandapower_converter import convert_from_pandapower

@@ -1,3 +1,6 @@
+import math
+from importlib.metadata import distribution
+
 import pytest
 
 import pypowsybl as pp
@@ -1505,3 +1508,7 @@ def test_split_or_merge_transformers():
 
 def test_scale_generator():
     n = pp.network.create_micro_grid_be_network()
+    distribution_mode = pp.network.DistributionMode.PROPORTIONAL_TO_P0
+    injections_ids = ['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator']
+    pp.network.scale_proportional(n, 10, distribution_mode, injections_ids, 0, 400)
+
