@@ -141,6 +141,26 @@ class Network:  # pylint: disable=too-many-public-methods
         self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
         self._case_date = datetime.datetime.fromtimestamp(att.case_date, timezone.utc)
 
+    def update_from_file(self, file: Union[str, PathLike], parameters: Dict[str, str] = None, post_processors: List[str] = None,
+             report_node: ReportNode = None) -> None:
+        """
+        Updates a network by loading information from a file. File should be in a supported format.
+
+        Basic compression formats are also supported (gzip, bzip2).
+
+        Args:
+           file:       path to the network file
+           parameters: a dictionary of import parameters
+           post_processors: a list of import post processors (will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        file = path_to_str(file)
+        _pp.update_network(self._handle, file,
+                           {} if parameters is None else parameters,
+                           [] if post_processors is None else post_processors,
+                           None if report_node is None else report_node._report_node)
+
+
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
 

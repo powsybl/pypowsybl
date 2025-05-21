@@ -318,3 +318,4 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
                                                 {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,
                                                 None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
+
