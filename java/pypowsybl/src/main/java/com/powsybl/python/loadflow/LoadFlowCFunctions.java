@@ -114,7 +114,10 @@ public final class LoadFlowCFunctions {
     }
 
     @CEntryPoint(name = "runLoadFlowAsync")
-    public static void runLoadFlowAsync(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
+    public static void runLoadFlowAsync(IsolateThread thread,
+                                        ObjectHandle networkHandle,
+                                        CCharPointer variantId,
+                                        boolean dc,
                                         LoadFlowParametersPointer loadFlowParametersPtr,
                                         CCharPointer provider, ObjectHandle reportNodeHandle,
                                         LoadFlowResultCallback loadFlowResultCallback,
@@ -122,6 +125,7 @@ public final class LoadFlowCFunctions {
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         Util.doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
+            String variantIdStr = CTypeUtil.toString(variantId);
             String providerStr = CTypeUtil.toString(provider);
             LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
             logger().debug("loadflow provider used is : {}", loadFlowProvider.getName());
@@ -129,7 +133,7 @@ public final class LoadFlowCFunctions {
             LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
             LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
             ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            runner.runAsync(network, network.getVariantManager().getWorkingVariantId(),
+            runner.runAsync(network, variantIdStr,
                     CommonObjects.getComputationManager(), parameters, reportNode)
                     .whenComplete((result, throwable) -> {
                         if (throwable != null) {

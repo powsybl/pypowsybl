@@ -67,12 +67,14 @@ class LoadFlowResultsFutureWrapper:
         self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
 
 
-def run_ac_async(network: Network, parameters: Parameters = None, provider: str = '', report_node: ReportNode = None) -> Future:  # pylint: disable=protected-access
+def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Parameters = None, provider: str = '',
+                 report_node: ReportNode = None) -> Future:  # pylint: disable=protected-access
     """
     Run an AC load flow on a network asynchronously.
 
     Args:
         network: a network
+        variant_id: the variant id, default on initial variant
         parameters: the load flow parameters
         provider: the load flow implementation provider, default is the default load flow provider
         report_node:   the reporter to be used to create an execution report, default is None (no report)
@@ -84,6 +86,7 @@ def run_ac_async(network: Network, parameters: Parameters = None, provider: str 
     loop = asyncio.get_running_loop()
     results_future = loop.create_future()
     _pypowsybl.run_loadflow_async(network._handle,
+                                  variant_id,
                                   False,
                                   c_parameters,
                                   provider,

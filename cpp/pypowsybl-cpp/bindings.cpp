@@ -34,8 +34,9 @@ pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& paramete
 py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
 
-void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const pypowsybl::LoadFlowParameters& parameters,
-                            const std::string& provider, pypowsybl::JavaHandle* reportNode, py::object resultsFuture);
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
+                            const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
+                            pypowsybl::JavaHandle* reportNode, py::object resultsFuture);
 
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
@@ -633,7 +634,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     m.def("run_loadflow_async", &runLoadFlowAsyncPython, "Run a load flow asynchronously", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"),
+          py::arg("network"), py::arg("variant_id"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"),
           py::arg("results_future"));
 
     m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
@@ -1329,17 +1330,19 @@ void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {
     resultsFuture.attr("set_results")(new pypowsybl::LoadFlowComponentResultArray(resultsPtr));
 }
 
-void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const pypowsybl::LoadFlowParameters& parameters,
-                            const std::string& provider, pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
+                            const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
+                            pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
     auto c_parameters = parameters.to_c_struct();
     auto onLoadFlowResultPtr = &onLoadFlowResult;
     PyObject* resultsFuturePtr = resultsFuture.ptr();
     Py_INCREF(resultsFuturePtr);  // to ensure we own the reference
     pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
                                               network,
+                                              (char*) variantId.data(),
                                               dc,
                                               c_parameters.get(),
-                                              (char *) provider.data(),
+                                              (char*) provider.data(),
                                               (reportNode == nullptr) ? nullptr : *reportNode,
                                               reinterpret_cast<void *&>(onLoadFlowResultPtr),
                                               (void*) resultsFuturePtr);
