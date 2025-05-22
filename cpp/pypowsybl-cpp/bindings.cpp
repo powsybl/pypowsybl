@@ -1323,14 +1323,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 
-py::object toto = py::none();
-
-void onLoadFlowResult(array* resultsPtr) {
+void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {
+    std::cout << "onLoadFlowResult" << std::endl;
     try {
         py::gil_scoped_acquire acquire;
-        std::cout << "AAA " << py::str(toto).cast<std::string>() << std::endl;
-        new pypowsybl::LoadFlowComponentResultArray(resultsPtr);
-        //toto.attr("set_result")();
+
+        py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr);
+        std::cout << resultsFuture << std::endl;
+        if (!resultsFuture.attr("done")().cast<bool>()) {
+        //new pypowsybl::LoadFlowComponentResultArray(resultsPtr);
+            resultsFuture.attr("set_result")("Hello from C++!");
+        }
+        std::cout << resultsFuture << std::endl;
     } catch (const py::error_already_set& e) {
         std::cout << "Erreur lors de l'affichage: " << e.what() << std::endl;
     }
@@ -1340,9 +1344,8 @@ void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const
                             const std::string& provider, pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
     auto c_parameters = parameters.to_c_struct();
     auto onLoadFlowResultPtr = &onLoadFlowResult;
-
-    toto = resultsFuture;
-    //auto boundOnLoadFlowResultPtr = std::bind(onLoadFlowResultPtr, std::placeholders::_1, resultsFuture);
+    PyObject* resultsFuturePtr = resultsFuture.ptr();
+    Py_INCREF(resultsFuturePtr);  // to ensure we own the reference
 
     pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
                                               network,
@@ -1350,7 +1353,8 @@ void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const
                                               c_parameters.get(),
                                               (char *) provider.data(),
                                               (reportNode == nullptr) ? nullptr : *reportNode,
-                                              reinterpret_cast<void *&>(onLoadFlowResultPtr));
+                                              reinterpret_cast<void *&>(onLoadFlowResultPtr),
+                                              (void*) resultsFuturePtr);
 }
 
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {

@@ -7,6 +7,7 @@
 import asyncio
 import warnings
 from asyncio import Future
+from time import sleep
 from typing import List
 from pandas import DataFrame
 from pypowsybl import _pypowsybl
@@ -80,7 +81,7 @@ def run_ac_async(network: Network, parameters: Parameters = None, provider: str 
                                   provider,
                                   None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
                                   results_future)
-    results_future.set_result(None)
+    sleep(1)
     return results_future
 
 

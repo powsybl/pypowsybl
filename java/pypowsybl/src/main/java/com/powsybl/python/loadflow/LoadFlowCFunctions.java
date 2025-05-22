@@ -31,6 +31,7 @@ import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +110,7 @@ public final class LoadFlowCFunctions {
 
     public interface LoadFlowResultCallback extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void invoke(ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> resultsPtr);
+        void invoke(ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> resultsPtr, VoidPointer resultFuturePtr);
     }
 
     @CEntryPoint(name = "runLoadFlowAsync")
@@ -117,6 +118,7 @@ public final class LoadFlowCFunctions {
                                         LoadFlowParametersPointer loadFlowParametersPtr,
                                         CCharPointer provider, ObjectHandle reportNodeHandle,
                                         LoadFlowResultCallback loadFlowResultCallback,
+                                        VoidPointer resultFuturePtr,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         Util.doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -134,7 +136,7 @@ public final class LoadFlowCFunctions {
                             exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(Util.getNonNullMessage(throwable)));
                         } else {
                             var resultsPtr = createLoadFlowComponentResultArrayPointer(result);
-                            loadFlowResultCallback.invoke(resultsPtr);
+                            loadFlowResultCallback.invoke(resultsPtr, resultFuturePtr);
                         }
                     });
         });
