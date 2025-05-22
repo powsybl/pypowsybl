@@ -58,6 +58,15 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
 
 
+class LoadFlowResultsFutureWrapper:
+    def __init__(self, loop, future: Future):
+        self._loop = loop
+        self._future = future
+
+    def set_results(self, results):
+        self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
+
+
 def run_ac_async(network: Network, parameters: Parameters = None, provider: str = '', report_node: ReportNode = None) -> Future:  # pylint: disable=protected-access
     """
     Run an AC load flow on a network asynchronously.
@@ -74,14 +83,12 @@ def run_ac_async(network: Network, parameters: Parameters = None, provider: str 
     c_parameters = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     loop = asyncio.get_running_loop()
     results_future = loop.create_future()
-    # TODO pass the future to the c++ part
     _pypowsybl.run_loadflow_async(network._handle,
                                   False,
                                   c_parameters,
                                   provider,
                                   None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
-                                  results_future)
-    sleep(1)
+                                  LoadFlowResultsFutureWrapper(loop, results_future))
     return results_future
 
 

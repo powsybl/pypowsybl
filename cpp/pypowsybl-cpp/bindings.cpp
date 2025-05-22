@@ -1324,20 +1324,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 }
 
 void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {
-    std::cout << "onLoadFlowResult" << std::endl;
-    try {
-        py::gil_scoped_acquire acquire;
-
-        py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr);
-        std::cout << resultsFuture << std::endl;
-        if (!resultsFuture.attr("done")().cast<bool>()) {
-        //new pypowsybl::LoadFlowComponentResultArray(resultsPtr);
-            resultsFuture.attr("set_result")("Hello from C++!");
-        }
-        std::cout << resultsFuture << std::endl;
-    } catch (const py::error_already_set& e) {
-        std::cout << "Erreur lors de l'affichage: " << e.what() << std::endl;
-    }
+    py::gil_scoped_acquire acquire;
+    py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr); // automatically decrease ref counter
+    resultsFuture.attr("set_results")(new pypowsybl::LoadFlowComponentResultArray(resultsPtr));
 }
 
 void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const pypowsybl::LoadFlowParameters& parameters,
@@ -1346,7 +1335,6 @@ void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, bool dc, const
     auto onLoadFlowResultPtr = &onLoadFlowResult;
     PyObject* resultsFuturePtr = resultsFuture.ptr();
     Py_INCREF(resultsFuturePtr);  // to ensure we own the reference
-
     pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
                                               network,
                                               dc,
