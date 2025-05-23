@@ -206,7 +206,7 @@ def is_loadable(file: Union[str, PathLike]) -> bool:
 
 
 def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_processors: List[str] = None, reporter: ReportNode = None,
-         report_node: ReportNode = None) -> Network:
+         report_node: ReportNode = None, allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -218,6 +218,7 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_pro
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
+       allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
@@ -241,7 +242,8 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_pro
     return Network(_pp.load_network(file,
                                     {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
-                                    None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node,
+                                    allow_variant_multi_thread_access))  # pylint: disable=protected-access
 
 
 def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = None, post_processors: List[str] = None,

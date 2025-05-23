@@ -14,6 +14,7 @@ import pypowsybl.loadflow as lf
 def set_up():
     pp.set_config_read(False)
 
+
 @pytest.mark.asyncio
 async def test_run_lf_ac_async():
     n = pp.network.create_ieee14()

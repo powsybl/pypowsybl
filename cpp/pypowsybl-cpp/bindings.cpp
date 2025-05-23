@@ -4,7 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-#include <iostream>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
@@ -23,7 +22,7 @@ namespace py = pybind11;
 //Explicitly update log level on java side
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc);
 
-pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode);
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
 
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
@@ -477,13 +476,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("file"));
 
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
-          py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+          py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
-              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
-              py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+              py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
@@ -1357,7 +1356,8 @@ void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handl
      }
 }
 
-pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode) {
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters,
+                                                         const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode, bool allowVariantMultiThreadAccess) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -1380,7 +1380,8 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
 
     pypowsybl::JavaHandle networkHandle = pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(),
-                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode,
+                           allowVariantMultiThreadAccess);
     delete[] dataPtrs;
     delete[] dataSizes;
     return networkHandle;

@@ -7,7 +7,6 @@
 import asyncio
 import warnings
 from asyncio import Future
-from time import sleep
 from typing import List
 from pandas import DataFrame
 from pypowsybl import _pypowsybl
