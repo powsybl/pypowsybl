@@ -53,13 +53,18 @@ async def test_run_lf_ac_async_multi_variants():
     for task_num in range(task_count):
         network.clone_variant("InitialState", f"v{task_num}")
 
-    results = []
+    async def run_lf_task(network: Network, variant_id: str):
+        results = await pp.loadflow.run_ac_async(network, variant_id)
+        return results[0].status
+
+    tasks = []
     for task_num in range(task_count):
         variant_id = f"v{task_num}"
         scale_loads(network, variant_id)
-        results.append(pp.loadflow.run_ac_async(network, variant_id))
+        tasks.append(run_lf_task(network, variant_id))
 
-    await asyncio.gather(*results)
+    statuses = await asyncio.gather(*tasks)
+    assert statuses == [pp.loadflow.ComponentStatus.CONVERGED] * task_count
 
     for task_num in range(task_count):
         network.remove_variant(f"v{task_num}")
