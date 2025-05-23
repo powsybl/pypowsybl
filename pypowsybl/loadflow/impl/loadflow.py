@@ -9,7 +9,7 @@ import warnings
 from asyncio import Future
 from typing import List
 from pandas import DataFrame
-from pypowsybl import _pypowsybl
+from pypowsybl import _pypowsybl, PyPowsyblError
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
@@ -64,6 +64,9 @@ class LoadFlowResultsFutureWrapper:
 
     def set_results(self, results):
         self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
+
+    def set_exception_message(self, message: str):
+        self._loop.call_soon_threadsafe(self._future.set_exception(PyPowsyblError(message)))
 
 
 def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Parameters = None, provider: str = '',

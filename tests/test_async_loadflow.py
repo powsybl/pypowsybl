@@ -63,3 +63,10 @@ async def test_run_lf_ac_async_multi_variants():
 
     for task_num in range(task_count):
         network.remove_variant(f"v{task_num}")
+
+
+@pytest.mark.asyncio
+async def test_run_lf_ac_async_on_bad_variant():
+    n = pp.network.create_ieee14()
+    with pytest.raises(Exception, match='com.powsybl.commons.PowsyblException: Variant \'v\' not found'):
+        await lf.run_ac_async(n, "v")

@@ -1329,11 +1329,18 @@ void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {
     resultsFuture.attr("set_results")(new pypowsybl::LoadFlowComponentResultArray(resultsPtr));
 }
 
+void onLoadFlowException(const char* message, void* resultFuturePtr) {
+    py::gil_scoped_acquire acquire;
+    py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr); // automatically decrease ref counter
+    resultsFuture.attr("set_exception_message")(message);
+}
+
 void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
                             const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
                             pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
     auto c_parameters = parameters.to_c_struct();
     auto onLoadFlowResultPtr = &onLoadFlowResult;
+    auto onLoadFlowExceptionPtr = &onLoadFlowException;
     PyObject* resultsFuturePtr = resultsFuture.ptr();
     Py_INCREF(resultsFuturePtr);  // to ensure we own the reference
     pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
@@ -1344,6 +1351,7 @@ void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::str
                                               (char*) provider.data(),
                                               (reportNode == nullptr) ? nullptr : *reportNode,
                                               reinterpret_cast<void *&>(onLoadFlowResultPtr),
+                                              reinterpret_cast<void *&>(onLoadFlowExceptionPtr),
                                               (void*) resultsFuturePtr);
 }
 

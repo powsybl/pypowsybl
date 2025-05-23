@@ -113,6 +113,11 @@ public final class LoadFlowCFunctions {
         void invoke(ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> resultsPtr, VoidPointer resultFuturePtr);
     }
 
+    public interface LoadFlowExceptionCallback extends CFunctionPointer {
+        @InvokeCFunctionPointer
+        void invoke(CCharPointer message, VoidPointer resultFuturePtr);
+    }
+
     @CEntryPoint(name = "runLoadFlowAsync")
     public static void runLoadFlowAsync(IsolateThread thread,
                                         ObjectHandle networkHandle,
@@ -121,6 +126,7 @@ public final class LoadFlowCFunctions {
                                         LoadFlowParametersPointer loadFlowParametersPtr,
                                         CCharPointer provider, ObjectHandle reportNodeHandle,
                                         LoadFlowResultCallback loadFlowResultCallback,
+                                        LoadFlowExceptionCallback loadFlowExceptionCallback,
                                         VoidPointer resultFuturePtr,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         Util.doCatch(exceptionHandlerPtr, () -> {
@@ -137,7 +143,8 @@ public final class LoadFlowCFunctions {
                     CommonObjects.getComputationManager(), parameters, reportNode)
                     .whenComplete((result, throwable) -> {
                         if (throwable != null) {
-                            exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(Util.getNonNullMessage(throwable)));
+                            var messagePtr = CTypeUtil.toCharPtr(Util.getNonNullMessage(throwable));
+                            loadFlowExceptionCallback.invoke(messagePtr, resultFuturePtr);
                         } else {
                             var resultsPtr = createLoadFlowComponentResultArrayPointer(result);
                             loadFlowResultCallback.invoke(resultsPtr, resultFuturePtr);
