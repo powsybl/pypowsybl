@@ -467,6 +467,21 @@ class Network:  # pylint: disable=too-many-public-methods
             voltage_level_ids = [voltage_level_ids]
         return _pp.get_network_area_diagram_displayed_voltage_levels(self._handle, voltage_level_ids, depth)
 
+
+    def get_default_nad_profile(self) -> NadProfile:
+        """
+        Creates a default NadProfile for branch labels, twt labels, bus descriptions, and VL descriptions.
+
+        Returns:
+            a NadProfile where the labels and descriptions dataframes have been set with the content from the default NAD content provider.
+        """
+        branch_labels_df = create_data_frame_from_series_array(_pp.get_default_branch_labels_nad(self._handle))
+        twt_labels_df = create_data_frame_from_series_array(_pp.get_default_twt_labels_nad(self._handle))
+        bus_descriptions_df = create_data_frame_from_series_array(_pp.get_default_bus_descriptions_nad(self._handle))
+        vl_infos_df = create_data_frame_from_series_array(_pp.get_default_voltage_level_descriptions_nad(self._handle))
+        return NadProfile(branch_labels=branch_labels_df, three_wt_labels=twt_labels_df, bus_descriptions=bus_descriptions_df, vl_descriptions=vl_infos_df)
+
+
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: Set[float] = None,
                          countries: Set[str] = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
