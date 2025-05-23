@@ -47,7 +47,7 @@ def scale_loads(network: Network, variant_id: str):
 
 @pytest.mark.asyncio
 async def test_run_lf_ac_async_multi_variants():
-    network = pp.network.create_ieee14()
+    network = pp.network.create_ieee14(allow_variant_multi_thread_access=True)
 
     task_count = 3
     for task_num in range(task_count):

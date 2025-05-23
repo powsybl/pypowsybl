@@ -365,7 +365,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
+    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 

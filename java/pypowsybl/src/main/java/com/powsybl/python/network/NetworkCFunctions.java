@@ -117,11 +117,13 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "createNetwork")
-    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, boolean allowVariantMultiThreadAccess,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String networkName = CTypeUtil.toString(name);
             String networkId = CTypeUtil.toString(id);
             Network network = Networks.create(networkName, networkId);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }

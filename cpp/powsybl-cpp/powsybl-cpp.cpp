@@ -658,8 +658,8 @@ std::string getVersionTable() {
     return toString(PowsyblCaller::get()->callJava<char*>(::getVersionTable));
 }
 
-JavaHandle createNetwork(const std::string& name, const std::string& id) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
+JavaHandle createNetwork(const std::string& name, const std::string& id, bool allowVariantMultiThreadAccess) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data(), allowVariantMultiThreadAccess);
 }
 
 JavaHandle merge(std::vector<JavaHandle>& networks) {

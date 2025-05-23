@@ -16,11 +16,11 @@ from .network import Network
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
 
-def _create_network(name: str, network_id: str = '') -> Network:
-    return Network(_pp.create_network(name, network_id))
+def _create_network(name: str, network_id: str = '', allow_variant_multi_thread_access: bool = False) -> Network:
+    return Network(_pp.create_network(name, network_id, allow_variant_multi_thread_access))
 
 
-def create_empty(network_id: str = "Default") -> Network:
+def create_empty(network_id: str = "Default", allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an empty network.
 
@@ -30,109 +30,109 @@ def create_empty(network_id: str = "Default") -> Network:
     Returns:
         a new empty network
     """
-    return _create_network('empty', network_id=network_id)
+    return _create_network('empty', network_id, allow_variant_multi_thread_access)
 
 
-def create_ieee9() -> Network:
+def create_ieee9(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of IEEE 9 bus network
 
     Returns:
         a new instance of IEEE 9 bus network
     """
-    return _create_network('ieee9')
+    return _create_network('ieee9', '', allow_variant_multi_thread_access)
 
 
-def create_ieee14() -> Network:
+def create_ieee14(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of IEEE 14 bus network
 
     Returns:
         a new instance of IEEE 14 bus network
     """
-    return _create_network('ieee14')
+    return _create_network('ieee14', '', allow_variant_multi_thread_access)
 
 
-def create_ieee30() -> Network:
+def create_ieee30(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of IEEE 30 bus network
 
     Returns:
         a new instance of IEEE 30 bus network
     """
-    return _create_network('ieee30')
+    return _create_network('ieee30', '', allow_variant_multi_thread_access)
 
 
-def create_ieee57() -> Network:
+def create_ieee57(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of IEEE 57 bus network
 
     Returns:
         a new instance of IEEE 57 bus network
     """
-    return _create_network('ieee57')
+    return _create_network('ieee57', '', allow_variant_multi_thread_access)
 
 
-def create_ieee118() -> Network:
+def create_ieee118(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of IEEE 118 bus network
 
     Returns:
         a new instance of IEEE 118 bus network
     """
-    return _create_network('ieee118')
+    return _create_network('ieee118', '', allow_variant_multi_thread_access)
 
 
-def create_ieee300() -> Network:
+def create_ieee300(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of IEEE 300 bus network
 
     Returns:
         a new instance of IEEE 300 bus network
     """
-    return _create_network('ieee300')
+    return _create_network('ieee300', '', allow_variant_multi_thread_access)
 
 
-def create_eurostag_tutorial_example1_network() -> Network:
+def create_eurostag_tutorial_example1_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial
 
     Returns:
         a new instance of example 1 network of Eurostag tutorial
     """
-    return _create_network('eurostag_tutorial_example1')
+    return _create_network('eurostag_tutorial_example1', '', allow_variant_multi_thread_access)
 
-def create_eurostag_tutorial_example1_with_more_generators_network() -> Network:
+def create_eurostag_tutorial_example1_with_more_generators_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial, with a second generator
 
     Returns:
         a new instance of example 1 network of Eurostag tutorial with a second generator
     """
-    return _create_network('eurostag_tutorial_example1_with_more_generators')
+    return _create_network('eurostag_tutorial_example1_with_more_generators', '', allow_variant_multi_thread_access)
 
 
-def create_eurostag_tutorial_example1_with_power_limits_network() -> Network:
+def create_eurostag_tutorial_example1_with_power_limits_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with Power limits
 
     Returns:
         a new instance of example 1 network of Eurostag tutorial with Power limits
     """
-    return _create_network('eurostag_tutorial_example1_with_power_limits')
+    return _create_network('eurostag_tutorial_example1_with_power_limits', '', allow_variant_multi_thread_access)
 
 
-def create_eurostag_tutorial_example1_with_tie_lines_and_areas() -> Network:
+def create_eurostag_tutorial_example1_with_tie_lines_and_areas(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with tie lines and areas
 
     Returns:
         a new instance of example 1 network of Eurostag tutorial with tie lines and areas
     """
-    return _create_network('eurostag_tutorial_example1_with_tie_lines_and_areas')
+    return _create_network('eurostag_tutorial_example1_with_tie_lines_and_areas', '', allow_variant_multi_thread_access)
 
 
-def create_four_substations_node_breaker_network() -> Network:
+def create_four_substations_node_breaker_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of powsybl "4 substations" test case.
 
@@ -143,46 +143,46 @@ def create_four_substations_node_breaker_network() -> Network:
     Returns:
         a new instance of powsybl "4 substations" test case
     """
-    return _create_network('four_substations_node_breaker')
+    return _create_network('four_substations_node_breaker', '', allow_variant_multi_thread_access)
 
 
-def create_four_substations_node_breaker_network_with_extensions() -> Network:
+def create_four_substations_node_breaker_network_with_extensions(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of powsybl "4 substations" test case with ConnectablePosition and BusbarSectionPosition extensions.
 
     The topology is in node-breaker representation.
     """
-    return _create_network('four_substations_node_breaker_with_extensions')
+    return _create_network('four_substations_node_breaker_with_extensions', '', allow_variant_multi_thread_access)
 
 
-def create_micro_grid_be_network() -> Network:
+def create_micro_grid_be_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of micro grid BE CGMES test case
 
     Returns:
         a new instance of micro grid BE CGMES test case
     """
-    return _create_network('micro_grid_be')
+    return _create_network('micro_grid_be', '', allow_variant_multi_thread_access)
 
 
-def create_micro_grid_nl_network() -> Network:
+def create_micro_grid_nl_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of micro grid NL CGMES test case
 
     Returns:
         a new instance of micro grid NL CGMES test case
     """
-    return _create_network('micro_grid_nl')
+    return _create_network('micro_grid_nl', '', allow_variant_multi_thread_access)
 
 
-def create_metrix_tutorial_six_buses_network() -> Network:
+def create_metrix_tutorial_six_buses_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of metrix tutorial six buses test case
 
     Returns:
         a new instance of metrix tutorial six buses test case
     """
-    return _create_network('metrix_tutorial_six_buses')
+    return _create_network('metrix_tutorial_six_buses', '', allow_variant_multi_thread_access)
 
 
 def is_loadable(file: Union[str, PathLike]) -> bool:
