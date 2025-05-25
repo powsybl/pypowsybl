@@ -1,4 +1,5 @@
 import logging
+import math
 from dataclasses import dataclass
 from typing import Any
 
@@ -371,6 +372,37 @@ class VariableContext:
 
         network_cache.network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
 
+    def _update_dangling_lines(self, network_cache: NetworkCache, model: ipopt.Model):
+        dl_ids = []
+        dl_v = []
+        dl_angle = []
+        dl_p = []
+        dl_q = []
+        for dl_num, (dl_id, row) in enumerate(network_cache.dangling_lines.iterrows()):
+            dl_index = self.dl_num_2_index[dl_num]
+
+            if row.bus_id:
+                v = model.get_value(self.dl_v_vars[dl_index])
+                angle = model.get_value(self.dl_ph_vars[dl_index])
+                dl_ids.append(dl_id)
+                dl_v.append(v * row.nominal_v)
+                dl_angle.append(math.degrees(angle))
+                p = model.get_value(self.dl_branch_p1_vars[dl_index])
+                q = model.get_value(self.dl_branch_q1_vars[dl_index])
+            else:
+                v = math.nan
+                angle = math.nan
+                p = 0.0
+                q = 0.0
+
+            dl_p.append(p)
+            dl_q.append(q)
+
+            logger.log(TRACE_LEVEL, f"Update dangline line '{dl_id}' (num={dl_num}): v={v}, angle={angle}, p={p}, q={q}")
+
+        network_cache.network.update_dangling_lines(id=dl_ids, p=dl_p, q=dl_q)
+        network_cache.network.add_elements_properties(id=dl_ids, v=dl_v, angle=dl_angle)
+
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)
         self._update_vsc_converter_stations(network_cache, model)
@@ -379,3 +411,4 @@ class VariableContext:
         self._update_shunt_compensators(network_cache, model)
         self._update_branches(network_cache, model)
         self._update_buses(network_cache, model)
+        self._update_dangling_lines(network_cache, model)
