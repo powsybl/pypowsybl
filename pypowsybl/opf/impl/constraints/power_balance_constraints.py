@@ -106,20 +106,20 @@ class PowerBalanceConstraints(Constraints):
             bus_p_expr = poi.ExprBuilder()
             bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
             bus_p_expr -= bus_p_load[bus_num]
-            model.add_quadratic_constraint(bus_p_expr, poi.Eq, 0.0)
+            model.add_linear_constraint(bus_p_expr, poi.Eq, 0.0)
 
             bus_q_expr = poi.ExprBuilder()
             bus_q_expr += poi.quicksum(bus_q_gen[bus_num])
             bus_q_expr -= bus_q_load[bus_num]
-            model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
+            model.add_linear_constraint(bus_q_expr, poi.Eq, 0.0)
 
         for dl_index in range(dl_count):
             bus_p_expr = poi.ExprBuilder()
             bus_p_expr += poi.quicksum(dl_bus_p_gen[dl_index])
             bus_p_expr -= dl_bus_p_load[dl_index]
-            model.add_quadratic_constraint(bus_p_expr, poi.Eq, 0.0)
+            model.add_linear_constraint(bus_p_expr, poi.Eq, 0.0)
 
             bus_q_expr = poi.ExprBuilder()
             bus_q_expr += poi.quicksum(dl_bus_q_gen[dl_index])
             bus_q_expr -= dl_bus_q_load[dl_index]
-            model.add_quadratic_constraint(bus_q_expr, poi.Eq, 0.0)
+            model.add_linear_constraint(bus_q_expr, poi.Eq, 0.0)
