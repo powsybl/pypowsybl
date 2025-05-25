@@ -620,6 +620,10 @@ public final class NetworkDataframes {
                         (twt, groupId) -> twt.getLeg1().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho1", (twt, context) -> perUnitRho(context, twt, ThreeSides.ONE, NetworkDataframes.computeRho(twt, ThreeSides.ONE)), false)
                 .doubles("alpha1", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.ONE)), false)
+                .doubles("r1_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeR(twt, ThreeSides.ONE), twt), false)
+                .doubles("x1_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeX(twt, ThreeSides.ONE), twt), false)
+                .doubles("g1_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeG(twt, ThreeSides.ONE), twt), false)
+                .doubles("b1_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeB(twt, ThreeSides.ONE), twt), false)
                 .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
                 .doubles("x2", (twt, context) -> perUnitRX(context, twt.getLeg2().getX(), twt), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
                 .doubles("g2", (twt, context) -> perUnitBG(context, twt.getLeg2().getG(), twt), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitBG(context, twt, g2)))
@@ -640,6 +644,10 @@ public final class NetworkDataframes {
                         (twt, groupId) -> twt.getLeg2().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho2", (twt, context) -> perUnitRho(context, twt, ThreeSides.TWO, NetworkDataframes.computeRho(twt, ThreeSides.TWO)), false)
                 .doubles("alpha2", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.TWO)), false)
+                .doubles("r2_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeR(twt, ThreeSides.TWO), twt), false)
+                .doubles("x2_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeX(twt, ThreeSides.TWO), twt), false)
+                .doubles("g2_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeG(twt, ThreeSides.TWO), twt), false)
+                .doubles("b2_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeB(twt, ThreeSides.TWO), twt), false)
                 .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
                 .doubles("x3", (twt, context) -> perUnitRX(context, twt.getLeg3().getX(), twt), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
                 .doubles("g3", (twt, context) -> perUnitBG(context, twt.getLeg3().getG(), twt), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitBG(context, twt, g3)))
@@ -660,6 +668,10 @@ public final class NetworkDataframes {
                         (twt, groupId) -> twt.getLeg3().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho3", (twt, context) -> perUnitRho(context, twt, ThreeSides.THREE, NetworkDataframes.computeRho(twt, ThreeSides.THREE)), false)
                 .doubles("alpha3", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.THREE)), false)
+                .doubles("r3_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeR(twt, ThreeSides.THREE), twt), false)
+                .doubles("x3_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeX(twt, ThreeSides.THREE), twt), false)
+                .doubles("g3_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeG(twt, ThreeSides.THREE), twt), false)
+                .doubles("b3_tap", (twt, context) -> perUnitRX(context, NetworkDataframes.computeB(twt, ThreeSides.THREE), twt), false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -1378,6 +1390,34 @@ public final class NetworkDataframes {
         return twt.getB()
                 * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getB() / 100.0) : 1)
                 * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getB() / 100.0) : 1);
+    }
+
+    private static double computeR(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getR()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getR() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getR() / 100.0) : 1);
+    }
+
+    private static double computeX(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getX()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getX() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getX() / 100.0) : 1);
+    }
+
+    private static double computeG(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getG()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getG() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getG() / 100.0) : 1);
+    }
+
+    private static double computeB(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getB()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getB() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getB() / 100.0) : 1);
     }
 
     private static NetworkDataframeMapper ptcs() {

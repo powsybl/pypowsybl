@@ -109,7 +109,7 @@ class VariableContext:
         closed_branch_nums = []
         open_side1_branch_nums = []
         open_side2_branch_nums = []
-        branch_count = len(network_cache.lines) + len(network_cache.transformers)
+        branch_count = len(network_cache.lines) + len(network_cache.transformers_2w)
         branch_num_2_index = [-1] * branch_count
         for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
             if row.bus1_id and row.bus2_id:

@@ -19,7 +19,8 @@ class NetworkCache:
         self._lcc_converter_stations = self._build_lcc_converter_stations(network, self.buses)
         self._hvdc_lines = self._build_hvdc_lines(network, self._vsc_converter_stations, self._lcc_converter_stations, self.buses)
         self._lines = self._build_lines(network, self.buses)
-        self._transformers = self._build_2_windings_transformers(network, self.buses)
+        self._transformers_2w = self._build_2w_transformers(network, self.buses)
+        self._transformers_3w = self._build_3w_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
         self._dangling_lines = self._build_dangling_lines(network, self.buses)
         self._slack_terminal = self._network.get_extensions('slackTerminal')
@@ -45,15 +46,37 @@ class NetworkCache:
                     branches_and_buses['synchronous_component_2'] == 0)]
 
     @staticmethod
+    def _filter_3w_transformers(transformers_3w: DataFrame, buses: DataFrame) -> DataFrame:
+        if len(transformers_3w) == 0:
+            return transformers_3w
+        transfos_and_buses = pd.merge(transformers_3w, buses, left_on='bus1_id', right_index=True, how='left')
+        transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus2_id', right_index=True, suffixes=('', '_2'), how='left')
+        transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus3_id', right_index=True, suffixes=('', '_3'), how='left')
+        return transfos_and_buses[
+            (transfos_and_buses['connected_component'] == 0) & (transfos_and_buses['synchronous_component'] == 0)
+            & (transfos_and_buses['connected_component_2'] == 0) & (transfos_and_buses['synchronous_component_2'] == 0)
+            & (transfos_and_buses['connected_component_3'] == 0) & (transfos_and_buses['synchronous_component_3'] == 0)]
+
+    @staticmethod
     def _build_branches(network: Network, buses: DataFrame):
         branches = network.get_branches(attributes=['bus1_id', 'bus2_id'])
         return NetworkCache._filter_branches(branches, buses)
 
     @staticmethod
-    def _build_2_windings_transformers(network: Network, buses: DataFrame):
+    def _build_2w_transformers(network: Network, buses: DataFrame):
         transfos = network.get_2_windings_transformers(
             attributes=['bus1_id', 'bus2_id', 'rho', 'alpha', 'r_tap', 'x_tap', 'g_tap', 'b_tap'])
         return NetworkCache._filter_branches(transfos, buses)
+
+    @staticmethod
+    def _build_3w_transformers(network: Network, buses: DataFrame):
+        transfos = network.get_3_windings_transformers(
+            attributes=['bus1_id', 'bus2_id', 'bus3_id',
+                        'rho1', 'rho2', 'rho3',
+                        'alpha1', 'alpha2', 'alpha3',
+                        'r1_tap', 'r2_tap', 'r3_tap', 'x1_tap', 'x2_tap', 'x3_tap',
+                        'g1_tap', 'g2_tap', 'g3_tap', 'b1_tap', 'b2_tap', 'b3_tap'])
+        return NetworkCache._filter_3w_transformers(transfos, buses)
 
     @staticmethod
     def _build_lines(network: Network, buses: DataFrame):
@@ -174,8 +197,8 @@ class NetworkCache:
         return self._lines
 
     @property
-    def transformers(self) -> DataFrame:
-        return self._transformers
+    def transformers_2w(self) -> DataFrame:
+        return self._transformers_2w
 
     @property
     def branches(self) -> DataFrame:
