@@ -1256,6 +1256,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("serialize_rao_parameters", ::saveRaoParametersToBinaryBuffer, "Serialize rao parameters to a buffer", py::arg("rao_parameters"));
     m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_result"), py::arg("crac"));
     m.def("get_rao_result_status", &pypowsybl::getRaoResultStatus, "Get the status of a rao result", py::arg("rao_result"));
+    m.def("get_flow_cnec_results", &pypowsybl::getFlowCnecResults, "Get flow cnec results", py::arg("rao_context"), py::arg("rao_result"));
+    m.def("get_angle_cnec_results", &pypowsybl::getAngleCnecResults, "Get angle cnec results", py::arg("rao_context"), py::arg("rao_result"));
+    m.def("get_voltage_cnec_results", &pypowsybl::getVoltageCnecResults, "Get voltage cnec results", py::arg("rao_context"), py::arg("rao_result"));
+    m.def("get_ra_results", &pypowsybl::getRaResults, "Get ra results", py::arg("rao_context"), py::arg("rao_result"));
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
     m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 

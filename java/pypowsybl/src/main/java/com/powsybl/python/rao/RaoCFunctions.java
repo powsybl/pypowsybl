@@ -8,6 +8,7 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
@@ -24,6 +25,7 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
+import com.powsybl.python.network.Dataframes;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -207,6 +209,34 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "createRaoParameters")
     public static PyPowsyblApiHeader.RaoParametersPointer createRaoParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters()));
+    }
+
+    @CEntryPoint(name = "getFlowCnecResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getFlowCnecResults(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+        return Dataframes.createCDataframe(Dataframes.flowCnecMapper(), raoContext, new DataframeFilter(), result);
+    }
+
+    @CEntryPoint(name = "getAngleCnecResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getAngleCnecResults(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+        return Dataframes.createCDataframe(Dataframes.angleCnecMapper(), raoContext, new DataframeFilter(), result);
+    }
+
+    @CEntryPoint(name = "getVoltageCnecResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVoltageCnecResults(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+        return Dataframes.createCDataframe(Dataframes.voltageCnecMapper(), raoContext, new DataframeFilter(), result);
+    }
+
+    @CEntryPoint(name = "getRaResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+        return Dataframes.createCDataframe(Dataframes.raResultMapper(), raoContext, new DataframeFilter(), result);
     }
 
     @CEntryPoint(name = "freeRaoParameters")

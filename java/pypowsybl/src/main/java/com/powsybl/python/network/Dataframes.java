@@ -17,10 +17,18 @@ import com.powsybl.dataframe.impl.Series;
 import com.powsybl.flow_decomposition.FlowDecompositionResults;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
+import com.powsybl.openrao.commons.MinOrMax;
+import com.powsybl.openrao.commons.Unit;
+import com.powsybl.openrao.data.crac.api.Instant;
+import com.powsybl.openrao.data.crac.api.cnec.AngleCnec;
+import com.powsybl.openrao.data.crac.api.cnec.FlowCnec;
+import com.powsybl.openrao.data.crac.api.cnec.VoltageCnec;
+import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.python.flow_decomposition.XnecWithDecompositionContext;
+import com.powsybl.python.rao.RaoContext;
 import com.powsybl.python.security.BranchResultContext;
 import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
@@ -74,6 +82,13 @@ public final class Dataframes {
     private static final DataframeMapper<VoltageLevel.BusBreakerView, Void> BUS_BREAKER_VIEW_SWITCHES_MAPPER = createBusBreakerViewSwitchesMapper();
     private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
     private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
+
+    private static final DataframeMapper<RaoContext, RaoResult> FLOW_CNEC_RESULT_MAPPER = createFlowCnecResultMapper();
+    private static final DataframeMapper<RaoContext, RaoResult> ANGLE_CNEC_RESULT_MAPPER = createAngleCnecResultMapper();
+
+    private static final DataframeMapper<RaoContext, RaoResult> VOLTAGE_CNEC_RESULT_MAPPER = createVoltageCnecResultMapper();
+
+    private static final DataframeMapper<RaoContext, RaoResult> RA_RESULT_MAPPER = createRemedialActionResultMapper();
 
     private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> FEEDER_MAP_MAPPER = createFeederMapDataframe();
 
@@ -159,6 +174,22 @@ public final class Dataframes {
 
     public static DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> feederMapMapper() {
         return FEEDER_MAP_MAPPER;
+    }
+
+    public static DataframeMapper<RaoContext, RaoResult> flowCnecMapper() {
+        return FLOW_CNEC_RESULT_MAPPER;
+    }
+
+    public static DataframeMapper<RaoContext, RaoResult> angleCnecMapper() {
+        return ANGLE_CNEC_RESULT_MAPPER;
+    }
+
+    public static DataframeMapper<RaoContext, RaoResult> voltageCnecMapper() {
+        return VOLTAGE_CNEC_RESULT_MAPPER;
+    }
+
+    public static DataframeMapper<RaoContext, RaoResult> raResultMapper() {
+        return RA_RESULT_MAPPER;
     }
 
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
@@ -282,6 +313,142 @@ public final class Dataframes {
                 .doubles("value", LimitViolation::getValue)
                 .strings("side", p -> Objects.toString(p.getSide(), ""))
                 .build();
+    }
+
+    public record FlowCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double flow, double margin, double relativeMargin, double commercialFlow, double loopFlow, double ptdfZonalSum) { }
+
+    public record AngleCnecResult(String cnecId, Instant instant, String contingency, double angle, double margin) { }
+
+    public record VoltageCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double minVoltage, double maxVoltage, double margin) { }
+
+    public record ActivedRemedialActionResult(String remedialActionId, Instant instant, boolean actived) { }
+
+    private static List<FlowCnecResult> getFlowCnecResult(RaoContext raoContext, RaoResult raoResult) {
+        List<FlowCnecResult> results = new ArrayList<>();
+        for (var cnec : raoContext.getCrac().getFlowCnecs()) {
+            results.add(readFlowCnecResult(raoResult, cnec, null, TwoSides.ONE));
+            results.add(readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.ONE));
+        }
+        return results;
+    }
+
+    static FlowCnecResult readFlowCnecResult(RaoResult result, FlowCnec cnec, Instant instant, TwoSides side) {
+        return new FlowCnecResult(
+            cnec.getId(),
+            instant,
+            cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "",
+            TwoSides.ONE,
+            result.getFlow(instant, cnec, side, Unit.MEGAWATT),
+            result.getMargin(instant, cnec, Unit.MEGAWATT),
+            result.getRelativeMargin(instant, cnec, Unit.MEGAWATT),
+            result.getCommercialFlow(instant, cnec, side, Unit.MEGAWATT),
+            result.getLoopFlow(instant, cnec, side, Unit.MEGAWATT),
+            result.getPtdfZonalSum(instant, cnec, side)
+        );
+    }
+
+    private static List<AngleCnecResult> getAngleCnecResult(RaoContext raoContext, RaoResult raoResult) {
+        List<AngleCnecResult> results = new ArrayList<>();
+        for (var cnec : raoContext.getCrac().getAngleCnecs()) {
+            results.add(readAngleCnecResult(raoResult, cnec, null));
+            results.add(readAngleCnecResult(raoResult, cnec, cnec.getState().getInstant()));
+        }
+        return results;
+    }
+
+    static AngleCnecResult readAngleCnecResult(RaoResult result, AngleCnec cnec, Instant instant) {
+        return new AngleCnecResult(
+            cnec.getId(),
+            instant,
+            cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "",
+            result.getAngle(instant, cnec, Unit.DEGREE),
+            result.getMargin(instant, cnec, Unit.DEGREE)
+        );
+    }
+
+    private static List<VoltageCnecResult> getVoltageCnecResult(RaoContext raoContext, RaoResult raoResult) {
+        List<VoltageCnecResult> results = new ArrayList<>();
+        for (var cnec : raoContext.getCrac().getVoltageCnecs()) {
+            results.add(readVoltageCnecResult(raoResult, cnec, null));
+            results.add(readVoltageCnecResult(raoResult, cnec, cnec.getState().getInstant()));
+        }
+        return results;
+    }
+
+    static VoltageCnecResult readVoltageCnecResult(RaoResult result, VoltageCnec cnec, Instant instant) {
+        return new VoltageCnecResult(
+            cnec.getId(),
+            instant,
+            cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "",
+            TwoSides.ONE,
+            result.getVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
+            result.getVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
+            result.getMargin(instant, cnec, Unit.KILOVOLT)
+        );
+    }
+
+    private static List<ActivedRemedialActionResult> getActivatedRemedialActions(RaoContext raoContext, RaoResult raoResult) {
+        List<ActivedRemedialActionResult> results = new ArrayList<>();
+        for (var ra : raoContext.getCrac().getRemedialActions()) {
+            for (var state : raoContext.getCrac().getStates()) {
+                ActivedRemedialActionResult result = new ActivedRemedialActionResult(
+                    ra.getId(),
+                    state.getInstant(),
+                    raoResult.isActivatedDuringState(state, ra)
+                );
+                results.add(result);
+            }
+        }
+        return results;
+    }
+
+    private static DataframeMapper<RaoContext, RaoResult> createFlowCnecResultMapper() {
+        return new DataframeMapperBuilder<RaoContext, FlowCnecResult, RaoResult>()
+            .itemsProvider(Dataframes::getFlowCnecResult)
+            .stringsIndex("cnec_id", FlowCnecResult::cnecId)
+            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("contingency", FlowCnecResult::contingency)
+            .strings("side", r -> r.side().toString())
+            .doubles("flow", FlowCnecResult::flow)
+            .doubles("margin", FlowCnecResult::margin)
+            .doubles("relative_margin", FlowCnecResult::relativeMargin)
+            .doubles("commercial_flow", FlowCnecResult::commercialFlow)
+            .doubles("loop_flow", FlowCnecResult::loopFlow)
+            .doubles("ptdf_zonal_sum", FlowCnecResult::ptdfZonalSum)
+            .build();
+    }
+
+    private static DataframeMapper<RaoContext, RaoResult> createAngleCnecResultMapper() {
+        return new DataframeMapperBuilder<RaoContext, AngleCnecResult, RaoResult>()
+            .itemsProvider(Dataframes::getAngleCnecResult)
+            .stringsIndex("cnec_id", AngleCnecResult::cnecId)
+            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("contingency", AngleCnecResult::contingency)
+            .doubles("angle", AngleCnecResult::angle)
+            .doubles("margin", AngleCnecResult::margin)
+            .build();
+    }
+
+    private static DataframeMapper<RaoContext, RaoResult> createVoltageCnecResultMapper() {
+        return new DataframeMapperBuilder<RaoContext, VoltageCnecResult, RaoResult>()
+            .itemsProvider(Dataframes::getVoltageCnecResult)
+            .stringsIndex("cnec_id", VoltageCnecResult::cnecId)
+            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("contingency", VoltageCnecResult::contingency)
+            .strings("side", r -> r.side().toString())
+            .doubles("min_voltage", VoltageCnecResult::minVoltage)
+            .doubles("max_voltage", VoltageCnecResult::maxVoltage)
+            .doubles("margin", VoltageCnecResult::margin)
+            .build();
+    }
+
+    private static DataframeMapper<RaoContext, RaoResult> createRemedialActionResultMapper() {
+        return new DataframeMapperBuilder<RaoContext, ActivedRemedialActionResult, RaoResult>()
+            .itemsProvider(Dataframes::getActivatedRemedialActions)
+            .stringsIndex("remedial_action_id", ActivedRemedialActionResult::remedialActionId)
+            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .booleans("activated", ActivedRemedialActionResult::actived)
+            .build();
     }
 
     private static List<NodeBreakerViewSwitchContext> getNodeBreakerViewSwitches(VoltageLevel.NodeBreakerView nodeBreakerView) {
