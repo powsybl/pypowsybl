@@ -9,6 +9,7 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.parameters.ParameterType;
+import com.powsybl.contingency.Contingency;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
@@ -333,10 +334,11 @@ public final class Dataframes {
     }
 
     static FlowCnecResult readFlowCnecResult(RaoResult result, FlowCnec cnec, Instant instant, TwoSides side) {
+        Optional<Contingency> contingencyOpt = cnec.getState().getContingency();
         return new FlowCnecResult(
             cnec.getId(),
             instant,
-            cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "",
+            contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
             TwoSides.ONE,
             result.getFlow(instant, cnec, side, Unit.MEGAWATT),
             result.getMargin(instant, cnec, Unit.MEGAWATT),
@@ -357,10 +359,11 @@ public final class Dataframes {
     }
 
     static AngleCnecResult readAngleCnecResult(RaoResult result, AngleCnec cnec, Instant instant) {
+        Optional<Contingency> contingencyOpt = cnec.getState().getContingency();
         return new AngleCnecResult(
             cnec.getId(),
             instant,
-            cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "",
+            contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
             result.getAngle(instant, cnec, Unit.DEGREE),
             result.getMargin(instant, cnec, Unit.DEGREE)
         );
@@ -376,10 +379,11 @@ public final class Dataframes {
     }
 
     static VoltageCnecResult readVoltageCnecResult(RaoResult result, VoltageCnec cnec, Instant instant) {
+        Optional<Contingency> contingencyOpt = cnec.getState().getContingency();
         return new VoltageCnecResult(
             cnec.getId(),
             instant,
-            cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "",
+            contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
             TwoSides.ONE,
             result.getVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
             result.getVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
