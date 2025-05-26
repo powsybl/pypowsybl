@@ -69,6 +69,16 @@ typedef struct loadflow_parameters_struct {
     int provider_parameters_values_count;
 } loadflow_parameters;
 
+typedef struct scaling_parameters_struct {
+    int scaling_convention;
+    unsigned char constant_power_factor;
+    unsigned char reconnect;
+    unsigned char allows_generator_out_ofo_active_power_limits;
+    int priority;
+    int scaling_type;
+    char* ignored_injection_ids;
+} scaling_parameters;
+
 typedef struct loadflow_validation_parameters_struct {
     double threshold;
     double epsilon_x;
