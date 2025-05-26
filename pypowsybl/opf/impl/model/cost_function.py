@@ -55,6 +55,11 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
                 gen_p_expr += variable_context.gen_p_vars[gen_num]
                 gen_p_expr += row.target_p
                 cost += gen_p_expr * gen_p_expr
+                if row.voltage_regulator_on:
+                    bus_num = network_cache.buses.index.get_loc(row.bus_id)
+                    v_var = variable_context.v_vars[bus_num]
+                    cost += (v_var - row.target_v) * (v_var - row.target_v)
+
         for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
             if row.bus_id:
                 if NetworkCache.is_rectifier(row):
@@ -62,4 +67,9 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
                     vsc_cs_p_expr += variable_context.vsc_cs_p_vars[vsc_cs_num]
                     vsc_cs_p_expr -= row.target_p
                     cost += vsc_cs_p_expr * vsc_cs_p_expr
+                if row.voltage_regulator_on:
+                    bus_num = network_cache.buses.index.get_loc(row.bus_id)
+                    v_var = variable_context.v_vars[bus_num]
+                    cost += (v_var - row.target_v) * (v_var - row.target_v)
+
         return cost
