@@ -20,6 +20,7 @@ import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.openrao.commons.MinOrMax;
 import com.powsybl.openrao.commons.Unit;
+import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.Instant;
 import com.powsybl.openrao.data.crac.api.cnec.AngleCnec;
 import com.powsybl.openrao.data.crac.api.cnec.FlowCnec;
@@ -29,7 +30,6 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.dataframe.CDataframeHandler;
 import com.powsybl.python.flow_decomposition.XnecWithDecompositionContext;
-import com.powsybl.python.rao.RaoContext;
 import com.powsybl.python.security.BranchResultContext;
 import com.powsybl.python.security.BusResultContext;
 import com.powsybl.python.security.LimitViolationContext;
@@ -84,12 +84,12 @@ public final class Dataframes {
     private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_BUSES_MAPPER = createBusBreakerViewBuses();
     private static final DataframeMapper<VoltageLevel, Void> BUS_BREAKER_VIEW_ELEMENTS_MAPPER = createBusBreakerViewElements();
 
-    private static final DataframeMapper<RaoContext, RaoResult> FLOW_CNEC_RESULT_MAPPER = createFlowCnecResultMapper();
-    private static final DataframeMapper<RaoContext, RaoResult> ANGLE_CNEC_RESULT_MAPPER = createAngleCnecResultMapper();
+    private static final DataframeMapper<Crac, RaoResult> FLOW_CNEC_RESULT_MAPPER = createFlowCnecResultMapper();
+    private static final DataframeMapper<Crac, RaoResult> ANGLE_CNEC_RESULT_MAPPER = createAngleCnecResultMapper();
 
-    private static final DataframeMapper<RaoContext, RaoResult> VOLTAGE_CNEC_RESULT_MAPPER = createVoltageCnecResultMapper();
+    private static final DataframeMapper<Crac, RaoResult> VOLTAGE_CNEC_RESULT_MAPPER = createVoltageCnecResultMapper();
 
-    private static final DataframeMapper<RaoContext, RaoResult> RA_RESULT_MAPPER = createRemedialActionResultMapper();
+    private static final DataframeMapper<Crac, RaoResult> RA_RESULT_MAPPER = createRemedialActionResultMapper();
 
     private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> FEEDER_MAP_MAPPER = createFeederMapDataframe();
 
@@ -177,19 +177,19 @@ public final class Dataframes {
         return FEEDER_MAP_MAPPER;
     }
 
-    public static DataframeMapper<RaoContext, RaoResult> flowCnecMapper() {
+    public static DataframeMapper<Crac, RaoResult> flowCnecMapper() {
         return FLOW_CNEC_RESULT_MAPPER;
     }
 
-    public static DataframeMapper<RaoContext, RaoResult> angleCnecMapper() {
+    public static DataframeMapper<Crac, RaoResult> angleCnecMapper() {
         return ANGLE_CNEC_RESULT_MAPPER;
     }
 
-    public static DataframeMapper<RaoContext, RaoResult> voltageCnecMapper() {
+    public static DataframeMapper<Crac, RaoResult> voltageCnecMapper() {
         return VOLTAGE_CNEC_RESULT_MAPPER;
     }
 
-    public static DataframeMapper<RaoContext, RaoResult> raResultMapper() {
+    public static DataframeMapper<Crac, RaoResult> raResultMapper() {
         return RA_RESULT_MAPPER;
     }
 
@@ -324,9 +324,9 @@ public final class Dataframes {
 
     public record ActivedRemedialActionResult(String remedialActionId, Instant instant, boolean actived) { }
 
-    private static List<FlowCnecResult> getFlowCnecResult(RaoContext raoContext, RaoResult raoResult) {
+    private static List<FlowCnecResult> getFlowCnecResult(Crac crac, RaoResult raoResult) {
         List<FlowCnecResult> results = new ArrayList<>();
-        for (var cnec : raoContext.getCrac().getFlowCnecs()) {
+        for (var cnec : crac.getFlowCnecs()) {
             results.add(readFlowCnecResult(raoResult, cnec, null, TwoSides.ONE));
             results.add(readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.ONE));
         }
@@ -349,9 +349,9 @@ public final class Dataframes {
         );
     }
 
-    private static List<AngleCnecResult> getAngleCnecResult(RaoContext raoContext, RaoResult raoResult) {
+    private static List<AngleCnecResult> getAngleCnecResult(Crac crac, RaoResult raoResult) {
         List<AngleCnecResult> results = new ArrayList<>();
-        for (var cnec : raoContext.getCrac().getAngleCnecs()) {
+        for (var cnec : crac.getAngleCnecs()) {
             results.add(readAngleCnecResult(raoResult, cnec, null));
             results.add(readAngleCnecResult(raoResult, cnec, cnec.getState().getInstant()));
         }
@@ -369,9 +369,9 @@ public final class Dataframes {
         );
     }
 
-    private static List<VoltageCnecResult> getVoltageCnecResult(RaoContext raoContext, RaoResult raoResult) {
+    private static List<VoltageCnecResult> getVoltageCnecResult(Crac crac, RaoResult raoResult) {
         List<VoltageCnecResult> results = new ArrayList<>();
-        for (var cnec : raoContext.getCrac().getVoltageCnecs()) {
+        for (var cnec : crac.getVoltageCnecs()) {
             results.add(readVoltageCnecResult(raoResult, cnec, null));
             results.add(readVoltageCnecResult(raoResult, cnec, cnec.getState().getInstant()));
         }
@@ -391,10 +391,10 @@ public final class Dataframes {
         );
     }
 
-    private static List<ActivedRemedialActionResult> getActivatedRemedialActions(RaoContext raoContext, RaoResult raoResult) {
+    private static List<ActivedRemedialActionResult> getActivatedRemedialActions(Crac crac, RaoResult raoResult) {
         List<ActivedRemedialActionResult> results = new ArrayList<>();
-        for (var ra : raoContext.getCrac().getRemedialActions()) {
-            for (var state : raoContext.getCrac().getStates()) {
+        for (var ra : crac.getRemedialActions()) {
+            for (var state : crac.getStates()) {
                 ActivedRemedialActionResult result = new ActivedRemedialActionResult(
                     ra.getId(),
                     state.getInstant(),
@@ -406,8 +406,8 @@ public final class Dataframes {
         return results;
     }
 
-    private static DataframeMapper<RaoContext, RaoResult> createFlowCnecResultMapper() {
-        return new DataframeMapperBuilder<RaoContext, FlowCnecResult, RaoResult>()
+    private static DataframeMapper<Crac, RaoResult> createFlowCnecResultMapper() {
+        return new DataframeMapperBuilder<Crac, FlowCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getFlowCnecResult)
             .stringsIndex("cnec_id", FlowCnecResult::cnecId)
             .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
@@ -422,8 +422,8 @@ public final class Dataframes {
             .build();
     }
 
-    private static DataframeMapper<RaoContext, RaoResult> createAngleCnecResultMapper() {
-        return new DataframeMapperBuilder<RaoContext, AngleCnecResult, RaoResult>()
+    private static DataframeMapper<Crac, RaoResult> createAngleCnecResultMapper() {
+        return new DataframeMapperBuilder<Crac, AngleCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getAngleCnecResult)
             .stringsIndex("cnec_id", AngleCnecResult::cnecId)
             .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
@@ -433,8 +433,8 @@ public final class Dataframes {
             .build();
     }
 
-    private static DataframeMapper<RaoContext, RaoResult> createVoltageCnecResultMapper() {
-        return new DataframeMapperBuilder<RaoContext, VoltageCnecResult, RaoResult>()
+    private static DataframeMapper<Crac, RaoResult> createVoltageCnecResultMapper() {
+        return new DataframeMapperBuilder<Crac, VoltageCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getVoltageCnecResult)
             .stringsIndex("cnec_id", VoltageCnecResult::cnecId)
             .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
@@ -446,8 +446,8 @@ public final class Dataframes {
             .build();
     }
 
-    private static DataframeMapper<RaoContext, RaoResult> createRemedialActionResultMapper() {
-        return new DataframeMapperBuilder<RaoContext, ActivedRemedialActionResult, RaoResult>()
+    private static DataframeMapper<Crac, RaoResult> createRemedialActionResultMapper() {
+        return new DataframeMapperBuilder<Crac, ActivedRemedialActionResult, RaoResult>()
             .itemsProvider(Dataframes::getActivatedRemedialActions)
             .stringsIndex("remedial_action_id", ActivedRemedialActionResult::remedialActionId)
             .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
