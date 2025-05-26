@@ -9,6 +9,10 @@ import pathlib
 import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
+import logging
+logging.basicConfig()
+logging.getLogger("powsybl").setLevel(1)
+logging.getLogger("pypowsybl").setLevel(1)
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -1508,7 +1512,15 @@ def test_split_or_merge_transformers():
 
 def test_scale_generator():
     n = pp.network.create_micro_grid_be_network()
-    distribution_mode = pp.network.DistributionMode.PROPORTIONAL_TO_P0
-    injections_ids = ['FFR1AA1 _generator', 'FFR2AA1 _generator', 'FFR3AA1 _generator']
-    pp.network.scale_proportional(n, 10, distribution_mode, injections_ids, 0, 400)
+    proportional_to_pmax = pp.network.DistributionMode.PROPORTIONAL_TO_PMAX
+    proportional_to_target = pp.network.DistributionMode.PROPORTIONAL_TO_TARGETP
+
+    injections_ids = ['3a3b27be-b18b-4385-b557-6735d733baf0', '550ebe0d-f2b2-48c1-991f-cebea43a21aa']
+    pp.network.scale_proportional(n, 10, proportional_to_pmax, injections_ids, 50, 200)
+    pp.network.scale_proportional(n, 50, proportional_to_target, injections_ids, 50, 200)
+
+
+
+
+
 
