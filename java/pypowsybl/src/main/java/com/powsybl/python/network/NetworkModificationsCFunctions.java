@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
@@ -193,8 +194,13 @@ public final class NetworkModificationsCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> injectionsIdsStringList = toStringList(injectionsIdsPtrPtr, injectionCount);
             List<Injection<?>> injections = new ArrayList<>();
-            injectionsIdsStringList.forEach(injection ->
-                    injections.add((Injection<?>) network.getConnectable(injection)));
+
+            try {
+                injectionsIdsStringList.forEach(injection ->
+                        injections.add((Injection<?>) network.getConnectable(injection)));
+            } catch (NullPointerException e) {
+                throw new PowsyblException("Can't find injections", e);
+            }
             ProportionalScalable.DistributionMode distributionMode = convert(distributionModeHandle);
             ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
             return (int) proportionalScalable.scale(network, asked);
