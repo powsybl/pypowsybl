@@ -38,11 +38,11 @@ async def test_run_lf_ac_async():
 
 
 def scale_loads(network: Network, variant_id: str):
-    network.set_working_variant(variant_id)
-    loads = network.get_loads(attributes=['p0', 'q0'])
-    loads['p0'] = loads['p0'] + 1
-    loads['q0'] = loads['q0'] + 1
-    network.update_loads(loads)
+    with network.working_variant(variant_id):
+        loads = network.get_loads(attributes=['p0', 'q0'])
+        loads['p0'] = loads['p0'] + 1
+        loads['q0'] = loads['q0'] + 1
+        network.update_loads(loads)
 
 
 @pytest.mark.asyncio
