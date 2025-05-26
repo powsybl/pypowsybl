@@ -247,7 +247,7 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_pro
 
 
 def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = None, post_processors: List[str] = None,
-                            reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
+                            reporter: ReportNode = None, report_node: ReportNode = None, allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a binary buffer.
 
@@ -257,6 +257,7 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
+       allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
@@ -267,11 +268,13 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
     return load_from_binary_buffers([buffer],
                                     {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
-                                    report_node)
+                                    reporter,
+                                    report_node,
+                                    allow_variant_multi_thread_access)
 
 
 def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, str] = None, post_processors: List[str] = None,
-                             reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
+                             reporter: ReportNode = None, report_node: ReportNode = None, allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
 
@@ -281,6 +284,7 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
+       allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
@@ -294,11 +298,12 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
     return Network(_pp.load_network_from_binary_buffers(buffer_list,
                                                         {} if parameters is None else parameters,
                                                         [] if post_processors is None else post_processors,
-                                                        None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
+                                                        None if report_node is None else report_node._report_node,
+                                                        allow_variant_multi_thread_access))  # pylint: disable=protected-access
 
 
 def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None, post_processors: List[str] = None,
-                     reporter: ReportNode = None, report_node: ReportNode = None) -> Network:
+                     reporter: ReportNode = None, report_node: ReportNode = None, allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -309,6 +314,7 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
        post_processors: a list of import post processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
+       allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
 
     Returns:
         The loaded network
@@ -319,4 +325,5 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
     return Network(_pp.load_network_from_string(file_name, file_content,
                                                 {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,
-                                                None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
+                                                None if report_node is None else report_node._report_node,
+                                                allow_variant_multi_thread_access))  # pylint: disable=protected-access

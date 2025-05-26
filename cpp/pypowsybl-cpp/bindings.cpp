@@ -1326,13 +1326,21 @@ PYBIND11_MODULE(_pypowsybl, m) {
 void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {
     py::gil_scoped_acquire acquire;
     py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr); // automatically decrease ref counter
-    resultsFuture.attr("set_results")(new pypowsybl::LoadFlowComponentResultArray(resultsPtr));
+    try {
+        resultsFuture.attr("set_results")(new pypowsybl::LoadFlowComponentResultArray(resultsPtr));
+    } catch (py::error_already_set& err) {
+        err.restore();
+    }
 }
 
 void onLoadFlowException(const char* message, void* resultFuturePtr) {
     py::gil_scoped_acquire acquire;
     py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr); // automatically decrease ref counter
-    resultsFuture.attr("set_exception_message")(message);
+    try {
+        resultsFuture.attr("set_exception_message")(message);
+    } catch (py::error_already_set& err) {
+        err.restore();
+    }
 }
 
 void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
