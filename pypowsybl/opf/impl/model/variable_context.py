@@ -304,8 +304,8 @@ class VariableContext:
             bus_id = row.bus_id
             if bus_id:
                 shunt_index = self.shunt_num_2_index[shunt_num]
-                p = -model.get_value(self.shunt_p_vars[shunt_index])
-                q = -model.get_value(self.shunt_q_vars[shunt_index])
+                p = model.get_value(self.shunt_p_vars[shunt_index])
+                q = model.get_value(self.shunt_q_vars[shunt_index])
             else:
                 p = 0.0
                 q = 0.0

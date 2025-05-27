@@ -41,7 +41,7 @@ class NetworkCache:
         branches_and_buses = pd.merge(branches_and_buses, buses, left_on='bus2_id', right_index=True,
                                       suffixes=('', '_2'), how='left')
         return branches_and_buses[
-            (branches_and_buses['connected_component'] == 0) & (branches_and_buses['synchronous_component'] == 0) & (
+            (branches_and_buses['connected_component'] == 0) & (branches_and_buses['synchronous_component'] == 0) | (
                     branches_and_buses['connected_component_2'] == 0) & (
                     branches_and_buses['synchronous_component_2'] == 0)]
 
@@ -54,8 +54,8 @@ class NetworkCache:
         transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus3_id', right_index=True, suffixes=('', '_3'), how='left')
         return transfos_and_buses[
             (transfos_and_buses['connected_component'] == 0) & (transfos_and_buses['synchronous_component'] == 0)
-            & (transfos_and_buses['connected_component_2'] == 0) & (transfos_and_buses['synchronous_component_2'] == 0)
-            & (transfos_and_buses['connected_component_3'] == 0) & (transfos_and_buses['synchronous_component_3'] == 0)]
+            | (transfos_and_buses['connected_component_2'] == 0) & (transfos_and_buses['synchronous_component_2'] == 0)
+            | (transfos_and_buses['connected_component_3'] == 0) & (transfos_and_buses['synchronous_component_3'] == 0)]
 
     @staticmethod
     def _build_branches(network: Network, buses: DataFrame):

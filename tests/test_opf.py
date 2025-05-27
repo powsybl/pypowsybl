@@ -6,11 +6,13 @@
 #
 import logging
 
+import pandas as pd
 import pytest
 
 import pypowsybl as pp
-from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
+from pypowsybl.network import Network
 from pypowsybl.opf.impl.model.bounds import Bounds
+from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
 
 
 @pytest.fixture(autouse=True)
@@ -18,6 +20,8 @@ def set_up():
     pp.set_config_read(False)
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('powsybl').setLevel(1)
+    pd.options.display.max_columns = None
+    pd.options.display.expand_frame_repr = False
 
 
 def test_reactive_range():
@@ -54,10 +58,19 @@ def run_opf_then_lf(network: pp.network.Network, iteration_count: int = 1):
     opf_parameters = OptimalPowerFlowParameters()
     assert pp.opf.run_ac(network, opf_parameters)
 
+    validate(network)
+
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
+
+
+def validate(network: Network):
+    validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True)
+    result = pp.loadflow.run_validation(network, [pp.loadflow.ValidationType.BUSES], validation_parameters)
+    print(result.buses[result.buses['validated'] == False])
+    assert result.valid
 
 
 def test_esg_tuto1():
