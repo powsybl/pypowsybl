@@ -9,8 +9,18 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 
 class PowerBalanceConstraints(Constraints):
+    @staticmethod
+    def _to_expressions(bus_gen: list, bus_load: list) -> list[poi.ExprBuilder]:
+        return [poi.ExprBuilder() + poi.quicksum(gen) - load
+                for gen, load in zip(bus_gen, bus_load)]
+
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, function_context: FunctionContext, model: ipopt.Model) -> None:
+        for bus_expr in self.create_bus_expr_list(network_cache, variable_context):
+            model.add_linear_constraint(bus_expr, poi.Eq, 0.0)
+
+    @classmethod
+    def create_bus_expr_list(cls, network_cache, variable_context):
         bus_count = len(network_cache.buses)
         bus_p_gen = [[] for _ in range(bus_count)]
         bus_q_gen = [[] for _ in range(bus_count)]
@@ -102,24 +112,9 @@ class PowerBalanceConstraints(Constraints):
                 dl_bus_p_load[dl_index] -= row.p0
                 dl_bus_q_load[dl_index] -= row.q0
 
-        for bus_num in range(bus_count):
-            bus_p_expr = poi.ExprBuilder()
-            bus_p_expr += poi.quicksum(bus_p_gen[bus_num])
-            bus_p_expr -= bus_p_load[bus_num]
-            model.add_linear_constraint(bus_p_expr, poi.Eq, 0.0)
-
-            bus_q_expr = poi.ExprBuilder()
-            bus_q_expr += poi.quicksum(bus_q_gen[bus_num])
-            bus_q_expr -= bus_q_load[bus_num]
-            model.add_linear_constraint(bus_q_expr, poi.Eq, 0.0)
-
-        for dl_index in range(dl_count):
-            bus_p_expr = poi.ExprBuilder()
-            bus_p_expr += poi.quicksum(dl_bus_p_gen[dl_index])
-            bus_p_expr -= dl_bus_p_load[dl_index]
-            model.add_linear_constraint(bus_p_expr, poi.Eq, 0.0)
-
-            bus_q_expr = poi.ExprBuilder()
-            bus_q_expr += poi.quicksum(dl_bus_q_gen[dl_index])
-            bus_q_expr -= dl_bus_q_load[dl_index]
-            model.add_linear_constraint(bus_q_expr, poi.Eq, 0.0)
+        return (
+                cls._to_expressions(bus_p_gen, bus_p_load) +
+                cls._to_expressions(bus_q_gen, bus_q_load) +
+                cls._to_expressions(dl_bus_p_gen, dl_bus_p_load) +
+                cls._to_expressions(dl_bus_q_gen, dl_bus_q_load)
+        )
