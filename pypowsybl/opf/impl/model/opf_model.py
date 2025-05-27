@@ -38,6 +38,8 @@ class OpfModel:
         logger.info("Building model...")
 
         model = ipopt.Model()
+        model.set_raw_parameter("print_user_options", "yes")
+        model.set_raw_parameter("print_advanced_options", "yes")
 
         # create variables
         variable_context = VariableContext.build(network_cache, model)
