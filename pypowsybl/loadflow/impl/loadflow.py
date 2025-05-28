@@ -62,7 +62,7 @@ class LoadFlowResultsFutureWrapper:
         self._loop = loop
         self._future = future
 
-    def set_results(self, results: list[_pypowsybl.LoadFlowComponentResult]) -> None:
+    def set_results(self, results: List[_pypowsybl.LoadFlowComponentResult]) -> None:
         self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
 
     def set_exception_message(self, message: str) -> None:
