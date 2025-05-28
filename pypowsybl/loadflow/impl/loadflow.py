@@ -6,7 +6,7 @@
 #
 import asyncio
 import warnings
-from asyncio import Future
+from asyncio import Future, AbstractEventLoop
 from typing import List
 from pandas import DataFrame
 from pypowsybl import _pypowsybl, PyPowsyblError
@@ -58,15 +58,15 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
 
 
 class LoadFlowResultsFutureWrapper:
-    def __init__(self, loop, future: Future):
+    def __init__(self, loop: AbstractEventLoop, future: Future):
         self._loop = loop
         self._future = future
 
-    def set_results(self, results):
+    def set_results(self, results: list[_pypowsybl.LoadFlowComponentResult]) -> None:
         self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
 
-    def set_exception_message(self, message: str):
-        self._loop.call_soon_threadsafe(self._future.set_exception(PyPowsyblError(message)))
+    def set_exception_message(self, message: str) -> None:
+        self._loop.call_soon_threadsafe(self._future.set_exception, PyPowsyblError(message))
 
 
 def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Parameters = None, provider: str = '',

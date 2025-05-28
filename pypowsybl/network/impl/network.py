@@ -54,7 +54,6 @@ class WorkingVariantScope:
     def __init__(self, network: 'Network', variant_id: str):
         self._network = network
         self._variant_id = variant_id
-        self._old_variant_id = None
 
     def __enter__(self) -> 'WorkingVariantScope':
         self._old_variant_id = self._network.get_working_variant_id()
@@ -65,7 +64,6 @@ class WorkingVariantScope:
                        exc_value: Optional[BaseException],
                        traceback: Optional[object]) -> Literal[False]:
         self._network.set_working_variant(self._old_variant_id)
-        self._old_variant_id = None
         return False
 
 
