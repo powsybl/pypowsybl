@@ -540,8 +540,6 @@ class ScalingParameters:
     constant_power_factor: bool
     reconnect: bool
     allows_generator_out_ofo_active_power_limits: bool
-    priority: int
-    scaling_type: ScalingType
     ignored_injection_ids: List[str]
 
 
