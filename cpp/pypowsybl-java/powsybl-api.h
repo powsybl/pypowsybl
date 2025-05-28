@@ -73,10 +73,11 @@ typedef struct scaling_parameters_struct {
     int scaling_convention;
     unsigned char constant_power_factor;
     unsigned char reconnect;
-    unsigned char allows_generator_out_ofo_active_power_limits;
+    unsigned char allows_generator_out_of_active_power_limits;
     int priority;
     int scaling_type;
     char* ignored_injection_ids;
+    int ignored_injection_ids_count;
 } scaling_parameters;
 
 typedef struct loadflow_validation_parameters_struct {

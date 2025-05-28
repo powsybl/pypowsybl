@@ -314,6 +314,55 @@ public final class PyPowsyblApiHeader {
         void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
+    @CStruct("scaling_parameters")
+    public interface ScalingParameters extends PointerBase {
+
+        @CField("scaling_convention")
+        int getScalingConvention();
+
+        @CField("scaling_convention")
+        void setScalingConvention(int scalingConvention);
+
+        @CField("constant_power_factor")
+        boolean isConstantPowerFactor();
+
+        @CField("constant_power_factor")
+        void setConstantPowerFactor(boolean constantPowerFactor);
+
+        @CField("reconnect")
+        boolean reconnect();
+
+        @CField("reconnect")
+        void setReconnect(boolean reconnect);
+
+        @CField("allows_generator_out_of_active_power_limits")
+        boolean allowsGeneratorOutOfActivePowerLimits();
+
+        @CField("allows_generator_out_of_active_power_limits")
+        void setAllowsGeneratorOutOfActivePowerLimits(boolean allowsGeneratorOutOfActivePowerLimits);
+
+        @CField("priority")
+        int getPriority();
+
+        @CField("priority")
+        void setPriority(int priority);
+
+        @CField("scaling_type")
+        int getScalingType();
+
+        @CField("scaling_type")
+        void setScalingType(int scalingType);
+
+        @CField("ignored_injection_ids")
+        CCharPointerPointer getIgnoredInjectionIds();
+
+        @CField("ignored_injection_ids_count")
+        int getIgnoredInjectionIdsCount();
+
+        @CField("ignored_injection_ids_count")
+        void setIgnoredInjectionIdsCount(int ignoredInjectionIdsCount);
+    }
+
     @CStruct("loadflow_validation_parameters")
     public interface LoadFlowValidationParametersPointer extends PointerBase {
 
@@ -640,6 +689,43 @@ public final class PyPowsyblApiHeader {
         public static native ElementType fromCValue(int value);
     }
 
+    @CEnum("scaling_type")
+    public enum ScalingType {
+        DELTA_P,
+        TARGET_P;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ScalingType fromCValue(int value);
+    }
+
+    @CEnum("priority")
+    public enum Priority {
+        RESPECT_OF_VOLUME_ASKED,
+        RESPECT_OF_DISTRIBUTION,
+        ONESHOT;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Priority fromCValue(int value);
+    }
+
+    @CEnum("scaling_convention")
+    public enum ScalingConvention {
+        GENERATOR,
+        LOAD;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ScalingConvention fromCValue(int value);
+    }
+
     @CEnum("distribution_mode")
     public enum DistributionMode {
         PROPORTIONAL_TO_TARGETP,
@@ -654,7 +740,6 @@ public final class PyPowsyblApiHeader {
 
         @CEnumLookup
         public static native DistributionMode fromCValue(int value);
-
     }
 
     @CEnum("validation_type")

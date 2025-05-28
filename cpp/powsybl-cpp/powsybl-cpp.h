@@ -323,6 +323,21 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class ScalingParameters {
+public:
+    ScalingParameters(scaling_parameters* src);
+    std::shared_ptr<scaling_parameters> to_c_struct() const;
+    void load_to_c_struct(scaling_parameters& params) const;
+
+    double scaling_convention;
+    bool constant_power_factor;
+    bool reconnect;
+    bool allows_generator_out_ofo_active_power_limits;
+    int priority;
+    int scaling_type;
+    std::vector<std::string> ignored_injection_ids;
+};
+
 class LoadFlowValidationParameters {
 public:
     LoadFlowValidationParameters(loadflow_validation_parameters* src);
