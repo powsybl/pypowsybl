@@ -319,6 +319,7 @@ public final class SecurityAnalysisCFunctions {
     public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer parameters,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parameters.getProviderParameters());
             LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
             UnmanagedMemory.free(parameters);
         });
@@ -337,8 +338,8 @@ public final class SecurityAnalysisCFunctions {
         paramsPtr.setHighVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageProportionalThreshold());
         paramsPtr.setLowVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageAbsoluteThreshold());
         paramsPtr.setLowVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageProportionalThreshold());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 

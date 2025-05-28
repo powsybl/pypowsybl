@@ -157,21 +157,27 @@ public final class NetworkUtil {
         Stream.Builder<TemporaryLimitData> limits = Stream.builder();
         network.getBranchStream().forEach(branch -> {
             addOperationalLimitGroupsLimits(limits, branch.getOperationalLimitsGroups1(), branch, ONE,
-                    (String) branch.getSelectedOperationalLimitsGroupId1().orElse(null));
+                    (String) branch.getSelectedOperationalLimitsGroupId1().orElse(null),
+                    branch.getTerminal1().getVoltageLevel().getNominalV());
             addOperationalLimitGroupsLimits(limits, branch.getOperationalLimitsGroups2(), branch, TWO,
-                    (String) branch.getSelectedOperationalLimitsGroupId2().orElse(null));
+                    (String) branch.getSelectedOperationalLimitsGroupId2().orElse(null),
+                    branch.getTerminal2().getVoltageLevel().getNominalV());
         });
         network.getDanglingLineStream().forEach(danglingLine ->
             addOperationalLimitGroupsLimits(limits, danglingLine.getOperationalLimitsGroups(), danglingLine, NONE,
-                    danglingLine.getSelectedOperationalLimitsGroupId().orElse(null))
+                    danglingLine.getSelectedOperationalLimitsGroupId().orElse(null),
+                    danglingLine.getTerminal().getVoltageLevel().getNominalV())
         );
         network.getThreeWindingsTransformerStream().forEach(twt -> {
             addOperationalLimitGroupsLimits(limits, twt.getLeg1().getOperationalLimitsGroups(), twt, ONE,
-                    twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse(null));
+                    twt.getLeg1().getSelectedOperationalLimitsGroupId().orElse(null),
+                    twt.getLeg1().getTerminal().getVoltageLevel().getNominalV());
             addOperationalLimitGroupsLimits(limits, twt.getLeg2().getOperationalLimitsGroups(), twt, TWO,
-                    twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse(null));
+                    twt.getLeg2().getSelectedOperationalLimitsGroupId().orElse(null),
+                    twt.getLeg2().getTerminal().getVoltageLevel().getNominalV());
             addOperationalLimitGroupsLimits(limits, twt.getLeg3().getOperationalLimitsGroups(), twt, THREE,
-                    twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse(null));
+                    twt.getLeg3().getSelectedOperationalLimitsGroupId().orElse(null),
+                    twt.getLeg3().getTerminal().getVoltageLevel().getNominalV());
         });
         return limits.build();
     }
@@ -181,25 +187,27 @@ public final class NetworkUtil {
     }
 
     private static void addOperationalLimitGroupsLimits(Stream.Builder<TemporaryLimitData> limits, Collection<OperationalLimitsGroup> groups,
-                                                        Identifiable<?> element, TemporaryLimitData.Side side, String selectedGroupId) {
+                                                        Identifiable<?> element, TemporaryLimitData.Side side, String selectedGroupId,
+                                                        double perUnitingNominalV) {
         groups.forEach(group -> {
             String groupId1 = group.getId();
             boolean isSelected1 = groupId1.equals(selectedGroupId);
-            addLimit(limits, element, group.getCurrentLimits().orElse(null), side, groupId1, isSelected1);
-            addLimit(limits, element, group.getActivePowerLimits().orElse(null), side, groupId1, isSelected1);
-            addLimit(limits, element, group.getApparentPowerLimits().orElse(null), side, groupId1, isSelected1);
+            addLimit(limits, element, group.getCurrentLimits().orElse(null), side, groupId1, isSelected1, perUnitingNominalV);
+            addLimit(limits, element, group.getActivePowerLimits().orElse(null), side, groupId1, isSelected1, perUnitingNominalV);
+            addLimit(limits, element, group.getApparentPowerLimits().orElse(null), side, groupId1, isSelected1, perUnitingNominalV);
         });
     }
 
     private static void addLimit(Stream.Builder<TemporaryLimitData> temporaryLimitContexts, Identifiable<?> identifiable,
-                                 LoadingLimits limits, TemporaryLimitData.Side side, String groupId, boolean isSelected) {
+                                 LoadingLimits limits, TemporaryLimitData.Side side, String groupId, boolean isSelected,
+                                 double perUnitingNominalV) {
         if (limits != null) {
             temporaryLimitContexts.add(new TemporaryLimitData(identifiable.getId(), "permanent_limit", side, limits.getPermanentLimit(),
-                    limits.getLimitType(), identifiable.getType(), groupId, isSelected));
+                    limits.getLimitType(), identifiable.getType(), groupId, isSelected, perUnitingNominalV));
             limits.getTemporaryLimits().stream()
                     .map(temporaryLimit -> new TemporaryLimitData(identifiable.getId(), temporaryLimit.getName(), side, temporaryLimit.getValue(),
                             limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious(),
-                            groupId, isSelected))
+                            groupId, isSelected, perUnitingNominalV))
                     .forEach(temporaryLimitContexts::add);
         }
     }

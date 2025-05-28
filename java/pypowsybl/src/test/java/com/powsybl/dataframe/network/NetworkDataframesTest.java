@@ -299,8 +299,9 @@ class NetworkDataframesTest {
         List<Series> allAttributeSeries = createDataFrame(BATTERY, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "max_p", "min_p", "min_q", "max_q", "reactive_limits_kind", "target_p", "target_q", "p", "q", "i", "voltage_level_id",
-                        "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
+                .containsExactly("id", "name", "max_p", "min_p", "min_q", "max_q", "min_q_at_target_p",
+                        "max_q_at_target_p", "min_q_at_p", "max_q_at_p", "reactive_limits_kind", "target_p", "target_q",
+                        "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
     }
 
     @Test
@@ -404,12 +405,12 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id", "connected", "hvdc_line_id");
         List<Series> allAttributeSeries = createDataFrame(LCC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "power_factor", "loss_factor", "p", "q", "i", "voltage_level_id", "bus_id",
-                        "bus_breaker_bus_id", "node", "connected", "fictitious");
+                        "bus_breaker_bus_id", "node", "connected", "fictitious", "hvdc_line_id");
     }
 
     @Test
@@ -420,12 +421,13 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "loss_factor", "min_q", "max_q", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
-                        "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                        "p", "q", "i", "voltage_level_id", "bus_id", "connected", "hvdc_line_id");
         List<Series> allAttributeSeries = createDataFrame(VSC_CONVERTER_STATION, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "loss_factor", "min_q", "max_q", "min_q_at_p", "max_q_at_p", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
-                        "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
+                .containsExactly("id", "name", "loss_factor", "min_q", "max_q", "min_q_at_target_p", "max_q_at_target_p",
+                        "min_q_at_p", "max_q_at_p", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
+                        "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious", "hvdc_line_id");
     }
 
     @Test
