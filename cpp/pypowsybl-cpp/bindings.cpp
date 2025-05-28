@@ -425,7 +425,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("PROPORTIONAL_TO_P0", distribution_mode::PROPORTIONAL_TO_P0)
             .value("UNIFORM_DISTRIBUTION", distribution_mode::UNIFORM_DISTRIBUTION);
 
-
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
             .value("DEFAULT_ATTRIBUTES", filter_attributes_type::DEFAULT_ATTRIBUTES)
@@ -579,6 +578,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
+    py::enum_<scaling_type>(m, "ScalingType")
+            .value("DELTA_P", scaling_type::DELTA_P)
+            .value("TARGET_P", scaling_type::TARGET_P);
+
+    py::enum_<priority>(m, "Priority")
+            .value("RESPECT_OF_VOLUME_ASKED", priority::RESPECT_OF_VOLUME_ASKED)
+            .value("RESPECT_OF_DISTRIBUTION", priority::RESPECT_OF_DISTRIBUTION)
+            .value("ONESHOT", priority::ONESHOT);
+
+    py::enum_<scaling_convention>(m, "ScalingConvention")
+            .value("GENERATOR", scaling_convention::GENERATOR)
+            .value("LOAD", scaling_convention::LOAD)
+
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 
@@ -606,7 +618,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<pypowsybl::ScalingParameters>(m, "ScalingParameters")
             .def(py::init(&pypowsybl::ScalingParameters))
             .def_readwrite("scaling_convention", &pypowsybl::ScalingParameters::scaling_convention)
-            .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::scaling_convention)
+            .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::constant_power_factor)
             .def_readwrite("reconnect", &pypowsybl::ScalingParameters::reconnect)
             .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
             .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
