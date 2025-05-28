@@ -603,6 +603,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
+    py::class_<pypowsybl::ScalingParameters>(m, "ScalingParameters")
+            .def(py::init(&pypowsybl::ScalingParameters))
+            .def_readwrite("scaling_convention", &pypowsybl::ScalingParameters::scaling_convention)
+            .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::scaling_convention)
+            .def_readwrite("reconnect", &pypowsybl::ScalingParameters::reconnect)
+            .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
+            .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
+            .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
+            .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids)
+
     py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
             .def(py::init(&pypowsybl::createValidationConfig))
             .def_readwrite("threshold", &pypowsybl::LoadFlowValidationParameters::threshold)
