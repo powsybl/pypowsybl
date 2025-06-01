@@ -54,6 +54,7 @@ class WorkingVariantScope:
     def __init__(self, network: 'Network', variant_id: str):
         self._network = network
         self._variant_id = variant_id
+        self._old_variant_id = ''
 
     def __enter__(self) -> 'WorkingVariantScope':
         self._old_variant_id = self._network.get_working_variant_id()
