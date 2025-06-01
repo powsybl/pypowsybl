@@ -242,8 +242,8 @@ def load(file: Union[str, PathLike], parameters: Dict[str, str] = None, post_pro
     return Network(_pp.load_network(file,
                                     {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
-                                    None if report_node is None else report_node._report_node,
-                                    allow_variant_multi_thread_access))  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                    allow_variant_multi_thread_access))
 
 
 def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = None, post_processors: List[str] = None,
@@ -298,8 +298,8 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Dict[str, st
     return Network(_pp.load_network_from_binary_buffers(buffer_list,
                                                         {} if parameters is None else parameters,
                                                         [] if post_processors is None else post_processors,
-                                                        None if report_node is None else report_node._report_node,
-                                                        allow_variant_multi_thread_access))  # pylint: disable=protected-access
+                                                        None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                                        allow_variant_multi_thread_access))
 
 
 def load_from_string(file_name: str, file_content: str, parameters: Dict[str, str] = None, post_processors: List[str] = None,
@@ -325,5 +325,5 @@ def load_from_string(file_name: str, file_content: str, parameters: Dict[str, st
     return Network(_pp.load_network_from_string(file_name, file_content,
                                                 {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,
-                                                None if report_node is None else report_node._report_node,
-                                                allow_variant_multi_thread_access))  # pylint: disable=protected-access
+                                                None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                                allow_variant_multi_thread_access))
