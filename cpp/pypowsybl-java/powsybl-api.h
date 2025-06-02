@@ -293,8 +293,8 @@ typedef enum {
 } priority;
 
 typedef enum {
-    GENERATOR_CONVENTION = 0,
-    LOAD,
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
 } scaling_convention;
 
 typedef struct matrix_struct {
