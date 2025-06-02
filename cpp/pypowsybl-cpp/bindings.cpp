@@ -588,8 +588,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ONESHOT", priority::ONESHOT);
 
     py::enum_<scaling_convention>(m, "ScalingConvention")
-            .value("GENERATOR", scaling_convention::GENERATOR)
-            .value("LOAD", scaling_convention::LOAD)
+            .value("GENERATOR_SCALING_CONVENTION", scaling_convention::GENERATOR_SCALING_CONVENTION)
+            .value("LOAD_SCALING_CONVENTION", scaling_convention::LOAD_SCALING_CONVENTION)
 
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
