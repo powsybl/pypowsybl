@@ -65,7 +65,7 @@ class NetworkCache:
     @staticmethod
     def _build_2w_transformers(network: Network, buses: DataFrame):
         transfos = network.get_2_windings_transformers(
-            attributes=['bus1_id', 'bus2_id', 'rho', 'alpha', 'r_tap', 'x_tap', 'g_tap', 'b_tap'])
+            attributes=['bus1_id', 'bus2_id', 'rho', 'alpha', 'r_at_current_tap', 'x_at_current_tap', 'g_at_current_tap', 'b_at_current_tap'])
         return NetworkCache._filter_branches(transfos, buses)
 
     @staticmethod
@@ -74,8 +74,8 @@ class NetworkCache:
             attributes=['bus1_id', 'bus2_id', 'bus3_id',
                         'rho1', 'rho2', 'rho3',
                         'alpha1', 'alpha2', 'alpha3',
-                        'r1_tap', 'r2_tap', 'r3_tap', 'x1_tap', 'x2_tap', 'x3_tap',
-                        'g1_tap', 'g2_tap', 'g3_tap', 'b1_tap', 'b2_tap', 'b3_tap'])
+                        'r1_at_current_tap', 'r2_at_current_tap', 'r3_at_current_tap', 'x1_at_current_tap', 'x2_at_current_tap', 'x3_at_current_tap',
+                        'g1_at_current_tap', 'g2_at_current_tap', 'g3_at_current_tap', 'b1_at_current_tap', 'b2_at_current_tap', 'b3_at_current_tap'])
         return NetworkCache._filter_3w_transformers(transfos, buses)
 
     @staticmethod

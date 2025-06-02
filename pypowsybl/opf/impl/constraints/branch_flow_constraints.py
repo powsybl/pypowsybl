@@ -116,8 +116,8 @@ class BranchFlowConstraints(Constraints):
                                         r, x, g1, b1, g2, b2, r1, a1,
                                         variable_context, function_context)
 
-        for transfo_num, row in enumerate(network_cache.transformers_2w.itertuples(index=False)):
-            r, x, g, b, rho, alpha = row.r_tap, row.x_tap, row.g_tap, row.b_tap, row.rho, row.alpha
+        for transfo_num, row in enumerate(network_cache.transformers_2w.itertuples(index=True)):
+            r, x, g, b, rho, alpha = row.r_at_current_tap, row.x_at_current_tap, row.g_at_current_tap, row.b_at_current_tap, row.rho, row.alpha
             if parameters.twt_split_shunt_admittance:
                 g1 = g / 2
                 g2 = g / 2

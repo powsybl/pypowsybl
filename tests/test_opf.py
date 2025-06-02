@@ -68,7 +68,10 @@ def run_opf_then_lf(network: pp.network.Network, iteration_count: int = 1):
 
 def validate(network: Network):
     validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True)
-    result = pp.loadflow.run_validation(network, [pp.loadflow.ValidationType.BUSES], validation_parameters)
+    validation_types = [pp.loadflow.ValidationType.BUSES,
+                        pp.loadflow.ValidationType.FLOWS,
+                        pp.loadflow.ValidationType.GENERATORS]
+    result = pp.loadflow.run_validation(network, validation_types, validation_parameters)
     # print(result.buses[result.buses['validated'] == False])
     assert result.valid
 
