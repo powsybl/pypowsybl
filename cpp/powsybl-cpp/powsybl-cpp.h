@@ -329,12 +329,12 @@ public:
     std::shared_ptr<scaling_parameters> to_c_struct() const;
     void load_to_c_struct(scaling_parameters& params) const;
 
-    double scaling_convention;
+    ScalingConvention scaling_convention;
     bool constant_power_factor;
     bool reconnect;
     bool allows_generator_out_ofo_active_power_limits;
-    int priority;
-    int scaling_type;
+    Priority priority;
+    ScalingType scaling_type;
     std::vector<std::string> ignored_injection_ids;
 };
 
