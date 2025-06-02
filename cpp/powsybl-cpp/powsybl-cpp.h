@@ -265,8 +265,8 @@ enum Priority {
 };
 
 enum ScalingConvention {
-        GENERATOR = 0,
-        LOAD,
+    GENERATOR = 0,
+    LOAD,
 };
 
 enum ConnectedComponentMode {
@@ -348,7 +348,7 @@ public:
     ScalingConvention scaling_convention;
     bool constant_power_factor;
     bool reconnect;
-    bool allows_generator_out_ofo_active_power_limits;
+    bool allows_generator_out_of_active_power_limits;
     Priority priority;
     ScalingType scaling_type;
     std::vector<std::string> ignored_injection_ids;
