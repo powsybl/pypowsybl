@@ -398,6 +398,9 @@ std::shared_ptr<scaling_parameters> ScalingParameters::to_c_struct() const {
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<scaling_parameters>(res, [](scaling_parameters* ptr){
         deleteScalingParameters(ptr);
+        delete ptr;
+    });
+}
 
 void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
     deleteLoadFlowParameters(&ptr->loadflow_parameters);
