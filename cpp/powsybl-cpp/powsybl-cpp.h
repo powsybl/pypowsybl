@@ -253,6 +253,22 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ScalingType {
+    DELTA_P = 0,
+    TARGET_P,
+};
+
+enum Priority {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+};
+
+enum ScalingConvention {
+        GENERATOR = 0,
+        LOAD,
+};
+
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,
