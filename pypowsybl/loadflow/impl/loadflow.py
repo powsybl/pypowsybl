@@ -21,6 +21,7 @@ from pypowsybl.network import Network
 from pypowsybl.utils import create_data_frame_from_series_array
 from pypowsybl.report import ReportNode
 from .component_result import ComponentResult
+from .loadflow_results_future_wrapper import LoadFlowResultsFutureWrapper
 from .parameters import Parameters
 from .validation_result import ValidationResult
 from .validation_parameters import ValidationParameters, ValidationType
@@ -55,18 +56,6 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
-
-
-class LoadFlowResultsFutureWrapper:
-    def __init__(self, loop: AbstractEventLoop, future: Future):
-        self._loop = loop
-        self._future = future
-
-    def set_results(self, results: List[_pypowsybl.LoadFlowComponentResult]) -> None:
-        self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
-
-    def set_exception_message(self, message: str) -> None:
-        self._loop.call_soon_threadsafe(self._future.set_exception, PyPowsyblError(message))
 
 
 def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Parameters = None, provider: str = '',

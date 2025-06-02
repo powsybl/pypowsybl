@@ -3,8 +3,6 @@ from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union
 
 from numpy import ndarray
 
-from pypowsybl.loadflow.impl.loadflow import LoadFlowResultsFutureWrapper
-
 
 class ArrayStruct:
     def __init__(self) -> None: ...
