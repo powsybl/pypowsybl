@@ -972,6 +972,11 @@ SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisRes
 JavaHandle createRao();
 JavaHandle getCrac(const JavaHandle& raoContext);
 RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
+SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+
 JavaHandle createDefaultRaoParameters();
 JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters);
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);

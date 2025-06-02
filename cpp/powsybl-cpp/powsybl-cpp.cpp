@@ -1911,6 +1911,23 @@ RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult) {
     return pypowsybl::PowsyblCaller::get()->callJava<RaoComputationStatus>(::getRaoResultStatus, raoResult);
 }
 
+SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFlowCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getAngleCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRaResults, cracHandle, resultHandle));
+}
+
+
 JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
