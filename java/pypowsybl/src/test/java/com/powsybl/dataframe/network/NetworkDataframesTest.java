@@ -444,7 +444,8 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "rated_u1", "rated_u2", "rated_s", "p1", "q1", "i1", "p2", "q2", "i2",
                         "voltage_level1_id", "voltage_level2_id", "bus1_id", "bus_breaker_bus1_id", "node1", "bus2_id", "bus_breaker_bus2_id", "node2",
-                        "connected1", "connected2", "fictitious", "selected_limits_group_1", "selected_limits_group_2", "rho", "alpha", "r_tap", "x_tap", "g_tap", "b_tap");
+                        "connected1", "connected2", "fictitious", "selected_limits_group_1", "selected_limits_group_2", "rho", "alpha",
+                        "r_at_current_tap", "x_at_current_tap", "g_at_current_tap", "b_at_current_tap");
     }
 
     @Test
@@ -462,9 +463,9 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "rated_u0",
-                        "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "bus_breaker_bus1_id", "node1", "connected1", "selected_limits_group_1", "rho1", "alpha1", "r1_tap", "x1_tap", "g1_tap", "b1_tap",
-                        "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "bus_breaker_bus2_id", "node2", "connected2", "selected_limits_group_2", "rho2", "alpha2", "r2_tap", "x2_tap", "g2_tap", "b2_tap",
-                        "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "bus_breaker_bus3_id", "node3", "connected3", "selected_limits_group_3", "rho3", "alpha3", "r3_tap", "x3_tap", "g3_tap", "b3_tap",
+                        "r1", "x1", "g1", "b1", "rated_u1", "rated_s1", "ratio_tap_position1", "phase_tap_position1", "p1", "q1", "i1", "voltage_level1_id", "bus1_id", "bus_breaker_bus1_id", "node1", "connected1", "selected_limits_group_1", "rho1", "alpha1", "r1_at_current_tap", "x1_at_current_tap", "g1_at_current_tap", "b1_at_current_tap",
+                        "r2", "x2", "g2", "b2", "rated_u2", "rated_s2", "ratio_tap_position2", "phase_tap_position2", "p2", "q2", "i2", "voltage_level2_id", "bus2_id", "bus_breaker_bus2_id", "node2", "connected2", "selected_limits_group_2", "rho2", "alpha2", "r2_at_current_tap", "x2_at_current_tap", "g2_at_current_tap", "b2_at_current_tap",
+                        "r3", "x3", "g3", "b3", "rated_u3", "rated_s3", "ratio_tap_position3", "phase_tap_position3", "p3", "q3", "i3", "voltage_level3_id", "bus3_id", "bus_breaker_bus3_id", "node3", "connected3", "selected_limits_group_3", "rho3", "alpha3", "r3_at_current_tap", "x3_at_current_tap", "g3_at_current_tap", "b3_at_current_tap",
                         "fictitious");
     }
 
