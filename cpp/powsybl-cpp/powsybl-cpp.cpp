@@ -366,7 +366,7 @@ std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
 }
 
 void deleteScalingParameters(scaling_parameters* ptr) {
-    deleteScalingParameters(&ptr->scaling_parameters);
+    pypowsybl::deleteCharPtrPtr(ptr->ignored_injection_ids, ptr->ignored_injection_ids_count);
 }
 
 ScalingParameters::ScalingParameters(scaling_parameters* src) {
