@@ -281,6 +281,22 @@ typedef enum {
     UNIFORM_DISTRIBUTION,
 } distribution_mode;
 
+typedef enum {
+    DELTA_P = 0,
+    TARGET_P,
+} scaling_type;
+
+typedef enum {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+} priority;
+
+typedef enum {
+    GENERATOR_CONVENTION = 0,
+    LOAD,
+} scaling_convention;
+
 typedef struct matrix_struct {
     int row_count;
     int column_count;
