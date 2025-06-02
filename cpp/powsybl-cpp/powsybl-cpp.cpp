@@ -887,6 +887,17 @@ LoadFlowParameters* createLoadFlowParameters() {
     return new LoadFlowParameters(parameters.get());
 }
 
+
+ScalingParameters* createScalingParameters() {
+    scaling_parameters* parameters_ptr = PowsyblCaller::get()->callJava<scaling_parameters*>(::createScalingParameters);
+    auto parameters = std::shared_ptr<scaling_parameters>(parameters_ptr, [](scaling_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       PowsyblCaller::get()->callJava(::freeScalingParameters, ptr);
+    });
+    return new ScalingParameters(parameters.get());
+}
+
+
 RaoParameters* createRaoParameters() {
     rao_parameters* parameters_ptr = PowsyblCaller::get()->callJava<rao_parameters*>(::createRaoParameters);
     auto parameters = std::shared_ptr<rao_parameters>(parameters_ptr, [](rao_parameters* ptr){

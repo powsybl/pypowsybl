@@ -685,6 +685,8 @@ void saveNetwork(const JavaHandle& network, const std::string& file, const std::
 
 LoadFlowParameters* createLoadFlowParameters();
 
+ScalingParameters* createScalingParameters();
+
 std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
 SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& provider);

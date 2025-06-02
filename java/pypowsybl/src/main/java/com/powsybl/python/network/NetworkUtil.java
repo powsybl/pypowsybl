@@ -9,9 +9,12 @@ package com.powsybl.python.network;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
+import com.powsybl.iidm.modification.scalable.ScalingParameters;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblConfiguration;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -19,6 +22,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.powsybl.python.commons.Util.freeCharPtrPtr;
+import static com.powsybl.python.commons.Util.freeProviderParameters;
 import static com.powsybl.python.network.TemporaryLimitData.Side.*;
 
 /**
@@ -280,5 +285,16 @@ public final class NetworkUtil {
                             .anyMatch(b2 -> b.getId().equals(b2.getId())))
                     .findFirst();
         }
+    }
+
+    public static ScalingParameters createScalingParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? ScalingParameters.load() : new ScalingParameters();
+    }
+
+    /**
+     * Frees inner memory, but not the pointer itself.
+     */
+    public static void freeScalingParametersContent(PyPowsyblApiHeader.ScalingParametersPointer parameters) {
+        freeCharPtrPtr(parameters.getIgnoredInjectionIds(), parameters.getIgnoredInjectionIdsCount());
     }
 }

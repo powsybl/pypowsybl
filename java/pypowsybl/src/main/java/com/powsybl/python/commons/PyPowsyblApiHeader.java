@@ -322,7 +322,7 @@ public final class PyPowsyblApiHeader {
     }
 
     @CStruct("scaling_parameters")
-    public interface ScalingParameters extends PointerBase {
+    public interface ScalingParametersPointer extends PointerBase {
 
         @CField("scaling_convention")
         int getScalingConvention();
@@ -337,13 +337,13 @@ public final class PyPowsyblApiHeader {
         void setConstantPowerFactor(boolean constantPowerFactor);
 
         @CField("reconnect")
-        boolean reconnect();
+        boolean isReconnect();
 
         @CField("reconnect")
         void setReconnect(boolean reconnect);
 
         @CField("allows_generator_out_of_active_power_limits")
-        boolean allowsGeneratorOutOfActivePowerLimits();
+        boolean isAllowsGeneratorOutOfActivePowerLimits();
 
         @CField("allows_generator_out_of_active_power_limits")
         void setAllowsGeneratorOutOfActivePowerLimits(boolean allowsGeneratorOutOfActivePowerLimits);
@@ -362,6 +362,9 @@ public final class PyPowsyblApiHeader {
 
         @CField("ignored_injection_ids")
         CCharPointerPointer getIgnoredInjectionIds();
+
+        @CField("ignored_injection_ids")
+        void setIgnoredInjectionIds(CCharPointerPointer ignoredInjectionIds);
 
         @CField("ignored_injection_ids_count")
         int getIgnoredInjectionIdsCount();
