@@ -80,7 +80,7 @@ typedef struct scaling_parameters_struct {
     unsigned char allows_generator_out_of_active_power_limits;
     int priority;
     int scaling_type;
-    char* ignored_injection_ids;
+    char** ignored_injection_ids;
     int ignored_injection_ids_count;
 } scaling_parameters;
 

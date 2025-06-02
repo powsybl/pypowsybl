@@ -369,9 +369,7 @@ void deleteScalingParameters(scaling_parameters* ptr) {
     deleteScalingParameters(&ptr->scaling_parameters);
 }
 
-ScalingParameters::ScalingParameters(scaling_parameters* src):
-    scaling_parameters(&src->scaling_parameters)
-{
+ScalingParameters::ScalingParameters(scaling_parameters* src) {
     scaling_convention = static_cast<ScalingConvention>(src->scaling_convention);
     constant_power_factor = (bool) src->constant_power_factor;
     reconnect = (bool) src->reconnect;
@@ -389,7 +387,7 @@ void ScalingParameters::load_to_c_struct(scaling_parameters& res) const {
     res.priority = priority;
     res.scaling_type = scaling_type;
     res.ignored_injection_ids = pypowsybl::copyVectorStringToCharPtrPtr(ignored_injection_ids);
-    res.provider_parameters_values_count = ignored_injection_ids.size();
+    res.ignored_injection_ids_count = ignored_injection_ids.size();
 }
 
 std::shared_ptr<scaling_parameters> ScalingParameters::to_c_struct() const {
