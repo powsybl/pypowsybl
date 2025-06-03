@@ -5,11 +5,11 @@ import pyoptinterface as poi
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
 from pypowsybl.opf.impl.bounds.dangling_line_voltage_bounds import DanglingLineVoltageBounds
+from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBounds
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.constraints.dangling_line_flow_constraints import DanglingLineFlowConstraints
-from pypowsybl.opf.impl.constraints.generator_power_bounds import GeneratorPowerBounds
 from pypowsybl.opf.impl.constraints.hvdc_line_constraints import HvdcLineConstraints
 from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
 from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
