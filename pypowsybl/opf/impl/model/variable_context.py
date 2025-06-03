@@ -220,10 +220,11 @@ class VariableContext:
             bus_id = row.bus_id
             if bus_id:
                 vsc_cs_ids.append(vsc_cs_id)
-
-                vsc_cs_p.append(0.0)
-
                 vsc_cs_index = self.vsc_cs_num_2_index[vsc_cs_num]
+
+                p = model.get_value(self.vsc_cs_p_vars[vsc_cs_index])
+                vsc_cs_p.append(p)
+
                 q = model.get_value(self.vsc_cs_q_vars[vsc_cs_index])
                 target_q = -q
                 vsc_cs_target_q.append(target_q)
