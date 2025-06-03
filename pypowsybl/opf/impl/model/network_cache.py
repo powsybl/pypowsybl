@@ -217,9 +217,9 @@ class NetworkCache:
         return self._slack_terminal
 
     @staticmethod
-    def is_rectifier(vsc_cs_row) -> bool:
-        return ((vsc_cs_row.Index == vsc_cs_row.converter_station1_id and vsc_cs_row.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER')
-                or (vsc_cs_row.Index == vsc_cs_row.converter_station2_id and vsc_cs_row.converters_mode == 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'))
+    def is_rectifier(vsc_cs_id: str, hvdc_line_row) -> bool:
+        return ((vsc_cs_id == hvdc_line_row.converter_station1_id and hvdc_line_row.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER')
+                or (vsc_cs_id == hvdc_line_row.converter_station2_id and hvdc_line_row.converters_mode == 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'))
 
     def is_too_small_reactive_power_bounds(self, q_bounds: Bounds):
         return abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / self._network.nominal_apparent_power

@@ -246,22 +246,18 @@ class VariableContext:
     def _update_hvdc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
         hvdc_line_ids = []
         hvdc_line_target_p = []
-        hvdc_line_converters_mode = []
-        for hvdc_line_num, (hvdc_line_id, row) in enumerate(network_cache.hvdc_lines.iterrows()):
+        for hvdc_line_num, (hvdc_line_id, hvdc_line_row) in enumerate(network_cache.hvdc_lines.iterrows()):
             hvdc_line_ids.append(hvdc_line_id)
-            vsc_cs1_num = network_cache.vsc_converter_stations.index.get_loc(row.converter_station1_id)
-            vsc_cs2_num = network_cache.vsc_converter_stations.index.get_loc(row.converter_station2_id)
+            vsc_cs1_num = network_cache.vsc_converter_stations.index.get_loc(hvdc_line_row.converter_station1_id)
+            vsc_cs2_num = network_cache.vsc_converter_stations.index.get_loc(hvdc_line_row.converter_station2_id)
             p1 = model.get_value(self.vsc_cs_p_vars[vsc_cs1_num])
-            _p2 = model.get_value(self.vsc_cs_p_vars[vsc_cs2_num])
-            target_p = abs(p1)
+            p2 = model.get_value(self.vsc_cs_p_vars[vsc_cs2_num])
+            target_p = abs(p1) if NetworkCache.is_rectifier(hvdc_line_row.converter_station1_id, hvdc_line_row) else abs(p2)
             hvdc_line_target_p.append(target_p)
-            converters_mode = 'SIDE_1_RECTIFIER_SIDE_2_INVERTER' if p1 >= 0 else 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'
-            hvdc_line_converters_mode.append(converters_mode)
 
-            logger.log(TRACE_LEVEL, f"Update HVDC line '{hvdc_line_id}': target_p={target_p}, converters_mode={converters_mode}")
+            logger.log(TRACE_LEVEL, f"Update HVDC line '{hvdc_line_id}': target_p={target_p}")
 
-        network_cache.network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p,
-                                                converters_mode=hvdc_line_converters_mode)
+        network_cache.network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p)
 
     def _update_static_var_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
         svc_ids = []

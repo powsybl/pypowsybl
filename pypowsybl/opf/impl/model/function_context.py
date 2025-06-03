@@ -125,7 +125,7 @@ def add_converter_losses(p, loss_factor):
     return p * (100.0 - loss_factor) / 100.0
 
 
-def dc_line_flow(vars, params):
+def dc_line_flow_rectifier_side1(vars, params):
     r, nominal_v, loss_factor1, loss_factor2, sb = (
         params.r,
         params.nominal_v,
@@ -142,6 +142,23 @@ def dc_line_flow(vars, params):
 
     return [p_eq]
 
+def dc_line_flow_rectifier_side2(vars, params):
+    r, nominal_v, loss_factor1, loss_factor2, sb = (
+        params.r,
+        params.nominal_v,
+        params.loss_factor1,
+        params.loss_factor2,
+        params.sb,
+    )
+    p1, p2 = (
+        vars.p1,
+        vars.p2
+    )
+
+    p_eq = add_converter_losses(add_converter_losses(p2, loss_factor2) - hvdc_line_losses(p2, r, nominal_v, sb), loss_factor1) + p1
+
+    return [p_eq]
+
 
 @dataclass
 class FunctionContext:
@@ -149,7 +166,8 @@ class FunctionContext:
     o1bf_index: FunctionIndex
     o2bf_index: FunctionIndex
     sf_index: FunctionIndex
-    dclf_index: FunctionIndex
+    dclf1_index: FunctionIndex
+    dclf2_index: FunctionIndex
 
     @staticmethod
     def build(model: ipopt.Model) -> 'FunctionContext':
@@ -157,5 +175,6 @@ class FunctionContext:
         o1bf_index = model.register_function(open_side1_branch_flow)
         o2bf_index = model.register_function(open_side2_branch_flow)
         sf_index = model.register_function(shunt_flow)
-        dclf_index = model.register_function(dc_line_flow)
-        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index, dclf_index)
+        dclf1_index = model.register_function(dc_line_flow_rectifier_side1)
+        dclf2_index = model.register_function(dc_line_flow_rectifier_side2)
+        return FunctionContext(cbf_index, o1bf_index, o2bf_index, sf_index, dclf1_index, dclf2_index)
