@@ -62,19 +62,19 @@ public final class PerUnitUtil {
     }
 
     public static double perUnitG(NetworkDataframeContext context, ShuntCompensator shuntCompensator) {
-        return perUnitBG(context, shuntCompensator.getG(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
+        return perUnitGB(context, shuntCompensator.getG(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double perUnitG(NetworkDataframeContext context, ShuntCompensatorNonLinearModel.Section section, ShuntCompensator shuntCompensator) {
-        return perUnitBG(context, section.getG(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
+        return perUnitGB(context, section.getG(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
     }
 
-    public static double perUnitBG(NetworkDataframeContext context, double bg, ThreeWindingsTransformer twt) {
-        return perUnitBG(context, bg, twt.getRatedU0());
+    public static double perUnitGB(NetworkDataframeContext context, ThreeWindingsTransformer twt, double gb) {
+        return perUnitGB(context, gb, twt.getRatedU0());
     }
 
-    public static double perUnitBG(NetworkDataframeContext context, double bg, double nominalV) {
-        return context.isPerUnit() ? bg * pow(nominalV, 2) / context.getNominalApparentPower() : bg;
+    public static double perUnitGB(NetworkDataframeContext context, double gb, double nominalV) {
+        return context.isPerUnit() ? gb * pow(nominalV, 2) / context.getNominalApparentPower() : gb;
     }
 
     public static double perUnitG(NetworkDataframeContext context, double g, double r, double x, double nominalV1, double nominalV2) {
@@ -91,8 +91,8 @@ public final class PerUnitUtil {
             line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV());
     }
 
-    public static double unPerUnitBG(NetworkDataframeContext context, TwoWindingsTransformer twt, double g) {
-        return unPerUnitBG(context, g, twt.getTerminal2().getVoltageLevel().getNominalV());
+    public static double unPerUnitGB(NetworkDataframeContext context, TwoWindingsTransformer twt, double gb) {
+        return unPerUnitGB(context, gb, twt.getTerminal2().getVoltageLevel().getNominalV());
     }
 
     public static double unPerUnitG(NetworkDataframeContext context, DanglingLine danglingLine, double g) {
@@ -100,16 +100,16 @@ public final class PerUnitUtil {
             danglingLine.getTerminal().getVoltageLevel().getNominalV(), danglingLine.getTerminal().getVoltageLevel().getNominalV());
     }
 
-    public static double unPerUnitBG(NetworkDataframeContext context, ShuntCompensator shuntCompensator, double bg) {
-        return unPerUnitBG(context, bg, shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
+    public static double unPerUnitGB(NetworkDataframeContext context, ShuntCompensator shuntCompensator, double gb) {
+        return unPerUnitGB(context, gb, shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
     }
 
-    public static double unPerUnitBG(NetworkDataframeContext context, ThreeWindingsTransformer twt, double bg) {
-        return unPerUnitBG(context, bg, twt.getRatedU0());
+    public static double unPerUnitGB(NetworkDataframeContext context, ThreeWindingsTransformer twt, double gb) {
+        return unPerUnitGB(context, gb, twt.getRatedU0());
     }
 
-    public static double unPerUnitBG(NetworkDataframeContext context, double bg, double nominalV) {
-        return context.isPerUnit() ? bg * context.getNominalApparentPower() / pow(nominalV, 2) : bg;
+    public static double unPerUnitGB(NetworkDataframeContext context, double gb, double nominalV) {
+        return context.isPerUnit() ? gb * context.getNominalApparentPower() / pow(nominalV, 2) : gb;
     }
 
     public static double unPerUnitG(NetworkDataframeContext context, double g, double r, double x, double nominalV1, double nominalV2) {
@@ -126,20 +126,20 @@ public final class PerUnitUtil {
             line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV());
     }
 
-    public static double perUnitBG(NetworkDataframeContext context, TwoWindingsTransformer twt, double bg) {
-        return perUnitBG(context, bg, twt.getTerminal2().getVoltageLevel().getNominalV());
+    public static double perUnitGB(NetworkDataframeContext context, TwoWindingsTransformer twt, double gb) {
+        return perUnitGB(context, gb, twt.getTerminal2().getVoltageLevel().getNominalV());
     }
 
     public static double perUnitB(NetworkDataframeContext context, DanglingLine dl) {
-        return perUnitBG(context, dl.getB(), dl.getTerminal().getVoltageLevel().getNominalV());
+        return perUnitGB(context, dl.getB(), dl.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double perUnitB(NetworkDataframeContext context, ShuntCompensatorNonLinearModel.Section section, ShuntCompensator shuntCompensator) {
-        return perUnitBG(context, section.getB(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
+        return perUnitGB(context, section.getB(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double perUnitB(NetworkDataframeContext context, ShuntCompensator shuntCompensator) {
-        return perUnitBG(context, shuntCompensator.getB(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
+        return perUnitGB(context, shuntCompensator.getB(), shuntCompensator.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double perUnitB(NetworkDataframeContext context, double b, double r, double x, double nominalV1, double nominalV2) {
@@ -157,7 +157,7 @@ public final class PerUnitUtil {
     }
 
     public static double unPerUnitB(NetworkDataframeContext context, DanglingLine danglingLine, double b) {
-        return unPerUnitBG(context, b, danglingLine.getTerminal().getVoltageLevel().getNominalV());
+        return unPerUnitGB(context, b, danglingLine.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double unPerUnitB(NetworkDataframeContext context, double b, double r, double x, double nominalV1, double nominalV2) {
@@ -196,11 +196,11 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? (nominalV1 * nominalV2) / context.getNominalApparentPower() * r : r;
     }
 
-    public static double perUnitRX(NetworkDataframeContext context, double rx, TwoWindingsTransformer twt) {
+    public static double perUnitRX(NetworkDataframeContext context, TwoWindingsTransformer twt, double rx) {
         return perUnitRX(context, rx, twt.getTerminal2().getVoltageLevel().getNominalV(), twt.getTerminal2().getVoltageLevel().getNominalV());
     }
 
-    public static double perUnitRX(NetworkDataframeContext context, double rx, ThreeWindingsTransformer twt) {
+    public static double perUnitRX(NetworkDataframeContext context, ThreeWindingsTransformer twt, double rx) {
         return perUnitRX(context, rx, twt.getRatedU0(), twt.getRatedU0());
     }
 
