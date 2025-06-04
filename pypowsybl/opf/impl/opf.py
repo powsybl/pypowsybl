@@ -7,6 +7,7 @@ from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
 from pypowsybl.opf.impl.bounds.dangling_line_voltage_bounds import DanglingLineVoltageBounds
 from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBounds
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
+from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.constraints.dangling_line_flow_constraints import DanglingLineFlowConstraints
@@ -15,6 +16,7 @@ from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanc
 from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
 from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
+from pypowsybl.opf.impl.constraints.transformer_3w_flow_constraints import Transformer3wFlowConstraints
 from pypowsybl.opf.impl.model.cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -52,13 +54,15 @@ class OptimalPowerFlow:
                            SlackBusAngleBounds(),
                            GeneratorPowerBounds(),
                            VscCsPowerBounds(),
-                           DanglingLineVoltageBounds()]
+                           DanglingLineVoltageBounds(),
+                           Transformer3wMiddleVoltageBounds()]
         constraints = [BranchFlowConstraints(),
                        ShuntFlowConstraints(),
                        StaticVarCompensatorReactiveLimitsConstraints(),
                        HvdcLineConstraints(),
                        PowerBalanceConstraints(),
-                       DanglingLineFlowConstraints()]
+                       DanglingLineFlowConstraints(),
+                       Transformer3wFlowConstraints()]
         cost_function = MinimizeAgainstReferenceCostFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                            parameters.twt_split_shunt_admittance)

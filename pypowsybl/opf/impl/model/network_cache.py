@@ -201,6 +201,10 @@ class NetworkCache:
         return self._transformers_2w
 
     @property
+    def transformers_3w(self) -> DataFrame:
+        return self._transformers_3w
+
+    @property
     def branches(self) -> DataFrame:
         return self._branches
 

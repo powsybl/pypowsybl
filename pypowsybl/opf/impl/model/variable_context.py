@@ -38,6 +38,14 @@ class VariableContext:
     dl_branch_p2_vars: Any
     dl_branch_q1_vars: Any
     dl_branch_q2_vars: Any
+    t3_middle_v_vars: Any
+    t3_middle_ph_vars: Any
+    t3_closed_branch_p1_vars: Any
+    t3_closed_branch_p2_vars: Any
+    t3_closed_branch_q1_vars: Any
+    t3_closed_branch_q2_vars: Any
+    t3_open_side2_branch_p1_vars: Any
+    t3_open_side2_branch_q1_vars: Any
     branch_num_2_index: list[int]
     gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
@@ -45,6 +53,10 @@ class VariableContext:
     svc_num_2_index: list[int]
     vsc_cs_num_2_index: list[int]
     dl_num_2_index: list[int]
+    t3_num_2_index: list[int]
+    t3_leg1_num_2_index: list[int]
+    t3_leg2_num_2_index: list[int]
+    t3_leg3_num_2_index: list[int]
 
     @staticmethod
     def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
@@ -145,6 +157,49 @@ class VariableContext:
         dl_branch_q1_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_q1")
         dl_branch_q2_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_q2")
 
+        t3_count = len(network_cache.transformers_3w)
+        t3_nums = []
+        t3_num_2_index = [-1] * t3_count
+        t3_closed_branch_leg_nums = []
+        t3_open_side2_leg_nums = []
+        t3_leg1_num_2_index = [-1] * t3_count
+        t3_leg2_num_2_index = [-1] * t3_count
+        t3_leg3_num_2_index = [-1] * t3_count
+        for t3_num, t3_row in enumerate(network_cache.transformers_3w.itertuples()):
+            if t3_row.bus1_id or t3_row.bus2_id or t3_row.bus3_id:
+                t3_num_2_index[t3_num] = len(t3_nums)
+                t3_nums.append(t3_num)
+
+                if t3_row.bus1_id:
+                    t3_leg1_num_2_index[t3_num] = len(t3_closed_branch_leg_nums)
+                    t3_closed_branch_leg_nums.append(t3_num)
+                else:
+                    t3_leg1_num_2_index[t3_num] = len(t3_open_side2_leg_nums)
+                    t3_open_side2_leg_nums.append(t3_num)
+
+                if t3_row.bus2_id:
+                    t3_leg2_num_2_index[t3_num] = len(t3_closed_branch_leg_nums)
+                    t3_closed_branch_leg_nums.append(t3_num)
+                else:
+                    t3_leg2_num_2_index[t3_num] = len(t3_open_side2_leg_nums)
+                    t3_open_side2_leg_nums.append(t3_num)
+
+                if t3_row.bus3_id:
+                    t3_leg3_num_2_index[t3_num] = len(t3_closed_branch_leg_nums)
+                    t3_closed_branch_leg_nums.append(t3_num)
+                else:
+                    t3_leg3_num_2_index[t3_num] = len(t3_open_side2_leg_nums)
+                    t3_open_side2_leg_nums.append(t3_num)
+
+        t3_middle_v_vars = model.add_variables(range(len(t3_nums)), name="t3_v")
+        t3_middle_ph_vars = model.add_variables(range(len(t3_nums)), name="t3_ph")
+        t3_closed_branch_p1_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_p1")
+        t3_closed_branch_p2_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_p2")
+        t3_closed_branch_q1_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_q1")
+        t3_closed_branch_q2_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_q2")
+        t3_open_side2_p1_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side2_branch_p1")
+        t3_open_side2_q1_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side2_branch_q1")
+
         return VariableContext(v_vars, ph_vars,
                                gen_p_vars, gen_q_vars,
                                shunt_p_vars, shunt_q_vars,
@@ -157,12 +212,17 @@ class VariableContext:
                                dl_v_vars, dl_ph_vars,
                                dl_branch_p1_vars, dl_branch_p2_vars,
                                dl_branch_q1_vars, dl_branch_q2_vars,
+                               t3_middle_v_vars, t3_middle_ph_vars,
+                               t3_closed_branch_p1_vars, t3_closed_branch_p2_vars,
+                               t3_closed_branch_q1_vars, t3_closed_branch_q2_vars,
+                               t3_open_side2_p1_vars, t3_open_side2_q1_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
                                shunt_num_2_index,
                                svc_num_2_index,
                                vsc_cs_num_2_index,
-                               dl_num_2_index)
+                               dl_num_2_index,
+                               t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
         gen_ids = []
@@ -354,6 +414,60 @@ class VariableContext:
 
         network_cache.network.update_branches(id=branch_ids, p1=branch_p1, p2=branch_p2, q1=branch_q1, q2=branch_q2)
 
+    def _update_transformers_3w(self, network_cache: NetworkCache, model: ipopt.Model):
+        t3_ids = []
+        t3_p1 = []
+        t3_p2 = []
+        t3_p3 = []
+        t3_q1 = []
+        t3_q2 = []
+        t3_q3 = []
+        for t3_num, (t3_id, t3_row) in enumerate(network_cache.transformers_3w.iterrows()):
+            t3_ids.append(t3_id)
+            if t3_row.bus1_id or t3_row.bus2_id or t3_row.bus3_id:
+                leg1_index = self.t3_leg1_num_2_index[t3_num]
+                leg2_index = self.t3_leg2_num_2_index[t3_num]
+                leg3_index = self.t3_leg3_num_2_index[t3_num]
+
+                if t3_row.bus1_id:
+                    p1 = model.get_value(self.t3_closed_branch_p1_vars[leg1_index])
+                    q1 = model.get_value(self.t3_closed_branch_q1_vars[leg1_index])
+                else:
+                    p1 = model.get_value(self.t3_open_side2_branch_p1_vars[leg1_index])
+                    q1 = model.get_value(self.t3_open_side2_branch_q1_vars[leg1_index])
+
+                if t3_row.bus2_id:
+                    p2 = model.get_value(self.t3_closed_branch_p1_vars[leg2_index])
+                    q2 = model.get_value(self.t3_closed_branch_q1_vars[leg2_index])
+                else:
+                    p2 = model.get_value(self.t3_open_side2_branch_p1_vars[leg2_index])
+                    q2 = model.get_value(self.t3_open_side2_branch_q1_vars[leg2_index])
+
+                if t3_row.bus3_id:
+                    p3 = model.get_value(self.t3_closed_branch_p1_vars[leg3_index])
+                    q3 = model.get_value(self.t3_closed_branch_q1_vars[leg3_index])
+                else:
+                    p3 = model.get_value(self.t3_open_side2_branch_p1_vars[leg3_index])
+                    q3 = model.get_value(self.t3_open_side2_branch_q1_vars[leg3_index])
+            else:
+                p1 = 0.0
+                p2 = 0.0
+                p3 = 0.0
+                q1 = 0.0
+                q2 = 0.0
+                q3 = 0.0
+
+            t3_p1.append(p1)
+            t3_p2.append(p2)
+            t3_p3.append(p3)
+            t3_q1.append(q1)
+            t3_q2.append(q2)
+            t3_q3.append(q3)
+
+            logger.log(TRACE_LEVEL, f"Update 3 windings transformer '{t3_id}': p1={p1} p2={p2} p3={p3} q1={q1} q2={q2} q3={q3}")
+
+        network_cache.network.update_3_windings_transformers(id=t3_ids, p1=t3_p1, p2=t3_p2, p3=t3_p3, q1=t3_q1, q2=t3_q2, q3=t3_q3)
+
     def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
         bus_ids = []
         bus_v_mag = []
@@ -407,5 +521,6 @@ class VariableContext:
         self._update_static_var_compensators(network_cache, model)
         self._update_shunt_compensators(network_cache, model)
         self._update_branches(network_cache, model)
+        self._update_transformers_3w(network_cache, model)
         self._update_buses(network_cache, model)
         self._update_dangling_lines(network_cache, model)
