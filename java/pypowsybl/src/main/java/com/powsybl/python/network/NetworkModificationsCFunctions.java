@@ -23,7 +23,6 @@ import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
-import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -41,7 +40,6 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -270,16 +268,16 @@ public final class NetworkModificationsCFunctions {
         doCatch(exceptionHandlerPtr, () -> freeScalingParametersPointer(scalingParametersPtr));
     }
 
-    @CEntryPoint(name = "scaleStack")
-    public static int scaleStack(IsolateThread thread, ObjectHandle networkHandle,
-                                        double asked,
-                                        PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPointer,
-                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ScalingParameters scalingParameters = scalingParametersPointer;
-            ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
-            return (int) proportionalScalable.scale(network, asked);
-        });
-    }
+//    @CEntryPoint(name = "scaleStack")
+//    public static int scaleStack(IsolateThread thread, ObjectHandle networkHandle,
+//                                        double asked,
+//                                        PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPointer,
+//                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+//        return doCatch(exceptionHandlerPtr, () -> {
+//            Network network = ObjectHandles.getGlobal().get(networkHandle);
+//            ScalingParameters scalingParameters = scalingParametersPointer;
+//            ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
+//            return (int) proportionalScalable.scale(network, asked);
+//        });
+//    }
 }
