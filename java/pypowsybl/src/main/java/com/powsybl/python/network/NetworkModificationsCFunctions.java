@@ -240,7 +240,7 @@ public final class NetworkModificationsCFunctions {
         Set<String> ignoredInjectionIds = new HashSet<>();
         for (Object injection : ((Collection<?>) scalingParametersPtr.getIgnoredInjectionIds()).toArray()) {
             ignoredInjectionIds.add((String) injection);
-        };
+        }
 
         return createScalingParameters()
                 .setScalingConvention(Scalable.ScalingConvention.values()[scalingParametersPtr.getScalingConvention()])
