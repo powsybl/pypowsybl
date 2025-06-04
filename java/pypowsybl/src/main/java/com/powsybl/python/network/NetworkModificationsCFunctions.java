@@ -23,9 +23,11 @@ import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.apache.commons.lang3.Range;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -39,6 +41,7 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -229,25 +232,26 @@ public final class NetworkModificationsCFunctions {
         return paramsPtr;
     }
 
-    public static void copyToScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer cParameters, ScalingParameters parameters) {
-        parameters.setScalingConvention(cParameters.getScalingConvention());
-        parameters.setConstantPowerFactor(cParameters.isConstantPowerFactor());
-        parameters.setReconnect(cParameters.isReconnect());
-        parameters.setAllowsGeneratorOutOfActivePowerLimits(cParameters.isAllowsGeneratorOutOfActivePowerLimits());
-        parameters.setPriority(cParameters.getPriority());
-        parameters.setScalingType(cParameters.getScalingType());
-
-        Set<String> ignoredInjectionIds = new HashSet<>();
-        for (Object injection : ((Collection<?>) cParameters.getIgnoredInjectionIds()).toArray()) {
-            ignoredInjectionIds.add((String) injection);
-        };
-        parameters.setIgnoredInjectionIds(ignoredInjectionIds);
+    public static ScalingParameters createScalingParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? ScalingParameters.load() : new ScalingParameters();
     }
 
-    public static ScalingParameters convertToScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer paramsPtr) {
-        ScalingParameters params = new ScalingParameters();
-        copyToScalingParameters(paramsPtr, params);
-        return params;
+    public static ScalingParameters convertScalingParameters(boolean dc,
+                                                               PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
+
+        Set<String> ignoredInjectionIds = new HashSet<>();
+        for (Object injection : ((Collection<?>) scalingParametersPtr.getIgnoredInjectionIds()).toArray()) {
+            ignoredInjectionIds.add((String) injection);
+        };
+
+        return createScalingParameters()
+                .setScalingConvention(Scalable.ScalingConvention.values()[scalingParametersPtr.getScalingConvention()])
+                .setConstantPowerFactor(scalingParametersPtr.isConstantPowerFactor())
+                .setReconnect(scalingParametersPtr.isReconnect())
+                .setAllowsGeneratorOutOfActivePowerLimits(scalingParametersPtr.isAllowsGeneratorOutOfActivePowerLimits())
+                .setPriority(ScalingParameters.Priority.values()[scalingParametersPtr.getPriority()])
+                .setScalingType(ScalingParameters.ScalingType.values()[scalingParametersPtr.getScalingType()])
+                .setIgnoredInjectionIds(ignoredInjectionIds);
     }
 
     public static void freeScalingParametersPointer(PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
