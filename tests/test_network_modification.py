@@ -10,6 +10,9 @@ import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
 import logging
+
+from pypowsybl.network.impl.scaling_parameters import Parameters
+
 logging.basicConfig()
 logging.getLogger("powsybl").setLevel(1)
 logging.getLogger("pypowsybl").setLevel(1)
@@ -1518,6 +1521,15 @@ def test_scale_generator():
     injections_ids = ['3a3b27be-b18b-4385-b557-6735d733baf0', '550ebe0d-f2b2-48c1-991f-cebea43a21aa']
     pp.network.scale_proportional(n, 10, proportional_to_pmax, injections_ids, 50, 200)
     pp.network.scale_proportional(n, 50, proportional_to_target, injections_ids, 50, 200)
+
+def test_scaling_parameters_init():
+     scaling_type = Parameters().scaling_type
+     priority = Parameters().priority
+     allows_generator_out_of_active_power_limits = Parameters().allows_generator_out_of_active_power_limits
+
+     assert scaling_type == 0
+     assert priority == 2
+     assert allows_generator_out_of_active_power_limits == false
 
 
 
