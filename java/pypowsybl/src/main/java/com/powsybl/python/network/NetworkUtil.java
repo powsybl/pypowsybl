@@ -12,7 +12,6 @@ import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.modification.scalable.ScalingParameters;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
-import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.powsybl.python.commons.Util.freeCharPtrPtr;
-import static com.powsybl.python.commons.Util.freeProviderParameters;
 import static com.powsybl.python.network.TemporaryLimitData.Side.*;
 
 /**

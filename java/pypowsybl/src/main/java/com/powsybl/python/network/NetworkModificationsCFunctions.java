@@ -26,7 +26,6 @@ import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.loadflow.LoadFlowCUtils;
 import org.apache.commons.lang3.Range;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
