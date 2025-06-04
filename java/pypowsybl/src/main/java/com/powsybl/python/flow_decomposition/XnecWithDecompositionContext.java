@@ -9,6 +9,7 @@ package com.powsybl.python.flow_decomposition;
 
 import com.powsybl.flow_decomposition.DecomposedFlow;
 import com.powsybl.flow_decomposition.DecomposedFlowBuilder;
+import com.powsybl.flow_decomposition.FlowPartition;
 import com.powsybl.flow_decomposition.NetworkUtil;
 import com.powsybl.iidm.network.Country;
 
@@ -29,11 +30,11 @@ public class XnecWithDecompositionContext extends DecomposedFlow {
                 .withAcTerminal1ReferenceFlow(decomposedFlow.getAcTerminal1ReferenceFlow())
                 .withAcTerminal2ReferenceFlow(decomposedFlow.getAcTerminal2ReferenceFlow())
                 .withDcReferenceFlow(decomposedFlow.getDcReferenceFlow())
-                .withAllocatedFlow(decomposedFlow.getAllocatedFlow())
-                .withXNodeFlow(decomposedFlow.getXNodeFlow())
-                .withPstFlow(decomposedFlow.getPstFlow())
-                .withInternalFlow(decomposedFlow.getInternalFlow())
-                .withLoopFlowsMap(decomposedFlow.getLoopFlows()));
+                .withFlowPartition(new FlowPartition(decomposedFlow.getInternalFlow(),
+                        decomposedFlow.getAllocatedFlow(),
+                        decomposedFlow.getLoopFlows(),
+                        decomposedFlow.getPstFlow(),
+                        decomposedFlow.getXNodeFlow())));
     }
 
     public String getCountry1String() {
