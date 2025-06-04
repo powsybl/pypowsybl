@@ -1529,7 +1529,7 @@ def test_scaling_parameters_init():
 
      assert scaling_type == 0
      assert priority == 2
-     assert allows_generator_out_of_active_power_limits == false
+     assert allows_generator_out_of_active_power_limits == False
 
 
 
