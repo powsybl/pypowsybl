@@ -229,6 +229,27 @@ public final class NetworkModificationsCFunctions {
         return paramsPtr;
     }
 
+    public static void copyToScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer cParameters, ScalingParameters parameters) {
+        parameters.setScalingConvention(cParameters.getScalingConvention());
+        parameters.setConstantPowerFactor(cParameters.isConstantPowerFactor());
+        parameters.setReconnect(cParameters.isReconnect());
+        parameters.setAllowsGeneratorOutOfActivePowerLimits(cParameters.isAllowsGeneratorOutOfActivePowerLimits());
+        parameters.setPriority(cParameters.getPriority());
+        parameters.setScalingType(cParameters.getScalingType());
+
+        Set<String> ignoredInjectionIds = new HashSet<>();
+        for (Object injection : ((Collection<?>) cParameters.getIgnoredInjectionIds()).toArray()) {
+            ignoredInjectionIds.add((String) injection);
+        };
+        parameters.setIgnoredInjectionIds(ignoredInjectionIds);
+    }
+
+    public static ScalingParameters convertToScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer paramsPtr) {
+        ScalingParameters params = new ScalingParameters();
+        copyToScalingParameters(paramsPtr, params);
+        return params;
+    }
+
     public static void freeScalingParametersPointer(PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
         freeScalingParametersContent(scalingParametersPtr);
         UnmanagedMemory.free(scalingParametersPtr);
@@ -242,8 +263,19 @@ public final class NetworkModificationsCFunctions {
     @CEntryPoint(name = "freeScalingParameters")
     public static void freeScalingParameters(IsolateThread thread, PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeScalingParametersPointer(scalingParametersPtr);
+        doCatch(exceptionHandlerPtr, () -> freeScalingParametersPointer(scalingParametersPtr));
+    }
+
+    @CEntryPoint(name = "scaleStack")
+    public static int scaleStack(IsolateThread thread, ObjectHandle networkHandle,
+                                        double asked,
+                                        PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPointer,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            ScalingParameters scalingParameters = scalingParametersPointer;
+            ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
+            return (int) proportionalScalable.scale(network, asked);
         });
     }
 }

@@ -16,6 +16,8 @@ import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationT
 import com.powsybl.dynamicsimulation.DynamicSimulationResult;
 import com.powsybl.dynamicsimulation.OutputVariable;
 import com.powsybl.iidm.modification.scalable.ProportionalScalable;
+import com.powsybl.iidm.modification.scalable.Scalable;
+import com.powsybl.iidm.modification.scalable.ScalingParameters;
 import com.powsybl.iidm.network.ThreeSides;
 import com.powsybl.iidm.network.ValidationLevel;
 import com.powsybl.openreac.parameters.input.algo.OpenReacAmplLogLevel;
@@ -45,6 +47,7 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
+import static com.powsybl.iidm.modification.scalable.ScalingParameters.*;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 
 /**
@@ -308,6 +311,28 @@ public final class Util {
             case PROPORTIONAL_TO_DIFF_TARGETP_PMIN -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_DIFF_TARGETP_PMIN;
             case PROPORTIONAL_TO_P0 -> ProportionalScalable.DistributionMode.PROPORTIONAL_TO_P0;
             case UNIFORM_DISTRIBUTION -> ProportionalScalable.DistributionMode.UNIFORM_DISTRIBUTION;
+        };
+    }
+
+    public static ScalingParameters.Priority convert(PyPowsyblApiHeader.Priority type) {
+        return switch (type) {
+            case RESPECT_OF_VOLUME_ASKED -> ScalingParameters.Priority.RESPECT_OF_VOLUME_ASKED;
+            case RESPECT_OF_DISTRIBUTION -> ScalingParameters.Priority.RESPECT_OF_DISTRIBUTION;
+            case ONESHOT -> ScalingParameters.Priority.ONESHOT;
+        };
+    }
+
+    public static ScalingParameters.ScalingType convert(PyPowsyblApiHeader.ScalingType type) {
+        return switch (type) {
+            case DELTA_P -> ScalingParameters.ScalingType.DELTA_P;
+            case TARGET_P -> ScalingParameters.ScalingType.TARGET_P;
+        };
+    }
+
+    public static Scalable.ScalingConvention convert(PyPowsyblApiHeader.ScalingConvention type) {
+        return switch (type) {
+            case GENERATOR -> Scalable.ScalingConvention.GENERATOR;
+            case LOAD -> Scalable.ScalingConvention.LOAD;
         };
     }
 
