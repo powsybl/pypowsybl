@@ -623,7 +623,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
             .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
             .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
-            .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids)
+            .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids);
 
     py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
             .def(py::init(&pypowsybl::createValidationConfig))
