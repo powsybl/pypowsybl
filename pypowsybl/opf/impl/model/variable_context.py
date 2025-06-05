@@ -44,8 +44,8 @@ class VariableContext:
     t3_closed_branch_p2_vars: Any
     t3_closed_branch_q1_vars: Any
     t3_closed_branch_q2_vars: Any
-    t3_open_side2_branch_p1_vars: Any
-    t3_open_side2_branch_q1_vars: Any
+    t3_open_side1_branch_p2_vars: Any
+    t3_open_side1_branch_q2_vars: Any
     branch_num_2_index: list[int]
     gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
@@ -197,8 +197,8 @@ class VariableContext:
         t3_closed_branch_p2_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_p2")
         t3_closed_branch_q1_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_q1")
         t3_closed_branch_q2_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_q2")
-        t3_open_side2_p1_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side2_branch_p1")
-        t3_open_side2_q1_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side2_branch_q1")
+        t3_open_side1_p2_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side1_branch_p2")
+        t3_open_side1_q2_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side1_branch_q2")
 
         return VariableContext(v_vars, ph_vars,
                                gen_p_vars, gen_q_vars,
@@ -215,7 +215,7 @@ class VariableContext:
                                t3_middle_v_vars, t3_middle_ph_vars,
                                t3_closed_branch_p1_vars, t3_closed_branch_p2_vars,
                                t3_closed_branch_q1_vars, t3_closed_branch_q2_vars,
-                               t3_open_side2_p1_vars, t3_open_side2_q1_vars,
+                               t3_open_side1_p2_vars, t3_open_side1_q2_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
                                shunt_num_2_index,
@@ -433,22 +433,22 @@ class VariableContext:
                     p1 = model.get_value(self.t3_closed_branch_p1_vars[leg1_index])
                     q1 = model.get_value(self.t3_closed_branch_q1_vars[leg1_index])
                 else:
-                    p1 = model.get_value(self.t3_open_side2_branch_p1_vars[leg1_index])
-                    q1 = model.get_value(self.t3_open_side2_branch_q1_vars[leg1_index])
+                    p1 = 0
+                    q1 = 0
 
                 if t3_row.bus2_id:
                     p2 = model.get_value(self.t3_closed_branch_p1_vars[leg2_index])
                     q2 = model.get_value(self.t3_closed_branch_q1_vars[leg2_index])
                 else:
-                    p2 = model.get_value(self.t3_open_side2_branch_p1_vars[leg2_index])
-                    q2 = model.get_value(self.t3_open_side2_branch_q1_vars[leg2_index])
+                    p2 = 0
+                    q2 = 0
 
                 if t3_row.bus3_id:
                     p3 = model.get_value(self.t3_closed_branch_p1_vars[leg3_index])
                     q3 = model.get_value(self.t3_closed_branch_q1_vars[leg3_index])
                 else:
-                    p3 = model.get_value(self.t3_open_side2_branch_p1_vars[leg3_index])
-                    q3 = model.get_value(self.t3_open_side2_branch_q1_vars[leg3_index])
+                    q3 = 0
+                    p3 = 0
             else:
                 p1 = 0.0
                 p2 = 0.0

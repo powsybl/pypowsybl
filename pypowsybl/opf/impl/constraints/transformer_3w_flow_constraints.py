@@ -66,17 +66,17 @@ class Transformer3wFlowConstraints(Constraints):
                 eq=0.0,
             )
         else:
-            v1_var = variable_context.t3_middle_v_vars[t3_index]
-            ph1_var = variable_context.t3_middle_ph_vars[t3_index]
-            p1_var = variable_context.t3_open_side2_branch_p1_vars[leg_index]
-            q1_var = variable_context.t3_open_side2_branch_q1_vars[leg_index]
+            v2_var = variable_context.t3_middle_v_vars[t3_index]
+            ph2_var = variable_context.t3_middle_ph_vars[t3_index]
+            p2_var = variable_context.t3_open_side1_branch_p2_vars[leg_index]
+            q2_var = variable_context.t3_open_side1_branch_q2_vars[leg_index]
             model.add_nl_constraint(
-                function_context.o2bf_index,
+                function_context.o1bf_index,
                 vars=nlfunc.Vars(
-                    v1=v1_var,
-                    ph1=ph1_var,
-                    p1=p1_var,
-                    q1=q1_var
+                    v2=v2_var,
+                    ph2=ph2_var,
+                    p2=p2_var,
+                    q2=q2_var
                 ),
                 params=nlfunc.Params(
                     y=y,
