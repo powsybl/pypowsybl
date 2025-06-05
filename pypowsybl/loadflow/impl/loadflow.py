@@ -4,10 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import asyncio
 import warnings
+from asyncio import Future, AbstractEventLoop
 from typing import List
 from pandas import DataFrame
-from pypowsybl import _pypowsybl
+from pypowsybl import _pypowsybl, PyPowsyblError
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
@@ -19,6 +21,7 @@ from pypowsybl.network import Network
 from pypowsybl.utils import create_data_frame_from_series_array
 from pypowsybl.report import ReportNode
 from .component_result import ComponentResult
+from .loadflow_results_future_wrapper import LoadFlowResultsFutureWrapper
 from .parameters import Parameters
 from .validation_result import ValidationResult
 from .validation_parameters import ValidationParameters, ValidationType
@@ -53,6 +56,34 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
     return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
+
+
+def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Parameters = None, provider: str = '',
+                 report_node: ReportNode = None) -> Future:  # pylint: disable=protected-access
+    """
+    Run an AC load flow on a network asynchronously.
+
+    Args:
+        network: a network
+        variant_id: the variant id, default on initial variant
+        parameters: the load flow parameters
+        provider: the load flow implementation provider, default is the default load flow provider
+        report_node:   the reporter to be used to create an execution report, default is None (no report)
+
+    Returns:
+        A future list of component results, one for each component of the network.
+    """
+    c_parameters = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    loop = asyncio.get_running_loop()
+    results_future = loop.create_future()
+    _pypowsybl.run_loadflow_async(network._handle,
+                                  variant_id,
+                                  False,
+                                  c_parameters,
+                                  provider,
+                                  None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                  LoadFlowResultsFutureWrapper(loop, results_future))
+    return results_future
 
 
 def run_dc(network: Network, parameters: Parameters = None, provider: str = '', reporter: ReportNode = None,

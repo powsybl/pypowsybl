@@ -60,7 +60,7 @@ class Backend:
                 'connect_all_elements_to_first_bus': self._connect_all_elements_to_first_bus}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        self._network = Network(_pypowsybl.load_network_from_binary_buffers([state['xiidm'].getbuffer()], {}, [], None))
+        self._network = Network(_pypowsybl.load_network_from_binary_buffers([state['xiidm'].getbuffer()], {}, [], None, False))
         self._consider_open_branch_reactive_flow = state['consider_open_branch_reactive_flow']
         self._check_isolated_and_disconnected_injections = state['check_isolated_and_disconnected_injections']
         self._buses_per_voltage_level = state['buses_per_voltage_level']
