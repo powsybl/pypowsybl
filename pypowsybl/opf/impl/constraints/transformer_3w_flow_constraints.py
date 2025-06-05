@@ -103,7 +103,7 @@ class Transformer3wFlowConstraints(Constraints):
             rho1, rho2, rho3 = row.rho1, row.rho2, row.rho3
             alpha1, alpha2, alpha3 = row.alpha1, row.alpha2, row.alpha3
             bus1_id, bus2_id, bus3_id = row.bus1_id, row.bus2_id, row.bus3_id
-            if row.bus1_id or row.bus2_id or row.bus3_id:
+            if bus1_id or bus2_id or bus3_id:
                 leg1_index = variable_context.t3_leg1_num_2_index[t3_num]
                 leg2_index = variable_context.t3_leg2_num_2_index[t3_num]
                 leg3_index = variable_context.t3_leg3_num_2_index[t3_num]
