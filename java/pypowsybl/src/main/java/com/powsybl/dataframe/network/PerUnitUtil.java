@@ -275,7 +275,8 @@ public final class PerUnitUtil {
     }
 
     public static double perUnitRho(NetworkDataframeContext context, ThreeWindingsTransformer twt, ThreeSides side, double rho) {
-        return context.isPerUnit() ? rho * twt.getTerminal(side).getVoltageLevel().getNominalV() / twt.getTerminal(ThreeSides.ONE).getVoltageLevel().getNominalV() : rho;
+        double baseRatio = twt.getRatedU0() / twt.getTerminal(side).getVoltageLevel().getNominalV();
+        return context.isPerUnit() ? rho / baseRatio : rho;
     }
 
     public static double perUnitAngle(NetworkDataframeContext context, double angle) {
