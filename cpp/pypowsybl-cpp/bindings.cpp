@@ -417,6 +417,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION)
             .value("PROPERTIES", element_type::PROPERTIES);
 
+    py::enum_<distribution_mode>(m, "DistributionMode")
+            .value("PROPORTIONAL_TO_TARGETP", distribution_mode::PROPORTIONAL_TO_TARGETP)
+            .value("PROPORTIONAL_TO_PMAX", distribution_mode::PROPORTIONAL_TO_PMAX)
+            .value("PROPORTIONAL_TO_DIFF_PMAX_TARGETP", distribution_mode::PROPORTIONAL_TO_DIFF_PMAX_TARGETP)
+            .value("PROPORTIONAL_TO_DIFF_TARGETP_PMIN", distribution_mode::PROPORTIONAL_TO_DIFF_TARGETP_PMIN)
+            .value("PROPORTIONAL_TO_P0", distribution_mode::PROPORTIONAL_TO_P0)
+            .value("UNIFORM_DISTRIBUTION", distribution_mode::UNIFORM_DISTRIBUTION);
+
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
             .value("DEFAULT_ATTRIBUTES", filter_attributes_type::DEFAULT_ATTRIBUTES)
@@ -570,6 +578,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
+    py::enum_<scaling_type>(m, "ScalingType")
+            .value("DELTA_P", scaling_type::DELTA_P)
+            .value("TARGET_P", scaling_type::TARGET_P);
+
+    py::enum_<priority>(m, "Priority")
+            .value("RESPECT_OF_VOLUME_ASKED", priority::RESPECT_OF_VOLUME_ASKED)
+            .value("RESPECT_OF_DISTRIBUTION", priority::RESPECT_OF_DISTRIBUTION)
+            .value("ONESHOT", priority::ONESHOT);
+
+    py::enum_<scaling_convention>(m, "ScalingConvention")
+            .value("GENERATOR_SCALING_CONVENTION", scaling_convention::GENERATOR_SCALING_CONVENTION)
+            .value("LOAD_SCALING_CONVENTION", scaling_convention::LOAD_SCALING_CONVENTION);
+
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 
@@ -593,6 +614,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
+
+    py::class_<pypowsybl::ScalingParameters>(m, "ScalingParameters")
+            .def(py::init(&pypowsybl::createScalingParameters))
+            .def_readwrite("scaling_convention", &pypowsybl::ScalingParameters::scaling_convention)
+            .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::constant_power_factor)
+            .def_readwrite("reconnect", &pypowsybl::ScalingParameters::reconnect)
+            .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
+            .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
+            .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
+            .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids);
 
     py::class_<pypowsybl::LoadFlowValidationParameters>(m, "LoadFlowValidationParameters")
             .def(py::init(&pypowsybl::createValidationConfig))
@@ -1188,6 +1219,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
+
+    m.def("scale_proportional", &pypowsybl::scaleProportional, "Scale the given network proportionally.",
+         py::arg("network"), py::arg("asked"), py::arg("distribution_mode"), py::arg("injections_ids"), py::arg("limit_min"), py::arg("limit_max"));
 
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,

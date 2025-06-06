@@ -1,3 +1,6 @@
+import math
+from importlib.metadata import distribution
+
 import pytest
 
 import pypowsybl as pp
@@ -6,6 +9,13 @@ import pathlib
 import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
+import logging
+
+from pypowsybl.network.impl.scaling_parameters import Parameters
+
+logging.basicConfig()
+logging.getLogger("powsybl").setLevel(1)
+logging.getLogger("pypowsybl").setLevel(1)
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -1502,3 +1512,27 @@ def test_split_or_merge_transformers():
     pp.network.replace_3_2_windings_transformers_with_3_windings_transformers(n)
     assert len(n.get_3_windings_transformers()) == 1
     assert len(n.get_2_windings_transformers()) == 3
+
+def test_scale_generator():
+    n = pp.network.create_micro_grid_be_network()
+    proportional_to_pmax = pp.network.DistributionMode.PROPORTIONAL_TO_PMAX
+    proportional_to_target = pp.network.DistributionMode.PROPORTIONAL_TO_TARGETP
+
+    injections_ids = ['3a3b27be-b18b-4385-b557-6735d733baf0', '550ebe0d-f2b2-48c1-991f-cebea43a21aa']
+    pp.network.scale_proportional(n, 10, proportional_to_pmax, injections_ids, 50, 200)
+    pp.network.scale_proportional(n, 50, proportional_to_target, injections_ids, 50, 200)
+
+def test_scaling_parameters_init():
+     scaling_type = Parameters().scaling_type
+     priority = Parameters().priority
+     allows_generator_out_of_active_power_limits = Parameters().allows_generator_out_of_active_power_limits
+
+     assert scaling_type == 0
+     assert priority == 2
+     assert allows_generator_out_of_active_power_limits == False
+
+
+
+
+
+

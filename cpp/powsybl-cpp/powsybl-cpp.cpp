@@ -365,6 +365,41 @@ std::shared_ptr<loadflow_parameters> LoadFlowParameters::to_c_struct() const {
     });
 }
 
+void deleteScalingParameters(scaling_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->ignored_injection_ids, ptr->ignored_injection_ids_count);
+}
+
+ScalingParameters::ScalingParameters(scaling_parameters* src) {
+    scaling_convention = static_cast<ScalingConvention>(src->scaling_convention);
+    constant_power_factor = (bool) src->constant_power_factor;
+    reconnect = (bool) src->reconnect;
+    allows_generator_out_of_active_power_limits = (bool) src->allows_generator_out_of_active_power_limits;
+    priority = static_cast<Priority>(src->priority);
+    scaling_type = static_cast<ScalingType>(src->scaling_type);
+    copyCharPtrPtrToVector(src->ignored_injection_ids, src->ignored_injection_ids_count, ignored_injection_ids);
+}
+
+void ScalingParameters::load_to_c_struct(scaling_parameters& res) const {
+    res.scaling_convention = scaling_convention;
+    res.constant_power_factor = (unsigned char) constant_power_factor;
+    res.reconnect = (unsigned char) reconnect;
+    res.allows_generator_out_of_active_power_limits = (unsigned char) allows_generator_out_of_active_power_limits;
+    res.priority = priority;
+    res.scaling_type = scaling_type;
+    res.ignored_injection_ids = pypowsybl::copyVectorStringToCharPtrPtr(ignored_injection_ids);
+    res.ignored_injection_ids_count = ignored_injection_ids.size();
+}
+
+std::shared_ptr<scaling_parameters> ScalingParameters::to_c_struct() const {
+    scaling_parameters* res = new scaling_parameters();
+    load_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<scaling_parameters>(res, [](scaling_parameters* ptr){
+        deleteScalingParameters(ptr);
+        delete ptr;
+    });
+}
+
 void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
     deleteLoadFlowParameters(&ptr->loadflow_parameters);
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
@@ -851,6 +886,17 @@ LoadFlowParameters* createLoadFlowParameters() {
     });
     return new LoadFlowParameters(parameters.get());
 }
+
+
+ScalingParameters* createScalingParameters() {
+    scaling_parameters* parameters_ptr = PowsyblCaller::get()->callJava<scaling_parameters*>(::createScalingParameters);
+    auto parameters = std::shared_ptr<scaling_parameters>(parameters_ptr, [](scaling_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       PowsyblCaller::get()->callJava(::freeScalingParameters, ptr);
+    });
+    return new ScalingParameters(parameters.get());
+}
+
 
 RaoParameters* createRaoParameters() {
     rao_parameters* parameters_ptr = PowsyblCaller::get()->callJava<rao_parameters*>(::createRaoParameters);
@@ -1667,6 +1713,11 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode) {
     ToCharPtrPtr transformerIdsPtr(transformerIds);
     pypowsybl::PowsyblCaller::get()->callJava(::splitOrMergeTransformers, network, transformerIdsPtr.get(), transformerIds.size(), merge, (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
+int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, const std::vector<std::string>& injectionsIds, const int limitMin, const int limitMax) {
+    ToCharPtrPtr injectionsIdsPtr(injectionsIds);
+    return pypowsybl::PowsyblCaller::get()->callJava<int>(::scaleProportional, network, asked, distributionMode, injectionsIdsPtr.get(), injectionsIds.size(), limitMin, limitMax);
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
