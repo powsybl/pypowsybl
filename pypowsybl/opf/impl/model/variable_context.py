@@ -256,8 +256,9 @@ class VariableContext:
                     gen_target_q.append(target_q)
                     gen_q.append(q)
 
-                    bus_num = network_cache.buses.index.get_loc(bus_id)
-                    target_v = model.get_value(self.v_vars[bus_num])
+                    regulated_bus_num = network_cache.buses.index.get_loc(row.regulated_bus_id)
+                    v = model.get_value(self.v_vars[regulated_bus_num])
+                    target_v = v
                     gen_target_v.append(target_v)
 
                     q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
@@ -290,8 +291,9 @@ class VariableContext:
                 vsc_cs_target_q.append(target_q)
                 vsc_cs_q.append(q)
 
-                bus_num = network_cache.buses.index.get_loc(bus_id)
-                target_v = model.get_value(self.v_vars[bus_num])
+                regulated_bus_num = network_cache.buses.index.get_loc(row.regulated_bus_id)
+                v = model.get_value(self.v_vars[regulated_bus_num])
+                target_v = v
                 vsc_cs_target_v.append(target_v)
 
                 q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
@@ -339,8 +341,8 @@ class VariableContext:
                 svc_target_q.append(target_q)
                 svc_q.append(q)
 
-                bus_num = network_cache.buses.index.get_loc(bus_id)
-                v = model.get_value(self.v_vars[bus_num])
+                regulated_bus_num = network_cache.buses.index.get_loc(row.regulated_bus_id)
+                v = model.get_value(self.v_vars[regulated_bus_num])
                 target_v = v
                 svc_target_v.append(target_v)
 
@@ -422,8 +424,11 @@ class VariableContext:
         t3_q1 = []
         t3_q2 = []
         t3_q3 = []
+        t3_v = []
+        t3_angle = []
         for t3_num, (t3_id, t3_row) in enumerate(network_cache.transformers_3w.iterrows()):
             t3_ids.append(t3_id)
+            t3_index = self.t3_num_2_index[t3_num]
             if t3_row.bus1_id or t3_row.bus2_id or t3_row.bus3_id:
                 leg1_index = self.t3_leg1_num_2_index[t3_num]
                 leg2_index = self.t3_leg2_num_2_index[t3_num]
@@ -449,6 +454,9 @@ class VariableContext:
                 else:
                     q3 = 0
                     p3 = 0
+
+                v = model.get_value(self.t3_middle_v_vars[t3_index])
+                angle = model.get_value(self.t3_middle_ph_vars[t3_index])
             else:
                 p1 = 0.0
                 p2 = 0.0
@@ -456,6 +464,8 @@ class VariableContext:
                 q1 = 0.0
                 q2 = 0.0
                 q3 = 0.0
+                v = math.nan
+                angle = math.nan
 
             t3_p1.append(p1)
             t3_p2.append(p2)
@@ -463,10 +473,13 @@ class VariableContext:
             t3_q1.append(q1)
             t3_q2.append(q2)
             t3_q3.append(q3)
+            t3_v.append(v * t3_row.rated_u0)
+            t3_angle.append(math.degrees(angle))
 
-            logger.log(TRACE_LEVEL, f"Update 3 windings transformer '{t3_id}': p1={p1} p2={p2} p3={p3} q1={q1} q2={q2} q3={q3}")
+            logger.log(TRACE_LEVEL, f"Update 3 windings transformer '{t3_id}': p1={p1} p2={p2} p3={p3} q1={q1} q2={q2} q3={q3} v={v} angle={angle}")
 
         network_cache.network.update_3_windings_transformers(id=t3_ids, p1=t3_p1, p2=t3_p2, p3=t3_p3, q1=t3_q1, q2=t3_q2, q3=t3_q3)
+        network_cache.network.add_elements_properties(id=t3_ids, v=t3_v, angle=t3_angle)
 
     def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
         bus_ids = []

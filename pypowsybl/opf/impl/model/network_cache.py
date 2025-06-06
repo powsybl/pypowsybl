@@ -72,6 +72,7 @@ class NetworkCache:
     def _build_3w_transformers(network: Network, buses: DataFrame):
         transfos = network.get_3_windings_transformers(
             attributes=['bus1_id', 'bus2_id', 'bus3_id',
+                        'rated_u0',
                         'rho1', 'rho2', 'rho3',
                         'alpha1', 'alpha2', 'alpha3',
                         'r1_at_current_tap', 'r2_at_current_tap', 'r3_at_current_tap', 'x1_at_current_tap', 'x2_at_current_tap', 'x3_at_current_tap',
@@ -90,7 +91,7 @@ class NetworkCache:
 
     @staticmethod
     def _build_static_var_compensators(network: Network, buses: DataFrame):
-        svcs = network.get_static_var_compensators(attributes=['bus_id', 'b_min', 'b_max'])
+        svcs = network.get_static_var_compensators(attributes=['bus_id', 'b_min', 'b_max', 'regulated_bus_id'])
         return NetworkCache._filter_injections(svcs, buses)
 
     @staticmethod
@@ -120,7 +121,8 @@ class NetworkCache:
     @staticmethod
     def _build_vsc_converter_stations(network: Network, buses: DataFrame):
         stations = network.get_vsc_converter_stations(attributes=['bus_id', 'loss_factor', 'min_q_at_target_p', 'max_q_at_target_p',
-                                                                  'target_v', 'target_q', 'voltage_regulator_on', 'hvdc_line_id'])
+                                                                  'target_v', 'target_q', 'voltage_regulator_on', 'hvdc_line_id',
+                                                                  'regulated_bus_id'])
         if len(stations) > 0:
             hvdc_lines = network.get_hvdc_lines(attributes=['converter_station1_id', 'converter_station2_id', 'converters_mode', 'target_p', 'max_p'])
             stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
@@ -142,7 +144,8 @@ class NetworkCache:
     @staticmethod
     def _build_generators(network: Network, buses: DataFrame):
         generators = network.get_generators(
-            attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q', 'target_v', 'voltage_regulator_on'])
+            attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q',
+                        'target_v', 'voltage_regulator_on', 'regulated_bus_id'])
         return NetworkCache._filter_injections(generators, buses)
 
     @staticmethod
