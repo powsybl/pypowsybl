@@ -1,4 +1,5 @@
 import logging
+import time
 
 import pyoptinterface as poi
 
@@ -69,10 +70,13 @@ class OptimalPowerFlow:
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
         logger.info("Starting optimization...")
+        start = time.perf_counter()
+
         opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, False)
         opf_model.model.optimize()
         status = opf_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
-        logger.info(f"Optimization ends with status {status}")
+
+        logger.info(f"Optimization ends with status {status} in {time.perf_counter() - start:.3f} seconds.")
 
         # for debugging
         opf_model.analyze_violations()

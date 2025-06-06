@@ -1,4 +1,5 @@
 import logging
+import time
 
 from pyoptinterface import ipopt
 
@@ -36,6 +37,7 @@ class OpfModel:
               variable_bounds: list[VariableBounds], constraints: list[Constraints],
               cost_function: CostFunction) -> 'OpfModel':
         logger.info("Building model...")
+        start = time.perf_counter()
 
         model = ipopt.Model()
         model.set_raw_parameter("print_user_options", "yes")
@@ -59,6 +61,8 @@ class OpfModel:
         logger.debug(f"Using cost function: '{cost_function.name}'")
         cost = cost_function.create(network_cache, variable_context)
         model.set_objective(cost)
+
+        logger.info(f"Model built in {time.perf_counter() - start:.3f} seconds")
 
         return OpfModel(network_cache, model, variable_context)
 
