@@ -49,9 +49,13 @@ def test_reactive_range():
     assert b.mirror().reduce(0.1).max_value_with_margin == -10.999999
 
 
+def create_loadflow_parameters():
+    return pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES,
+                                  provider_parameters={'plausibleActivePowerLimit': '10000.0'})
+
+
 def run_opf_then_lf(network: pp.network.Network, iteration_count: int = 1):
-    lf_parameters = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES,
-                                           provider_parameters={'plausibleActivePowerLimit': '10000.0'})
+    lf_parameters = create_loadflow_parameters()
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
 
@@ -71,6 +75,8 @@ def validate(network: Network):
     validation_types = [
         pp.loadflow.ValidationType.BUSES,
         pp.loadflow.ValidationType.FLOWS,
+        # pp.loadflow.ValidationType.SHUNTS, to fix because active power is expected nan
+        # pp.loadflow.ValidationType.TWTS, to fix
         pp.loadflow.ValidationType.TWTS3W,
         # pp.loadflow.ValidationType.GENERATORS # to fix because remote voltage not taken into account
     ]
