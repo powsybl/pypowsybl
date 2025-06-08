@@ -23,7 +23,6 @@ class VariableContext:
     svc_q_vars: Any
     vsc_cs_p_vars: Any
     vsc_cs_q_vars: Any
-    shunt_q_vars: Any
     closed_branch_p1_vars: Any
     closed_branch_q1_vars: Any
     closed_branch_p2_vars: Any
