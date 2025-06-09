@@ -111,7 +111,7 @@ def shunt_flow(vars, params):
         vars.q
     )
 
-    p_eq = -g * v * v - p
+    p_eq = g * v * v - p
     q_eq = -b * v * v - q
 
     return [p_eq, q_eq]

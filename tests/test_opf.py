@@ -140,7 +140,7 @@ def test_metrix_tutorial_six_buses():
 
 
 def test_micro_grid_be():
-    run_opf_then_lf(pp.network.create_micro_grid_be_network(), 2)
+    run_opf_then_lf(pp.network.create_micro_grid_be_network())
 
 
 def test_micro_grid_nl():
