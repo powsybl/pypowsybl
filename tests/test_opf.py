@@ -6,6 +6,7 @@
 #
 import logging
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -13,6 +14,7 @@ import pypowsybl as pp
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
+from pypowsybl.opf.impl.parameters import OptimalPowerFlowMode
 
 
 @pytest.fixture(autouse=True)
@@ -95,6 +97,33 @@ def test_ieee9():
 
 def test_ieee14():
     run_opf_then_lf(pp.network.create_ieee14())
+
+
+def test_ieee14_redispatching():
+    network = pp.network.create_ieee14()
+    lf_parameters = create_loadflow_parameters()
+    lf_result = pp.loadflow.run_ac(network, lf_parameters)
+    assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
+
+    assert network.get_lines(attributes=['i1']).loc['L7-9-1'].i1 == pytest.approx(1113.514, rel=1e-3, abs=1e-3)
+
+    # add a current limit on L7-9-1
+    network.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+        {'element_id': 'L7-9-1', 'name': 'permanent_limit', 'side': 'ONE',
+         'type': 'CURRENT', 'value': 1000, 'acceptable_duration': np.inf,
+         'fictitious': False, 'group_name': 'GROUP1'},
+    ]))
+    network.update_lines(id=['L7-9-1'], selected_limits_group_1=['GROUP1'])
+
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.REDISPATCHING)
+    assert pp.opf.run_ac(network, opf_parameters)
+
+    lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
+    lf_result = pp.loadflow.run_ac(network, lf_parameters)
+    assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
+    assert lf_result[0].iteration_count == 1
+
+    assert network.get_lines(attributes=['i1']).loc['L7-9-1'].i1 == pytest.approx(947.535, rel=1e-3, abs=1e-3)
 
 
 def test_ieee14_open_side_1_branch():
