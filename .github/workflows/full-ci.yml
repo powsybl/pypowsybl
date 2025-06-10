@@ -49,9 +49,9 @@ jobs:
 
       - name: Install Maven
         run: |
-          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.10/binaries/apache-maven-3.9.10-bin.tar.gz -P /tmp
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
+          echo /opt/apache-maven-3.9.10/bin >> $GITHUB_PATH
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
