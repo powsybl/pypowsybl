@@ -598,7 +598,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getThreeWindingsTransformerStream, getOrThrow(Network::getThreeWindingsTransformer, "Three windings transformer"))
                 .stringsIndex("id", ThreeWindingsTransformer::getId)
                 .strings("name", twt -> twt.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("rated_u0", (twt, context) -> twt.getRatedU0())
+                .doubles("rated_u0", (twt, context) -> twt.getRatedU0(), (twt, ratedU0, context) -> twt.setRatedU0(ratedU0))
                 .doubles("r1", (twt, context) -> perUnitRX(context, twt, twt.getLeg1().getR()), (twt, r1, context) -> twt.getLeg1().setR(unPerUnitRX(context, twt, r1)))
                 .doubles("x1", (twt, context) -> perUnitRX(context, twt, twt.getLeg1().getX()), (twt, x1, context) -> twt.getLeg1().setX(unPerUnitRX(context, twt, x1)))
                 .doubles("g1", (twt, context) -> perUnitGB(context, twt, twt.getLeg1().getG()), (twt, g1, context) -> twt.getLeg1().setG(unPerUnitGB(context, twt, g1)))
