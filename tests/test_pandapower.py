@@ -7,11 +7,13 @@
 import pathlib
 import sys
 
+import pytest
+pytest.mark.skipif(sys.version_info.minor == 13, "No pandapower version compatible with python 3.13 yet")
+
 try:
     import pandapower as pdp
 except ImportError:
     pdp = any
-import pytest
 
 import pypowsybl as pp
 import logging
@@ -28,8 +30,6 @@ def setup():
 
 
 def run_and_compare(pdp_n, expected_bus_count: int):
-    if sys.version_info.minor >= 13:
-        return
     pdp.runpp(pdp_n, numba=True, enforce_q_lims=False, distributed_slack=True, trafo_model="pi")
     n = pp.network.convert_from_pandapower(pdp_n)
     assert len(n.get_buses()) == expected_bus_count
