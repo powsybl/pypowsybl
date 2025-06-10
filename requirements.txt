@@ -1,5 +1,5 @@
 # actual dependencies
-pandas==2.2.3
+pandas==2.3.0
 networkx
 matplotlib==3.9.2
 pybind11[global]==2.13.6
@@ -19,5 +19,5 @@ wheel==0.44.0
 coverage==7.3.2
 pytest>=8.3.3
 mypy==0.982
-pandas-stubs==2.2.2.240603
+pandas-stubs==2.2.3.250527
 pylint==3.2.0
