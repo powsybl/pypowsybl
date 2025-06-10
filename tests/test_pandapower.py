@@ -7,7 +7,10 @@
 import pathlib
 import sys
 
-import pandapower as pdp
+try:
+    import pandapower as pdp
+except ImportError:
+    pdp = any
 import pytest
 
 import pypowsybl as pp
