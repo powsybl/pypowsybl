@@ -8,7 +8,8 @@ import pathlib
 import sys
 
 import pytest
-pytest.mark.skipif(sys.version_info.minor == 13, "No pandapower version compatible with python 3.13 yet")
+if sys.version_info.minor == 13:
+    pytest.skip("No pandapower version compatible with python 3.13 yet.", allow_module_level=True)
 
 try:
     import pandapower as pdp
