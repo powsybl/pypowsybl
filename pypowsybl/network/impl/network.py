@@ -4940,8 +4940,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **value**: the value of the limit in A, MVA or MW
             - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
             - **fictitious**: fictitious limit ?
+            - **group_name**: Name of the operational limit group to add the limit to (if not specified, the limit is added to the group "DEFAULT")
 
-            For each location of the network defined by a couple (element_id, side):
+            For each location of the network defined by a couple (element_id, side) and each group_name:
 
             - if operational limits already exist, they will be replaced
             - multiple limits may be defined, typically with different acceptable_duration
