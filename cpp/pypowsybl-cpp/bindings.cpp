@@ -28,10 +28,9 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
 
 void setCracSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& crac);
 void setGlskSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& glsk);
-void runRaoWithParameters(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const pypowsybl::JavaHandle& parametersHandle);
-pypowsybl::JavaHandle loadRaoParametersFromBuffer(const py::buffer& parameters);
+pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& parameters);
 
-py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::JavaHandle& rao_parameters);
+py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
 
 template<typename T>
@@ -340,6 +339,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::JavaHandle>(m, "JavaHandle");
 
+    m.def("log_max_memory", &pypowsybl::logMaxMemory, "Log JVM max memory");
+
     m.def("set_java_library_path", &pypowsybl::setJavaLibraryPath, "Set java.library.path JVM property");
 
     m.def("set_config_read", &pypowsybl::setConfigRead, "Set config read mode");
@@ -466,6 +467,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_exporter_parameters_series_array", &pypowsybl::createExporterParametersSeriesArray, "Create a parameters series array for a given export format",
           py::arg("format"));
+
+    m.def("is_network_loadable", &pypowsybl::isNetworkLoadable, "Check if a file is a loadable network", py::call_guard<py::gil_scoped_release>(),
+          py::arg("file"));
 
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
           py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
@@ -779,6 +783,78 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<RaoComputationStatus>(m, "RaoComputationStatus")
             .value("DEFAULT", RaoComputationStatus::DEFAULT)
             .value("FAILURE", RaoComputationStatus::FAILURE);
+
+    py::enum_<pypowsybl::ObjectiveFunctionType>(m, "ObjectiveFunctionType", "")
+            .value("SECURE_FLOW", pypowsybl::ObjectiveFunctionType::SECURE_FLOW, "")
+            .value("MAX_MIN_MARGIN", pypowsybl::ObjectiveFunctionType::MAX_MIN_MARGIN, "")
+            .value("MAX_MIN_RELATIVE_MARGIN", pypowsybl::ObjectiveFunctionType::MAX_MIN_RELATIVE_MARGIN, "")
+            .value("MIN_COST", pypowsybl::ObjectiveFunctionType::MIN_COST, "");
+
+    py::enum_<pypowsybl::Unit>(m, "Unit")
+            .value("AMPERE", pypowsybl::Unit::AMPERE)
+            .value("DEGREE", pypowsybl::Unit::DEGREE)
+            .value("MEGAWATT", pypowsybl::Unit::MEGAWATT)
+            .value("KILOVOLT", pypowsybl::Unit::KILOVOLT)
+            .value("PERCENT_IMAX", pypowsybl::Unit::PERCENT_IMAX)
+            .value("TAP", pypowsybl::Unit::TAP)
+            .value("SECTION_COUNT", pypowsybl::Unit::SECTION_COUNT);
+
+    py::enum_<pypowsybl::Solver>(m, "Solver")
+            .value("CBC", pypowsybl::Solver::CBC)
+            .value("SCIP", pypowsybl::Solver::SCIP)
+            .value("XPRESS", pypowsybl::Solver::XPRESS);
+
+    py::enum_<pypowsybl::PstModel>(m, "PstModel")
+            .value("CONTINUOUS", pypowsybl::PstModel::CONTINUOUS)
+            .value("APPROXIMATED_INTEGERS", pypowsybl::PstModel::APPROXIMATED_INTEGERS);
+
+    py::enum_<pypowsybl::RaRangeShrinking>(m, "RaRangeShrinking")
+            .value("DISABLED", pypowsybl::RaRangeShrinking::DISABLED)
+            .value("ENABLED", pypowsybl::RaRangeShrinking::ENABLED)
+            .value("ENABLED_IN_FIRST_PRAO_AND_CRAO", pypowsybl::RaRangeShrinking::ENABLED_IN_FIRST_PRAO_AND_CRAO);
+
+    py::enum_<pypowsybl::ExecutionCondition>(m, "ExecutionCondition")
+            .value("DISABLED", pypowsybl::ExecutionCondition::DISABLED)
+            .value("POSSIBLE_CURATIVE_IMPROVEMENT", pypowsybl::ExecutionCondition::POSSIBLE_CURATIVE_IMPROVEMENT)
+            .value("COST_INCREASE", pypowsybl::ExecutionCondition::COST_INCREASE);
+
+    py::class_<pypowsybl::RaoParameters>(m, "RaoParameters")
+            .def(py::init(&pypowsybl::createRaoParameters))
+            .def_readwrite("objective_function_type", &pypowsybl::RaoParameters::objective_function_type)
+            .def_readwrite("unit", &pypowsybl::RaoParameters::unit)
+            .def_readwrite("curative_min_obj_improvement", &pypowsybl::RaoParameters::curative_min_obj_improvement)
+            .def_readwrite("enforce_curative_security", &pypowsybl::RaoParameters::enforce_curative_security)
+            .def_readwrite("solver", &pypowsybl::RaoParameters::solver)
+            .def_readwrite("relative_mip_gap", &pypowsybl::RaoParameters::relative_mip_gap)
+            .def_readwrite("solver_specific_parameters", &pypowsybl::RaoParameters::solver_specific_parameters)
+            .def_readwrite("pst_ra_min_impact_threshold", &pypowsybl::RaoParameters::pst_ra_min_impact_threshold)
+            .def_readwrite("hvdc_ra_min_impact_threshold", &pypowsybl::RaoParameters::hvdc_ra_min_impact_threshold)
+            .def_readwrite("injection_ra_min_impact_threshold", &pypowsybl::RaoParameters::injection_ra_min_impact_threshold)
+            .def_readwrite("max_mip_iterations", &pypowsybl::RaoParameters::max_mip_iterations)
+            .def_readwrite("pst_sensitivity_threshold", &pypowsybl::RaoParameters::pst_sensitivity_threshold)
+            .def_readwrite("hvdc_sensitivity_threshold", &pypowsybl::RaoParameters::hvdc_sensitivity_threshold)
+            .def_readwrite("injection_ra_sensitivity_threshold", &pypowsybl::RaoParameters::injection_ra_sensitivity_threshold)
+            .def_readwrite("pst_model", &pypowsybl::RaoParameters::pst_model)
+            .def_readwrite("ra_range_shrinking", &pypowsybl::RaoParameters::ra_range_shrinking)
+            .def_readwrite("max_preventive_search_tree_depth", &pypowsybl::RaoParameters::max_preventive_search_tree_depth)
+            .def_readwrite("max_auto_search_tree_depth", &pypowsybl::RaoParameters::max_auto_search_tree_depth)
+            .def_readwrite("max_curative_search_tree_depth", &pypowsybl::RaoParameters::max_curative_search_tree_depth)
+            .def_readwrite("predefined_combinations", &pypowsybl::RaoParameters::predefined_combinations)
+            .def_readwrite("relative_min_impact_threshold", &pypowsybl::RaoParameters::relative_min_impact_threshold)
+            .def_readwrite("absolute_min_impact_threshold", &pypowsybl::RaoParameters::absolute_min_impact_threshold)
+            .def_readwrite("skip_actions_far_from_most_limiting_element", &pypowsybl::RaoParameters::skip_actions_far_from_most_limiting_element)
+            .def_readwrite("max_number_of_boundaries_for_skipping_actions", &pypowsybl::RaoParameters::max_number_of_boundaries_for_skipping_actions)
+            .def_readwrite("available_cpus", &pypowsybl::RaoParameters::available_cpus)
+            .def_readwrite("execution_condition", &pypowsybl::RaoParameters::execution_condition)
+            .def_readwrite("re_optimize_curative_range_actions", &pypowsybl::RaoParameters::re_optimize_curative_range_actions)
+            .def_readwrite("hint_from_first_preventive_rao", &pypowsybl::RaoParameters::hint_from_first_preventive_rao)
+            .def_readwrite("do_not_optimize_curative_cnecs_for_tsos_without_cras", &pypowsybl::RaoParameters::do_not_optimize_curative_cnecs_for_tsos_without_cras)
+            .def_readwrite("load_flow_provider", &pypowsybl::RaoParameters::load_flow_provider)
+            .def_readwrite("sensitivity_provider", &pypowsybl::RaoParameters::sensitivity_provider)
+            .def_readwrite("sensitivity_parameters", &pypowsybl::RaoParameters::sensitivity_parameters)
+            .def_readwrite("sensitivity_failure_overcost", &pypowsybl::RaoParameters::sensitivity_failure_overcost)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::RaoParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {
@@ -1116,6 +1192,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
+    m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
+          py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
+
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
@@ -1161,19 +1240,20 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_short_circuit_bus_results", &pypowsybl::getShortCircuitBusResults, "gets the bus results of a short-circuit analysis", py::arg("result"), py::arg("with_fortescue_result"));
 
     m.def("create_rao", &pypowsybl::createRao, "Create rao context");
-    m.def("run_rao", ::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
+    m.def("run_rao", &pypowsybl::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
         py::arg("network"), py::arg("rao_context"), py::arg("parameters"));
     m.def("set_crac_source", ::setCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
             py::arg("network"), py::arg("rao_context"), py::arg("crac_source"));
     m.def("set_glsk_source", ::setGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source",
             py::arg("network"), py::arg("rao_context"), py::arg("glsk_source"));
     m.def("get_crac", &pypowsybl::getCrac, "Get crac associated to the rao context", py::arg("rao_context"));
-    m.def("get_rao_result", &pypowsybl::getRaoResult, "Get rao result associated to the rao context", py::arg("rao_context"));
     m.def("create_default_rao_parameters", &pypowsybl::createDefaultRaoParameters, "Create a default rao parameter");
     m.def("load_rao_parameters", ::loadRaoParametersFromBuffer, "Load rao parameters from a buffer", py::arg("parameters_buffer"));
     m.def("serialize_rao_parameters", ::saveRaoParametersToBinaryBuffer, "Serialize rao parameters to a buffer", py::arg("rao_parameters"));
     m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_result"), py::arg("crac"));
     m.def("get_rao_result_status", &pypowsybl::getRaoResultStatus, "Get the status of a rao result", py::arg("rao_result"));
+    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
@@ -1311,11 +1391,6 @@ void setGlskSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::
      static_cast<char*>(glskInfo.ptr), glskInfo.size);
 }
 
-void runRaoWithParameters(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const pypowsybl::JavaHandle& parametersHandle) {
-    pypowsybl::PowsyblCaller::get()->callJava<>(::runRao,
-     networkHandle, raoHandle, parametersHandle);
-}
-
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoResult, const pypowsybl::JavaHandle& crac) {
     array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::serializeRaoResultsToBuffer, raoResult, crac);
     py::gil_scoped_acquire acquire;
@@ -1324,14 +1399,15 @@ py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoResult, c
     return bytes;
 }
 
-pypowsybl::JavaHandle loadRaoParametersFromBuffer(const py::buffer& parameters) {
+pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& parameters) {
     py::buffer_info parametersInfo = parameters.request();
-    return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadRaoParameters,
-     static_cast<char*>(parametersInfo.ptr), parametersInfo.size);
+    rao_parameters* c_parameters = pypowsybl::PowsyblCaller::get()->callJava<rao_parameters*>(::loadRaoParameters, static_cast<char*>(parametersInfo.ptr), parametersInfo.size);
+    return new pypowsybl::RaoParameters(c_parameters);
 }
 
-py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::JavaHandle& rao_parameters) {
-    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::serializeRaoParameters, rao_parameters);
+py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters) {
+    auto c_parameters = rao_parameters.to_c_struct();
+    array* byteArray = pypowsybl::PowsyblCaller::get()->callJava<array*>(::serializeRaoParameters, c_parameters.get());
     py::gil_scoped_acquire acquire;
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
     pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);

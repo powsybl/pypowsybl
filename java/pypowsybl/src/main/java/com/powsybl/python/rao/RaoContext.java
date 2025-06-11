@@ -8,14 +8,19 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.glsk.commons.ZonalData;
+import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import com.powsybl.openrao.monitoring.Monitoring;
+import com.powsybl.openrao.monitoring.MonitoringInput;
+import com.powsybl.openrao.monitoring.results.MonitoringResult;
+import com.powsybl.openrao.monitoring.results.RaoResultWithAngleMonitoring;
+import com.powsybl.openrao.monitoring.results.RaoResultWithVoltageMonitoring;
 import com.powsybl.openrao.raoapi.Rao;
 import com.powsybl.openrao.raoapi.RaoInput;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
-import com.powsybl.sensitivity.SensitivityVariableSet;
 
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
@@ -25,40 +30,48 @@ public class RaoContext {
     public RaoContext() {
     }
 
-    private RaoResult results;
-
     private Crac crac;
 
-    private ZonalData<SensitivityVariableSet> glsks;
+    private GlskDocument glsks;
 
     public void setCrac(Crac crac) {
         this.crac = crac;
     }
 
-    public void setGlsks(ZonalData<SensitivityVariableSet> glsks) {
-        this.glsks = glsks;
+    public void setGlsks(GlskDocument glskDocument) {
+        this.glsks = glskDocument;
     }
 
-    public void run(Network network, RaoParameters parameters) {
+    public RaoResult run(Network network, RaoParameters parameters) {
         if (crac == null) {
             throw new PowsyblException("Providing a crac source is mandatory to run a Rao.");
         }
         RaoInput.RaoInputBuilder inputBuilder = RaoInput.build(network, crac);
         if (glsks != null) {
-            inputBuilder.withGlskProvider(glsks);
+            inputBuilder.withGlskProvider(glsks.getZonalGlsks(network));
         }
-        results = Rao.run(inputBuilder.build(), parameters);
+        return Rao.run(inputBuilder.build(), parameters);
     }
 
-    public RaoResult getResults() {
-        return results;
+    public RaoResultWithVoltageMonitoring runVoltageMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
+        Monitoring raoMonitoring = new Monitoring(provider, parameters);
+        MonitoringInput inputs = MonitoringInput.buildWithVoltage(network, crac, resultIn).build();
+        MonitoringResult monitoringResult = raoMonitoring.runMonitoring(inputs, 1);
+        return new RaoResultWithVoltageMonitoring(resultIn, monitoringResult);
+    }
+
+    public RaoResultWithAngleMonitoring runAngleMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
+        Monitoring raoMonitoring = new Monitoring(provider, parameters);
+        MonitoringInput inputs = MonitoringInput.buildWithAngle(network, crac, resultIn, glsks.getZonalScalable(network)).build();
+        MonitoringResult monitoringResult = raoMonitoring.runMonitoring(inputs, 1);
+        return new RaoResultWithAngleMonitoring(resultIn, monitoringResult);
     }
 
     public Crac getCrac() {
         return crac;
     }
 
-    public ZonalData<SensitivityVariableSet> getGlsks() {
+    public GlskDocument getGlsks() {
         return glsks;
     }
 }
