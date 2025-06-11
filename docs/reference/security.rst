@@ -87,4 +87,5 @@ When the security analysis is completed, you can inspect its results:
     SecurityAnalysisResult.branch_results
     SecurityAnalysisResult.bus_results
     SecurityAnalysisResult.three_windings_transformer_results
+    SecurityAnalysisResult.export_to_json
 

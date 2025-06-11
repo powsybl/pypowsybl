@@ -992,6 +992,10 @@ void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::st
     PowsyblCaller::get()->callJava(::addContingencyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
+void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath) {
+    PowsyblCaller::get()->callJava(::exportToJson, securityAnalysisResult, (char*) jsonFilePath.data());
+}
+
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
                                const std::string& provider, bool dc, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
