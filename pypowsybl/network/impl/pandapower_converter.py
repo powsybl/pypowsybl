@@ -67,7 +67,7 @@ def create_extensions(n: Network, slack_weight_by_gen_id: Dict[str, float]) -> N
 
 def get_name(df: pd.DataFrame, name: str) -> pd.Series:
     name_col = df[name]
-    replace_none = np.vectorize(lambda x: '' if x is None else x, otypes=[np.string_])
+    replace_none = np.vectorize(lambda x: '' if x is None else x, otypes=[np.bytes_])
     name_cleaned = replace_none(name_col)
     return name_cleaned.astype(str)
 

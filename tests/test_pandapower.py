@@ -5,9 +5,16 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pathlib
+import sys
 
-import pandapower as pdp
 import pytest
+if sys.version_info.minor == 13:
+    pytest.skip("No pandapower version compatible with python 3.13 yet.", allow_module_level=True)
+
+try:
+    import pandapower as pdp
+except ImportError:
+    pdp = any
 
 import pypowsybl as pp
 import logging
