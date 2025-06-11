@@ -1523,13 +1523,13 @@ def test_scale_generator():
     pp.network.scale_proportional(n, 50, proportional_to_target, injections_ids, 50, 200)
 
 def test_scaling_parameters_init():
-     scaling_type = Parameters().scaling_type
-     priority = Parameters().priority
-     allows_generator_out_of_active_power_limits = Parameters().allows_generator_out_of_active_power_limits
+    scaling_type = Parameters().scaling_type
+    priority = Parameters().priority
+    allows_generator_out_of_active_power_limits = Parameters().allows_generator_out_of_active_power_limits
 
-     assert scaling_type == 0
-     assert priority == 2
-     assert allows_generator_out_of_active_power_limits == False
+    assert scaling_type == 0
+    assert priority == 2
+    assert allows_generator_out_of_active_power_limits == False
 
 
 

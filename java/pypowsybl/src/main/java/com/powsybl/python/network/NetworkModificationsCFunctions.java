@@ -267,17 +267,4 @@ public final class NetworkModificationsCFunctions {
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> freeScalingParametersPointer(scalingParametersPtr));
     }
-
-//    @CEntryPoint(name = "scaleStack")
-//    public static int scaleStack(IsolateThread thread, ObjectHandle networkHandle,
-//                                        double asked,
-//                                        PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPointer,
-//                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-//        return doCatch(exceptionHandlerPtr, () -> {
-//            Network network = ObjectHandles.getGlobal().get(networkHandle);
-//            ScalingParameters scalingParameters = scalingParametersPointer;
-//            ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
-//            return (int) proportionalScalable.scale(network, asked);
-//        });
-//    }
 }
