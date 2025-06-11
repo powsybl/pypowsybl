@@ -12,6 +12,7 @@ import pypowsybl.report as rp
 import logging
 
 from pypowsybl.network.impl.scaling_parameters import Parameters
+from pypowsybl._pypowsybl import ScalingConvention
 
 logging.basicConfig()
 logging.getLogger("powsybl").setLevel(1)

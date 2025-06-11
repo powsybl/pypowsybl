@@ -265,8 +265,8 @@ enum Priority {
 };
 
 enum ScalingConvention {
-    GENERATOR = 0,
-    LOAD,
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
 };
 
 enum ConnectedComponentMode {

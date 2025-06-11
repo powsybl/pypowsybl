@@ -550,12 +550,12 @@ class LoadFlowParameters:
     def __init__(self) -> None: ...
 
 class ScalingParameters:
-    scaling_type: ScalingType
-    priority: Priority
     scaling_convention: ScalingConvention
     constant_power_factor: bool
     reconnect: bool
     allows_generator_out_of_active_power_limits: bool
+    scaling_type: ScalingType
+    priority: Priority
     ignored_injection_ids: List[str]
 
 class LoadFlowValidationParameters:
