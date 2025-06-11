@@ -191,6 +191,7 @@ public final class NetworkModificationsCFunctions {
                                         PyPowsyblApiHeader.DistributionMode distributionModeHandle,
                                         CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
                                         double limitMin, double limitMax,
+                                        PyPowsyblApiHeader.ScalingParametersPointer scalingParametersHandle,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -203,10 +204,10 @@ public final class NetworkModificationsCFunctions {
             } catch (NullPointerException e) {
                 throw new PowsyblException("Can't find injections", e);
             }
-            ScalingParameters parameters = createScalingParameters();
+            ScalingParameters parameters = convertScalingParameters(scalingParametersHandle);
             ProportionalScalable.DistributionMode distributionMode = convert(distributionModeHandle);
             ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
-            return (int) proportionalScalable.scale(network, asked, parameters);
+            return (int) proportionalScalable.scale(network, asked);
         });
     }
 
@@ -235,8 +236,7 @@ public final class NetworkModificationsCFunctions {
         return PyPowsyblConfiguration.isReadConfig() ? ScalingParameters.load() : new ScalingParameters();
     }
 
-    public static ScalingParameters convertScalingParameters(boolean dc,
-                                                               PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
+    public static ScalingParameters convertScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
 
         Set<String> ignoredInjectionIds = new HashSet<>();
         for (Object injection : ((Collection<?>) scalingParametersPtr.getIgnoredInjectionIds()).toArray()) {

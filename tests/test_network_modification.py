@@ -1526,7 +1526,6 @@ def test_scaling_parameters_init():
     scaling_type = Parameters().scaling_type
     priority = Parameters().priority
     allows_generator_out_of_active_power_limits = Parameters().allows_generator_out_of_active_power_limits
-
     assert scaling_type == 0
     assert priority == 2
     assert allows_generator_out_of_active_power_limits == False

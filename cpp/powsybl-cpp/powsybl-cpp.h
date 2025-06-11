@@ -987,7 +987,7 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
 
-int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, const std::vector<std::string>& injections_ids, const int limit_min, const int limit_max);
+int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, const std::vector<std::string>& injections_ids, const int limit_min, const int limit_max, scaling_parameters scalingParameters);
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
