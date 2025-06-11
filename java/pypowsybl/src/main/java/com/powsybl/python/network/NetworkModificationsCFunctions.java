@@ -203,9 +203,10 @@ public final class NetworkModificationsCFunctions {
             } catch (NullPointerException e) {
                 throw new PowsyblException("Can't find injections", e);
             }
+            ScalingParameters parameters = createScalingParameters();
             ProportionalScalable.DistributionMode distributionMode = convert(distributionModeHandle);
             ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
-            return (int) proportionalScalable.scale(network, asked);
+            return (int) proportionalScalable.scale(network, asked, parameters);
         });
     }
 
