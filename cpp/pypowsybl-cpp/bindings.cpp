@@ -578,16 +578,16 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
-    py::enum_<scaling_type>(m, "ScalingType")
+    py::enum_<pypowsybl::ScalingType>(m, "ScalingType")
             .value("DELTA_P", pypowsybl::ScalingType::DELTA_P)
             .value("TARGET_P", pypowsybl::ScalingType::TARGET_P);
 
-    py::enum_<priority>(m, "Priority")
+    py::enum_<pypowsybl::Priority>(m, "Priority")
             .value("RESPECT_OF_VOLUME_ASKED", pypowsybl::Priority::RESPECT_OF_VOLUME_ASKED)
             .value("RESPECT_OF_DISTRIBUTION", pypowsybl::Priority::RESPECT_OF_DISTRIBUTION)
             .value("ONESHOT", pypowsybl::Priority::ONESHOT);
 
-    py::enum_<scaling_convention>(m, "ScalingConvention")
+    py::enum_<pypowsybl::ScalingConvention>(m, "ScalingConvention")
             .value("GENERATOR_SCALING_CONVENTION", pypowsybl::ScalingConvention::GENERATOR_SCALING_CONVENTION)
             .value("LOAD_SCALING_CONVENTION", pypowsybl::ScalingConvention::LOAD_SCALING_CONVENTION);
 

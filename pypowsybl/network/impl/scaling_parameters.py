@@ -42,7 +42,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.ignored_injection_ids = ignored_injection_ids
 
     def _init_from_c(self, c_parameters: ScalingParameters) -> None:
-        print(c_parameters.scaling_convention)
         self.scaling_convention = c_parameters.scaling_convention
         self.constant_power_factor = c_parameters.constant_power_factor
         self.reconnect = c_parameters.reconnect
