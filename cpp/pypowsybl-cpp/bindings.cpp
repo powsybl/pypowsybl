@@ -579,17 +579,17 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
     py::enum_<scaling_type>(m, "ScalingType")
-            .value("DELTA_P", scaling_type::DELTA_P)
-            .value("TARGET_P", scaling_type::TARGET_P);
+            .value("DELTA_P", pypowsybl::ScalingType::DELTA_P)
+            .value("TARGET_P", pypowsybl::ScalingType::TARGET_P);
 
     py::enum_<priority>(m, "Priority")
-            .value("RESPECT_OF_VOLUME_ASKED", priority::RESPECT_OF_VOLUME_ASKED)
-            .value("RESPECT_OF_DISTRIBUTION", priority::RESPECT_OF_DISTRIBUTION)
-            .value("ONESHOT", priority::ONESHOT);
+            .value("RESPECT_OF_VOLUME_ASKED", pypowsybl::Priority::RESPECT_OF_VOLUME_ASKED)
+            .value("RESPECT_OF_DISTRIBUTION", pypowsybl::Priority::RESPECT_OF_DISTRIBUTION)
+            .value("ONESHOT", pypowsybl::Priority::ONESHOT);
 
     py::enum_<scaling_convention>(m, "ScalingConvention")
-            .value("GENERATOR_SCALING_CONVENTION", scaling_convention::GENERATOR_SCALING_CONVENTION)
-            .value("LOAD_SCALING_CONVENTION", scaling_convention::LOAD_SCALING_CONVENTION);
+            .value("GENERATOR_SCALING_CONVENTION", pypowsybl::ScalingConvention::GENERATOR_SCALING_CONVENTION)
+            .value("LOAD_SCALING_CONVENTION", pypowsybl::ScalingConvention::LOAD_SCALING_CONVENTION);
 
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());

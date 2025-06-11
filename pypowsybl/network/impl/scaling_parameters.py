@@ -5,8 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Sequence, Dict, List
-
-from mpl_toolkits.axes_grid1.axes_size import Scalable
 from pypowsybl._pypowsybl import (ScalingType, ScalingConvention, Priority, ScalingParameters)
 
 # enforcing some class metadata on classes imported from C extension,
@@ -15,7 +13,7 @@ from pypowsybl._pypowsybl import (ScalingType, ScalingConvention, Priority, Scal
 ScalingType.__module__ = __name__
 ScalingConvention.__module__ = __name__
 Priority.__module__ = __name__
-Scalable.__module__ = __name__
+ScalingParameters.__module__ = __name__
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -44,6 +42,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.ignored_injection_ids = ignored_injection_ids
 
     def _init_from_c(self, c_parameters: ScalingParameters) -> None:
+        print(c_parameters.scaling_convention)
         self.scaling_convention = c_parameters.scaling_convention
         self.constant_power_factor = c_parameters.constant_power_factor
         self.reconnect = c_parameters.reconnect

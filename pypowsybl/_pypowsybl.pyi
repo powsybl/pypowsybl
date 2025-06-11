@@ -558,6 +558,9 @@ class ScalingParameters:
     priority: Priority
     ignored_injection_ids: List[str]
 
+class Scalable :
+
+
 class LoadFlowValidationParameters:
     threshold: float
     verbose: bool
@@ -1453,3 +1456,4 @@ def update_grid2op_integer_value(backend: JavaHandle, value_type: Grid2opUpdateI
 def check_grid2op_isolated_and_disconnected_injections(backend: JavaHandle) -> bool: ...
 
 def run_grid2op_loadflow(backend: JavaHandle, dc: bool, parameters: LoadFlowParameters) -> LoadFlowComponentResultArray: ...
+
