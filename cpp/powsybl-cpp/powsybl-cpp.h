@@ -253,6 +253,22 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ScalingType {
+    DELTA_P = 0,
+    TARGET_P,
+};
+
+enum Priority {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+};
+
+enum ScalingConvention {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+};
+
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,
@@ -321,6 +337,21 @@ public:
     double dc_power_factor;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
+};
+
+class ScalingParameters {
+public:
+    ScalingParameters(scaling_parameters* src);
+    std::shared_ptr<scaling_parameters> to_c_struct() const;
+    void load_to_c_struct(scaling_parameters& params) const;
+
+    ScalingConvention scaling_convention;
+    bool constant_power_factor;
+    bool reconnect;
+    bool allows_generator_out_of_active_power_limits;
+    Priority priority;
+    ScalingType scaling_type;
+    std::vector<std::string> ignored_injection_ids;
 };
 
 class LoadFlowValidationParameters {
@@ -654,6 +685,8 @@ void saveNetwork(const JavaHandle& network, const std::string& file, const std::
 
 LoadFlowParameters* createLoadFlowParameters();
 
+ScalingParameters* createScalingParameters();
+
 std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& loadFlowProvider);
 
 SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& provider);
@@ -953,6 +986,8 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
+
+int scaleProportional(pypowsybl::JavaHandle network, int asked, distribution_mode distributionMode, const std::vector<std::string>& injections_ids, const int limit_min, const int limit_max, scaling_parameters scalingParameters);
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();
