@@ -25,6 +25,8 @@ import com.powsybl.openrao.data.crac.api.Instant;
 import com.powsybl.openrao.data.crac.api.cnec.AngleCnec;
 import com.powsybl.openrao.data.crac.api.cnec.FlowCnec;
 import com.powsybl.openrao.data.crac.api.cnec.VoltageCnec;
+import com.powsybl.openrao.data.crac.api.rangeaction.PstRangeAction;
+import com.powsybl.openrao.data.crac.api.rangeaction.RangeAction;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
@@ -322,7 +324,7 @@ public final class Dataframes {
 
     public record VoltageCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double minVoltage, double maxVoltage, double margin) { }
 
-    public record ActivedRemedialActionResult(String remedialActionId, Instant instant, boolean actived) { }
+    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, boolean activated, int optimizedTap, double optimizedSetPoint) { }
 
     private static List<FlowCnecResult> getFlowCnecResult(Crac crac, RaoResult raoResult) {
         List<FlowCnecResult> results = new ArrayList<>();
@@ -391,14 +393,25 @@ public final class Dataframes {
         );
     }
 
-    private static List<ActivedRemedialActionResult> getActivatedRemedialActions(Crac crac, RaoResult raoResult) {
-        List<ActivedRemedialActionResult> results = new ArrayList<>();
+    private static List<ActivatedRemedialActionResult> getActivatedRemedialActions(Crac crac, RaoResult raoResult) {
+        List<ActivatedRemedialActionResult> results = new ArrayList<>();
         for (var ra : crac.getRemedialActions()) {
             for (var state : crac.getStates()) {
-                ActivedRemedialActionResult result = new ActivedRemedialActionResult(
+                int optimizedTap = Integer.MIN_VALUE;
+                double optimizedSetPoint = Double.MIN_VALUE;
+                if (ra instanceof RangeAction<?> rangeAction) {
+                    if (rangeAction instanceof PstRangeAction pstRangeAction) {
+                        optimizedTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
+                    } else {
+                        optimizedSetPoint = raoResult.getOptimizedSetPointOnState(state, rangeAction);
+                    }
+                }
+                ActivatedRemedialActionResult result = new ActivatedRemedialActionResult(
                     ra.getId(),
                     state.getInstant(),
-                    raoResult.isActivatedDuringState(state, ra)
+                    raoResult.isActivatedDuringState(state, ra),
+                    optimizedTap,
+                    optimizedSetPoint
                 );
                 results.add(result);
             }
@@ -447,11 +460,13 @@ public final class Dataframes {
     }
 
     private static DataframeMapper<Crac, RaoResult> createRemedialActionResultMapper() {
-        return new DataframeMapperBuilder<Crac, ActivedRemedialActionResult, RaoResult>()
+        return new DataframeMapperBuilder<Crac, ActivatedRemedialActionResult, RaoResult>()
             .itemsProvider(Dataframes::getActivatedRemedialActions)
-            .stringsIndex("remedial_action_id", ActivedRemedialActionResult::remedialActionId)
+            .stringsIndex("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
             .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
-            .booleans("activated", ActivedRemedialActionResult::actived)
+            .booleans("activated", ActivatedRemedialActionResult::activated)
+            .ints("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
+            .doubles("optimized_set_point", ActivatedRemedialActionResult::optimizedSetPoint)
             .build();
     }
 
