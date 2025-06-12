@@ -45,6 +45,10 @@ public final class NetworkDataframes {
     private static final Map<ExtensionDataframeKey, NetworkDataframeMapper> EXTENSIONS_MAPPERS = NetworkExtensions.createExtensionsMappers();
 
     private static final String DEFAULT_OPERATIONAL_LIMIT_GROUP_ID = "DEFAULT";
+    private static final String MIN_Q_AT_TARGET_P = "min_q_at_target_p";
+    private static final String MAX_Q_AT_TARGET_P = "max_q_at_target_p";
+    private static final String MIN_Q_AT_P = "min_q_at_p";
+    private static final String MAX_Q_AT_P = "max_q_at_p";
 
     private NetworkDataframes() {
     }
@@ -156,7 +160,7 @@ public final class NetworkDataframes {
 
     private static MinMaxReactiveLimits getMinMaxReactiveLimits(ReactiveLimitsHolder holder) {
         ReactiveLimits reactiveLimits = holder.getReactiveLimits();
-        return reactiveLimits instanceof MinMaxReactiveLimits ? (MinMaxReactiveLimits) reactiveLimits : null;
+        return reactiveLimits instanceof MinMaxReactiveLimits minMaxReactiveLimits ? minMaxReactiveLimits : null;
     }
 
     static <U extends ReactiveLimitsHolder> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitMinQ(ToDoubleFunction<U> pGetter) {
@@ -280,10 +284,10 @@ public final class NetworkDataframes {
                     setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ),
                     setPerUnitMaxQ())
-                .doubles("min_q_at_target_p", getPerUnitMinQ(Generator::getTargetP), false)
-                .doubles("max_q_at_target_p", getPerUnitMaxQ(Generator::getTargetP), false)
-                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
-                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
+                .doubles(MIN_Q_AT_TARGET_P, getPerUnitMinQ(Generator::getTargetP), false)
+                .doubles(MAX_Q_AT_TARGET_P, getPerUnitMaxQ(Generator::getTargetP), false)
+                .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
+                .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .doubles("rated_s", (g, context) -> g.getRatedS(), (g, ratedS, context) -> g.setRatedS(ratedS))
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", (g, context) -> perUnitTargetV(context, g.getTargetV(), g.getRegulatingTerminal(), g.getTerminal()),
@@ -377,6 +381,10 @@ public final class NetworkDataframes {
                     setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ),
                     setPerUnitMaxQ())
+                .doubles(MIN_Q_AT_TARGET_P, getPerUnitMinQ(Battery::getTargetP), false)
+                .doubles(MAX_Q_AT_TARGET_P, getPerUnitMaxQ(Battery::getTargetP), false)
+                .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
+                .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_p", (b, context) -> perUnitPQ(context, b.getTargetP()), (b, targetP, context) -> b.setTargetP(unPerUnitPQ(context, targetP)))
                 .doubles("target_q", (b, context) -> perUnitPQ(context, b.getTargetQ()), (b, targetQ, context) -> b.setTargetQ(unPerUnitPQ(context, targetQ)))
@@ -448,9 +456,9 @@ public final class NetworkDataframes {
                 .stringsIndex("id", triple -> triple.getLeft().getId())
                 .intsIndex("section", Triple::getRight)
                 .doubles("g", (p, context) -> perUnitG(context, p.getMiddle(), p.getLeft()),
-                    (p, g, context) -> p.getMiddle().setG(unPerUnitBG(context, p.getLeft(), g)))
+                    (p, g, context) -> p.getMiddle().setG(unPerUnitGB(context, p.getLeft(), g)))
                 .doubles("b", (p, context) -> perUnitB(context, p.getMiddle(), p.getLeft()),
-                    (p, b, context) -> p.getMiddle().setB(unPerUnitBG(context, p.getLeft(), b)))
+                    (p, b, context) -> p.getMiddle().setB(unPerUnitGB(context, p.getLeft(), b)))
                 .build();
     }
 
@@ -478,10 +486,10 @@ public final class NetworkDataframes {
                         .map(shuntCompensator -> Pair.of(shuntCompensator, (ShuntCompensatorLinearModel) shuntCompensator.getModel()));
         return NetworkDataframeMapperBuilder.ofStream(linearShunts, (net, s) -> Pair.of(checkShuntNonNull(net, s), checkLinearModel(net, s)))
                 .stringsIndex("id", p -> p.getLeft().getId())
-                .doubles("g_per_section", (p, context) -> perUnitBG(context, p.getRight().getGPerSection(), p.getLeft().getTerminal().getVoltageLevel().getNominalV()),
-                    (p, g, context) -> p.getRight().setGPerSection(unPerUnitBG(context, g, p.getLeft().getTerminal().getVoltageLevel().getNominalV())))
-                .doubles("b_per_section", (p, context) -> perUnitBG(context, p.getRight().getBPerSection(), p.getLeft().getTerminal().getVoltageLevel().getNominalV()),
-                    (p, b, context) -> p.getRight().setBPerSection(unPerUnitBG(context, b, p.getLeft().getTerminal().getVoltageLevel().getNominalV())))
+                .doubles("g_per_section", (p, context) -> perUnitGB(context, p.getRight().getGPerSection(), p.getLeft().getTerminal().getVoltageLevel().getNominalV()),
+                    (p, g, context) -> p.getRight().setGPerSection(unPerUnitGB(context, g, p.getLeft().getTerminal().getVoltageLevel().getNominalV())))
+                .doubles("b_per_section", (p, context) -> perUnitGB(context, p.getRight().getBPerSection(), p.getLeft().getTerminal().getVoltageLevel().getNominalV()),
+                    (p, b, context) -> p.getRight().setBPerSection(unPerUnitGB(context, b, p.getLeft().getTerminal().getVoltageLevel().getNominalV())))
                 .ints("max_section_count", p -> p.getLeft().getMaximumSectionCount(), (p, s) -> p.getRight().setMaximumSectionCount(s))
                 .build();
     }
@@ -547,14 +555,12 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getTwoWindingsTransformerStream, getOrThrow(Network::getTwoWindingsTransformer, "Two windings transformer"))
                 .stringsIndex("id", TwoWindingsTransformer::getId)
                 .strings("name", twt -> twt.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("r", (twt, context) -> perUnitRX(context, twt.getR(), twt), (twt, r, context) -> twt.setR(unPerUnitRX(context, twt, r)))
-                .doubles("x", (twt, context) -> perUnitRX(context, twt.getX(), twt), (twt, x, context) -> twt.setX(unPerUnitRX(context, twt, x)))
-                .doubles("g", (twt, context) -> perUnitBG(context, twt, twt.getG()), (twt, g, context) -> twt.setG(unPerUnitBG(context, twt, g)))
-                .doubles("b", (twt, context) -> perUnitBG(context, twt, twt.getB()), (twt, b, context) -> twt.setB(unPerUnitBG(context, twt, b)))
-                .doubles("rated_u1", (twt, context) -> perUnitV(context, twt.getRatedU1(), twt.getTerminal1()),
-                    (twt, ratedV1, context) -> twt.setRatedU1(unPerUnitV(context, ratedV1, twt.getTerminal1())))
-                .doubles("rated_u2", (twt, context) -> perUnitV(context, twt.getRatedU2(), twt.getTerminal2()),
-                    (twt, ratedV2, context) -> twt.setRatedU2(unPerUnitV(context, ratedV2, twt.getTerminal2())))
+                .doubles("r", (twt, context) -> perUnitRX(context, twt, twt.getR()), (twt, r, context) -> twt.setR(unPerUnitRX(context, twt, r)))
+                .doubles("x", (twt, context) -> perUnitRX(context, twt, twt.getX()), (twt, x, context) -> twt.setX(unPerUnitRX(context, twt, x)))
+                .doubles("g", (twt, context) -> perUnitGB(context, twt, twt.getG()), (twt, g, context) -> twt.setG(unPerUnitGB(context, twt, g)))
+                .doubles("b", (twt, context) -> perUnitGB(context, twt, twt.getB()), (twt, b, context) -> twt.setB(unPerUnitGB(context, twt, b)))
+                .doubles("rated_u1", (twt, context) -> twt.getRatedU1(), (twt, ratedV1, context) -> twt.setRatedU1(ratedV1))
+                .doubles("rated_u2", (twt, context) -> twt.getRatedU2(), (twt, ratedV2, context) -> twt.setRatedU2(ratedV2))
                 .doubles("rated_s", (twt, context) -> twt.getRatedS(), (twt, ratedS, context) -> twt.setRatedS(ratedS))
                 .doubles("p1", getPerUnitP1(), setPerUnitP1())
                 .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
@@ -579,6 +585,10 @@ public final class NetworkDataframes {
                         TwoWindingsTransformer::setSelectedOperationalLimitsGroup2, false)
                 .doubles("rho", (twt, context) -> perUnitRho(context, twt, NetworkDataframes.computeRho(twt)), false)
                 .doubles("alpha", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt)), false)
+                .doubles("r_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeR(twt)), false)
+                .doubles("x_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeX(twt)), false)
+                .doubles("g_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeG(twt)), false)
+                .doubles("b_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeB(twt)), false)
                 .addProperties()
                 .build();
     }
@@ -587,12 +597,12 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getThreeWindingsTransformerStream, getOrThrow(Network::getThreeWindingsTransformer, "Three windings transformer"))
                 .stringsIndex("id", ThreeWindingsTransformer::getId)
                 .strings("name", twt -> twt.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("rated_u0", (twt, context) -> context.isPerUnit() ? 1 : twt.getRatedU0())
-                .doubles("r1", (twt, context) -> perUnitRX(context, twt.getLeg1().getR(), twt), (twt, r1, context) -> twt.getLeg1().setR(unPerUnitRX(context, twt, r1)))
-                .doubles("x1", (twt, context) -> perUnitRX(context, twt.getLeg1().getX(), twt), (twt, x1, context) -> twt.getLeg1().setX(unPerUnitRX(context, twt, x1)))
-                .doubles("g1", (twt, context) -> perUnitBG(context, twt.getLeg1().getG(), twt), (twt, g1, context) -> twt.getLeg1().setG(unPerUnitBG(context, twt, g1)))
-                .doubles("b1", (twt, context) -> perUnitBG(context, twt.getLeg1().getB(), twt), (twt, b1, context) -> twt.getLeg1().setB(unPerUnitBG(context, twt, b1)))
-                .doubles("rated_u1", (twt, context) -> perUnitV(context, twt.getLeg1()), (twt, ratedU1, context) -> twt.getLeg1().setRatedU(unPerUnitV(context, ratedU1, twt.getLeg1())))
+                .doubles("rated_u0", (twt, context) -> twt.getRatedU0(), (twt, ratedU0, context) -> twt.setRatedU0(ratedU0))
+                .doubles("r1", (twt, context) -> perUnitRX(context, twt, twt.getLeg1().getR()), (twt, r1, context) -> twt.getLeg1().setR(unPerUnitRX(context, twt, r1)))
+                .doubles("x1", (twt, context) -> perUnitRX(context, twt, twt.getLeg1().getX()), (twt, x1, context) -> twt.getLeg1().setX(unPerUnitRX(context, twt, x1)))
+                .doubles("g1", (twt, context) -> perUnitGB(context, twt, twt.getLeg1().getG()), (twt, g1, context) -> twt.getLeg1().setG(unPerUnitGB(context, twt, g1)))
+                .doubles("b1", (twt, context) -> perUnitGB(context, twt, twt.getLeg1().getB()), (twt, b1, context) -> twt.getLeg1().setB(unPerUnitGB(context, twt, b1)))
+                .doubles("rated_u1", (twt, context) -> twt.getLeg1().getRatedU(), (twt, ratedU1, context) -> twt.getLeg1().setRatedU(ratedU1))
                 .doubles("rated_s1", (twt, context) -> twt.getLeg1().getRatedS(), (twt, ratedS1, context) -> twt.getLeg1().setRatedS(ratedS1))
                 .ints("ratio_tap_position1", getRatioTapPosition(ThreeWindingsTransformer::getLeg1), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
                 .ints("phase_tap_position1", getPhaseTapPosition(ThreeWindingsTransformer::getLeg1), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
@@ -608,11 +618,15 @@ public final class NetworkDataframes {
                         (twt, groupId) -> twt.getLeg1().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho1", (twt, context) -> perUnitRho(context, twt, ThreeSides.ONE, NetworkDataframes.computeRho(twt, ThreeSides.ONE)), false)
                 .doubles("alpha1", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.ONE)), false)
-                .doubles("r2", (twt, context) -> perUnitRX(context, twt.getLeg2().getR(), twt), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
-                .doubles("x2", (twt, context) -> perUnitRX(context, twt.getLeg2().getX(), twt), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
-                .doubles("g2", (twt, context) -> perUnitBG(context, twt.getLeg2().getG(), twt), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitBG(context, twt, g2)))
-                .doubles("b2", (twt, context) -> perUnitBG(context, twt.getLeg2().getB(), twt), (twt, b2, context) -> twt.getLeg2().setB(unPerUnitBG(context, twt, b2)))
-                .doubles("rated_u2", (twt, context) -> perUnitV(context, twt.getLeg2()), (twt, ratedU2, context) -> twt.getLeg2().setRatedU(unPerUnitV(context, ratedU2, twt.getLeg2())))
+                .doubles("r1_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeR(twt, ThreeSides.ONE)), false)
+                .doubles("x1_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeX(twt, ThreeSides.ONE)), false)
+                .doubles("g1_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeG(twt, ThreeSides.ONE)), false)
+                .doubles("b1_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeB(twt, ThreeSides.ONE)), false)
+                .doubles("r2", (twt, context) -> perUnitRX(context, twt, twt.getLeg2().getR()), (twt, r2, context) -> twt.getLeg2().setR(unPerUnitRX(context, twt, r2)))
+                .doubles("x2", (twt, context) -> perUnitRX(context, twt, twt.getLeg2().getX()), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
+                .doubles("g2", (twt, context) -> perUnitGB(context, twt, twt.getLeg2().getG()), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitGB(context, twt, g2)))
+                .doubles("b2", (twt, context) -> perUnitGB(context, twt, twt.getLeg2().getB()), (twt, b2, context) -> twt.getLeg2().setB(unPerUnitGB(context, twt, b2)))
+                .doubles("rated_u2", (twt, context) -> twt.getLeg2().getRatedU(), (twt, ratedU2, context) -> twt.getLeg2().setRatedU(ratedU2))
                 .doubles("rated_s2", (twt, context) -> twt.getLeg2().getRatedS(), (twt, v, context) -> twt.getLeg2().setRatedS(v))
                 .ints("ratio_tap_position2", getRatioTapPosition(ThreeWindingsTransformer::getLeg2), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
                 .ints("phase_tap_position2", getPhaseTapPosition(ThreeWindingsTransformer::getLeg2), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
@@ -628,11 +642,15 @@ public final class NetworkDataframes {
                         (twt, groupId) -> twt.getLeg2().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho2", (twt, context) -> perUnitRho(context, twt, ThreeSides.TWO, NetworkDataframes.computeRho(twt, ThreeSides.TWO)), false)
                 .doubles("alpha2", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.TWO)), false)
-                .doubles("r3", (twt, context) -> perUnitRX(context, twt.getLeg3().getR(), twt), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
-                .doubles("x3", (twt, context) -> perUnitRX(context, twt.getLeg3().getX(), twt), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
-                .doubles("g3", (twt, context) -> perUnitBG(context, twt.getLeg3().getG(), twt), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitBG(context, twt, g3)))
-                .doubles("b3", (twt, context) -> perUnitBG(context, twt.getLeg3().getB(), twt), (twt, b3, context) -> twt.getLeg3().setB(unPerUnitBG(context, twt, b3)))
-                .doubles("rated_u3", (twt, context) -> perUnitV(context, twt.getLeg3()), (twt, ratedU3, context) -> twt.getLeg3().setRatedU(unPerUnitV(context, ratedU3, twt.getLeg3())))
+                .doubles("r2_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeR(twt, ThreeSides.TWO)), false)
+                .doubles("x2_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeX(twt, ThreeSides.TWO)), false)
+                .doubles("g2_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeG(twt, ThreeSides.TWO)), false)
+                .doubles("b2_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeB(twt, ThreeSides.TWO)), false)
+                .doubles("r3", (twt, context) -> perUnitRX(context, twt, twt.getLeg3().getR()), (twt, r3, context) -> twt.getLeg3().setR(unPerUnitRX(context, twt, r3)))
+                .doubles("x3", (twt, context) -> perUnitRX(context, twt, twt.getLeg3().getX()), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
+                .doubles("g3", (twt, context) -> perUnitGB(context, twt, twt.getLeg3().getG()), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitGB(context, twt, g3)))
+                .doubles("b3", (twt, context) -> perUnitGB(context, twt, twt.getLeg3().getB()), (twt, b3, context) -> twt.getLeg3().setB(unPerUnitGB(context, twt, b3)))
+                .doubles("rated_u3", (twt, context) -> twt.getLeg3().getRatedU(), (twt, ratedU3, context) -> twt.getLeg3().setRatedU(ratedU3))
                 .doubles("rated_s3", (twt, context) -> twt.getLeg3().getRatedS(), (twt, v, context) -> twt.getLeg3().setRatedS(v))
                 .ints("ratio_tap_position3", getRatioTapPosition(ThreeWindingsTransformer::getLeg3), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
                 .ints("phase_tap_position3", getPhaseTapPosition(ThreeWindingsTransformer::getLeg3), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
@@ -648,6 +666,10 @@ public final class NetworkDataframes {
                         (twt, groupId) -> twt.getLeg3().setSelectedOperationalLimitsGroup(groupId), false)
                 .doubles("rho3", (twt, context) -> perUnitRho(context, twt, ThreeSides.THREE, NetworkDataframes.computeRho(twt, ThreeSides.THREE)), false)
                 .doubles("alpha3", (twt, context) -> perUnitAngle(context, NetworkDataframes.computeAlpha(twt, ThreeSides.THREE)), false)
+                .doubles("r3_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeR(twt, ThreeSides.THREE)), false)
+                .doubles("x3_at_current_tap", (twt, context) -> perUnitRX(context, twt, NetworkDataframes.computeX(twt, ThreeSides.THREE)), false)
+                .doubles("g3_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeG(twt, ThreeSides.THREE)), false)
+                .doubles("b3_at_current_tap", (twt, context) -> perUnitGB(context, twt, NetworkDataframes.computeB(twt, ThreeSides.THREE)), false)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
@@ -746,8 +768,10 @@ public final class NetworkDataframes {
                 .doubles("loss_factor", (vsc, context) -> vsc.getLossFactor(), (vscConverterStation, lf, context) -> vscConverterStation.setLossFactor((float) lf))
                 .doubles("min_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMinQ), setPerUnitMinQ())
                 .doubles("max_q", ifExistsDoublePerUnitPQ(NetworkDataframes::getMinMaxReactiveLimits, MinMaxReactiveLimits::getMaxQ), setPerUnitMaxQ())
-                .doubles("min_q_at_p", getPerUnitMinQ(getOppositeP()), false)
-                .doubles("max_q_at_p", getPerUnitMaxQ(getOppositeP()), false)
+                .doubles(MIN_Q_AT_TARGET_P, getPerUnitMinQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
+                .doubles(MAX_Q_AT_TARGET_P, getPerUnitMaxQ(vsc -> vsc.getHvdcLine().getActivePowerSetpoint()), false)
+                .doubles(MIN_Q_AT_P, getPerUnitMinQ(getOppositeP()), false)
+                .doubles(MAX_Q_AT_P, getPerUnitMaxQ(getOppositeP()), false)
                 .strings("reactive_limits_kind", NetworkDataframes::getReactiveLimitsKind)
                 .doubles("target_v", (vsc, context) -> perUnitTargetV(context, vsc.getVoltageSetpoint(), vsc.getRegulatingTerminal(), vsc.getTerminal()),
                     (vsc, targetV, context) -> vsc.setVoltageSetpoint(unPerUnitTargetV(context, targetV, vsc.getRegulatingTerminal(), vsc.getTerminal())))
@@ -1342,6 +1366,58 @@ public final class NetworkDataframes {
         return leg.getPhaseTapChanger() != null ? leg.getPhaseTapChanger().getCurrentStep().getAlpha() : 0;
     }
 
+    private static double computeR(TwoWindingsTransformer twt) {
+        return twt.getR()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getR() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getR() / 100.0) : 1);
+    }
+
+    private static double computeX(TwoWindingsTransformer twt) {
+        return twt.getX()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getX() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getX() / 100.0) : 1);
+    }
+
+    private static double computeG(TwoWindingsTransformer twt) {
+        return twt.getG()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getG() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getG() / 100.0) : 1);
+    }
+
+    private static double computeB(TwoWindingsTransformer twt) {
+        return twt.getB()
+                * (twt.getRatioTapChanger() != null ? (1 + twt.getRatioTapChanger().getCurrentStep().getB() / 100.0) : 1)
+                * (twt.getPhaseTapChanger() != null ? (1 + twt.getPhaseTapChanger().getCurrentStep().getB() / 100.0) : 1);
+    }
+
+    private static double computeR(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getR()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getR() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getR() / 100.0) : 1);
+    }
+
+    private static double computeX(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getX()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getX() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getX() / 100.0) : 1);
+    }
+
+    private static double computeG(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getG()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getG() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getG() / 100.0) : 1);
+    }
+
+    private static double computeB(ThreeWindingsTransformer twt, ThreeSides side) {
+        ThreeWindingsTransformer.Leg leg = twt.getLeg(side);
+        return leg.getB()
+                * (leg.getRatioTapChanger() != null ? (1 + leg.getRatioTapChanger().getCurrentStep().getB() / 100.0) : 1)
+                * (leg.getPhaseTapChanger() != null ? (1 + leg.getPhaseTapChanger().getCurrentStep().getB() / 100.0) : 1);
+    }
+
     private static NetworkDataframeMapper ptcs() {
         return NetworkDataframeMapperBuilder.ofStream(network -> NetworkDataframes.getTapChangerRows(network, TapChangerType.PHASE), NetworkDataframes::getTapChangerRow)
                 .stringsIndex("id", TapChangerRow::getId)
@@ -1539,12 +1615,25 @@ public final class NetworkDataframes {
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
                 .enums("type", LimitType.class, TemporaryLimitData::getType)
-                .doubles("value", TemporaryLimitData::getValue)
+                .doubles("value", (limit, context) -> perUnitLimitValue(context, limit))
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
                 .strings("group_name", TemporaryLimitData::getGroupId, false)
                 .booleans("selected", TemporaryLimitData::isSelected, false)
                 .build();
+    }
+
+    private static double perUnitLimitValue(NetworkDataframeContext context, TemporaryLimitData limit) {
+        return switch (limit.getType()) {
+            case CURRENT ->
+                perUnitI(context, limit.getValue(), limit.getPerUnitingNominalV());
+            case ACTIVE_POWER, APPARENT_POWER ->
+                perUnitPQ(context, limit.getValue());
+            case VOLTAGE ->
+                perUnitV(context, limit.getValue(), limit.getPerUnitingNominalV());
+            case VOLTAGE_ANGLE ->
+                perUnitAngle(context, limit.getValue());
+        };
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
@@ -1645,14 +1734,6 @@ public final class NetworkDataframes {
             }
             return equipment;
         };
-    }
-
-    private static TwoWindingsTransformer getT2OrThrow(Network network, String id) {
-        TwoWindingsTransformer twt = network.getTwoWindingsTransformer(id);
-        if (twt == null) {
-            throw new PowsyblException("Two windings transformer '" + id + "' not found");
-        }
-        return twt;
     }
 
     private static Injection<?> getInjectionOrThrow(Network network, String id) {
