@@ -238,10 +238,10 @@ public final class NetworkModificationsCFunctions {
 
     public static ScalingParameters convertScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
 
+        List<String> injectionsIdsStringList = toStringList(scalingParametersPtr.getIgnoredInjectionIds(), scalingParametersPtr.getIgnoredInjectionIdsCount());
+
         Set<String> ignoredInjectionIds = new HashSet<>();
-        for (Object injection : ((Collection<?>) scalingParametersPtr.getIgnoredInjectionIds()).toArray()) {
-            ignoredInjectionIds.add((String) injection);
-        }
+        injectionsIdsStringList.forEach(ignoredInjectionIds::add);
 
         return createScalingParameters()
                 .setScalingConvention(Scalable.ScalingConvention.values()[scalingParametersPtr.getScalingConvention()])

@@ -1517,10 +1517,10 @@ def test_scale_generator():
     n = pp.network.create_micro_grid_be_network()
     proportional_to_pmax = pp.network.DistributionMode.PROPORTIONAL_TO_PMAX
     proportional_to_target = pp.network.DistributionMode.PROPORTIONAL_TO_TARGETP
-
+    param = Parameters()
     injections_ids = ['3a3b27be-b18b-4385-b557-6735d733baf0', '550ebe0d-f2b2-48c1-991f-cebea43a21aa']
-    pp.network.scale_proportional(n, 10, proportional_to_pmax, injections_ids, 50, 200)
-    pp.network.scale_proportional(n, 50, proportional_to_target, injections_ids, 50, 200)
+    pp.network.scale_proportional(n, 10, proportional_to_pmax, injections_ids, 50, 200, param)
+    pp.network.scale_proportional(n, 50, proportional_to_target, injections_ids, 50, 200, param)
 
 def test_scaling_parameters_init():
     scaling_type = Parameters().scaling_type

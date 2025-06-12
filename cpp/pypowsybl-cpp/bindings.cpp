@@ -1218,7 +1218,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
-          py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg(scaling_parameters"report_node"));
+          py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("scaling_parameters"));
 
     m.def("scale_proportional", &pypowsybl::scaleProportional, "Scale the given network proportionally.",
          py::arg("network"), py::arg("asked"), py::arg("distribution_mode"), py::arg("injections_ids"), py::arg("limit_min"), py::arg("limit_max"), py::arg(""));
