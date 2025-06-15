@@ -23,7 +23,7 @@ class NetworkCache:
         self._transformers_3w = self._build_3w_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
         self._dangling_lines = self._build_dangling_lines(network, self.buses)
-        self._current_limits = self._build_current_limits(network)
+        self._current_limits1, self._current_limits2 = self._build_current_limits(network)
         self._slack_terminal = self._network.get_extensions('slackTerminal')
 
     @staticmethod
@@ -165,10 +165,10 @@ class NetworkCache:
         return NetworkCache._filter_injections(dangling_lines, buses)
 
     @staticmethod
-    def _build_current_limits(network: Network):
-        limits = network.get_operational_limits(attributes=['side', 'type', 'value'])
-        limits = limits[limits['type'] == 'CURRENT']
-        return limits
+    def _build_current_limits(network: Network) -> tuple[DataFrame, DataFrame]:
+        limits = network.get_operational_limits(attributes=['side', 'type', 'name', 'value'])
+        limits = limits[(limits['type'] == 'CURRENT') & (limits['name'] == 'permanent_limit')]
+        return limits[limits['side'] == 'ONE'][['value']], limits[limits['side'] == 'TWO'][['value']]
 
     @property
     def network(self) -> Network:
@@ -227,8 +227,12 @@ class NetworkCache:
         return self._dangling_lines
 
     @property
-    def current_limits(self) -> DataFrame:
-        return self._current_limits
+    def current_limits1(self) -> DataFrame:
+        return self._current_limits1
+
+    @property
+    def current_limits2(self) -> DataFrame:
+        return self._current_limits2
 
     @property
     def slack_terminal(self) -> DataFrame:
