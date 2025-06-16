@@ -746,6 +746,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
+              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
               - **i**: the current on the generator, ``NaN`` if no loadflow has been computed (in A)
@@ -1690,6 +1692,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **reactive_limits_kind**: type of the reactive limit of the VSC converter station (can be MIN_MAX, CURVE or NONE)
               - **voltage_regulator_on**: The voltage regulator status
               - **regulated_element_id**: The ID of the network element where voltage is regulated
+              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
@@ -1775,6 +1779,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_q**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
               - **regulated_element_id**: The ID of the network element where voltage is regulated
+              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
               - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)

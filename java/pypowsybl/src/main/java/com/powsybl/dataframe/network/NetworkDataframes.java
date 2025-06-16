@@ -296,6 +296,8 @@ public final class NetworkDataframes {
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
                         (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
+                .strings("regulated_bus_id", generator -> getBusId(generator.getRegulatingTerminal()), false)
+                .strings("regulated_bus_breaker_bus_id", generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (g, context) -> perUnitI(context, g.getTerminal()))
@@ -780,6 +782,8 @@ public final class NetworkDataframes {
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
                 .strings("regulated_element_id", vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
                         (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(vsc::setRegulatingTerminal, vsc.getNetwork(), elementId))
+                .strings("regulated_bus_id", vsc -> getBusId(vsc.getRegulatingTerminal()), false)
+                .strings("regulated_bus_breaker_bus_id", vsc -> getBusBreakerViewBusId(vsc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
@@ -808,6 +812,8 @@ public final class NetworkDataframes {
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
                         (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
+                .strings("regulated_bus_id", svc -> getBusId(svc.getRegulatingTerminal()), false)
+                .strings("regulated_bus_breaker_bus_id", svc -> getBusBreakerViewBusId(svc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
