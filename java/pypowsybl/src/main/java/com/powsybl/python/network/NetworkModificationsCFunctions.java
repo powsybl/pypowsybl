@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
@@ -14,22 +15,26 @@ import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.Replace3TwoWindingsTransformersByThreeWindingsTransformers;
 import com.powsybl.iidm.modification.ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers;
+import com.powsybl.iidm.modification.scalable.ProportionalScalable;
+import com.powsybl.iidm.modification.scalable.Scalable;
+import com.powsybl.iidm.modification.scalable.ScalingParameters;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
-import com.powsybl.iidm.network.BusbarSection;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.VoltageLevel;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.apache.commons.lang3.Range;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
@@ -40,6 +45,7 @@ import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
+import static com.powsybl.python.network.NetworkUtil.freeScalingParametersContent;
 
 /**
  * Defines the C functions for network modifications.
@@ -177,5 +183,89 @@ public final class NetworkModificationsCFunctions {
                 modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
             }
         });
+    }
+
+    @CEntryPoint(name = "scaleProportional")
+    public static int scaleProportional(IsolateThread thread, ObjectHandle networkHandle,
+                                        double asked,
+                                        PyPowsyblApiHeader.DistributionMode distributionModeHandle,
+                                        CCharPointerPointer injectionsIdsPtrPtr, int injectionCount,
+                                        double limitMin, double limitMax,
+                                        PyPowsyblApiHeader.ScalingParametersPointer scalingParametersHandle,
+                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            List<String> injectionsIdsStringList = toStringList(injectionsIdsPtrPtr, injectionCount);
+            List<Injection<?>> injections = new ArrayList<>();
+
+            try {
+                injectionsIdsStringList.forEach(injection ->
+                        injections.add((Injection<?>) network.getConnectable(injection)));
+            } catch (NullPointerException e) {
+                throw new PowsyblException("Can't find injections", e);
+            }
+            ScalingParameters parameters = convertScalingParameters(scalingParametersHandle);
+            ProportionalScalable.DistributionMode distributionMode = convert(distributionModeHandle);
+            ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
+            return (int) proportionalScalable.scale(network, asked, parameters);
+        });
+    }
+
+    public static void copyToCScalingParameters(ScalingParameters parameters, PyPowsyblApiHeader.ScalingParametersPointer cParameters) {
+        cParameters.setScalingConvention(parameters.getScalingConvention().ordinal());
+        cParameters.setConstantPowerFactor(parameters.isConstantPowerFactor());
+        cParameters.setReconnect(parameters.isReconnect());
+        cParameters.setAllowsGeneratorOutOfActivePowerLimits(parameters.isAllowsGeneratorOutOfActivePowerLimits());
+        cParameters.setPriority(parameters.getPriority().ordinal());
+        cParameters.setScalingType(parameters.getScalingType().ordinal());
+        CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getIgnoredInjectionIds().size() * SizeOf.get(CCharPointerPointer.class));
+        ArrayList<String> ignoredInjectionIds = new ArrayList<>(parameters.getIgnoredInjectionIds());
+        for (int i = 0; i < parameters.getIgnoredInjectionIds().size(); i++) {
+            calloc.write(i, CTypeUtil.toCharPtr(ignoredInjectionIds.get(i)));
+        }
+        cParameters.setIgnoredInjectionIds(calloc);
+    }
+
+    public static PyPowsyblApiHeader.ScalingParametersPointer convertToScalingParametersPointer(ScalingParameters parameters) {
+        PyPowsyblApiHeader.ScalingParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.ScalingParametersPointer.class));
+        copyToCScalingParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    public static ScalingParameters createScalingParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? ScalingParameters.load() : new ScalingParameters();
+    }
+
+    public static ScalingParameters convertScalingParameters(PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
+
+        List<String> injectionsIdsStringList = toStringList(scalingParametersPtr.getIgnoredInjectionIds(), scalingParametersPtr.getIgnoredInjectionIdsCount());
+
+        Set<String> ignoredInjectionIds = new HashSet<>();
+        injectionsIdsStringList.forEach(ignoredInjectionIds::add);
+
+        return createScalingParameters()
+                .setScalingConvention(Scalable.ScalingConvention.values()[scalingParametersPtr.getScalingConvention()])
+                .setConstantPowerFactor(scalingParametersPtr.isConstantPowerFactor())
+                .setReconnect(scalingParametersPtr.isReconnect())
+                .setAllowsGeneratorOutOfActivePowerLimits(scalingParametersPtr.isAllowsGeneratorOutOfActivePowerLimits())
+                .setPriority(ScalingParameters.Priority.values()[scalingParametersPtr.getPriority()])
+                .setScalingType(ScalingParameters.ScalingType.values()[scalingParametersPtr.getScalingType()])
+                .setIgnoredInjectionIds(ignoredInjectionIds);
+    }
+
+    public static void freeScalingParametersPointer(PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr) {
+        freeScalingParametersContent(scalingParametersPtr);
+        UnmanagedMemory.free(scalingParametersPtr);
+    }
+
+    @CEntryPoint(name = "createScalingParameters")
+    public static PyPowsyblApiHeader.ScalingParametersPointer createScalingParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToScalingParametersPointer(NetworkUtil.createScalingParameters()));
+    }
+
+    @CEntryPoint(name = "freeScalingParameters")
+    public static void freeScalingParameters(IsolateThread thread, PyPowsyblApiHeader.ScalingParametersPointer scalingParametersPtr,
+                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> freeScalingParametersPointer(scalingParametersPtr));
     }
 }
