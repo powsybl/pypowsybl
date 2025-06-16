@@ -557,9 +557,7 @@ class ScalingParameters:
     scaling_type: ScalingType
     priority: Priority
     ignored_injection_ids: List[str]
-
-class Scalable :
-
+    def __init__(self) -> None: ...
 
 class LoadFlowValidationParameters:
     threshold: float

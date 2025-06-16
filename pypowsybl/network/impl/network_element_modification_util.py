@@ -1076,4 +1076,5 @@ def scale_proportional(network: Network, asked: int, distribution_mode: Distribu
     Return:
         The actual value of the scalable active power adjustment.
     """
-    return _pp.scale_proportional(network._handle, asked, distribution_mode, injections_ids, limit_min, limit_max, scaling_parameters)
+    p = scaling_parameters._to_c_parameters() if scaling_parameters is not None else _pp.ScalingParameters()
+    return _pp.scale_proportional(network._handle, asked, distribution_mode, injections_ids, limit_min, limit_max, p)

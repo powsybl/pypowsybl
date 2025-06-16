@@ -207,7 +207,7 @@ public final class NetworkModificationsCFunctions {
             ScalingParameters parameters = convertScalingParameters(scalingParametersHandle);
             ProportionalScalable.DistributionMode distributionMode = convert(distributionModeHandle);
             ProportionalScalable proportionalScalable = Scalable.proportional(injections, distributionMode, limitMin, limitMax);
-            return (int) proportionalScalable.scale(network, asked);
+            return (int) proportionalScalable.scale(network, asked, parameters);
         });
     }
 

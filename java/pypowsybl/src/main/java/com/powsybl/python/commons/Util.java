@@ -47,7 +47,6 @@ import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
-import static com.powsybl.iidm.modification.scalable.ScalingParameters.*;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 
 /**

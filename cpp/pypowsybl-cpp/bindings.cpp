@@ -1218,10 +1218,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_network_modification", ::createNetworkModificationBind, "Create and apply network modification", py::arg("network"), py::arg("dataframe"), py::arg("network_modification_type"), py::arg("raise_exception"), py::arg("report_node"));
 
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
-          py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("scaling_parameters"));
+          py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
 
     m.def("scale_proportional", &pypowsybl::scaleProportional, "Scale the given network proportionally.",
-         py::arg("network"), py::arg("asked"), py::arg("distribution_mode"), py::arg("injections_ids"), py::arg("limit_min"), py::arg("limit_max"), py::arg(""));
+         py::arg("network"), py::arg("asked"), py::arg("distribution_mode"), py::arg("injections_ids"), py::arg("limit_min"), py::arg("limit_max"), py::arg("scaling_parameters"));
 
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,

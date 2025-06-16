@@ -16,7 +16,7 @@ Priority.__module__ = __name__
 ScalingParameters.__module__ = __name__
 
 
-class Parameters:  # pylint: disable=too-few-public-methods
+class ScalingParameters:  # pylint: disable=too-few-public-methods
 
     def __init__(self, scaling_convention: ScalingConvention  = None,
                  constant_power_factor: bool = None,
