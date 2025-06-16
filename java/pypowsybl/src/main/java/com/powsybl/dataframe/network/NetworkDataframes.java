@@ -49,6 +49,8 @@ public final class NetworkDataframes {
     private static final String MAX_Q_AT_TARGET_P = "max_q_at_target_p";
     private static final String MIN_Q_AT_P = "min_q_at_p";
     private static final String MAX_Q_AT_P = "max_q_at_p";
+    private static final String REGULATED_BUS_ID = "regulated_bus_id";
+    private static final String REGULATED_BUS_BREAKER_BUS_ID = "regulated_bus_breaker_bus_id";
 
     private NetworkDataframes() {
     }
@@ -296,8 +298,8 @@ public final class NetworkDataframes {
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
                         (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
-                .strings("regulated_bus_id", generator -> getBusId(generator.getRegulatingTerminal()), false)
-                .strings("regulated_bus_breaker_bus_id", generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_ID, generator -> getBusId(generator.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_BREAKER_BUS_ID, generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (g, context) -> perUnitI(context, g.getTerminal()))
@@ -782,8 +784,8 @@ public final class NetworkDataframes {
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
                 .strings("regulated_element_id", vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
                         (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(vsc::setRegulatingTerminal, vsc.getNetwork(), elementId))
-                .strings("regulated_bus_id", vsc -> getBusId(vsc.getRegulatingTerminal()), false)
-                .strings("regulated_bus_breaker_bus_id", vsc -> getBusBreakerViewBusId(vsc.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_ID, vsc -> getBusId(vsc.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_BREAKER_BUS_ID, vsc -> getBusBreakerViewBusId(vsc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
@@ -812,8 +814,8 @@ public final class NetworkDataframes {
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
                         (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
-                .strings("regulated_bus_id", svc -> getBusId(svc.getRegulatingTerminal()), false)
-                .strings("regulated_bus_breaker_bus_id", svc -> getBusBreakerViewBusId(svc.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_ID, svc -> getBusId(svc.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_BREAKER_BUS_ID, svc -> getBusBreakerViewBusId(svc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
