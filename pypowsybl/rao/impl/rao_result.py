@@ -47,6 +47,10 @@ class RaoResult:
         serie_flow = _pypowsybl.get_ra_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
+    def get_cost_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
     def serialize(self, output_file: str) -> None:
         """
         Serialize result to file

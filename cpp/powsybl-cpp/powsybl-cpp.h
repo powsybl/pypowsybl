@@ -983,6 +983,7 @@ SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& 
 SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 
 JavaHandle createDefaultRaoParameters();
 JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters);
