@@ -9,6 +9,7 @@ package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
@@ -34,6 +35,7 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 import java.io.*;
@@ -43,6 +45,7 @@ import java.util.*;
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
+import static com.powsybl.python.network.Dataframes.createVirtualCostResultMapper;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
@@ -253,6 +256,25 @@ public final class RaoCFunctions {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
             return Dataframes.createCDataframe(Dataframes.costResultMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getVirtualCostNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getVirtualCostNames(IsolateThread thread, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Util.createCharPtrArray(result.getVirtualCostNames().stream().toList());
+        });
+    }
+
+    @CEntryPoint(name = "getVirtualCostResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVirtualCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer virtualCostNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            String virtualCostName = CTypeUtil.toString(virtualCostNamePtr);
+            DataframeMapper<Crac, RaoResult> virtualCostResultMapper = createVirtualCostResultMapper(virtualCostName);
+            return Dataframes.createCDataframe(virtualCostResultMapper, crac, new DataframeFilter(), result);
         });
     }
 

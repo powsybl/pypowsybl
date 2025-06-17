@@ -1946,6 +1946,16 @@ SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resu
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResults, cracHandle, resultHandle));
 }
 
+std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle) {
+    auto virtulCostArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getVirtualCostNames, resultHandle);
+    ToStringVector virtalCosts(virtulCostArrayPtr);
+    return virtalCosts.get();
+}
+
+SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVirtualCostResults, cracHandle, resultHandle, (char*) virtualCostName.c_str()));
+}
+
 JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }

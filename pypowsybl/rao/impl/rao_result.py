@@ -51,6 +51,13 @@ class RaoResult:
         serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
+    def get_virtual_cost_names(self) -> DataFrame:
+        return _pypowsybl.get_virtual_cost_names(self._handle_result)
+
+    def get_virtual_cost_results(self, virtual_cost_name) -> DataFrame:
+        serie_flow = _pypowsybl.get_virtual_cost_results(self._handle_crac, self._handle_result, virtual_cost_name)
+        return create_data_frame_from_series_array(serie_flow)
+
     def serialize(self, output_file: str) -> None:
         """
         Serialize result to file
