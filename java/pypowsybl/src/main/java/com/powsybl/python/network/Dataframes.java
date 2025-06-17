@@ -330,22 +330,20 @@ public final class Dataframes {
 
     public record VoltageCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double minVoltage, double maxVoltage, double margin) { }
 
-    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, boolean activated, int optimizedTap, double optimizedSetPoint) { }
+    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, boolean activated, double optimizedTap, double optimizedSetPoint) { }
 
     public record CostResult(Instant instant, double functionalCost, double virtualCost, double cost) { }
 
-    /**
-     * Add dataframe or virtual cost / virtual cost names / cost
-     *
-     * @param crac
-     * @param raoResult
-     * @return
-     */
+    public record VirtualCostResult(Instant instant, Map<String, Double> virtualCosts) { }
+
     private static List<FlowCnecResult> getFlowCnecResult(Crac crac, RaoResult raoResult) {
         List<FlowCnecResult> results = new ArrayList<>();
         for (var cnec : crac.getFlowCnecs()) {
+            // For each cnec output initial instant and ond cnec instant for both side
             results.add(readFlowCnecResult(raoResult, cnec, null, TwoSides.ONE));
+            results.add(readFlowCnecResult(raoResult, cnec, null, TwoSides.TWO));
             results.add(readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.ONE));
+            results.add(readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.TWO));
         }
         return results;
     }
@@ -412,7 +410,7 @@ public final class Dataframes {
         List<ActivatedRemedialActionResult> results = new ArrayList<>();
         for (var ra : crac.getRemedialActions()) {
             for (var state : crac.getStates()) {
-                int optimizedTap = MIN_VALUE;
+                double optimizedTap = Double.NaN; // Use a double for tap so we can set it to NaN when not relevant
                 double optimizedSetPoint = Double.NaN;
                 if (ra instanceof RangeAction<?> rangeAction) {
                     if (rangeAction instanceof PstRangeAction pstRangeAction) {
@@ -447,6 +445,23 @@ public final class Dataframes {
                 raoResult.getCost(instant)));
         }
         return results;
+    }
+
+    private static List<VirtualCostResult> getVirtualCost(Crac crac, RaoResult raoResult) {
+        List<VirtualCostResult> results = new ArrayList<>();
+        results.add(new VirtualCostResult(null, getVirtualCostMap(null, raoResult)));
+        for (var instant : crac.getSortedInstants()) {
+            results.add(new VirtualCostResult(instant, getVirtualCostMap(instant, raoResult)));
+        }
+        return results;
+    }
+
+    static Map<String, Double> getVirtualCostMap(Instant instant, RaoResult results) {
+        Map<String, Double> costs = new HashMap<>();
+        for (String virtualCost : results.getVirtualCostNames()) {
+            costs.put(virtualCost, results.getVirtualCost(instant, virtualCost));
+        }
+        return costs;
     }
 
     private static DataframeMapper<Crac, RaoResult> createFlowCnecResultMapper() {
@@ -495,7 +510,7 @@ public final class Dataframes {
             .stringsIndex("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
             .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .booleans("activated", ActivatedRemedialActionResult::activated)
-            .ints("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
+            .doubles("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
             .doubles("optimized_set_point", ActivatedRemedialActionResult::optimizedSetPoint)
             .build();
     }
@@ -507,6 +522,14 @@ public final class Dataframes {
             .doubles("functional_cost", CostResult::functionalCost)
             .doubles("virtual_cost", CostResult::virtualCost)
             .doubles("cost", CostResult::cost)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, RaoResult> createVirtualCostResultMapper(String virtualCostName) {
+        return new DataframeMapperBuilder<Crac, VirtualCostResult, RaoResult>()
+            .itemsProvider(Dataframes::getVirtualCost)
+            .stringsIndex("optimized_instant", c -> c.instant() != null ? c.instant().getId() : "initial")
+            .doubles(virtualCostName, c -> c.virtualCosts().get(virtualCostName))
             .build();
     }
 
