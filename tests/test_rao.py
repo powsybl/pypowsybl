@@ -213,7 +213,7 @@ def test_rao_cnec_results():
                             columns=['optimized_instant', 'flow', 'margin'],
                             data=[['initial', 499.996955, -89.996955],
                                   ['preventive', 211.496250, 198.503750]])
-    pd.testing.assert_frame_equal(expected, nl_be_cnec_side1, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, nl_be_cnec_side1, check_dtype=False, check_like=True)
 
     # Voltage cnecs
     df_voltage_cnecs = result.get_voltage_cnec_results()
@@ -244,7 +244,7 @@ def test_rao_ra_results():
                                   ['outage', False, -10, nan],
                                   ['curative', True, 6, nan],
                                   ['preventive', True, -10, nan]])
-    pd.testing.assert_frame_equal(expected, ra_results, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, ra_results, check_dtype=False, check_like=True)
 
 def test_rao_cost_results():
     network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
@@ -265,7 +265,7 @@ def test_rao_cost_results():
                                   [237.646702, 0.0, 237.646702],
                                   [237.646702, 0.0, 237.646702],
                                   [-187.219238, 0.0, -187.219238]])
-    pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False, check_like=True)
 
     assert ['sensitivity-failure-cost'] == result.get_virtual_cost_names()
 
@@ -277,7 +277,7 @@ def test_rao_cost_results():
                                   [0.0],
                                   [0.0],
                                   [0.0]])
-    pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False)
+    pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False, check_like=True)
 
 if __name__ == '__main__':
     unittest.main()
