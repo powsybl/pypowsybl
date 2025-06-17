@@ -7,6 +7,8 @@
 import pathlib
 import io
 import unittest
+import pandas as pd
+from numpy import nan
 
 import pypowsybl as pp
 import pypowsybl.sensitivity
@@ -193,6 +195,89 @@ def test_rao_monitoring():
     result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, LfParameters())
     assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
 
+def test_rao_cnec_results():
+    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+    result = rao_runner.run(network, parameters)
+
+    # Flow cnecs
+    df_flow_cnecs = result.get_flow_cnec_results()
+    assert ['optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'] == list(df_flow_cnecs.columns)
+    nl_be_cnec = df_flow_cnecs.loc['NNL2AA1  BBE3AA1  1 - preventive']
+    nl_be_cnec_side1 = nl_be_cnec.loc[nl_be_cnec['side'] == 'ONE'][['optimized_instant', 'flow', 'margin']]
+    expected = pd.DataFrame(index=pd.Series(name='cnec_id', data=['NNL2AA1  BBE3AA1  1 - preventive', 'NNL2AA1  BBE3AA1  1 - preventive']),
+                            columns=['optimized_instant', 'flow', 'margin'],
+                            data=[['initial', 499.996955, -89.996955],
+                                  ['preventive', 211.496250, 198.503750]])
+    pd.testing.assert_frame_equal(expected, nl_be_cnec_side1, check_dtype=False)
+
+    # Voltage cnecs
+    df_voltage_cnecs = result.get_voltage_cnec_results()
+    assert ['optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'] == list(df_voltage_cnecs.columns)
+
+    # Voltage cnecs
+    df_angle_cnecs = result.get_angle_cnec_results()
+    assert ['optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
+
+def test_rao_ra_results():
+    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+
+    result = rao_runner.run(network, parameters)
+
+    # Ra results
+    ra_results = result.get_ra_results()
+    assert ['optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'] == list(ra_results.columns)
+    expected = pd.DataFrame(index=pd.Series(name='remedial_action_id', data=['close NL2 BE3 2', 'close NL2 BE3 2', 'close NL2 BE3 2', 'pst-range-action', 'pst-range-action', 'pst-range-action']),
+                            columns=['optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'],
+                            data=[['outage', False, nan, nan],
+                                  ['curative', False, nan, nan],
+                                  ['preventive', True, nan, nan],
+                                  ['outage', False, -10, nan],
+                                  ['curative', True, 6, nan],
+                                  ['preventive', True, -10, nan]])
+    pd.testing.assert_frame_equal(expected, ra_results, check_dtype=False)
+
+def test_rao_cost_results():
+    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+
+    result = rao_runner.run(network, parameters)
+
+    # Cost results
+    cost_results_df = result.get_cost_results()
+    assert ['functional_cost', 'virtual_cost', 'cost'] == list(cost_results_df.columns)
+    expected = pd.DataFrame(index=pd.Series(name='optimized_instant', data=['initial', 'preventive', 'outage', 'curative']),
+                            columns=['functional_cost', 'virtual_cost', 'cost'],
+                            data=[[133.304310, 0.0, 133.304310],
+                                  [237.646702, 0.0, 237.646702],
+                                  [237.646702, 0.0, 237.646702],
+                                  [-187.219238, 0.0, -187.219238]])
+    pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False)
+
+    assert ['sensitivity-failure-cost'] == result.get_virtual_cost_names()
+
+    # Virtual cost results
+    virtual_cost_df = result.get_virtual_cost_results('sensitivity-failure-cost')
+    expected_virtual = pd.DataFrame(index=pd.Series(name='optimized_instant', data=['initial', 'preventive', 'outage', 'curative']),
+                            columns=['sensitivity-failure-cost'],
+                            data=[[0.0],
+                                  [0.0],
+                                  [0.0],
+                                  [0.0]])
+    pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False)
 
 if __name__ == '__main__':
     unittest.main()
