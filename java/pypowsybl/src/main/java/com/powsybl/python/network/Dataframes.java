@@ -93,6 +93,8 @@ public final class Dataframes {
 
     private static final DataframeMapper<Crac, RaoResult> RA_RESULT_MAPPER = createRemedialActionResultMapper();
 
+    private static final DataframeMapper<Crac, RaoResult> COST_RESULT_MAPPER = createCostResultMapper();
+
     private static final DataframeMapper<Map<String, List<ConnectablePosition.Feeder>>, Void> FEEDER_MAP_MAPPER = createFeederMapDataframe();
 
     private Dataframes() {
@@ -193,6 +195,10 @@ public final class Dataframes {
 
     public static DataframeMapper<Crac, RaoResult> raResultMapper() {
         return RA_RESULT_MAPPER;
+    }
+
+    public static DataframeMapper<Crac, RaoResult> costResultMapper() {
+        return COST_RESULT_MAPPER;
     }
 
     private static List<BranchResultContext> getBranchResults(SecurityAnalysisResult result) {
@@ -326,6 +332,15 @@ public final class Dataframes {
 
     public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, boolean activated, int optimizedTap, double optimizedSetPoint) { }
 
+    public record CostResult(Instant instant, double functionalCost, double virtualCost, double cost) { }
+
+    /**
+     * Add dataframe or virtual cost / virtual cost names / cost
+     *
+     * @param crac
+     * @param raoResult
+     * @return
+     */
     private static List<FlowCnecResult> getFlowCnecResult(Crac crac, RaoResult raoResult) {
         List<FlowCnecResult> results = new ArrayList<>();
         for (var cnec : crac.getFlowCnecs()) {
@@ -341,7 +356,7 @@ public final class Dataframes {
             cnec.getId(),
             instant,
             contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
-            TwoSides.ONE,
+            side,
             result.getFlow(instant, cnec, side, Unit.MEGAWATT),
             result.getMargin(instant, cnec, Unit.MEGAWATT),
             result.getRelativeMargin(instant, cnec, Unit.MEGAWATT),
@@ -397,8 +412,8 @@ public final class Dataframes {
         List<ActivatedRemedialActionResult> results = new ArrayList<>();
         for (var ra : crac.getRemedialActions()) {
             for (var state : crac.getStates()) {
-                int optimizedTap = Integer.MIN_VALUE;
-                double optimizedSetPoint = Double.MIN_VALUE;
+                int optimizedTap = MIN_VALUE;
+                double optimizedSetPoint = Double.NaN;
                 if (ra instanceof RangeAction<?> rangeAction) {
                     if (rangeAction instanceof PstRangeAction pstRangeAction) {
                         optimizedTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
@@ -419,11 +434,26 @@ public final class Dataframes {
         return results;
     }
 
+    private static List<CostResult> getCostResults(Crac crac, RaoResult raoResult) {
+        List<CostResult> results = new ArrayList<>();
+        results.add(new CostResult(null,
+            raoResult.getFunctionalCost(null),
+            raoResult.getVirtualCost(null),
+            raoResult.getCost(null)));
+        for (var instant : crac.getSortedInstants()) {
+            results.add(new CostResult(instant,
+                raoResult.getFunctionalCost(instant),
+                raoResult.getVirtualCost(instant),
+                raoResult.getCost(instant)));
+        }
+        return results;
+    }
+
     private static DataframeMapper<Crac, RaoResult> createFlowCnecResultMapper() {
         return new DataframeMapperBuilder<Crac, FlowCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getFlowCnecResult)
             .stringsIndex("cnec_id", FlowCnecResult::cnecId)
-            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .strings("contingency", FlowCnecResult::contingency)
             .strings("side", r -> r.side().toString())
             .doubles("flow", FlowCnecResult::flow)
@@ -439,7 +469,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<Crac, AngleCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getAngleCnecResult)
             .stringsIndex("cnec_id", AngleCnecResult::cnecId)
-            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .strings("contingency", AngleCnecResult::contingency)
             .doubles("angle", AngleCnecResult::angle)
             .doubles("margin", AngleCnecResult::margin)
@@ -450,7 +480,7 @@ public final class Dataframes {
         return new DataframeMapperBuilder<Crac, VoltageCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getVoltageCnecResult)
             .stringsIndex("cnec_id", VoltageCnecResult::cnecId)
-            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .strings("contingency", VoltageCnecResult::contingency)
             .strings("side", r -> r.side().toString())
             .doubles("min_voltage", VoltageCnecResult::minVoltage)
@@ -463,10 +493,20 @@ public final class Dataframes {
         return new DataframeMapperBuilder<Crac, ActivatedRemedialActionResult, RaoResult>()
             .itemsProvider(Dataframes::getActivatedRemedialActions)
             .stringsIndex("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
-            .strings("instant", r -> r.instant() != null ? r.instant().getId() : null)
+            .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .booleans("activated", ActivatedRemedialActionResult::activated)
             .ints("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
             .doubles("optimized_set_point", ActivatedRemedialActionResult::optimizedSetPoint)
+            .build();
+    }
+
+    private static DataframeMapper<Crac, RaoResult> createCostResultMapper() {
+        return new DataframeMapperBuilder<Crac, CostResult, RaoResult>()
+            .itemsProvider(Dataframes::getCostResults)
+            .stringsIndex("optimized_instant", c -> c.instant() != null ? c.instant().getId() : "initial")
+            .doubles("functional_cost", CostResult::functionalCost)
+            .doubles("virtual_cost", CostResult::virtualCost)
+            .doubles("cost", CostResult::cost)
             .build();
     }
 

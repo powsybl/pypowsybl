@@ -213,30 +213,47 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getFlowCnecResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getFlowCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-        return Dataframes.createCDataframe(Dataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(Dataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
+        });
     }
 
     @CEntryPoint(name = "getAngleCnecResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getAngleCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-        return Dataframes.createCDataframe(Dataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(Dataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
+        });
     }
 
     @CEntryPoint(name = "getVoltageCnecResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVoltageCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-        return Dataframes.createCDataframe(Dataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(Dataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
+        });
     }
 
     @CEntryPoint(name = "getRaResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-        RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-        return Dataframes.createCDataframe(Dataframes.raResultMapper(), crac, new DataframeFilter(), result);
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(Dataframes.raResultMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getCostResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(Dataframes.costResultMapper(), crac, new DataframeFilter(), result);
+        });
     }
 
     @CEntryPoint(name = "freeRaoParameters")
