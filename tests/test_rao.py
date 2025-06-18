@@ -206,22 +206,22 @@ def test_rao_cnec_results():
 
     # Flow cnecs
     df_flow_cnecs = result.get_flow_cnec_results()
-    assert ['optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'] == list(df_flow_cnecs.columns)
-    nl_be_cnec = df_flow_cnecs.loc['NNL2AA1  BBE3AA1  1 - preventive']
-    nl_be_cnec_side1 = nl_be_cnec.loc[nl_be_cnec['side'] == 'ONE'][['optimized_instant', 'flow', 'margin']]
-    expected = pd.DataFrame(index=pd.Series(name='cnec_id', data=['NNL2AA1  BBE3AA1  1 - preventive', 'NNL2AA1  BBE3AA1  1 - preventive']),
-                            columns=['optimized_instant', 'flow', 'margin'],
-                            data=[['initial', 499.996955, -89.996955],
-                                  ['preventive', 211.496250, 198.503750]])
-    pd.testing.assert_frame_equal(expected, nl_be_cnec_side1, check_dtype=False, check_like=True)
+    assert ['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'] == list(df_flow_cnecs.columns)
+    nl_be_cnec = df_flow_cnecs.loc[df_flow_cnecs['cnec_id'] == 'NNL2AA1  BBE3AA1  1 - preventive']
+    nl_be_cnec_side1 = nl_be_cnec.loc[nl_be_cnec['side'] == 'ONE'][['cnec_id', 'optimized_instant', 'flow', 'margin']]
+    expected = pd.DataFrame(index=pd.Series(name='index', data=[0, 2]),
+                            columns=['cnec_id', 'optimized_instant', 'flow', 'margin'],
+                            data=[['NNL2AA1  BBE3AA1  1 - preventive', 'initial', 499.996955, -89.996955],
+                                  ['NNL2AA1  BBE3AA1  1 - preventive', 'preventive', 211.496250, 198.503750]])
+    pd.testing.assert_frame_equal(expected, nl_be_cnec_side1, check_dtype=False, check_index_type=False, check_like=True)
 
     # Voltage cnecs
     df_voltage_cnecs = result.get_voltage_cnec_results()
-    assert ['optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'] == list(df_voltage_cnecs.columns)
+    assert ['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'] == list(df_voltage_cnecs.columns)
 
     # Voltage cnecs
     df_angle_cnecs = result.get_angle_cnec_results()
-    assert ['optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
+    assert ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
 
 def test_rao_ra_results():
     network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
@@ -235,16 +235,17 @@ def test_rao_ra_results():
 
     # Ra results
     ra_results = result.get_ra_results()
-    assert ['optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'] == list(ra_results.columns)
-    expected = pd.DataFrame(index=pd.Series(name='remedial_action_id', data=['close NL2 BE3 2', 'close NL2 BE3 2', 'close NL2 BE3 2', 'pst-range-action', 'pst-range-action', 'pst-range-action']),
-                            columns=['optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'],
-                            data=[['outage', False, nan, nan],
-                                  ['curative', False, nan, nan],
-                                  ['preventive', True, nan, nan],
-                                  ['outage', False, -10, nan],
-                                  ['curative', True, 6, nan],
-                                  ['preventive', True, -10, nan]])
-    pd.testing.assert_frame_equal(expected, ra_results, check_dtype=False, check_like=True)
+    ra_results = ra_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
+    assert ['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'] == list(ra_results.columns)
+    expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'],
+                            data=[['close NL2 BE3 2', 'outage', False, nan, nan],
+                                  ['close NL2 BE3 2', 'curative', False, nan, nan],
+                                  ['close NL2 BE3 2', 'preventive', True, nan, nan],
+                                  ['pst-range-action', 'outage', False, -10, nan],
+                                  ['pst-range-action', 'curative', True, 6, nan],
+                                  ['pst-range-action', 'preventive', True, -10, nan]])
+    expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), ra_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_cost_results():
     network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
