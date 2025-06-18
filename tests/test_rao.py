@@ -209,11 +209,12 @@ def test_rao_cnec_results():
     assert ['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'] == list(df_flow_cnecs.columns)
     nl_be_cnec = df_flow_cnecs.loc[df_flow_cnecs['cnec_id'] == 'NNL2AA1  BBE3AA1  1 - preventive']
     nl_be_cnec_side1 = nl_be_cnec.loc[nl_be_cnec['side'] == 'ONE'][['cnec_id', 'optimized_instant', 'flow', 'margin']]
-    expected = pd.DataFrame(index=pd.Series(name='index', data=[0, 2]),
-                            columns=['cnec_id', 'optimized_instant', 'flow', 'margin'],
+    nl_be_cnec_side1 = nl_be_cnec_side1.sort_values(['optimized_instant'], ascending=[True])
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'flow', 'margin'],
                             data=[['NNL2AA1  BBE3AA1  1 - preventive', 'initial', 499.996955, -89.996955],
                                   ['NNL2AA1  BBE3AA1  1 - preventive', 'preventive', 211.496250, 198.503750]])
-    pd.testing.assert_frame_equal(expected, nl_be_cnec_side1, check_dtype=False, check_index_type=False, check_like=True)
+    expected = expected.sort_values(['optimized_instant'], ascending=[True])
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), nl_be_cnec_side1.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
     # Voltage cnecs
     df_voltage_cnecs = result.get_voltage_cnec_results()
