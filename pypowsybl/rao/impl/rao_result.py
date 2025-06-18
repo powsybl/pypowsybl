@@ -55,7 +55,7 @@ class RaoResult:
     def get_virtual_cost_names(self) -> List[str]:
         return _pypowsybl.get_virtual_cost_names(self._handle_result)
 
-    def get_virtual_cost_results(self, virtual_cost_name) -> DataFrame:
+    def get_virtual_cost_results(self, virtual_cost_name: str) -> DataFrame:
         serie_flow = _pypowsybl.get_virtual_cost_results(self._handle_crac, self._handle_result, virtual_cost_name)
         return create_data_frame_from_series_array(serie_flow)
 
