@@ -45,6 +45,7 @@ import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -465,9 +466,11 @@ public final class Dataframes {
     }
 
     private static DataframeMapper<Crac, RaoResult> createFlowCnecResultMapper() {
+        AtomicInteger index = new AtomicInteger();
         return new DataframeMapperBuilder<Crac, FlowCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getFlowCnecResult)
-            .stringsIndex("cnec_id", FlowCnecResult::cnecId)
+            .intsIndex("index", e -> index.getAndIncrement())
+            .strings("cnec_id", FlowCnecResult::cnecId)
             .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .strings("contingency", FlowCnecResult::contingency)
             .strings("side", r -> r.side().toString())
@@ -481,9 +484,11 @@ public final class Dataframes {
     }
 
     private static DataframeMapper<Crac, RaoResult> createAngleCnecResultMapper() {
+        AtomicInteger index = new AtomicInteger();
         return new DataframeMapperBuilder<Crac, AngleCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getAngleCnecResult)
-            .stringsIndex("cnec_id", AngleCnecResult::cnecId)
+            .intsIndex("index", e -> index.getAndIncrement())
+            .strings("cnec_id", AngleCnecResult::cnecId)
             .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .strings("contingency", AngleCnecResult::contingency)
             .doubles("angle", AngleCnecResult::angle)
@@ -492,9 +497,11 @@ public final class Dataframes {
     }
 
     private static DataframeMapper<Crac, RaoResult> createVoltageCnecResultMapper() {
+        AtomicInteger index = new AtomicInteger();
         return new DataframeMapperBuilder<Crac, VoltageCnecResult, RaoResult>()
             .itemsProvider(Dataframes::getVoltageCnecResult)
-            .stringsIndex("cnec_id", VoltageCnecResult::cnecId)
+            .intsIndex("index", e -> index.getAndIncrement())
+            .strings("cnec_id", VoltageCnecResult::cnecId)
             .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .strings("contingency", VoltageCnecResult::contingency)
             .strings("side", r -> r.side().toString())
@@ -505,9 +512,11 @@ public final class Dataframes {
     }
 
     private static DataframeMapper<Crac, RaoResult> createRemedialActionResultMapper() {
+        AtomicInteger index = new AtomicInteger();
         return new DataframeMapperBuilder<Crac, ActivatedRemedialActionResult, RaoResult>()
             .itemsProvider(Dataframes::getActivatedRemedialActions)
-            .stringsIndex("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
+            .intsIndex("index", e -> index.getAndIncrement())
+            .strings("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
             .strings("optimized_instant", r -> r.instant() != null ? r.instant().getId() : "initial")
             .booleans("activated", ActivatedRemedialActionResult::activated)
             .doubles("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
