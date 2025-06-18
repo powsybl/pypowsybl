@@ -45,7 +45,7 @@ import java.util.*;
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
-import static com.powsybl.python.network.Dataframes.createVirtualCostResultMapper;
+import static com.powsybl.python.rao.RaoDataframes.createVirtualCostResultMapper;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
@@ -219,7 +219,7 @@ public final class RaoCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(Dataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
+            return Dataframes.createCDataframe(RaoDataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
         });
     }
 
@@ -228,7 +228,7 @@ public final class RaoCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(Dataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
+            return Dataframes.createCDataframe(RaoDataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
         });
     }
 
@@ -237,7 +237,7 @@ public final class RaoCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(Dataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
+            return Dataframes.createCDataframe(RaoDataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
         });
     }
 
@@ -246,7 +246,7 @@ public final class RaoCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(Dataframes.raResultMapper(), crac, new DataframeFilter(), result);
+            return Dataframes.createCDataframe(RaoDataframes.raResultMapper(), crac, new DataframeFilter(), result);
         });
     }
 
@@ -255,7 +255,7 @@ public final class RaoCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(Dataframes.costResultMapper(), crac, new DataframeFilter(), result);
+            return Dataframes.createCDataframe(RaoDataframes.costResultMapper(), crac, new DataframeFilter(), result);
         });
     }
 
