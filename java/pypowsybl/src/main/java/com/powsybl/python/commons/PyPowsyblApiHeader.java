@@ -314,6 +314,12 @@ public final class PyPowsyblApiHeader {
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
 
+        @CField("hvdc_ac_emulation")
+        boolean isHvdcAcEmulation();
+
+        @CField("hvdc_ac_emulation")
+        void setHvdcAcEmulation(boolean hvdcAcEmulation);
+
         @CField("dc_power_factor")
         double getDcPowerFactor();
 

@@ -70,6 +70,7 @@ typedef struct loadflow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    unsigned char hvdc_ac_emulation;
     double dc_power_factor;
 } loadflow_parameters;
 
