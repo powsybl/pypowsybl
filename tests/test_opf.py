@@ -54,7 +54,9 @@ def test_reactive_range():
 
 def create_loadflow_parameters():
     return pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES,
-                                  provider_parameters={'plausibleActivePowerLimit': '10000.0'})
+                                  hvdc_ac_emulation=False,
+                                  provider_parameters={'plausibleActivePowerLimit': '10000.0',
+                                                       'svcVoltageMonitoring': 'false'})
 
 
 def run_opf_then_lf(network: pp.network.Network,
@@ -92,7 +94,8 @@ def validate(network: Network):
 def calculate_overloading(network: Network) -> DataFrame:
     sa = pp.security.create_analysis()
     lf_parameters = create_loadflow_parameters()
-    sa_results = sa.run_ac(network, lf_parameters)
+    sa_parameters = pp.security.Parameters(lf_parameters)
+    sa_results = sa.run_ac(network, sa_parameters)
     print(sa_results.pre_contingency_result.limit_violations)
     limit_violations = sa_results.limit_violations
     limit_violations = limit_violations[
