@@ -464,20 +464,21 @@ class VoltageInitMode:
     def name(self) -> str: ...
 
 class LoadFlowParameters:
-    balance_type: BalanceType
-    connected_component_mode: ConnectedComponentMode
-    countries_to_balance: Sequence[str]
-    dc_use_transformer_ratio: bool
-    distributed_slack: bool
+    voltage_init_mode: VoltageInitMode
+    transformer_voltage_control_on: bool
     use_reactive_limits: bool
     phase_shifter_regulation_on: bool
-    read_slack_bus: bool
-    shunt_compensator_voltage_control_on: bool
-    transformer_voltage_control_on: bool
     twt_split_shunt_admittance: bool
-    voltage_init_mode: VoltageInitMode
+    shunt_compensator_voltage_control_on: bool
+    read_slack_bus: bool
     write_slack_bus: bool
+    distributed_slack: bool
+    balance_type: BalanceType
+    dc_use_transformer_ratio: bool
+    countries_to_balance: Sequence[str]
+    connected_component_mode: ConnectedComponentMode
     dc_power_factor: float
+    hvdc_ac_emulation: bool
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
     def __init__(self) -> None: ...
