@@ -23,7 +23,7 @@ import org.awaitility.Awaitility;
 /**
  * @author Olivier Perrin {@literal <olivier.perrin at rte-france.com>}
  */
-public class InMemoryZipFileDataSourceTest {
+class InMemoryZipFileDataSourceTest {
 
     @Test
     void polynomialRegexTest() throws IOException {
