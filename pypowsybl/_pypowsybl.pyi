@@ -1,6 +1,5 @@
 from logging import Logger
 from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union
-
 from numpy import ndarray
 
 class ArrayStruct:
@@ -464,20 +463,21 @@ class VoltageInitMode:
     def name(self) -> str: ...
 
 class LoadFlowParameters:
-    balance_type: BalanceType
-    connected_component_mode: ConnectedComponentMode
-    countries_to_balance: Sequence[str]
-    dc_use_transformer_ratio: bool
-    distributed_slack: bool
+    voltage_init_mode: VoltageInitMode
+    transformer_voltage_control_on: bool
     use_reactive_limits: bool
     phase_shifter_regulation_on: bool
-    read_slack_bus: bool
-    shunt_compensator_voltage_control_on: bool
-    transformer_voltage_control_on: bool
     twt_split_shunt_admittance: bool
-    voltage_init_mode: VoltageInitMode
+    shunt_compensator_voltage_control_on: bool
+    read_slack_bus: bool
     write_slack_bus: bool
+    distributed_slack: bool
+    balance_type: BalanceType
+    dc_use_transformer_ratio: bool
+    countries_to_balance: Sequence[str]
+    connected_component_mode: ConnectedComponentMode
     dc_power_factor: float
+    hvdc_ac_emulation: bool
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
     def __init__(self) -> None: ...
@@ -967,6 +967,7 @@ class RaoComputationStatus:
 
 def add_contingency(analysis_context: JavaHandle, contingency_id: str, elements_ids: List[str]) -> None: ...
 def add_contingency_from_json_file(analysis_context: JavaHandle, path_to_json_file: str) -> None: ...
+def export_to_json(result: JavaHandle, path: str) -> None: ...
 def add_monitored_elements(security_analysis_context: JavaHandle, contingency_context_type: ContingencyContextType, branch_ids: List[str], voltage_level_ids: List[str], three_windings_transformer_ids: List[str], contingency_ids: List[str]) -> None: ...
 def add_load_active_power_action(security_analysis_context: JavaHandle, action_id: str, load_id: str, is_relative: bool, active_power: float) -> None: ...
 def add_load_reactive_power_action(security_analysis_context: JavaHandle, action_id: str, load_id: str, is_relative: bool, reactive_power: float) -> None: ...
@@ -977,6 +978,8 @@ def add_ratio_tap_changer_position_action(security_analysis_context: JavaHandle,
 def add_shunt_compensator_position_action(security_analysis_context: JavaHandle, action_id: str, shunt_id: str, section: int) -> None: ...
 def add_terminals_connection_action(security_analysis_context: JavaHandle, action_id: str, element_id: str, side: Side, opening: bool) -> None: ...
 def add_operator_strategy(security_analysis_context: JavaHandle, operator_strategy_id: str, contingency_id: str, action_ids: List[str], condition_type: ConditionType, violation_subject_ids: List[str], violation_types: List[ViolationType]) -> None: ...
+def add_action_from_json_file(security_analysis_context: JavaHandle, path_to_json_file: str) -> None: ...
+def add_operator_strategy_from_json_file(security_analysis_context: JavaHandle, path_to_json_file: str) -> None: ...
 def clone_variant(network: JavaHandle, src: str, variant: str, may_overwrite: bool) -> None: ...
 def create_dataframe(columns_values: list, columns_names: List[str], columns_types: List[int], is_index: List[bool]) -> Dataframe: ...
 def create_element(network: JavaHandle, dataframes: List[Optional[Dataframe]], element_type: ElementType) -> None: ...

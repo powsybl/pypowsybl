@@ -2710,5 +2710,58 @@ def test_alpha_rho_transfo3():
     pd.testing.assert_frame_equal(expected_transfo3, transfo3, check_dtype=False, atol=1e-6)
 
 
+def test_q_min_max_at_target_p():
+    network  = pp.network.create_four_substations_node_breaker_network()
+    pp.loadflow.run_ac(network)
+    attributes = ['min_q', 'max_q', 'min_q_at_p', 'max_q_at_p', 'min_q_at_target_p', 'max_q_at_target_p']
+    generators = network.get_generators(attributes=attributes).tail(1)
+    expected_generators = pd.DataFrame(index=pd.Series(name='id', data=['GTH2']),
+                                       columns=attributes,
+                                       data=[[nan, nan, -172.607678, 185.036696, -172.594302, 185.097207]])
+    pd.testing.assert_frame_equal(expected_generators, generators, check_dtype=False)
+    vscs = network.get_vsc_converter_stations(attributes=attributes).tail(1)
+    expected_vscs = pd.DataFrame(index=pd.Series(name='id', data=['VSC2']),
+                                 columns=attributes,
+                                 data=[[-400.0, 500.0, -400.0, 500.0, -400.0, 500.0]])
+    pd.testing.assert_frame_equal(expected_vscs, vscs, check_dtype=False)
+
+    network_with_batteries = pp.network.load(TEST_DIR.joinpath('battery.xiidm'))
+    batteries = network_with_batteries.get_batteries(attributes=attributes).head(1)
+    expected_batteries = pd.DataFrame(index=pd.Series(name='id', data=['BAT']),
+                                      columns=attributes,
+                                      data=[[-9999.99, 9999.99, -9999.99, 9999.99, -9999.99, 9999.99]])
+    pd.testing.assert_frame_equal(expected_batteries, batteries, check_dtype=False)
+
+
+def test_rxbg_at_current_tap_transfo2():
+    network = pp.network.create_micro_grid_be_network()
+    transfo2 = network.get_2_windings_transformers(attributes=['r_at_current_tap', 'x_at_current_tap', 'g_at_current_tap', 'b_at_current_tap'])
+    expected_transfo2 = pd.DataFrame(index=pd.Series(name='id',
+                                                     data=['a708c3bc-465d-4fe7-b6ef-6fa6408a62b0',
+                                                           'b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                           'e482b89a-fa84-4ea9-8e70-a83d44790957']),
+                                     columns=['r_at_current_tap', 'x_at_current_tap', 'g_at_current_tap', 'b_at_current_tap'],
+                                     data=[[0.204769, 1.097992, 0.0, 0.0],
+                                           [0.2057, 2.78472, 0.0, 0.0],
+                                           [0.000903, 0.050402, 0.002009, -0.009626]])
+    pd.testing.assert_frame_equal(expected_transfo2, transfo2, check_dtype=False, atol=1e-6)
+
+
+def test_rxbg_at_current_tap_transfo3():
+    network = pp.network.create_micro_grid_be_network()
+    transfo3 = network.get_3_windings_transformers(attributes=['r1_at_current_tap', 'x1_at_current_tap', 'g1_at_current_tap', 'b1_at_current_tap',
+                                                               'r2_at_current_tap', 'x2_at_current_tap', 'g2_at_current_tap', 'b2_at_current_tap',
+                                                               'r3_at_current_tap', 'x3_at_current_tap', 'g3_at_current_tap', 'b3_at_current_tap'])
+    expected_transfo3 = pd.DataFrame(index=pd.Series(name='id',
+                                                     data=['84ed55f4-61f5-4d9d-8755-bba7b877a246']),
+                                     columns=['r1_at_current_tap', 'x1_at_current_tap', 'g1_at_current_tap', 'b1_at_current_tap',
+                                              'r2_at_current_tap', 'x2_at_current_tap', 'g2_at_current_tap', 'b2_at_current_tap',
+                                              'r3_at_current_tap', 'x3_at_current_tap', 'g3_at_current_tap', 'b3_at_current_tap'],
+                                     data=[[0.898462, 17.204128, 0.0, 0.000002,
+                                            1.07077, 19.6664, 0.0, 0.0,
+                                            4.837007, 21.760726, 0.0, 0.0]])
+    pd.testing.assert_frame_equal(expected_transfo3, transfo3, check_dtype=False, atol=1e-6)
+
+
 if __name__ == '__main__':
     unittest.main()

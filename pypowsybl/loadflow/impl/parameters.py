@@ -63,6 +63,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         connected_component_mode: Define which connected components should be computed.
             Use ``MAIN`` to computes flows only on the main connected component,
             or prefer ``ALL`` for a run on all connected component.
+        hvdc_ac_emulation: Enable AC emulation of HVDC links.
         dc_power_factor: Power factor used to convert current limits into active power limits in DC calculations.
         provider_parameters: Define parameters linked to the loadflow provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
@@ -82,6 +83,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  countries_to_balance: Sequence[str] = None,
                  connected_component_mode: ConnectedComponentMode = None,
                  dc_power_factor: float = None,
+                 hvdc_ac_emulation: bool = None,
                  provider_parameters: Dict[str, str] = None):
         self._init_with_default_values()
         if voltage_init_mode is not None:
@@ -110,6 +112,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.countries_to_balance = countries_to_balance
         if connected_component_mode is not None:
             self.connected_component_mode = connected_component_mode
+        if hvdc_ac_emulation is not None:
+            self.hvdc_ac_emulation = hvdc_ac_emulation
         if dc_power_factor is not None:
             self.dc_power_factor = dc_power_factor
         if provider_parameters is not None:
@@ -129,6 +133,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.dc_use_transformer_ratio = c_parameters.dc_use_transformer_ratio
         self.countries_to_balance = c_parameters.countries_to_balance
         self.connected_component_mode = c_parameters.connected_component_mode
+        self.hvdc_ac_emulation = c_parameters.hvdc_ac_emulation
         self.dc_power_factor = c_parameters.dc_power_factor
         self.provider_parameters = dict(
             zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
@@ -151,6 +156,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.dc_use_transformer_ratio = self.dc_use_transformer_ratio
         c_parameters.countries_to_balance = self.countries_to_balance
         c_parameters.connected_component_mode = self.connected_component_mode
+        c_parameters.hvdc_ac_emulation = self.hvdc_ac_emulation
         c_parameters.dc_power_factor = self.dc_power_factor
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
@@ -171,6 +177,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}" \
                f", countries_to_balance={self.countries_to_balance}" \
                f", connected_component_mode={self.connected_component_mode!r}" \
+               f", hvdc_ac_emulation={self.hvdc_ac_emulation!r}" \
                f", dc_power_factor={self.dc_power_factor!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"

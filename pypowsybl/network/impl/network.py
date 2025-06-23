@@ -985,6 +985,10 @@ class Network:  # pylint: disable=too-many-public-methods
               - **min_p**: the minimum active value for the battery  (MW)
               - **min_q**: the maximum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
               - **max_q**: the minimum reactive value for the battery only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the battery for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the battery for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the battery at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the battery at current p (MVar)
               - **target_p**: The active power setpoint  (MW)
               - **target_q**: The reactive power setpoint  (MVAr)
               - **p**: the result active battery consumption, it is ``NaN`` is not loadflow has been computed (MW)
@@ -1114,10 +1118,10 @@ class Network:  # pylint: disable=too-many-public-methods
             - **r**: the resistance of the transformer at its "2" side  (in Ohm)
             - **x**: the reactance of the transformer at its "2" side (in Ohm)
             - **b**: the susceptance of transformer at its "2" side (in Siemens)
-            - **g**: the  conductance of transformer at its "2" side (in Siemens)
-            - **rated_u1**: The rated voltage of the transformer at side 1 (in kV)
-            - **rated_u2**: The rated voltage of the transformer at side 2 (in kV)
-            - **rated_s**:
+            - **g**: the conductance of transformer at its "2" side (in Siemens)
+            - **rated_u1**: the rated voltage of the transformer at side 1 (in kV)
+            - **rated_u2**: the rated voltage of the transformer at side 2 (in kV)
+            - **rated_s**: the rated apparent power of the transformer (in MVA)
             - **p1**: the active flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
             - **q1**: the reactive flow on the transformer at its "1" side, ``NaN`` if no loadflow has been computed  (in MVAr)
             - **i1**: the current on the transformer at its "1" side, ``NaN`` if no loadflow has been computed (in A)
@@ -1137,6 +1141,12 @@ class Network:  # pylint: disable=too-many-public-methods
             - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
             - **selected_limits_group_1** (optional): Name of the selected operational limits group selected for side 1
             - **selected_limits_group_2** (optional): Name of the selected operational limits group selected for side 2
+            - **rho** (optional): the voltage ratio of the transformer at current tap position
+            - **alpha** (optional): the phase shift of the transformer at current tap position (in degree)
+            - **r_at_current_tap** (optional): the resistance of the transformer at current tap position (in Ohm)
+            - **x_at_current_tap** (optional): the reactance of the transformer at current tap position (in Ohm)
+            - **g_at_current_tap** (optional): the susceptance of the transformer at current tap position (in Ohm)
+            - **b_at_current_tap** (optional): the conductance of the transformer at current tap position (in Ohm)
 
             This dataframe is indexed by the id of the two windings transformers
 
@@ -1205,6 +1215,83 @@ class Network:  # pylint: disable=too-many-public-methods
 
         Returns:
             A dataframe of 3 windings transformers.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+            - **rated_u0**: the rated voltage of the transformer at middle point od the star model (in kV)
+            - **fictitious** (optional): ``True`` if the transformer is part of the model and not of the actual network
+            - **r1**: the leg 1 resistance of the transformer (in Ohm)
+            - **x1**: the leg 1 reactance of the transformer (in Ohm)
+            - **b1**: the leg 1 susceptance of transformer (in Siemens)
+            - **g1**: the leg 1 conductance of transformer (in Siemens)
+            - **rated_u1**: the leg 1 rated voltage of the transformer (in kV)
+            - **rated_s1**: the leg 1 rated apparent power of the transformer (in MVA)
+            - **ratio_tap_position1**: the leg 1 ratio tap changer current position
+            - **phase_tap_position1**: the leg 1 phase tap changer current position
+            - **p1**: the leg 1 active power flow on the transformer, ``NaN`` if no loadflow has been computed (in MW)
+            - **q1**: the leg 1 reactive power flow on the transformer, ``NaN`` if no loadflow has been computed  (in MVAr)
+            - **i1**: the leg 1 current on the transformer, ``NaN`` if no loadflow has been computed (in A)
+            - **voltage_level1_id**: the voltage level where the leg 1 of the transformer is connected
+            - **bus1_id**: the bus where the leg 1 of the transformer is connected
+            - **bus_breaker_bus1_id** (optional): the bus of the bus-breaker view where leg 1 of the transformer is connected
+            - **node1** (optional): the node where the leg 1 transformer is connected (only in node-breaker voltage levels)
+            - **connected1**: ``True`` if the leg 1 of the transformer is connected to a bus
+            - **selected_limits_group_1** (optional): the name of the selected operational limits group selected for the leg 1 of the transformer
+            - **rho1** (optional): the leg 1 voltage ratio of the transformer at current tap position
+            - **alpha1** (optional): the leg 1 phase shift of the transformer at current tap position (in degree)
+            - **r1_at_current_tap** (optional): the leg 1 resistance of the transformer at current tap position (in Ohm)
+            - **x1_at_current_tap** (optional): the leg 1 reactance of the transformer at current tap position (in Ohm)
+            - **g1_at_current_tap** (optional): the leg 1 susceptance of the transformer at current tap position (in Ohm)
+            - **b1_at_current_tap** (optional): the leg 1 conductance of the transformer at current tap position (in Ohm)
+            - **r2**: the leg 2 resistance of the transformer (in Ohm)
+            - **x2**: the leg 2 reactance of the transformer (in Ohm)
+            - **b2**: the leg 2 susceptance of transformer (in Siemens)
+            - **g2**: the leg 2 conductance of transformer (in Siemens)
+            - **rated_u2**: the leg 2 rated voltage of the transformer (in kV)
+            - **rated_s2**: the leg 2 rated apparent power of the transformer (in MVA)
+            - **ratio_tap_position2**: the leg 2 ratio tap changer current position
+            - **phase_tap_position2**: the leg 2 phase tap changer current position
+            - **p2**: the leg 2 active power flow on the transformer, ``NaN`` if no loadflow has been computed (in MW)
+            - **q2**: the leg 2 reactive power flow on the transformer, ``NaN`` if no loadflow has been computed (in MVAr)
+            - **i2**: the leg 2 current on the transformer, ``NaN`` if no loadflow has been computed (in A)
+            - **voltage_level2_id**: the voltage level where the leg 2 of the transformer is connected
+            - **bus2_id**: the bus where the leg 2 of the transformer is connected
+            - **bus_breaker_bus2_id** (optional): the bus of the bus-breaker view where leg 2 of the transformer is connected
+            - **node2** (optional): the node where the leg 2 transformer is connected (only in node-breaker voltage levels)
+            - **connected2**: ``True`` if the leg 2 of the transformer is connected to a bus
+            - **selected_limits_group_2** (optional): the name of the selected operational limits group selected for the leg 2 of the transformer
+            - **rho2** (optional): the leg 2 voltage ratio of the transformer at current tap position
+            - **alpha2** (optional): the leg 2 phase shift of the transformer at current tap position (in degree)
+            - **r2_at_current_tap** (optional): the leg 2 resistance of the transformer at current tap position (in Ohm)
+            - **x2_at_current_tap** (optional): the leg 2 reactance of the transformer at current tap position (in Ohm)
+            - **g2_at_current_tap** (optional): the leg 2 susceptance of the transformer at current tap position (in Ohm)
+            - **b2_at_current_tap** (optional): the leg 2 conductance of the transformer at current tap position (in Ohm)
+            - **r3**: the leg 3 resistance of the transformer (in Ohm)
+            - **x3**: the leg 3 reactance of the transformer (in Ohm)
+            - **b3**: the leg 3 susceptance of transformer (in Siemens)
+            - **g3**: the leg 3 conductance of transformer (in Siemens)
+            - **rated_u3**: the leg 3 rated voltage of the transformer (in kV)
+            - **rated_s3**: the leg 3 rated apparent power of the transformer (in MVA)
+            - **ratio_tap_position3**: the leg 3 ratio tap changer current position
+            - **phase_tap_position3**: the leg 3 phase tap changer current position
+            - **p3**: the leg 3 active power flow on the transformer, ``NaN`` if no loadflow has been computed (in MW)
+            - **q3**: the leg 3 reactive power flow on the transformer, ``NaN`` if no loadflow has been computed (in MVAr)
+            - **i3**: the leg 3 current on the transformer, ``NaN`` if no loadflow has been computed (in A)
+            - **voltage_level3_id**: the voltage level where the leg 3 of the transformer is connected
+            - **bus3_id**: the bus where the leg 3 of the transformer is connected
+            - **bus_breaker_bus3_id** (optional): the bus of the bus-breaker view where leg 3 of the transformer is connected
+            - **node3** (optional): the node where the leg 3 transformer is connected (only in node-breaker voltage levels)
+            - **connected3**: ``True`` if the leg 3 of the transformer is connected to a bus
+            - **selected_limits_group_3** (optional): the name of the selected operational limits group selected for the leg 3 of the transformer
+            - **rho3** (optional): the leg 3 voltage ratio of the transformer at current tap position
+            - **alpha3** (optional): the leg 3 phase shift of the transformer at current tap position (in degree)
+            - **r3_at_current_tap** (optional): the leg 3 resistance of the transformer at current tap position (in Ohm)
+            - **x3_at_current_tap** (optional): the leg 3 reactance of the transformer at current tap position (in Ohm)
+            - **g3_at_current_tap** (optional): the leg 3 susceptance of the transformer at current tap position (in Ohm)
+            - **b3_at_current_tap** (optional): the leg 3 conductance of the transformer at current tap position (in Ohm)
+
+            This dataframe is indexed by the id of the three windings transformers
         """
         return self.get_elements(ElementType.THREE_WINDINGS_TRANSFORMER, all_attributes, attributes, **kwargs)
 
@@ -1594,11 +1681,13 @@ class Network:  # pylint: disable=too-many-public-methods
               - **loss_factor**: correspond to the loss of power due to ac dc conversion
               - **target_v**: The voltage setpoint
               - **target_q**: The reactive power setpoint
-              - **max_q**: the maximum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
-              - **min_q**: the minimum reactive value for the generator only if reactive_limits_kind is MIN_MAX (MVar)
-              - **max_q_at_p** (optional): the maximum reactive value for the generator at current p (MVar)
-              - **min_q_at_p** (optional): the minimum reactive value for the generator at current p (MVar)
-              - **reactive_limits_kind**: type of the reactive limit of the vsc converter station (can be MIN_MAX, CURVE or NONE)
+              - **max_q**: the maximum reactive value for the VSC converter station only if reactive_limits_kind is MIN_MAX (MVar)
+              - **min_q**: the minimum reactive value for the VSC converter station only if reactive_limits_kind is MIN_MAX (MVar)
+              - **max_q_at_target_p** (optional): the maximum reactive value for the VSC converter station for the target p specified (MVar)
+              - **min_q_at_target_p** (optional): the minimum reactive value for the VSC converter station for the target p specified (MVar)
+              - **max_q_at_p** (optional): the maximum reactive value for the VSC converter station at current p (MVar)
+              - **min_q_at_p** (optional): the minimum reactive value for the VSC converter station at current p (MVar)
+              - **reactive_limits_kind**: type of the reactive limit of the VSC converter station (can be MIN_MAX, CURVE or NONE)
               - **voltage_regulator_on**: The voltage regulator status
               - **regulated_element_id**: The ID of the network element where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
