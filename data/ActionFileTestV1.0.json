@@ -1,0 +1,14 @@
+{
+  "version" : "1.0",
+  "actions" : [ {
+    "type" : "SWITCH",
+    "id" : "id1",
+    "switchId" : "S1VL2_LCC1_BREAKER",
+    "open" : true
+  }, {
+    "type" : "SWITCH",
+    "id" : "id2",
+    "switchId" : "S1VL2_BBS2_COUPLER_DISCONNECTOR",
+    "open" : true
+  }]
+}
