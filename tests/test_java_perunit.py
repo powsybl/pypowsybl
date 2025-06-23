@@ -104,7 +104,7 @@ def test_two_windings_transformers_per_unit():
                                      'p2',
                                      'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                      'connected1', 'connected2'],
-                            data=[['', 0.0013, 0.0092, 0, 0.0512, 1, 1, nan, -0.8, -0.1, 0.8076, 0.8008,
+                            data=[['', 0.0013, 0.0092, 0, 0.0512, 225.0, 400.0, nan, -0.8, -0.1, 0.8076, 0.8008,
                                    0.05486, 0.8027, 'S1VL1', 'S1VL2', 'S1VL1_0', 'S1VL2_0', True, True]])
     pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -4)
     n.update_2_windings_transformers(
@@ -165,18 +165,18 @@ def test_lcc_converter_stations_per_unit():
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                     'connected'],
-                            data=[['LCC1', 0.6, 1.1, 0.8, 1.07, 1.33, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, -0.78, 1.04, 1.30, 'S3VL1', 'S3VL1_0', True]])
+                                     'connected', 'hvdc_line_id'],
+                            data=[['LCC1', 0.6, 1.1, 0.8, 1.07, 1.33, 'S1VL2', 'S1VL2_0', True , 'HVDC2'],
+                                  ['LCC2', 0.6, 1.1, -0.78, 1.04, 1.30, 'S3VL1', 'S3VL1_0', True, 'HVDC2']])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
     n.update_lcc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                  columns=['p', 'q'],
                                                  index=['LCC1', 'LCC2']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                                     'connected'],
-                            data=[['LCC1', 0.6, 1.1, 3.0, 4.0, 5.0, 'S1VL2', 'S1VL2_0', True],
-                                  ['LCC2', 0.6, 1.1, 1.0, 2.0, 2.24, 'S3VL1', 'S3VL1_0', True]])
+                                     'connected', 'hvdc_line_id'],
+                            data=[['LCC1', 0.6, 1.1, 3.0, 4.0, 5.0, 'S1VL2', 'S1VL2_0', True, 'HVDC2'],
+                                  ['LCC2', 0.6, 1.1, 1.0, 2.0, 2.24, 'S3VL1', 'S3VL1_0', True, 'HVDC2']])
     pd.testing.assert_frame_equal(expected, n.get_lcc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
@@ -188,11 +188,11 @@ def test_vsc_converter_stations_per_unit():
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q',
                  'voltage_regulator_on',
                  'regulated_element_id',
-                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected', 'hvdc_line_id'],
 
-        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
+        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 1, 5, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
               ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 0, 1.2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0',
-               True]])
+               True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=1e-2)
     n.update_vsc_converter_stations(pd.DataFrame(data=[[3.0, 4.0], [1.0, 2.0]],
                                                  columns=['target_v', 'target_q'],
@@ -201,9 +201,9 @@ def test_vsc_converter_stations_per_unit():
         index='id',
         columns=['id', 'name', 'loss_factor', 'min_q', 'max_q', 'reactive_limits_kind', 'target_v', 'target_q',
                  'voltage_regulator_on', 'regulated_element_id',
-                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True],
-              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True]])
+                 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected', 'hvdc_line_id'],
+        data=[['VSC1', 'VSC1', 1.1, nan, nan, 'CURVE', 3, 4, True, 'VSC1', 0.10, -5.12, 5.12, 'S1VL2', 'S1VL2_0', True, 'HVDC1'],
+              ['VSC2', 'VSC2', 1.1, -4, 5, 'MIN_MAX', 1, 2, False, 'VSC2', -0.1, -1.2, 1.18, 'S2VL1', 'S2VL1_0', True, 'HVDC1']])
     pd.testing.assert_frame_equal(expected, n.get_vsc_converter_stations(), check_dtype=False, atol=1e-2)
 
 
@@ -296,12 +296,9 @@ def test_three_windings_transformer_per_unit():
                  'ratio_tap_position3', 'phase_tap_position3', 'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id',
                  'connected3'],
         data=[
-            ['', 1, 0.1, 0.01, 1, 0.1, 1, nan, -99999, -99999, nan, nan, nan, 'VL_132', 'VL_132_0', True, 0.00625,
-             0.000625,
-             0, 0,
-             1, nan, 2, -99999, nan, nan, nan, 'VL_33', 'VL_33_0', True, 0.001, 6.94444e-05, 0, 0, 1, nan, 0, -99999,
-             nan,
-             nan, nan, 'VL_11', 'VL_11_0', True]])
+            ['', 132.0, 0.1, 0.01, 1, 0.1, 132.0, nan, -99999, -99999, nan, nan, nan, 'VL_132', 'VL_132_0', True, 0.00625,
+             0.000625, 0, 0, 33.0, nan, 2, -99999, nan, nan, nan, 'VL_33', 'VL_33_0', True, 0.001, 6.94444e-05, 0, 0, 11.0,
+             nan, 0, -99999, nan, nan, nan, 'VL_11', 'VL_11_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False,
                                   atol=1e-2)
     n.update_3_windings_transformers(pd.DataFrame(data=[
@@ -323,7 +320,7 @@ def test_three_windings_transformer_per_unit():
                  'voltage_level2_id', 'bus2_id', 'connected2', 'r3', 'x3', 'g3', 'b3', 'rated_u3', 'rated_s3',
                  'ratio_tap_position3', 'phase_tap_position3', 'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id',
                  'connected3'],
-        data=[['', 1, 99, 9, 0, 0, 1, 100, -99999, -99999, 0.5, 0.1, 0.5, 'VL_132', 'VL_132_0', True, 99, 9, 0, 0,
+        data=[['', 132.0, 99, 9, 0, 0, 1, 100, -99999, -99999, 0.5, 0.1, 0.5, 'VL_132', 'VL_132_0', True, 99, 9, 0, 0,
                1, 100, 1, -99999, 0.5, 0.1, 0.48, 'VL_33', 'VL_33_0', True, 99, 9, 0, 0, 1, 100, 1, -99999, 0.5,
                0.1, 0.48, 'VL_11', 'VL_11_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False,

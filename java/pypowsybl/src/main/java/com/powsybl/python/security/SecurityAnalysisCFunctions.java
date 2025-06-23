@@ -343,6 +343,7 @@ public final class SecurityAnalysisCFunctions {
     public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer parameters,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parameters.getProviderParameters());
             LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
             UnmanagedMemory.free(parameters);
         });
@@ -361,8 +362,8 @@ public final class SecurityAnalysisCFunctions {
         paramsPtr.setHighVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageProportionalThreshold());
         paramsPtr.setLowVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageAbsoluteThreshold());
         paramsPtr.setLowVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageProportionalThreshold());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 
@@ -482,6 +483,17 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addActionFromJsonFile")
+    public static void addActionFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addActionFromJsonFile(path);
+        });
+    }
+
     @CEntryPoint(name = "addTerminalsConnectionAction")
     public static void addTerminalsConnectionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                          CCharPointer actionId, CCharPointer elementId, PyPowsyblApiHeader.ThreeSideType side,
@@ -519,6 +531,17 @@ public final class SecurityAnalysisCFunctions {
             OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
                     ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
+        });
+    }
+
+    @CEntryPoint(name = "addOperatorStrategyFromJsonFile")
+    public static void addOperatorStrategyFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addOperatorStrategyFromJsonFile(path);
         });
     }
 
