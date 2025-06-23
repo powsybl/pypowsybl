@@ -438,3 +438,9 @@ def test_terminal_connection_action():
     sa_result = sa.run_ac(n)
     assert 'Line contingency' in sa_result.post_contingency_results.keys()
     assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+
+def test_export_json_file_from_security_analysis():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa_result = sa.run_ac(n)
+    sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))

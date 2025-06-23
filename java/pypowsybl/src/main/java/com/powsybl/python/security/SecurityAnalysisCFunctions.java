@@ -20,6 +20,8 @@ import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.condition.*;
+import com.powsybl.security.converter.SecurityAnalysisResultExporter;
+import com.powsybl.security.converter.SecurityAnalysisResultExporters;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.OperatorStrategyResult;
 import com.powsybl.security.results.PostContingencyResult;
@@ -38,6 +40,9 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -244,6 +249,23 @@ public final class SecurityAnalysisCFunctions {
             ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
             SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
             return ObjectHandles.getGlobal().create(result);
+        });
+    }
+
+    @CEntryPoint(name = "exportToJson")
+    public static void exportToJson(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, CCharPointer jsonFilePath,
+                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            try {
+                Writer writer = Files.newBufferedWriter(path);
+                SecurityAnalysisResultExporter exporter = SecurityAnalysisResultExporters.getExporter("JSON");
+                exporter.export(result, writer);
+            } catch (IOException e) {
+                throw new PowsyblException(e);
+            }
         });
     }
 
