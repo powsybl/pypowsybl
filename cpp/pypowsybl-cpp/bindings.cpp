@@ -713,6 +713,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_contingency_from_json_file", &pypowsybl::addContingencyFromJsonFile, "Add contingencies from JSON file.",
           py::arg("analysis_context"), py::arg("path_to_json_file"));
 
+    m.def("export_to_json", &pypowsybl::exportToJson, "Add the security analysis' output to the specified path in a JSON file.",
+          py::arg("security_analysis_result"), py::arg("path"));
+
     m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
 
@@ -740,6 +743,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
           py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
           py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
+
+    m.def("add_action_from_json_file", &pypowsybl::addActionFromJsonFile, "Add actions from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
+
+    m.def("add_operator_strategy_from_json_file", &pypowsybl::addOperatorStrategyFromJsonFile, "Add operator strategies from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
 
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("ACTIVE_POWER", pypowsybl::LimitType::ACTIVE_POWER)

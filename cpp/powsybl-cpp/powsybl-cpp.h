@@ -707,6 +707,8 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 
 void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
+void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath);
+
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
 
 JavaHandle createSensitivityAnalysis();
@@ -730,6 +732,10 @@ void addTerminalsConnectionAction(const JavaHandle& analysisContext, const std::
 
 void addOperatorStrategy(const JavaHandle& analysisContext, std::string operatorStrategyId, std::string contingencyId, const std::vector<std::string>& actionsIds,
                          condition_type conditionType, const std::vector<std::string>& subjectIds, const std::vector<violation_type>& violationTypesFilters);
+
+void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
+
+void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
