@@ -480,6 +480,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
+    m.def("update_network", &pypowsybl::updateNetwork, "Update a network from a file", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"))
+
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
