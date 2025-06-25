@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Sequence, Dict, List
-from pypowsybl._pypowsybl import (ScalingType, ScalingConvention, Priority, ScalingParameters)
+from pypowsybl._pypowsybl import (ScalingType, ScalingConvention, Priority, ScalingParameters as CParameters)
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -13,7 +13,7 @@ from pypowsybl._pypowsybl import (ScalingType, ScalingConvention, Priority, Scal
 ScalingType.__module__ = __name__
 ScalingConvention.__module__ = __name__
 Priority.__module__ = __name__
-ScalingParameters.__module__ = __name__
+CParameters.__module__ = __name__
 
 
 class ScalingParameters:  # pylint: disable=too-few-public-methods
@@ -41,7 +41,7 @@ class ScalingParameters:  # pylint: disable=too-few-public-methods
         if ignored_injection_ids is not None:
             self.ignored_injection_ids = ignored_injection_ids
 
-    def _init_from_c(self, c_parameters: ScalingParameters) -> None:
+    def _init_from_c(self, c_parameters: CParameters) -> None:
         self.scaling_convention = c_parameters.scaling_convention
         self.constant_power_factor = c_parameters.constant_power_factor
         self.reconnect = c_parameters.reconnect
@@ -51,10 +51,10 @@ class ScalingParameters:  # pylint: disable=too-few-public-methods
         self.ignored_injection_ids = c_parameters.ignored_injection_ids
 
     def _init_with_default_values(self) -> None:
-        self._init_from_c(ScalingParameters())
+        self._init_from_c(CParameters())
 
-    def _to_c_parameters(self) -> ScalingParameters:
-        c_parameters = ScalingParameters()
+    def _to_c_parameters(self) -> CParameters:
+        c_parameters = CParameters()
         c_parameters.scaling_convention = self.scaling_convention
         c_parameters.constant_power_factor = self.constant_power_factor
         c_parameters.reconnect = self.reconnect
