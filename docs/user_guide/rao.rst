@@ -80,7 +80,7 @@ When monitoring has been executed, voltage and angle cnec results can also be re
     Index(['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage',
            'max_voltage', 'margin'],
           dtype='object')
-    >>> angle_cnecs = result.get_angle_cnec_results()
+    >>> angle_cnecs = rao_result.get_angle_cnec_results()
     >>> angle_cnecs.columns
     Index(['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
           dtype='object')
