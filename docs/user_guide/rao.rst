@@ -77,7 +77,8 @@ When monitoring has been executed, voltage and angle cnec results can also be re
 
     >>> voltage_cnec = rao_result.get_voltage_cnec_results()
     >>> voltage_cnec.columns
-    Index(['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'],
+    Index(['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage',
+           'max_voltage', 'margin'],
           dtype='object')
     >>> angle_cnecs = result.get_angle_cnec_results()
     >>> angle_cnecs.columns
@@ -91,7 +92,8 @@ Remedial action results are also available in a pandas dataframe :
 
     >>> ra_results = rao_result.get_ra_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'],
+    Index(['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap',
+           'optimized_set_point'],
           dtype='object')
 
 For each remedial action and optimized instant the activation information is available.
