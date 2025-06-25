@@ -47,6 +47,10 @@ from .nad_profile import NadProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
+_pp.ScalingType.__module__ = __name__
+_pp.ScalingConvention.__module__ = __name__
+_pp.ConnectedComponentMode.__module__ = __name__
+
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
 

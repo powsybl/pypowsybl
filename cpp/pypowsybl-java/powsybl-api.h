@@ -74,6 +74,17 @@ typedef struct loadflow_parameters_struct {
     double dc_power_factor;
 } loadflow_parameters;
 
+typedef struct scaling_parameters_struct {
+    int scaling_convention;
+    unsigned char constant_power_factor;
+    unsigned char reconnect;
+    unsigned char allows_generator_out_of_active_power_limits;
+    int priority;
+    int scaling_type;
+    char** ignored_injection_ids;
+    int ignored_injection_ids_count;
+} scaling_parameters;
+
 typedef struct loadflow_validation_parameters_struct {
     double threshold;
     double epsilon_x;
@@ -261,6 +272,31 @@ typedef enum {
     REMOVE_VOLTAGE_LEVEL,
     REMOVE_HVDC_LINE,
 } remove_modification_type;
+
+typedef enum {
+    PROPORTIONAL_TO_TARGETP = 0,
+    PROPORTIONAL_TO_PMAX,
+    PROPORTIONAL_TO_DIFF_PMAX_TARGETP,
+    PROPORTIONAL_TO_DIFF_TARGETP_PMIN,
+    PROPORTIONAL_TO_P0,
+    UNIFORM_DISTRIBUTION,
+} distribution_mode;
+
+typedef enum {
+    DELTA_P = 0,
+    TARGET_P,
+} scaling_type;
+
+typedef enum {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+} priority;
+
+typedef enum {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+} scaling_convention;
 
 typedef struct matrix_struct {
     int row_count;
