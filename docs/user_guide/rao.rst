@@ -65,7 +65,9 @@ Retrieve the result for the flow CNEC:
 
     >>> flow_cnec = rao_result.get_flow_cnec_results()
     >>> flow_cnec.columns
-    ['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum']
+    Index(['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin',
+           'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'],
+          dtype='object')
 
 Each line represent a flow cnec result for an optimized instant and a contingency context
 
@@ -75,10 +77,12 @@ When monitoring has been executed, voltage and angle cnec results can also be re
 
     >>> voltage_cnec = rao_result.get_voltage_cnec_results()
     >>> voltage_cnec.columns
-    ['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin']
+    Index(['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'],
+          dtype='object')
     >>> angle_cnecs = result.get_angle_cnec_results()
     >>> angle_cnecs.columns
-    ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin']
+    Index(['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
+          dtype='object')
 
 
 Remedial action results are also available in a pandas dataframe :
@@ -87,7 +91,8 @@ Remedial action results are also available in a pandas dataframe :
 
     >>> ra_results = rao_result.get_ra_results()
     >>> ra_results.columns
-    ['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point']
+    Index(['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'],
+          dtype='object')
 
 For each remedial action and optimized instant the activation information is available.
 For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
@@ -98,7 +103,8 @@ Finally cost results can also be retrieved. Generic cost result are available in
 
     >>> cost_results = rao_result.get_cost_results()
     >>> cost_results.columns
-    ['functional_cost', 'virtual_cost', 'cost']
+    Index(['functional_cost', 'virtual_cost', 'cost'],
+          dtype='object')
 
 With optimized instant as an index, functional cost, virtual cost and the sum of the two as cost for each optimized instant.
 Details for virtual cost can also be queried for a given virtual cost with the list of virtual cost names available.
