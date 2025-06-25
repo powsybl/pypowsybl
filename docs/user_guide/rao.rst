@@ -36,8 +36,86 @@ Here is a code example of how to configure and run the RAO:
     >>> rao_result.status()
     <RaoComputationStatus.DEFAULT: 0>
 
+Monitoring API
+--------------
+
+Rao monitoring can run through the following API using an already produced rao result :
+
+    >>> result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, rao_result, LfParameters())
+    >>> result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, rao_result, LfParameters())
+
+The returned rao result object are the original result enhanced with voltage or angle monitoring data.
 
 Outputs of a RAO
 ----------------
 
-The RAO result is readable in a `RaoResult` object that can be serialized in json. It contains the optimal list of remedial actions to be applied in both basecase and after contingencies provided in the input CRAC file.
+The RAO results can be explored through the `RaoResult` object returned by the run function of the rao runner.
+Results are exposed in pandas dataframe format using the following API.
+
+Retrieve the global result status (can be DEFAULT or FAILURE):
+
+.. doctest::
+
+    >>> rao_result.status()
+    <RaoComputationStatus.DEFAULT: 0>
+
+Retrieve the result for the flow CNEC:
+
+.. doctest::
+
+    >>> flow_cnec = rao_result.get_flow_cnec_results()
+    >>> flow_cnec.columns
+    ['cnec_id', 'optimized_instant', 'contingency', 'side', 'flow', 'margin', 'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum']
+
+Each line represent a flow cnec result for an optimized instant and a contingency context
+
+When monitoring has been executed, voltage and angle cnec results can also be retrieved through pandas dataframes:
+
+.. doctest::
+
+    >>> voltage_cnec = rao_result.get_voltage_cnec_results()
+    >>> voltage_cnec.columns
+    ['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin']
+    >>> angle_cnecs = result.get_angle_cnec_results()
+    >>> angle_cnecs.columns
+    ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin']
+
+
+Remedial action results are also available in a pandas dataframe :
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_ra_results()
+    >>> ra_results.columns
+    ['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point']
+
+For each remedial action and optimized instant the activation information is available.
+For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
+
+Finally cost results can also be retrieved. Generic cost result are available in a dataframe :
+
+.. doctest::
+
+    >>> cost_results = rao_result.get_cost_results()
+    >>> cost_results.columns
+    ['functional_cost', 'virtual_cost', 'cost']
+
+With optimized instant as an index, functional cost, virtual cost and the sum of the two as cost for each optimized instant.
+Details for virtual cost can also be queried for a given virtual cost with the list of virtual cost names available.
+Cost for the provided virtual cost name is returned as a pandas dataframe with cost value for each instant.
+
+.. doctest::
+
+    >>> virtual_cost_names = rao_result.get_virtual_cost_names()
+    >>> virtual_cost_names
+    ['sensitivity-failure-cost']
+    >>> sensi_cost = rao_result.get_virtual_cost_results('sensitivity-failure-cost')
+                       sensitivity-failure-cost
+    optimized_instant
+    initial                                 0.0
+    preventive                              0.0
+    outage                                  0.0
+    curative                                0.0
+
+The RAO result is readable in a `RaoResult` object that can be serialized in json.
+It contains the optimal list of remedial actions to be applied in both basecase and after contingencies provided in the input CRAC file.
