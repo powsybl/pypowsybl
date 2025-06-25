@@ -5,6 +5,7 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.openrao.commons.MinOrMax;
+import com.powsybl.openrao.commons.OpenRaoException;
 import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.Instant;
@@ -73,70 +74,82 @@ public final class RaoDataframes {
         List<FlowCnecResult> results = new ArrayList<>();
         for (var cnec : crac.getFlowCnecs()) {
             // For each cnec output initial instant and ond cnec instant for both side
-            results.add(readFlowCnecResult(raoResult, cnec, null, TwoSides.ONE));
-            results.add(readFlowCnecResult(raoResult, cnec, null, TwoSides.TWO));
-            results.add(readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.ONE));
-            results.add(readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.TWO));
+            readFlowCnecResult(raoResult, cnec, null, TwoSides.ONE).ifPresent(results::add);
+            readFlowCnecResult(raoResult, cnec, null, TwoSides.TWO).ifPresent(results::add);
+            readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.ONE).ifPresent(results::add);
+            readFlowCnecResult(raoResult, cnec, cnec.getState().getInstant(), TwoSides.TWO).ifPresent(results::add);
         }
         return results;
     }
 
-    static FlowCnecResult readFlowCnecResult(RaoResult result, FlowCnec cnec, Instant instant, TwoSides side) {
+    static Optional<FlowCnecResult> readFlowCnecResult(RaoResult result, FlowCnec cnec, Instant instant, TwoSides side) {
         Optional<Contingency> contingencyOpt = cnec.getState().getContingency();
-        return new FlowCnecResult(
-            cnec.getId(),
-            instant,
-            contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
-            side,
-            result.getFlow(instant, cnec, side, Unit.MEGAWATT),
-            result.getMargin(instant, cnec, Unit.MEGAWATT),
-            result.getRelativeMargin(instant, cnec, Unit.MEGAWATT),
-            result.getCommercialFlow(instant, cnec, side, Unit.MEGAWATT),
-            result.getLoopFlow(instant, cnec, side, Unit.MEGAWATT),
-            result.getPtdfZonalSum(instant, cnec, side)
-        );
+        try {
+            return Optional.of(new FlowCnecResult(
+                cnec.getId(),
+                instant,
+                contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
+                side,
+                result.getFlow(instant, cnec, side, Unit.MEGAWATT),
+                result.getMargin(instant, cnec, Unit.MEGAWATT),
+                result.getRelativeMargin(instant, cnec, Unit.MEGAWATT),
+                result.getCommercialFlow(instant, cnec, side, Unit.MEGAWATT),
+                result.getLoopFlow(instant, cnec, side, Unit.MEGAWATT),
+                result.getPtdfZonalSum(instant, cnec, side)
+            ));
+        } catch (OpenRaoException exception) {
+            return Optional.empty();
+        }
     }
 
     private static List<AngleCnecResult> getAngleCnecResult(Crac crac, RaoResult raoResult) {
         List<AngleCnecResult> results = new ArrayList<>();
         for (var cnec : crac.getAngleCnecs()) {
-            results.add(readAngleCnecResult(raoResult, cnec, null));
-            results.add(readAngleCnecResult(raoResult, cnec, cnec.getState().getInstant()));
+            readAngleCnecResult(raoResult, cnec, null).ifPresent(results::add);
+            readAngleCnecResult(raoResult, cnec, cnec.getState().getInstant()).ifPresent(results::add);
         }
         return results;
     }
 
-    static AngleCnecResult readAngleCnecResult(RaoResult result, AngleCnec cnec, Instant instant) {
+    static Optional<AngleCnecResult> readAngleCnecResult(RaoResult result, AngleCnec cnec, Instant instant) {
         Optional<Contingency> contingencyOpt = cnec.getState().getContingency();
-        return new AngleCnecResult(
-            cnec.getId(),
-            instant,
-            contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
-            result.getAngle(instant, cnec, Unit.DEGREE),
-            result.getMargin(instant, cnec, Unit.DEGREE)
-        );
+        try {
+            return Optional.of(new AngleCnecResult(
+                cnec.getId(),
+                instant,
+                contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
+                result.getAngle(instant, cnec, Unit.DEGREE),
+                result.getMargin(instant, cnec, Unit.DEGREE)
+            ));
+        } catch (OpenRaoException exception) {
+            return Optional.empty();
+        }
     }
 
     private static List<VoltageCnecResult> getVoltageCnecResult(Crac crac, RaoResult raoResult) {
         List<VoltageCnecResult> results = new ArrayList<>();
         for (var cnec : crac.getVoltageCnecs()) {
-            results.add(readVoltageCnecResult(raoResult, cnec, null));
-            results.add(readVoltageCnecResult(raoResult, cnec, cnec.getState().getInstant()));
+            readVoltageCnecResult(raoResult, cnec, null).ifPresent(results::add);
+            readVoltageCnecResult(raoResult, cnec, cnec.getState().getInstant()).ifPresent(results::add);
         }
         return results;
     }
 
-    static VoltageCnecResult readVoltageCnecResult(RaoResult result, VoltageCnec cnec, Instant instant) {
+    static Optional<VoltageCnecResult> readVoltageCnecResult(RaoResult result, VoltageCnec cnec, Instant instant) {
         Optional<Contingency> contingencyOpt = cnec.getState().getContingency();
-        return new VoltageCnecResult(
-            cnec.getId(),
-            instant,
-            contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
-            TwoSides.ONE,
-            result.getVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
-            result.getVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
-            result.getMargin(instant, cnec, Unit.KILOVOLT)
-        );
+        try {
+            return Optional.of(new VoltageCnecResult(
+                cnec.getId(),
+                instant,
+                contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
+                TwoSides.ONE,
+                result.getVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
+                result.getVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
+                result.getMargin(instant, cnec, Unit.KILOVOLT)
+            ));
+        } catch (OpenRaoException exception) {
+            return Optional.empty();
+        }
     }
 
     private static List<ActivatedRemedialActionResult> getActivatedRemedialActions(Crac crac, RaoResult raoResult) {
