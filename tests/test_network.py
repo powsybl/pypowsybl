@@ -2165,6 +2165,9 @@ def test_multiple_limit_groups():
     network.update_lines(id="NHV1_NHV2_1", selected_limits_group_1="SUMMER")
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "SUMMER")
 
+def test_update_limits():
+
+
 def test_validation_level():
     n = pp.network.create_ieee14()
     vl = n.get_validation_level()

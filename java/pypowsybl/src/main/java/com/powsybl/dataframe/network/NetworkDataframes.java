@@ -1623,7 +1623,9 @@ public final class NetworkDataframes {
                 .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
                 .enums("type", LimitType.class, TemporaryLimitData::getType)
-                .doubles("value", (limit, context) -> perUnitLimitValue(context, limit))
+                .doubles("value", (limit, context) -> perUnitLimitValue(context, limit),
+                        (limit, value, context) ->
+                                limit.changeLimitValue(unPerUnitLimitValue(context, limit, value)))
                 .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
                 .strings("group_name", TemporaryLimitData::getGroupId, false)
@@ -1641,6 +1643,19 @@ public final class NetworkDataframes {
                 perUnitV(context, limit.getValue(), limit.getPerUnitingNominalV());
             case VOLTAGE_ANGLE ->
                 perUnitAngle(context, limit.getValue());
+        };
+    }
+
+    private static double unPerUnitLimitValue(NetworkDataframeContext context, TemporaryLimitData limit, double value) {
+        return switch (limit.getType()) {
+            case CURRENT ->
+                    unPerUnitI(context, value, limit.getPerUnitingNominalV());
+            case ACTIVE_POWER, APPARENT_POWER ->
+                    unPerUnitPQ(context, value);
+            case VOLTAGE ->
+                    unPerUnitV(context, value, limit.getPerUnitingNominalV());
+            case VOLTAGE_ANGLE ->
+                    unPerUnitAngle(context, value);
         };
     }
 

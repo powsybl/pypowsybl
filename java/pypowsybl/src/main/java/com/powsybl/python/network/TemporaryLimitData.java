@@ -9,6 +9,7 @@ package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.IdentifiableType;
 import com.powsybl.iidm.network.LimitType;
+import com.powsybl.iidm.network.LoadingLimits;
 
 import java.util.Objects;
 
@@ -28,6 +29,7 @@ public class TemporaryLimitData {
     private final String groupId;
     private final boolean selected;
     private final double perUnitingNominalV;
+    private final LoadingLimits limitSet;
 
     public enum Side {
         NONE,
@@ -37,7 +39,8 @@ public class TemporaryLimitData {
     }
 
     public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
-                              int acceptableDuration, boolean isFictitious, String groupId, boolean selected, double perUnitingNominalV) {
+                              int acceptableDuration, boolean isFictitious, String groupId, boolean selected, double perUnitingNominalV,
+                              LoadingLimits limitSet) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
         this.side = side;
@@ -49,11 +52,12 @@ public class TemporaryLimitData {
         this.groupId = Objects.requireNonNull(groupId);
         this.selected = selected;
         this.perUnitingNominalV = perUnitingNominalV;
+        this.limitSet = limitSet;
     }
 
     public TemporaryLimitData(String id, String name, Side side, double value, LimitType type, IdentifiableType elementType,
-                              String groupId, boolean isSelected, double perUnitingNominalV) {
-        this(id, name, side, value, type, elementType, -1, false, groupId, isSelected, perUnitingNominalV);
+                              String groupId, boolean isSelected, double perUnitingNominalV, LoadingLimits limitSet) {
+        this(id, name, side, value, type, elementType, -1, false, groupId, isSelected, perUnitingNominalV, limitSet);
     }
 
     public String getId() {
@@ -98,5 +102,13 @@ public class TemporaryLimitData {
 
     public double getPerUnitingNominalV() {
         return perUnitingNominalV;
+    }
+
+    public void changeLimitValue(double newValue) {
+        if (name.equals("permanent_limit")) {
+            limitSet.setPermanentLimit(newValue);
+        } else {
+            limitSet.setTemporaryLimitValue(acceptableDuration, newValue);
+        }
     }
 }

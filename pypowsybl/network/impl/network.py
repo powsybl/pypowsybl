@@ -3996,6 +3996,36 @@ class Network:  # pylint: disable=too-many-public-methods
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
         return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
+    def update_operational_limits(self, df: DataFrame, **kwargs: ArrayLike):
+        """
+        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Only the value of operational limits can be updated.
+            To define which limit must be modified, the following fields must be present :
+
+            - `target_p`
+            - `max_p`
+            - `min_p`
+
+        See Also:
+            :meth:`get_generators`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_generators(id='G-1', connected=True, target_p=500)
+                network.update_generators(id=['G-1', 'G-2'], target_v=[403, 401])
+        """
+
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
