@@ -2763,5 +2763,12 @@ def test_rxbg_at_current_tap_transfo3():
     pd.testing.assert_frame_equal(expected_transfo3, transfo3, check_dtype=False, atol=1e-6)
 
 
+def test_regulated_bus_id():
+    n = pp.network.create_four_substations_node_breaker_network()
+    gens = n.get_generators(attributes=['regulated_bus_id', 'regulated_bus_breaker_bus_id'])
+    assert 'S1VL2_0' == gens['regulated_bus_id']['GH1']
+    assert 'S1VL2_7' == gens['regulated_bus_breaker_bus_id']['GH1']
+
+
 if __name__ == '__main__':
     unittest.main()

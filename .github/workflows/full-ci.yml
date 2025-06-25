@@ -18,11 +18,6 @@ jobs:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8'
-          }
-          - {
             name: cp39,
             abi: cp39,
             version: '3.9'
@@ -42,11 +37,11 @@ jobs:
             abi: cp312,
             version: '3.12'
           }
-#          - {
-#            name: cp313,
-#            abi: cp313,
-#            version: '3.13'
-#          }
+          - {
+            name: cp313,
+            abi: cp313,
+            version: '3.13'
+          }
 
     steps:
       - name: Install Linux Packages
@@ -156,10 +151,6 @@ jobs:
           }
         python:
           - {
-            name: cp38,
-            version: '3.8',
-          }
-          - {
             name: cp39,
             version: '3.9',
           }
@@ -175,10 +166,10 @@ jobs:
             name: cp312,
             version: '3.12',
           }
-#          - {
-#            name: cp313,
-#            version: '3.13',
-#          }
+          - {
+            name: cp313,
+            version: '3.13',
+          }
 
     steps:
       - name: Setup GraalVM

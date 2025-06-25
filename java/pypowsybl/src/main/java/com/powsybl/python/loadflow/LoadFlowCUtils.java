@@ -67,6 +67,7 @@ public final class LoadFlowCUtils {
                 .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
                         .stream().map(Country::valueOf).collect(Collectors.toSet()))
                 .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()])
+                .setHvdcAcEmulation(loadFlowParametersPtr.isHvdcAcEmulation())
                 .setDcPowerFactor(loadFlowParametersPtr.getDcPowerFactor());
     }
 
