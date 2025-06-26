@@ -123,5 +123,8 @@ Cost for the provided virtual cost name is returned as a pandas dataframe with c
     >>> sensi_cost.loc['curative', 'sensitivity-failure-cost']
     0.0
 
-The RAO result is readable in a `RaoResult` object that can be serialized in json.
-It contains the optimal list of remedial actions to be applied in both basecase and after contingencies provided in the input CRAC file.
+Finally the 'RaoResult' object can also be serialized to json:
+
+.. doctest::
+
+    >>> rao_result.serialize(str(DATA_DIR.joinpath("rao/results.json")))
