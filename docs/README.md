@@ -23,7 +23,7 @@ cd docs
 ~~~
 Install the requirements the first time:
 ~~~bash
-pip install -r requirements.txt
+pip install -r ../requirements.txt
 ~~~
 Build the documentation:
 ~~~bash

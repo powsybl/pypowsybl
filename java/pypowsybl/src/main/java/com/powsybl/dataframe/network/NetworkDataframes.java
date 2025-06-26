@@ -919,6 +919,8 @@ public final class NetworkDataframes {
                 .doubles("angle", (busbar, context) -> perUnitAngle(context, busbar.getAngle()))
                 .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
                 .strings("bus_id", bbs -> getBusId(bbs.getTerminal()))
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
+                .ints("node", bbs -> getNode(bbs.getTerminal()), false)
                 .booleans("connected", bbs -> bbs.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
