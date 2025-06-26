@@ -205,6 +205,44 @@ Or in a Jupyter Notebook:
 
 The substation diagrams will be arranged in a grid, based on the content of the matrix parameter. An empty string in the matrix will result in an empty spot in the grid.
 
+
+
+The single line diagram can be further customized using an SldProfile. For example, to set the labels for feeders and buses by using dataframes:
+
+.. code-block:: python
+
+    >>> import pypowsybl.network as pn
+    >>> import pandas as pd
+
+    >>> network = pn.create_ieee14()
+
+    >>> sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label'], 
+                                      data=[('B1-G', 'MY-GENERATOR'),
+                                            ('L1-5-1', 'MY-LINE1'),
+                                            ('L1-2-1', 'MY-LINE2'),
+                                            ('B1', 'MY-BUS1')])
+
+    >>> sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
+                                            data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
+                                                  ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
+                                                  ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1')])
+
+    >>> diagram_profile=pn.SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df)
+    >>> network.get_single_line_diagram('VL1', sld_profile=diagram_profile)
+
+In the labels dataframe:
+    - id: is the network element id
+    - label: defines the label for the element
+
+In the feeders_info dataframe:
+    - id is the feeder id
+    - type: is a symbol type for the feeder info element. E.g., ARROW_ACTIVE, ARROW_REACTIVE, ARROW_CURRENT.
+    - side: for feeders with multiple sides (e.g. lines, transformers), determines  at which side the feeder info is placed. E.g. ONE, TWO.
+    - direction: is direction of the arrows (IN, OUT).
+    - label: defines  the label for the  feeder info element..
+
+The optional parameter sld_profile can also be set in the write_single_line_diagram_svg function.    
+
 Network area diagram
 --------------------
 
