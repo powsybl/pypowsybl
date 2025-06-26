@@ -9,10 +9,13 @@ import json
 
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import RaoComputationStatus
+from pypowsybl.utils import create_data_frame_from_series_array
+from pandas import DataFrame
 
 from typing import (
     Dict,
-    Any
+    Any,
+    List
 )
 
 
@@ -28,6 +31,33 @@ class RaoResult:
 
     def status(self) -> RaoComputationStatus:
         return self._status
+
+    def get_flow_cnec_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_flow_cnec_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_angle_cnec_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_angle_cnec_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_voltage_cnec_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_voltage_cnec_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_ra_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_ra_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_cost_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_virtual_cost_names(self) -> List[str]:
+        return _pypowsybl.get_virtual_cost_names(self._handle_result)
+
+    def get_virtual_cost_results(self, virtual_cost_name: str) -> DataFrame:
+        serie_flow = _pypowsybl.get_virtual_cost_results(self._handle_crac, self._handle_result, virtual_cost_name)
+        return create_data_frame_from_series_array(serie_flow)
 
     def serialize(self, output_file: str) -> None:
         """
