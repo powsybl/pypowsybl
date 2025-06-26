@@ -69,7 +69,7 @@ Retrieve the result for the flow CNEC:
            'relative_margin', 'commercial_flow', 'loop_flow', 'ptdf_zonal_sum'],
           dtype='object')
 
-Each line represent a flow cnec result for an optimized instant and a contingency context
+Each line represent a flow cnec result for an optimized instant and a contingency context.
 
 When monitoring has been executed, voltage and angle cnec results can also be retrieved through pandas dataframes:
 
@@ -97,8 +97,9 @@ Remedial action results are also available in a pandas dataframe :
 
 For each remedial action and optimized instant the activation information is available.
 For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
+Optimized tap and optimized set point are set to NaN when not applicable (not a range action).
 
-Finally cost results can also be retrieved. Generic cost result are available in a dataframe :
+Finally cost results can also be retrieved. Generic cost results are available in a dataframe :
 
 .. doctest::
 
@@ -108,7 +109,7 @@ Finally cost results can also be retrieved. Generic cost result are available in
 
 With optimized instant as an index, functional cost, virtual cost and the sum of the two as cost for each optimized instant are available.
 Details for virtual cost can also be queried for a given virtual cost with the list of virtual cost names available.
-Cost for the provided virtual cost name is returned as a pandas dataframe with cost value for each instant.
+Cost for a given virtual cost name is returned as a pandas dataframe with cost value for each instant.
 
 .. doctest::
 
@@ -123,7 +124,7 @@ Cost for the provided virtual cost name is returned as a pandas dataframe with c
     >>> sensi_cost.loc['curative', 'sensitivity-failure-cost']
     0.0
 
-Finally the 'RaoResult' object can also be serialized to json:
+The 'RaoResult' object can also be serialized to json:
 
 .. doctest::
 
