@@ -82,8 +82,7 @@ When monitoring has been executed, voltage and angle cnec results can also be re
           dtype='object')
     >>> angle_cnecs = rao_result.get_angle_cnec_results()
     >>> angle_cnecs.columns
-    Index(['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
-          dtype='object')
+    Index(['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'], dtype='object')
 
 
 Remedial action results are also available in a pandas dataframe :
@@ -105,10 +104,9 @@ Finally cost results can also be retrieved. Generic cost result are available in
 
     >>> cost_results = rao_result.get_cost_results()
     >>> cost_results.columns
-    Index(['functional_cost', 'virtual_cost', 'cost'],
-          dtype='object')
+    Index(['functional_cost', 'virtual_cost', 'cost'], dtype='object')
 
-With optimized instant as an index, functional cost, virtual cost and the sum of the two as cost for each optimized instant.
+With optimized instant as an index, functional cost, virtual cost and the sum of the two as cost for each optimized instant are available.
 Details for virtual cost can also be queried for a given virtual cost with the list of virtual cost names available.
 Cost for the provided virtual cost name is returned as a pandas dataframe with cost value for each instant.
 
@@ -118,12 +116,12 @@ Cost for the provided virtual cost name is returned as a pandas dataframe with c
     >>> virtual_cost_names
     ['sensitivity-failure-cost']
     >>> sensi_cost = rao_result.get_virtual_cost_results('sensitivity-failure-cost')
-                       sensitivity-failure-cost
-    optimized_instant
-    initial                                 0.0
-    preventive                              0.0
-    outage                                  0.0
-    curative                                0.0
+    >>> sensi_cost.index
+    Index(['initial', 'preventive', 'outage', 'auto', 'curative'], dtype='object', name='optimized_instant')
+    >>> sensi_cost.columns
+    Index(['sensitivity-failure-cost'], dtype='object')
+    >>> sensi_cost.loc['curative', 'sensitivity-failure-cost']
+    0.0
 
 The RAO result is readable in a `RaoResult` object that can be serialized in json.
 It contains the optimal list of remedial actions to be applied in both basecase and after contingencies provided in the input CRAC file.
