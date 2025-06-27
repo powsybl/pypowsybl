@@ -53,6 +53,9 @@ import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
+import com.powsybl.sld.model.nodes.NodeSide;
+import com.powsybl.sld.svg.CustomLabelProvider.SldCustomFeederInfos;
+import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import org.apache.commons.io.IOUtils;
@@ -1066,6 +1069,8 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
     public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
+                                                 DataframePointer labels,
+                                                 DataframePointer feederInfos,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1073,6 +1078,7 @@ public final class NetworkCFunctions {
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            applySldCustomLabels(labels, feederInfos, sldParameters);
             SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParameters);
         });
     }
@@ -1081,16 +1087,88 @@ public final class NetworkCFunctions {
     public static void writeMatrixMultiSubstationSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                 int substationIdCount, int substationIdRowCount,
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
-                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                      DataframePointer labels,
+                                                                      DataframePointer feederInfos,
+                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
             String svgFileStr = CTypeUtil.toString(svgFile);
             String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            applySldCustomLabels(labels, feederInfos, sldParameters);
 
             SingleLineDiagramUtil.writeMatrixMultiSubstationSvg(network, matrixIds, svgFileStr, metadataFileStr, sldParameters);
         });
+    }
+
+    private static Map<String, String> getSldCustomLabels(int rowCount, StringSeries idSeries,
+                                                                                          StringSeries labels) {
+        Map<String, String> nadCustomBranchLabels = new HashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            String id = idSeries.get(i);
+            String label = getValueFromSeriesOrNull(labels, i);
+            nadCustomBranchLabels.put(id, label);
+        }
+        return nadCustomBranchLabels;
+    }
+
+    private static Map<String, List<SldCustomFeederInfos>> getSldCustomFeederInfos(
+            int rowCount,
+            StringSeries ids,
+            StringSeries componentTypes,
+            StringSeries sides,
+            StringSeries directions,
+            StringSeries labels
+    ) {
+        Map<String, List<SldCustomFeederInfos>> customFeederInfo = new LinkedHashMap<>();
+        IntStream.range(0, rowCount)
+                .forEach(i -> {
+                    String id = ids.get(i);
+                    String componentType = componentTypes.get(i);
+                    String side = sides.get(i);
+                    String direction = directions.get(i);
+                    String label = labels.get(i);
+                    SldCustomFeederInfos feederInfo = new SldCustomFeederInfos(
+                            componentType, NodeSide.valueOf(side), LabelProvider.LabelDirection.valueOf(direction), label);
+
+                    customFeederInfo.computeIfAbsent(id, k -> new ArrayList<>()).add(feederInfo);
+                });
+        return customFeederInfo;
+    }
+
+    private static void applySldCustomLabels(DataframePointer customLabels, DataframePointer customFeederInfo, SldParameters parameters) {
+        UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
+        UpdatingDataframe customFeederInfoDataframe = createDataframe(customFeederInfo);
+        if (customLabelsDataframe != null || customFeederInfoDataframe != null) {
+            final Map<String, String> customLabelsMap;
+            if (customLabelsDataframe != null) {
+                parameters.getSvgParameters().setDisplayEquipmentNodesLabel(true);
+                customLabelsMap = getSldCustomLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
+                        customLabelsDataframe.getStrings("label"));
+            } else {
+                customLabelsMap = Collections.emptyMap();
+            }
+
+            final Map<String, List<SldCustomFeederInfos>> feederInfoMap;
+            if (customFeederInfoDataframe != null) {
+                feederInfoMap = getSldCustomFeederInfos(customFeederInfoDataframe.getRowCount(),
+                        customFeederInfoDataframe.getStrings("id"),
+                        customFeederInfoDataframe.getStrings("type"),
+                        customFeederInfoDataframe.getStrings("side"),
+                        customFeederInfoDataframe.getStrings("direction"),
+                        customFeederInfoDataframe.getStrings("label")
+                );
+
+            } else {
+                feederInfoMap = Collections.emptyMap();
+            }
+
+            parameters.setLabelProviderFactory((network, componentLibrary, layoutParameters, svgParameters) ->
+                    new com.powsybl.sld.svg.CustomLabelProvider(customLabelsMap, feederInfoMap, parameters.getComponentLibrary(),
+                            parameters.getLayoutParameters(), parameters.getSvgParameters()));
+
+        }
     }
 
     @CEntryPoint(name = "getSingleLineDiagramSvg")
@@ -1106,11 +1184,15 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                                                       SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                       SldParametersPointer sldParametersPtr,
+                                                                                       DataframePointer labels,
+                                                                                       DataframePointer feederInfos,
+                                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String containerIdStr = CTypeUtil.toString(containerId);
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            applySldCustomLabels(labels, feederInfos, sldParameters);
             List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
             return createCharPtrArray(svgAndMeta);
         });
@@ -1119,11 +1201,15 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getMatrixMultiSubstationSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                                            int substationIdCount, int substationIdRowCount,
-                                                                                           SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                                           SldParametersPointer sldParametersPtr,
+                                                                                           DataframePointer labels,
+                                                                                           DataframePointer feederInfos,
+                                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
             SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+            applySldCustomLabels(labels, feederInfos, sldParameters);
             List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
             return createCharPtrArray(svgAndMeta);
         });

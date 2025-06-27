@@ -905,12 +905,12 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::runLoadFlowValidation, network, validationType, c_validation_parameters.get()));
 }
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info) {
     auto c_parameters = parameters.to_c_struct();
-    PowsyblCaller::get()->callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+    PowsyblCaller::get()->callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get(), labels, feeders_info);
 }
 
-void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info) {
     auto c_parameters = parameters.to_c_struct();
     int nbRows = matrixIds.size();
     std::vector<std::string> substationIds;
@@ -921,21 +921,21 @@ void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, c
         }
     }
     ToCharPtrPtr substationIdPtr(substationIds);
-    PowsyblCaller::get()->callJava(::writeMatrixMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), substationIds.size(), nbRows, (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+    PowsyblCaller::get()->callJava(::writeMatrixMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), substationIds.size(), nbRows, (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get(), labels, feeders_info);
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(PowsyblCaller::get()->callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
-std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters) {
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info) {
     auto c_parameters = parameters.to_c_struct();
-    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get());
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get(), labels, feeders_info);
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
 
-std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters){
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info){
     auto c_parameters = parameters.to_c_struct();
     int nbRows = matrixIds.size();
     std::vector<std::string> substationIds;
@@ -946,7 +946,7 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
         }
     }
     ToCharPtrPtr substationIdPtr(substationIds);
-    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getMatrixMultiSubstationSvgAndMetadata, network, substationIdPtr.get(), substationIds.size(), nbRows, c_parameters.get());
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getMatrixMultiSubstationSvgAndMetadata, network, substationIdPtr.get(), substationIds.size(), nbRows, c_parameters.get(), labels, feeders_info);
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
