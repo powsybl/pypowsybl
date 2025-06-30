@@ -64,7 +64,7 @@ public final class RaoDataframes {
 
     public record VoltageCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double minVoltage, double maxVoltage, double margin) { }
 
-    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, boolean activated, double optimizedTap, double optimizedSetPoint) { }
+    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, String contingency, boolean activated, double optimizedTap, double optimizedSetPoint) { }
 
     public record CostResult(Instant instant, double functionalCost, double virtualCost, double cost) { }
 
@@ -156,6 +156,7 @@ public final class RaoDataframes {
         List<ActivatedRemedialActionResult> results = new ArrayList<>();
         for (var ra : crac.getRemedialActions()) {
             for (var state : crac.getStates()) {
+                Optional<Contingency> contingencyOpt = state.getContingency();
                 double optimizedTap = Double.NaN; // Use a double for tap so we can set it to NaN when not relevant
                 double optimizedSetPoint = Double.NaN;
                 if (ra instanceof RangeAction<?> rangeAction) {
@@ -168,6 +169,7 @@ public final class RaoDataframes {
                 ActivatedRemedialActionResult result = new ActivatedRemedialActionResult(
                     ra.getId(),
                     state.getInstant(),
+                    contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
                     raoResult.isActivatedDuringState(state, ra),
                     optimizedTap,
                     optimizedSetPoint
@@ -263,6 +265,7 @@ public final class RaoDataframes {
             .intsIndex(INDEX, e -> index.getAndIncrement())
             .strings("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
             .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
+            .strings(CONTINGENCY, ActivatedRemedialActionResult::contingency)
             .booleans("activated", ActivatedRemedialActionResult::activated)
             .doubles("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
             .doubles("optimized_set_point", ActivatedRemedialActionResult::optimizedSetPoint)

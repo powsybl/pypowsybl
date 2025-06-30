@@ -237,14 +237,14 @@ def test_rao_ra_results():
     # Ra results
     ra_results = result.get_ra_results()
     ra_results = ra_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
-    assert ['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'] == list(ra_results.columns)
-    expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap', 'optimized_set_point'],
-                            data=[['close NL2 BE3 2', 'outage', False, nan, nan],
-                                  ['close NL2 BE3 2', 'curative', False, nan, nan],
-                                  ['close NL2 BE3 2', 'preventive', True, nan, nan],
-                                  ['pst-range-action', 'outage', False, -10, nan],
-                                  ['pst-range-action', 'curative', True, 6, nan],
-                                  ['pst-range-action', 'preventive', True, -10, nan]])
+    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'activated', 'optimized_tap', 'optimized_set_point'] == list(ra_results.columns)
+    expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'contingency', 'activated', 'optimized_tap', 'optimized_set_point'],
+                            data=[['close NL2 BE3 2', 'outage', "Contingency DE2 DE3", False, nan, nan],
+                                  ['close NL2 BE3 2', 'curative', "Contingency DE2 DE3", False, nan, nan],
+                                  ['close NL2 BE3 2', 'preventive', "", True, nan, nan],
+                                  ['pst-range-action', 'outage', "Contingency DE2 DE3", False, -10, nan],
+                                  ['pst-range-action', 'curative', "Contingency DE2 DE3", True, 6, nan],
+                                  ['pst-range-action', 'preventive', "", True, -10, nan]])
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), ra_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 

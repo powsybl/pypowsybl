@@ -91,11 +91,11 @@ Remedial action results are also available in a pandas dataframe :
 
     >>> ra_results = rao_result.get_ra_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'activated', 'optimized_tap',
+    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'activated', 'optimized_tap',
            'optimized_set_point'],
           dtype='object')
 
-For each remedial action and optimized instant the activation information is available.
+For each remedial action, optimized instant and a contingency (if applicable) the activation information is available.
 For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
 Optimized tap and optimized set point are set to NaN when not applicable (not a range action).
 
