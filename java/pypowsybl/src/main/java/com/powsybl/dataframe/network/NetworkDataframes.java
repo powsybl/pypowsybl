@@ -1620,15 +1620,15 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits)
                 .stringsIndex("element_id", TemporaryLimitData::getId)
                 .enums("element_type", IdentifiableType.class, TemporaryLimitData::getElementType)
-                .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
+                .enumsIndex("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
-                .enums("type", LimitType.class, TemporaryLimitData::getType)
+                .enumsIndex("type", LimitType.class, TemporaryLimitData::getType)
                 .doubles("value", (limit, context) -> perUnitLimitValue(context, limit),
                         (limit, value, context) ->
                                 limit.changeLimitValue(unPerUnitLimitValue(context, limit, value)))
-                .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
+                .intsIndex("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
-                .strings("group_name", TemporaryLimitData::getGroupId, false)
+                .stringsIndex("group_name", TemporaryLimitData::getGroupId)
                 .booleans("selected", TemporaryLimitData::isSelected, false)
                 .build();
     }

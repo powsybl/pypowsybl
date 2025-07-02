@@ -3938,31 +3938,6 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_current_limits(self, all_attributes: bool = False, attributes: List[str] = None) -> DataFrame:
-        """
-        .. deprecated::
-          Use :meth:`get_operational_limits` instead.
-
-        Get the list of all current limits on the network paired with their branch id.
-
-        Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-
-        Returns:
-            all current limits on the network
-        """
-        warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
-        limits = self.get_operational_limits(all_attributes, attributes)
-        current_limits = limits[
-            limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
-        current_limits.index.rename('branch_id', inplace=True)
-        current_limits.set_index('name', append=True, inplace=True)
-        columns = ['side', 'value', 'acceptable_duration']
-        if 'fictitious' in current_limits.columns:
-            columns.append('fictitious')
-        return current_limits[columns]
-
     def get_operational_limits(self, all_attributes: bool = False, attributes: List[str] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
@@ -4010,12 +3985,14 @@ class Network:  # pylint: disable=too-many-public-methods
             Only the value of operational limits can be updated.
             To define which limit must be modified, the following fields must be present :
 
-            - `target_p`
-            - `max_p`
-            - `min_p`
+            - `element_id`
+            - `side`
+            - `type`
+            - `acceptable_duration`
+            - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
 
         See Also:
-            :meth:`get_generators`
+            :meth:`get_operational_limits`
 
         Examples:
             Some examples using keyword arguments:
@@ -4025,6 +4002,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_generators(id='G-1', connected=True, target_p=500)
                 network.update_generators(id=['G-1', 'G-2'], target_v=[403, 401])
         """
+        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """

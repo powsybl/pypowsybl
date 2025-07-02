@@ -812,10 +812,10 @@ class NetworkDataframesTest {
 
         assertThat(limits)
             .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
-                "name", "type", "value", "acceptable_duration");
+                "name", "type", "value", "acceptable_duration", "group_name");
         assertThat(selectedLimits)
                 .extracting(Series::getName).containsExactly("element_id", "element_type", "side",
-                        "name", "type", "value", "acceptable_duration");
+                        "name", "type", "value", "acceptable_duration", "group_name");
         assertThat(limits.get(0).getStrings()).isEqualTo(selectedLimits.get(0).getStrings());
     }
 
