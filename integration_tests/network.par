@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <parametersSet xmlns="http://www.rte-france.com/dynawo">
-    <set id="NET">
+    <set id="Network">
         <par type="DOUBLE" name="capacitor_no_reclosing_delay" value="300"/>
         <par type="DOUBLE" name="dangling_line_currentLimit_maxTimeOperation" value="90"/>
         <par type="DOUBLE" name="line_currentLimit_maxTimeOperation" value="90"/>

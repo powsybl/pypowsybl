@@ -27,7 +27,7 @@ def test_simulation():
     generator_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
         data={
-            'parameter_set_id': ['GSTWPR_GEN____6_SM', 'GSTWPR_GEN____8_SM'],
+            'parameter_set_id': ['GSTWPR_6', 'GSTWPR_8'],
             'model_name': 'GeneratorSynchronousThreeWindingsProportionalRegulations'
         }
     )
@@ -44,9 +44,9 @@ def test_simulation():
     dynawo_param = {
         'parametersFile': str(testPath.joinpath('models.par')),
         'network.parametersFile': str(testPath.joinpath('network.par')),
-        'network.parametersId': 'NET',
+        'network.parametersId': 'Network',
         'solver.parametersFile': str(testPath.joinpath('solvers.par')),
-        'solver.parametersId': 'SOL_IDA',
+        'solver.parametersId': 'IDA',
         'solver.type': 'IDA',
         'precision': '1e-5'
     }

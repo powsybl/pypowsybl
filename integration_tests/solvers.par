@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <parametersSet xmlns="http://www.rte-france.com/dynawo">
     <!-- IDA order 2 solver -->
-    <set id="SOL_IDA">
+    <set id="IDA">
         <par type="INT" name="order" value="2"/>
         <par type="DOUBLE" name="initStep" value="0.000001"/>
         <par type="DOUBLE" name="minStep" value="0.000001"/>
