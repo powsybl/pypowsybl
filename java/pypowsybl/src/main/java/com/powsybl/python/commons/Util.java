@@ -149,10 +149,19 @@ public final class Util {
     }
 
     public static void freeCharPtrArray(ArrayPointer<CCharPointerPointer> array) {
-        for (int i = 0; i < array.getLength(); i++) {
-            UnmanagedMemory.free(array.getPtr().read(i));
+        freeCharPtrPtr(array.getPtr(), array.getLength());
+    }
+
+    public static void freeCharPtrPtr(CCharPointerPointer ptr, int length) {
+        for (int i = 0; i < length; i++) {
+            UnmanagedMemory.free(ptr.read(i));
         }
-        UnmanagedMemory.free(array.getPtr());
+        UnmanagedMemory.free(ptr);
+    }
+
+    public static void freeProviderParameters(ProviderParameters parameters) {
+        freeCharPtrPtr(parameters.getProviderParametersKeys(), parameters.getProviderParametersKeysCount());
+        freeCharPtrPtr(parameters.getProviderParametersValues(), parameters.getProviderParametersValuesCount());
     }
 
     /**

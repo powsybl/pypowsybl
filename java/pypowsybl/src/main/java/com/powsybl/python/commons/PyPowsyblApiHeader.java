@@ -196,8 +196,39 @@ public final class PyPowsyblApiHeader {
         LoadFlowComponentResultPointer addressOf(int index);
     }
 
+    @CStruct("provider_parameters")
+    public interface ProviderParameters extends PointerBase {
+
+        @CField("provider_parameters_keys")
+        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
+
+        @CField("provider_parameters_keys")
+        CCharPointerPointer getProviderParametersKeys();
+
+        @CField("provider_parameters_keys_count")
+        int getProviderParametersKeysCount();
+
+        @CField("provider_parameters_keys_count")
+        void setProviderParametersKeysCount(int providerParametersKeysCount);
+
+        @CField("provider_parameters_values")
+        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
+
+        @CField("provider_parameters_values")
+        CCharPointerPointer getProviderParametersValues();
+
+        @CField("provider_parameters_values_count")
+        int getProviderParametersValuesCount();
+
+        @CField("provider_parameters_values_count")
+        void setProviderParametersValuesCount(int providerParametersKeysCount);
+    }
+
     @CStruct("loadflow_parameters")
     public interface LoadFlowParametersPointer extends PointerBase {
+
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
 
         @CField("voltage_init_mode")
         int getVoltageInitMode();
@@ -283,35 +314,17 @@ public final class PyPowsyblApiHeader {
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
 
+        @CField("hvdc_ac_emulation")
+        boolean isHvdcAcEmulation();
+
+        @CField("hvdc_ac_emulation")
+        void setHvdcAcEmulation(boolean hvdcAcEmulation);
+
         @CField("dc_power_factor")
         double getDcPowerFactor();
 
         @CField("dc_power_factor")
         void setDcPowerFactor(double dcPowerFactor);
-
-        @CField("provider_parameters_keys")
-        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
-
-        @CField("provider_parameters_keys")
-        CCharPointerPointer getProviderParametersKeys();
-
-        @CField("provider_parameters_keys_count")
-        int getProviderParametersKeysCount();
-
-        @CField("provider_parameters_keys_count")
-        void setProviderParametersKeysCount(int providerParametersKeysCount);
-
-        @CField("provider_parameters_values")
-        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
-
-        @CField("provider_parameters_values")
-        CCharPointerPointer getProviderParametersValues();
-
-        @CField("provider_parameters_values_count")
-        int getProviderParametersValuesCount();
-
-        @CField("provider_parameters_values_count")
-        void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
     @CStruct("loadflow_validation_parameters")
@@ -384,6 +397,9 @@ public final class PyPowsyblApiHeader {
     @CStruct("security_analysis_parameters")
     public interface SecurityAnalysisParametersPointer extends PointerBase {
 
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
         @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
 
@@ -416,61 +432,16 @@ public final class PyPowsyblApiHeader {
 
         @CField("high_voltage_absolute_threshold")
         void setHighVoltageAbsoluteThreshold(double highVoltageAbsoluteThreshold);
-
-        @CField("provider_parameters_keys")
-        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
-
-        @CField("provider_parameters_keys")
-        CCharPointerPointer getProviderParametersKeys();
-
-        @CField("provider_parameters_keys_count")
-        int getProviderParametersKeysCount();
-
-        @CField("provider_parameters_keys_count")
-        void setProviderParametersKeysCount(int providerParametersKeysCount);
-
-        @CField("provider_parameters_values")
-        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
-
-        @CField("provider_parameters_values")
-        CCharPointerPointer getProviderParametersValues();
-
-        @CField("provider_parameters_values_count")
-        int getProviderParametersValuesCount();
-
-        @CField("provider_parameters_values_count")
-        void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
         @CFieldAddress("loadflow_parameters")
         LoadFlowParametersPointer getLoadFlowParameters();
-
-        @CField("provider_parameters_keys")
-        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
-
-        @CField("provider_parameters_keys")
-        CCharPointerPointer getProviderParametersKeys();
-
-        @CField("provider_parameters_keys_count")
-        int getProviderParametersKeysCount();
-
-        @CField("provider_parameters_keys_count")
-        void setProviderParametersKeysCount(int providerParametersKeysCount);
-
-        @CField("provider_parameters_values")
-        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
-
-        @CField("provider_parameters_values")
-        CCharPointerPointer getProviderParametersValues();
-
-        @CField("provider_parameters_values_count")
-        int getProviderParametersValuesCount();
-
-        @CField("provider_parameters_values_count")
-        void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
     @CStruct("limit_violation")
@@ -1334,6 +1305,9 @@ public final class PyPowsyblApiHeader {
     @CStruct("shortcircuit_analysis_parameters")
     public interface ShortCircuitAnalysisParametersPointer extends PointerBase {
 
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
         @CField("with_voltage_result")
         boolean isWithVoltageResult();
 
@@ -1375,30 +1349,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("initial_voltage_profile_mode")
         void setInitialVoltageProfileMode(int initialVoltageProfileMode);
-
-        @CField("provider_parameters_keys")
-        void setProviderParametersKeys(CCharPointerPointer providerParametersKeys);
-
-        @CField("provider_parameters_keys")
-        CCharPointerPointer getProviderParametersKeys();
-
-        @CField("provider_parameters_keys_count")
-        int getProviderParametersKeysCount();
-
-        @CField("provider_parameters_keys_count")
-        void setProviderParametersKeysCount(int providerParametersKeysCount);
-
-        @CField("provider_parameters_values")
-        void setProviderParametersValues(CCharPointerPointer providerParametersValues);
-
-        @CField("provider_parameters_values")
-        CCharPointerPointer getProviderParametersValues();
-
-        @CField("provider_parameters_values_count")
-        int getProviderParametersValuesCount();
-
-        @CField("provider_parameters_values_count")
-        void setProviderParametersValuesCount(int providerParametersKeysCount);
     }
 
     @CEnum("VoltageInitializerObjective")
@@ -1477,4 +1427,213 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native RaoComputationStatus fromCValue(int value);
     }
+
+    @CStruct("rao_parameters")
+    public interface RaoParametersPointer extends PointerBase {
+
+        // Objective function parameters
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
+        @CField("objective_function_type")
+        int getObjectiveFunctionType();
+
+        @CField("objective_function_type")
+        void setObjectiveFunctionType(int type);
+
+        @CField("enforce_curative_security")
+        boolean getEnforceCurativeSecurity();
+
+        @CField("enforce_curative_security")
+        void setEnforceCurativeSecurity(boolean enforceCurativeSecurity);
+
+        @CField("unit")
+        int getUnit();
+
+        @CField("unit")
+        void setUnit(int unit);
+
+        @CField("curative_min_obj_improvement")
+        double getCurativeMinObjImprovement();
+
+        @CField("curative_min_obj_improvement")
+        void setCurativeMinObjImprovement(double curativeMinObjImprovement);
+
+        // Range action optim parameters (solver)
+        @CField("solver")
+        int getSolver();
+
+        @CField("solver")
+        void setSolver(int solver);
+
+        @CField("relative_mip_gap")
+        double getRelativeMipGap();
+
+        @CField("relative_mip_gap")
+        void setRelativeMipGap(double relativeMipGap);
+
+        @CField("solver_specific_parameters")
+        CCharPointer getSolverSpecificParameters();
+
+        @CField("solver_specific_parameters")
+        void setSolverSpecificParameters(CCharPointer solverSpecificParameters);
+
+        // Range action optim parameters
+        @CField("pst_ra_min_impact_threshold")
+        double getPstRaMinImpactThreshold();
+
+        @CField("pst_ra_min_impact_threshold")
+        void setPstRaMinImpactThreshold(double pstRaMinImpactThreshold);
+
+        @CField("hvdc_ra_min_impact_threshold")
+        double getHvdcRaMinImpactThreshold();
+
+        @CField("hvdc_ra_min_impact_threshold")
+        void setHvdcRaMinImpactThreshold(double hvdcRaMinImpactThreshold);
+
+        @CField("injection_ra_min_impact_threshold")
+        double getInjectionRaMinImpactThreshold();
+
+        @CField("injection_ra_min_impact_threshold")
+        void setInjectionRaMinImpactThreshold(double injectionRaMinImpactThreshold);
+
+        @CField("max_mip_iterations")
+        int getMaxMipIterations();
+
+        @CField("max_mip_iterations")
+        void setMaxMipIterations(int maxMipIterations);
+
+        @CField("pst_sensitivity_threshold")
+        double getPstSensitivityThreshold();
+
+        @CField("pst_sensitivity_threshold")
+        void setPstSensitivityThreshold(double pstSensitivityThreshold);
+
+        @CField("hvdc_sensitivity_threshold")
+        double getHvdcSensitivityThreshold();
+
+        @CField("hvdc_sensitivity_threshold")
+        void setHvdcSensitivityThreshold(double pstSensitivityThreshold);
+
+        @CField("pst_model")
+        int getPstModel();
+
+        @CField("pst_model")
+        void setPstModel(int pstModel);
+
+        @CField("injection_ra_sensitivity_threshold")
+        double getInjectionRaSensitivityThreshold();
+
+        @CField("injection_ra_sensitivity_threshold")
+        void setInjectionRaSensitivityThreshold(double injectionRaSensitivityThreshold);
+
+        @CField("ra_range_shrinking")
+        int getRaRangeShrinking();
+
+        @CField("ra_range_shrinking")
+        void setRaRangeShrinking(int raRangeShrinking);
+
+        // Topo optimization parameters
+        @CField("relative_min_impact_threshold")
+        double getRelativeMinImpactThreshold();
+
+        @CField("relative_min_impact_threshold")
+        void setRelativeMinImpactThreshold(double threshold);
+
+        @CField("absolute_min_impact_threshold")
+        double getAbsoluteMinImpactThreshold();
+
+        @CField("absolute_min_impact_threshold")
+        void setAbsoluteMinImpactThreshold(double threshold);
+
+        @CField("max_preventive_search_tree_depth")
+        int getMaxPreventiveSearchTreeDepth();
+
+        @CField("max_preventive_search_tree_depth")
+        void setMaxPreventiveSearchTreeDepth(int depth);
+
+        @CField("max_auto_search_tree_depth")
+        int getMaxAutoSearchTreeDepth();
+
+        @CField("max_auto_search_tree_depth")
+        void setMaxAutoSearchTreeDepth(int depth);
+
+        @CField("max_curative_search_tree_depth")
+        int getMaxCurativeSearchTreeDepth();
+
+        @CField("max_curative_search_tree_depth")
+        void setMaxCurativeSearchTreeDepth(int depth);
+
+        @CFieldAddress("predefined_combinations")
+        ArrayPointer<ArrayPointer<CCharPointerPointer>> getPredefinedCombinations();
+
+        @CField("skip_actions_far_from_most_limiting_element")
+        boolean getSkipActionsFarFromMostLimitingElement();
+
+        @CField("skip_actions_far_from_most_limiting_element")
+        void setSkipActionsFarFromMostLimitingElement(boolean skip);
+
+        @CField("max_number_of_boundaries_for_skipping_actions")
+        int getMaxNumberOfBoundariesForSkippingActions();
+
+        @CField("max_number_of_boundaries_for_skipping_actions")
+        void setMaxNumberOfBoundariesForSkippingActions(int boundaries);
+
+        // Multithreading parameters
+        @CField("available_cpus")
+        int getAvailableCpus();
+
+        @CField("available_cpus")
+        void setAvailableCpus(int availableCpus);
+
+        // Second preventive parameters
+        @CField("execution_condition")
+        int getExecutionCondition();
+
+        @CField("execution_condition")
+        void setExecutionCondition(int executionCondition);
+
+        @CField("re_optimize_curative_range_actions")
+        boolean getReOptimizeCurativeRangeActions();
+
+        @CField("re_optimize_curative_range_actions")
+        void setReOptimizeCurativeRangeActions(boolean reOptimizeCurativeRangeActions);
+
+        @CField("hint_from_first_preventive_rao")
+        boolean getHintFromFirstPreventiveRao();
+
+        @CField("hint_from_first_preventive_rao")
+        void setHintFromFirstPreventiveRao(boolean hintFromFirstPreventiveRao);
+
+        @CField("do_not_optimize_curative_cnecs_for_tsos_without_cras")
+        boolean getDoNotOptimizeCurativeCnecsForTsosWithoutCras();
+
+        @CField("do_not_optimize_curative_cnecs_for_tsos_without_cras")
+        void setDoNotOptimizeCurativeCnecsForTsosWithoutCras(boolean doNotOptimizeCurativeCnecsForTsosWithoutCras);
+
+        @CField("load_flow_provider")
+        CCharPointer getLoadFlowProvider();
+
+        @CField("load_flow_provider")
+        void setLoadFlowProvider(CCharPointer loadFlowProvider);
+
+        @CField("sensitivity_provider")
+        CCharPointer getSensitivityProvider();
+
+        @CField("sensitivity_provider")
+        void setSensitivityProvider(CCharPointer sensitivityProvider);
+
+        @CField("sensitivity_parameters")
+        SensitivityAnalysisParametersPointer getSensitivityParameters();
+
+        @CField("sensitivity_parameters")
+        void setSensitivityParameters(SensitivityAnalysisParametersPointer sensitivityParameters);
+
+        @CField("sensitivity_failure_overcost")
+        double getSensitivityFailureOvercost();
+
+        @CField("sensitivity_failure_overcost")
+        void setSensitivityFailureOvercost(double sensitivityFailureOvercost);
+    }
+
 }

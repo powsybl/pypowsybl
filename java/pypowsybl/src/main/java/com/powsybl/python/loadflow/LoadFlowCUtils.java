@@ -15,10 +15,12 @@ import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
-import org.graalvm.nativeimage.UnmanagedMemory;
 
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.powsybl.python.commons.Util.freeCharPtrPtr;
+import static com.powsybl.python.commons.Util.freeProviderParameters;
 
 /**
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
@@ -37,10 +39,10 @@ public final class LoadFlowCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(LoadFlowParametersPointer loadFlowParametersPtr) {
-        return CTypeUtil.toStringMap(loadFlowParametersPtr.getProviderParametersKeys(),
-                loadFlowParametersPtr.getProviderParametersKeysCount(),
-                loadFlowParametersPtr.getProviderParametersValues(),
-                loadFlowParametersPtr.getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(loadFlowParametersPtr.getProviderParameters().getProviderParametersKeys(),
+                loadFlowParametersPtr.getProviderParameters().getProviderParametersKeysCount(),
+                loadFlowParametersPtr.getProviderParameters().getProviderParametersValues(),
+                loadFlowParametersPtr.getProviderParameters().getProviderParametersValuesCount());
     }
 
     public static LoadFlowParameters createLoadFlowParameters() {
@@ -65,6 +67,7 @@ public final class LoadFlowCUtils {
                 .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
                         .stream().map(Country::valueOf).collect(Collectors.toSet()))
                 .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()])
+                .setHvdcAcEmulation(loadFlowParametersPtr.isHvdcAcEmulation())
                 .setDcPowerFactor(loadFlowParametersPtr.getDcPowerFactor());
     }
 
@@ -99,9 +102,7 @@ public final class LoadFlowCUtils {
      * Frees inner memory, but not the pointer itself.
      */
     public static void freeLoadFlowParametersContent(LoadFlowParametersPointer parameters) {
-        for (int i = 0; i < parameters.getCountriesToBalanceCount(); i++) {
-            UnmanagedMemory.free(parameters.getCountriesToBalance().read(i));
-        }
-        UnmanagedMemory.free(parameters.getCountriesToBalance());
+        freeProviderParameters(parameters.getProviderParameters());
+        freeCharPtrPtr(parameters.getCountriesToBalance(), parameters.getCountriesToBalanceCount());
     }
 }
