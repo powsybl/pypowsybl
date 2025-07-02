@@ -63,6 +63,3 @@ def test_simulation():
     assert 'B6-G_generator_UStatorPu' in res.curves()
     assert False == res.final_state_values().loc['NETWORK_B3_Upu_value'].empty
     assert False == res.timeline().empty
-
-
-test_simulation()
