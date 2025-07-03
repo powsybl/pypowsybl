@@ -1245,11 +1245,11 @@ def test_sld_profile():
     diagram_profile = SldProfile(labels=None)
     assert not diagram_profile.labels
     n = pp.network.create_ieee14()
-    sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label'],
-                                              data=[('B1-G', 'MY-GENERATOR'),
-                                                    ('L1-5-1', 'MY-LINE1'),
-                                                    ('L1-2-1', 'MY-LINE2'),
-                                                    ('B1', 'MY-BUS1')])
+    sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'label2'],
+                                              data=[('B1-G', 'MY-GENERATOR', ''),
+                                                    ('L1-5-1', 'MY-LINE1', ''),
+                                                    ('L1-2-1', 'MY-LINE2', ''),
+                                                    ('B1', 'MY-BUS1', '')])
     sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
                                                     data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
                                                           ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),

@@ -16,7 +16,8 @@ class SldProfile:
     This class represents parameters to customize a single line diagram (e.g., labels)."""
 
     _sld_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('label',0,False,False,False)]
+                  _pp.SeriesMetadata('label',0,False,False,False),
+                  _pp.SeriesMetadata('label2',0,False,False,False)]
 
     _sld_feeders_info_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('type',0,False,False,False),

@@ -55,6 +55,7 @@ import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.model.nodes.NodeSide;
 import com.powsybl.sld.svg.CustomLabelProvider.SldCustomFeederInfos;
+import com.powsybl.sld.svg.CustomLabelProvider.SldCustomLabels;
 import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
@@ -1102,13 +1103,14 @@ public final class NetworkCFunctions {
         });
     }
 
-    private static Map<String, String> getSldCustomLabels(int rowCount, StringSeries idSeries,
-                                                                                          StringSeries labels) {
-        Map<String, String> nadCustomBranchLabels = new HashMap<>();
+    private static Map<String, SldCustomLabels> getSldCustomLabels(int rowCount, StringSeries idSeries,
+                                                                   StringSeries labels, StringSeries labels2) {
+        Map<String, SldCustomLabels> nadCustomBranchLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idSeries.get(i);
             String label = getValueFromSeriesOrNull(labels, i);
-            nadCustomBranchLabels.put(id, label);
+            String label2 = getValueFromSeriesOrNull(labels2, i);
+            nadCustomBranchLabels.put(id, new SldCustomLabels(label, label2));
         }
         return nadCustomBranchLabels;
     }
@@ -1141,11 +1143,11 @@ public final class NetworkCFunctions {
         UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
         UpdatingDataframe customFeederInfoDataframe = createDataframe(customFeederInfo);
         if (customLabelsDataframe != null || customFeederInfoDataframe != null) {
-            final Map<String, String> customLabelsMap;
+            final Map<String, SldCustomLabels> customLabelsMap;
             if (customLabelsDataframe != null) {
                 parameters.getSvgParameters().setDisplayEquipmentNodesLabel(true);
                 customLabelsMap = getSldCustomLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
-                        customLabelsDataframe.getStrings("label"));
+                        customLabelsDataframe.getStrings("label"), customLabelsDataframe.getStrings("label2"));
             } else {
                 customLabelsMap = Collections.emptyMap();
             }

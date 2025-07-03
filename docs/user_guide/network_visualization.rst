@@ -216,11 +216,11 @@ The single line diagram can be further customized using an SldProfile. For examp
 
     >>> network = pn.create_ieee14()
 
-    >>> sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label'], 
-                                      data=[('B1-G', 'MY-GENERATOR'),
-                                            ('L1-5-1', 'MY-LINE1'),
-                                            ('L1-2-1', 'MY-LINE2'),
-                                            ('B1', 'MY-BUS1')])
+    >>> sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'label2'], 
+                                      data=[('B1-G', 'MY-GENERATOR', 'GEN'),
+                                            ('L1-5-1', 'MY-LINE1', None),
+                                            ('L1-2-1', 'MY-LINE2', None),
+                                            ('B1', 'MY-BUS1', None)])
 
     >>> sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
                                             data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
@@ -233,6 +233,7 @@ The single line diagram can be further customized using an SldProfile. For examp
 In the labels dataframe:
     - id: is the network element id
     - label: defines the label for the element
+    - label2: defines an additional label, displayed on the right side of the element
 
 In the feeders_info dataframe:
     - id is the feeder id
