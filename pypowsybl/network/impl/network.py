@@ -3971,7 +3971,7 @@ class Network:  # pylint: disable=too-many-public-methods
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
         return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
 
-    def update_operational_limits(self, df: DataFrame, **kwargs: ArrayLike):
+    def update_operational_limits(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
         """
         Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 

@@ -2151,7 +2151,16 @@ def test_multiple_limit_groups():
     network.update_lines(id="NHV1_NHV2_1", selected_limits_group_1="SUMMER")
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "SUMMER")
 
-#def test_update_limits():
+def test_update_limits():
+    network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 500
+    updating_df = pd.DataFrame.from_records(
+        index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_id', 'side', 'type', 'acceptable_duration', 'group_name', 'value'],
+        data=[('NHV1_NHV2_1', 'ONE', 'ACTIVE_POWER', -1, 'DEFAULT', 400)]
+    )
+    network.update_operational_limits(df=updating_df)
+    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 400
 
 
 def test_validation_level():

@@ -105,7 +105,7 @@ public class TemporaryLimitData {
     }
 
     public void changeLimitValue(double newValue) {
-        if (name.equals("permanent_limit")) {
+        if (acceptableDuration == -1) {
             limitSet.setPermanentLimit(newValue);
         } else {
             limitSet.setTemporaryLimitValue(acceptableDuration, newValue);
