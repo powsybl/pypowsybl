@@ -81,7 +81,6 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_busbar_sections
    Network.get_buses
    Network.get_bus_breaker_view_buses
-   Network.get_current_limits
    Network.get_dangling_lines
    Network.get_generators
    Network.get_hvdc_lines
