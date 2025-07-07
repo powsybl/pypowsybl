@@ -49,6 +49,8 @@ public final class NetworkDataframes {
     private static final String MAX_Q_AT_TARGET_P = "max_q_at_target_p";
     private static final String MIN_Q_AT_P = "min_q_at_p";
     private static final String MAX_Q_AT_P = "max_q_at_p";
+    private static final String REGULATED_BUS_ID = "regulated_bus_id";
+    private static final String REGULATED_BUS_BREAKER_BUS_ID = "regulated_bus_breaker_bus_id";
 
     private NetworkDataframes() {
     }
@@ -296,6 +298,8 @@ public final class NetworkDataframes {
                 .booleans("voltage_regulator_on", Generator::isVoltageRegulatorOn, Generator::setVoltageRegulatorOn)
                 .strings("regulated_element_id", generator -> NetworkUtil.getRegulatedElementId(generator::getRegulatingTerminal),
                         (generator, elementId) -> NetworkUtil.setRegulatingTerminal(generator::setRegulatingTerminal, generator.getNetwork(), elementId))
+                .strings(REGULATED_BUS_ID, generator -> getBusId(generator.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_BREAKER_BUS_ID, generator -> getBusBreakerViewBusId(generator.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (g, context) -> perUnitI(context, g.getTerminal()))
@@ -559,10 +563,8 @@ public final class NetworkDataframes {
                 .doubles("x", (twt, context) -> perUnitRX(context, twt, twt.getX()), (twt, x, context) -> twt.setX(unPerUnitRX(context, twt, x)))
                 .doubles("g", (twt, context) -> perUnitGB(context, twt, twt.getG()), (twt, g, context) -> twt.setG(unPerUnitGB(context, twt, g)))
                 .doubles("b", (twt, context) -> perUnitGB(context, twt, twt.getB()), (twt, b, context) -> twt.setB(unPerUnitGB(context, twt, b)))
-                .doubles("rated_u1", (twt, context) -> perUnitV(context, twt.getRatedU1(), twt.getTerminal1()),
-                    (twt, ratedV1, context) -> twt.setRatedU1(unPerUnitV(context, ratedV1, twt.getTerminal1())))
-                .doubles("rated_u2", (twt, context) -> perUnitV(context, twt.getRatedU2(), twt.getTerminal2()),
-                    (twt, ratedV2, context) -> twt.setRatedU2(unPerUnitV(context, ratedV2, twt.getTerminal2())))
+                .doubles("rated_u1", (twt, context) -> twt.getRatedU1(), (twt, ratedV1, context) -> twt.setRatedU1(ratedV1))
+                .doubles("rated_u2", (twt, context) -> twt.getRatedU2(), (twt, ratedV2, context) -> twt.setRatedU2(ratedV2))
                 .doubles("rated_s", (twt, context) -> twt.getRatedS(), (twt, ratedS, context) -> twt.setRatedS(ratedS))
                 .doubles("p1", getPerUnitP1(), setPerUnitP1())
                 .doubles("q1", getPerUnitQ1(), setPerUnitQ1())
@@ -599,12 +601,12 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getThreeWindingsTransformerStream, getOrThrow(Network::getThreeWindingsTransformer, "Three windings transformer"))
                 .stringsIndex("id", ThreeWindingsTransformer::getId)
                 .strings("name", twt -> twt.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("rated_u0", (twt, context) -> context.isPerUnit() ? 1 : twt.getRatedU0())
+                .doubles("rated_u0", (twt, context) -> twt.getRatedU0(), (twt, ratedU0, context) -> twt.setRatedU0(ratedU0))
                 .doubles("r1", (twt, context) -> perUnitRX(context, twt, twt.getLeg1().getR()), (twt, r1, context) -> twt.getLeg1().setR(unPerUnitRX(context, twt, r1)))
                 .doubles("x1", (twt, context) -> perUnitRX(context, twt, twt.getLeg1().getX()), (twt, x1, context) -> twt.getLeg1().setX(unPerUnitRX(context, twt, x1)))
                 .doubles("g1", (twt, context) -> perUnitGB(context, twt, twt.getLeg1().getG()), (twt, g1, context) -> twt.getLeg1().setG(unPerUnitGB(context, twt, g1)))
                 .doubles("b1", (twt, context) -> perUnitGB(context, twt, twt.getLeg1().getB()), (twt, b1, context) -> twt.getLeg1().setB(unPerUnitGB(context, twt, b1)))
-                .doubles("rated_u1", (twt, context) -> perUnitV(context, twt.getLeg1()), (twt, ratedU1, context) -> twt.getLeg1().setRatedU(unPerUnitV(context, ratedU1, twt.getLeg1())))
+                .doubles("rated_u1", (twt, context) -> twt.getLeg1().getRatedU(), (twt, ratedU1, context) -> twt.getLeg1().setRatedU(ratedU1))
                 .doubles("rated_s1", (twt, context) -> twt.getLeg1().getRatedS(), (twt, ratedS1, context) -> twt.getLeg1().setRatedS(ratedS1))
                 .ints("ratio_tap_position1", getRatioTapPosition(ThreeWindingsTransformer::getLeg1), (t, v) -> setTapPosition(t.getLeg1().getRatioTapChanger(), v))
                 .ints("phase_tap_position1", getPhaseTapPosition(ThreeWindingsTransformer::getLeg1), (t, v) -> setTapPosition(t.getLeg1().getPhaseTapChanger(), v))
@@ -628,7 +630,7 @@ public final class NetworkDataframes {
                 .doubles("x2", (twt, context) -> perUnitRX(context, twt, twt.getLeg2().getX()), (twt, x2, context) -> twt.getLeg2().setX(unPerUnitRX(context, twt, x2)))
                 .doubles("g2", (twt, context) -> perUnitGB(context, twt, twt.getLeg2().getG()), (twt, g2, context) -> twt.getLeg2().setG(unPerUnitGB(context, twt, g2)))
                 .doubles("b2", (twt, context) -> perUnitGB(context, twt, twt.getLeg2().getB()), (twt, b2, context) -> twt.getLeg2().setB(unPerUnitGB(context, twt, b2)))
-                .doubles("rated_u2", (twt, context) -> perUnitV(context, twt.getLeg2()), (twt, ratedU2, context) -> twt.getLeg2().setRatedU(unPerUnitV(context, ratedU2, twt.getLeg2())))
+                .doubles("rated_u2", (twt, context) -> twt.getLeg2().getRatedU(), (twt, ratedU2, context) -> twt.getLeg2().setRatedU(ratedU2))
                 .doubles("rated_s2", (twt, context) -> twt.getLeg2().getRatedS(), (twt, v, context) -> twt.getLeg2().setRatedS(v))
                 .ints("ratio_tap_position2", getRatioTapPosition(ThreeWindingsTransformer::getLeg2), (t, v) -> setTapPosition(t.getLeg2().getRatioTapChanger(), v))
                 .ints("phase_tap_position2", getPhaseTapPosition(ThreeWindingsTransformer::getLeg2), (t, v) -> setTapPosition(t.getLeg2().getPhaseTapChanger(), v))
@@ -652,7 +654,7 @@ public final class NetworkDataframes {
                 .doubles("x3", (twt, context) -> perUnitRX(context, twt, twt.getLeg3().getX()), (twt, x3, context) -> twt.getLeg3().setX(unPerUnitRX(context, twt, x3)))
                 .doubles("g3", (twt, context) -> perUnitGB(context, twt, twt.getLeg3().getG()), (twt, g3, context) -> twt.getLeg3().setG(unPerUnitGB(context, twt, g3)))
                 .doubles("b3", (twt, context) -> perUnitGB(context, twt, twt.getLeg3().getB()), (twt, b3, context) -> twt.getLeg3().setB(unPerUnitGB(context, twt, b3)))
-                .doubles("rated_u3", (twt, context) -> perUnitV(context, twt.getLeg3()), (twt, ratedU3, context) -> twt.getLeg3().setRatedU(unPerUnitV(context, ratedU3, twt.getLeg3())))
+                .doubles("rated_u3", (twt, context) -> twt.getLeg3().getRatedU(), (twt, ratedU3, context) -> twt.getLeg3().setRatedU(ratedU3))
                 .doubles("rated_s3", (twt, context) -> twt.getLeg3().getRatedS(), (twt, v, context) -> twt.getLeg3().setRatedS(v))
                 .ints("ratio_tap_position3", getRatioTapPosition(ThreeWindingsTransformer::getLeg3), (t, v) -> setTapPosition(t.getLeg3().getRatioTapChanger(), v))
                 .ints("phase_tap_position3", getPhaseTapPosition(ThreeWindingsTransformer::getLeg3), (t, v) -> setTapPosition(t.getLeg3().getPhaseTapChanger(), v))
@@ -782,6 +784,8 @@ public final class NetworkDataframes {
                 .booleans("voltage_regulator_on", VscConverterStation::isVoltageRegulatorOn, VscConverterStation::setVoltageRegulatorOn)
                 .strings("regulated_element_id", vsc -> NetworkUtil.getRegulatedElementId(vsc::getRegulatingTerminal),
                         (vsc, elementId) -> NetworkUtil.setRegulatingTerminal(vsc::setRegulatingTerminal, vsc.getNetwork(), elementId))
+                .strings(REGULATED_BUS_ID, vsc -> getBusId(vsc.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_BREAKER_BUS_ID, vsc -> getBusBreakerViewBusId(vsc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
@@ -810,6 +814,8 @@ public final class NetworkDataframes {
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
                         (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
+                .strings(REGULATED_BUS_ID, svc -> getBusId(svc.getRegulatingTerminal()), false)
+                .strings(REGULATED_BUS_BREAKER_BUS_ID, svc -> getBusBreakerViewBusId(svc.getRegulatingTerminal()), false)
                 .doubles("p", getPerUnitP(), setPerUnitP())
                 .doubles("q", getPerUnitQ(), setPerUnitQ())
                 .doubles("i", (st, context) -> perUnitI(context, st.getTerminal()))
@@ -913,6 +919,8 @@ public final class NetworkDataframes {
                 .doubles("angle", (busbar, context) -> perUnitAngle(context, busbar.getAngle()))
                 .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
                 .strings("bus_id", bbs -> getBusId(bbs.getTerminal()))
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
+                .ints("node", bbs -> getNode(bbs.getTerminal()), false)
                 .booleans("connected", bbs -> bbs.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()

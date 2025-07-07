@@ -764,6 +764,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
+              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
               - **p**: the actual active production of the generator (``NaN`` if no loadflow has been computed)
               - **q**: the actual reactive production of the generator (``NaN`` if no loadflow has been computed)
               - **i**: the current on the generator, ``NaN`` if no loadflow has been computed (in A)
@@ -1708,6 +1710,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **reactive_limits_kind**: type of the reactive limit of the VSC converter station (can be MIN_MAX, CURVE or NONE)
               - **voltage_regulator_on**: The voltage regulator status
               - **regulated_element_id**: The ID of the network element where voltage is regulated
+              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
               - **p**: active flow on the VSC  converter station, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the VSC converter station, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the VSC converter station, ``NaN`` if no loadflow has been computed (in A)
@@ -1793,6 +1797,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **target_q**: The reactive power setpoint
               - **regulation_mode**: The regulation mode
               - **regulated_element_id**: The ID of the network element where voltage is regulated
+              - **regulated_bus_id**: the ID of the bus from bus view where voltage is regulated
+              - **regulated_bus_breaker_bus_id**: the ID of the bus from bus/breaker view where voltage is regulated
               - **p**: active flow on the var compensator, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the var compensator, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: The current on the var compensator, ``NaN`` if no loadflow has been computed (in A)
@@ -1972,17 +1978,17 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ========== ======== ======== ================ =========
-            \          fictitious        v    angle voltage_level_id connected
-            ========== ========== ======== ======== ================ =========
+            ========== ========== ======== ======== ================ ========= =========
+            \                name        v    angle voltage_level_id    bus_id connected
+            ========== ========== ======== ======== ================ ========= =========
             id
-             S1VL1_BBS      False 224.6139   2.2822            S1VL1      True
-            S1VL2_BBS1      False 400.0000   0.0000            S1VL2      True
-            S1VL2_BBS2      False 400.0000   0.0000            S1VL2      True
-             S2VL1_BBS      False 408.8470   0.7347            S2VL1      True
-             S3VL1_BBS      False 400.0000   0.0000            S3VL1      True
-             S4VL1_BBS      False 400.0000  -1.1259            S4VL1      True
-            ========== ========== ======== ======== ================ =========
+             S1VL1_BBS  S1VL1_BBS 224.6139   2.2822            S1VL1   S1VL1_0      True
+            S1VL2_BBS1 S1VL2_BBS1 400.0000   0.0000            S1VL2   S1VL2_0      True
+            S1VL2_BBS2 S1VL2_BBS2 400.0000   0.0000            S1VL2   S1VL2_0      True
+             S2VL1_BBS  S2VL1_BBS 408.8470   0.7347            S2VL1   S2VL1_0      True
+             S3VL1_BBS  S3VL1_BBS 400.0000   0.0000            S3VL1   S3VL1_0      True
+             S4VL1_BBS  S4VL1_BBS 400.0000  -1.1259            S4VL1   S4VL1_0      True
+            ========== ========== ======== ======== ================ ========= =========
 
             .. code-block:: python
 
@@ -1991,17 +1997,17 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ========== ======== ======== ================ =========
-            \          fictitious        v    angle voltage_level_id connected
-            ========== ========== ======== ======== ================ =========
+            ========== ========== ======== ======== ================ ======= ================== ==== ========= ==========
+            \                name        v    angle voltage_level_id  bus_id bus_breaker_bus_id node connected fictitious
+            ========== ========== ======== ======== ================ ======= ================== ==== ========= ==========
             id
-             S1VL1_BBS      False 224.6139   2.2822            S1VL1      True
-            S1VL2_BBS1      False 400.0000   0.0000            S1VL2      True
-            S1VL2_BBS2      False 400.0000   0.0000            S1VL2      True
-             S2VL1_BBS      False 408.8470   0.7347            S2VL1      True
-             S3VL1_BBS      False 400.0000   0.0000            S3VL1      True
-             S4VL1_BBS      False 400.0000  -1.1259            S4VL1      True
-            ========== ========== ======== ======== ================ =========
+             S1VL1_BBS  S1VL1_BBS 224.6139   2.2822            S1VL1 S1VL1_0            S1VL1_0    0      True      False
+            S1VL2_BBS1 S1VL2_BBS1 400.0000   0.0000            S1VL2 S1VL2_0            S1VL2_0    0      True      False
+            S1VL2_BBS2 S1VL2_BBS2 400.0000   0.0000            S1VL2 S1VL2_0            S1VL2_1    1      True      False
+             S2VL1_BBS  S2VL1_BBS 408.8470   0.7347            S2VL1 S2VL1_0            S2VL1_0    0      True      False
+             S3VL1_BBS  S3VL1_BBS 400.0000   0.0000            S3VL1 S3VL1_0            S3VL1_0    0      True      False
+             S4VL1_BBS  S4VL1_BBS 400.0000  -1.1259            S4VL1 S4VL1_0            S4VL1_0    0      True      False
+            ========== ========== ======== ======== ================ ======= ================== ==== ========= ==========
 
             .. code-block:: python
 

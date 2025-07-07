@@ -331,6 +331,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
     connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
+    hvdc_ac_emulation = (bool) src->hvdc_ac_emulation;
     dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
@@ -348,9 +349,10 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.distributed_slack = (unsigned char) distributed_slack;
     res.balance_type = balance_type;
     res.dc_use_transformer_ratio = (unsigned char) dc_use_transformer_ratio;
-    res.connected_component_mode = connected_component_mode;
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
+    res.connected_component_mode = connected_component_mode;
+    res.hvdc_ac_emulation = (unsigned char) hvdc_ac_emulation;
     res.dc_power_factor = dc_power_factor;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
@@ -995,6 +997,10 @@ void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::st
     PowsyblCaller::get()->callJava(::addContingencyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
+void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath) {
+    PowsyblCaller::get()->callJava(::exportToJson, securityAnalysisResult, (char*) jsonFilePath.data());
+}
+
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
                                const std::string& provider, bool dc, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
@@ -1054,6 +1060,15 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
     PowsyblCaller::get()->callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actionsPtr.get(), actionsIds.size(),
         conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
 }
+
+void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
+      PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
+void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
+      PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
@@ -1912,6 +1927,36 @@ JavaHandle createRao() {
 
 RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult) {
     return pypowsybl::PowsyblCaller::get()->callJava<RaoComputationStatus>(::getRaoResultStatus, raoResult);
+}
+
+SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFlowCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getAngleCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRaResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResults, cracHandle, resultHandle));
+}
+
+std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle) {
+    auto virtulCostArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getVirtualCostNames, resultHandle);
+    ToStringVector virtalCosts(virtulCostArrayPtr);
+    return virtalCosts.get();
+}
+
+SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVirtualCostResults, cracHandle, resultHandle, (char*) virtualCostName.c_str()));
 }
 
 JavaHandle getCrac(const JavaHandle& raoContext) {

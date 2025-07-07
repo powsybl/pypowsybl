@@ -594,6 +594,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
             .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
             .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("hvdc_ac_emulation", &pypowsybl::LoadFlowParameters::hvdc_ac_emulation)
             .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
@@ -720,6 +721,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_contingency_from_json_file", &pypowsybl::addContingencyFromJsonFile, "Add contingencies from JSON file.",
           py::arg("analysis_context"), py::arg("path_to_json_file"));
 
+    m.def("export_to_json", &pypowsybl::exportToJson, "Add the security analysis' output to the specified path in a JSON file.",
+          py::arg("security_analysis_result"), py::arg("path"));
+
     m.def("add_load_active_power_action", &pypowsybl::addLoadActivePowerAction, "Add a load active power remedial action",
           py::arg("analysis_context"), py::arg("action_id"), py::arg("load_id"), py::arg("is_relative"), py::arg("active_power"));
 
@@ -747,6 +751,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_operator_strategy", &pypowsybl::addOperatorStrategy, "Add an operator strategy",
           py::arg("analysis_context"), py::arg("operator_strategy_id"), py::arg("contingency_id"), py::arg("action_ids"),
           py::arg("condition_type"), py::arg("subject_ids"), py::arg("violation_types"));
+
+    m.def("add_action_from_json_file", &pypowsybl::addActionFromJsonFile, "Add actions from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
+
+    m.def("add_operator_strategy_from_json_file", &pypowsybl::addOperatorStrategyFromJsonFile, "Add operator strategies from JSON file.",
+          py::arg("analysis_context"), py::arg("path_to_json_file"));
 
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("ACTIVE_POWER", pypowsybl::LimitType::ACTIVE_POWER)
@@ -1254,6 +1264,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("serialize_rao_parameters", ::saveRaoParametersToBinaryBuffer, "Serialize rao parameters to a buffer", py::arg("rao_parameters"));
     m.def("serialize_rao_results_to_buffer", ::saveRaoResultsToBinaryBuffer, "Run a rao", py::arg("rao_result"), py::arg("crac"));
     m.def("get_rao_result_status", &pypowsybl::getRaoResultStatus, "Get the status of a rao result", py::arg("rao_result"));
+    m.def("get_flow_cnec_results", &pypowsybl::getFlowCnecResults, "Get rao flow cnec results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_angle_cnec_results", &pypowsybl::getAngleCnecResults, "Get rao angle cnec results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_voltage_cnec_results", &pypowsybl::getVoltageCnecResults, "Get rao voltage cnec results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_ra_results", &pypowsybl::getRaResults, "Get rao remedial actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_cost_results", &pypowsybl::getCostResults, "Get rao cost results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_virtual_cost_names", &pypowsybl::getVirtualCostNames, "Get virtual cost names", py::arg("rao_result"));
+    m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
     m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 

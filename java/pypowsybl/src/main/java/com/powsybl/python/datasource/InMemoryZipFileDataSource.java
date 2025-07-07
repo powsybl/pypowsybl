@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.datasource;
 
+import com.google.re2j.Pattern;
 import com.powsybl.commons.datasource.DataSourceUtil;
 import com.powsybl.commons.datasource.ReadOnlyMemDataSource;
 import com.powsybl.commons.io.ForwardingInputStream;
@@ -20,7 +21,6 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
