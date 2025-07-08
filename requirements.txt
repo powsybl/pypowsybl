@@ -1,6 +1,5 @@
 # actual dependencies
 pandas==2.2.3
-numpy >= 2.0.0
 networkx
 matplotlib==3.9.2
 pybind11[global]==2.13.6
