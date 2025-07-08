@@ -268,7 +268,7 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Dict[str, str] = Non
     return load_from_binary_buffers([buffer],
                                     {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
-                                    reporter,
+                                    None,
                                     report_node,
                                     allow_variant_multi_thread_access)
 
