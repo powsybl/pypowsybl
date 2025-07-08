@@ -2,7 +2,6 @@ from logging import Logger
 from typing import ClassVar, Dict, Iterator, List, Sequence, Optional, Union, Any
 from numpy import ndarray
 
-
 class ArrayStruct:
     def __init__(self) -> None: ...
 
