@@ -199,13 +199,13 @@ Both loadflow calculations are executed in parallel using Python's asyncio API.
     >>> import asyncio
     >>> async def run_2_lf():
     ...     lf1 = lf.run_ac_async(network, "variant1")
-    ...     lf2 = lf.run_ac_async(network, "variant1")
+    ...     lf2 = lf.run_ac_async(network, "variant2")
     ...     results = await asyncio.gather(lf1, lf2)
     ...     print(results[0][0].status)
     ...     print(results[1][0].status)
     >>> network = pn.create_ieee14(allow_variant_multi_thread_access=True)
     >>> network.clone_variant("InitialState", "variant1")
-    >>> network.clone_variant("InitialState", "variant1")
+    >>> network.clone_variant("InitialState", "variant2")
     >>> asyncio.run(run_2_lf())
     ComponentStatus.CONVERGED
     ComponentStatus.CONVERGED
