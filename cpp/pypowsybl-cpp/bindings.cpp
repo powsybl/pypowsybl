@@ -22,7 +22,7 @@ namespace py = pybind11;
 //Explicitly update log level on java side
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc);
 
-pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode);
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
 
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
@@ -32,6 +32,10 @@ pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& paramete
 
 py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
+
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
+                            const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
+                            pypowsybl::JavaHandle* reportNode, py::object resultsFuture);
 
 template<typename T>
 void bindArray(py::module_& m, const std::string& className) {
@@ -361,7 +365,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_version_table", &pypowsybl::getVersionTable, "Get an ASCII table with all PowSybBl modules version");
 
-    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"));
+    m.def("create_network", &pypowsybl::createNetwork, "Create an example network", py::arg("name"), py::arg("id"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("update_switch_position", &pypowsybl::updateSwitchPosition, "Update a switch position");
 
@@ -472,13 +476,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("file"));
 
     m.def("load_network", &pypowsybl::loadNetwork, "Load a network from a file", py::call_guard<py::gil_scoped_release>(),
-          py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+          py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
-              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+              py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
-              py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+              py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
@@ -628,6 +632,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
+
+    m.def("run_loadflow_async", &runLoadFlowAsyncPython, "Run a load flow asynchronously", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("variant_id"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"),
+          py::arg("results_future"));
 
     m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
           py::arg("validation_type"), py::arg("validation_parameters"));
@@ -1332,6 +1340,46 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
 }
 
+void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {
+    py::gil_scoped_acquire acquire;
+    py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr); // automatically decrease ref counter
+    try {
+        resultsFuture.attr("set_results")(new pypowsybl::LoadFlowComponentResultArray(resultsPtr));
+    } catch (py::error_already_set& err) {
+        err.restore();
+    }
+}
+
+void onLoadFlowException(const char* message, void* resultFuturePtr) {
+    py::gil_scoped_acquire acquire;
+    py::object resultsFuture = py::reinterpret_steal<py::object>((PyObject*) resultFuturePtr); // automatically decrease ref counter
+    try {
+        resultsFuture.attr("set_exception_message")(message);
+    } catch (py::error_already_set& err) {
+        err.restore();
+    }
+}
+
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
+                            const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
+                            pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
+    auto c_parameters = parameters.to_c_struct();
+    auto onLoadFlowResultPtr = &onLoadFlowResult;
+    auto onLoadFlowExceptionPtr = &onLoadFlowException;
+    PyObject* resultsFuturePtr = resultsFuture.ptr();
+    Py_INCREF(resultsFuturePtr);  // to ensure we own the reference
+    pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
+                                              network,
+                                              (char*) variantId.data(),
+                                              dc,
+                                              c_parameters.get(),
+                                              (char*) provider.data(),
+                                              (reportNode == nullptr) ? nullptr : *reportNode,
+                                              reinterpret_cast<void *&>(onLoadFlowResultPtr),
+                                              reinterpret_cast<void *&>(onLoadFlowExceptionPtr),
+                                              (void*) resultsFuturePtr);
+}
+
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc) {
     py::object logger = CppToPythonLogger::get()->getLogger();
     if (!logger.is_none()) {
@@ -1341,7 +1389,8 @@ void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handl
      }
 }
 
-pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode) {
+pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters,
+                                                         const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode, bool allowVariantMultiThreadAccess) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -1364,7 +1413,8 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
 
     pypowsybl::JavaHandle networkHandle = pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadNetworkFromBinaryBuffers, dataPtrs, dataSizes, byteBuffers.size(),
                            parameterNamesPtr.get(), parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(),
-                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode,
+                           allowVariantMultiThreadAccess);
     delete[] dataPtrs;
     delete[] dataSizes;
     return networkHandle;

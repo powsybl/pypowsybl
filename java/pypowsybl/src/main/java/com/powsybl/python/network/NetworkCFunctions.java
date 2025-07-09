@@ -117,11 +117,13 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "createNetwork")
-    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, boolean allowVariantMultiThreadAccess,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String networkName = CTypeUtil.toString(name);
             String networkId = CTypeUtil.toString(id);
             Network network = Networks.create(networkName, networkId);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -183,6 +185,7 @@ public final class NetworkCFunctions {
                                            CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                            CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
                                            ObjectHandle reportNodeHandle,
+                                           boolean allowVariantMultiThreadAccess,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
@@ -193,6 +196,7 @@ public final class NetworkCFunctions {
             }
             var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
             Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -203,6 +207,7 @@ public final class NetworkCFunctions {
                                                      CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                      CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
                                                      ObjectHandle reportNodeHandle,
+                                                     boolean allowVariantMultiThreadAccess,
                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileNameStr = CTypeUtil.toString(fileName);
@@ -215,6 +220,7 @@ public final class NetworkCFunctions {
                 }
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+                network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -228,6 +234,7 @@ public final class NetworkCFunctions {
                                                             CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                             CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
                                                             ObjectHandle reportNodeHandle,
+                                                            boolean allowVariantMultiThreadAccess,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
@@ -263,6 +270,7 @@ public final class NetworkCFunctions {
             var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
             // FIXME there is no way to pass the import config with powsybl 2024.2.0. To FIX when upgrading to next release.
             Network network = Network.read(dataSource, parameters, reportNode);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }

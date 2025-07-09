@@ -20,7 +20,7 @@ from typing import (
     Dict,
     Optional,
     Union,
-    Any
+    Any, Type, Literal
 )
 
 from numpy import inf
@@ -48,6 +48,24 @@ from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
+
+
+class WorkingVariantScope:
+    def __init__(self, network: 'Network', variant_id: str):
+        self._network = network
+        self._variant_id = variant_id
+        self._old_variant_id = ''
+
+    def __enter__(self) -> 'WorkingVariantScope':
+        self._old_variant_id = self._network.get_working_variant_id()
+        self._network.set_working_variant(self._variant_id)
+        return self
+
+    def __exit__(self, exc_type: Optional[Type[BaseException]],
+                       exc_value: Optional[BaseException],
+                       traceback: Optional[object]) -> Literal[False]:
+        self._network.set_working_variant(self._old_variant_id)
+        return False
 
 
 class Network:  # pylint: disable=too-many-public-methods
@@ -128,7 +146,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 'nominal_apparent_power': self._nominal_apparent_power}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, [], None)
+        self._handle = _pp.load_network_from_binary_buffers([state['biidm'].getbuffer()], {}, [], None, False)
         self._per_unit = state['per_unit']
         self._nominal_apparent_power = state['nominal_apparent_power']
         self.__init_from_handle()
@@ -3919,6 +3937,9 @@ class Network:  # pylint: disable=too-many-public-methods
             variant: id of the variant selected (it must exist)
         """
         _pp.set_working_variant(self._handle, variant)
+
+    def working_variant(self, variant_id: str) -> WorkingVariantScope:
+        return WorkingVariantScope(self, variant_id)
 
     def remove_variant(self, variant: str) -> None:
         """
