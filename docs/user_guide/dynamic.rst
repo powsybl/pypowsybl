@@ -20,7 +20,7 @@ For now we only support the Dynawo simulator integration, provided by the `Dynaw
 Prerequisites
 -------------
 The pypowsybl config file (generally located at ~/.itools/config.yml) must define the dynawo section to find your dynawo installation and defaults parameters
-Here is an example of a simple config.yml file. It uses the same configurations as in powsybl-dynawo.
+Here is an example of a simple config.yml file. It uses the same configurations as in powsybl-dynawo. Note that parameters can be set programmatically with the `Parameters` class.
 
 .. code-block:: yaml+jinja
 
@@ -52,7 +52,7 @@ There is a class for each of these elements.
 
 You will see a lot of arguments called parameterSetId. Dynawo simulator use a lot of parameters that will be stored in files.
 
-Pypowsybl will find the path to this file in the powsybl config.yml in dynawo-simulation-default-parameters.parametersFile value.
+Pypowsybl will find the path to this file in the powsybl config.yml in dynawo-simulation-default-parameters.parametersFile value or in `Parameters`.
 
 The parameterSetId argument must match an id in this file (generally called models.par).
 

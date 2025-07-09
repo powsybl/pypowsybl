@@ -67,7 +67,6 @@ public final class Util {
             .build();
 
     private Util() {
-
     }
 
     public static void setException(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, Throwable t) {
