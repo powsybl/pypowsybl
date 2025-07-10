@@ -122,7 +122,7 @@ Cost for a given virtual cost name is returned as a pandas dataframe with cost v
     >>> sensi_cost.columns
     Index(['sensitivity-failure-cost'], dtype='object')
     >>> sensi_cost.loc['curative', 'sensitivity-failure-cost']
-    0.0
+    np.float64(0.0)
 
 The 'RaoResult' object can also be serialized to json:
 
