@@ -984,6 +984,22 @@ std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaH
     return displayedVoltageLevelIds.get();
 }
 
+SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBranchLabels, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultThreeWtLabels, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBusDescriptions, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultVoltageLevelDescriptions(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultVlDescriptions, network));
+}
+
 JavaHandle createSecurityAnalysis() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createSecurityAnalysis);
 }
