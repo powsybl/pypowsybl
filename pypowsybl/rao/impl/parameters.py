@@ -19,18 +19,18 @@ from .second_preventive_rao_parameters import SecondPreventiveRaoParameters
 from .not_optimized_cnecs_parameters import NotOptimizedCnecsParameters
 from .loadflow_and_sensitivity_parameters import LoadFlowAndSensitivityParameters
 from pypowsybl.utils import path_to_str
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Optional
 from os import PathLike
 
 class Parameters:
-    def __init__(self, objective_function_parameters: ObjectiveFunctionParameters = None,
-                 range_action_optimization_parameters: RangeActionOptimizationParameters = None,
-                 topo_optimization_parameters: TopoOptimizationParameters = None,
-                 multithreading_parameters: MultithreadingParameters = None,
-                 second_preventive_rao_parameters: SecondPreventiveRaoParameters = None,
-                 not_optimized_cnecs_parameters: NotOptimizedCnecsParameters = None,
-                 loadflow_and_sensitivity_parameters: LoadFlowAndSensitivityParameters = None,
-                 provider_parameters: Dict[str, str] = None) -> None:
+    def __init__(self, objective_function_parameters: Optional[ObjectiveFunctionParameters] = None,
+                 range_action_optimization_parameters: Optional[RangeActionOptimizationParameters] = None,
+                 topo_optimization_parameters: Optional[TopoOptimizationParameters] = None,
+                 multithreading_parameters: Optional[MultithreadingParameters] = None,
+                 second_preventive_rao_parameters: Optional[SecondPreventiveRaoParameters] = None,
+                 not_optimized_cnecs_parameters: Optional[NotOptimizedCnecsParameters] = None,
+                 loadflow_and_sensitivity_parameters: Optional[LoadFlowAndSensitivityParameters] = None,
+                 provider_parameters: Optional[Dict[str, str]] = None) -> None:
         self._init_with_default_values()
         if objective_function_parameters is not None:
             self.objective_function_parameters = objective_function_parameters

@@ -19,6 +19,6 @@ wheel==0.44.0
 coverage==7.3.2
 pytest>=8.3.3
 pytest-asyncio==0.24.0
-mypy==0.982
+mypy==1.15.0
 pandas-stubs==2.2.2.240603
 pylint==3.2.0
