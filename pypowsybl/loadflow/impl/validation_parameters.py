@@ -4,6 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from typing import Optional
+
 from pypowsybl._pypowsybl import ValidationType, LoadFlowValidationParameters
 from .parameters import Parameters
 from .util import parameters_from_c
@@ -47,17 +49,17 @@ class ValidationParameters:  # pylint: disable=too-few-public-methods
             The default value is ``False``.
     """
 
-    def __init__(self, threshold: float = None,
-                 verbose: bool = None,
-                 loadflow_name: str = None,
-                 epsilon_x: float = None,
-                 apply_reactance_correction: bool = None,
-                 loadflow_parameters: Parameters = None,
-                 ok_missing_values: bool = None,
-                 no_requirement_if_reactive_bound_inversion: bool = None,
-                 compare_results: bool = None,
-                 check_main_component_only: bool = None,
-                 no_requirement_if_setpoint_outside_power_bounds: bool = None):
+    def __init__(self, threshold: Optional[float] = None,
+                 verbose: Optional[bool] = None,
+                 loadflow_name:  Optional[str] = None,
+                 epsilon_x: Optional[float] = None,
+                 apply_reactance_correction: Optional[bool] = None,
+                 loadflow_parameters: Optional[Parameters] = None,
+                 ok_missing_values: Optional[bool] = None,
+                 no_requirement_if_reactive_bound_inversion: Optional[bool] = None,
+                 compare_results: Optional[bool] = None,
+                 check_main_component_only: Optional[bool] = None,
+                 no_requirement_if_setpoint_outside_power_bounds: Optional[bool] = None):
         self._init_with_default_values()
         if threshold is not None:
             self.threshold = threshold

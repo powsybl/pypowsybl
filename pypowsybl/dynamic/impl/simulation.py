@@ -4,6 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from typing import Optional
+
 from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.report import ReportNode
@@ -24,7 +26,7 @@ class Simulation:  # pylint: disable=too-few-public-methods
             timeseries_mapping: OutputVariableMapping,
             start: int,
             stop: int,
-            report_node: ReportNode = None
+            report_node: Optional[ReportNode] = None
             ) -> SimulationResult:
         """Run the dynawo simulation"""
         return SimulationResult(

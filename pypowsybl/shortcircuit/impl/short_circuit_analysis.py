@@ -41,7 +41,7 @@ class ShortCircuitAnalysis:
         c_dfs = _get_c_dataframes(dfs, [metadata], **kwargs)
         _pypowsybl.set_faults(self._handle, c_dfs[0])
 
-    def set_faults(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def set_faults(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Define faults to be analysed in the short-circuit simulation.
 
@@ -85,8 +85,8 @@ class ShortCircuitAnalysis:
         """
         self._set_faults([df], **kwargs)
 
-    def run(self, network: Network, parameters: Parameters = None,
-            provider: str = '', reporter: ReportNode = None, report_node: ReportNode = None) -> ShortCircuitAnalysisResult:
+    def run(self, network: Network, parameters: Optional[Parameters] = None,
+            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> ShortCircuitAnalysisResult:
         """ Runs a short-circuit analysis.
 
         Args:
