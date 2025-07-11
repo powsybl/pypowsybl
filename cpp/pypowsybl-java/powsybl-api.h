@@ -467,6 +467,7 @@ typedef enum {
 typedef enum {
     DEFAULT = 0,
     FAILURE,
+    PARTIAL_FAILURE,
 } RaoComputationStatus;
 
 typedef enum {

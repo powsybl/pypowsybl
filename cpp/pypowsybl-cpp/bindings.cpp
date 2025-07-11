@@ -806,7 +806,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<RaoComputationStatus>(m, "RaoComputationStatus")
             .value("DEFAULT", RaoComputationStatus::DEFAULT)
-            .value("FAILURE", RaoComputationStatus::FAILURE);
+            .value("FAILURE", RaoComputationStatus::FAILURE)
+            .value("PARTIAL_FAILURE", RaoComputationStatus::PARTIAL_FAILURE);
 
     py::enum_<pypowsybl::ObjectiveFunctionType>(m, "ObjectiveFunctionType", "")
             .value("SECURE_FLOW", pypowsybl::ObjectiveFunctionType::SECURE_FLOW, "")
