@@ -291,7 +291,7 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: Optional[PathOrStr] = None,
-                                      parameters: Optional[SldParameters] = None, sld_profile: SldProfile = None) -> None:
+                                      parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -316,7 +316,7 @@ class Network:  # pylint: disable=too-many-public-methods
     def write_matrix_multi_substation_single_line_diagram_svg(self, matrix_ids: List[List[str]], svg_file: PathOrStr,
                                                               metadata_file: Optional[PathOrStr] = None,
                                                               parameters: Optional[SldParameters] = None,
-                                                              sld_profile: SldProfile = None) -> None:
+                                                              sld_profile: Optional[SldProfile] = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -338,9 +338,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                                                   None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
                                                                   )
 
-                                                                  p)
-
-    def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None, sld_profile: SldProfile = None) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
@@ -361,7 +359,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                                                                    )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
-    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: Optional[SldParameters] = None, sld_profile: SldProfile = None) -> Svg:
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
         """
         Create a single line diagram from multiple substations
 

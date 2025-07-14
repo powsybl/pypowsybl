@@ -233,7 +233,7 @@ The single line diagram can be further customized using an SldProfile. For examp
 In the labels dataframe:
     - id: is the network element id
     - label: defines the label for the element
-    - label2: defines an additional label, displayed on the right side of the element
+    - additional_label: defines an additional label, displayed on the right side of the element
 
 In the feeders_info dataframe:
     - id is the feeder id
@@ -242,7 +242,7 @@ In the feeders_info dataframe:
     - direction: is direction of the arrows (IN, OUT).
     - label: defines  the label for the  feeder info element..
 
-The optional parameter sld_profile can also be set in the write_single_line_diagram_svg function.    
+The optional parameter sld_profile can also be set for the write_single_line_diagram_svg, get_matrix_multi_substation_single_line_diagram, and write_matrix_multi_substation_single_line_diagram_svg functions.
 
 Network area diagram
 --------------------

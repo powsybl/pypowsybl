@@ -54,8 +54,9 @@ import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.model.nodes.NodeSide;
-import com.powsybl.sld.svg.CustomLabelProvider.SldCustomFeederInfos;
-import com.powsybl.sld.svg.CustomLabelProvider.SldCustomLabels;
+import com.powsybl.sld.svg.CustomLabelProvider.CustomFeederInfos;
+import com.powsybl.sld.svg.CustomLabelProvider.CustomLabels;
+import com.powsybl.sld.svg.CustomLabelProvider.FeederContext;
 import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
@@ -1111,19 +1112,19 @@ public final class NetworkCFunctions {
         });
     }
 
-    private static Map<String, SldCustomLabels> getSldCustomLabels(int rowCount, StringSeries idSeries,
-                                                                   StringSeries labels, StringSeries labels2) {
-        Map<String, SldCustomLabels> nadCustomBranchLabels = new HashMap<>();
+    private static Map<String, CustomLabels> getSldCustomLabels(int rowCount, StringSeries idSeries,
+                                                                   StringSeries labels, StringSeries additionalLabels) {
+        Map<String, CustomLabels> nadCustomBranchLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idSeries.get(i);
             String label = getValueFromSeriesOrNull(labels, i);
-            String label2 = getValueFromSeriesOrNull(labels2, i);
-            nadCustomBranchLabels.put(id, new SldCustomLabels(label, label2));
+            String additionalLabel = getValueFromSeriesOrNull(additionalLabels, i);
+            nadCustomBranchLabels.put(id, new CustomLabels(label, additionalLabel));
         }
         return nadCustomBranchLabels;
     }
 
-    private static Map<String, List<SldCustomFeederInfos>> getSldCustomFeederInfos(
+    private static Map<FeederContext, List<CustomFeederInfos>> getSldCustomFeederInfos(
             int rowCount,
             StringSeries ids,
             StringSeries componentTypes,
@@ -1131,18 +1132,19 @@ public final class NetworkCFunctions {
             StringSeries directions,
             StringSeries labels
     ) {
-        Map<String, List<SldCustomFeederInfos>> customFeederInfo = new LinkedHashMap<>();
+        Map<FeederContext, List<CustomFeederInfos>> customFeederInfo = new LinkedHashMap<>();
         IntStream.range(0, rowCount)
                 .forEach(i -> {
                     String id = ids.get(i);
                     String componentType = componentTypes.get(i);
-                    String side = sides.get(i);
+                    String side = getNonEmptyValueFromSeries(sides, i);
                     String direction = directions.get(i);
                     String label = labels.get(i);
-                    SldCustomFeederInfos feederInfo = new SldCustomFeederInfos(
-                            componentType, NodeSide.valueOf(side), LabelProvider.LabelDirection.valueOf(direction), label);
+                    FeederContext fc = new FeederContext(id, side == null ? null : NodeSide.valueOf(side));
+                    CustomFeederInfos feederInfo = new CustomFeederInfos(
+                            componentType, LabelProvider.LabelDirection.valueOf(direction), label);
 
-                    customFeederInfo.computeIfAbsent(id, k -> new ArrayList<>()).add(feederInfo);
+                    customFeederInfo.computeIfAbsent(fc, k -> new ArrayList<>()).add(feederInfo);
                 });
         return customFeederInfo;
     }
@@ -1151,16 +1153,16 @@ public final class NetworkCFunctions {
         UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
         UpdatingDataframe customFeederInfoDataframe = createDataframe(customFeederInfo);
         if (customLabelsDataframe != null || customFeederInfoDataframe != null) {
-            final Map<String, SldCustomLabels> customLabelsMap;
+            final Map<String, CustomLabels> customLabelsMap;
             if (customLabelsDataframe != null) {
                 parameters.getSvgParameters().setDisplayEquipmentNodesLabel(true);
                 customLabelsMap = getSldCustomLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
-                        customLabelsDataframe.getStrings("label"), customLabelsDataframe.getStrings("label2"));
+                        customLabelsDataframe.getStrings("label"), customLabelsDataframe.getStrings("additional_label"));
             } else {
                 customLabelsMap = Collections.emptyMap();
             }
 
-            final Map<String, List<SldCustomFeederInfos>> feederInfoMap;
+            final Map<FeederContext, List<CustomFeederInfos>> feederInfoMap;
             if (customFeederInfoDataframe != null) {
                 feederInfoMap = getSldCustomFeederInfos(customFeederInfoDataframe.getRowCount(),
                         customFeederInfoDataframe.getStrings("id"),
