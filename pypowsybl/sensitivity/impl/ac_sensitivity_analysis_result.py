@@ -26,7 +26,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
                  function_data_frame_index: Dict[str, List[str]]):
         DcSensitivityAnalysisResult.__init__(self, result_context_ptr, functions_ids, function_data_frame_index)
 
-    def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> \
+    def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> \
     Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
@@ -43,7 +43,7 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
                       DeprecationWarning)
         return self.get_sensitivity_matrix(matrix_id, contingency_id)
 
-    def get_reference_voltages(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[
+    def get_reference_voltages(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
         pd.DataFrame]:
         """
         .. deprecated:: 1.1.0

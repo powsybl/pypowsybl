@@ -609,7 +609,7 @@ std::string getDefaultSensitivityAnalysisProvider();
 
 std::string getVersionTable();
 
-JavaHandle createNetwork(const std::string& name, const std::string& id);
+JavaHandle createNetwork(const std::string& name, const std::string& id, bool allowVariantMultiThreadAccess);
 
 JavaHandle merge(std::vector<JavaHandle>& others);
 
@@ -647,9 +647,9 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network);
 
 bool isNetworkLoadable(const std::string& file);
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
 
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
@@ -700,6 +700,14 @@ std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& n
     dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
+
+SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultVoltageLevelDescriptions(const JavaHandle& network);
 
 JavaHandle createSecurityAnalysis();
 
@@ -979,6 +987,14 @@ SeriesArray* getShortCircuitBusResults(const JavaHandle& shortCircuitAnalysisRes
 JavaHandle createRao();
 JavaHandle getCrac(const JavaHandle& raoContext);
 RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
+SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
+SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
+
 JavaHandle createDefaultRaoParameters();
 JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters);
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
