@@ -1379,7 +1379,8 @@ public final class PyPowsyblApiHeader {
     @CEnum("RaoComputationStatus")
     public enum RaoComputationStatus {
         DEFAULT,
-        FAILURE;
+        FAILURE,
+        PARTIAL_FAILURE;
 
         @CEnumValue
         public native int getCValue();

@@ -196,6 +196,9 @@ public final class RaoCFunctions {
                 case FAILURE -> {
                     return PyPowsyblApiHeader.RaoComputationStatus.FAILURE;
                 }
+                case PARTIAL_FAILURE -> {
+                    return PyPowsyblApiHeader.RaoComputationStatus.PARTIAL_FAILURE;
+                }
                 default -> throw new PowsyblException("Unexpected computation status : " + result.getComputationStatus());
             }
         });

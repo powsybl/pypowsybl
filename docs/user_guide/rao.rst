@@ -52,7 +52,7 @@ Outputs of a RAO
 The RAO results can be explored through the `RaoResult` object returned by the run function of the rao runner.
 Results are exposed in pandas dataframe format using the following API.
 
-Retrieve the global result status (can be DEFAULT or FAILURE):
+Retrieve the global result status (can be DEFAULT, FAILURE or PARTIAL_FAILURE):
 
 .. doctest::
 
