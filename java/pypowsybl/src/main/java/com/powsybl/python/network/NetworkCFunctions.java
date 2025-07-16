@@ -997,6 +997,7 @@ public final class NetworkCFunctions {
         cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
         cParameters.setEdgeInfoDisplayed(edgeInfo);
         cParameters.setVoltageLevelDetails(parameters.getSvgParameters().isVoltageLevelDetails());
+        cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1146,7 +1147,7 @@ public final class NetworkCFunctions {
     public static void writeNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer svgFile, CCharPointer metadataFile,
                                                   CCharPointerPointer voltageLevelIdsPointer, int voltageLevelIdCount, int depth,
                                                   double highNominalVoltageBound, double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
-                                                  DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels,
+                                                  DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels, DataframePointer injectionLabels,
                                                   DataframePointer busDescriptions, DataframePointer vlDescriptions, DataframePointer busNodeStyles,
                                                   DataframePointer edgeStyles, DataframePointer threeWtStyles, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
@@ -1156,7 +1157,7 @@ public final class NetworkCFunctions {
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             applyFixedPositions(fixedPositions, nadParameters);
-            applyCustomLabels(branchLabels, threeWtLabels, busDescriptions, vlDescriptions, nadParameters);
+            applyCustomLabels(branchLabels, threeWtLabels, injectionLabels, busDescriptions, vlDescriptions, nadParameters);
             applyCustomStyles(busNodeStyles, edgeStyles, threeWtStyles, nadParameters);
             NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
         });
@@ -1290,6 +1291,24 @@ public final class NetworkCFunctions {
         return nadCustomThreeWtLabels;
     }
 
+    private static Map<String, CustomLabelProvider.InjectionLabels> getNadCustomInjectionsLabels(UpdatingDataframe injectionLabelsDataframe) {
+        int rowCount = injectionLabelsDataframe.getRowCount();
+        StringSeries idS = injectionLabelsDataframe.getStrings("id");
+        StringSeries labelS = injectionLabelsDataframe.getStrings("label");
+        StringSeries arrowS = injectionLabelsDataframe.getStrings("arrow");
+
+        Map<String, CustomLabelProvider.InjectionLabels> nadCustomInjectionsLabels = new HashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            String id = idS.get(i);
+            CustomLabelProvider.InjectionLabels labels = new CustomLabelProvider.InjectionLabels(
+                    getValueFromSeriesOrNull(labelS, i),
+                    getDirectionFromSeriesOrNull(arrowS, i)
+            );
+            nadCustomInjectionsLabels.put(id, labels);
+        }
+        return nadCustomInjectionsLabels;
+    }
+
     private static Map<String, String> getNadCustomBusDescriptions(int rowCount, StringSeries idS, StringSeries descriptionS) {
         Map<String, String> nadCustomDescriptions = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
@@ -1322,12 +1341,13 @@ public final class NetworkCFunctions {
         return new VlInfo(headers, footers);
     }
 
-    private static void applyCustomLabels(DataframePointer customLabels, DataframePointer threeWtLabels, DataframePointer busDescriptions, DataframePointer vlDescriptions, NadParameters nadParameters) {
+    private static void applyCustomLabels(DataframePointer customLabels, DataframePointer threeWtLabels, DataframePointer injectionLabels, DataframePointer busDescriptions, DataframePointer vlDescriptions, NadParameters nadParameters) {
         UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
         UpdatingDataframe threeWtLabelsDataframe = createDataframe(threeWtLabels);
+        UpdatingDataframe injectionLabelsDataframe = createDataframe(injectionLabels);
         UpdatingDataframe busDescriptionsDataframe = createDataframe(busDescriptions);
         UpdatingDataframe customVlDescriptionsDataframe = createDataframe(vlDescriptions);
-        if (customLabelsDataframe != null || threeWtLabelsDataframe != null || busDescriptionsDataframe != null || customVlDescriptionsDataframe != null) {
+        if (customLabelsDataframe != null || threeWtLabelsDataframe != null || injectionLabelsDataframe != null || busDescriptionsDataframe != null || customVlDescriptionsDataframe != null) {
             final Map<String, CustomLabelProvider.BranchLabels> branchLabels;
             if (customLabelsDataframe != null) {
                 //when the custom dataframe is defined, the displaying of the edge name is forced
@@ -1341,6 +1361,15 @@ public final class NetworkCFunctions {
             }
 
             Map<String, CustomLabelProvider.ThreeWtLabels> customThreeWtLabels = (threeWtLabelsDataframe != null) ? getNadCustomThreeWtLabels(threeWtLabelsDataframe) : Collections.emptyMap();
+
+            Map<String, CustomLabelProvider.InjectionLabels> customInjectionsLabels;
+            if (injectionLabelsDataframe != null) {
+                //when the custom dataframe is defined, the injections addition to the graph is forced
+                nadParameters.getLayoutParameters().setInjectionsAdded(true);
+                customInjectionsLabels = getNadCustomInjectionsLabels(injectionLabelsDataframe);
+            } else {
+                customInjectionsLabels = Collections.emptyMap();
+            }
 
             final Map<String, String> customBusDescriptions;
             if (busDescriptionsDataframe != null) {
@@ -1369,7 +1398,7 @@ public final class NetworkCFunctions {
                 customVlDetails = Collections.emptyMap();
             }
             nadParameters.setLabelProviderFactory((network, svgParameters) ->
-                    new CustomLabelProvider(branchLabels, customThreeWtLabels, customBusDescriptions, customVlDescriptions, customVlDetails));
+                    new CustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customBusDescriptions, customVlDescriptions, customVlDetails));
         }
     }
 
@@ -1482,7 +1511,7 @@ public final class NetworkCFunctions {
     public static ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
                                                                                         double lowNominalVoltageBound, NadParametersPointer nadParametersPointer,
-                                                                                        DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels, DataframePointer busDescriptions,
+                                                                                        DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels, DataframePointer injectionLabels, DataframePointer busDescriptions,
                                                                                         DataframePointer vlDescriptions, DataframePointer busNodeStyles, DataframePointer edgeStyles,
                                                                                         DataframePointer threeWtStyles, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -1490,7 +1519,7 @@ public final class NetworkCFunctions {
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
             applyFixedPositions(fixedPositions, nadParameters);
-            applyCustomLabels(branchLabels, threeWtLabels, busDescriptions, vlDescriptions, nadParameters);
+            applyCustomLabels(branchLabels, threeWtLabels, injectionLabels, busDescriptions, vlDescriptions, nadParameters);
             applyCustomStyles(busNodeStyles, edgeStyles, threeWtStyles, nadParameters);
             List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
             return createCharPtrArray(svgAndMeta);
