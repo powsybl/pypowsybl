@@ -4794,7 +4794,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **on_load**: true if the transformer has on-load voltage regulation capability
             - **target_v**: the target voltage, in kV
             - **target_deadband**: the target voltage regulation deadband, in kV
-            - **regulating**: true if the tap changer should regulate voltage
+            - **regulating**: true if the tap changer should regulate voltage (**on_load** must be true to set this to true)
             - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
               or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
