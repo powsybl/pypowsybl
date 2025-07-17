@@ -203,6 +203,7 @@ def test_svc_creation():
                'node': 1,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])

@@ -209,6 +209,17 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             }
 
             @Override
+            public OperationalLimitsGroup getOrCreateSelectedOperationalLimitsGroup() {
+                return getSelectedOperationalLimitsGroup().orElseGet(() -> {
+                    String groupId = "DEFAULT";
+                    OperationalLimitsGroup group = getOperationalLimitsGroup(groupId)
+                            .orElseGet(() -> newOperationalLimitsGroup(groupId));
+                    setSelectedOperationalLimitsGroup(groupId);
+                    return group;
+                });
+            }
+
+            @Override
             public Optional<ActivePowerLimits> getActivePowerLimits() {
                 return branch.getActivePowerLimits(side);
             }

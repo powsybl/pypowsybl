@@ -4389,7 +4389,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **name**: an optional human-readable name
             - **b_max**: the maximum susceptance, in S
             - **b_min**: the minimum susceptance, in S
-            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
+            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER)
+            - **regulating**: True if the regulation is active
             - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
             - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
 
@@ -4400,7 +4401,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 network.create_static_var_compensators(id='CS-1', voltage_level_id='VL1', bus_id='B1',
                                                        b_min=-0.01, b_max=0.01, regulation_mode='VOLTAGE',
-                                                       target_v=400.0)
+                                                       regulating=True, target_v=400.0)
         """
         return self._create_elements(ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 

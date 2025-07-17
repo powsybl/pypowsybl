@@ -776,6 +776,7 @@ public final class NetworkDataframes {
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
+                .booleans("regulating", StaticVarCompensator::isRegulating, StaticVarCompensator::setRegulating)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
                         (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
                 .doubles("p", getPerUnitP(), setPerUnitP())

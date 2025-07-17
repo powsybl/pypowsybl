@@ -279,9 +279,9 @@ def test_get_static_var_compensators_per_unit():
         n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
     n.update_static_var_compensators(pd.DataFrame.from_records(
@@ -290,9 +290,9 @@ def test_get_static_var_compensators_per_unit():
 
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
 

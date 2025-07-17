@@ -45,7 +45,7 @@ class EventModelsAdderTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("eventProvider")
     void testEventAdders(EventMappingType mappingType, Consumer<DefaultUpdatingDataframe> updateDataframe) {
-        Network network = EurostagTutorialExample1Factory.create();
+        Network network = EurostagTutorialExample1Factory.createWithLFResults();
         dataframe.addSeries(START_TIME, false, new TestDoubleSeries(10));
         updateDataframe.accept(dataframe);
         EventMappingHandler.addElements(mappingType, eventModelsSupplier, dataframe);
