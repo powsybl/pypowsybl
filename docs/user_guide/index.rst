@@ -20,3 +20,4 @@ relying as much as possible on practical examples.
    dynamic
    shortcircuit
    voltage_initializer
+   advanced_parameters

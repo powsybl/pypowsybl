@@ -70,6 +70,7 @@ import org.graalvm.word.WordFactory;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -116,11 +117,13 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "createNetwork")
-    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, boolean allowVariantMultiThreadAccess,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String networkName = CTypeUtil.toString(name);
             String networkId = CTypeUtil.toString(id);
             Network network = Networks.create(networkName, networkId);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -163,11 +166,26 @@ public final class NetworkCFunctions {
         return importConfig;
     }
 
+    @CEntryPoint(name = "isNetworkLoadable")
+    public static boolean isNetworkLoadable(IsolateThread thread, CCharPointer file, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String fileStr = CTypeUtil.toString(file);
+            ReadOnlyDataSource dataSource = DataSource.fromPath(Path.of(fileStr));
+            for (Importer importer : Importer.list()) {
+                if (importer.exists(dataSource)) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
     @CEntryPoint(name = "loadNetwork")
     public static ObjectHandle loadNetwork(IsolateThread thread, CCharPointer file, CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                            CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                            CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
                                            ObjectHandle reportNodeHandle,
+                                           boolean allowVariantMultiThreadAccess,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileStr = CTypeUtil.toString(file);
@@ -178,6 +196,7 @@ public final class NetworkCFunctions {
             }
             var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
             Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -188,6 +207,7 @@ public final class NetworkCFunctions {
                                                      CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                      CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
                                                      ObjectHandle reportNodeHandle,
+                                                     boolean allowVariantMultiThreadAccess,
                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String fileNameStr = CTypeUtil.toString(fileName);
@@ -200,6 +220,7 @@ public final class NetworkCFunctions {
                 }
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+                network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
                 return ObjectHandles.getGlobal().create(network);
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -213,6 +234,7 @@ public final class NetworkCFunctions {
                                                             CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                             CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
                                                             ObjectHandle reportNodeHandle,
+                                                            boolean allowVariantMultiThreadAccess,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
@@ -248,6 +270,7 @@ public final class NetworkCFunctions {
             var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
             // FIXME there is no way to pass the import config with powsybl 2024.2.0. To FIX when upgrading to next release.
             Network network = Network.read(dataSource, parameters, reportNode);
+            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
             return ObjectHandles.getGlobal().create(network);
         });
     }
@@ -1483,6 +1506,54 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             return createCharPtrArray(NetworkAreaDiagramUtil.getDisplayedVoltageLevels(network, voltageLevelIds, depth));
+        });
+    }
+
+    private static SvgParameters getNadSvgParsForDefaultLabels() {
+        return new SvgParameters()
+                .setSvgWidthAndHeightAdded(true)
+                .setEdgeNameDisplayed(true)
+                .setVoltageLevelDetails(true)
+                .setBusLegend(true);
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultBranchLabels")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultBranchLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            Map<String, CustomLabelProvider.BranchLabels> labelMap = NetworkAreaDiagramUtil.getBranchLabelsMap(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BRANCH_LABELS_MAPPER, labelMap);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultThreeWtLabels")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultThreeWtLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            Map<String, CustomLabelProvider.ThreeWtLabels> labelMap = NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.TWT_LABELS_MAPPER, labelMap);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultBusDescriptions")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultBusDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            Map<String, String> labelMap = NetworkAreaDiagramUtil.getBusDescriptionsMap(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BUS_DESCRIPTIONS_MAPPER, labelMap);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultVlDescriptions")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultVlDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            List<NetworkAreaDiagramUtil.VlInfos> vlInfos = NetworkAreaDiagramUtil.getVlDescriptionsWithType(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.VL_DESCRIPTIONS_MAPPER, vlInfos);
         });
     }
 

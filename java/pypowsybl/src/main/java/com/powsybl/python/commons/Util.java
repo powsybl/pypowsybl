@@ -75,9 +75,13 @@ public final class Util {
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side
-        String message = t.getMessage();
-        String nonNullMessage = message == null || message.isEmpty() ? t.toString() : message;
+        String nonNullMessage = getNonNullMessage(t);
         exceptionHandlerPtr.setMessage(CTypeUtil.toCharPtr(nonNullMessage));
+    }
+
+    public static String getNonNullMessage(Throwable t) {
+        String message = t.getMessage();
+        return message == null || message.isEmpty() ? t.toString() : message;
     }
 
     public static void doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, Runnable runnable) {
@@ -150,10 +154,19 @@ public final class Util {
     }
 
     public static void freeCharPtrArray(ArrayPointer<CCharPointerPointer> array) {
-        for (int i = 0; i < array.getLength(); i++) {
-            UnmanagedMemory.free(array.getPtr().read(i));
+        freeCharPtrPtr(array.getPtr(), array.getLength());
+    }
+
+    public static void freeCharPtrPtr(CCharPointerPointer ptr, int length) {
+        for (int i = 0; i < length; i++) {
+            UnmanagedMemory.free(ptr.read(i));
         }
-        UnmanagedMemory.free(array.getPtr());
+        UnmanagedMemory.free(ptr);
+    }
+
+    public static void freeProviderParameters(ProviderParameters parameters) {
+        freeCharPtrPtr(parameters.getProviderParametersKeys(), parameters.getProviderParametersKeysCount());
+        freeCharPtrPtr(parameters.getProviderParametersValues(), parameters.getProviderParametersValuesCount());
     }
 
     /**

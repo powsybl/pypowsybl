@@ -33,6 +33,7 @@
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
+        <monitoring.version>6.4.0</monitoring.version>
     </properties>
 
     <build>
@@ -163,6 +164,10 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>${commons-csv.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.re2j</groupId>
+            <artifactId>re2j</artifactId>
         </dependency>
         <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
         <dependency>
@@ -376,6 +381,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
             <version>${zstdjni.version}</version>
@@ -403,6 +413,11 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-rao-result-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>monitoring</artifactId>
+            <version>${monitoring.version}</version>
         </dependency>
     </dependencies>
 </project>

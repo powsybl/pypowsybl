@@ -21,7 +21,7 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_disconnection(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_disconnection(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates an equipment disconnection event
 
         Args:
@@ -48,7 +48,7 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.DISCONNECT, df, **kwargs)
 
-    def add_active_power_variation(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_active_power_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates an equipment active power variation event
 
         Args:
@@ -75,7 +75,7 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.ACTIVE_POWER_VARIATION, df, **kwargs)
 
-    def add_node_fault(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_node_fault(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates a bus node fault event
 
         Args:

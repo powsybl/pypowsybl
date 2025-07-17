@@ -20,6 +20,8 @@ import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.security.*;
 import com.powsybl.security.condition.*;
+import com.powsybl.security.converter.SecurityAnalysisResultExporter;
+import com.powsybl.security.converter.SecurityAnalysisResultExporters;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.OperatorStrategyResult;
 import com.powsybl.security.results.PostContingencyResult;
@@ -38,6 +40,9 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -247,6 +252,23 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "exportToJson")
+    public static void exportToJson(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, CCharPointer jsonFilePath,
+                                     PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            try {
+                Writer writer = Files.newBufferedWriter(path);
+                SecurityAnalysisResultExporter exporter = SecurityAnalysisResultExporters.getExporter("JSON");
+                exporter.export(result, writer);
+            } catch (IOException e) {
+                throw new PowsyblException(e);
+            }
+        });
+    }
+
     @CEntryPoint(name = "getPostContingencyResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.PostContingencyResultPointer> getPostContingencyResults(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -321,6 +343,7 @@ public final class SecurityAnalysisCFunctions {
     public static void freeSecurityAnalysisParameters(IsolateThread thread, SecurityAnalysisParametersPointer parameters,
                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parameters.getProviderParameters());
             LoadFlowCUtils.freeLoadFlowParametersContent(parameters.getLoadFlowParameters());
             UnmanagedMemory.free(parameters);
         });
@@ -339,8 +362,8 @@ public final class SecurityAnalysisCFunctions {
         paramsPtr.setHighVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getHighVoltageProportionalThreshold());
         paramsPtr.setLowVoltageAbsoluteThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageAbsoluteThreshold());
         paramsPtr.setLowVoltageProportionalThreshold(parameters.getIncreasedViolationsParameters().getLowVoltageProportionalThreshold());
-        paramsPtr.setProviderParametersValuesCount(0);
-        paramsPtr.setProviderParametersKeysCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
+        paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
     }
 
@@ -460,6 +483,17 @@ public final class SecurityAnalysisCFunctions {
         });
     }
 
+    @CEntryPoint(name = "addActionFromJsonFile")
+    public static void addActionFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addActionFromJsonFile(path);
+        });
+    }
+
     @CEntryPoint(name = "addTerminalsConnectionAction")
     public static void addTerminalsConnectionAction(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                          CCharPointer actionId, CCharPointer elementId, PyPowsyblApiHeader.ThreeSideType side,
@@ -497,6 +531,17 @@ public final class SecurityAnalysisCFunctions {
             OperatorStrategy op = new OperatorStrategy(operationStrategyIdStr,
                     ContingencyContext.specificContingency(contingencyIdStr), condition, actionsStrList);
             analysisContext.addOperatorStrategy(op);
+        });
+    }
+
+    @CEntryPoint(name = "addOperatorStrategyFromJsonFile")
+    public static void addOperatorStrategyFromJsonFile(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
+                                             CCharPointer jsonFilePath, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
+            String stringPath = CTypeUtil.toString(jsonFilePath);
+            Path path = Paths.get(stringPath);
+            analysisContext.addOperatorStrategyFromJsonFile(path);
         });
     }
 

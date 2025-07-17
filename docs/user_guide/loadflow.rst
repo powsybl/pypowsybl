@@ -47,7 +47,7 @@ Let's have a look at the default ones:
 .. doctest::
 
     >>> lf.Parameters()
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, dc_power_factor=1.0, provider_parameters={})
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, hvdc_ac_emulation=True, dc_power_factor=1.0, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
@@ -177,3 +177,35 @@ We can finally retrieve the computed flows on lines:
     NHV1_NHV2_1  300.0 -300.0
     NHV1_NHV2_2  300.0 -300.0
 
+
+Asynchronous API
+----------------
+
+An asynchronous API based on Python's asyncio has been added for AC loadflow calculations (DC loadflow support will be added in a future release). The following example demonstrates how to:
+ - Load a network
+ - Create two identical variants from the initial state
+ - Run AC loadflow calculations on both variants concurrently
+ - Wait for both results and display their convergence status
+
+Both loadflow calculations are executed in parallel using Python's asyncio API.
+
+
+.. caution::
+   The network has to be loaded using a special parameter `allow_variant_multi_thread_access` to `True` to be able
+   to work on multiple variants of a same network concurrently using different threads.
+
+.. doctest::
+
+    >>> import asyncio
+    >>> async def run_2_lf():
+    ...     lf1 = lf.run_ac_async(network, "variant1")
+    ...     lf2 = lf.run_ac_async(network, "variant2")
+    ...     results = await asyncio.gather(lf1, lf2)
+    ...     print(results[0][0].status)
+    ...     print(results[1][0].status)
+    >>> network = pn.create_ieee14(allow_variant_multi_thread_access=True)
+    >>> network.clone_variant("InitialState", "variant1")
+    >>> network.clone_variant("InitialState", "variant2")
+    >>> asyncio.run(run_2_lf())
+    ComponentStatus.CONVERGED
+    ComponentStatus.CONVERGED
