@@ -400,7 +400,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
     // topo optimization parameters
     max_preventive_search_tree_depth = src->max_preventive_search_tree_depth;
-    max_auto_search_tree_depth = src->max_auto_search_tree_depth;
     max_curative_search_tree_depth = src->max_curative_search_tree_depth;
     // Missing predefinedCombinations (list of list of string..)
     predefined_combinations = arrayToStringVectorVector(src->predefined_combinations);
@@ -452,7 +451,6 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
 
     // topo optimization parameters
     res.max_preventive_search_tree_depth = max_preventive_search_tree_depth;
-    res.max_auto_search_tree_depth = max_auto_search_tree_depth;
     res.max_curative_search_tree_depth = max_curative_search_tree_depth;
     // Missing predefinedCombinations (list of list of string..)
     res.predefined_combinations = stringVectorVectorToArray(predefined_combinations);

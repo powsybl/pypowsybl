@@ -10,6 +10,7 @@ package com.powsybl.python.network;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.iidm.network.*;
+import com.powsybl.nad.layout.LayoutParameters;
 import com.powsybl.nad.model.Identifiable;
 import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.NetworkAreaDiagram;
@@ -165,7 +166,7 @@ public final class NetworkAreaDiagramUtil {
 
     public static Map<String, CustomLabelProvider.BranchLabels> getBranchLabelsMap(Network network, SvgParameters pars) {
         LabelProvider labelProvider = new DefaultLabelProvider(network, pars);
-        Graph graph = new NetworkGraphBuilder(network).buildGraph();
+        Graph graph = new NetworkGraphBuilder(network, new LayoutParameters()).buildGraph();
         return NetworkAreaDiagramUtil.getBranchLabelsMap(graph, labelProvider);
     }
 
@@ -215,7 +216,7 @@ public final class NetworkAreaDiagramUtil {
 
     public static Map<String, CustomLabelProvider.ThreeWtLabels> getThreeWtBranchLabelsMap(Network network, SvgParameters pars) {
         LabelProvider labelProvider = new DefaultLabelProvider(network, pars);
-        Graph graph = new NetworkGraphBuilder(network).buildGraph();
+        Graph graph = new NetworkGraphBuilder(network, new LayoutParameters()).buildGraph();
         return NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(graph, labelProvider);
     }
 
@@ -230,7 +231,7 @@ public final class NetworkAreaDiagramUtil {
 
     public static Map<String, String> getBusDescriptionsMap(Network network, SvgParameters pars) {
         LabelProvider labelProvider = new DefaultLabelProvider(network, pars);
-        Graph graph = new NetworkGraphBuilder(network).buildGraph();
+        Graph graph = new NetworkGraphBuilder(network, new LayoutParameters()).buildGraph();
         return NetworkAreaDiagramUtil.getBusDescriptionsMap(graph, labelProvider);
     }
 
@@ -344,7 +345,7 @@ public final class NetworkAreaDiagramUtil {
         Objects.requireNonNull(network);
         Objects.requireNonNull(svgParameters);
         LabelProvider labelProvider = new DefaultLabelProvider(network, svgParameters);
-        Graph graph = new NetworkGraphBuilder(network).buildGraph();
+        Graph graph = new NetworkGraphBuilder(network, new LayoutParameters()).buildGraph();
         return getVlDescriptionsWithType(NetworkAreaDiagramUtil.getVoltageLevelDescriptionsMap(graph, labelProvider), NetworkAreaDiagramUtil.getVoltageLevelDetailsMap(graph, labelProvider));
 
     }
