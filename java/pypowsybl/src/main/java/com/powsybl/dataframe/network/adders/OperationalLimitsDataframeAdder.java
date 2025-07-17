@@ -242,7 +242,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimitsAdder newCurrentLimits() {
-                return side == TwoSides.ONE ? branch.() : branch.newCurrentLimits2();
+                return side == TwoSides.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
             }
 
             @Override
