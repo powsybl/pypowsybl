@@ -26,6 +26,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         SeriesMetadata.booleans("fictitious"),
         SeriesMetadata.strings("group_name")
     );
+    private static final String DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME = "DEFAULT";
 
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
@@ -211,7 +212,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             @Override
             public OperationalLimitsGroup getOrCreateSelectedOperationalLimitsGroup() {
                 return getSelectedOperationalLimitsGroup().orElseGet(() -> {
-                    String groupId = "DEFAULT";
+                    String groupId = DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME;
                     OperationalLimitsGroup group = getOperationalLimitsGroup(groupId)
                             .orElseGet(() -> newOperationalLimitsGroup(groupId));
                     setSelectedOperationalLimitsGroup(groupId);
@@ -241,7 +242,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public CurrentLimitsAdder newCurrentLimits() {
-                return side == TwoSides.ONE ? branch.newCurrentLimits1() : branch.newCurrentLimits2();
+                return side == TwoSides.ONE ? branch.() : branch.newCurrentLimits2();
             }
 
             @Override
@@ -295,9 +296,9 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         FlowsLimitsHolder limitsHolder = getLimitsHolder(network, elementId, side);
         OperationalLimitsGroup group;
         if (groupId == null) {
-            String selectedGroupId = limitsHolder.getSelectedOperationalLimitsGroupId().orElse("DEFAULT");
+            String selectedGroupId = limitsHolder.getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME);
             group = limitsHolder.getSelectedOperationalLimitsGroup()
-                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup("DEFAULT"));
+                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup(DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME));
             limitsHolder.setSelectedOperationalLimitsGroup(selectedGroupId);
         } else {
             group = limitsHolder.getOperationalLimitsGroup(groupId)
