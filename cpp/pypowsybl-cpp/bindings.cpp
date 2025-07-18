@@ -714,6 +714,18 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
 
+    m.def("get_default_branch_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultBranchLabels, "Get network area diagram default branch labels",
+        py::arg("network"));
+
+    m.def("get_default_twt_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultTwtLabels, "Get network area diagram default twt labels",
+            py::arg("network"));
+
+    m.def("get_default_bus_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultBusDescriptions, "Get network area diagram default bus descriptions",
+        py::arg("network"));
+
+    m.def("get_default_voltage_level_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultVoltageLevelDescriptions, "Get network area diagram default voltage level descriptions",
+        py::arg("network"));
+    
     m.def("create_security_analysis", &pypowsybl::createSecurityAnalysis, "Create a security analysis");
 
     m.def("add_contingency", &pypowsybl::addContingency, "Add a contingency to a security analysis or sensitivity analysis",
@@ -795,7 +807,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<RaoComputationStatus>(m, "RaoComputationStatus")
             .value("DEFAULT", RaoComputationStatus::DEFAULT)
-            .value("FAILURE", RaoComputationStatus::FAILURE);
+            .value("FAILURE", RaoComputationStatus::FAILURE)
+            .value("PARTIAL_FAILURE", RaoComputationStatus::PARTIAL_FAILURE);
 
     py::enum_<pypowsybl::ObjectiveFunctionType>(m, "ObjectiveFunctionType", "")
             .value("SECURE_FLOW", pypowsybl::ObjectiveFunctionType::SECURE_FLOW, "")
@@ -850,7 +863,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("pst_model", &pypowsybl::RaoParameters::pst_model)
             .def_readwrite("ra_range_shrinking", &pypowsybl::RaoParameters::ra_range_shrinking)
             .def_readwrite("max_preventive_search_tree_depth", &pypowsybl::RaoParameters::max_preventive_search_tree_depth)
-            .def_readwrite("max_auto_search_tree_depth", &pypowsybl::RaoParameters::max_auto_search_tree_depth)
             .def_readwrite("max_curative_search_tree_depth", &pypowsybl::RaoParameters::max_curative_search_tree_depth)
             .def_readwrite("predefined_combinations", &pypowsybl::RaoParameters::predefined_combinations)
             .def_readwrite("relative_min_impact_threshold", &pypowsybl::RaoParameters::relative_min_impact_threshold)

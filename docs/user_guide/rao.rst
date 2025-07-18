@@ -52,7 +52,7 @@ Outputs of a RAO
 The RAO results can be explored through the `RaoResult` object returned by the run function of the rao runner.
 Results are exposed in pandas dataframe format using the following API.
 
-Retrieve the global result status (can be DEFAULT or FAILURE):
+Retrieve the global result status (can be DEFAULT, FAILURE or PARTIAL_FAILURE):
 
 .. doctest::
 
@@ -122,7 +122,7 @@ Cost for a given virtual cost name is returned as a pandas dataframe with cost v
     >>> sensi_cost.columns
     Index(['sensitivity-failure-cost'], dtype='object')
     >>> sensi_cost.loc['curative', 'sensitivity-failure-cost']
-    0.0
+    np.float64(0.0)
 
 The 'RaoResult' object can also be serialized to json:
 

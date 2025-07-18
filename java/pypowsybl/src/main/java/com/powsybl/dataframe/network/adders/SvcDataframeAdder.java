@@ -10,6 +10,7 @@ package com.powsybl.dataframe.network.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.DoubleSeries;
+import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -23,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.powsybl.dataframe.network.adders.NetworkUtils.getVoltageLevelOrThrowWithBusOrBusbarSectionId;
+import static com.powsybl.dataframe.network.adders.SeriesUtils.applyBooleanIfPresent;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -42,6 +44,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("b_max"),
             SeriesMetadata.doubles("b_min"),
             SeriesMetadata.strings("regulation_mode"),
+            SeriesMetadata.booleans("regulating"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.strings("regulating_element_id")
@@ -58,6 +61,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries bMin;
         private final DoubleSeries bMax;
         private final StringSeries regulationModes;
+        private final IntSeries regulating;
         private final DoubleSeries targetV;
         private final DoubleSeries targetQ;
         private final StringSeries busOrBusbarSections;
@@ -71,6 +75,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
             this.targetQ = dataframe.getDoubles("target_q");
             this.targetV = dataframe.getDoubles("target_v");
             this.regulationModes = dataframe.getStrings("regulation_mode");
+            this.regulating = dataframe.getInts("regulating");
             this.busOrBusbarSections = dataframe.getStrings("bus_or_busbar_section_id");
             this.regulatingElements = dataframe.getStrings("regulating_element_id");
         }
@@ -85,6 +90,7 @@ public class SvcDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(targetQ, row, adder::setReactivePowerSetpoint);
                 applyIfPresent(targetV, row, adder::setVoltageSetpoint);
                 applyIfPresent(regulationModes, row, StaticVarCompensator.RegulationMode.class, adder::setRegulationMode);
+                applyBooleanIfPresent(regulating, row, adder::setRegulating);
                 applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
                         .setRegulatingTerminal(adder::setRegulatingTerminal, network, elementId));
                 return Optional.of(adder);

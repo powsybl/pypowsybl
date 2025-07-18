@@ -544,7 +544,6 @@ public:
 
     // topo optimization parameters
     int max_preventive_search_tree_depth;
-    int max_auto_search_tree_depth;
     int max_curative_search_tree_depth;
     std::vector<std::vector<std::string>> predefined_combinations;
     // Missing predefinedCombinations (list of list of string..)
@@ -701,6 +700,14 @@ std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& n
     dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles);
 
 std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaHandle& network, const std::vector<std::string>& voltageLevelIds, int depth);
+
+SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultVoltageLevelDescriptions(const JavaHandle& network);
 
 JavaHandle createSecurityAnalysis();
 

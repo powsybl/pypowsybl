@@ -4,14 +4,14 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Callable
+from typing import List, Callable, Optional
 from pypowsybl import _pypowsybl
 
 class ContingencyContainer:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def add_single_element_contingency(self, element_id: str, contingency_id: str = None) -> None:
+    def add_single_element_contingency(self, element_id: str, contingency_id:  Optional[str] = None) -> None:
         """
         Add one N-1 contingency.
 
@@ -33,7 +33,7 @@ class ContingencyContainer:
         _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
     def add_single_element_contingencies(self, elements_ids: List[str],
-                                         contingency_id_provider: Callable[[str], str] = None) -> None:
+                                         contingency_id_provider: Optional[Callable[[str], str]] = None) -> None:
         """
         Add multiple N-1 contingencies.
 

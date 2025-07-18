@@ -51,7 +51,7 @@ import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
-import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.SldComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
@@ -1030,7 +1030,7 @@ public final class NetworkCFunctions {
         SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters()
                 .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory()
                         : new NominalVoltageStyleProviderFactory())
-                .setComponentLibrary(ComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
+                .setComponentLibrary(SldComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
         sldParameters.getSvgParameters()
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
@@ -1533,6 +1533,54 @@ public final class NetworkCFunctions {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
             return createCharPtrArray(NetworkAreaDiagramUtil.getDisplayedVoltageLevels(network, voltageLevelIds, depth));
+        });
+    }
+
+    private static SvgParameters getNadSvgParsForDefaultLabels() {
+        return new SvgParameters()
+                .setSvgWidthAndHeightAdded(true)
+                .setEdgeNameDisplayed(true)
+                .setVoltageLevelDetails(true)
+                .setBusLegend(true);
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultBranchLabels")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultBranchLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            Map<String, CustomLabelProvider.BranchLabels> labelMap = NetworkAreaDiagramUtil.getBranchLabelsMap(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BRANCH_LABELS_MAPPER, labelMap);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultThreeWtLabels")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultThreeWtLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            Map<String, CustomLabelProvider.ThreeWtLabels> labelMap = NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.TWT_LABELS_MAPPER, labelMap);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultBusDescriptions")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultBusDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            Map<String, String> labelMap = NetworkAreaDiagramUtil.getBusDescriptionsMap(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BUS_DESCRIPTIONS_MAPPER, labelMap);
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultVlDescriptions")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultVlDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            SvgParameters pars = getNadSvgParsForDefaultLabels();
+            List<NetworkAreaDiagramUtil.VlInfos> vlInfos = NetworkAreaDiagramUtil.getVlDescriptionsWithType(network, pars);
+            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.VL_DESCRIPTIONS_MAPPER, vlInfos);
         });
     }
 
