@@ -49,7 +49,7 @@ jobs:
 
       - name: Install Maven
         run: |
-          wget -q https://dlcdn.apache.org/maven/maven-3/3.9./binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
+          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
           echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
 

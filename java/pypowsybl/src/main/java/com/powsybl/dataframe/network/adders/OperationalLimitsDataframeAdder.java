@@ -9,6 +9,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.network.TemporaryLimitData;
 import gnu.trove.list.array.TIntArrayList;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 
@@ -211,13 +212,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
 
             @Override
             public OperationalLimitsGroup getOrCreateSelectedOperationalLimitsGroup() {
-                return getSelectedOperationalLimitsGroup().orElseGet(() -> {
-                    String groupId = DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME;
-                    OperationalLimitsGroup group = getOperationalLimitsGroup(groupId)
-                            .orElseGet(() -> newOperationalLimitsGroup(groupId));
-                    setSelectedOperationalLimitsGroup(groupId);
-                    return group;
-                });
+                throw new NotImplementedException();
             }
 
             @Override
