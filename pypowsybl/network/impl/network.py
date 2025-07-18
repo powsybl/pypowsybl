@@ -4539,7 +4539,8 @@ class Network:  # pylint: disable=too-many-public-methods
             - **name**: an optional human-readable name
             - **b_max**: the maximum susceptance, in S
             - **b_min**: the minimum susceptance, in S
-            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER, OFF)
+            - **regulation_mode**: the regulation mode (VOLTAGE, REACTIVE_POWER)
+            - **regulating**: True if the regulation is active
             - **target_v**: the target voltage, in kV, when the regulation mode is VOLTAGE
             - **target_q**: the target reactive power, in MVar, when the regulation mode is not VOLTAGE
 
@@ -4550,7 +4551,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 network.create_static_var_compensators(id='CS-1', voltage_level_id='VL1', bus_id='B1',
                                                        b_min=-0.01, b_max=0.01, regulation_mode='VOLTAGE',
-                                                       target_v=400.0)
+                                                       regulating=True, target_v=400.0)
         """
         return self._create_elements(ElementType.STATIC_VAR_COMPENSATOR, [df], **kwargs)
 
@@ -4943,7 +4944,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **on_load**: true if the transformer has on-load voltage regulation capability
             - **target_v**: the target voltage, in kV
             - **target_deadband**: the target voltage regulation deadband, in kV
-            - **regulating**: true if the tap changer should regulate voltage
+            - **regulating**: true if the tap changer should regulate voltage (**on_load** must be true to set this to true)
             - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
               or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)

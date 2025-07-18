@@ -51,7 +51,7 @@ import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
-import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.SldComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.model.nodes.NodeSide;
 import com.powsybl.sld.svg.CustomLabelProvider.CustomFeederInfos;
@@ -1034,7 +1034,7 @@ public final class NetworkCFunctions {
         SldParameters sldParameters = SingleLineDiagramUtil.createSldParameters()
                 .setStyleProviderFactory(sldParametersPtr.isTopologicalColoring() ? new DefaultStyleProviderFactory()
                         : new NominalVoltageStyleProviderFactory())
-                .setComponentLibrary(ComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
+                .setComponentLibrary(SldComponentLibrary.find(componentLibraryName).orElseGet(ConvergenceComponentLibrary::new));
         sldParameters.getSvgParameters()
                 .setUseName(sldParametersPtr.isUseName())
                 .setLabelCentered(sldParametersPtr.isCenterName())
@@ -1443,6 +1443,8 @@ public final class NetworkCFunctions {
                 customBusDescriptions = Collections.emptyMap();
             }
 
+            final Map<String, CustomLabelProvider.InjectionLabels> injectionlabels = Collections.emptyMap();
+
             final Map<String, List<String>> customVlDescriptions;
             final Map<String, List<String>> customVlDetails;
             if (customVlDescriptionsDataframe != null) {
@@ -1459,7 +1461,7 @@ public final class NetworkCFunctions {
                 customVlDetails = Collections.emptyMap();
             }
             nadParameters.setLabelProviderFactory((network, svgParameters) ->
-                    new CustomLabelProvider(branchLabels, customThreeWtLabels, customBusDescriptions, customVlDescriptions, customVlDetails));
+                    new CustomLabelProvider(branchLabels, customThreeWtLabels, injectionlabels, customBusDescriptions, customVlDescriptions, customVlDetails));
         }
     }
 

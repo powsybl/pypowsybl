@@ -7,7 +7,6 @@ from typing import List, Optional
 
 class TopoOptimizationParameters:
     def __init__(self, max_preventive_search_tree_depth: Optional[int] = None,
-                 max_auto_search_tree_depth: Optional[int] = None,
                  max_curative_search_tree_depth: Optional[int] = None,
                  predefined_combinations: Optional[List[List[str]]] = None,
                  relative_min_impact_threshold: Optional[float] = None,
@@ -21,8 +20,6 @@ class TopoOptimizationParameters:
             self._init_with_default_values()
         if max_preventive_search_tree_depth is not None:
             self.max_preventive_search_tree_depth = max_preventive_search_tree_depth
-        if max_auto_search_tree_depth is not None:
-            self.max_auto_search_tree_depth = max_auto_search_tree_depth
         if max_curative_search_tree_depth is not None:
             self.max_curative_search_tree_depth = max_curative_search_tree_depth
         if predefined_combinations is not None:
@@ -41,7 +38,6 @@ class TopoOptimizationParameters:
 
     def _init_from_c(self, c_parameters: RaoParameters) -> None:
         self.max_preventive_search_tree_depth = c_parameters.max_preventive_search_tree_depth
-        self.max_auto_search_tree_depth = c_parameters.max_auto_search_tree_depth
         self.max_curative_search_tree_depth = c_parameters.max_curative_search_tree_depth
         self.predefined_combinations = c_parameters.predefined_combinations
         self.relative_min_impact_threshold = c_parameters.relative_min_impact_threshold
@@ -52,7 +48,6 @@ class TopoOptimizationParameters:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
                f"max_preventive_search_tree_depth={self.max_preventive_search_tree_depth!r}" \
-               f", max_auto_search_tree_depth={self.max_auto_search_tree_depth!r}" \
                f", max_curative_search_tree_depth={self.max_curative_search_tree_depth!r}" \
                f", relative_min_impact_threshold={self.relative_min_impact_threshold!r}" \
                f", absolute_min_impact_threshold={self.absolute_min_impact_threshold!r}" \

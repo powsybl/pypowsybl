@@ -296,7 +296,7 @@ class NetworkElementAddersTest {
     @Test
     void svc() {
         var network = SvcTestCaseFactory.create();
-        var mode = StaticVarCompensator.RegulationMode.OFF;
+        var mode = StaticVarCompensator.RegulationMode.VOLTAGE;
         var dataframe = new DefaultUpdatingDataframe(1);
         addDoubleColumn(dataframe, "b_min", 0.0003);
         addDoubleColumn(dataframe, "b_max", 0.0009);
@@ -306,6 +306,7 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "voltage_level_id", "VL2");
         addStringColumn(dataframe, "connectable_bus_id", "B2");
         addStringColumn(dataframe, "regulation_mode", mode.name());
+        addIntColumn(dataframe, "regulating", 1);
         addStringColumn(dataframe, "bus_id", "B2");
         addIntColumn(dataframe, "section_count", 4);
         NetworkElementAdders.addElements(DataframeElementType.STATIC_VAR_COMPENSATOR, network, singletonList(dataframe));

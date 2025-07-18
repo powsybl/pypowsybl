@@ -806,7 +806,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::enum_<RaoComputationStatus>(m, "RaoComputationStatus")
             .value("DEFAULT", RaoComputationStatus::DEFAULT)
-            .value("FAILURE", RaoComputationStatus::FAILURE);
+            .value("FAILURE", RaoComputationStatus::FAILURE)
+            .value("PARTIAL_FAILURE", RaoComputationStatus::PARTIAL_FAILURE);
 
     py::enum_<pypowsybl::ObjectiveFunctionType>(m, "ObjectiveFunctionType", "")
             .value("SECURE_FLOW", pypowsybl::ObjectiveFunctionType::SECURE_FLOW, "")
@@ -861,7 +862,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("pst_model", &pypowsybl::RaoParameters::pst_model)
             .def_readwrite("ra_range_shrinking", &pypowsybl::RaoParameters::ra_range_shrinking)
             .def_readwrite("max_preventive_search_tree_depth", &pypowsybl::RaoParameters::max_preventive_search_tree_depth)
-            .def_readwrite("max_auto_search_tree_depth", &pypowsybl::RaoParameters::max_auto_search_tree_depth)
             .def_readwrite("max_curative_search_tree_depth", &pypowsybl::RaoParameters::max_curative_search_tree_depth)
             .def_readwrite("predefined_combinations", &pypowsybl::RaoParameters::predefined_combinations)
             .def_readwrite("relative_min_impact_threshold", &pypowsybl::RaoParameters::relative_min_impact_threshold)
