@@ -67,7 +67,7 @@ def create_extensions(n: Network, slack_weight_by_gen_id: Dict[str, float]) -> N
 
 def get_name(df: pd.DataFrame, name: str) -> pd.Series:
     name_col = df[name]
-    replace_none = np.vectorize(lambda x: '' if x is None else x, otypes=[np.string_])
+    replace_none = np.vectorize(lambda x: '' if x is None else x, otypes=[np.bytes_])
     name_cleaned = replace_none(name_col)
     return name_cleaned.astype(str)
 
@@ -300,9 +300,10 @@ def create_buses(n: Network, n_pdp: pandapowerNet) -> None:
         low_voltage_limit = n_pdp.bus['min_vm_pu'] * nominal_v if 'min_vm_pu' in n_pdp.bus.columns else None
         high_voltage_limit = n_pdp.bus['max_vm_pu'] * nominal_v if 'max_vm_pu' in n_pdp.bus.columns else None
         substation_id = ['s'] * len(n_pdp.bus)
-        # TODO topology kind should have a default value
+        # TODO: topology kind should have a default value
+        # None voltage limit values are well treated when creating DataFrame
         n.create_voltage_levels(id=vl_id, substation_id=substation_id, topology_kind=topology_kind, nominal_v=nominal_v,
-                                low_voltage_limit=low_voltage_limit, high_voltage_limit=high_voltage_limit)
+                                low_voltage_limit=low_voltage_limit, high_voltage_limit=high_voltage_limit) # type: ignore
         bus_id = build_bus_id(n_pdp.bus.index.astype(str))
         name = get_name(n_pdp.bus, 'name')
         n.create_buses(id=bus_id, name=name, voltage_level_id=vl_id)

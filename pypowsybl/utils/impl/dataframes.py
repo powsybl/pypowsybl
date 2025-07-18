@@ -11,7 +11,7 @@ Provides utility methods for dataframes handling:
  - creation of C API dataframes
  - ...
 """
-from typing import List, Dict as _Dict
+from typing import List, Dict as _Dict, Optional
 from typing import Optional as _Optional, Any as _Any
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
@@ -63,7 +63,7 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFra
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame = None, **kwargs: _Any) -> DataFrame:
+def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: Optional[DataFrame] = None, **kwargs: _Any) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """

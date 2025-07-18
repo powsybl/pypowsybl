@@ -32,7 +32,7 @@ class FlowDecomposition:
     def __get_contingency_id(self, contingency_id_provider: Optional[Callable[[str], str]], element_id: str) -> str:
         return contingency_id_provider(element_id) if contingency_id_provider else element_id
 
-    def add_single_element_contingency(self, element_id: str, contingency_id: str = None) -> FlowDecomposition:
+    def add_single_element_contingency(self, element_id: str, contingency_id:  Optional[str] = None) -> FlowDecomposition:
         """
         Add a contingency with a single element (1 N-1 state).
 
@@ -45,7 +45,7 @@ class FlowDecomposition:
         return self.add_multiple_elements_contingency(elements_ids=[element_id], contingency_id=contingency_id)
 
     def add_single_element_contingencies(self, element_ids: List[str],
-                                         contingency_id_provider: Callable[[str], str] = None) -> FlowDecomposition:
+                                         contingency_id_provider: Optional[Callable[[str], str]] = None) -> FlowDecomposition:
         """
         Add a contingency for each element (n N-1 states).
 
@@ -60,7 +60,7 @@ class FlowDecomposition:
         return self
 
     def add_multiple_elements_contingency(self, elements_ids: List[str],
-                                          contingency_id: str = None) -> FlowDecomposition:
+                                          contingency_id:  Optional[str] = None) -> FlowDecomposition:
         """
         Add a contingency with multiple elements (1 N-k state).
 
@@ -75,7 +75,7 @@ class FlowDecomposition:
         return self
 
     def add_monitored_elements(self, branch_ids: Union[List[str], str],
-                               contingency_ids: Union[List[str], str] = None,
+                               contingency_ids: Optional[Union[List[str], str]] = None,
                                contingency_context_type: ContingencyContextType = ContingencyContextType.ALL) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition.
@@ -150,8 +150,8 @@ class FlowDecomposition:
         _pypowsybl.add_additional_xnec_provider_for_flow_decomposition(self._handle, DefaultXnecProvider.ALL_BRANCHES)
         return self
 
-    def run(self, network: Network, flow_decomposition_parameters: Parameters = None,
-            load_flow_parameters: pypowsybl.loadflow.Parameters = None) -> pd.DataFrame:
+    def run(self, network: Network, flow_decomposition_parameters: Optional[Parameters] = None,
+            load_flow_parameters: Optional[pypowsybl.loadflow.Parameters] = None) -> pd.DataFrame:
         """
         Runs a flow decomposition.
 

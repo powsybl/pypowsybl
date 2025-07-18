@@ -4,12 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pypowsybl._pypowsybl import PyPowsyblError
 
 
 class Zone:
-    def __init__(self, id: str, shift_keys_by_injections_ids: Dict[str, float] = None):
+    def __init__(self, id: str, shift_keys_by_injections_ids: Optional[Dict[str, float]] = None):
         self._id = id
         self._shift_keys_by_injections_ids = {} if shift_keys_by_injections_ids is None else shift_keys_by_injections_ids
 

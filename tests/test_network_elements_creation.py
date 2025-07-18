@@ -203,6 +203,7 @@ def test_svc_creation():
                'node': 1,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
@@ -284,7 +285,7 @@ def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     rtc_df = dataframe_from_string("""
 id         target_deadband  target_v  on_load  low_tap  tap  regulating  regulated_side
-NGEN_NHV1                2       200    False        0    1        True             ONE
+NGEN_NHV1                2       200     True        0    1        True             ONE
 """)
 
     steps_df = dataframe_from_string("""
@@ -298,7 +299,7 @@ NGEN_NHV1  2  2  1  1  0.5
     rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
     assert rtc.target_deadband == 2
     assert rtc.target_v == 200
-    assert not rtc.on_load
+    assert rtc.on_load
     assert rtc.low_tap == 0
     assert rtc.tap == 1
     assert rtc.regulating
@@ -471,14 +472,15 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS', 'S_TEST']),
-                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected', 'fictitious'],
-                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True, False],
-                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
-                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
-                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False],
-                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', True, False]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'bus_breaker_bus_id', 'node',
+                                     'connected', 'fictitious'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 0, True, False],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_0', 0, True, False],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_1', 1, True, False],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', 'S2VL1_0', 0, True, False],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', 'S3VL1_0', 0, True, False],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', 'S4VL1_0', 0, True, False],
+                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 1, True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 

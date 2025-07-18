@@ -46,7 +46,7 @@ class SensitivityAnalysisResult:
         # remove rows corresponding to power transfer second zone
         return df.drop([TO_REMOVE], errors='ignore')
 
-    def get_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[
+    def get_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
         pd.DataFrame]:
         """
         Get the matrix of sensitivity values on the base case or on post contingency state.
@@ -70,7 +70,7 @@ class SensitivityAnalysisResult:
 
         return self.process_ptdf(df, matrix_id) # only used for PTDF
 
-    def get_reference_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None, reference_column_id: str = DEFAULT_REFERENCE_COLUMN_ID) -> Optional[pd.DataFrame]:
+    def get_reference_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None, reference_column_id: str = DEFAULT_REFERENCE_COLUMN_ID) -> Optional[pd.DataFrame]:
         """
         The reference values on the base case or on post contingency state.
 

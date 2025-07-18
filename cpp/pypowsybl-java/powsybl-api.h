@@ -70,6 +70,7 @@ typedef struct loadflow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    unsigned char hvdc_ac_emulation;
     double dc_power_factor;
 } loadflow_parameters;
 
@@ -466,6 +467,7 @@ typedef enum {
 typedef enum {
     DEFAULT = 0,
     FAILURE,
+    PARTIAL_FAILURE,
 } RaoComputationStatus;
 
 typedef enum {
@@ -551,7 +553,6 @@ typedef struct rao_parameters_struct {
   int ra_range_shrinking;
 
   int max_preventive_search_tree_depth; // topo optimization parameters
-  int max_auto_search_tree_depth;
   int max_curative_search_tree_depth;
   double relative_min_impact_threshold;
   double absolute_min_impact_threshold;
