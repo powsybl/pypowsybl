@@ -1441,6 +1441,7 @@ public final class NetworkDataframes {
                 .ints("low_tap", t -> t.getPtc().getLowTapPosition())
                 .ints("high_tap", t -> t.getPtc().getHighTapPosition())
                 .ints("step_count", t -> t.getPtc().getStepCount())
+                .booleans("on_load", t -> t.getPtc().hasLoadTapChangingCapabilities(), (t, v) -> t.getPtc().setLoadTapChangingCapabilities(v))
                 .booleans(REGULATING, t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
                 .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
                 .doubles("regulation_value", (t, context) -> t.getPtc().getRegulationValue(),

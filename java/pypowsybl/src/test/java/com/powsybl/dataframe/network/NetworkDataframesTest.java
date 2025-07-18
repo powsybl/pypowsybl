@@ -638,7 +638,7 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "side", "tap", "solved_tap_position", "low_tap", "high_tap", "step_count",
-                        "regulating", "regulation_mode", "regulation_value", "target_deadband", "regulating_bus_id");
+                        "on_load", "regulating", "regulation_mode", "regulation_value", "target_deadband", "regulating_bus_id");
     }
 
     @Test

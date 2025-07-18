@@ -1348,7 +1348,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **model_type**:
               - **max_section_count**: The maximum number of sections that may be switched on
-              - **section_count**: The current number of section that may be switched on
+              - **section_count**: The number of section in service (input for the computation)
+              - **solved_section_count**: The number of section in service (output of a computation, ``NaN`` before any loadflow)
               - **p**: the active flow on the shunt, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the shunt, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
@@ -2425,7 +2426,8 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **side**: the ratio tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
-              - **tap**: the current tap position
+              - **tap**: the current tap position (input of a loadflow)
+              - **solved_tap_position**: the tap position obtained after running a loadflow (``NaN`` before any computation)
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
               - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
@@ -2446,12 +2448,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === =================== ======= ======== ========== ======= ========== ======== =============== =================
+            \          side tap solved_tap_position low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
+            ========== ==== === =================== ======= ======== ========== ======= ========== ======== =============== =================
             id
-            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1                 NaN       0        2          3    True       True    158.0             0.0          VLLOAD_0
+            ========== ==== === =================== ======= ======== ========== ======= ========== ======== =============== =================
 
             .. code-block:: python
 
@@ -2460,12 +2462,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === =================== ======= ======== ========== ======= ========== ======== =============== ================= ==============
+            \          side tap solved_tap_position low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id regulated_side
+            ========== ==== === =================== ======= ======== ========== ======= ========== ======== =============== ================= ==============
             id
-            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1                 nan       0        2          3    True       True    158.0             0.0          VLLOAD_0            TWO
+            ========== ==== === =================== ======= ======== ========== ======= ========== ======== =============== ================= ==============
 
             .. code-block:: python
 
@@ -2501,10 +2503,12 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **side**: the phase tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
-              - **tap**: the current tap position
+              - **tap**: the current tap position (input of a loadflow)
+              - **solved_tap_position**: the tap position obtained after running a loadflow (``NaN`` before any computation)
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
               - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
+              - **on_load**: true if the tap changer has on-load regulation capability
               - **regulating**: true if the phase shifter is in regulation
               - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
@@ -2522,12 +2526,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
-            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== =================
+            \   side tap low_tap solved_tap_position high_tap step_count on_load regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== =================
             id
-            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0                 NaN       32         33    True     False CURRENT_LIMITER              NaN             NaN           S1VL1_0
+            === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== =================
 
             .. code-block:: python
 
@@ -2536,12 +2540,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
-            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== ================= ==============
+            \   side tap low_tap solved_tap_position high_tap step_count on_load regulating regulation_mode regulation_value target_deadband regulating_bus_id regulated_side
+            === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== ================= ==============
             id
-            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0                 NaN       32         33    True      False  CURRENT_LIMITER              NaN             NaN           S1VL1_0             ONE
+            === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== ================= ==============
 
             .. code-block:: python
 
