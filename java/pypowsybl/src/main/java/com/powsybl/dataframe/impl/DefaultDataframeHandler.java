@@ -10,6 +10,7 @@ package com.powsybl.dataframe.impl;
 import com.powsybl.dataframe.DataframeHandler;
 
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.function.Consumer;
 
 /**
@@ -54,6 +55,13 @@ public class DefaultDataframeHandler implements DataframeHandler {
     @Override
     public IntSeriesWriter newIntSeries(String name, int size) {
         int[] values = new int[size];
+        seriesConsumer.accept(new Series(name, values));
+        return (i, s) -> values[i] = s;
+    }
+
+    @Override
+    public OptionalIntSeriesWriter newOptionalIntSeries(String name, int size) {
+        OptionalInt[] values = new OptionalInt[size];
         seriesConsumer.accept(new Series(name, values));
         return (i, s) -> values[i] = s;
     }

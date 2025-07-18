@@ -764,6 +764,12 @@ public final class PyPowsyblApiHeader {
         @CFieldAddress("data")
         <T extends PointerBase> ArrayPointer<T> data();
 
+        @CField("mask")
+        CIntPointer getMask();
+
+        @CField("mask")
+        void setMask(CIntPointer mask);
+
         SeriesPointer addressOf(int index);
     }
 

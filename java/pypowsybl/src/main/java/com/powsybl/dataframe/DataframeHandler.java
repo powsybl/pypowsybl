@@ -7,6 +7,8 @@
  */
 package com.powsybl.dataframe;
 
+import java.util.OptionalInt;
+
 /**
  * Receives series data, is in charge of doing something with it,
  * typically writing to a data structure.
@@ -18,6 +20,11 @@ public interface DataframeHandler {
     @FunctionalInterface
     interface IntSeriesWriter {
         void set(int index, int value);
+    }
+
+    @FunctionalInterface
+    interface OptionalIntSeriesWriter {
+        void set(int index, OptionalInt value);
     }
 
     @FunctionalInterface
@@ -44,6 +51,8 @@ public interface DataframeHandler {
     StringSeriesWriter newStringSeries(String name, int size);
 
     IntSeriesWriter newIntSeries(String name, int size);
+
+    OptionalIntSeriesWriter newOptionalIntSeries(String name, int size);
 
     BooleanSeriesWriter newBooleanSeries(String name, int size);
 

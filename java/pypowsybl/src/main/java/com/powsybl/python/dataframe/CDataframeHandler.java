@@ -19,7 +19,8 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.PointerBase;
-import org.graalvm.word.WordFactory;
+
+import static org.graalvm.word.WordFactory.nullPointer;
 
 /**
  * Writes dataframe to C structures.
@@ -37,7 +38,7 @@ public class CDataframeHandler implements DataframeHandler {
     private int currentIndex;
 
     public CDataframeHandler() {
-        this.dataframePtr = WordFactory.nullPointer();
+        this.dataframePtr = nullPointer();
         this.currentIndex = 0;
     }
 
@@ -80,6 +81,21 @@ public class CDataframeHandler implements DataframeHandler {
     }
 
     @Override
+    public OptionalIntSeriesWriter newOptionalIntSeries(String name, int size) {
+        CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
+        CIntPointer maskPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
+        addOptionalSeries(name, size, dataPtr, maskPtr, INT_SERIES_TYPE);
+        return (i, v) -> {
+            if (v.isEmpty()) {
+                dataPtr.addressOf(i).write(0);
+                maskPtr.addressOf(i).write(1);
+            } else {
+                dataPtr.addressOf(i).write(v.getAsInt());
+            }
+        };
+    }
+
+    @Override
     public BooleanSeriesWriter newBooleanSeries(String name, int size) {
         CCharPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointer.class));
         addSeries(name, size, dataPtr, BOOLEAN_SERIES_TYPE);
@@ -94,20 +110,25 @@ public class CDataframeHandler implements DataframeHandler {
     }
 
     private void addSeries(String name, int count, PointerBase dataPtr, int type) {
-        addSeries(false, name, count, dataPtr, type);
+        addSeries(false, name, count, dataPtr, nullPointer(), type);
+    }
+
+    private void addOptionalSeries(String name, int count, PointerBase dataPtr, CIntPointer maskPtr, int type) {
+        addSeries(false, name, count, dataPtr, maskPtr, type);
     }
 
     private void addIndex(String name, int count, PointerBase dataPtr, int type) {
-        addSeries(true, name, count, dataPtr, type);
+        addSeries(true, name, count, dataPtr, nullPointer(), type);
     }
 
-    private void addSeries(boolean index, String name, int count, PointerBase dataPtr, int type) {
+    private void addSeries(boolean index, String name, int count, PointerBase dataPtr, CIntPointer maskPtr, int type) {
         SeriesPointer seriesPtrI = dataframePtr.getPtr().addressOf(currentIndex);
         seriesPtrI.setName(CTypeUtil.toCharPtr(name));
         seriesPtrI.setIndex(index);
         seriesPtrI.setType(type);
         seriesPtrI.data().setLength(count);
         seriesPtrI.data().setPtr(dataPtr);
+        seriesPtrI.setMask(maskPtr);
         currentIndex++;
     }
 }
