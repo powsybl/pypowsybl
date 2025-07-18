@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from os import PathLike
-from typing import Union
+from typing import Union, Any
 import pandas as pd
 import numpy as np
 from pypowsybl import _pypowsybl
@@ -15,7 +15,7 @@ PathOrStr = Union[str, PathLike]
 
 
 def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> pd.DataFrame:
-    series_dict = {}
+    series_dict: dict[str, Any] = {}
     index_data = []
     index_names = []
     for series in series_array:
