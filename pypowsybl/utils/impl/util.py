@@ -8,6 +8,7 @@
 from os import PathLike
 from typing import Union
 import pandas as pd
+import numpy as np
 from pypowsybl import _pypowsybl
 
 PathOrStr = Union[str, PathLike]
@@ -22,7 +23,10 @@ def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) ->
             index_data.append(series.data)
             index_names.append(series.name)
         else:
-            series_dict[series.name] = series.data
+            if series.mask.any():
+                series_dict[series.name] = np.ma.masked_array(series.data, series.mask)
+            else:
+                series_dict[series.name] = series.data
     if not index_names:
         raise ValueError('No index in returned dataframe')
     if len(index_names) == 1:

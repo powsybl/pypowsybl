@@ -428,6 +428,7 @@ public final class NetworkDataframes {
                 .enums("model_type", ShuntCompensatorModelType.class, ShuntCompensator::getModelType)
                 .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
                 .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
+                .optionalInts("solved_section_count", ShuntCompensator::findSolvedSectionCount)
                 .booleans("voltage_regulation_on", ShuntCompensator::isVoltageRegulatorOn, ShuntCompensator::setVoltageRegulatorOn)
                 .doubles("target_v", (sc, context) -> perUnitTargetV(context, sc.getTargetV(), sc.getRegulatingTerminal(), sc.getTerminal()),
                     (sc, v, context) -> sc.setTargetV(unPerUnitTargetV(context, v, sc.getRegulatingTerminal(), sc.getTerminal())))
@@ -1296,6 +1297,7 @@ public final class NetworkDataframes {
                 .stringsIndex("id", TapChangerRow::getId)
                 .strings("side", TapChangerRow::getSide)
                 .ints("tap", row -> row.getRtc().getTapPosition(), (row, p) -> row.getRtc().setTapPosition(p))
+                .optionalInts("solved_tap_position", row -> row.getRtc().findSolvedTapPosition())
                 .ints("low_tap", row -> row.getRtc().getLowTapPosition())
                 .ints("high_tap", row -> row.getRtc().getHighTapPosition())
                 .ints("step_count", row -> row.getRtc().getStepCount())
@@ -1435,6 +1437,7 @@ public final class NetworkDataframes {
                 .stringsIndex("id", TapChangerRow::getId)
                 .strings("side", TapChangerRow::getSide)
                 .ints("tap", t -> t.getPtc().getTapPosition(), (t, v) -> t.getPtc().setTapPosition(v))
+                .optionalInts("solved_tap_position", t -> t.getPtc().findSolvedTapPosition())
                 .ints("low_tap", t -> t.getPtc().getLowTapPosition())
                 .ints("high_tap", t -> t.getPtc().getHighTapPosition())
                 .ints("step_count", t -> t.getPtc().getStepCount())
