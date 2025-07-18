@@ -2544,7 +2544,7 @@ class Network:  # pylint: disable=too-many-public-methods
             \   side tap low_tap solved_tap_position high_tap step_count on_load regulating regulation_mode regulation_value target_deadband regulating_bus_id regulated_side
             === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== ================= ==============
             id
-            TWT       15       0                 NaN       32         33    True      False CURRENT_LIMITER              NaN             NaN           S1VL1_0             ONE
+            TWT       15       0                 NaN       32         33    True      False CURRENT_LIMITER              NaN             NaN           S1VL1_0            ONE
             === ==== === ======= =================== ======== ========== ======= ========== =============== ================ =============== ================= ==============
 
             .. code-block:: python
