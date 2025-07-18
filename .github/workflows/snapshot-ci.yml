@@ -2,6 +2,12 @@ name: Snapshot CI
 
 on:
   workflow_dispatch:
+    inputs:
+      testPackaging:
+        description: Test packaging operations
+        required: true
+        type: boolean
+        default: false
   schedule:
     - cron: '0 3 * * *'
 
@@ -73,6 +79,11 @@ jobs:
 
       - name: Build powsybl-core
         run: mvn -batch-mode --no-transfer-progress clean install -DskipTests
+        working-directory: ./powsybl-core
+
+      - name: Package powsybl-core
+        if: ${{ github.event_name == 'schedule' || inputs.testPackaging }}
+        run: mvn -batch-mode --no-transfer-progress package -Prelease -DskipTests
         working-directory: ./powsybl-core
 
       - name: Get powsybl-core version
