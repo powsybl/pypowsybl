@@ -1018,6 +1018,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
                     default:
                         throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
+            })
+            .def_property_readonly("mask", [](const series& s) {
+                if (s.mask != nullptr) {
+                    return py::array(py::dtype::of<int>(), s.data.length, s.mask, py::cast(s.mask));
+                } else {
+                    return py::array();
+                }
             });
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 

@@ -17,6 +17,7 @@ import com.powsybl.dataframe.impl.DefaultDataframeHandler;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.*;
+import com.powsybl.ieeecdf.converter.IeeeCdfNetworkFactory;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -383,21 +384,19 @@ class NetworkDataframesTest {
 
     @Test
     void shunts() {
-        Network network = IeeeCdfNetworkFactory.create14();
+        Network network = EurostagTutorialExample1Factory.create();
         List<Series> series = createDataFrame(SHUNT_COMPENSATOR, network);
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count",
-                        "solved_section_count", "voltage_regulation_on", "target_v", "target_deadband",
-                        "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
+                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on",
+                        "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(SHUNT_COMPENSATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count",
-                        "solved_section_count", "voltage_regulation_on", "target_v", "target_deadband",
-                        "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id",
-                        "node", "connected", "fictitious");
+                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on",
+                        "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i",
+                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
     }
 
     @Test
