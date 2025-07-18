@@ -889,18 +889,18 @@ def test_exception():
 def test_ratio_tap_changers():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 1, nan, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
                           data=[[0, False, 180]])
     n.update_ratio_tap_changers(update)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 0, nan, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
@@ -909,11 +909,11 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
-                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['TWO', 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
+                                  ['TWO', 17, 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
     update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('84ed55f4-61f5-4d9d-8755-bba7b877a246', 'TWO')],
@@ -925,11 +925,11 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
-                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
+                                  ['TWO', 9, 17, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
     steps = n.get_ratio_tap_changer_steps()
@@ -941,10 +941,11 @@ def test_ratio_tap_changers_3_windings():
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+            'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
+    assert pd.isna(twt_values.solved_tap_position)
     assert 0 == twt_values.low_tap
     assert 32 == twt_values.high_tap
     assert 33 == twt_values.step_count
@@ -958,8 +959,8 @@ def test_phase_tap_changers():
     n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+            'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
     assert twt_values.regulating
@@ -1413,10 +1414,10 @@ def test_shunt():
     assert not df['fictitious']['SHUNT']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
+                                     'solved_section_count', 'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, False, nan, nan,
+                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, nan, False, nan, nan,
                                    'S1VL2_0', nan, 1920, nan, 'S1VL2', 'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     n.update_shunt_compensators(
@@ -1430,10 +1431,10 @@ def test_shunt():
                      data=[[True]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
+                                     'solved_section_count', 'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
+                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, nan, True, 50, 3,
                                    '', nan, 1900, nan, 'S1VL2', '', False]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     shunts = n.get_shunt_compensators(attributes=['bus_breaker_bus_id', 'node'])
