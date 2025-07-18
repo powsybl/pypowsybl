@@ -862,7 +862,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("pst_model", &pypowsybl::RaoParameters::pst_model)
             .def_readwrite("ra_range_shrinking", &pypowsybl::RaoParameters::ra_range_shrinking)
             .def_readwrite("max_preventive_search_tree_depth", &pypowsybl::RaoParameters::max_preventive_search_tree_depth)
-            .def_readwrite("max_auto_search_tree_depth", &pypowsybl::RaoParameters::max_auto_search_tree_depth)
             .def_readwrite("max_curative_search_tree_depth", &pypowsybl::RaoParameters::max_curative_search_tree_depth)
             .def_readwrite("predefined_combinations", &pypowsybl::RaoParameters::predefined_combinations)
             .def_readwrite("relative_min_impact_threshold", &pypowsybl::RaoParameters::relative_min_impact_threshold)

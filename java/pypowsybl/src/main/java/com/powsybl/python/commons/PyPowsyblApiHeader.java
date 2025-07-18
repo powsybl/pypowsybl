@@ -1513,12 +1513,6 @@ public final class PyPowsyblApiHeader {
         @CField("max_preventive_search_tree_depth")
         void setMaxPreventiveSearchTreeDepth(int depth);
 
-        @CField("max_auto_search_tree_depth")
-        int getMaxAutoSearchTreeDepth();
-
-        @CField("max_auto_search_tree_depth")
-        void setMaxAutoSearchTreeDepth(int depth);
-
         @CField("max_curative_search_tree_depth")
         int getMaxCurativeSearchTreeDepth();
 

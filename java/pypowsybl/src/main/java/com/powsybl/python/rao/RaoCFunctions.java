@@ -333,7 +333,6 @@ public final class RaoCFunctions {
         raoParameters.getTopoOptimizationParameters().setRelativeMinImpactThreshold(paramPointer.getRelativeMinImpactThreshold());
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(paramPointer.getAbsoluteMinImpactThreshold());
         searchTreeParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
-        searchTreeParameters.getTopoOptimizationParameters().setMaxAutoSearchTreeDepth(paramPointer.getMaxAutoSearchTreeDepth());
         searchTreeParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
         searchTreeParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
         searchTreeParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
@@ -419,7 +418,6 @@ public final class RaoCFunctions {
         paramsPtr.setRelativeMinImpactThreshold(parameters.getTopoOptimizationParameters().getRelativeMinImpactThreshold());
         paramsPtr.setAbsoluteMinImpactThreshold(parameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
         paramsPtr.setMaxPreventiveSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxPreventiveSearchTreeDepth());
-        paramsPtr.setMaxAutoSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxAutoSearchTreeDepth());
         paramsPtr.setMaxCurativeSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxCurativeSearchTreeDepth());
         paramsPtr.setSkipActionsFarFromMostLimitingElement(searchTreeParameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
         paramsPtr.setMaxNumberOfBoundariesForSkippingActions(searchTreeParameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());
