@@ -544,14 +544,15 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulated_element_id",
+                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulating", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(STATIC_VAR_COMPENSATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode",
-                        "regulated_element_id", "regulated_bus_id", "regulated_bus_breaker_bus_id", "p", "q", "i",
-                        "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
+                        "regulating", "regulated_element_id", "regulated_bus_id", "regulated_bus_breaker_bus_id",
+                        "p", "q", "i", "voltage_level_id", "bus_id",
+                        "bus_breaker_bus_id", "node", "connected", "fictitious");
     }
 
     @Test

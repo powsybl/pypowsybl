@@ -16,12 +16,14 @@ class SvcValidationData {
     double voltageSetpoint;
     boolean connected;
     StaticVarCompensator.RegulationMode regulationMode;
+    boolean regulating;
     double bMin;
     double bMax;
     boolean mainComponent;
     boolean validated;
 
-    SvcValidationData(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, StaticVarCompensator.RegulationMode regulationMode, double bMin, double bMax, boolean mainComponent, boolean validated) {
+    SvcValidationData(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, StaticVarCompensator.RegulationMode regulationMode,
+                      boolean regulating, double bMin, double bMax, boolean mainComponent, boolean validated) {
         this.svcId = svcId;
         this.p = p;
         this.q = q;
@@ -32,6 +34,7 @@ class SvcValidationData {
         this.voltageSetpoint = voltageSetpoint;
         this.connected = connected;
         this.regulationMode = regulationMode;
+        this.regulating = regulating;
         this.bMin = bMin;
         this.bMax = bMax;
         this.mainComponent = mainComponent;
@@ -76,6 +79,10 @@ class SvcValidationData {
 
     StaticVarCompensator.RegulationMode getRegulationMode() {
         return regulationMode;
+    }
+
+    boolean isRegulating() {
+        return regulating;
     }
 
     double getbMin() {

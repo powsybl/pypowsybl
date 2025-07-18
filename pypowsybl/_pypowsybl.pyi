@@ -930,7 +930,6 @@ class RaoParameters:
     pst_model: PstModel
     ra_range_shrinking: RaRangeShrinking
     max_preventive_search_tree_depth: int
-    max_auto_search_tree_depth: int
     max_curative_search_tree_depth: int
     predefined_combinations: List[List[str]]
     relative_min_impact_threshold: float

@@ -1,5 +1,5 @@
 {
-  "version" : "3.0",
+  "version" : "3.1",
   "objective-function" : {
     "type" : "SECURE_FLOW",
     "unit" : "MW"
@@ -36,7 +36,6 @@
       },
       "topological-actions-optimization" : {
         "max-preventive-search-tree-depth" : 5,
-        "max-auto-search-tree-depth" : 5,
         "max-curative-search-tree-depth" : 5,
         "predefined-combinations" : [ ],
         "skip-actions-far-from-most-limiting-element" : false,

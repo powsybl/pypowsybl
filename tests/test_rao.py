@@ -72,7 +72,6 @@ def test_rao_parameters():
 
     topo_optimization_param = TopoOptimizationParameters(
         max_preventive_search_tree_depth=10,
-        max_auto_search_tree_depth=22,
         max_curative_search_tree_depth=45,
         relative_min_impact_threshold=13.0,
         absolute_min_impact_threshold=32.0,
@@ -129,7 +128,6 @@ def test_rao_parameters():
     assert parameters2.range_action_optimization_parameters.relative_mip_gap == 22.0
 
     assert parameters2.topo_optimization_parameters.max_preventive_search_tree_depth == 10
-    assert parameters2.topo_optimization_parameters.max_auto_search_tree_depth == 22
     assert parameters2.topo_optimization_parameters.max_curative_search_tree_depth == 45
     assert parameters2.topo_optimization_parameters.relative_min_impact_threshold == 13.0
     assert parameters2.topo_optimization_parameters.absolute_min_impact_threshold == 32.0
