@@ -30,6 +30,10 @@ class NadProfile:
                   _pp.SeriesMetadata('arrow2',0,False,False,False),
                   _pp.SeriesMetadata('arrow3',0,False,False,False)]
 
+    _nad_injections_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('label',0,False,False,False),
+                  _pp.SeriesMetadata('arrow',0,False,False,False)]
+
     _nad_descriptions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('type',0,False,False,False),
                   _pp.SeriesMetadata('description',0,False,False,False)]
@@ -63,11 +67,12 @@ class NadProfile:
 
 
     def __init__(self, branch_labels: Optional[DataFrame] = None, three_wt_labels: Optional[DataFrame] = None,
-                 bus_descriptions: Optional[DataFrame] = None, vl_descriptions: Optional[DataFrame] = None,
-                 bus_node_styles: Optional[DataFrame] = None, edge_styles: Optional[DataFrame] = None,
-                 three_wt_styles: Optional[DataFrame] = None):
+                 injections_labels: Optional[DataFrame] = None, bus_descriptions: Optional[DataFrame] = None,
+                 vl_descriptions: Optional[DataFrame] = None, bus_node_styles: Optional[DataFrame] = None,
+                 edge_styles: Optional[DataFrame] = None, three_wt_styles: Optional[DataFrame] = None):
         self._branch_labels = branch_labels
         self._three_wt_labels = three_wt_labels
+        self._injections_labels = injections_labels
         self._bus_descriptions = bus_descriptions
         self._vl_descriptions = vl_descriptions
         self._bus_node_styles = bus_node_styles
@@ -83,6 +88,11 @@ class NadProfile:
     def three_wt_labels(self) -> Optional[DataFrame]:
         """three_wt_labels"""
         return self._three_wt_labels
+
+    @property
+    def injections_labels(self) -> Optional[DataFrame]:
+        """injections_labels"""
+        return self._injections_labels
 
     @property
     def bus_descriptions(self) -> Optional[DataFrame]:
@@ -116,6 +126,10 @@ class NadProfile:
     def _create_nad_three_wt_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._three_wt_labels is None else _create_c_dataframe(self._three_wt_labels.fillna(''),
                                                                            NadProfile._nad_three_wt_metadata)
+
+    def _create_nad_injections_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
+        return None if self._injections_labels is None else _create_c_dataframe(self._injections_labels.fillna(''),
+                                                                           NadProfile._nad_injections_metadata)
 
     def _create_nad_bus_descriptions_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._bus_descriptions is None else _create_c_dataframe(self._bus_descriptions.fillna(''),

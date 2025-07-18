@@ -678,7 +678,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
         .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
-        .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details);
+        .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details)
+        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
@@ -700,7 +701,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
           py::arg("network"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("voltage_level_ids"),
           py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
-          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"),
+          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("injections_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"),
           py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
@@ -708,7 +709,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           
     m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
-          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
+          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("injections_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
 
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
