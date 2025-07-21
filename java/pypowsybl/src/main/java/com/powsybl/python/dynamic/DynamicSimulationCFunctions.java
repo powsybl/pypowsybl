@@ -105,7 +105,10 @@ public final class DynamicSimulationCFunctions {
     @CEntryPoint(name = "freeDynamicSimulationParameters")
     public static void freeDynamicSimulationParameters(IsolateThread thread, DynamicSimulationParametersPointer parametersPtr,
                                               ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parametersPtr));
+        doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parametersPtr.getProviderParameters());
+            UnmanagedMemory.free(parametersPtr);
+        });
     }
 
     @CEntryPoint(name = "runDynamicSimulation")

@@ -104,12 +104,9 @@ typedef struct sensitivity_analysis_parameters_struct {
 } sensitivity_analysis_parameters;
 
 typedef struct dynamic_simulation_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     double start_time;
     double stop_time;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } dynamic_simulation_parameters;
 
 typedef struct limit_violation_struct {

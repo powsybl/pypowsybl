@@ -63,8 +63,8 @@ public final class DynamicSimulationParametersCUtils {
     public static void copyToCDynamicSimulationParameters(DynamicSimulationParameters parameters, DynamicSimulationParametersPointer cParameters) {
         cParameters.setStartTime(parameters.getStartTime());
         cParameters.setStopTime(parameters.getStopTime());
-        cParameters.setProviderParametersValuesCount(0);
-        cParameters.setProviderParametersKeysCount(0);
+        cParameters.getProviderParameters().setProviderParametersValuesCount(0);
+        cParameters.getProviderParameters().setProviderParametersKeysCount(0);
     }
 
     private static DynawoSimulationParameters createSpecificDynamicSimulationParameters(DynamicSimulationParameters parameters) {
@@ -77,9 +77,9 @@ public final class DynamicSimulationParametersCUtils {
     }
 
     private static Map<String, String> getSpecificParameters(DynamicSimulationParametersPointer parametersPointer) {
-        return CTypeUtil.toStringMap(parametersPointer.getProviderParametersKeys(),
-                parametersPointer.getProviderParametersKeysCount(),
-                parametersPointer.getProviderParametersValues(),
-                parametersPointer.getProviderParametersValuesCount());
+        return CTypeUtil.toStringMap(parametersPointer.getProviderParameters().getProviderParametersKeys(),
+                parametersPointer.getProviderParameters().getProviderParametersKeysCount(),
+                parametersPointer.getProviderParameters().getProviderParametersValues(),
+                parametersPointer.getProviderParameters().getProviderParametersValuesCount());
     }
 }

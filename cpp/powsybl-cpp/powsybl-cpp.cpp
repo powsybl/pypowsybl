@@ -592,25 +592,21 @@ void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parame
 }
 
 void deleteDynamicSimulationParameters(dynamic_simulation_parameters* ptr) {
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_keys, ptr->provider_parameters_keys_count);
-    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters_values, ptr->provider_parameters_values_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
 }
 
 DynamicSimulationParameters::DynamicSimulationParameters(dynamic_simulation_parameters* src) {
     start_time = (double) src->start_time;
     stop_time = (double) src->stop_time;
-    copyCharPtrPtrToVector(src->provider_parameters_keys, src->provider_parameters_keys_count, provider_parameters_keys);
-    copyCharPtrPtrToVector(src->provider_parameters_values, src->provider_parameters_values_count, provider_parameters_values);
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
 std::shared_ptr<dynamic_simulation_parameters> DynamicSimulationParameters::to_c_struct() const {
     dynamic_simulation_parameters* res = new dynamic_simulation_parameters();
     res->start_time = (double) start_time;
     res->stop_time = (double) stop_time;
-    res->provider_parameters_keys = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_keys);
-    res->provider_parameters_keys_count = provider_parameters_keys.size();
-    res->provider_parameters_values = pypowsybl::copyVectorStringToCharPtrPtr(provider_parameters_values);
-    res->provider_parameters_values_count = provider_parameters_values.size();
+    providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
     return std::shared_ptr<dynamic_simulation_parameters>(res, [](dynamic_simulation_parameters* ptr){
         deleteDynamicSimulationParameters(ptr);
