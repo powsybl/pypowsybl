@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict
+from typing import Dict, Optional
 from pypowsybl import _pypowsybl
 
 
@@ -24,9 +24,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
             currently Dynawo is the only provider handled by pypowsybl
     """
 
-    def __init__(self, start_time: float = None,
-                 stop_time: float = None,
-                 provider_parameters: Dict[str, str] = None):
+    def __init__(self, start_time: Optional[float] = None,
+                 stop_time: Optional[float] = None,
+                 provider_parameters: Optional[Dict[str, str]] = None):
         self._init_with_default_values()
         if start_time is not None:
             self.start_time = start_time
