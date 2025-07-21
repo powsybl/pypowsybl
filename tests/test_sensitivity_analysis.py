@@ -362,9 +362,6 @@ def test_transfo3_sensi():
     network.create_phase_tap_changers(ptc_df, step_df)
 
     analysis = pp.sensitivity.create_ac_analysis()
-    analysis.add_factor_matrix([line_id], [t3e_id], [], pp.sensitivity.ContingencyContextType.ALL,
-                               pp.sensitivity.SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
-                               pp.sensitivity.SensitivityVariableType.TRANSFORMER_PHASE_1, "ptc_test")
     analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
     result = analysis.run(network)
     assert -0.00268 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-4)
