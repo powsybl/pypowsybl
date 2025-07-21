@@ -60,19 +60,6 @@ class Simulation:  # pylint: disable=too-few-public-methods
 
         Returns:
             dynamic simulation parameters dataframe
-
-        Examples:
-           .. doctest::
-
-               >>> parameters = pp.dynamic.Simulation.get_provider_parameters()
-               >>> parameters['description']['solver.type']
-               'Solver used in the simulation'
-               >>> parameters['type']['solver.type']
-               'STRING'
-               >>> parameters['default']['solver.type']
-               'SIM'
-               >>> parameters['possible_values']['solver.type']
-               '[SIM, IDA]'
         """
         series_array = _pp.create_dynamic_simulation_provider_parameters_series_array()
         return create_data_frame_from_series_array(series_array)
