@@ -103,6 +103,7 @@ To build from sources and install PyPowSyBl package:
 
 ```bash
 git clone https://github.com/powsybl/pypowsybl.git
+cd pypowsybl
 export JAVA_HOME=<path to GraalVM>
 pip install --upgrade setuptools pip
 pip install -r requirements.txt
