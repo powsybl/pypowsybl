@@ -422,7 +422,7 @@ def test_ratio_tap_changers_per_unit():
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
                             data=[['', 1, nan, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)

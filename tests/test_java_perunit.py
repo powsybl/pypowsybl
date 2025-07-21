@@ -353,7 +353,7 @@ def test_ratio_tap_changers_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc',
                                      'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
                             data=[['', 1, nan, 0, 2, 3, True, True, 1.05, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)

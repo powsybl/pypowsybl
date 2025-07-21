@@ -889,7 +889,7 @@ def test_exception():
 def test_ratio_tap_changers():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc',
                                      'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
                             data=[['', 1, nan, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
@@ -898,7 +898,7 @@ def test_ratio_tap_changers():
                           data=[[0, False, 180]])
     n.update_ratio_tap_changers(update)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
                             data=[['', 0, nan, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
@@ -909,7 +909,7 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
                             data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
                                   ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
@@ -925,7 +925,7 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
                             data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
                                   ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
@@ -941,7 +941,7 @@ def test_ratio_tap_changers_3_windings():
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
             'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
@@ -958,7 +958,7 @@ def test_phase_tap_changers():
     n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
             'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
