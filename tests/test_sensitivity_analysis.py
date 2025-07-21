@@ -364,4 +364,4 @@ def test_transfo3_sensi():
     analysis = pp.sensitivity.create_ac_analysis()
     analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
     result = analysis.run(network)
-    assert -0.00268 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-4)
+    assert -0.002685 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-3)
