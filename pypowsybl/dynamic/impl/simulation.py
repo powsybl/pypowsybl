@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List
+from typing import Optional
 from pandas import DataFrame
 from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
@@ -26,8 +27,8 @@ class Simulation:  # pylint: disable=too-few-public-methods
             model_mapping: ModelMapping,
             event_mapping: EventMapping,
             timeseries_mapping: OutputVariableMapping,
-            parameters: Parameters = None,
-            report_node: ReportNode = None
+            parameters: Optional[Parameters] = None,
+            report_node: Optional[ReportNode] = None
             ) -> SimulationResult:
         """Run the dynawo simulation"""
         return SimulationResult(

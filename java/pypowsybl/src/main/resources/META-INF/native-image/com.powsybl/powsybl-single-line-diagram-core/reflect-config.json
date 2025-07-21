@@ -34,25 +34,13 @@
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.Component",
+    "name":"com.powsybl.sld.library.SldComponent",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true
   },
   {
-    "name":"com.powsybl.sld.library.ComponentSize",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.sld.library.Components",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.sld.library.SubComponent",
+    "name":"com.powsybl.sld.library.SldComponent[]",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allDeclaredConstructors":true

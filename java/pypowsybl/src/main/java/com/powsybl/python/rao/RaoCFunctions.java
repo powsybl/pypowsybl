@@ -8,6 +8,8 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.DataframeFilter;
+import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
@@ -24,6 +26,7 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
+import com.powsybl.python.network.Dataframes;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -32,6 +35,7 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 import java.io.*;
@@ -41,6 +45,7 @@ import java.util.*;
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
+import static com.powsybl.python.rao.RaoDataframes.createVirtualCostResultMapper;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
@@ -191,6 +196,9 @@ public final class RaoCFunctions {
                 case FAILURE -> {
                     return PyPowsyblApiHeader.RaoComputationStatus.FAILURE;
                 }
+                case PARTIAL_FAILURE -> {
+                    return PyPowsyblApiHeader.RaoComputationStatus.PARTIAL_FAILURE;
+                }
                 default -> throw new PowsyblException("Unexpected computation status : " + result.getComputationStatus());
             }
         });
@@ -207,6 +215,70 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "createRaoParameters")
     public static PyPowsyblApiHeader.RaoParametersPointer createRaoParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters()));
+    }
+
+    @CEntryPoint(name = "getFlowCnecResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getFlowCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getAngleCnecResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getAngleCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getVoltageCnecResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVoltageCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getRaResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.raResultMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getCostResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.costResultMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
+    @CEntryPoint(name = "getVirtualCostNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getVirtualCostNames(IsolateThread thread, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Util.createCharPtrArray(result.getVirtualCostNames().stream().toList());
+        });
+    }
+
+    @CEntryPoint(name = "getVirtualCostResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVirtualCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer virtualCostNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            String virtualCostName = CTypeUtil.toString(virtualCostNamePtr);
+            DataframeMapper<Crac, RaoResult> virtualCostResultMapper = createVirtualCostResultMapper(virtualCostName);
+            return Dataframes.createCDataframe(virtualCostResultMapper, crac, new DataframeFilter(), result);
+        });
     }
 
     @CEntryPoint(name = "freeRaoParameters")
@@ -261,7 +333,6 @@ public final class RaoCFunctions {
         raoParameters.getTopoOptimizationParameters().setRelativeMinImpactThreshold(paramPointer.getRelativeMinImpactThreshold());
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(paramPointer.getAbsoluteMinImpactThreshold());
         searchTreeParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
-        searchTreeParameters.getTopoOptimizationParameters().setMaxAutoSearchTreeDepth(paramPointer.getMaxAutoSearchTreeDepth());
         searchTreeParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
         searchTreeParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
         searchTreeParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
@@ -347,7 +418,6 @@ public final class RaoCFunctions {
         paramsPtr.setRelativeMinImpactThreshold(parameters.getTopoOptimizationParameters().getRelativeMinImpactThreshold());
         paramsPtr.setAbsoluteMinImpactThreshold(parameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
         paramsPtr.setMaxPreventiveSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxPreventiveSearchTreeDepth());
-        paramsPtr.setMaxAutoSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxAutoSearchTreeDepth());
         paramsPtr.setMaxCurativeSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxCurativeSearchTreeDepth());
         paramsPtr.setSkipActionsFarFromMostLimitingElement(searchTreeParameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
         paramsPtr.setMaxNumberOfBoundariesForSkippingActions(searchTreeParameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());

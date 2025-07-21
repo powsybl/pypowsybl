@@ -9,6 +9,7 @@ import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.*;
 import com.powsybl.python.network.TemporaryLimitData;
 import gnu.trove.list.array.TIntArrayList;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.*;
 
@@ -26,6 +27,7 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         SeriesMetadata.booleans("fictitious"),
         SeriesMetadata.strings("group_name")
     );
+    private static final String DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME = "DEFAULT";
 
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
@@ -209,6 +211,11 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             }
 
             @Override
+            public OperationalLimitsGroup getOrCreateSelectedOperationalLimitsGroup() {
+                throw new NotImplementedException();
+            }
+
+            @Override
             public Optional<ActivePowerLimits> getActivePowerLimits() {
                 return branch.getActivePowerLimits(side);
             }
@@ -284,9 +291,9 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
         FlowsLimitsHolder limitsHolder = getLimitsHolder(network, elementId, side);
         OperationalLimitsGroup group;
         if (groupId == null) {
-            String selectedGroupId = limitsHolder.getSelectedOperationalLimitsGroupId().orElse("DEFAULT");
+            String selectedGroupId = limitsHolder.getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME);
             group = limitsHolder.getSelectedOperationalLimitsGroup()
-                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup("DEFAULT"));
+                    .orElseGet(() -> limitsHolder.newOperationalLimitsGroup(DEFAULT_OPERATIONAL_LIMIT_GROUP_NAME));
             limitsHolder.setSelectedOperationalLimitsGroup(selectedGroupId);
         } else {
             group = limitsHolder.getOperationalLimitsGroup(groupId)
