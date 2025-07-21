@@ -153,11 +153,3 @@ def test_parameters():
     assert 100.0 == parameters.stop_time
     assert 'IDA'== parameters.provider_parameters['solver.type']
     assert '1e-5' == parameters.provider_parameters['precision']
-
-
-def test_provider_parameters_list():
-    assert dyn.Simulation.get_provider_parameters_names()
-    parameters = dyn.Simulation.get_provider_parameters()
-    assert 'Simulation step precision' == parameters['description']['precision']
-    assert 'DOUBLE' == parameters['type']['precision']
-    assert '1.0E-6' == parameters['default']['precision']

@@ -63,3 +63,10 @@ def test_simulation():
     assert 'B6-G_generator_UStatorPu' in res.curves()
     assert False == res.final_state_values().loc['NETWORK_B3_Upu_value'].empty
     assert False == res.timeline().empty
+
+def test_provider_parameters_list():
+    assert dyn.Simulation.get_provider_parameters_names()
+    parameters = dyn.Simulation.get_provider_parameters()
+    assert 'Simulation step precision' == parameters['description']['precision']
+    assert 'DOUBLE' == parameters['type']['precision']
+    assert '1.0E-6' == parameters['default']['precision']
