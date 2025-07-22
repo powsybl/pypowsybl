@@ -279,6 +279,7 @@ typedef struct series_struct {
     unsigned char index;
     int type;
     array data;
+    int* mask;
 } series;
 
 /**

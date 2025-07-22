@@ -193,11 +193,10 @@ def test_shunt_compensators_per_unit():
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
+                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count', 'solved_section_count',
                                      'voltage_regulation_on', 'target_v', 'target_deadband', 'regulating_bus_id',
-                                     'p', 'q', 'i',
-                                     'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0, -19.2, 'LINEAR', 1, 1, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 0, -19.2, 'LINEAR', 1, 1, nan, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
                                    'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False, atol=1e-2)
 
@@ -423,9 +422,9 @@ def test_ratio_tap_changers_per_unit():
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0']])
+                            data=[['', 1, nan, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
