@@ -2775,6 +2775,13 @@ def test_regulated_bus_id():
     assert 'S1VL2_0' == gens['regulated_bus_id']['GH1']
     assert 'S1VL2_7' == gens['regulated_bus_breaker_bus_id']['GH1']
 
+def test_apply_solved_values():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 607.0 == n.get_generators().loc["GEN", "target_p"]
+    assert pytest.approx(-302.78, abs=1e-2) == n.get_generators().loc["GEN", "p"]
+    n.apply_solved_values()
+    assert pytest.approx(302.78, abs=1e-2) == n.get_generators().loc["GEN", "target_p"]
 
 if __name__ == '__main__':
     unittest.main()

@@ -75,7 +75,8 @@ import java.util.*;
 import java.util.stream.IntStream;
 import java.util.zip.ZipOutputStream;
 
-import com.powsybl.iidm.network.util.Networks;
+import static com.powsybl.iidm.network.util.Networks.applySolvedTapPositionAndSolvedSectionCount;
+import static com.powsybl.iidm.network.util.Networks.applySolvedValues;
 import static com.powsybl.nad.svg.SvgParameters.EdgeInfoEnum.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
@@ -1636,18 +1637,18 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "applySolvedValues")
-    public static void applySolvedValues(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void applyAllSolvedValues(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Networks.applySolvedValues(network);
+            applySolvedValues(network);
         });
     }
 
     @CEntryPoint(name = "applySolvedTapPositionAndSolvedSectionCount")
-    public static void applySolvedTapPositionAndSolvedSectionCount(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void applySolvedTapPositionAndSectionCount(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Networks.applySolvedTapPositionAndSolvedSectionCount(network);
+            applySolvedTapPositionAndSolvedSectionCount(network);
         });
     }
 }
