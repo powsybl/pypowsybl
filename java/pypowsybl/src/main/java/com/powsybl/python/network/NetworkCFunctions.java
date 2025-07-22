@@ -1646,8 +1646,8 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "applySolvedTapPositionAndSolvedSectionCount")
     public static void applySolvedTapPositionAndSolvedSectionCount(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
-           Network network = ObjectHandles.getGlobal().get(networkHandle);
-           Networks.applySolvedTapPositionAndSolvedSectionCount(network);
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            Networks.applySolvedTapPositionAndSolvedSectionCount(network);
         });
     }
 }
