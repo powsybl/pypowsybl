@@ -388,12 +388,12 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on",
+                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "solved_section_count", "voltage_regulation_on",
                         "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(SHUNT_COMPENSATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on",
+                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "solved_section_count", "voltage_regulation_on",
                         "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i",
                         "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
     }
@@ -623,8 +623,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "side", "tap", "low_tap", "high_tap", "step_count", "on_load", "regulating", "target_v",
-                        "target_deadband", "regulating_bus_id");
+                .containsExactly("id", "side", "tap", "solved_tap_position", "low_tap", "high_tap", "step_count",
+                        "oltc", "regulating", "target_v", "target_deadband", "regulating_bus_id");
     }
 
     @Test
@@ -634,8 +634,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "side", "tap", "low_tap", "high_tap", "step_count", "regulating", "regulation_mode",
-                        "regulation_value", "target_deadband", "regulating_bus_id");
+                .containsExactly("id", "side", "tap", "solved_tap_position", "low_tap", "high_tap", "step_count",
+                        "oltc", "regulating", "regulation_mode", "regulation_value", "target_deadband", "regulating_bus_id");
     }
 
     @Test

@@ -284,8 +284,8 @@ def test_voltage_levels_creation():
 def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     rtc_df = dataframe_from_string("""
-id         target_deadband  target_v  on_load  low_tap  tap  regulating  regulated_side
-NGEN_NHV1                2       200     True        0    1        True             ONE
+id         target_deadband  target_v  oltc  low_tap  tap  regulating  regulated_side
+NGEN_NHV1                2       200  True        0    1        True             ONE
 """)
 
     steps_df = dataframe_from_string("""
@@ -299,7 +299,7 @@ NGEN_NHV1  2  2  1  1  0.5
     rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
     assert rtc.target_deadband == 2
     assert rtc.target_v == 200
-    assert rtc.on_load
+    assert rtc.oltc
     assert rtc.low_tap == 0
     assert rtc.tap == 1
     assert rtc.regulating
@@ -1000,7 +1000,7 @@ def test_3_windings_transformers_creation():
     #Add ratio tap changer
     rtc_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap', 'side'],
         data=[('TWT_TEST', 2, 200, False, 0, 1, 'ONE')])
     steps_df = pd.DataFrame.from_records(
         index='id',
