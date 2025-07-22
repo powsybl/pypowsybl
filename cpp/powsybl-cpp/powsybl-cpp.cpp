@@ -683,6 +683,14 @@ JavaHandle detachSubNetwork(const JavaHandle& subNetwork) {
     return PowsyblCaller::get()->callJava<JavaHandle>(::detachSubNetwork, subNetwork);
 }
 
+void applySolvedValues(const JavaHandle& network) {
+    PowsyblCaller::get()->callJava(::applySolvedValues, network);
+}
+
+void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network) {
+    PowsyblCaller::get()->callJava(::applySolvedTapPositionAndSolvedSectionCount, network);
+}
+
 std::vector<std::string> getNetworkImportFormats() {
     auto formatsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkImportFormats);
     ToStringVector formats(formatsArrayPtr);

@@ -5660,3 +5660,24 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(ids, str):
             ids = [ids]
         _pp.remove_extensions(self._handle, extension_name, ids)
+
+    def apply_solved_values(self):
+        """
+        Replaces the "input" values used for load flow calculation by their solved values returned by the
+        load flow calculation. The copied values are :
+        - **solved_tap_position** -> **tap** for ratio/phase tap changers
+        - **solved_section_count** -> **section_count** for shunt/compensators
+        - **targetP/Q** -> **P/Q** for generators, dangling lines, batteries
+        - **targetV** -> **V** for generators and dangling lines
+        - **P0/Q0** -> **P/Q** for loads
+        """
+        _pp.apply_solved_values(self)
+
+    def apply_solved_tap_position_and_section_count_values(self):
+        """
+        Replaces the "input" values used for load flow calculation by their solved values returned by the
+        load flow calculation, only for tap position and section count. The copied values are :
+        - **solved_tap_position** -> **tap** for ratio/phase tap changers
+        - **solved_section_count** -> **section_count** for shunt/compensators
+        """
+        _pp.apply_solved_tap_and_section_count_values(self)
