@@ -286,6 +286,15 @@ its state has not changed, our generator still produces 607 MW:
    >>> network.get_generators()['target_p']['GEN'].item()
    607.0
 
+We also provide an automatic way to switch to a variant and then go back to previous one with:
+
+.. doctest::
+
+   >>> with network.working_variant('Variant'):
+   ...     network.update_generators(id='GEN', target_p=701)
+   ...     network.get_generators()['target_p']['GEN'].item()
+   701.0
+
 Once you're done working with your variant, you can remove it:
 
 .. doctest::
@@ -387,7 +396,7 @@ You can add a ratio tap changer on the leg 1 of the three-winding transformer wi
 
     rtc_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap', 'side'],
         data=[('T1', 2, 200, False, 0, 1, 'ONE')])
     steps_df = pd.DataFrame.from_records(
         index='id',

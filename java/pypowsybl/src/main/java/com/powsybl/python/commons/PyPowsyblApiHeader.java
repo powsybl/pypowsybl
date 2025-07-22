@@ -314,6 +314,12 @@ public final class PyPowsyblApiHeader {
         @CField("connected_component_mode")
         void setConnectedComponentMode(int connectedComponentMode);
 
+        @CField("hvdc_ac_emulation")
+        boolean isHvdcAcEmulation();
+
+        @CField("hvdc_ac_emulation")
+        void setHvdcAcEmulation(boolean hvdcAcEmulation);
+
         @CField("dc_power_factor")
         double getDcPowerFactor();
 
@@ -757,6 +763,12 @@ public final class PyPowsyblApiHeader {
 
         @CFieldAddress("data")
         <T extends PointerBase> ArrayPointer<T> data();
+
+        @CField("mask")
+        CIntPointer getMask();
+
+        @CField("mask")
+        void setMask(CIntPointer mask);
 
         SeriesPointer addressOf(int index);
     }
@@ -1373,7 +1385,8 @@ public final class PyPowsyblApiHeader {
     @CEnum("RaoComputationStatus")
     public enum RaoComputationStatus {
         DEFAULT,
-        FAILURE;
+        FAILURE,
+        PARTIAL_FAILURE;
 
         @CEnumValue
         public native int getCValue();
@@ -1505,12 +1518,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("max_preventive_search_tree_depth")
         void setMaxPreventiveSearchTreeDepth(int depth);
-
-        @CField("max_auto_search_tree_depth")
-        int getMaxAutoSearchTreeDepth();
-
-        @CField("max_auto_search_tree_depth")
-        void setMaxAutoSearchTreeDepth(int depth);
 
         @CField("max_curative_search_tree_depth")
         int getMaxCurativeSearchTreeDepth();

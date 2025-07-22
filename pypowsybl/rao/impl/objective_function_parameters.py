@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pypowsybl._pypowsybl import (
     RaoParameters,
     ObjectiveFunctionType,
@@ -5,11 +7,11 @@ from pypowsybl._pypowsybl import (
 )
 
 class ObjectiveFunctionParameters:
-    def __init__(self, objective_function_type: ObjectiveFunctionType = None,
-                 unit: Unit = None,
-                 curative_min_obj_improvement: float = None,
-                 enforce_curative_security: bool = None,
-                 rao_parameters: RaoParameters = None) -> None:
+    def __init__(self, objective_function_type: Optional[ObjectiveFunctionType] = None,
+                 unit: Optional[Unit] = None,
+                 curative_min_obj_improvement: Optional[float] = None,
+                 enforce_curative_security: Optional[bool] = None,
+                 rao_parameters: Optional[RaoParameters] = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:
