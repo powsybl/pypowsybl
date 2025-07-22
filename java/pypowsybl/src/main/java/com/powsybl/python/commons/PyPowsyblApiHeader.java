@@ -1165,6 +1165,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("voltage_level_details")
         boolean isVoltageLevelDetails();
+
+        @CField("injections_added")
+        void setInjectionsAdded(boolean injectionsAdded);
+
+        @CField("injections_added")
+        boolean isInjectionsAdded();
     }
 
     @CEnum("DynamicMappingType")

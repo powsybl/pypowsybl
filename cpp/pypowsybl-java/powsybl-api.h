@@ -370,6 +370,7 @@ typedef struct nad_parameters_struct {
     double radius_factor;
     int edge_info_displayed;
     unsigned char voltage_level_details;
+    unsigned char injections_added;
 } nad_parameters;
 
 typedef enum {
