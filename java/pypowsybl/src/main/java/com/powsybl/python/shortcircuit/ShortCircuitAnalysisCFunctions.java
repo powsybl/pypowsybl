@@ -8,6 +8,7 @@
 package com.powsybl.python.shortcircuit;
 
 import com.powsybl.commons.PowsyblException;
+import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.shortcircuit.adders.FaultDataframeAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -132,17 +133,14 @@ public final class ShortCircuitAnalysisCFunctions {
         return paramsPtr;
     }
 
-    static List<String> getSpecificParametersNames(ShortCircuitAnalysisProvider provider) {
-        // currently, the short-circuit APIs do not have this method.
-        // there is a List<Parameter> getSpecificParameters(), but its semantic must be checked
-        return Collections.emptyList();
-    }
-
     @CEntryPoint(name = "getShortCircuitAnalysisProviderParametersNames")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread,
+                                                                                                  CCharPointer provider,
+                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(getSpecificParametersNames(ShortCircuitAnalysisCUtils.getShortCircuitAnalysisProvider(providerStr)));
+            return Util.createCharPtrArray(ShortCircuitAnalysisCUtils.getShortCircuitAnalysisProvider(providerStr)
+                    .getSpecificParameters().stream().map(Parameter::getName).collect(Collectors.toList()));
         });
     }
 
