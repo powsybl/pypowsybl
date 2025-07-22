@@ -2780,6 +2780,8 @@ def test_apply_solved_values():
     pp.loadflow.run_ac(n)
     assert 607.0 == n.get_generators().loc["GEN", "target_p"]
     assert pytest.approx(-302.78, abs=1e-2) == n.get_generators().loc["GEN", "p"]
+    n.apply_solved_tap_position_and_section_count_values()
+    assert 607.0 == n.get_generators().loc["GEN", "target_p"]
     n.apply_solved_values()
     assert pytest.approx(302.78, abs=1e-2) == n.get_generators().loc["GEN", "target_p"]
 
