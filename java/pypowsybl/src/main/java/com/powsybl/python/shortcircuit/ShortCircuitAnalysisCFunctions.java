@@ -33,8 +33,6 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.Util.*;
