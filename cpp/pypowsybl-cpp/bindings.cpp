@@ -375,6 +375,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("detach_sub_network", &pypowsybl::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
 
+    m.def("apply_solved_values", &pypowsybl::applySolvedValues, "Copy solved values to input", py::arg("network"));
+
+    m.def("apply_solved_tap_and_section_count_values", &pypowsybl::applySolvedTapPositionAndSolvedSectionCount, "Copy solved values of tap position and section count to input", py::arg("network"));
+
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
     py::enum_<element_type>(m, "ElementType")

@@ -31,12 +31,11 @@ import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.reducer.*;
 import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
-import com.powsybl.nad.model.*;
+import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.CustomLabelProvider;
 import com.powsybl.nad.svg.CustomStyleProvider;
 import com.powsybl.nad.svg.EdgeInfo;
@@ -51,8 +50,8 @@ import com.powsybl.python.dataframe.CStringSeries;
 import com.powsybl.python.datasource.InMemoryZipFileDataSource;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
-import com.powsybl.sld.library.SldComponentLibrary;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
+import com.powsybl.sld.library.SldComponentLibrary;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import org.apache.commons.io.IOUtils;
@@ -76,6 +75,8 @@ import java.util.*;
 import java.util.stream.IntStream;
 import java.util.zip.ZipOutputStream;
 
+import static com.powsybl.iidm.network.util.Networks.applySolvedTapPositionAndSolvedSectionCount;
+import static com.powsybl.iidm.network.util.Networks.applySolvedValues;
 import static com.powsybl.nad.svg.SvgParameters.EdgeInfoEnum.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
@@ -1659,6 +1660,22 @@ public final class NetworkCFunctions {
             Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
             Network detachNetwork = subNetwork.detach();
             return ObjectHandles.getGlobal().create(detachNetwork);
+        });
+    }
+
+    @CEntryPoint(name = "applySolvedValues")
+    public static void applyAllSolvedValues(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            applySolvedValues(network);
+        });
+    }
+
+    @CEntryPoint(name = "applySolvedTapPositionAndSolvedSectionCount")
+    public static void applySolvedTapPositionAndSectionCount(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            Network network = ObjectHandles.getGlobal().get(networkHandle);
+            applySolvedTapPositionAndSolvedSectionCount(network);
         });
     }
 }
