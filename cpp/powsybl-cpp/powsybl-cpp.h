@@ -369,6 +369,17 @@ public:
     std::vector<std::string> provider_parameters_values;
 };
 
+class DynamicSimulationParameters {
+public:
+    DynamicSimulationParameters(dynamic_simulation_parameters* src);
+    std::shared_ptr<dynamic_simulation_parameters> to_c_struct() const;
+
+    double start_time;
+    double stop_time;
+    std::vector<std::string> provider_parameters_keys;
+    std::vector<std::string> provider_parameters_values;
+};
+
 enum class RescaleMode {
     NONE = 0,
     ACER_METHODOLOGY,
@@ -671,6 +682,12 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(se
 
 std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std::string& sensitivityAnalysisProvider);
 
+std::vector<std::string> getDynamicSimulationProviderParametersNames();
+
+SeriesArray* createDynamicSimulationProviderParametersSeriesArray();
+
+DynamicSimulationParameters* createDynamicSimulationParameters();
+
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
@@ -899,7 +916,7 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle* reportNode);
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle reportNode);
 
 // timeseries mapping
 void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);

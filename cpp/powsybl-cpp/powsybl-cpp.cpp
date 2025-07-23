@@ -585,10 +585,33 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
         delete ptr;
     });
 }
-
+  
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
     providerParametersToCStruct(params.provider_parameters, provider_parameters_keys, provider_parameters_values);
+}
+
+void deleteDynamicSimulationParameters(dynamic_simulation_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
+}
+
+DynamicSimulationParameters::DynamicSimulationParameters(dynamic_simulation_parameters* src) {
+    start_time = (double) src->start_time;
+    stop_time = (double) src->stop_time;
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
+}
+
+std::shared_ptr<dynamic_simulation_parameters> DynamicSimulationParameters::to_c_struct() const {
+    dynamic_simulation_parameters* res = new dynamic_simulation_parameters();
+    res->start_time = (double) start_time;
+    res->stop_time = (double) stop_time;
+    providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<dynamic_simulation_parameters>(res, [](dynamic_simulation_parameters* ptr){
+        deleteDynamicSimulationParameters(ptr);
+        delete ptr;
+    });
 }
 
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
@@ -892,6 +915,14 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(se
         PowsyblCaller::get()->callJava(::freeSensitivityAnalysisParameters, ptr);
     });
     return new SensitivityAnalysisParameters(parameters.get());
+}
+
+DynamicSimulationParameters* createDynamicSimulationParameters() {
+    dynamic_simulation_parameters* parameters_ptr = PowsyblCaller::get()->callJava<dynamic_simulation_parameters*>(::createDynamicSimulationParameters);
+    auto parameters = std::shared_ptr<dynamic_simulation_parameters>(parameters_ptr, [](dynamic_simulation_parameters* ptr){
+        PowsyblCaller::get()->callJava(::freeDynamicSimulationParameters, ptr);
+    });
+    return new DynamicSimulationParameters(parameters.get());
 }
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
@@ -1356,6 +1387,16 @@ std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std
     return providerParameters.get();
 }
 
+std::vector<std::string> getDynamicSimulationProviderParametersNames() {
+    auto providerParametersArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getDynamicSimulationProviderParametersNames);
+    ToStringVector providerParameters(providerParametersArrayPtr);
+    return providerParameters.get();
+}
+
+SeriesArray* createDynamicSimulationProviderParametersSeriesArray() {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::createDynamicSimulationProviderParametersSeriesArray));
+}
+
 void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, std::string& tableName, dataframe* dataframe) {
     pypowsybl::PowsyblCaller::get()->callJava<>(::updateNetworkElementsExtensionsWithSeries, network, (char*) name.data(), (char*) tableName.data(), dataframe);
 }
@@ -1613,8 +1654,9 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle *reportNode) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, (reportNode == nullptr) ? nullptr : *reportNode);
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle reportNode) {
+    auto c_parameters  = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {

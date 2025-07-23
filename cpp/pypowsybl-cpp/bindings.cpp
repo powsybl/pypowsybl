@@ -236,8 +236,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("create_event_mapping", &pypowsybl::createEventMapping);
 
     //running simulations
-    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
-        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
+    m.def("run_dynamic_simulation", &pypowsybl::runDynamicSimulation, py::call_guard<py::gil_scoped_release>(),
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("parameters"), py::arg("report_node"));
 
     //model mapping
     m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("dataframes"));
@@ -629,6 +629,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("loadflow_parameters", &pypowsybl::SensitivityAnalysisParameters::loadflow_parameters)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
+
+    py::class_<pypowsybl::DynamicSimulationParameters>(m, "DynamicSimulationParameters")
+            .def(py::init(&pypowsybl::createDynamicSimulationParameters))
+            .def_readwrite("start_time", &pypowsybl::DynamicSimulationParameters::start_time)
+            .def_readwrite("stop_time", &pypowsybl::DynamicSimulationParameters::stop_time)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::DynamicSimulationParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::DynamicSimulationParameters::provider_parameters_values);
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
@@ -1141,6 +1148,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("provider"));
     m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
     m.def("get_sensitivity_analysis_provider_parameters_names", &pypowsybl::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
+    m.def("get_dynamic_simulation_provider_parameters_names", &pypowsybl::getDynamicSimulationProviderParametersNames, "get dynamic simulation provider parameters for Dynawo");
+    m.def("create_dynamic_simulation_provider_parameters_series_array", &pypowsybl::createDynamicSimulationProviderParametersSeriesArray, "Create a parameters series array for Dynawo");
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("table_name"), py::arg("dataframe"));
     m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements",

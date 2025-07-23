@@ -1173,6 +1173,25 @@ public final class PyPowsyblApiHeader {
         boolean isInjectionsAdded();
     }
 
+    @CStruct("dynamic_simulation_parameters")
+    public interface DynamicSimulationParametersPointer extends PointerBase {
+
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
+        @CField("start_time")
+        double getStartTime();
+
+        @CField("start_time")
+        void setStartTime(double startTime);
+
+        @CField("stop_time")
+        double getStopTime();
+
+        @CField("stop_time")
+        void setStopTime(double stopTime);
+    }
+
     @CEnum("DynamicMappingType")
     public enum DynamicMappingType {
         BASE_LOAD,
