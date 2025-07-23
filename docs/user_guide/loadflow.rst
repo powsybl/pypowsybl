@@ -185,32 +185,33 @@ Reports contain detailed computation information. To see those reports, pass a r
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
-   >>> report_node = pp.report.ReportNode()
-   >>> network = pn.create_eurostag_tutorial_example1_network()
-   >>> results = lf.run_ac(network, parameters, report_node=report_node)
-   >>> print(report_node)
-   +
-      + Load flow on network 'sim1'
-         + Network CC0 SC0
-            + Network info
-               Network has 4 buses and 4 branches
-               Network balance: active generation=1214.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
-               Angle reference bus: VLHV1_0
-               Slack bus: VLHV1_0
-            Slack bus active power (-614.0 MW) distributed in 1 distribution iteration(s)
-            DC load flow completed (solverSuccess=true, outerloopStatus=STABLE)
-            + Outer loop DistributedSlack
-               + Outer loop iteration 1
-                  Slack bus active power (-606.5609401389966 MW) distributed in 1 distribution iteration(s)
-               + Outer loop iteration 2
-                  Slack bus active power (-1.8780315347046717 MW) distributed in 1 distribution iteration(s)
-            Outer loop VoltageMonitoring
-            Outer loop ReactiveLimits
-            Outer loop DistributedSlack
-            Outer loop VoltageMonitoring
-            Outer loop ReactiveLimits
-            AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
-   <BLANKLINE>
+   
+    >>> report_node = pp.report.ReportNode()
+    >>> network = pn.create_eurostag_tutorial_example1_network()
+    >>> results = lf.run_ac(network, parameters, report_node=report_node)
+    >>> print(report_node)
+    +
+       + Load flow on network 'sim1'
+          + Network CC0 SC0
+             + Network info
+                Network has 4 buses and 4 branches
+                Network balance: active generation=1214.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
+                Angle reference bus: VLHV1_0
+                Slack bus: VLHV1_0
+             Slack bus active power (-614.0 MW) distributed in 1 distribution iteration(s)
+             DC load flow completed (solverSuccess=true, outerloopStatus=STABLE)
+             + Outer loop DistributedSlack
+                + Outer loop iteration 1
+                   Slack bus active power (-606.5609401389966 MW) distributed in 1 distribution iteration(s)
+                + Outer loop iteration 2
+                   Slack bus active power (-1.8780315347046717 MW) distributed in 1 distribution iteration(s)
+             Outer loop VoltageMonitoring
+             Outer loop ReactiveLimits
+             Outer loop DistributedSlack
+             Outer loop VoltageMonitoring
+             Outer loop ReactiveLimits
+             AC load flow completed successfully (solverStatus=CONVERGED, outerloopStatus=STABLE)
+    <BLANKLINE>
 	     
 Asynchronous API
 ----------------
