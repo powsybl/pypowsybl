@@ -198,13 +198,11 @@ Reports contain detailed computation information. To see those reports, pass a r
                 Network balance: active generation=1214.0 MW, active load=600.0 MW, reactive generation=0.0 MVar, reactive load=200.0 MVar
                 Angle reference bus: VLHV1_0
                 Slack bus: VLHV1_0
-             Slack bus active power (-614.0 MW) distributed in 1 distribution iteration(s)
-             DC load flow completed (solverSuccess=true, outerloopStatus=STABLE)
              + Outer loop DistributedSlack
                 + Outer loop iteration 1
-                   Slack bus active power (-606.5609401389966 MW) distributed in 1 distribution iteration(s)
+		   Slack bus active power (-606.5596837558763 MW) distributed in 1 distribution iteration(s)
                 + Outer loop iteration 2
-                   Slack bus active power (-1.8780315347046717 MW) distributed in 1 distribution iteration(s)
+		   Slack bus active power (-1.8792855272990572 MW) distributed in 1 distribution iteration(s)
              Outer loop VoltageMonitoring
              Outer loop ReactiveLimits
              Outer loop DistributedSlack
