@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
@@ -154,27 +155,33 @@ public final class LoadFlowCFunctions {
                                         LoadFlowExceptionCallback loadFlowExceptionCallback,
                                         VoidPointer resultFuturePtr,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        Util.doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String variantIdStr = CTypeUtil.toString(variantId);
-            String providerStr = CTypeUtil.toString(provider);
-            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-            logger().debug("loadflow provider used is : {}", loadFlowProvider.getName());
+        Util.doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String variantIdStr = CTypeUtil.toString(variantId);
+                String providerStr = CTypeUtil.toString(provider);
+                LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+                logger().debug("loadflow provider used is : {}", loadFlowProvider.getName());
 
-            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
-            LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            runner.runAsync(network, variantIdStr,
-                    CommonObjects.getComputationManager(), parameters, reportNode)
-                    .whenComplete((result, throwable) -> {
-                        if (throwable != null) {
-                            var messagePtr = CTypeUtil.toCharPtr(Util.getNonNullMessage(throwable));
-                            loadFlowExceptionCallback.invoke(messagePtr, resultFuturePtr);
-                        } else {
-                            var resultsPtr = createLoadFlowComponentResultArrayPointer(result);
-                            loadFlowResultCallback.invoke(resultsPtr, resultFuturePtr);
-                        }
-                    });
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                runner.runAsync(network, variantIdStr,
+                                CommonObjects.getComputationManager(), parameters, reportNode)
+                        .whenComplete(new BiConsumer<LoadFlowResult, Throwable>() {
+                            @Override
+                            public void accept(LoadFlowResult loadFlowResult, Throwable throwable) {
+                                if (throwable != null) {
+                                    var messagePtr = CTypeUtil.toCharPtr(Util.getNonNullMessage(throwable));
+                                    loadFlowExceptionCallback.invoke(messagePtr, resultFuturePtr);
+                                } else {
+                                    var resultsPtr = createLoadFlowComponentResultArrayPointer(loadFlowResult);
+                                    loadFlowResultCallback.invoke(resultsPtr, resultFuturePtr);
+                                }
+                            }
+                        });
+            }
         });
     }
 

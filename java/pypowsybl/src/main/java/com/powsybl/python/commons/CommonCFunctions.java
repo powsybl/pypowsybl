@@ -48,10 +48,10 @@ public final class CommonCFunctions {
     @CEntryPoint(name = "logMaxMemory")
     public static void logMaxMemory(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
-           @Override
-           public void run() {
-               LoggerFactory.getLogger(CommonCFunctions.class).debug("Max heap is {}", Runtime.getRuntime().maxMemory() / (1024 * 1024) + " MB");
-           }
+            @Override
+            public void run() {
+                LoggerFactory.getLogger(CommonCFunctions.class).debug("Max heap is {}", Runtime.getRuntime().maxMemory() / (1024 * 1024) + " MB");
+            }
         });
     }
 

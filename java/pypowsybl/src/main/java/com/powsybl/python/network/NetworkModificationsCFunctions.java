@@ -175,26 +175,29 @@ public final class NetworkModificationsCFunctions {
                                                CCharPointerPointer transformerIdsPtrPtr,
                                                int transformerIdsCount, boolean merge, ObjectHandle reportNodeHandle,
                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            List<String> transformerIds = toStringList(transformerIdsPtrPtr, transformerIdsCount);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            if (merge) {
-                Replace3TwoWindingsTransformersByThreeWindingsTransformers modification;
-                if (transformerIds.isEmpty()) {
-                    modification = new Replace3TwoWindingsTransformersByThreeWindingsTransformers();
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                List<String> transformerIds = toStringList(transformerIdsPtrPtr, transformerIdsCount);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (merge) {
+                    Replace3TwoWindingsTransformersByThreeWindingsTransformers modification;
+                    if (transformerIds.isEmpty()) {
+                        modification = new Replace3TwoWindingsTransformersByThreeWindingsTransformers();
+                    } else {
+                        modification = new Replace3TwoWindingsTransformersByThreeWindingsTransformers(transformerIds);
+                    }
+                    modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
                 } else {
-                    modification = new Replace3TwoWindingsTransformersByThreeWindingsTransformers(transformerIds);
+                    ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers modification;
+                    if (transformerIds.isEmpty()) {
+                        modification = new ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers();
+                    } else {
+                        modification = new ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers(transformerIds);
+                    }
+                    modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
                 }
-                modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
-            } else {
-                ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers modification;
-                if (transformerIds.isEmpty()) {
-                    modification = new ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers();
-                } else {
-                    modification = new ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers(transformerIds);
-                }
-                modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
             }
         });
     }
