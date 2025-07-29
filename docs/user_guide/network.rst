@@ -32,6 +32,9 @@ The supported formats are the following:
 
    >>> pp.network.get_import_formats()
    ['BIIDM', 'CGMES', 'IEEE-CDF', 'JIIDM', 'MATPOWER', 'POWER-FACTORY', 'PSS/E', 'UCTE', 'XIIDM']
+   >>> pp.network.get_import_supported_extensions()
+   ['RAW', 'RAWX', 'UCT', 'biidm', 'bin', 'dgs', 'iidm', 'jiidm', 'json', 'mat', 'raw', 'rawx', 'txt', 'uct', 'xiidm', 'xml']
+
 
 .. Note::
 
@@ -52,6 +55,20 @@ Only zipped network loading are supported for now, but inside the zip file the s
             n = pp.network.load_from_binary_buffer(io.BytesIO(fh.read()))
 
 You may also create your own network from scratch, see below.
+
+We can also configure some post processors to be loaded after import.
+To see the list of available post processors:
+
+.. doctest::
+
+   >>> pp.network.get_import_post_processors()
+   ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines']
+
+Then a list of post processors can be pass to the load function:
+
+    .. code-block:: python
+
+       network = pp.network.load('mycgmes.zip', post_processors=['replaceTieLinesByLines'])
 
 
 Save a network
@@ -93,6 +110,7 @@ Reading network elements data
 All network elements data can be read as :class:`DataFrames <pandas.DataFrame>`.
 Supported elements are:
 
+ - areas
  - buses (from bus view)
  - buses from bus/breaker view
  - lines
@@ -137,22 +155,22 @@ the step position:
 .. doctest::
 
     >>> network.get_ratio_tap_changer_steps() # doctest: +NORMALIZE_WHITESPACE
-                              rho    r    x    g    b
+                        side       rho    r    x    g    b
     id         position
-    NHV2_NLOAD 0         0.850567  0.0  0.0  0.0  0.0
-               1         1.000667  0.0  0.0  0.0  0.0
-               2         1.150767  0.0  0.0  0.0  0.0
+    NHV2_NLOAD 0              0.850567  0.0  0.0  0.0  0.0
+               1              1.000667  0.0  0.0  0.0  0.0
+               2              1.150767  0.0  0.0  0.0  0.0
 
 This allows to easily get steps related to just one transformer:
 
 .. doctest::
 
     >>> network.get_ratio_tap_changer_steps().loc['NHV2_NLOAD'] # doctest: +NORMALIZE_WHITESPACE
-                   rho    r    x    g    b
+             side       rho    r    x    g    b
     position
-    0         0.850567  0.0  0.0  0.0  0.0
-    1         1.000667  0.0  0.0  0.0  0.0
-    2         1.150767  0.0  0.0  0.0  0.0
+    0              0.850567  0.0  0.0  0.0  0.0
+    1              1.000667  0.0  0.0  0.0  0.0
+    2              1.150767  0.0  0.0  0.0  0.0
 
 For a detailed description of each dataframe, please refer
 to the reference API :doc:`documentation </reference/network>`.
@@ -268,6 +286,15 @@ its state has not changed, our generator still produces 607 MW:
    >>> network.get_generators()['target_p']['GEN'].item()
    607.0
 
+We also provide an automatic way to switch to a variant and then go back to previous one with:
+
+.. doctest::
+
+   >>> with network.working_variant('Variant'):
+   ...     network.update_generators(id='GEN', target_p=701)
+   ...     network.get_generators()['target_p']['GEN'].item()
+   701.0
+
 Once you're done working with your variant, you can remove it:
 
 .. doctest::
@@ -369,7 +396,7 @@ You can add a ratio tap changer on the leg 1 of the three-winding transformer wi
 
     rtc_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap', 'side'],
         data=[('T1', 2, 200, False, 0, 1, 'ONE')])
     steps_df = pd.DataFrame.from_records(
         index='id',
@@ -934,3 +961,65 @@ S1VL1 is connected to S1VL2 by the transformer TWT, so it is kept after the netw
 It is the only voltage level connected to S1VL1 by one branch.
 
 the parameter "ids" can be used to specify the exact voltage levels that will be kept
+
+Using operational limits
+------------------------
+
+Operational limits can be added on various network elements :
+- each side of the branches (lines and 2 windings transformers)
+- each leg of 3 windings transformers
+- dangling lines
+
+For more information on the model of operational limits, see `the internal model documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_model/additional.html#loading-limits>`_
+
+Limits are defined in operational limit groups, that are represented by an `id`. Each line, transformer or dangling line is associated with a collection of groups, and for each element one of its groups is the selected one.
+The id of the selected limit group can be found in the data of each element :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> net = pp.network.create_eurostag_tutorial_example1_network()
+    >>> net.get_lines(attributes=["selected_limits_group_1", "selected_limits_group_2"])
+                selected_limits_group_1 selected_limits_group_2
+    id
+    NHV1_NHV2_1                 DEFAULT                 DEFAULT
+    NHV1_NHV2_2                 DEFAULT                 DEFAULT
+
+To retrieve the limits present on a network, the user can use the `get_operational_limits` method (choosing with the `show_inactive_sets` parameter whether to get all groups or only the active ones).
+For example on a network with a line that has two sets of current limits :
+
+.. code-block:: python
+
+    >>> net.get_operational_limits() # only selected sets
+
+                element_type side             name     type     value  acceptable_duration
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60
+
+    >>> net.get_operational_limits(all_attributes=True, show_inactive_sets=True) # all sets
+
+                element_type side             name     type     value  acceptable_duration  fictitious     group_name  selected
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1       False        DEFAULT      True
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600       False        DEFAULT      True
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT      True
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP     False
+
+
+Finally, the user can change the selected group of limits using the respective update methods of network elements.
+Using the same example as above :
+
+.. code-block:: python
+
+    >>> net.update_lines(id='LINE1', 'selected_limits_group_2'='OTHER_GROUP')
+    >>> net.get_operational_limits(all_attributes=True, show_inactive_sets=True)
+
+                element_type side             name     type     value  acceptable_duration  fictitious     group_name  selected
+    element_id
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1000                   -1       False        DEFAULT     False
+    LINE1               LINE  TWO              10'  CURRENT      1200                  600       False        DEFAULT     False
+    LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT     False
+    LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP      True
+

@@ -56,16 +56,16 @@ def test_runner():
     from pypowsybl import network, voltage_initializer as v_init
     params = v_init.VoltageInitializerParameters()
     n = network.create_eurostag_tutorial_example1_network()
+    n.update_voltage_levels(id=['VLGEN', 'VLLOAD'], low_voltage_limit=[20, 130], high_voltage_limit=[30, 180])
     some_gen_id = n.get_generators().iloc[0].name
     params.add_constant_q_generators([some_gen_id])
     some_2wt_id = n.get_2_windings_transformers().iloc[0].name
     params.add_variable_two_windings_transformers([some_2wt_id])
 
-    params.add_algorithm_param({"foo": "bar", "bar": "bar2"})
     params.set_objective(v_init.VoltageInitializerObjective.SPECIFIC_VOLTAGE_PROFILE)
 
     results = v_init.run(n, params, True)
     results.apply_all_modifications(n)
 
     assert results.status == v_init.VoltageInitializerStatus.OK
-    assert len(results.indicators) == 78
+    assert len(results.indicators) == 79

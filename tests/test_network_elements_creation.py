@@ -9,6 +9,7 @@ import io
 import numpy as np
 import pandas as pd
 import pytest
+import re
 
 import pypowsybl
 import pypowsybl.network
@@ -202,6 +203,7 @@ def test_svc_creation():
                'node': 1,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
@@ -282,8 +284,8 @@ def test_voltage_levels_creation():
 def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     rtc_df = dataframe_from_string("""
-id         target_deadband  target_v  on_load  low_tap  tap  regulating  regulated_side
-NGEN_NHV1                2       200    False        0    1        True             ONE
+id         target_deadband  target_v  oltc  low_tap  tap  regulating  regulated_side
+NGEN_NHV1                2       200  True        0    1        True             ONE
 """)
 
     steps_df = dataframe_from_string("""
@@ -297,7 +299,7 @@ NGEN_NHV1  2  2  1  1  0.5
     rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
     assert rtc.target_deadband == 2
     assert rtc.target_v == 200
-    assert not rtc.on_load
+    assert rtc.oltc
     assert rtc.low_tap == 0
     assert rtc.tap == 1
     assert rtc.regulating
@@ -445,16 +447,16 @@ def test_non_linear_shunt():
     assert shunt.b == 2
 
     model1 = n.get_non_linear_shunt_compensator_sections().loc['SHUNT1']
-    section1 = model1.loc[0]
-    section2 = model1.loc[1]
+    section1 = model1.loc[1]
+    section2 = model1.loc[2]
     assert section1.g == 1
     assert section1.b == 2
     assert section2.g == 3
     assert section2.b == 4
 
     model2 = n.get_non_linear_shunt_compensator_sections().loc['SHUNT2']
-    section1 = model2.loc[0]
-    section2 = model2.loc[1]
+    section1 = model2.loc[1]
+    section2 = model2.loc[2]
     assert section1.g == 5
     assert section1.b == 6
     assert section2.g == 7
@@ -470,14 +472,15 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS', 'S_TEST']),
-                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected', 'fictitious'],
-                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True, False],
-                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
-                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
-                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False],
-                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', True, False]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'bus_breaker_bus_id', 'node',
+                                     'connected', 'fictitious'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 0, True, False],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_0', 0, True, False],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_1', 1, True, False],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', 'S2VL1_0', 0, True, False],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', 'S3VL1_0', 0, True, False],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', 'S4VL1_0', 0, True, False],
+                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 1, True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
@@ -629,36 +632,36 @@ def test_create_node_breaker_network_and_run_loadflow():
 def test_create_limits():
     net = pn.create_eurostag_tutorial_example1_network()
     net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
-         'acceptable_duration': 60, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': 60, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'element_type': 'LINE', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'NHV1_NHV2_1', 'name': '1\'', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
-         'acceptable_duration': 60, 'is_fictitious': False}
+         'acceptable_duration': 60, 'fictitious': False}
     ]))
     expected = pd.DataFrame.from_records(
         index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious'],
-        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False],
-              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False]])
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
+        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False, 'DEFAULT', True]])
     limits = net.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     permanent_limits = limits[limits['name'] == 'permanent_limit']
     pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False)
 
     expected = pd.DataFrame.from_records(
         index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious'],
-        data=[['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False]])
+        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
+        data=[['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False, 'DEFAULT', True],
+              ['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False, 'DEFAULT', True]])
     one_minute_limits = limits[limits['name'] == '1\'']
     pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
 
@@ -825,14 +828,14 @@ def test_creating_vl_without_substation():
 def check_unknown_voltage_level_error_message(fn):
     with pytest.raises(PyPowsyblError) as exc:
         fn(voltage_level_id='UNKNOWN', id='S')
-    assert exc.match('Voltage level UNKNOWN does not exist')
+    assert exc.match("Voltage level 'UNKNOWN' does not exist")
 
 
 def test_error_messages():
     network = pn.create_eurostag_tutorial_example1_network()
     with pytest.raises(PyPowsyblError) as exc:
         network.create_voltage_levels(id='VL', substation_id='UNKNOWN', nominal_v=400)
-    assert exc.match('Substation UNKNOWN does not exist')
+    assert exc.match("Substation 'UNKNOWN' does not exist")
 
     check_unknown_voltage_level_error_message(network.create_loads)
     check_unknown_voltage_level_error_message(network.create_generators)
@@ -851,10 +854,11 @@ def test_tie_line_creation():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
-                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
-                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
-                                  ucte_xnode_code=['XNODE', 'XNODE'])
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
+        network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                      bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                      p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
+                                      ucte_xnode_code=['XNODE', 'XNODE'])
     df = pd.DataFrame.from_records(
         columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
         data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
@@ -913,7 +917,7 @@ def test_deprecated_ucte_xnode_code_kwargs():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
         network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
                                       bus_id=['BUS_TEST', 'BUS_TEST2'],
                                       p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
@@ -931,7 +935,7 @@ def test_deprecated_ucte_xnode_code_dataframe():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    with pytest.deprecated_call():
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
         network.create_dangling_lines(pd.DataFrame.from_records(
             columns=['id', 'voltage_level_id', 'bus_id', 'p0', 'q0', 'r', 'x', 'g', 'b', 'ucte_xnode_code'],
             data=[('DL_TEST', 'VLTEST', 'BUS_TEST', 100, 101, 2, 2, 1, 1, 'XNODE1'),
@@ -996,7 +1000,7 @@ def test_3_windings_transformers_creation():
     #Add ratio tap changer
     rtc_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap', 'side'],
         data=[('TWT_TEST', 2, 200, False, 0, 1, 'ONE')])
     steps_df = pd.DataFrame.from_records(
         index='id',
@@ -1023,21 +1027,123 @@ def test_3_windings_transformers_creation():
 
     #Add some limits
     n.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
-        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 1000,
-         'acceptable_duration': 60, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': 'permanent_limit', 'element_type': 'THREE_WINDINGS_TRANSFORMER',
+         'acceptable_duration': 60, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': 'permanent_limit',
          'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 400,
-         'acceptable_duration': np.inf, 'is_fictitious': False},
-        {'element_id': 'TWT_TEST', 'name': '1\'', 'element_type': 'THREE_WINDINGS_TRANSFORMER', 'side': 'ONE',
+         'acceptable_duration': np.inf, 'fictitious': False},
+        {'element_id': 'TWT_TEST', 'name': '1\'', 'side': 'ONE',
          'type': 'ACTIVE_POWER', 'value': 700,
-         'acceptable_duration': 60, 'is_fictitious': False}
+         'acceptable_duration': 60, 'fictitious': False}
     ]))
     operational_limits = n.get_operational_limits().loc['TWT_TEST']
     assert operational_limits.shape[0] == 4
 
+
+def test_internal_connections_creation_removal():
+    network = pn.create_empty()
+    network.create_substations(id='S1')
+    network.create_voltage_levels(id=['VL1', 'VL2'], nominal_v=[380, 380],
+                                  topology_kind=['NODE_BREAKER', 'NODE_BREAKER'])
+
+    busbar_sections = pd.DataFrame.from_records(index='voltage_level_id', data=[
+        {'voltage_level_id': 'VL1', 'id': 'VL1BBS1', 'node': 0},
+        {'voltage_level_id': 'VL1', 'id': 'VL1BBS2', 'node': 1},
+        {'voltage_level_id': 'VL2', 'id': 'VL2BBS1', 'node': 0},
+        {'voltage_level_id': 'VL2', 'id': 'VL2BBS2', 'node': 1},
+    ])
+    network.create_busbar_sections(busbar_sections)
+    network.create_switches(id='VL1.COUPLER', voltage_level_id='VL1', kind='BREAKER', node1=2, node2=3)
+    network.create_switches(id='VL2.COUPLER', voltage_level_id='VL2', kind='BREAKER', node1=2, node2=3)
+
+    # create internal connections - dataframe
+    internal_connections = pd.DataFrame.from_records(index='voltage_level_id', data=[
+        {'voltage_level_id': 'VL1', 'node1': 0, 'node2': 2},
+        {'voltage_level_id': 'VL1', 'node1': 1, 'node2': 3},
+        {'voltage_level_id': 'VL2', 'node1': 0, 'node2': 2},
+        {'voltage_level_id': 'VL2', 'node1': 1, 'node2': 3},
+    ])
+    network.create_internal_connections(internal_connections)
+    expected_icn_initial = pd.DataFrame(
+        index=pd.Series(name='id', data=[0, 1]),
+        columns=['node1', 'node2'],
+        data=[[0, 2],
+              [1, 3]])
+    pd.testing.assert_frame_equal(expected_icn_initial,
+                                  network.get_node_breaker_topology('VL1').internal_connections,
+                                  check_dtype=False, check_index_type=False)
+    pd.testing.assert_frame_equal(expected_icn_initial,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False, check_index_type=False)
+
+    # remove internal connections - dataframe
+    vl1_remove = pd.DataFrame.from_records(index='voltage_level_id', data=[
+        {'voltage_level_id': 'VL1', 'node1': 3, 'node2': 1},  # removal is not oriented
+    ])
+    network.remove_internal_connections(vl1_remove)
+    expected_icn_vl1_after_removal = pd.DataFrame(
+        index=pd.Series(name='id', data=[0]),
+        columns=['node1', 'node2'],
+        data=[[0, 2]])
+    pd.testing.assert_frame_equal(expected_icn_vl1_after_removal,
+                                  network.get_node_breaker_topology('VL1').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+    # VL2 unaffected
+    pd.testing.assert_frame_equal(expected_icn_initial,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+    # create internal connections - kwargs
+    network.create_internal_connections(voltage_level_id='VL2', node1=5, node2=6)
+    expected_icn_vl2 = pd.DataFrame(
+        index=pd.Series(name='id', data=[0, 1, 2]),
+        columns=['node1', 'node2'],
+        data=[[0, 2],
+              [1, 3],
+              [5, 6]])
+    pd.testing.assert_frame_equal(expected_icn_vl2,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+    # remove internal connections - kwargs
+    network.remove_internal_connections(voltage_level_id=['VL2', 'VL2'], node1=[0, 5], node2=[2, 6])
+    expected_icn_vl2_after_removal = pd.DataFrame(
+        index=pd.Series(name='id', data=[0]),
+        columns=['node1', 'node2'],
+        data=[[1, 3]])
+    pd.testing.assert_frame_equal(expected_icn_vl1_after_removal,
+                                  network.get_node_breaker_topology('VL1').internal_connections,  # unchanged
+                                  check_dtype=False,
+                                  check_index_type=False)
+    pd.testing.assert_frame_equal(expected_icn_vl2_after_removal,
+                                  network.get_node_breaker_topology('VL2').internal_connections,
+                                  check_dtype=False,
+                                  check_index_type=False)
+
+
+def test_internal_connections_errors():
+    network = pypowsybl.network.create_eurostag_tutorial_example1_network()
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_internal_connections(voltage_level_id='wrongVL', node1=0, node2=1)
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.remove_internal_connections(voltage_level_id='wrongVL', node1=0, node2=1)
+    assert "Voltage level \'wrongVL\' does not exist." in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.create_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
+    assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)
+
+    with pytest.raises(PyPowsyblError) as exc:
+        network.remove_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
+    assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)

@@ -37,6 +37,15 @@ the violations created by the contingency, they are collected by contingency in 
                       NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0  1477.824335  TWO
                       VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
 
+It is also possible to get a JSON file with the full security analysis results, just by using the `export_to_json` method, like in the example below :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> n = pp.network.create_eurostag_tutorial_example1_network()
+    >>> sa = pp.security.create_analysis()
+    >>> sa_result = sa.run_ac(n)
+    >>> sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))
 
 
 Adding monitored Elements
@@ -52,13 +61,13 @@ Information can be obtained on buses, branches and three windings transformers.
 .. doctest:: security.monitored_elements
     :options: +NORMALIZE_WHITESPACE
 
-    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> network = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
     >>> security_analysis = pp.security.create_analysis()
     >>> security_analysis.add_single_element_contingency('NHV1_NHV2_1', 'NHV1_NHV2_1')
-    >>> security_analysis.add_single_element_contingency('NGEN_NHV1', 'NGEN_NHV1')
+    >>> security_analysis.add_single_element_contingency('GEN', 'GEN')
     >>> security_analysis.add_monitored_elements(voltage_level_ids=['VLHV2'])
-    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'NGEN_NHV1'])
-    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='NGEN_NHV1')
+    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'], contingency_ids=['NHV1_NHV2_1', 'GEN'])
+    >>> security_analysis.add_postcontingency_monitored_elements(branch_ids=['NHV1_NHV2_1'], contingency_ids='GEN')
     >>> security_analysis.add_precontingency_monitored_elements(branch_ids=['NHV1_NHV2_2'])
     >>> results = security_analysis.run_ac(network)
     >>> results.bus_results
@@ -69,8 +78,8 @@ Information can be obtained on buses, branches and three windings transformers.
                                                         p1     q1       i1      p2      q2       i2  flow_transfer
     contingency_id operator_strategy_id branch_id
                                         NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
-    NGEN_NHV1                           NHV1_NHV2_1 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
-                                        NHV1_NHV2_2 301.06   0.00   302.80 -300.19 -116.60   326.75            NaN
+    GEN                                 NHV1_NHV2_1 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
+                                        NHV1_NHV2_2 302.44  98.74   456.77 -300.43 -137.19   488.99            NaN
     NHV1_NHV2_1                         NHV1_NHV2_2 610.56 334.06 1,008.93 -601.00 -285.38 1,047.83            NaN
 
 It also possible to get flow transfer on monitored branches in case of N-1 branch contingencies:
@@ -99,9 +108,22 @@ Operator strategies and remedial actions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Pypowsybl security analysis support operator strategies and remedial actions definition.
+
 You can define several types of actions by calling the add_XXX_action API.
 All actions need a unique id to be referenced later at the operator strategy creation stage.
-The following example define a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
+
+The supported actions in PyPowsybl are listed here:
+
+- `switch`, to open or close a switch
+- `phase_tap_changer_position`, to change the tap position of a phase tap changer
+- `ratio_tap_changer_position`, to change the tap position of a ratio tap changer
+- `load_active_power`, to change the active power of a load
+- `load_reactive_power`, to change the reactive power of a load
+- `shunt_compensator_position`, to change the section of a shunt compensator
+- `generator_active_power`, to modify the generator active power
+- `terminals_connection`, to connect/disconnect one or multiple sides of a network element
+
+The following example defines a switch closing action with id 'SwitchAction' on the switch with id 'S4VL1_BBS_LD6_DISCONNECTOR'.
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
@@ -131,3 +153,79 @@ The following operator strategy define the application of the switch action 'Swi
     240.00360040333226
 
 Results for the post remedial action state are available in the branch results indexed with the operator strategy unique id.
+
+Adding input data from JSON files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is possible to add the input data of a security analysis using JSON files.
+The contingencies can be added this way, using the `add_contingencies_from_json_file` method.
+
+An example of a valid JSON contingency file is the following :
+
+.. code-block:: JSON
+
+    {
+      "type" : "default",
+      "version" : "1.0",
+      "name" : "list",
+      "contingencies" : [ {
+        "id" : "contingency",
+        "elements" : [ {
+          "id" : "NHV1_NHV2_1",
+          "type" : "BRANCH"
+        }, {
+          "id" : "NHV1_NHV2_2",
+          "type" : "BRANCH"
+        } ]
+      }, {
+        "id" : "contingency2",
+        "elements" : [ {
+          "id" : "GEN",
+          "type" : "GENERATOR"
+        } ]
+      } ]
+    }
+
+
+From now on, it is possible to add the remedial actions using JSON files too, using the `add_actions_from_json_file` method.
+The following example is a valid JSON file input for this method :
+
+.. code-block:: JSON
+
+    {
+      "version" : "1.0",
+      "actions" : [ {
+        "type" : "SWITCH",
+        "id" : "id1",
+        "switchId" : "S1VL2_LCC1_BREAKER",
+        "open" : true
+      }, {
+        "type" : "SWITCH",
+        "id" : "id2",
+        "switchId" : "S1VL2_BBS2_COUPLER_DISCONNECTOR",
+        "open" : true
+      }]
+    }
+
+
+Additionally, you can add operator strategies from JSON data, using the `add_operator_strategies_from_json_file` method.
+The following example is a valid JSON file input for this method :
+
+.. code-block:: JSON
+
+    {
+      "version" : "1.1",
+      "operatorStrategies" : [ {
+        "id" : "id1",
+        "contingencyContextType" : "SPECIFIC",
+        "contingencyId" : "contingency",
+        "conditionalActions" : [ {
+          "id" : "stage1",
+          "condition" : {
+            "type" : "TRUE_CONDITION"
+          },
+          "actionIds" : [ "id1", "id2" ]
+        } ]
+      }]
+    }
+

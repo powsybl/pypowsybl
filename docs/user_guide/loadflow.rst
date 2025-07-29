@@ -29,13 +29,13 @@ We can get the list of supported load flow implementations (so called providers)
     'OpenLoadFlow'
 
 By default, load flows are based on the OpenLoadFlow implementation,
-fully described on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/openlf.html>`_.
+fully described `here <https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/>`_.
 OpenLoadFlow supports AC Newton-Raphson and linear DC calculation methods.
 
 You may also use DynaFlow, provided by the `Dynawo <https://dynawo.github.io>`_ project.
 DynaFlow is a new steady-state simulation tool that aims at calculating the steady-state point by using
 a simplified time-domain simulation.
-Please see configuration instructions on `Powsybl website <https://www.powsybl.org/pages/documentation/simulation/powerflow/dynaflow.html>`__.
+Please see configuration instructions `here <https://powsybl.readthedocs.io/projects/powsybl-dynawo/en/latest/>`__.
 
 
 Parameters
@@ -47,11 +47,11 @@ Let's have a look at the default ones:
 .. doctest::
 
     >>> lf.Parameters()
-    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, dc_power_factor=1.0, provider_parameters={})
+    Parameters(voltage_init_mode=UNIFORM_VALUES, transformer_voltage_control_on=False, use_reactive_limits=True, phase_shifter_regulation_on=False, twt_split_shunt_admittance=False, shunt_compensator_voltage_control_on=False, read_slack_bus=True, write_slack_bus=True, distributed_slack=True, balance_type=PROPORTIONAL_TO_GENERATION_P_MAX, dc_use_transformer_ratio=True, countries_to_balance=[], connected_component_mode=<ConnectedComponentMode.MAIN: 0>, hvdc_ac_emulation=True, dc_power_factor=1.0, provider_parameters={})
 
 For more details on each parameter, please refer to the :doc:`API reference </reference/loadflow/parameters>`.
 
-All parameters are also fully described in `Powsybl load flow parameters documentation <https://www.powsybl.org/pages/documentation/simulation/powerflow/>`_.
+All parameters are also fully described in `Powsybl load flow parameters documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/simulation/loadflow/configuration.html>`_.
 
 Parameters specific to a provider
 ---------------------------------
@@ -60,7 +60,23 @@ Some parameters are not supported by all load flow providers but specific to onl
 parameters could be specified in a less typed way than common parameters using the `provider_parameters` attribute.
 
 .. warning::
-    `provider_parameters` is dictionary and all keys and values have to be a string even in case of a numeric value.
+    `provider_parameters` is a dictionary in which all keys and values **must** be a string, even in case of a numeric value:
+
+    * string and integer parameters do not bring much challenge:
+
+      ``provider_parameters={'someStringParam' : 'myStringValue', 'someIntegerParam' : '42'}``
+
+    * for float (double) parameters, use the dot as decimal separator. E notation is also supported:
+
+      ``provider_parameters={'someDoubleParam' : '1.23', 'someOtherDoubleParam' : '4.56E-2'}``
+
+    * for boolean parameters, use either `'True'`, `'true'`, `'False'`, `'false'`:
+
+      ``provider_parameters={'someBooleanParam' : 'true'}``
+
+    * for string list parameters, use the comma as a separator:
+
+      ``provider_parameters={'someStringListParam' : 'value1,value2,value3'}``
 
 We can list supported parameters specific to default provider using:
 
@@ -69,16 +85,17 @@ We can list supported parameters specific to default provider using:
     >>> lf.get_provider_parameters_names()
     ['slackBusSelectionMode', 'slackBusesIds', 'lowImpedanceBranchMode', 'voltageRemoteControl', ...]
 
-And get more detailed information about theses parameters using:
+And get more detailed information about theses parameters, such as parameter description, type, default value if any,
+possible values if applicable, using:
 
 .. doctest::
     :options: +NORMALIZE_WHITESPACE
 
-    >>> lf.get_provider_parameters().iloc[:2]
-                                        description    type      default                                possible_values
+    >>> lf.get_provider_parameters().query('name == "slackBusSelectionMode" or name == "slackBusesIds"')
+                                category_key               description         type      default                                possible_values
     name
-    slackBusSelectionMode  Slack bus selection mode  STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
-    slackBusesIds                     Slack bus IDs  STRING_LIST
+    slackBusSelectionMode  SlackDistribution  Slack bus selection mode       STRING  MOST_MESHED  [FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]
+    slackBusesIds          SlackDistribution             Slack bus IDs  STRING_LIST
 
 For instance, OLF supports configuration of slack bus from its ID like this:
 
@@ -160,3 +177,35 @@ We can finally retrieve the computed flows on lines:
     NHV1_NHV2_1  300.0 -300.0
     NHV1_NHV2_2  300.0 -300.0
 
+
+Asynchronous API
+----------------
+
+An asynchronous API based on Python's asyncio has been added for AC loadflow calculations (DC loadflow support will be added in a future release). The following example demonstrates how to:
+ - Load a network
+ - Create two identical variants from the initial state
+ - Run AC loadflow calculations on both variants concurrently
+ - Wait for both results and display their convergence status
+
+Both loadflow calculations are executed in parallel using Python's asyncio API.
+
+
+.. caution::
+   The network has to be loaded using a special parameter `allow_variant_multi_thread_access` to `True` to be able
+   to work on multiple variants of a same network concurrently using different threads.
+
+.. doctest::
+
+    >>> import asyncio
+    >>> async def run_2_lf():
+    ...     lf1 = lf.run_ac_async(network, "variant1")
+    ...     lf2 = lf.run_ac_async(network, "variant2")
+    ...     results = await asyncio.gather(lf1, lf2)
+    ...     print(results[0][0].status)
+    ...     print(results[1][0].status)
+    >>> network = pn.create_ieee14(allow_variant_multi_thread_access=True)
+    >>> network.clone_variant("InitialState", "variant1")
+    >>> network.clone_variant("InitialState", "variant2")
+    >>> asyncio.run(run_2_lf())
+    ComponentStatus.CONVERGED
+    ComponentStatus.CONVERGED

@@ -47,7 +47,15 @@ typedef struct loadflow_component_result_struct {
     double distributed_active_power;
 } loadflow_component_result;
 
+typedef struct provider_parameters_struct {
+    char** provider_parameters_keys;
+    int provider_parameters_keys_count;
+    char** provider_parameters_values;
+    int provider_parameters_values_count;
+} provider_parameters;
+
 typedef struct loadflow_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     int voltage_init_mode;
     unsigned char transformer_voltage_control_on;
     unsigned char use_reactive_limits;
@@ -62,11 +70,8 @@ typedef struct loadflow_parameters_struct {
     char** countries_to_balance;
     int countries_to_balance_count;
     int connected_component_mode;
+    unsigned char hvdc_ac_emulation;
     double dc_power_factor;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } loadflow_parameters;
 
 typedef struct loadflow_validation_parameters_struct {
@@ -84,25 +89,25 @@ typedef struct loadflow_validation_parameters_struct {
 } loadflow_validation_parameters;
 
 typedef struct security_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
     double flow_proportional_threshold;
     double low_voltage_proportional_threshold;
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } sensitivity_analysis_parameters;
+
+typedef struct dynamic_simulation_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
+    double start_time;
+    double stop_time;
+} dynamic_simulation_parameters;
 
 typedef struct limit_violation_struct {
     char* subject_id;
@@ -141,11 +146,13 @@ typedef enum {
     THREE_WINDINGS_TRANSFORMER,
     GENERATOR,
     LOAD,
+    GROUND,
     BATTERY,
     SHUNT_COMPENSATOR,
     NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
     LINEAR_SHUNT_COMPENSATOR_SECTION,
     DANGLING_LINE,
+    DANGLING_LINE_GENERATION,
     TIE_LINE,
     LCC_CONVERTER_STATION,
     VSC_CONVERTER_STATION,
@@ -161,13 +168,19 @@ typedef enum {
     PHASE_TAP_CHANGER,
     REACTIVE_CAPABILITY_CURVE_POINT,
     OPERATIONAL_LIMITS,
+    SELECTED_OPERATIONAL_LIMITS,
     MINMAX_REACTIVE_LIMITS,
     ALIAS,
     IDENTIFIABLE,
     INJECTION,
     BRANCH,
     TERMINAL,
-    SUB_NETWORK
+    SUB_NETWORK,
+    AREA,
+    AREA_VOLTAGE_LEVELS,
+    AREA_BOUNDARIES,
+    INTERNAL_CONNECTION,
+    PROPERTIES
 } element_type;
 
 typedef enum {
@@ -266,6 +279,7 @@ typedef struct series_struct {
     unsigned char index;
     int type;
     array data;
+    int* mask;
 } series;
 
 /**
@@ -328,7 +342,7 @@ typedef struct flow_decomposition_parameters_struct {
     unsigned char enable_losses_compensation;
     double losses_compensation_epsilon;
     double sensitivity_epsilon;
-    unsigned char rescale_enabled;
+    int rescale_mode;
     unsigned char dc_fallback_enabled_after_ac_divergence;
     int sensitivity_variable_batch_size;
 } flow_decomposition_parameters;
@@ -361,18 +375,54 @@ typedef struct nad_parameters_struct {
     int scaling_factor;
     double radius_factor;
     int edge_info_displayed;
+    unsigned char voltage_level_details;
+    unsigned char injections_added;
 } nad_parameters;
 
 typedef enum {
-    ALPHA_BETA_LOAD = 0,
-    ONE_TRANSFORMER_LOAD,
-    CURRENT_LIMIT_AUTOMATON,
-    GENERATOR_SYNCHRONOUS,
-    GENERATOR_SYNCHRONOUS_THREE_WINDINGS,
-    GENERATOR_SYNCHRONOUS_THREE_WINDINGS_PROPORTIONAL_REGULATIONS,
-    GENERATOR_SYNCHRONOUS_FOUR_WINDINGS,
-    GENERATOR_SYNCHRONOUS_FOUR_WINDINGS_PROPORTIONAL_REGULATIONS,
+    BASE_LOAD = 0,
+    LOAD_ONE_TRANSFORMER,
+    LOAD_ONE_TRANSFORMER_TAP_CHANGER,
+    LOAD_TWO_TRANSFORMERS,
+    LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
+    BASE_GENERATOR,
+    SYNCHRONIZED_GENERATOR,
+    SYNCHRONOUS_GENERATOR,
+    WECC,
+    GRID_FORMING_CONVERTER,
+    SIGNAL_N_GENERATOR,
+    HVDC_P,
+    HVDC_VSC,
+    BASE_TRANSFORMER,
+    BASE_STATIC_VAR_COMPENSATOR,
+    BASE_LINE,
+    BASE_BUS,
+    INFINITE_BUS,
+    OVERLOAD_MANAGEMENT_SYSTEM,
+    TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
+    UNDER_VOLTAGE,
+    PHASE_SHIFTER_I,
+    PHASE_SHIFTER_P,
+    PHASE_SHIFTER_BLOCKING_I,
+    TAP_CHANGER,
+    TAP_CHANGER_BLOCKING,
 } DynamicMappingType;
+
+typedef enum {
+    DISCONNECT = 0,
+    NODE_FAULT,
+    ACTIVE_POWER_VARIATION,
+} EventMappingType;
+
+typedef enum {
+    CURVE = 0,
+    FINAL_STATE,
+} OutputVariableType;
+
+typedef enum {
+    DYNAMIC_SIMULATION_SUCCESS = 0,
+    DYNAMIC_SIMULATION_FAILURE,
+} DynamicSimulationStatus;
 
 typedef enum {
     UNDEFINED = -1,
@@ -382,6 +432,7 @@ typedef enum {
 } ThreeSide;
 
 typedef struct shortcircuit_analysis_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
     unsigned char with_voltage_result;
     unsigned char with_feeder_result;
     unsigned char with_limit_violations;
@@ -389,10 +440,6 @@ typedef struct shortcircuit_analysis_parameters_struct {
     unsigned char with_fortescue_result;
     double min_voltage_drop_proportional_threshold;
     int initial_voltage_profile_mode;
-    char** provider_parameters_keys;
-    int provider_parameters_keys_count;
-    char** provider_parameters_values;
-    int provider_parameters_values_count;
 } shortcircuit_analysis_parameters;
 
 typedef enum {
@@ -424,3 +471,113 @@ typedef enum {
     NO_GENERATION,
     ALL_BUSES,
 } VoltageInitializerReactiveSlackBusesMode;
+
+typedef enum {
+    DEFAULT = 0,
+    FAILURE,
+    PARTIAL_FAILURE,
+} RaoComputationStatus;
+
+typedef enum {
+    VOLTAGE_LEVEL_NAME = 0,
+    LOAD_NAME,
+    GENERATOR_NAME,
+    SHUNT_NAME,
+    BRANCH_NAME,
+} Grid2opStringValueType;
+
+typedef enum {
+    LOAD_VOLTAGE_LEVEL_NUM = 0,
+    GENERATOR_VOLTAGE_LEVEL_NUM,
+    SHUNT_VOLTAGE_LEVEL_NUM,
+    BRANCH_VOLTAGE_LEVEL_NUM_1,
+    BRANCH_VOLTAGE_LEVEL_NUM_2,
+    SHUNT_LOCAL_BUS,
+    TOPO_VECT,
+} Grid2opIntegerValueType;
+
+typedef enum {
+    LOAD_P = 0,
+    LOAD_Q,
+    LOAD_V,
+    LOAD_ANGLE,
+    GENERATOR_P,
+    GENERATOR_Q,
+    GENERATOR_V,
+    GENERATOR_ANGLE,
+    SHUNT_P,
+    SHUNT_Q,
+    SHUNT_V,
+    SHUNT_ANGLE,
+    BRANCH_P1,
+    BRANCH_P2,
+    BRANCH_Q1,
+    BRANCH_Q2,
+    BRANCH_V1,
+    BRANCH_V2,
+    BRANCH_ANGLE1,
+    BRANCH_ANGLE2,
+    BRANCH_I1,
+    BRANCH_I2,
+    BRANCH_PERMANENT_LIMIT_A,
+} Grid2opDoubleValueType;
+
+typedef enum {
+    UPDATE_LOAD_P = 0,
+    UPDATE_LOAD_Q,
+    UPDATE_GENERATOR_P,
+    UPDATE_GENERATOR_V,
+} Grid2opUpdateDoubleValueType;
+
+
+typedef enum {
+    UPDATE_LOAD_BUS = 0,
+    UPDATE_GENERATOR_BUS,
+    UPDATE_SHUNT_BUS,
+    UPDATE_BRANCH_BUS1,
+    UPDATE_BRANCH_BUS2,
+} Grid2opUpdateIntegerValueType;
+
+typedef struct rao_parameters_struct {
+  struct provider_parameters_struct provider_parameters;
+  int objective_function_type; // Objective function parameters
+  unsigned char enforce_curative_security;
+  int unit; // Objective function parameters
+  double curative_min_obj_improvement;
+
+  // range action solver
+  int solver;
+  double relative_mip_gap;
+  char* solver_specific_parameters;
+
+  double pst_ra_min_impact_threshold;
+  double hvdc_ra_min_impact_threshold;
+  double injection_ra_min_impact_threshold;
+  int max_mip_iterations; // range action optimization parameters
+  double pst_sensitivity_threshold;
+  double hvdc_sensitivity_threshold;
+  double injection_ra_sensitivity_threshold;
+  int pst_model;
+  int ra_range_shrinking;
+
+  int max_preventive_search_tree_depth; // topo optimization parameters
+  int max_curative_search_tree_depth;
+  double relative_min_impact_threshold;
+  double absolute_min_impact_threshold;
+  array predefined_combinations;
+  unsigned char skip_actions_far_from_most_limiting_element;
+  int max_number_of_boundaries_for_skipping_actions;
+
+  int available_cpus; // Multithreading parameters
+
+  int execution_condition;  // Second preventive rao parameters
+  unsigned char re_optimize_curative_range_actions;
+  unsigned char hint_from_first_preventive_rao;
+
+  unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters
+
+  char* load_flow_provider;  // Load flow and sensitivity parameters
+  char* sensitivity_provider;
+  struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
+  double sensitivity_failure_overcost;
+} rao_parameters;

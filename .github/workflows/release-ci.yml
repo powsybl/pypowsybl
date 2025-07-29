@@ -4,39 +4,44 @@ on:
   release:
     types:
       - created
+      - released
 
+permissions:
+  contents: write
+  
 jobs:
   manylinux_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux2014_x86_64:2024-07-01-8dac23b
-    env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
     strategy:
       matrix:
         python:
           - {
-            name: cp38,
-            abi: cp38,
-            version: '3.8',
+            name: cp39,
+            abi: cp39,
+            version: '3.9',
           }
 
     steps:
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
       - name: Install Maven
         run: |
-          curl --fail --silent --show-error https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -o /tmp/apache-maven-3.9.6-bin.tar.gz
+          wget https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.6/bin >> $GITHUB_PATH
+          echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
 
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1.1.5 # !!! this is last version compatible with manylinux 2014
+        uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17'
+          java-version: '17.0.12'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
@@ -76,33 +81,39 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-12,
+            os: macos-13,
           }
+#          - {
+#            name: darwin-arm64,
+#            os: macos-15,
+#            macosx_deployment_target: "11", # first arm64 version of macosx
+#            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
+#          }
           - {
             name: windows,
             os: windows-2022,
           }
         python:
           - {
-            name: cp38,
-            version: '3.8',
+            name: cp39,
+            version: '3.9',
           }
 
     steps:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17'
+          java-version: '17.0.12'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Setup Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python.version }}
 

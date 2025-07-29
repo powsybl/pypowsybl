@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<GSKDocument xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DtdVersion="1" DtdRelease="0" xsi:noNamespaceSchemaLocation="gsk-document.xsd">
+	<DocumentIdentification v="17XTSO-CS------W-20160729-F112"/>
+	<DocumentVersion v="1"/>
+	<DocumentType v="Z02"/>
+	<ProcessType v="Z02"/>
+	<SenderIdentification v="17XTSO-CS------W" codingScheme="A01"/>
+	<SenderRole v="A36"/>
+	<ReceiverIdentification v="10XFR-RTE------Q" codingScheme="A01"/>
+	<ReceiverRole v="A04"/>
+	<CreationDateTime v="2017-10-30T09:27:21Z"/>
+	<GSKTimeInterval v="2019-01-07T23:00Z/2019-01-08T23:00Z"/>
+	<Domain v="10YDOM-REGION-1V" codingScheme="A01"/>
+	<GSKSeries>
+		<TimeSeriesIdentification v="1"/>
+		<BusinessType v="Z02" share="100"/>
+		<Area v="10YBE----------2" codingScheme="A01"/>
+		<AutoGSK_Block>
+			<GSK_Name v="BE"/>
+			<TimeInterval v="2019-01-07T23:00Z/2019-01-08T23:00Z"/>
+			<AutoNodes>
+				<NodeName v="BBE1AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="BBE2AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="BBE3AA1 "/>
+			</AutoNodes>
+		</AutoGSK_Block>
+	</GSKSeries>
+	<GSKSeries>
+		<TimeSeriesIdentification v="2"/>
+		<BusinessType v="Z02" share="100"/>
+		<Area v="10YCB-GERMANY--8" codingScheme="A01"/>
+		<AutoGSK_Block>
+			<GSK_Name v="DE"/>
+			<TimeInterval v="2019-01-07T23:00Z/2019-01-08T23:00Z"/>
+			<AutoNodes>
+				<NodeName v="DDE1AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="DDE2AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="DDE3AA1 "/>
+			</AutoNodes>
+		</AutoGSK_Block>
+	</GSKSeries>
+	<GSKSeries>
+		<TimeSeriesIdentification v="3"/>
+		<BusinessType v="Z02" share="100"/>
+		<Area v="10YFR-RTE------C" codingScheme="A01"/>
+		<AutoGSK_Block>
+			<GSK_Name v="FR"/>
+			<TimeInterval v="2019-01-07T23:00Z/2019-01-08T23:00Z"/>
+			<AutoNodes>
+				<NodeName v="FFR1AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="FFR2AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="FFR3AA1 "/>
+			</AutoNodes>
+		</AutoGSK_Block>
+	</GSKSeries>
+	<GSKSeries>
+		<TimeSeriesIdentification v="4"/>
+		<BusinessType v="Z02" share="100"/>
+		<Area v="10YNL----------L" codingScheme="A01"/>
+		<AutoGSK_Block>
+			<GSK_Name v="NL"/>
+			<TimeInterval v="2019-01-07T23:00Z/2019-01-08T23:00Z"/>
+			<AutoNodes>
+				<NodeName v="NNL1AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="NNL2AA1 "/>
+			</AutoNodes>
+			<AutoNodes>
+				<NodeName v="NNL3AA1 "/>
+			</AutoNodes>
+		</AutoGSK_Block>
+	</GSKSeries>
+</GSKDocument>
