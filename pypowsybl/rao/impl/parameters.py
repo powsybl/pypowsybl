@@ -11,6 +11,8 @@ from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     RaoParameters
 )
+
+from .costly_min_margin_parameters import CostlyMinMarginParameters
 from .objective_function_parameters import ObjectiveFunctionParameters
 from .range_action_optimization_parameters import RangeActionOptimizationParameters
 from .topo_optimization_parameters import TopoOptimizationParameters
