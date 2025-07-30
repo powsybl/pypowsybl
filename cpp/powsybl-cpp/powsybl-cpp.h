@@ -582,6 +582,8 @@ public:
 
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
+
+    float shifted_violation_penalty;
 };
 
 RaoParameters* createRaoParameters();
