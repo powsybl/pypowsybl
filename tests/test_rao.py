@@ -35,6 +35,8 @@ from pypowsybl.rao import (
     LoadFlowAndSensitivityParameters,
     RaoLogFilter)
 
+from pypowsybl.rao.impl.costly_min_margin_parameters import CostlyMinMarginParameters
+
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
 
@@ -96,6 +98,10 @@ def test_rao_parameters():
         do_not_optimize_curative_cnecs_for_tsos_without_cras=True
     )
 
+    costly_min_margin_parameters = CostlyMinMarginParameters(
+        shifted_violation_penalty=10.2
+    )
+
     custom_sensi_param = pypowsybl.sensitivity.Parameters()
     custom_sensi_param.load_flow_parameters.phase_shifter_regulation_on = True
     sensitivity_parameters = LoadFlowAndSensitivityParameters(
@@ -110,7 +116,8 @@ def test_rao_parameters():
         multithreading_parameters=multithreading_param,
         second_preventive_rao_parameters=second_preventive_params,
         not_optimized_cnecs_parameters=not_optimized_cnecs_parameters,
-        loadflow_and_sensitivity_parameters=sensitivity_parameters
+        loadflow_and_sensitivity_parameters=sensitivity_parameters,
+        costly_min_margin_parameters=costly_min_margin_parameters
     )
 
     assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
@@ -146,6 +153,8 @@ def test_rao_parameters():
 
     assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost == 32.0
     assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters.phase_shifter_regulation_on == True
+
+    assert parameters2.costly_min_margin_parameters.shifted_violation_penalty == 10.2
 
 def test_rao_from_files():
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
