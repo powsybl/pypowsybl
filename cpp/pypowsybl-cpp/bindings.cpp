@@ -889,7 +889,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("sensitivity_parameters", &pypowsybl::RaoParameters::sensitivity_parameters)
             .def_readwrite("sensitivity_failure_overcost", &pypowsybl::RaoParameters::sensitivity_failure_overcost)
             .def_readwrite("provider_parameters_keys", &pypowsybl::RaoParameters::provider_parameters_keys)
-            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values);
+            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values)
+            .def_readwrite("shifted_violation_penalty", &pypowsybl::RaoParameters::shifted_violation_penalty)
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {

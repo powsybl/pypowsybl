@@ -424,6 +424,8 @@ RaoParameters::RaoParameters(rao_parameters* src):
     sensitivity_provider = toString(src->sensitivity_provider);
     sensitivity_failure_overcost = src->sensitivity_failure_overcost;
 
+    shifted_violation_penalty = src->shifted_violation_penalty;
+
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
@@ -474,6 +476,9 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.sensitivity_parameters = new sensitivity_analysis_parameters();
     sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
     res.sensitivity_failure_overcost = sensitivity_failure_overcost;
+
+    res.shifted_violation_penalty = shifted_violation_penalty;
+
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 

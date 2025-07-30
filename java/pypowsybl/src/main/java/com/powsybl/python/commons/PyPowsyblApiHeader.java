@@ -1614,6 +1614,13 @@ public final class PyPowsyblApiHeader {
 
         @CField("sensitivity_failure_overcost")
         void setSensitivityFailureOvercost(double sensitivityFailureOvercost);
+
+        // Costly min margin parameters
+        @CField("shifted_violation_penalty")
+        int getShiftedViolationPenalty();
+
+        @CField("shifted_violation_penalty")
+        void setShiftedViolationPenalty(int shiftedViolationPenalty);
     }
 
 }
