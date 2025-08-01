@@ -165,7 +165,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         return c_parameters
 
     @staticmethod
-    def from_json(json_str) -> "Parameters":
+    def from_json(json_str: str) -> "Parameters":
         parameters = Parameters()
         parameters._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str))
         return parameters
