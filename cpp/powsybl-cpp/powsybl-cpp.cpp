@@ -1383,6 +1383,19 @@ SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& prov
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::createLoadFlowProviderParametersSeriesArray, (char*) provider.data()));
 }
 
+LoadFlowParameters* createLoadFlowParametersFromJson(const std::string& parametersJson) {
+    loadflow_parameters* parametersPtr = PowsyblCaller::get()->callJava<loadflow_parameters*>(::createLoadFlowParametersFromJson, (char*) parametersJson.data());
+    LoadFlowParameters* parameters = new LoadFlowParameters(parametersPtr);
+    // memory has been allocated on java side, we need to clean it up on java side
+    PowsyblCaller::get()->callJava(::freeLoadFlowParameters, parametersPtr);
+    return parameters;
+}
+
+std::string writeLoadFlowParametersToJson(const LoadFlowParameters& parameters) {
+    auto parametersPtr = parameters.to_c_struct();
+    return toString(PowsyblCaller::get()->callJava<char*>(::writeLoadFlowParametersToJson, parametersPtr.get()));
+}
+
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider) {
     auto providerParametersArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getSecurityAnalysisProviderParametersNames, (char*) securityAnalysisProvider.c_str());
     ToStringVector providerParameters(providerParametersArrayPtr);
