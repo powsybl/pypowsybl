@@ -45,9 +45,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
@@ -371,7 +369,7 @@ public final class SecurityAnalysisCFunctions {
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             String providerStr = CTypeUtil.toString(provider);
-            return Util.createCharPtrArray(SecurityAnalysisCUtils.getSecurityAnalysisProvider(providerStr).getSpecificParametersNames());
+            return createCharPtrArray(SecurityAnalysisCUtils.getSecurityAnalysisProvider(providerStr).getSpecificParametersNames());
         });
     }
 
@@ -448,7 +446,7 @@ public final class SecurityAnalysisCFunctions {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String actionIdStr = CTypeUtil.toString(actionId);
             String transformerIdStr = CTypeUtil.toString(transformerId);
-            PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
+            PhaseTapChangerTapPositionAction pstAction = new PhaseTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, convert(side));
             analysisContext.addAction(pstAction);
         });
     }
@@ -461,7 +459,7 @@ public final class SecurityAnalysisCFunctions {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String actionIdStr = CTypeUtil.toString(actionId);
             String transformerIdStr = CTypeUtil.toString(transformerId);
-            RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, Util.convert(side));
+            RatioTapChangerTapPositionAction ratioTapChangerAction = new RatioTapChangerTapPositionAction(actionIdStr, transformerIdStr, isRelative, tapPosition, convert(side));
             analysisContext.addAction(ratioTapChangerAction);
         });
     }
@@ -505,7 +503,7 @@ public final class SecurityAnalysisCFunctions {
             TerminalsConnectionActionBuilder builder = new TerminalsConnectionActionBuilder();
             TerminalsConnectionAction action = builder.withId(actionIdStr)
                     .withNetworkElementId(elementIdStr)
-                    .withSide(Util.convert(side))
+                    .withSide(convert(side))
                     .withOpen(opening)
                     .build();
             analysisContext.addAction(action);
@@ -524,7 +522,7 @@ public final class SecurityAnalysisCFunctions {
             SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
             String operationStrategyIdStr = CTypeUtil.toString(operationStrategyId);
             String contingencyIdStr = CTypeUtil.toString(contingencyId);
-            List<String> actionsStrList = CTypeUtil.toStringList(actions, actionCount);
+            List<String> actionsStrList = toStringList(actions, actionCount);
 
             Condition condition = buildCondition(conditionType, subjectIds, subjectIdsCount, violationTypes, violationTypesCount);
 
@@ -548,7 +546,7 @@ public final class SecurityAnalysisCFunctions {
     private static Condition buildCondition(PyPowsyblApiHeader.ConditionType conditionType,
                                             CCharPointerPointer subjectIds, int subjectIdsCount,
                                             CIntPointer violationTypes, int violationTypesCount) {
-        List<String> subjectIdsStrList = CTypeUtil.toStringList(subjectIds, subjectIdsCount);
+        List<String> subjectIdsStrList = toStringList(subjectIds, subjectIdsCount);
         Set<PyPowsyblApiHeader.LimitViolationType> violationTypesC = CTypeUtil.toEnumSet(
                 violationTypes, violationTypesCount, PyPowsyblApiHeader.LimitViolationType::fromCValue);
         Set<LimitViolationType> violationTypesFilter = violationTypesC.stream().map(Util::convert).collect(Collectors.toSet());
