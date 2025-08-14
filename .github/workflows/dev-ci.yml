@@ -4,18 +4,10 @@ on:
   pull_request:
 
 jobs:
-  manylinux_build:
+  manylinux_build_native:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
-    strategy:
-      matrix:
-        python:
-          - {
-            name: cp39,
-            abi: cp39,
-            version: '3.9',
-          }
 
     steps:
       - name: Install Linux Packages
@@ -39,11 +31,39 @@ jobs:
         with:
           submodules: true
 
+#      - name: Install dependencies
+#        run: pip3 install -r requirements.txt
+
+      - name: Build native library
+        run: |
+          export USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false
+          mkdir build
+          cmake pypowsybl/cpp -DBUILD_POWSYBL_CPP=OFF -DBUILD_PYTHON_BINDINGS=OFF -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build
+          cmake --build . --config Release -- -j2
+
+      - name: Save built libraries
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-libraries-linux-${{ github.event.pull_request.number }}
+          retention-days: 1
+          path: |
+            build/*
+
+
+  manylinux_build_python:
+    name: Build linux ${{ matrix.python.name }} wheel
+    needs: manylinux_build_native
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+    steps:
+
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: pip3 install -r requirements.txt
+
+      - name: Download libraries
 
       - name: Build wheel
         run: |
