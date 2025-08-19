@@ -64,7 +64,7 @@ public final class RaoDataframes {
 
     public record VoltageCnecResult(String cnecId, Instant instant, String contingency, TwoSides side, double minVoltage, double maxVoltage, double margin) { }
 
-    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, String contingency, boolean activated, double optimizedTap, double optimizedSetPoint) { }
+    public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, String contingency, double optimizedTap, double optimizedSetPoint) { }
 
     public record CostResult(Instant instant, double functionalCost, double virtualCost, double cost) { }
 
@@ -159,22 +159,27 @@ public final class RaoDataframes {
                 Optional<Contingency> contingencyOpt = state.getContingency();
                 double optimizedTap = Double.NaN; // Use a double for tap so we can set it to NaN when not relevant
                 double optimizedSetPoint = Double.NaN;
-                if (ra instanceof RangeAction<?> rangeAction) {
-                    if (rangeAction instanceof PstRangeAction pstRangeAction) {
-                        optimizedTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
-                    } else {
-                        optimizedSetPoint = raoResult.getOptimizedSetPointOnState(state, rangeAction);
+                // Only go through activated remedial actions
+                if (raoResult.isActivatedDuringState(state, ra)) {
+                    if (ra instanceof RangeAction<?> rangeAction) {
+                        // Pst range actions will have optimizedSetpoint set to NaN
+                        if (rangeAction instanceof PstRangeAction pstRangeAction) {
+                            optimizedTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
+                        // Other than Pst range actions will have optimizedTap set to NaN
+                        } else {
+                            optimizedSetPoint = raoResult.getOptimizedSetPointOnState(state, rangeAction);
+                        }
                     }
+                    // Network actions will have optimizedTap and optimizedSetpoint set to NaN
+                    ActivatedRemedialActionResult result = new ActivatedRemedialActionResult(
+                        ra.getId(),
+                        state.getInstant(),
+                        contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
+                        optimizedTap,
+                        optimizedSetPoint
+                    );
+                    results.add(result);
                 }
-                ActivatedRemedialActionResult result = new ActivatedRemedialActionResult(
-                    ra.getId(),
-                    state.getInstant(),
-                    contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
-                    raoResult.isActivatedDuringState(state, ra),
-                    optimizedTap,
-                    optimizedSetPoint
-                );
-                results.add(result);
             }
         }
         return results;
@@ -266,7 +271,6 @@ public final class RaoDataframes {
             .strings("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
             .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
             .strings(CONTINGENCY, ActivatedRemedialActionResult::contingency)
-            .booleans("activated", ActivatedRemedialActionResult::activated)
             .doubles("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
             .doubles("optimized_set_point", ActivatedRemedialActionResult::optimizedSetPoint)
             .build();
