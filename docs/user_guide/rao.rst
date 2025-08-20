@@ -91,7 +91,7 @@ Remedial action results are also available in a pandas dataframe :
 
     >>> ra_results = rao_result.get_ra_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'activated',
+    Index(['remedial_action_id', 'optimized_instant', 'contingency',
            'optimized_tap', 'optimized_set_point'],
           dtype='object')
 
