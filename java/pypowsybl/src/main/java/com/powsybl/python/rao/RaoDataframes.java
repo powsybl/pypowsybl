@@ -162,7 +162,7 @@ public final class RaoDataframes {
                 Optional<Contingency> contingencyOpt = state.getContingency();
                 // Only go through activated remedial actions
                 if (raoResult.isActivatedDuringState(state, ra)) {
-                    Pair<Double, Double> optimizedValues = getActivatedRangeAction(ra, state, raoResult);
+                    Pair<Double, Double> optimizedValues = getOptimizedRangeActionValues(ra, state, raoResult);
                     double optimizedTap = optimizedValues.getLeft();
                     double optimizedSetPoint = optimizedValues.getRight();
                     // Network actions will have optimizedTap and optimizedSetpoint set to NaN
@@ -180,7 +180,7 @@ public final class RaoDataframes {
         return results;
     }
 
-    private static Pair<Double, Double> getActivatedRangeAction(RemedialAction<?> ra, State state, RaoResult raoResult) {
+    private static Pair<Double, Double> getOptimizedRangeActionValues(RemedialAction<?> ra, State state, RaoResult raoResult) {
         double optimizedTap = Double.NaN; // Use a double for tap so we can set it to NaN when not relevant
         double optimizedSetPoint = Double.NaN;
         if (ra instanceof RangeAction<?> rangeAction) {
