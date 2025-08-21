@@ -579,6 +579,4 @@ typedef struct rao_parameters_struct {
   char* sensitivity_provider;
   struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
   double sensitivity_failure_overcost;
-
-  float shifted_violation_penalty;
 } rao_parameters;

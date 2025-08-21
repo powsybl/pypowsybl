@@ -406,7 +406,8 @@ public final class RaoCFunctions {
     private static RaoParameters convertToRaoParameters(RaoParametersPointer paramPointer) {
         RaoParameters raoParameters = new RaoParameters();
 
-        OpenRaoSearchTreeParameters searchTreeParameters = new OpenRaoSearchTreeParameters();
+        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters());
+        OpenRaoSearchTreeParameters searchTreeParameters = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
         searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
@@ -448,7 +449,7 @@ public final class RaoCFunctions {
         searchTreeParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
         searchTreeParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
 
-        // Not opitmized cnec parameters
+        // Not optimized cnec parameters
         raoParameters.getNotOptimizedCnecsParameters().setDoNotOptimizeCurativeCnecsForTsosWithoutCras(paramPointer.getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
         // Load flow and sensitivity providers
@@ -483,6 +484,10 @@ public final class RaoCFunctions {
         if (hasExtensionData(extensionData, RaoUtils.LOOP_FLOW_ST_EXT_PREFIX)) {
             SearchTreeRaoLoopFlowParameters searchTreeLoopFlowExt = RaoUtils.buildLoopFlowSearchTreeParametersExtension(extensionData);
             searchTreeParameters.setLoopFlowParameters(searchTreeLoopFlowExt);
+        }
+        if (hasExtensionData(extensionData, RaoUtils.COSTLY_MIN_MARGIN_ST_EXT_PREFIX)) {
+            SearchTreeRaoCostlyMinMarginParameters searchTreeCostlyMinMarginExt = RaoUtils.buildCostlyMinMarginSearchTreeParametersExtension(extensionData);
+            searchTreeParameters.setMinMarginsParameters(searchTreeCostlyMinMarginExt);
         }
         return raoParameters;
     }
@@ -533,7 +538,7 @@ public final class RaoCFunctions {
         paramsPtr.setExecutionCondition(searchTreeParameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
         paramsPtr.setHintFromFirstPreventiveRao(searchTreeParameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
 
-        // Not opitmized cnec parameters
+        // Not optimized cnec parameters
         paramsPtr.setDoNotOptimizeCurativeCnecsForTsosWithoutCras(parameters.getNotOptimizedCnecsParameters().getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
         // Load flow and sensitivity providers
@@ -581,7 +586,13 @@ public final class RaoCFunctions {
             searchTreeParameters.getRelativeMarginsParameters().ifPresent(
                 relativeMarginsParameters -> extensionData.putAll(RaoUtils.relativeMarginsParametersExtensionToMap(relativeMarginsParameters)));
             searchTreeParameters.getLoopFlowParameters().ifPresent(
-                loopFlowParameters -> extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters)));
+                loopFlowParameters -> {
+                    extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters));
+                });
+            searchTreeParameters.getMinMarginsParameters().ifPresent(
+                costlyMinMarginParameters -> {
+                    extensionData.putAll(RaoUtils.costlyMinMarginParametersExtensionToMap(costlyMinMarginParameters));
+                });
         }
 
         List<String> keys = new ArrayList<>();

@@ -12,7 +12,6 @@ from pypowsybl._pypowsybl import (
     RaoParameters
 )
 
-from .costly_min_margin_parameters import CostlyMinMarginParameters
 from .objective_function_parameters import ObjectiveFunctionParameters
 from .range_action_optimization_parameters import RangeActionOptimizationParameters
 from .topo_optimization_parameters import TopoOptimizationParameters
@@ -32,8 +31,7 @@ class Parameters:
                  second_preventive_rao_parameters: Optional[SecondPreventiveRaoParameters] = None,
                  not_optimized_cnecs_parameters: Optional[NotOptimizedCnecsParameters] = None,
                  loadflow_and_sensitivity_parameters: Optional[LoadFlowAndSensitivityParameters] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None,
-                 costly_min_margin_parameters: Optional[CostlyMinMarginParameters] = None) -> None:
+                 provider_parameters: Optional[Dict[str, str]] = None) -> None:
         self._init_with_default_values()
         if objective_function_parameters is not None:
             self.objective_function_parameters = objective_function_parameters
@@ -51,8 +49,6 @@ class Parameters:
             self.loadflow_and_sensitivity_parameters = loadflow_and_sensitivity_parameters
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
-        if costly_min_margin_parameters is not None:
-            self.costly_min_margin_parameters = costly_min_margin_parameters
 
     def _init_from_c(self, c_parameters: RaoParameters) -> None:
         self.objective_function_parameters = ObjectiveFunctionParameters(rao_parameters=c_parameters)
@@ -64,7 +60,6 @@ class Parameters:
         self.loadflow_and_sensitivity_parameters = LoadFlowAndSensitivityParameters(rao_parameters=c_parameters)
         self.provider_parameters = dict(
             zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
-        self.costly_min_margin_parameters = CostlyMinMarginParameters(rao_parameters=c_parameters)
 
     def _to_c_parameters(self) -> RaoParameters:
         c_parameters = RaoParameters()
@@ -109,7 +104,6 @@ class Parameters:
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
 
-        c_parameters.shifted_violation_penalty = self.costly_min_margin_parameters.shifted_violation_penalty
         return c_parameters
 
     def _init_with_default_values(self) -> None:
@@ -142,5 +136,4 @@ class Parameters:
                f", not_optimized_cnecs_parameters={self.not_optimized_cnecs_parameters!r}" \
                f", loadflow_and_sensitivity_parameters={self.loadflow_and_sensitivity_parameters!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
-               f", costly_min_margin_parameters={self.costly_min_margin_parameters!r}" \
                f")"

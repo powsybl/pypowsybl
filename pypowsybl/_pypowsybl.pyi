@@ -954,7 +954,6 @@ class RaoParameters:
     sensitivity_failure_overcost: float
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
-    shifted_violation_penalty: float
     def __init__(self) -> None: ...
 
 class RaoComputationStatus:
