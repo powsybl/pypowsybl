@@ -143,7 +143,7 @@ Cost for a given virtual cost name is returned as a pandas dataframe with cost v
 
     >>> virtual_cost_names = rao_result.get_virtual_cost_names()
     >>> virtual_cost_names
-    ['sensitivity-failure-cost']
+     ['mnec-cost', 'sensitivity-failure-cost', 'loop-flow-cost']
     >>> sensi_cost = rao_result.get_virtual_cost_results('sensitivity-failure-cost')
     >>> sensi_cost.index
     Index(['initial', 'preventive', 'outage', 'auto', 'curative'], dtype='object', name='optimized_instant')
