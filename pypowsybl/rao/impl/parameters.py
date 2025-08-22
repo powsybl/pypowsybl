@@ -11,7 +11,6 @@ from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     RaoParameters
 )
-
 from .objective_function_parameters import ObjectiveFunctionParameters
 from .range_action_optimization_parameters import RangeActionOptimizationParameters
 from .topo_optimization_parameters import TopoOptimizationParameters
@@ -103,7 +102,6 @@ class Parameters:
 
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
-
         return c_parameters
 
     def _init_with_default_values(self) -> None:

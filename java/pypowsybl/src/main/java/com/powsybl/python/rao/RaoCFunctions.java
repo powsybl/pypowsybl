@@ -586,13 +586,9 @@ public final class RaoCFunctions {
             searchTreeParameters.getRelativeMarginsParameters().ifPresent(
                 relativeMarginsParameters -> extensionData.putAll(RaoUtils.relativeMarginsParametersExtensionToMap(relativeMarginsParameters)));
             searchTreeParameters.getLoopFlowParameters().ifPresent(
-                loopFlowParameters -> {
-                    extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters));
-                });
+                loopFlowParameters -> extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters)));
             searchTreeParameters.getMinMarginsParameters().ifPresent(
-                costlyMinMarginParameters -> {
-                    extensionData.putAll(RaoUtils.costlyMinMarginParametersExtensionToMap(costlyMinMarginParameters));
-                });
+                costlyMinMarginParameters -> extensionData.putAll(RaoUtils.costlyMinMarginParametersExtensionToMap(costlyMinMarginParameters)));
         }
 
         List<String> keys = new ArrayList<>();

@@ -474,7 +474,6 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.sensitivity_parameters = new sensitivity_analysis_parameters();
     sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
     res.sensitivity_failure_overcost = sensitivity_failure_overcost;
-
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
