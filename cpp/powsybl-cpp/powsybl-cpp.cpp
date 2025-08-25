@@ -1701,13 +1701,8 @@ std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle) {
     return PowsyblCaller::get()->callJava<std::string>(::getDynamicSimulationResultsStatusText, resultsHandle);
 }
 
-SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
-    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getDynamicCurve, resultHandle, (char*) curveName.c_str()));
-}
-
-std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
-    ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getAllDynamicCurvesIds, resultHandle));
-    return vector.get();
+SeriesArray* getDynamicCurves(JavaHandle resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getDynamicCurves, resultHandle));
 }
 
 SeriesArray* getFinalStateValues(JavaHandle resultHandle) {
