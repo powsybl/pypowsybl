@@ -73,7 +73,7 @@ public final class TimeSeriesConverter {
         DataframeHandler.DoubleSeriesWriter writer = dataframeHandler.newDoubleSeries(timeSeries.getMetadata().getName(), size);
         int i = 0;
         for (DoublePoint point : timeSeries) {
-            indexWriter.set(i, (int) (point.getTime() % Integer.MAX_VALUE));
+            indexWriter.set(i, (int) (point.getInstant().toEpochMilli() % Integer.MAX_VALUE));
             writer.set(i, point.getValue());
             i++;
         }
