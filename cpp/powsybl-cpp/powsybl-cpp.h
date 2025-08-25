@@ -940,8 +940,7 @@ std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 // results
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
 std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
-SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
-std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getDynamicCurves(JavaHandle resultHandle);
 SeriesArray* getFinalStateValues(JavaHandle resultHandle);
 SeriesArray* getTimeline(JavaHandle resultHandle);
 

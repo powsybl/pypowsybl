@@ -26,7 +26,6 @@ import com.powsybl.dataframe.dynamic.TimeSeriesConverter;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
-import com.powsybl.timeseries.DoubleTimeSeries;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -272,31 +271,15 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getDynamicCurve")
-    public static ArrayPointer<SeriesPointer> getDynamicCurve(IsolateThread thread,
-                                                              ObjectHandle resultHandle,
-                                                              CCharPointer curveNamePtr,
-                                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getDynamicCurves")
+    public static ArrayPointer<SeriesPointer> getDynamicCurves(IsolateThread thread,
+                                                               ObjectHandle resultHandle,
+                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-                String curveName = CTypeUtil.toString(curveNamePtr);
-                DoubleTimeSeries curve = result.getCurve(curveName);
-                return TimeSeriesConverter.createCDataframe(curve);
-            }
-        });
-    }
-
-    @CEntryPoint(name = "getAllDynamicCurvesIds")
-    public static ArrayPointer<CCharPointerPointer> getAllDynamicCurvesIds(IsolateThread thread,
-                                                                           ObjectHandle resultHandle,
-                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
-            @Override
-            public ArrayPointer<CCharPointerPointer> get() throws IOException {
-                DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-                return Util.createCharPtrArray(new ArrayList<>(result.getCurves().keySet()));
+                return TimeSeriesConverter.createCDataframe(result.getCurves().values().stream().toList());
             }
         });
     }
