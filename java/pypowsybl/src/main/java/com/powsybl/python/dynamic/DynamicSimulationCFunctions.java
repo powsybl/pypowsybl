@@ -22,6 +22,7 @@ import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils;
+import com.powsybl.dataframe.dynamic.TimeSeriesConverter;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
@@ -282,8 +283,7 @@ public final class DynamicSimulationCFunctions {
                 DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
                 String curveName = CTypeUtil.toString(curveNamePtr);
                 DoubleTimeSeries curve = result.getCurve(curveName);
-                return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.curvesDataFrameMapper(curveName), curve);
-
+                return TimeSeriesConverter.createCDataframe(curve);
             }
         });
     }
