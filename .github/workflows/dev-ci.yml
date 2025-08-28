@@ -4,10 +4,18 @@ on:
   pull_request:
 
 jobs:
-  manylinux_build_native:
+  manylinux_complete_build:
     name: Build linux ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+    strategy:
+      matrix:
+        python:
+          - {
+            name: cp39,
+            abi: cp39,
+            version: '3.9',
+          }
 
     steps:
       - name: Install Linux Packages
@@ -31,39 +39,11 @@ jobs:
         with:
           submodules: true
 
-#      - name: Install dependencies
-#        run: pip3 install -r requirements.txt
-
-      - name: Build native library
-        run: |
-          export USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM=false
-          mkdir build
-          cmake pypowsybl/cpp -DBUILD_POWSYBL_CPP=OFF -DBUILD_PYTHON_BINDINGS=OFF -DCMAKE_LIBRARY_OUTPUT_DIRECTORY=build
-          cmake --build . --config Release -- -j2
-
-      - name: Save built libraries
-        uses: actions/upload-artifact@v4
-        with:
-          name: native-libraries-linux-${{ github.event.pull_request.number }}
-          retention-days: 1
-          path: |
-            build/*
-
-
-  manylinux_build_python:
-    name: Build linux ${{ matrix.python.name }} wheel
-    needs: manylinux_build_native
-    runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
-    steps:
-
       - name: Setup path
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install dependencies
         run: pip3 install -r requirements.txt
-
-      - name: Download libraries
 
       - name: Build wheel
         run: |
@@ -111,13 +91,100 @@ jobs:
         working-directory: ./docs
         run: make html doctest SPHINXOPTS="-W"
 
-      - name: Test standalone cpp build
-        shell: bash
-        working-directory: ./dist
-        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-          unzip binaries.zip && mkdir build && cd build
-          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-          cmake --build . --config Release
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+          retention-days: 1
+          path: |
+            dist/binaries.zip
+
+#      - name: Test standalone cpp build
+#        shell: bash
+#        working-directory: ./dist
+#        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+#          unzip binaries.zip && mkdir build && cd build
+#          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+#          cmake --build . --config Release
+
+  manylinux_python_build:
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+    needs: manylinux_complete_build
+    strategy:
+      matrix:
+        python:
+          - {
+            name: cp313,
+            abi: cp313,
+            version: '3.13',
+          }
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup path
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Download native libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+
+      - name: Build wheel
+        env:
+          PYPOWSYBL_NATIVE_BUILD_DIR: $GITHUB_WORKSPACE
+        run: |
+          unzip binaries.zip
+          python3 setup.py bdist_wheel
+          auditwheel repair dist/*.whl
+
+      - name: Install wheel
+        run: pip3 install wheelhouse/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: |
+          pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
+        run: |
+          pip3 uninstall -y pypowsybl
+          python3 setup.py develop
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Sonar analysis
+        uses: sonarsource/sonarcloud-github-action@v2.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
 
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel

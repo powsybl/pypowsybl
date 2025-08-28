@@ -6,6 +6,7 @@
 #
 import os
 import re
+import shutil
 import sys
 import platform
 import subprocess
@@ -65,7 +66,17 @@ class PyPowsyblBuild(build_ext):
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
 
-        print(cmake_args)
+        if os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR'):
+
+            native_build_dir = os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR')
+            cmake_args += ["-DBUILD_PYPOWSYBL_JAVA=OFF"]
+            lib_dir = os.path.join(native_build_dir, "lib")
+            cmake_args += [f"-DPYPOWSYBL_JAVA_LIBRARY_DIR={lib_dir}"]
+            include_dir = os.path.join(native_build_dir, "include")
+            cmake_args += [f"-DPYPOWSYBL_JAVA_INCLUDE_DIR={include_dir}"]
+
+            for filename in glob.glob(os.path.join(lib_dir, '*.*')):
+                shutil.copy(filename, extdir)
 
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
@@ -79,13 +90,18 @@ class PyPowsyblBuild(build_ext):
         binaries['lib'] = []
         if platform.system() == "Windows":
             binaries['bin'] = [os.path.join(binary_dir, 'math.dll'),
+                               os.path.join(binary_dir, 'jniortools.dll'),
                                os.path.join(binary_dir, 'pypowsybl-java.dll')]
             binaries['lib'] = [os.path.join(self.build_temp, 'java/pypowsybl-java.lib')]
         elif platform.system() == "Linux":
             binaries['lib'] = [os.path.join(binary_dir, 'libmath.so'),
+                               os.path.join(binary_dir, 'libjniortools.so'),
+                               os.path.join(binary_dir, 'libortools.so.9'),
                                os.path.join(binary_dir, 'libpypowsybl-java.so')]
         elif platform.system() == "Darwin" :
             binaries['lib'] = [os.path.join(binary_dir, 'libmath.dylib'),
+                               os.path.join(binary_dir, 'libjniortools.dylib'),
+                               os.path.join(binary_dir, 'libortools.9.dylib'),
                                os.path.join(binary_dir, 'libpypowsybl-java.dylib')]
 
         includes = glob.glob(os.path.join(cpp_source_dir, 'powsybl-cpp/') + '*.h')
