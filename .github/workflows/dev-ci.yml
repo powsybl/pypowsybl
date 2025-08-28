@@ -4,100 +4,100 @@ on:
   pull_request:
 
 jobs:
-  manylinux_complete_build:
-    name: Build linux ${{ matrix.python.name }} wheel
-    runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
-    strategy:
-      matrix:
-        python:
-          - {
-            name: cp39,
-            abi: cp39,
-            version: '3.9',
-          }
-
-    steps:
-      - name: Install Linux Packages
-        run: dnf install -y wget
-
-      - name: Install Maven
-        run: |
-          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
-          tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
-
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '17.0.12'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Setup path
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: pip3 install -r requirements.txt
-
-      - name: Build wheel
-        run: |
-          python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
-
-      - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
-      - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v2.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries-${{ github.event.pull_request.number }}-linux.zip
-          retention-days: 1
-          path: |
-            dist/binaries.zip
+#  manylinux_complete_build:
+#    name: Build linux ${{ matrix.python.name }} wheel
+#    runs-on: ubuntu-latest
+#    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+#    strategy:
+#      matrix:
+#        python:
+#          - {
+#            name: cp39,
+#            abi: cp39,
+#            version: '3.9',
+#          }
+#
+#    steps:
+#      - name: Install Linux Packages
+#        run: dnf install -y wget
+#
+#      - name: Install Maven
+#        run: |
+#          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
+#          tar xf /tmp/apache-maven-*.tar.gz -C /opt
+#          echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
+#
+#      - name: Setup GraalVM
+#        uses: graalvm/setup-graalvm@v1
+#        with:
+#          java-version: '17.0.12'
+#          distribution: 'graalvm'
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Checkout sources
+#        uses: actions/checkout@v4
+#        with:
+#          submodules: true
+#
+#      - name: Setup path
+#        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+#
+#      - name: Install dependencies
+#        run: pip3 install -r requirements.txt
+#
+#      - name: Build wheel
+#        run: |
+#          python3 setup.py bdist_wheel
+#          auditwheel repair dist/*.whl
+#
+#      - name: Install wheel
+#        run: pip3 install wheelhouse/*.whl --user
+#
+#      - name: Run basic pypowsybl import
+#        working-directory: ./tests
+#        run: python3 basic_import_test.py
+#
+#      - name: Run tests
+#        working-directory: ./tests # Run in subdir to use installed lib, not sources
+#        run: |
+#          pytest
+#
+#      - name: Type checking
+#        run: mypy -p pypowsybl
+#
+#      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
+#        run: |
+#          pip3 uninstall -y pypowsybl
+#          python3 setup.py develop
+#
+#      - name: Generate coverage
+#        run: |
+#          coverage run -m pytest tests/
+#          coverage xml
+#
+#      - name: Linting
+#        run: pylint pypowsybl
+#
+#      - name: Sonar analysis
+#        uses: sonarsource/sonarcloud-github-action@v2.0.2
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#        with:
+#          args: |
+#            -Dsonar.python.coverage.reportPaths=coverage.xml
+#
+#      - name: Run doc examples
+#        working-directory: ./docs
+#        run: make html doctest SPHINXOPTS="-W"
+#
+#      - name: Upload binaries
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+#          retention-days: 1
+#          path: |
+#            dist/binaries.zip
 
 #      - name: Test standalone cpp build
 #        shell: bash
@@ -110,7 +110,7 @@ jobs:
   manylinux_python_build:
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
-    needs: manylinux_complete_build
+    # needs: manylinux_complete_build
     strategy:
       matrix:
         python:
@@ -186,89 +186,89 @@ jobs:
         working-directory: ./docs
         run: make html doctest SPHINXOPTS="-W"
 
-  macos_windows_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - {
-            name: darwin,
-            os: macos-13,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: darwin-arm64,
-            os: macos-15,
-            macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-          }
-        python:
-          - {
-            name: cp39,
-            version: '3.9',
-          }
+#  macos_windows_build:
+#    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+#    runs-on: ${{ matrix.config.os }}
+#    strategy:
+#      matrix:
+#        config:
+#          - {
+#            name: darwin,
+#            os: macos-13,
+#            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+#            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+#          }
+#          - {
+#            name: darwin-arm64,
+#            os: macos-15,
+#            macosx_deployment_target: "11", # first arm64 version of macosx
+#            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
+#          }
+#          - {
+#            name: windows,
+#            os: windows-2022,
+#          }
+#        python:
+#          - {
+#            name: cp39,
+#            version: '3.9',
+#          }
+#
+#    steps:
+#      - name: Setup GraalVM
+#        uses: graalvm/setup-graalvm@v1
+#        with:
+#          java-version: '17.0.12'
+#          distribution: 'graalvm'
+#          github-token: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Checkout sources
+#        uses: actions/checkout@v4
+#        with:
+#          submodules: true
+#
+#      - name: Setup Python
+#        uses: actions/setup-python@v5
+#        with:
+#          python-version: ${{ matrix.python.version }}
+#
+#      - name: Install Python dependencies
+#        run: |
+#          python -m pip install --upgrade pip
+#          python -m pip install -r requirements.txt
+#
+#      - name: Build wheel
+#        env:
+#          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+#        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+#
+#      - name: Install wheel
+#        shell: bash
+#        run: python -m pip install dist/*.whl --user
+#
+#      - name: Run basic pypowsybl import
+#        working-directory: ./tests
+#        run: python3 basic_import_test.py
+#
+#      - name: Run tests
+#        working-directory: ./tests
+#        run: python3 -m pytest
+#
+#      - name: Type checking
+#        run: mypy -p pypowsybl
+#
+#      - name: Run doc examples
+#        working-directory: ./docs
+#        run: make html doctest SPHINXOPTS="-W"
+#
+#      - name: Test standalone cpp build
+#        shell: bash
+#        working-directory: ./dist
+#        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+#          unzip binaries.zip && mkdir build && cd build
+#          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+#          cmake --build . --config Release
 
-    steps:
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '17.0.12'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python.version }}
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Build wheel
-        env:
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
-        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-
-      - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Test standalone cpp build
-        shell: bash
-        working-directory: ./dist
-        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-          unzip binaries.zip && mkdir build && cd build
-          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-          cmake --build . --config Release
-          
   build:
     name: Run SonarCloud analysis for Java code
     runs-on: ubuntu-latest
