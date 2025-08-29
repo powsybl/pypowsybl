@@ -2,6 +2,8 @@ name: Dev CI
 
 on:
   pull_request:
+    types:
+      - synchronize
 
 jobs:
   manylinux_complete_build:
