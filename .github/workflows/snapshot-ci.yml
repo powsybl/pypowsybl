@@ -23,7 +23,7 @@ jobs:
         config:
           - { name: ubuntu, os: ubuntu-22.04 }
           - { name: darwin, os: macos-13, macosx_deployment_target: "10.16", bdist_wheel_args: "--plat-name macosx-11.0-x86_64" }
-          - { name: darwin-arm64, os: macos-15, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64" }
+          #- { name: darwin-arm64, os: macos-15, macosx_deployment_target: "11", bdist_wheel_args: "--plat-name macosx-11.0-arm64" }
           - { name: windows, os: windows-2022 }
         python:
           - { name: cp39, version: '3.9' }
