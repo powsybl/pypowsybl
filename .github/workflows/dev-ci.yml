@@ -142,8 +142,9 @@ jobs:
           unzip binaries.zip
 
       - name: Build wheel
+        env:
+          PYPOWSYBL_NATIVE_BUILD_DIR: "$GITHUB_WORKSPACE"
         run: |
-          export PYPOWSYBL_NATIVE_BUILD_DIR=$GITHUB_WORKSPACE
           python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
