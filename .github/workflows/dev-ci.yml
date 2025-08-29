@@ -4,100 +4,100 @@ on:
   pull_request:
 
 jobs:
-#  manylinux_complete_build:
-#    name: Build linux ${{ matrix.python.name }} wheel
-#    runs-on: ubuntu-latest
-#    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
-#    strategy:
-#      matrix:
-#        python:
-#          - {
-#            name: cp39,
-#            abi: cp39,
-#            version: '3.9',
-#          }
-#
-#    steps:
-#      - name: Install Linux Packages
-#        run: dnf install -y wget
-#
-#      - name: Install Maven
-#        run: |
-#          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
-#          tar xf /tmp/apache-maven-*.tar.gz -C /opt
-#          echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
-#
-#      - name: Setup GraalVM
-#        uses: graalvm/setup-graalvm@v1
-#        with:
-#          java-version: '17.0.12'
-#          distribution: 'graalvm'
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Checkout sources
-#        uses: actions/checkout@v4
-#        with:
-#          submodules: true
-#
-#      - name: Setup path
-#        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
-#
-#      - name: Install dependencies
-#        run: pip3 install -r requirements.txt
-#
-#      - name: Build wheel
-#        run: |
-#          python3 setup.py bdist_wheel
-#          auditwheel repair dist/*.whl
-#
-#      - name: Install wheel
-#        run: pip3 install wheelhouse/*.whl --user
-#
-#      - name: Run basic pypowsybl import
-#        working-directory: ./tests
-#        run: python3 basic_import_test.py
-#
-#      - name: Run tests
-#        working-directory: ./tests # Run in subdir to use installed lib, not sources
-#        run: |
-#          pytest
-#
-#      - name: Type checking
-#        run: mypy -p pypowsybl
-#
-#      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-#        run: |
-#          pip3 uninstall -y pypowsybl
-#          python3 setup.py develop
-#
-#      - name: Generate coverage
-#        run: |
-#          coverage run -m pytest tests/
-#          coverage xml
-#
-#      - name: Linting
-#        run: pylint pypowsybl
-#
-#      - name: Sonar analysis
-#        uses: sonarsource/sonarcloud-github-action@v2.0.2
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#        with:
-#          args: |
-#            -Dsonar.python.coverage.reportPaths=coverage.xml
-#
-#      - name: Run doc examples
-#        working-directory: ./docs
-#        run: make html doctest SPHINXOPTS="-W"
-#
-#      - name: Upload binaries
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: binaries-${{ github.event.pull_request.number }}-linux.zip
-#          retention-days: 1
-#          path: |
-#            dist/binaries.zip
+  manylinux_complete_build:
+    name: Build linux ${{ matrix.python.name }} wheel
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+    strategy:
+      matrix:
+        python:
+          - {
+            name: cp39,
+            abi: cp39,
+            version: '3.9',
+          }
+
+    steps:
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
+      - name: Install Maven
+        run: |
+          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
+          tar xf /tmp/apache-maven-*.tar.gz -C /opt
+          echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '17.0.12'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup path
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Build wheel
+        run: |
+          python3 setup.py bdist_wheel
+          auditwheel repair dist/*.whl
+
+      - name: Install wheel
+        run: pip3 install wheelhouse/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: python3 basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: |
+          pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
+        run: |
+          pip3 uninstall -y pypowsybl
+          python3 setup.py develop
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Sonar analysis
+        uses: sonarsource/sonarcloud-github-action@v2.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+          retention-days: 1
+          path: |
+            dist/binaries.zip
 
 #      - name: Test standalone cpp build
 #        shell: bash
@@ -110,7 +110,7 @@ jobs:
   manylinux_python_build:
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
-    # needs: manylinux_complete_build
+    needs: manylinux_complete_build
     strategy:
       matrix:
         python:
