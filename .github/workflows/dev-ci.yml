@@ -137,10 +137,13 @@ jobs:
         with:
           name: binaries-${{ github.event.pull_request.number }}-linux.zip
 
-      - name: Build wheel
+      - name: Set up native libraries
         run: |
           export PYPOWSYBL_NATIVE_BUILD_DIR=$GITHUB_WORKSPACE
           unzip binaries.zip
+
+      - name: Build wheel
+        run: |
           python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
@@ -161,6 +164,7 @@ jobs:
 
       - name: Dev install  # In order to generate coverage and linting, we need to install in sources
         run: |
+          echo $PYPOWSYBL_NATIVE_BUILD_DIR
           pip3 uninstall -y pypowsybl
           python3 setup.py develop
 
