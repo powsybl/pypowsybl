@@ -68,7 +68,7 @@ class PyPowsyblBuild(build_ext):
 
         if os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR'):
             print("Native libraries already built.")
-            native_build_dir = os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR')
+            native_build_dir = os.path.normpath(os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR'))
             cmake_args += ["-DBUILD_PYPOWSYBL_JAVA=OFF"]
             lib_dir = os.path.join(native_build_dir, "lib")
             cmake_args += [f"-DPYPOWSYBL_JAVA_LIBRARY_DIR={lib_dir}"]
