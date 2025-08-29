@@ -143,7 +143,7 @@ jobs:
 
       - name: Build wheel
         env:
-          PYPOWSYBL_NATIVE_BUILD_DIR: "$GITHUB_WORKSPACE"
+          PYPOWSYBL_NATIVE_BUILD_DIR: ${{ github.workspace }}
         run: |
           python3 setup.py bdist_wheel
           auditwheel repair dist/*.whl
