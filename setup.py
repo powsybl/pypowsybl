@@ -67,7 +67,6 @@ class PyPowsyblBuild(build_ext):
             os.makedirs(self.build_temp)
 
         if os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR'):
-            print("Native libraries already built.")
             native_build_dir = os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR')
             cmake_args += ["-DBUILD_PYPOWSYBL_JAVA=OFF"]
             lib_dir = os.path.join(native_build_dir, "lib")
@@ -76,10 +75,7 @@ class PyPowsyblBuild(build_ext):
             cmake_args += [f"-DPYPOWSYBL_JAVA_INCLUDE_DIR={include_dir}"]
 
             for filename in glob.glob(os.path.join(lib_dir, '*.*')):
-                print(filename)
-                shutil.copy(os.path.normpath(filename), extdir)
-
-        print(cmake_args)
+                shutil.copy(filename, extdir)
 
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
