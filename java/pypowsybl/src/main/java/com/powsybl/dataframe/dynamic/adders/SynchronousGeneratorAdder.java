@@ -23,6 +23,11 @@ import java.util.Collection;
 public class SynchronousGeneratorAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return SynchronousGeneratorBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return SynchronousGeneratorBuilder.getSupportedModelInfos();
     }

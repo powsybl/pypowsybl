@@ -22,6 +22,11 @@ import java.util.Collection;
 public class GridFormingConverterAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return GridFormingConverterBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return GridFormingConverterBuilder.getSupportedModelInfos();
     }

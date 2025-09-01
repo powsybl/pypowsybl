@@ -43,6 +43,11 @@ public class DynamicOverloadManagementSystemAdder extends AbstractSimpleDynamicM
     }
 
     @Override
+    public String getCategory() {
+        return DynamicOverloadManagementSystemBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return DynamicOverloadManagementSystemBuilder.getSupportedModelInfos();
     }

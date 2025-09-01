@@ -22,6 +22,11 @@ import java.util.Collection;
 public class WeccAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return WeccBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return WeccBuilder.getSupportedModelInfos();
     }

@@ -40,6 +40,11 @@ public class PhaseShifterPAdder extends AbstractSimpleDynamicModelAdder {
     }
 
     @Override
+    public String getCategory() {
+        return PhaseShifterPAutomationSystemBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return PhaseShifterPAutomationSystemBuilder.getSupportedModelInfos();
     }

@@ -45,6 +45,11 @@ public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimple
     }
 
     @Override
+    public String getCategory() {
+        return DynamicTwoLevelOverloadManagementSystemBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return DynamicTwoLevelOverloadManagementSystemBuilder.getSupportedModelInfos();
     }

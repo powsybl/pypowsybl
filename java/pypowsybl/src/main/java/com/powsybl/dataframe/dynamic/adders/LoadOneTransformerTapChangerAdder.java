@@ -22,6 +22,11 @@ import java.util.Collection;
 public class LoadOneTransformerTapChangerAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return LoadOneTransformerTapChangerBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return LoadOneTransformerTapChangerBuilder.getSupportedModelInfos();
     }

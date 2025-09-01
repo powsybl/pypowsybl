@@ -22,6 +22,11 @@ import java.util.Collection;
 public class BaseLoadAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return BaseLoadBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return BaseLoadBuilder.getSupportedModelInfos();
     }
