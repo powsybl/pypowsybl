@@ -85,7 +85,6 @@ def test_rao_parameters():
 
     second_preventive_params = SecondPreventiveRaoParameters(
         execution_condition=ExecutionCondition.COST_INCREASE,
-        re_optimize_curative_range_actions=False,
         hint_from_first_preventive_rao=False
     )
 
@@ -137,7 +136,6 @@ def test_rao_parameters():
     assert parameters2.multithreading_parameters.available_cpus == 8
 
     assert parameters2.second_preventive_rao_parameters.execution_condition == ExecutionCondition.COST_INCREASE
-    assert parameters2.second_preventive_rao_parameters.re_optimize_curative_range_actions == False
     assert parameters2.second_preventive_rao_parameters.hint_from_first_preventive_rao == False
 
     assert parameters2.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
