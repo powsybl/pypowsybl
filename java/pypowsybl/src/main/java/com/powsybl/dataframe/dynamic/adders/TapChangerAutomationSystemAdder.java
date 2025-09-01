@@ -42,6 +42,11 @@ public class TapChangerAutomationSystemAdder extends AbstractSimpleDynamicModelA
     }
 
     @Override
+    public String getCategory() {
+        return TapChangerAutomationSystemBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return TapChangerAutomationSystemBuilder.getSupportedModelInfos();
     }

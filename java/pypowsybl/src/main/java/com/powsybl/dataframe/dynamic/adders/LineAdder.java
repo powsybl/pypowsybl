@@ -22,6 +22,11 @@ import java.util.Collection;
 public class LineAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return LineBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return LineBuilder.getSupportedModelInfos();
     }

@@ -22,6 +22,11 @@ import java.util.Collection;
 public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return SynchronizedGeneratorBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return SynchronizedGeneratorBuilder.getSupportedModelInfos();
     }

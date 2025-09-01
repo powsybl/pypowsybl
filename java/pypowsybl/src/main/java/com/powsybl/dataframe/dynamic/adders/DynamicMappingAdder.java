@@ -33,6 +33,11 @@ public interface DynamicMappingAdder {
     void addElements(PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframe);
 
     /**
+     * Returns dynamic model category
+     */
+    String getCategory();
+
+    /**
      * Returns supported model names for the given adder
      */
     Collection<ModelInfo> getSupportedModels();

@@ -55,6 +55,11 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
     }
 
     @Override
+    public String getCategory() {
+        return TapChangerBlockingAutomationSystemBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return TapChangerBlockingAutomationSystemBuilder.getSupportedModelInfos();
     }

@@ -22,6 +22,11 @@ import java.util.Collection;
 public class InfiniteBusAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return InfiniteBusBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return InfiniteBusBuilder.getSupportedModelInfos();
     }

@@ -22,6 +22,11 @@ import java.util.Collection;
 public class HvdcPAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return HvdcPBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return HvdcPBuilder.getSupportedModelInfos();
     }

@@ -22,6 +22,11 @@ import java.util.Collection;
 public class SignalNGeneratorAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return SignalNGeneratorBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return SignalNGeneratorBuilder.getSupportedModelInfos();
     }

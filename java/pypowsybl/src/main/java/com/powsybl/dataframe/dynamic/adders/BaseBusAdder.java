@@ -22,6 +22,11 @@ import java.util.Collection;
 public class BaseBusAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return StandardBusBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return StandardBusBuilder.getSupportedModelInfos();
     }

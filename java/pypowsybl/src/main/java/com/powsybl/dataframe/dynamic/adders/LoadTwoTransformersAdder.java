@@ -22,6 +22,11 @@ import java.util.Collection;
 public class LoadTwoTransformersAdder extends AbstractEquipmentAdder {
 
     @Override
+    public String getCategory() {
+        return LoadTwoTransformersBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return LoadTwoTransformersBuilder.getSupportedModelInfos();
     }

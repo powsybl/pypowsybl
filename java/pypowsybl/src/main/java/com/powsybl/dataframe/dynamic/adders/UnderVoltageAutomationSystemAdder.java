@@ -40,6 +40,11 @@ public class UnderVoltageAutomationSystemAdder extends AbstractSimpleDynamicMode
     }
 
     @Override
+    public String getCategory() {
+        return UnderVoltageAutomationSystemBuilder.CATEGORY;
+    }
+
+    @Override
     public Collection<ModelInfo> getSupportedModels() {
         return UnderVoltageAutomationSystemBuilder.getSupportedModelInfos();
     }
