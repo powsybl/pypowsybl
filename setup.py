@@ -76,7 +76,8 @@ class PyPowsyblBuild(build_ext):
             cmake_args += [f"-DPYPOWSYBL_JAVA_INCLUDE_DIR={include_dir}"]
 
             for filename in glob.glob(os.path.join(lib_dir, '*.*')):
-                shutil.copy(os.path.normcase(filename), extdir)
+                print(filename)
+                shutil.copy(os.path.normpath(filename), extdir)
 
         print(cmake_args)
 
