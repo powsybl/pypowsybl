@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
 /**
@@ -44,19 +43,6 @@ public final class DynamicMappingHandler {
 
     public static Collection<String> getSupportedModels(String category) {
         return ADDERS.get(category).getSupportedModels().stream().map(ModelInfo::name).toList();
-    }
-
-    //TODO remove all DynamicMappingType methods
-    public static void addElements(DynamicMappingType type, PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframes) {
-        ADDERS.get(type.toString()).addElements(modelMapping, dataframes);
-    }
-
-    public static List<List<SeriesMetadata>> getMetadata(DynamicMappingType type) {
-        return ADDERS.get(type.toString()).getMetadata();
-    }
-
-    public static Collection<String> getSupportedModels(DynamicMappingType type) {
-        return ADDERS.get(type.toString()).getSupportedModels().stream().map(ModelInfo::name).toList();
     }
 
     private DynamicMappingHandler() {

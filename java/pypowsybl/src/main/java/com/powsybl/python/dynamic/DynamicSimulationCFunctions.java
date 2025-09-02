@@ -49,7 +49,6 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.EventMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.commons.Util;
@@ -146,25 +145,27 @@ public final class DynamicSimulationCFunctions {
 
     @CEntryPoint(name = "addDynamicMappings")
     public static void addDynamicMappings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-                                          DynamicMappingType mappingType,
+                                          CCharPointer categoryNamePtr,
                                           DataframeArrayPointer mappingDataframePtr,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, () -> {
+            String categoryName = CTypeUtil.toString(categoryNamePtr);
             PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
             List<UpdatingDataframe> mappingDataframes = new ArrayList<>();
             for (int i = 0; i < mappingDataframePtr.getDataframesCount(); i++) {
                 mappingDataframes.add(createDataframe(mappingDataframePtr.getDataframes().addressOf(i)));
             }
-            DynamicMappingHandler.addElements(mappingType, dynamicMapping, mappingDataframes);
+            DynamicMappingHandler.addElements(categoryName, dynamicMapping, mappingDataframes);
         });
     }
 
     @CEntryPoint(name = "getDynamicMappingsMetaData")
     public static DataframesMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
-                                                                                          DynamicMappingType mappingType,
-                                                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                       CCharPointer categoryNamePtr,
+                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(mappingType);
+            String categoryName = CTypeUtil.toString(categoryNamePtr);
+            List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(categoryName);
             DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
             int i = 0;
             for (List<SeriesMetadata> dataframeMetadata : metadata) {
@@ -180,9 +181,10 @@ public final class DynamicSimulationCFunctions {
 
     @CEntryPoint(name = "getSupportedModels")
     public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
-                                                                      DynamicMappingType mappingType,
-                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(mappingType))));
+                                                                       CCharPointer categoryNamePtr,
+                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () ->
+            Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr)))));
     }
 
     @CEntryPoint(name = "addEventMappings")

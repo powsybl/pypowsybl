@@ -1667,8 +1667,8 @@ JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle netwo
     return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), reportNode);
 }
 
-void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
-    PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, mappingType, dataframes);
+void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryName, dataframe_array* dataframes) {
+    PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, (char*) categoryName.c_str(), dataframes);
 }
 
 void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
@@ -1705,13 +1705,13 @@ SeriesArray* getTimeline(JavaHandle resultHandle) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getTimeline, resultHandle));
 }
 
-std::vector<std::string> getSupportedModels(DynamicMappingType mappingType) {
-    ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, mappingType));
+std::vector<std::string> getSupportedModels(std::string categoryName) {
+    ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, (char*) categoryName.c_str()));
     return vector.get();
 }
 
-std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(DynamicMappingType mappingType) {
-    dataframes_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframes_metadata*>(::getDynamicMappingsMetaData, mappingType);
+std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string categoryName) {
+    dataframes_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframes_metadata*>(::getDynamicMappingsMetaData, (char*) categoryName.c_str());
     std::vector<std::vector<SeriesMetadata>> res;
         for (int i =0; i < metadata->dataframes_count; i++) {
             res.push_back(convertDataframeMetadata(metadata->dataframes_metadata + i));

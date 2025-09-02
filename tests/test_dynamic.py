@@ -58,6 +58,8 @@ def test_add_mapping():
     # Equipment model from Supported models
     model_name = model_mapping.get_supported_models(dyn.DynamicMappingType.BASE_LOAD)[0]
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name=model_name)
+    # Dynamic model from category name
+    model_mapping.add_dynamic_model(category_name='BASE_LOAD', static_id='LOAD', parameter_set_id='lab', model_name='LoadPQ')
 
 
 def test_dynamic_dataframe():
