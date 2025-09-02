@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Optional
+from typing import List, Optional, Union
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
@@ -20,7 +20,10 @@ class ModelMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
 
-    def get_supported_models(self, mapping_type: DynamicMappingType) -> List[str]:
+    def get_supported_models(self, category_name: Union[DynamicMappingType, str]) -> List[str]:
+        #TODO remove
+        if isinstance(category_name, DynamicMappingType):
+            category_name = category_name.name
         return _pp.get_supported_models(mapping_type)
 
     def add_base_load(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -877,7 +880,43 @@ class ModelMapping:
         dfs = [df, tfo_df, mp1_df, mp2_df, mp3_df, mp4_df, mp5_df]
         self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER_BLOCKING, [DataFrame() if df is None else df for df in dfs])
 
-    def _add_all_dynamic_mappings(self, mapping_type: DynamicMappingType, mapping_dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
-        metadata = _pp.get_dynamic_mappings_meta_data(mapping_type)
+    def add_dynamic_model(self, category_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add a dynamic model from category_name
+
+        :Args:
+            category_name: dynamic model category
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_dynamic_model(category_name='BASE_LOAD'
+                                            static_id='LOAD',
+                                            parameter_set_id='lab',
+                                            model_name='LoadPQ')
+
+            Using dataframe:
+
+                .. code-block:: python
+
+                    df = pd.DataFrame.from_records(
+                                        index='static_id',
+                                        columns=['static_id', 'parameter_set_id', 'model_name'],
+                                        data=[('LOAD', 'lab', 'BUS', 'LoadPQ')])
+                    model_mapping.add_dynamic_model(category_name='BASE_LOAD', df)
+        """
+        if not isinstance(df, List):
+            df = [df]
+        self._add_all_dynamic_mappings(category_name, df, **kwargs)
+
+    def _add_all_dynamic_mappings(self, category_name: Union[DynamicMappingType, str], mapping_dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
+        #TODO remove
+        if isinstance(category_name, DynamicMappingType):
+            category_name = category_name.name
+        metadata = _pp.get_dynamic_mappings_meta_data(category_name)
         c_dfs = _get_c_dataframes(mapping_dfs, metadata, **kwargs)
-        _pp.add_all_dynamic_mappings(self._handle, mapping_type, c_dfs)
+        _pp.add_all_dynamic_mappings(self._handle, category_name, c_dfs)
