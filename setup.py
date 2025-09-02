@@ -85,7 +85,8 @@ class PyPowsyblBuild(build_ext):
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
         subprocess.check_call(['cmake', '--build', '.'] + build_args, cwd=self.build_temp)
 
-        self.zipHeadersAndBinaries(extdir, cpp_source_dir)
+        if not os.environ.get('PYPOWSYBL_NATIVE_BUILD_DIR'):
+            self.zipHeadersAndBinaries(extdir, cpp_source_dir)
 
     def zipHeadersAndBinaries(self, binary_dir, cpp_source_dir):
         binaries = dict()
