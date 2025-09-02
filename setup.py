@@ -76,6 +76,10 @@ class PyPowsyblBuild(build_ext):
 
             for filename in glob.glob(os.path.join(lib_dir, '*.*')):
                 shutil.copy(filename, extdir)
+            if platform.system() == "Windows":
+                bin_dir = os.path.join(native_build_dir, "bin")
+                for filename in glob.glob(os.path.join(bin_dir, '*.*')):
+                    shutil.copy(filename, extdir)
 
         cpp_source_dir=os.path.abspath('cpp')
         subprocess.check_call(['cmake', cpp_source_dir] + cmake_args, cwd=self.build_temp, env=env)
