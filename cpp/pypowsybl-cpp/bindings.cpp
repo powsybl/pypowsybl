@@ -1148,6 +1148,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
     m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
     m.def("get_loadflow_provider_parameters_names", &pypowsybl::getLoadFlowProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
+    m.def("create_loadflow_parameters_from_json", &pypowsybl::createLoadFlowParametersFromJson, "create loadflow parameters from a JSON string", py::arg("parameters_json"));
+    m.def("write_loadflow_parameters_to_json", &pypowsybl::writeLoadFlowParametersToJson, "write loadflow parameters to a JSON string", py::arg("parameters"));
     m.def("create_loadflow_provider_parameters_series_array", &pypowsybl::createLoadFlowProviderParametersSeriesArray, "Create a parameters series array for a given loadflow provider",
           py::arg("provider"));
     m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));

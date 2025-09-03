@@ -674,6 +674,10 @@ std::vector<std::string> getLoadFlowProviderParametersNames(const std::string& l
 
 SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& provider);
 
+LoadFlowParameters* createLoadFlowParametersFromJson(const std::string& parametersJson);
+
+std::string writeLoadFlowParametersToJson(const LoadFlowParameters& parameters);
+
 LoadFlowValidationParameters* createValidationConfig();
 
 SecurityAnalysisParameters* createSecurityAnalysisParameters();

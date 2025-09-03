@@ -15,6 +15,7 @@ import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.loadflow.json.JsonLoadFlowParameters;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
@@ -35,6 +36,8 @@ import org.graalvm.nativeimage.c.type.VoidPointer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -156,6 +159,34 @@ public final class LoadFlowCFunctions {
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters()));
+    }
+
+    @CEntryPoint(name = "createLoadFlowParametersFromJson")
+    public static LoadFlowParametersPointer createLoadFlowParametersFromJson(IsolateThread thread, CCharPointer parametersJsonPtr,
+                                                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String parametersJson = CTypeUtil.toString(parametersJsonPtr);
+            try (InputStream is = new ByteArrayInputStream(parametersJson.getBytes(StandardCharsets.UTF_8))) {
+                return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "writeLoadFlowParametersToJson")
+    public static CCharPointer writeLoadFlowParametersToJson(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
+                                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            String providerName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(false, loadFlowParametersPtr, providerName);
+            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                JsonLoadFlowParameters.write(parameters, os);
+                os.flush();
+                String parametersJson = os.toString(StandardCharsets.UTF_8);
+                return CTypeUtil.toCharPtr(parametersJson);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
     }
 
     @CEntryPoint(name = "freeLoadFlowParameters")

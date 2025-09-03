@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Sequence, Dict, Optional
+from typing import Sequence, Dict, Optional, Any
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
@@ -18,6 +18,8 @@ from pypowsybl._pypowsybl import (
 VoltageInitMode.__module__ = __name__
 BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
+
+import pypowsybl._pypowsybl
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -161,6 +163,21 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
+
+    @staticmethod
+    def from_json(json_str: str) -> "Parameters":
+        parameters = Parameters()
+        parameters._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str))
+        return parameters
+
+    def to_json(self) -> str:
+        return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(self._to_c_parameters())
+
+    def __getstate__(self) -> Dict[str, Any]:
+        return {'json': self.to_json()}
+
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        self._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(state['json']))
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
