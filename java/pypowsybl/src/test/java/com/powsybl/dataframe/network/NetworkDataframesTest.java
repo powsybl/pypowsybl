@@ -179,8 +179,8 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q",
                         "min_q_at_target_p", "max_q_at_target_p", "min_q_at_p", "max_q_at_p", "rated_s", "reactive_limits_kind",
-                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id", "regulated_bus_id", "p", "q", "i", "voltage_level_id",
-                        "bus_id", "bus_breaker_bus_id", "node", "condenser", "connected", "fictitious");
+                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id", "regulated_bus_id", "regulated_bus_breaker_bus_id",
+                        "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "condenser", "connected", "fictitious");
     }
 
     @Test
@@ -388,12 +388,12 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on",
+                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "solved_section_count", "voltage_regulation_on",
                         "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(SHUNT_COMPENSATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "voltage_regulation_on",
+                .containsExactly("id", "name", "g", "b", "model_type", "max_section_count", "section_count", "solved_section_count", "voltage_regulation_on",
                         "target_v", "target_deadband", "regulating_bus_id", "p", "q", "i",
                         "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious");
     }
@@ -427,7 +427,8 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "loss_factor", "min_q", "max_q", "min_q_at_target_p", "max_q_at_target_p",
                         "min_q_at_p", "max_q_at_p", "reactive_limits_kind", "target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
-                        "regulated_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "connected", "fictitious", "hvdc_line_id");
+                        "regulated_bus_id", "regulated_bus_breaker_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node",
+                        "connected", "fictitious", "hvdc_line_id");
     }
 
     @Test
@@ -543,14 +544,15 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulated_element_id",
+                .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode", "regulating", "regulated_element_id",
                         "p", "q", "i", "voltage_level_id", "bus_id", "connected");
         List<Series> allAttributeSeries = createDataFrame(STATIC_VAR_COMPENSATOR, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "b_min", "b_max", "target_v", "target_q", "regulation_mode",
-                        "regulated_element_id", "regulated_bus_id", "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id",
-                        "node", "connected", "fictitious");
+                        "regulating", "regulated_element_id", "regulated_bus_id", "regulated_bus_breaker_bus_id",
+                        "p", "q", "i", "voltage_level_id", "bus_id",
+                        "bus_breaker_bus_id", "node", "connected", "fictitious");
     }
 
     @Test
@@ -621,8 +623,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "side", "tap", "low_tap", "high_tap", "step_count", "on_load", "regulating", "target_v",
-                        "target_deadband", "regulating_bus_id");
+                .containsExactly("id", "side", "tap", "solved_tap_position", "low_tap", "high_tap", "step_count",
+                        "oltc", "regulating", "target_v", "target_deadband", "regulating_bus_id");
     }
 
     @Test
@@ -632,8 +634,8 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "side", "tap", "low_tap", "high_tap", "step_count", "regulating", "regulation_mode",
-                        "regulation_value", "target_deadband", "regulating_bus_id");
+                .containsExactly("id", "side", "tap", "solved_tap_position", "low_tap", "high_tap", "step_count",
+                        "oltc", "regulating", "regulation_mode", "regulation_value", "target_deadband", "regulating_bus_id");
     }
 
     @Test

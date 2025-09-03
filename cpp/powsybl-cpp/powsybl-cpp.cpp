@@ -331,7 +331,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
     connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
-    hvdc_ac_emulation = (double) src->hvdc_ac_emulation;
+    hvdc_ac_emulation = (bool) src->hvdc_ac_emulation;
     dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
@@ -352,7 +352,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
     res.connected_component_mode = connected_component_mode;
-    res.hvdc_ac_emulation = hvdc_ac_emulation;
+    res.hvdc_ac_emulation = (unsigned char) hvdc_ac_emulation;
     res.dc_power_factor = dc_power_factor;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
@@ -400,7 +400,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
     // topo optimization parameters
     max_preventive_search_tree_depth = src->max_preventive_search_tree_depth;
-    max_auto_search_tree_depth = src->max_auto_search_tree_depth;
     max_curative_search_tree_depth = src->max_curative_search_tree_depth;
     // Missing predefinedCombinations (list of list of string..)
     predefined_combinations = arrayToStringVectorVector(src->predefined_combinations);
@@ -452,7 +451,6 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
 
     // topo optimization parameters
     res.max_preventive_search_tree_depth = max_preventive_search_tree_depth;
-    res.max_auto_search_tree_depth = max_auto_search_tree_depth;
     res.max_curative_search_tree_depth = max_curative_search_tree_depth;
     // Missing predefinedCombinations (list of list of string..)
     res.predefined_combinations = stringVectorVectorToArray(predefined_combinations);
@@ -593,6 +591,29 @@ void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parame
     providerParametersToCStruct(params.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
+void deleteDynamicSimulationParameters(dynamic_simulation_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
+    pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
+}
+
+DynamicSimulationParameters::DynamicSimulationParameters(dynamic_simulation_parameters* src) {
+    start_time = (double) src->start_time;
+    stop_time = (double) src->stop_time;
+    providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
+}
+
+std::shared_ptr<dynamic_simulation_parameters> DynamicSimulationParameters::to_c_struct() const {
+    dynamic_simulation_parameters* res = new dynamic_simulation_parameters();
+    res->start_time = (double) start_time;
+    res->stop_time = (double) stop_time;
+    providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<dynamic_simulation_parameters>(res, [](dynamic_simulation_parameters* ptr){
+        deleteDynamicSimulationParameters(ptr);
+        delete ptr;
+    });
+}
+
 FlowDecompositionParameters::FlowDecompositionParameters(flow_decomposition_parameters* src) {
     enable_losses_compensation = (bool) src->enable_losses_compensation;
     losses_compensation_epsilon = (float) src->losses_compensation_epsilon;
@@ -660,8 +681,8 @@ std::string getVersionTable() {
     return toString(PowsyblCaller::get()->callJava<char*>(::getVersionTable));
 }
 
-JavaHandle createNetwork(const std::string& name, const std::string& id) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data());
+JavaHandle createNetwork(const std::string& name, const std::string& id, bool allowVariantMultiThreadAccess) {
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data(), allowVariantMultiThreadAccess);
 }
 
 JavaHandle merge(std::vector<JavaHandle>& networks) {
@@ -683,6 +704,14 @@ JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetwor
 
 JavaHandle detachSubNetwork(const JavaHandle& subNetwork) {
     return PowsyblCaller::get()->callJava<JavaHandle>(::detachSubNetwork, subNetwork);
+}
+
+void applySolvedValues(const JavaHandle& network) {
+    PowsyblCaller::get()->callJava(::applySolvedValues, network);
+}
+
+void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network) {
+    PowsyblCaller::get()->callJava(::applySolvedTapPositionAndSolvedSectionCount, network);
 }
 
 std::vector<std::string> getNetworkImportFormats() {
@@ -752,7 +781,8 @@ bool isNetworkLoadable(const std::string& file) {
     return PowsyblCaller::get()->callJava<bool>(::isNetworkLoadable, (char*) file.data());
 }
 
-JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode) {
+JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors,
+                       JavaHandle* reportNode, bool allowVariantMultiThreadAccess) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -766,10 +796,11 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
     ToCharPtrPtr postProcessorsPtr(postProcessors);
     return PowsyblCaller::get()->callJava<JavaHandle>(::loadNetwork, (char*) file.data(), parameterNamesPtr.get(), parameterNames.size(),
                               parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(), postProcessors.size(),
-                              (reportNode == nullptr) ? nullptr : *reportNode);
+                              (reportNode == nullptr) ? nullptr : *reportNode, allowVariantMultiThreadAccess);
 }
 
-JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode) {
+JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters,
+                                 const std::vector<std::string>& postProcessors, JavaHandle* reportNode, bool allowVariantMultiThreadAccess) {
     std::vector<std::string> parameterNames;
     std::vector<std::string> parameterValues;
     parameterNames.reserve(parameters.size());
@@ -783,7 +814,8 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
     ToCharPtrPtr postProcessorsPtr(postProcessors);
     return PowsyblCaller::get()->callJava<JavaHandle>(::loadNetworkFromString, (char*) fileName.data(), (char*) fileContent.data(),
                            parameterNamesPtr.get(), parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(),
-                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+                           postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode,
+                           allowVariantMultiThreadAccess);
 }
 
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
@@ -893,6 +925,14 @@ SensitivityAnalysisParameters* createSensitivityAnalysisParametersFromCStruct(se
     return new SensitivityAnalysisParameters(parameters.get());
 }
 
+DynamicSimulationParameters* createDynamicSimulationParameters() {
+    dynamic_simulation_parameters* parameters_ptr = PowsyblCaller::get()->callJava<dynamic_simulation_parameters*>(::createDynamicSimulationParameters);
+    auto parameters = std::shared_ptr<dynamic_simulation_parameters>(parameters_ptr, [](dynamic_simulation_parameters* ptr){
+        PowsyblCaller::get()->callJava(::freeDynamicSimulationParameters, ptr);
+    });
+    return new DynamicSimulationParameters(parameters.get());
+}
+
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
                                           const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
@@ -952,11 +992,11 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
 }
 
 void writeNetworkAreaDiagramSvg(const JavaHandle& network, const std::string& svgFile, const std::string& metadataFile, const std::vector<std::string>& voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
-    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles) {
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* injections_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles) {
     auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
     PowsyblCaller::get()->callJava(::writeNetworkAreaDiagramSvg, network, (char*) svgFile.data(), (char*) metadataFile.data(),
-        voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions, branch_labels, three_wt_labels, bus_descriptions, vl_descriptions, bus_node_styles, edge_styles, three_wt_styles);
+        voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions, branch_labels, three_wt_labels, injections_labels, bus_descriptions, vl_descriptions, bus_node_styles, edge_styles, three_wt_styles);
 }
 
 std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters) {
@@ -966,10 +1006,10 @@ std::string getNetworkAreaDiagramSvg(const JavaHandle& network, const std::vecto
 }
 
 std::vector<std::string> getNetworkAreaDiagramSvgAndMetadata(const JavaHandle& network, const std::vector<std::string>&  voltageLevelIds, int depth, double highNominalVoltageBound, double lowNominalVoltageBound, const NadParameters& parameters, dataframe* fixed_positions,
-    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles) {
+    dataframe* branch_labels, dataframe* three_wt_labels, dataframe* injections_labels, dataframe* bus_descriptions, dataframe* vl_descriptions, dataframe* bus_node_styles, dataframe* edge_styles, dataframe* three_wt_styles) {
     auto c_parameters = parameters.to_c_struct();
     ToCharPtrPtr voltageLevelIdPtr(voltageLevelIds);
-    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramSvgAndMetadata, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions, branch_labels, three_wt_labels, bus_descriptions, vl_descriptions, bus_node_styles, edge_styles, three_wt_styles);
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramSvgAndMetadata, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth, highNominalVoltageBound, lowNominalVoltageBound, c_parameters.get(), fixed_positions, branch_labels, three_wt_labels, injections_labels, bus_descriptions, vl_descriptions, bus_node_styles, edge_styles, three_wt_styles);
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
@@ -979,6 +1019,22 @@ std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaH
     auto displayedVoltageLevelIdsArrayPtr = PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDisplayedVoltageLevels, network, voltageLevelIdPtr.get(), voltageLevelIds.size(), depth);
     ToStringVector displayedVoltageLevelIds(displayedVoltageLevelIdsArrayPtr);
     return displayedVoltageLevelIds.get();
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBranchLabels, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultThreeWtLabels, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBusDescriptions, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultVoltageLevelDescriptions(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultVlDescriptions, network));
 }
 
 JavaHandle createSecurityAnalysis() {
@@ -992,6 +1048,10 @@ void addContingency(const JavaHandle& analysisContext, const std::string& contin
 
 void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
     PowsyblCaller::get()->callJava(::addContingencyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
+void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath) {
+    PowsyblCaller::get()->callJava(::exportToJson, securityAnalysisResult, (char*) jsonFilePath.data());
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
@@ -1053,6 +1113,15 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
     PowsyblCaller::get()->callJava(::addOperatorStrategy, analysisContext, (char*) operatorStrategyId.data(), (char*) contingencyId.data(), actionsPtr.get(), actionsIds.size(),
         conditionType, subjectIdsPtr.get(), subjectIds.size(), violationTypesPtr.get(), violationTypesFilters.size());
 }
+
+void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
+      PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
+void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
+      PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+}
+
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
@@ -1326,6 +1395,16 @@ std::vector<std::string> getSensitivityAnalysisProviderParametersNames(const std
     return providerParameters.get();
 }
 
+std::vector<std::string> getDynamicSimulationProviderParametersNames() {
+    auto providerParametersArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getDynamicSimulationProviderParametersNames);
+    ToStringVector providerParameters(providerParametersArrayPtr);
+    return providerParameters.get();
+}
+
+SeriesArray* createDynamicSimulationProviderParametersSeriesArray() {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::createDynamicSimulationProviderParametersSeriesArray));
+}
+
 void updateNetworkElementsExtensionsWithSeries(pypowsybl::JavaHandle network, std::string& name, std::string& tableName, dataframe* dataframe) {
     pypowsybl::PowsyblCaller::get()->callJava<>(::updateNetworkElementsExtensionsWithSeries, network, (char*) name.data(), (char*) tableName.data(), dataframe);
 }
@@ -1490,6 +1569,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     radius_factor = src->radius_factor;
     edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
     voltage_level_details = (bool) src->voltage_level_details;
+    injections_added = (bool) src->injections_added;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1521,6 +1601,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.radius_factor = radius_factor;
     res.edge_info_displayed = (int) edge_info_displayed;
     res.voltage_level_details = (unsigned char) voltage_level_details;
+    res.injections_added = (unsigned char) injections_added;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1581,8 +1662,9 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicModel(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, int start, int stop, JavaHandle *reportNode) {
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicModel, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, start, stop, (reportNode == nullptr) ? nullptr : *reportNode);
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle reportNode) {
+    auto c_parameters  = parameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
@@ -1911,6 +1993,36 @@ JavaHandle createRao() {
 
 RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult) {
     return pypowsybl::PowsyblCaller::get()->callJava<RaoComputationStatus>(::getRaoResultStatus, raoResult);
+}
+
+SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFlowCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getAngleCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRaResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResults, cracHandle, resultHandle));
+}
+
+std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle) {
+    auto virtulCostArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getVirtualCostNames, resultHandle);
+    ToStringVector virtalCosts(virtulCostArrayPtr);
+    return virtalCosts.get();
+}
+
+SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVirtualCostResults, cracHandle, resultHandle, (char*) virtualCostName.c_str()));
 }
 
 JavaHandle getCrac(const JavaHandle& raoContext) {

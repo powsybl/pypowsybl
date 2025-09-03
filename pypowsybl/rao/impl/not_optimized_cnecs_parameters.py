@@ -1,10 +1,12 @@
+from typing import Optional
+
 from pypowsybl._pypowsybl import (
     RaoParameters
 )
 
 class NotOptimizedCnecsParameters:
-    def __init__(self, do_not_optimize_curative_cnecs_for_tsos_without_cras: bool = None,
-                 rao_parameters: RaoParameters = None) -> None:
+    def __init__(self, do_not_optimize_curative_cnecs_for_tsos_without_cras: Optional[bool] = None,
+                 rao_parameters: Optional[RaoParameters] = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:

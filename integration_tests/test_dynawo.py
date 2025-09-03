@@ -10,6 +10,7 @@ import pypowsybl.dynamic as dyn
 import pypowsybl.report as rp
 from pypowsybl._pypowsybl import DynamicSimulationStatus
 import pandas as pd
+from pathlib import Path
 
 def test_simulation():
     """
@@ -26,7 +27,7 @@ def test_simulation():
     generator_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
         data={
-            'parameter_set_id': ['GSTWPR_GEN____6_SM', 'GSTWPR_GEN____8_SM'],
+            'parameter_set_id': ['GSTWPR_6', 'GSTWPR_8'],
             'model_name': 'GeneratorSynchronousThreeWindingsProportionalRegulations'
         }
     )
@@ -37,11 +38,22 @@ def test_simulation():
     event_mapping.add_active_power_variation(static_id='B3-L', start_time=4, delta_p=0.02)
 
     variables_mapping = dyn.OutputVariableMapping()
-    variables_mapping.add_dynamic_model_curves('B6-G', ['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
-    variables_mapping.add_standard_model_final_state_values('B3', 'Upu_value')
+    variables_mapping.add_dynamic_model_curves(dynamic_model_id='B6-G', variables=['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
+    variables_mapping.add_standard_model_final_state_values(static_id='B3', variables='Upu_value')
+    testPath = Path(__file__).parent
+    dynawo_param = {
+        'parametersFile': str(testPath.joinpath('models.par')),
+        'network.parametersFile': str(testPath.joinpath('network.par')),
+        'network.parametersId': 'Network',
+        'solver.parametersFile': str(testPath.joinpath('solvers.par')),
+        'solver.parametersId': 'IDA',
+        'solver.type': 'IDA',
+        'precision': '1e-5'
+    }
+    param = dyn.Parameters(start_time=0, stop_time=100, provider_parameters=dynawo_param)
 
     sim = dyn.Simulation()
-    res = sim.run(network, model_mapping, event_mapping, variables_mapping, 0, 100, report_node)
+    res = sim.run(network, model_mapping, event_mapping, variables_mapping, param, report_node)
 
     assert report_node
     assert DynamicSimulationStatus.SUCCESS == res.status()
@@ -51,3 +63,10 @@ def test_simulation():
     assert 'B6-G_generator_UStatorPu' in res.curves()
     assert False == res.final_state_values().loc['NETWORK_B3_Upu_value'].empty
     assert False == res.timeline().empty
+
+def test_provider_parameters_list():
+    assert dyn.Simulation.get_provider_parameters_names()
+    parameters = dyn.Simulation.get_provider_parameters()
+    assert 'Simulation step precision' == parameters['description']['precision']
+    assert 'DOUBLE' == parameters['type']['precision']
+    assert '1.0E-6' == parameters['default']['precision']

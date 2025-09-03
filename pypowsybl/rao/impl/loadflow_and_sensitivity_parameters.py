@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pypowsybl._pypowsybl import (
     RaoParameters
 )
@@ -6,11 +8,11 @@ from pypowsybl.loadflow.impl.util import parameters_from_c
 
 
 class LoadFlowAndSensitivityParameters:
-    def __init__(self, load_flow_provider: str = None,
-                 sensitivity_provider: str = None,
-                 sensitivity_parameters: SensitivityParameters = None,
-                 sensitivity_failure_overcost: float = None,
-                 rao_parameters: RaoParameters = None) -> None:
+    def __init__(self, load_flow_provider:  Optional[str] = None,
+                 sensitivity_provider:  Optional[str] = None,
+                 sensitivity_parameters: Optional[SensitivityParameters] = None,
+                 sensitivity_failure_overcost: Optional[float] = None,
+                 rao_parameters: Optional[RaoParameters] = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:

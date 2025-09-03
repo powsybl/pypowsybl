@@ -28,7 +28,7 @@ Notebooks demonstrating PyPowSyBl features can be found in this [repository](htt
 
 ## Installation
 
-PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.8 to 3.12, on Linux, Windows and MacOS.
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.9 to 3.13, on Linux, Windows and MacOS.
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
@@ -96,13 +96,14 @@ Requirements:
 - Maven >= 3.1
 - Cmake >= 3.20
 - C++11 compiler
-- Python >= 3.8 for Linux, Windows and MacOS (amd64 and arm64)
+- Python >= 3.9 for Linux, Windows and MacOS (amd64 and arm64)
 - [Oracle GraalVM Java 17](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
 
 ```bash
 git clone https://github.com/powsybl/pypowsybl.git
+cd pypowsybl
 export JAVA_HOME=<path to GraalVM>
 pip install --upgrade setuptools pip
 pip install -r requirements.txt

@@ -123,6 +123,7 @@ public final class Validations {
                 .doubles("voltage_setpoint", SvcValidationData::getVoltageSetpoint)
                 .booleans("connected", SvcValidationData::isConnected)
                 .strings("mode", data -> data.getRegulationMode().name())
+                .booleans("regulating", SvcValidationData::isRegulating)
                 .doubles("b_min", SvcValidationData::getbMin)
                 .doubles("b_max", SvcValidationData::getbMax)
                 .booleans("main_component", SvcValidationData::isMainComponent)

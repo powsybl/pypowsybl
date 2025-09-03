@@ -3,6 +3,7 @@
   "includes":[
     {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowParameters$ConfigLoader\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowProvider\\E"},
-    {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowDefaultParametersLoader\\E"}
+    {"pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowDefaultParametersLoader\\E"},
+    {"pattern":"\\Qcom/powsybl/openloadflow/reports.properties\\E"}
   ]}
 }

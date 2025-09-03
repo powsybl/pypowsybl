@@ -229,6 +229,7 @@ def test_get_provider_parameters_names():
                                    'maxPlausibleTargetVoltage',
                                    'minRealisticVoltage',
                                    'maxRealisticVoltage',
+                                   'minNominalVoltageRealisticVoltageCheck',
                                    'reactiveRangeCheckMode',
                                    'lowImpedanceThreshold',
                                    'networkCacheEnabled',
@@ -281,11 +282,12 @@ def test_get_provider_parameters_names():
                                    'areaInterchangePMaxMismatch',
                                    'voltageRemoteControlRobustMode',
                                    'forceTargetQInReactiveLimits',
-                                   'disableInconsistentVoltageControls']
+                                   'disableInconsistentVoltageControls',
+                                   'extrapolateReactiveLimits']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 74 == len(specific_parameters)
+    assert 76 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']

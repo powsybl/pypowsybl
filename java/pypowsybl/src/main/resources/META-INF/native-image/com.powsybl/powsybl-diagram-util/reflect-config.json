@@ -1,0 +1,26 @@
+[
+  {
+    "name":"com.powsybl.diagram.components.ComponentSize",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.diagram.components.Component",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.diagram.components.SubComponent",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.diagram.components.ComponentsLoader",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  }
+]

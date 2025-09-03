@@ -37,6 +37,15 @@ the violations created by the contingency, they are collected by contingency in 
                       NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0  1477.824335  TWO
                       VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
 
+It is also possible to get a JSON file with the full security analysis results, just by using the `export_to_json` method, like in the example below :
+
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
+
+    >>> n = pp.network.create_eurostag_tutorial_example1_network()
+    >>> sa = pp.security.create_analysis()
+    >>> sa_result = sa.run_ac(n)
+    >>> sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))
 
 
 Adding monitored Elements
@@ -149,7 +158,8 @@ Adding input data from JSON files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is possible to add the input data of a security analysis using JSON files.
-For now, only the contingencies can be added this way, using the `add_contingencies_from_json_file` method.
+The contingencies can be added this way, using the `add_contingencies_from_json_file` method.
+
 An example of a valid JSON contingency file is the following :
 
 .. code-block:: JSON
@@ -175,3 +185,47 @@ An example of a valid JSON contingency file is the following :
         } ]
       } ]
     }
+
+
+From now on, it is possible to add the remedial actions using JSON files too, using the `add_actions_from_json_file` method.
+The following example is a valid JSON file input for this method :
+
+.. code-block:: JSON
+
+    {
+      "version" : "1.0",
+      "actions" : [ {
+        "type" : "SWITCH",
+        "id" : "id1",
+        "switchId" : "S1VL2_LCC1_BREAKER",
+        "open" : true
+      }, {
+        "type" : "SWITCH",
+        "id" : "id2",
+        "switchId" : "S1VL2_BBS2_COUPLER_DISCONNECTOR",
+        "open" : true
+      }]
+    }
+
+
+Additionally, you can add operator strategies from JSON data, using the `add_operator_strategies_from_json_file` method.
+The following example is a valid JSON file input for this method :
+
+.. code-block:: JSON
+
+    {
+      "version" : "1.1",
+      "operatorStrategies" : [ {
+        "id" : "id1",
+        "contingencyContextType" : "SPECIFIC",
+        "contingencyId" : "contingency",
+        "conditionalActions" : [ {
+          "id" : "stage1",
+          "condition" : {
+            "type" : "TRUE_CONDITION"
+          },
+          "actionIds" : [ "id1", "id2" ]
+        } ]
+      }]
+    }
+

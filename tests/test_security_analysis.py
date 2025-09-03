@@ -4,7 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import numpy as np
 import pytest
 import pypowsybl as pp
 import pandas as pd
@@ -203,7 +202,6 @@ def test_loadflow_parameters():
     parameters.load_flow_parameters.countries_to_balance = ['FR']
     res = sa.run_ac(network, parameters=parameters)
     assert res.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
-
 
 def test_security_analysis_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()
@@ -420,6 +418,15 @@ def test_add_contingencies_from_json_file():
     assert 'contingency' in sa_result.post_contingency_results.keys()
     assert 'contingency2' in sa_result.post_contingency_results.keys()
 
+def test_add_operator_strategies_and_actions_from_json_file():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('LINE_S2S3', 'contingency')
+    sa.add_actions_from_json_file(str(DATA_DIR.joinpath('ActionFileTestV1.0.json')))
+    sa.add_operator_strategies_from_json_file(str(DATA_DIR.joinpath('OperatorStrategyFileTestV1.0.json')))
+    sa_result = sa.run_dc(n)
+    assert 'id1' in sa_result.operator_strategy_results.keys()
+
 def test_terminal_connection_action():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
@@ -429,3 +436,9 @@ def test_terminal_connection_action():
     sa_result = sa.run_ac(n)
     assert 'Line contingency' in sa_result.post_contingency_results.keys()
     assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+
+def test_export_json_file_from_security_analysis():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa_result = sa.run_ac(n)
+    sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))

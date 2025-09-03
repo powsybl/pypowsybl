@@ -28,7 +28,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.ints("tap"),
             SeriesMetadata.ints("low_tap"),
-            SeriesMetadata.booleans("on_load"),
+            SeriesMetadata.booleans("oltc"),
             SeriesMetadata.doubles("target_v"),
             SeriesMetadata.doubles("target_deadband"),
             SeriesMetadata.booleans("regulating"),
@@ -72,7 +72,7 @@ public class RatioTapChangerDataframeAdder implements NetworkElementAdder {
             this.ids = tapChangersDf.getStrings("id");
             this.taps = tapChangersDf.getInts("tap");
             this.lowTaps = tapChangersDf.getInts("low_tap");
-            this.onLoad = tapChangersDf.getInts("on_load");
+            this.onLoad = tapChangersDf.getInts("oltc");
             this.targetV = tapChangersDf.getDoubles("target_v");
             this.targetDeadband = tapChangersDf.getDoubles("target_deadband");
             this.regulating = tapChangersDf.getInts("regulating");
