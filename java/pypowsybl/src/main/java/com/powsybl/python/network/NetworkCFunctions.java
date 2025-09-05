@@ -1070,6 +1070,8 @@ public final class NetworkCFunctions {
                 .setBusLegend(nadParametersPointer.isBusLegend())
                 .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
                 .setEdgeInfoDisplayed(edgeInfo);
+        nadParameters.getLayoutParameters()
+                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;
     }
 
