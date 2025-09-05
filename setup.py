@@ -24,7 +24,6 @@ class PyPowsyblExtension(Pybind11Extension):
 
 class PyPowsyblBuild(build_ext):
     def run(self):
-        os.environ["USE_NATIVE_IMAGE_JAVA_PLATFORM_MODULE_SYSTEM"] = 'false'
         try:
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
