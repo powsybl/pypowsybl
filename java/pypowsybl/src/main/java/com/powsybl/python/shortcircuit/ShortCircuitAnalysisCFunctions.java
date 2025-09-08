@@ -44,7 +44,7 @@ import static com.powsybl.python.commons.Util.*;
  *
  * @author Christian Biasuzzi {@literal <christian.biasuzzi@soft.it>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class ShortCircuitAnalysisCFunctions {
 
@@ -57,7 +57,7 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "getShortCircuitAnalysisProviderNames")
     public static ArrayPointer<CCharPointerPointer> getShortCircuitAnalysisProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 return createCharPtrArray(ShortCircuitAnalysisProvider.findAll()
@@ -78,7 +78,7 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "getDefaultShortCircuitAnalysisProvider")
     public static CCharPointer getDefaultShortCircuitAnalysisProvider(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultShortCircuitAnalysisProvider());
@@ -88,7 +88,7 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "createShortCircuitAnalysis")
     public static ObjectHandle createShortCircuitAnalysis(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 return ObjectHandles.getGlobal().create(new ShortCircuitAnalysisContext());
@@ -101,7 +101,7 @@ public final class ShortCircuitAnalysisCFunctions {
                                                        ObjectHandle networkHandle, ShortCircuitAnalysisParametersPointer shortCircuitAnalysisParametersPointer,
                                                        CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 ShortCircuitAnalysisContext analysisContext = ObjectHandles.getGlobal().get(shortCircuitAnalysisContextHandle);
@@ -133,7 +133,7 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "createShortCircuitAnalysisParameters")
     public static ShortCircuitAnalysisParametersPointer createShortCircuitAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ShortCircuitAnalysisParametersPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ShortCircuitAnalysisParametersPointer get() {
                 return convertToShortCircuitAnalysisParametersPointer(ShortCircuitAnalysisCUtils.createShortCircuitAnalysisParameters());
@@ -157,7 +157,7 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "getShortCircuitAnalysisProviderParametersNames")
     public static ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 String providerStr = CTypeUtil.toString(provider);
@@ -170,7 +170,7 @@ public final class ShortCircuitAnalysisCFunctions {
     @CEntryPoint(name = "getFaultsDataframeMetaData")
     public static DataframeMetadataPointer getFaultsDataframeMetaData(IsolateThread thread,
                                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframeMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframeMetadataPointer get() {
                 return CTypeUtil.createSeriesMetadata(new FaultDataframeAdder().getMetadata());
@@ -197,7 +197,7 @@ public final class ShortCircuitAnalysisCFunctions {
                                                                                   ObjectHandle shortCircuitAnalysisResult,
                                                                                   boolean withFortescueResult,
                                                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
@@ -211,7 +211,7 @@ public final class ShortCircuitAnalysisCFunctions {
                                                                                    ObjectHandle shortCircuitAnalysisResult,
                                                                                    boolean withFortescueResult,
                                                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
@@ -222,7 +222,7 @@ public final class ShortCircuitAnalysisCFunctions {
 
     @CEntryPoint(name = "getShortCircuitAnalysisLimitViolationsResults")
     public static ArrayPointer<SeriesPointer> getShortCircuitAnalysisLimitViolationsResults(IsolateThread thread, ObjectHandle shortCircuitAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);
@@ -236,7 +236,7 @@ public final class ShortCircuitAnalysisCFunctions {
                                                                                 ObjectHandle shortCircuitAnalysisResult,
                                                                                 boolean withFortescueResult,
                                                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 ShortCircuitAnalysisResult result = ObjectHandles.getGlobal().get(shortCircuitAnalysisResult);

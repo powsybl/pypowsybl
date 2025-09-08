@@ -28,7 +28,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class CommonCFunctions {
 
@@ -138,7 +138,7 @@ public final class CommonCFunctions {
 
     @CEntryPoint(name = "getWorkingVariantId")
     public static CCharPointer getWorkingVariantId(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);

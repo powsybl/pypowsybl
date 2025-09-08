@@ -40,7 +40,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * @author Hugo Schindler {@literal <hugo.schindler at rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class FlowDecompositionCFunctions {
 
@@ -122,7 +122,7 @@ public final class FlowDecompositionCFunctions {
                                                                                       PyPowsyblApiHeader.FlowDecompositionParametersPointer flowDecompositionParametersPtr,
                                                                                       PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new Util.PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 FlowDecompositionContext flowDecompositionContext = ObjectHandles.getGlobal().get(flowDecompositionContextHandle);

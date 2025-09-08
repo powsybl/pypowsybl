@@ -30,7 +30,7 @@ import static com.powsybl.python.commons.Util.doCatch;
 /**
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class ReportCFunctions {
 
@@ -39,7 +39,7 @@ public final class ReportCFunctions {
 
     @CEntryPoint(name = "createReportNode")
     public static ObjectHandle createReportNode(IsolateThread thread, CCharPointer taskKeyPtr, CCharPointer defaultNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 String taskKey = CTypeUtil.toString(taskKeyPtr);
@@ -54,7 +54,7 @@ public final class ReportCFunctions {
 
     @CEntryPoint(name = "printReport")
     public static CCharPointer printReport(IsolateThread thread, ObjectHandle reportNodeHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() throws IOException {
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
@@ -67,7 +67,7 @@ public final class ReportCFunctions {
 
     @CEntryPoint(name = "jsonReport")
     public static CCharPointer jsonReport(IsolateThread thread, ObjectHandle reportNodeHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);

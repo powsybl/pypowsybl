@@ -26,7 +26,7 @@ import static com.powsybl.python.commons.Util.doCatch;
  *
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class LoggingCFunctions {
 

@@ -29,7 +29,7 @@ import static org.graalvm.word.WordFactory.nullPointer;
  *
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 public class CDataframeHandler implements DataframeHandler {
 
     public static final int STRING_SERIES_TYPE = 0;

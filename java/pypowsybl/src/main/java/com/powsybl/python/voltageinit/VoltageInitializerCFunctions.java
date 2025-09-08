@@ -43,7 +43,7 @@ import com.powsybl.python.commons.Util;
 /**
  * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class VoltageInitializerCFunctions {
     private VoltageInitializerCFunctions() {
@@ -56,7 +56,7 @@ public final class VoltageInitializerCFunctions {
     @CEntryPoint(name = "createVoltageInitializerParams")
     public static ObjectHandle createVoltageInitializerParams(IsolateThread thread,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 return ObjectHandles.getGlobal().create(new OpenReacParameters());
@@ -422,7 +422,7 @@ public final class VoltageInitializerCFunctions {
     @CEntryPoint(name = "voltageInitializerGetStatus")
     public static VoltageInitializerStatus getStatus(IsolateThread thread, ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new Supplier<VoltageInitializerStatus>() {
+        return doCatch(exceptionHandlerPtr, new Supplier<>() {
             @Override
             public VoltageInitializerStatus get() {
                 OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
@@ -434,7 +434,7 @@ public final class VoltageInitializerCFunctions {
     @CEntryPoint(name = "voltageInitializerGetIndicators")
     public static StringMap getIndicators(IsolateThread thread, ObjectHandle resultHandle,
             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<StringMap>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public StringMap get() {
                 OpenReacResult result = ObjectHandles.getGlobal().get(resultHandle);
@@ -446,7 +446,7 @@ public final class VoltageInitializerCFunctions {
     @CEntryPoint(name = "runVoltageInitializer")
     public static ObjectHandle runVoltageInitializer(IsolateThread thread, boolean debug, ObjectHandle networkHandle,
             ObjectHandle paramsHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return Util.doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);

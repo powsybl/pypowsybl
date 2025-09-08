@@ -50,7 +50,7 @@ import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
  *
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class NetworkModificationsCFunctions {
 
@@ -60,7 +60,7 @@ public final class NetworkModificationsCFunctions {
     @CEntryPoint(name = "getConnectablesOrderPositions")
     public static ArrayPointer<SeriesPointer> getConnectablesOrderPositions(IsolateThread thread, ObjectHandle networkHandle,
                                                                             CCharPointer voltageLevelId, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 String voltageLevelIdStr = CTypeUtil.toString(voltageLevelId);
@@ -77,7 +77,7 @@ public final class NetworkModificationsCFunctions {
     public static ArrayPointer<CIntPointer> getUnusedConnectableOrderPositions(IsolateThread thread, ObjectHandle networkHandle,
                                                                                                   CCharPointer busbarSectionId, CCharPointer beforeOrAfter,
                                                                                                   PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CIntPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CIntPointer> get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -125,7 +125,7 @@ public final class NetworkModificationsCFunctions {
     public static DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
                                                                                       PyPowsyblApiHeader.NetworkModificationType networkModificationType,
                                                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframeMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframeMetadataPointer get() throws IOException {
                 DataframeNetworkModificationType type = convert(networkModificationType);

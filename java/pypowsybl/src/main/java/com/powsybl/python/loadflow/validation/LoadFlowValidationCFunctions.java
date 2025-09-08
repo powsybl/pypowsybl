@@ -37,7 +37,7 @@ import static com.powsybl.python.commons.Util.doCatch;
  *
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class LoadFlowValidationCFunctions {
 
@@ -49,7 +49,7 @@ public final class LoadFlowValidationCFunctions {
                                                                                   PyPowsyblApiHeader.ValidationType validationType,
                                                                                   PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -114,7 +114,7 @@ public final class LoadFlowValidationCFunctions {
 
     @CEntryPoint(name = "createValidationConfig")
     public static LoadFlowValidationParametersPointer createValidationConfig(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<LoadFlowValidationParametersPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public LoadFlowValidationParametersPointer get() {
                 return convertToLoadFlowValidationParametersPointer(createValidationConfig());

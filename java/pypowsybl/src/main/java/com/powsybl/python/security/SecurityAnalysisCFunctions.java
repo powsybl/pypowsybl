@@ -61,7 +61,7 @@ import static com.powsybl.python.commons.Util.*;
  *
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class SecurityAnalysisCFunctions {
 
@@ -74,7 +74,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSecurityAnalysisProviderNames")
     public static ArrayPointer<CCharPointerPointer> getSecurityAnalysisProviderNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 return createCharPtrArray(SecurityAnalysisProvider.findAll()
@@ -95,7 +95,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getDefaultSecurityAnalysisProvider")
     public static CCharPointer getDefaultSecurityAnalysisProvider(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSecurityAnalysisProvider());
@@ -128,7 +128,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getBranchResults")
     public static ArrayPointer<SeriesPointer> getBranchResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
@@ -139,7 +139,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getBusResults")
     public static ArrayPointer<SeriesPointer> getBusResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
@@ -150,7 +150,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getThreeWindingsTransformerResults")
     public static ArrayPointer<SeriesPointer> getThreeWindingsTransformerResults(IsolateThread thread, ObjectHandle securityAnalysisResult, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResult);
@@ -161,7 +161,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "createSecurityAnalysis")
     public static ObjectHandle createSecurityAnalysis(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 return ObjectHandles.getGlobal().create(new SecurityAnalysisContext());
@@ -275,7 +275,7 @@ public final class SecurityAnalysisCFunctions {
                                                    ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
                                                    CCharPointer providerName, boolean dc, ObjectHandle reportNodeHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 SecurityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(securityAnalysisContextHandle);
@@ -312,7 +312,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getPostContingencyResults")
     public static ArrayPointer<PostContingencyResultPointer> getPostContingencyResults(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<PostContingencyResultPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<PostContingencyResultPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
@@ -323,7 +323,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getOperatorStrategyResults")
     public static ArrayPointer<OperatorStrategyResultPointer> getOperatorStrategyResults(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<OperatorStrategyResultPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<OperatorStrategyResultPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
@@ -334,7 +334,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getPreContingencyResult")
     public static PreContingencyResultPointer getPreContingencyResult(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<PreContingencyResultPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public PreContingencyResultPointer get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
@@ -345,7 +345,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getLimitViolations")
     public static ArrayPointer<SeriesPointer> getLimitViolations(IsolateThread thread, ObjectHandle securityAnalysisResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 SecurityAnalysisResult result = ObjectHandles.getGlobal().get(securityAnalysisResultHandle);
@@ -413,7 +413,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "createSecurityAnalysisParameters")
     public static SecurityAnalysisParametersPointer createSecurityAnalysisParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<SecurityAnalysisParametersPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public SecurityAnalysisParametersPointer get() {
                 return convertToSecurityAnalysisParametersPointer(SecurityAnalysisCUtils.createSecurityAnalysisParameters());
@@ -436,7 +436,7 @@ public final class SecurityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSecurityAnalysisProviderParametersNames")
     public static ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 String providerStr = CTypeUtil.toString(provider);

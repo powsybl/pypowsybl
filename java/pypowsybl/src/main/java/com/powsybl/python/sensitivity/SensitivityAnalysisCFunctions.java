@@ -46,7 +46,7 @@ import static com.powsybl.python.commons.Util.*;
  *
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class SensitivityAnalysisCFunctions {
 
@@ -59,7 +59,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSensitivityAnalysisProviderNames")
     public static ArrayPointer<CCharPointerPointer> getSensitivityAnalysisProviderNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 return createCharPtrArray(SensitivityAnalysisProvider.findAll()
@@ -80,7 +80,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "getDefaultSensitivityAnalysisProvider")
     public static CCharPointer getDefaultSensitivityAnalysisProvider(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 return CTypeUtil.toCharPtr(PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider());
@@ -90,7 +90,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "createSensitivityAnalysis")
     public static ObjectHandle createSensitivityAnalysis(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 return ObjectHandles.getGlobal().create(new SensitivityAnalysisContext());
@@ -152,7 +152,7 @@ public final class SensitivityAnalysisCFunctions {
                                                       ObjectHandle networkHandle, boolean dc, SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPtr,
                                                       CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 SensitivityAnalysisContext analysisContext = ObjectHandles.getGlobal().get(sensitivityAnalysisContextHandle);
@@ -171,7 +171,7 @@ public final class SensitivityAnalysisCFunctions {
     public static PyPowsyblApiHeader.MatrixPointer getSensitivityMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                                         CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
                                                                         ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<PyPowsyblApiHeader.MatrixPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public PyPowsyblApiHeader.MatrixPointer get() {
                 SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
@@ -186,7 +186,7 @@ public final class SensitivityAnalysisCFunctions {
     public static PyPowsyblApiHeader.MatrixPointer getReferenceMatrix(IsolateThread thread, ObjectHandle sensitivityAnalysisResultContextHandle,
                                                                       CCharPointer matrixIdPtr, CCharPointer contingencyIdPtr,
                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<PyPowsyblApiHeader.MatrixPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public PyPowsyblApiHeader.MatrixPointer get() {
                 SensitivityAnalysisResultContext resultContext = ObjectHandles.getGlobal().get(sensitivityAnalysisResultContextHandle);
@@ -220,7 +220,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "createSensitivityAnalysisParameters")
     public static SensitivityAnalysisParametersPointer createSensitivityAnalysisParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<SensitivityAnalysisParametersPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public SensitivityAnalysisParametersPointer get() {
                 return convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters());
@@ -238,7 +238,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "getSensitivityAnalysisProviderParametersNames")
     public static ArrayPointer<CCharPointerPointer> getProviderParametersNames(IsolateThread thread, CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 String providerStr = CTypeUtil.toString(provider);

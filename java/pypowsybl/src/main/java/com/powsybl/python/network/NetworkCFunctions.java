@@ -89,7 +89,7 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
  *
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
-@SuppressWarnings({"java:S1602", "java:S1604"})
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class NetworkCFunctions {
 
@@ -100,7 +100,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkImportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkImportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 return createCharPtrArray(Importer.getFormats().stream().sorted().toList());
@@ -115,7 +115,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkExportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 return createCharPtrArray(Exporter.getFormats().stream().sorted().toList());
@@ -131,7 +131,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "createNetwork")
     public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, boolean allowVariantMultiThreadAccess,
                                              ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 String networkName = CTypeUtil.toString(name);
@@ -146,7 +146,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getNetworkMetadata")
     public static NetworkMetadataPointer getNetworkMetadata(IsolateThread thread, ObjectHandle networkHandle,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<NetworkMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public NetworkMetadataPointer get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -213,7 +213,7 @@ public final class NetworkCFunctions {
                                            ObjectHandle reportNodeHandle,
                                            boolean allowVariantMultiThreadAccess,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 String fileStr = CTypeUtil.toString(file);
@@ -238,7 +238,7 @@ public final class NetworkCFunctions {
                                                      ObjectHandle reportNodeHandle,
                                                      boolean allowVariantMultiThreadAccess,
                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 String fileNameStr = CTypeUtil.toString(fileName);
@@ -268,7 +268,7 @@ public final class NetworkCFunctions {
                                                             ObjectHandle reportNodeHandle,
                                                             boolean allowVariantMultiThreadAccess,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
@@ -336,7 +336,7 @@ public final class NetworkCFunctions {
                                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                    ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -371,7 +371,7 @@ public final class NetworkCFunctions {
                                                                        CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                                        CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                                        ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -463,7 +463,7 @@ public final class NetworkCFunctions {
                                                                           CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
                                                                           CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
                                                                           boolean notConnectedToSameBusAtBothSides, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -510,7 +510,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getVariantsIds")
     public static ArrayPointer<CCharPointerPointer> getVariantsIds(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -541,7 +541,7 @@ public final class NetworkCFunctions {
                                                                                boolean perUnit,
                                                                                double nominalApparentPower,
                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return Util.doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
@@ -560,7 +560,7 @@ public final class NetworkCFunctions {
         String name = CTypeUtil.toString(extensionName);
         String tempName = CTypeUtil.toString(cTableName);
         String tableName = tempName.isEmpty() ? null : tempName;
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
@@ -725,7 +725,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNodeBreakerViewSwitches")
     public static ArrayPointer<SeriesPointer> getNodeBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -737,7 +737,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNodeBreakerViewNodes")
     public static ArrayPointer<SeriesPointer> getNodeBreakerViewNodes(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -751,7 +751,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNodeBreakerViewInternalConnections")
     public static ArrayPointer<SeriesPointer> getNodeBreakerViewInternalConnections(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -763,7 +763,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getBusBreakerViewSwitches")
     public static PyPowsyblApiHeader.ArrayPointer<SeriesPointer> getBusBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -775,7 +775,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getBusBreakerViewBuses")
     public static PyPowsyblApiHeader.ArrayPointer<SeriesPointer> getBusBreakerViewBuses(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -787,7 +787,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getBusBreakerViewElements")
     public static PyPowsyblApiHeader.ArrayPointer<SeriesPointer> getBusBreakerViewElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -800,7 +800,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "merge")
     public static ObjectHandle merge(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 Network[] networks = new Network[networkCount];
@@ -817,7 +817,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getSeriesMetadata")
     public static DataframeMetadataPointer getSeriesMetadata(IsolateThread thread, ElementType elementType,
                                                              ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframeMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframeMetadataPointer get() {
                 DataframeElementType type = convert(elementType);
@@ -842,7 +842,7 @@ public final class NetworkCFunctions {
     public static DataframesMetadataPointer getCreationMetadata(IsolateThread thread,
                                                                 ElementType elementType,
                                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframesMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframesMetadataPointer get() {
                 DataframeElementType type = convert(elementType);
@@ -988,7 +988,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getExtensionSeriesMetadata")
     public static DataframeMetadataPointer getExtensionSeriesMetadata(IsolateThread thread, CCharPointer namePtr, CCharPointer tableNamePtr,
                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframeMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframeMetadataPointer get() {
                 String name = CTypeUtil.toString(namePtr);
@@ -1028,7 +1028,7 @@ public final class NetworkCFunctions {
     public static DataframesMetadataPointer getExtensionsCreationMetadata(IsolateThread thread,
                                                                           CCharPointer namePtr,
                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframesMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframesMetadataPointer get() {
                 String name = CTypeUtil.toString(namePtr);
@@ -1051,7 +1051,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "createImporterParametersSeriesArray")
     static ArrayPointer<SeriesPointer> createImporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 String format = CTypeUtil.toString(formatPtr);
@@ -1067,7 +1067,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "createExporterParametersSeriesArray")
     static ArrayPointer<SeriesPointer> createExporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() {
                 String format = CTypeUtil.toString(formatPtr);
@@ -1279,7 +1279,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getSingleLineDiagramSvg")
     public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1293,7 +1293,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                                                        SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1309,7 +1309,7 @@ public final class NetworkCFunctions {
     public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                                            int substationIdCount, int substationIdRowCount,
                                                                                            SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1355,7 +1355,7 @@ public final class NetworkCFunctions {
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
                                                         double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1705,7 +1705,7 @@ public final class NetworkCFunctions {
                                                                                         DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels, DataframePointer injectionLabels, DataframePointer busDescriptions,
                                                                                         DataframePointer vlDescriptions, DataframePointer busNodeStyles, DataframePointer edgeStyles,
                                                                                         DataframePointer threeWtStyles, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1723,7 +1723,7 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "getNetworkAreaDiagramDisplayedVoltageLevels")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                                                                                    int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1743,7 +1743,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultBranchLabels")
     public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultBranchLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1756,7 +1756,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultThreeWtLabels")
     public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultThreeWtLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1769,7 +1769,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultBusDescriptions")
     public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultBusDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1782,7 +1782,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultVlDescriptions")
     public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultVlDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1836,7 +1836,7 @@ public final class NetworkCFunctions {
                                                                                    NetworkModificationType networkModificationType,
                                                                                    ElementType elementType,
                                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<DataframesMetadataPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframesMetadataPointer get() {
                 DataframeNetworkModificationType modificationType = convert(networkModificationType);
@@ -1858,7 +1858,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getSubNetwork")
     public static ObjectHandle getSubNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer subNetworkId, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -1874,7 +1874,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "detachSubNetwork")
     public static ObjectHandle detachSubNetwork(IsolateThread thread, ObjectHandle subNetworkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
