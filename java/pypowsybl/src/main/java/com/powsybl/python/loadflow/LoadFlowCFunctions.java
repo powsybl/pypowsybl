@@ -215,7 +215,7 @@ public final class LoadFlowCFunctions {
     @CEntryPoint(name = "writeLoadFlowParametersToJson")
     public static CCharPointer writeLoadFlowParametersToJson(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
                                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<> () {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public CCharPointer get() {
                 String providerName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
