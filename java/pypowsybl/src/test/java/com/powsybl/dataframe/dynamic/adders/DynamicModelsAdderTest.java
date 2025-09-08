@@ -30,7 +30,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
-import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -81,7 +80,7 @@ class DynamicModelsAdderTest {
     }
 
     @Test
-    void testTapChangerBlockingAdders() {
+    void testTapChangerBlockingAdder() {
         String expectedModelName = DynamicMappingHandler.getSupportedModels("TAP_CHANGER_BLOCKING").stream().findFirst().orElse("");
         Network network = EurostagTutorialExample1Factory.createWithLFResults();
         String dynamicModelId = "BBM_TCB";
@@ -137,7 +136,7 @@ class DynamicModelsAdderTest {
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 
-    static Stream<Arguments> equipmentDataProvider() {
+    private static Stream<Arguments> equipmentDataProvider() {
         return Stream.of(
                 Arguments.of("BASE_LOAD", EurostagTutorialExample1Factory.create(), "LOAD"),
                 Arguments.of("LOAD_ONE_TRANSFORMER", EurostagTutorialExample1Factory.create(), "LOAD"),
@@ -160,7 +159,7 @@ class DynamicModelsAdderTest {
                 );
     }
 
-    static Stream<Arguments> automationSystemProvider() {
+    private static Stream<Arguments> automationSystemProvider() {
         return Stream.of(
                 Arguments.of("OVERLOAD_MANAGEMENT",
                         (Consumer<DefaultUpdatingDataframe>) df -> {

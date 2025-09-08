@@ -22,7 +22,7 @@ public abstract class AbstractAutomationSystemSeries<T extends AbstractAutomatio
 
     protected final StringSeries dynamicModelIds;
 
-    AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
+    public AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
         super(dataframe);
         this.dynamicModelIds = PersistentStringSeries.copyOf(dataframe, DYNAMIC_MODEL_ID);
     }
