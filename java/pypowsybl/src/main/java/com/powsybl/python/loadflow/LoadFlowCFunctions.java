@@ -201,10 +201,13 @@ public final class LoadFlowCFunctions {
     @CEntryPoint(name = "createLoadFlowParametersFromJson")
     public static LoadFlowParametersPointer createLoadFlowParametersFromJson(IsolateThread thread, CCharPointer parametersJsonPtr,
                                                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String parametersJson = CTypeUtil.toString(parametersJsonPtr);
-            try (InputStream is = new ByteArrayInputStream(parametersJson.getBytes(StandardCharsets.UTF_8))) {
-                return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public LoadFlowParametersPointer get() throws IOException {
+                String parametersJson = CTypeUtil.toString(parametersJsonPtr);
+                try (InputStream is = new ByteArrayInputStream(parametersJson.getBytes(StandardCharsets.UTF_8))) {
+                    return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is));
+                }
             }
         });
     }
@@ -212,16 +215,19 @@ public final class LoadFlowCFunctions {
     @CEntryPoint(name = "writeLoadFlowParametersToJson")
     public static CCharPointer writeLoadFlowParametersToJson(IsolateThread thread, LoadFlowParametersPointer loadFlowParametersPtr,
                                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String providerName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
-            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(false, loadFlowParametersPtr, providerName);
-            try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                JsonLoadFlowParameters.write(parameters, os);
-                os.flush();
-                String parametersJson = os.toString(StandardCharsets.UTF_8);
-                return CTypeUtil.toCharPtr(parametersJson);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<> () {
+            @Override
+            public CCharPointer get() {
+                String providerName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(false, loadFlowParametersPtr, providerName);
+                try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                    JsonLoadFlowParameters.write(parameters, os);
+                    os.flush();
+                    String parametersJson = os.toString(StandardCharsets.UTF_8);
+                    return CTypeUtil.toCharPtr(parametersJson);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
             }
         });
     }
