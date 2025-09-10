@@ -41,6 +41,10 @@ public final class DynamicMappingHandler {
         return ADDERS.get(category).getMetadata();
     }
 
+    public static Collection<String> getCategories() {
+        return ADDERS.keySet();
+    }
+
     public static Collection<String> getSupportedModels(String category) {
         return ADDERS.get(category).getSupportedModels().stream().map(ModelInfo::name).toList();
     }

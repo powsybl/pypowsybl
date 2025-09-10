@@ -1705,6 +1705,11 @@ SeriesArray* getTimeline(JavaHandle resultHandle) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getTimeline, resultHandle));
 }
 
+std::vector<std::string> getCategories() {
+    ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getCategories));
+    return vector.get();
+}
+
 std::vector<std::string> getSupportedModels(std::string categoryName) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, (char*) categoryName.c_str()));
     return vector.get();

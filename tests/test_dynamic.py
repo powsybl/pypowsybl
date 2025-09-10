@@ -16,6 +16,7 @@ def set_up():
 
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()
+    assert model_mapping.get_categories()
     # Equipments
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name='LoadPQ')
     model_mapping.add_load_one_transformer(static_id='LOAD', parameter_set_id='lt', model_name='LoadOneTransformer')

@@ -179,6 +179,13 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getCategories")
+    public static ArrayPointer<CCharPointerPointer> getCategories(IsolateThread thread,
+                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () ->
+                Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getCategories())));
+    }
+
     @CEntryPoint(name = "getSupportedModels")
     public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
                                                                        CCharPointer categoryNamePtr,

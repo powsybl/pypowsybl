@@ -19,12 +19,31 @@ class ModelMapping:
 
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
+        self._categories = _pp.get_categories()
+
+    def get_categories(self) -> List[str]:
+        """
+        Get the dynamic model categories
+
+        Returns:
+            list of the categories
+        """
+        return self._categories
 
     def get_supported_models(self, category_name: Union[DynamicMappingType, str]) -> List[str]:
+        """
+        Get the supported dynamic models for a given category
+
+        Args:
+            category_name: dynamic model category name
+
+        Returns:
+            list of the supported models
+        """
         #TODO remove
         if isinstance(category_name, DynamicMappingType):
             category_name = category_name.name
-        return _pp.get_supported_models(mapping_type)
+        return _pp.get_supported_models(category_name)
 
     def add_base_load(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
