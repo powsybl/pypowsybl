@@ -42,7 +42,7 @@ public final class DynamicMappingHandler {
     }
 
     public static Collection<String> getCategories() {
-        return ADDERS.keySet();
+        return ADDERS.keySet().stream().sorted().toList();
     }
 
     public static Collection<String> getSupportedModels(String category) {

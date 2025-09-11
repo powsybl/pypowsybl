@@ -8,7 +8,6 @@ from typing import List, Optional, Union
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
-from pypowsybl._pypowsybl import DynamicMappingType # pylint: disable=protected-access
 from pypowsybl.utils import _get_c_dataframes  # pylint: disable=protected-access
 
 
@@ -30,7 +29,7 @@ class ModelMapping:
         """
         return self._categories
 
-    def get_supported_models(self, category_name: Union[DynamicMappingType, str]) -> List[str]:
+    def get_supported_models(self, category_name: str) -> List[str]:
         """
         Get the supported dynamic models for a given category
 
@@ -40,9 +39,6 @@ class ModelMapping:
         Returns:
             list of the supported models
         """
-        #TODO remove
-        if isinstance(category_name, DynamicMappingType):
-            category_name = category_name.name
         return _pp.get_supported_models(category_name)
 
     def add_base_load(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -73,7 +69,7 @@ class ModelMapping:
                                             parameter_set_id='lab',
                                             model_name='LoadPQ')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.BASE_LOAD, [df], **kwargs)
+        self._add_all_dynamic_mappings('BASE_LOAD', [df], **kwargs)
 
     def add_load_one_transformer(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -104,7 +100,7 @@ class ModelMapping:
                                                        parameter_set_id='lt',
                                                        model_name='LoadOneTransformer')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_ONE_TRANSFORMER, [df], **kwargs)
+        self._add_all_dynamic_mappings('LOAD_ONE_TRANSFORMER', [df], **kwargs)
 
     def add_load_one_transformer_tap_changer(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -135,7 +131,7 @@ class ModelMapping:
                                                                    parameter_set_id='lt_tc',
                                                                    model_name='LoadOneTransformerTapChanger')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_ONE_TRANSFORMER_TAP_CHANGER, [df], **kwargs)
+        self._add_all_dynamic_mappings('LOAD_ONE_TRANSFORMER_TAP_CHANGER', [df], **kwargs)
 
     def add_load_two_transformers(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -166,7 +162,7 @@ class ModelMapping:
                                                         parameter_set_id='ltt',
                                                         model_name='LoadTwoTransformers')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_TWO_TRANSFORMERS, [df], **kwargs)
+        self._add_all_dynamic_mappings('LOAD_TWO_TRANSFORMERS', [df], **kwargs)
 
     def add_load_two_transformers_tap_changers(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -197,7 +193,7 @@ class ModelMapping:
                                                                      parameter_set_id='ltt_tc',
                                                                      model_name='LoadTwoTransformersTapChangers')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.LOAD_TWO_TRANSFORMERS_TAP_CHANGERS, [df], **kwargs)
+        self._add_all_dynamic_mappings('LOAD_TWO_TRANSFORMERS_TAP_CHANGER', [df], **kwargs)
 
     def add_base_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -228,7 +224,7 @@ class ModelMapping:
                                                  parameter_set_id='gen',
                                                  model_name='GeneratorFictitious')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.BASE_GENERATOR, [df], **kwargs)
+        self._add_all_dynamic_mappings('BASE_GENERATOR', [df], **kwargs)
 
     def add_synchronized_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -259,7 +255,7 @@ class ModelMapping:
                                                          parameter_set_id='sgen',
                                                          model_name='GeneratorPVFixed')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.SYNCHRONIZED_GENERATOR, [df], **kwargs)
+        self._add_all_dynamic_mappings('SYNCHRONIZED_GENERATOR', [df], **kwargs)
 
     def add_synchronous_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -290,7 +286,7 @@ class ModelMapping:
                                                             parameter_set_id='ssgen',
                                                             model_name='GeneratorSynchronousThreeWindings')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.SYNCHRONOUS_GENERATOR, [df], **kwargs)
+        self._add_all_dynamic_mappings('SYNCHRONOUS_GENERATOR', [df], **kwargs)
 
     def add_wecc(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -321,7 +317,7 @@ class ModelMapping:
                                            parameter_set_id='wecc',
                                            model_name='WT4BWeccCurrentSource')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.WECC, [df], **kwargs)
+        self._add_all_dynamic_mappings('WECC', [df], **kwargs)
 
     def add_grid_forming_converter(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -352,7 +348,7 @@ class ModelMapping:
                                                          parameter_set_id='gf',
                                                          model_name='GridFormingConverterMatchingControl')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.GRID_FORMING_CONVERTER, [df], **kwargs)
+        self._add_all_dynamic_mappings('GRID_FORMING_CONVERTER', [df], **kwargs)
 
     def add_signal_n_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -383,7 +379,7 @@ class ModelMapping:
                                                      parameter_set_id='signal_n',
                                                      model_name='GeneratorPVSignalN')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.SIGNAL_N_GENERATOR, [df], **kwargs)
+        self._add_all_dynamic_mappings('SIGNAL_N_GENERATOR', [df], **kwargs)
 
     def add_hvdc_p(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -414,7 +410,7 @@ class ModelMapping:
                                          parameter_set_id='hvdc_p',
                                          model_name='HvdcPV')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.HVDC_P, [df], **kwargs)
+        self._add_all_dynamic_mappings('HVDC_P', [df], **kwargs)
 
     def add_hvdc_vsc(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -445,7 +441,7 @@ class ModelMapping:
                                            parameter_set_id='hvdc_vsc',
                                            model_name='HvdcVSCDanglingP')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.HVDC_VSC, [df], **kwargs)
+        self._add_all_dynamic_mappings('HVDC_VSC', [df], **kwargs)
 
     def add_base_transformer(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -476,7 +472,7 @@ class ModelMapping:
                                                    parameter_set_id='tfo',
                                                    model_name='TransformerFixedRatio')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.BASE_TRANSFORMER, [df], **kwargs)
+        self._add_all_dynamic_mappings('TRANSFORMER', [df], **kwargs)
 
     def add_base_static_var_compensator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -507,7 +503,7 @@ class ModelMapping:
                                                               parameter_set_id='svarc',
                                                               model_name='StaticVarCompensatorPV')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.BASE_STATIC_VAR_COMPENSATOR, [df], **kwargs)
+        self._add_all_dynamic_mappings('BASE_STATIC_VAR_COMPENSATOR', [df], **kwargs)
 
     def add_base_line(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -538,7 +534,7 @@ class ModelMapping:
                                              parameter_set_id='l',
                                              model_name='Line')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.BASE_LINE, [df], **kwargs)
+        self._add_all_dynamic_mappings('BASE_LINE', [df], **kwargs)
 
     def add_base_bus(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -569,7 +565,7 @@ class ModelMapping:
                                            parameter_set_id='bus',
                                            model_name='Bus')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.BASE_BUS, [df], **kwargs)
+        self._add_all_dynamic_mappings('BASE_BUS', [df], **kwargs)
 
     def add_infinite_bus(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -600,7 +596,7 @@ class ModelMapping:
                                                parameter_set_id='inf_bus',
                                                model_name='InfiniteBus')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.INFINITE_BUS, [df], **kwargs)
+        self._add_all_dynamic_mappings('INFINITE_BUS', [df], **kwargs)
 
     def add_overload_management_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -636,7 +632,7 @@ class ModelMapping:
                                                              i_measurement_side='TWO',
                                                              model_name='OverloadManagementSystem')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.OVERLOAD_MANAGEMENT_SYSTEM, [df], **kwargs)
+        self._add_all_dynamic_mappings('OVERLOAD_MANAGEMENT', [df], **kwargs)
 
     def add_two_level_overload_management_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -676,7 +672,7 @@ class ModelMapping:
                                                                         i_measurement_2_side='ONE',
                                                                         model_name='TwoLevelsOverloadManagementSystem')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM, [df], **kwargs)
+        self._add_all_dynamic_mappings('TWO_LEVEL_OVERLOAD_MANAGEMENT', [df], **kwargs)
 
     def add_under_voltage_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -708,7 +704,7 @@ class ModelMapping:
                                                                   generator='GEN',
                                                                   model_name='UnderVoltage'
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.UNDER_VOLTAGE, [df], **kwargs)
+        self._add_all_dynamic_mappings('UNDER_VOLTAGE', [df], **kwargs)
 
     def add_phase_shifter_i_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -740,7 +736,7 @@ class ModelMapping:
                                                                     transformer='TRA',
                                                                     model_name='PhaseShifterI')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.PHASE_SHIFTER_I, [df], **kwargs)
+        self._add_all_dynamic_mappings('PHASE_SHIFTER_I', [df], **kwargs)
 
     def add_phase_shifter_p_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -772,7 +768,7 @@ class ModelMapping:
                                                                     transformer='TRA',
                                                                     model_name='PhaseShifterP')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.PHASE_SHIFTER_P, [df], **kwargs)
+        self._add_all_dynamic_mappings('PHASE_SHIFTER_P', [df], **kwargs)
 
     def add_phase_shifter_blocking_i_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -804,7 +800,7 @@ class ModelMapping:
                                                                              phase_shifter_id='PSI',
                                                                              model_name='PhaseShifterBlockingI')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.PHASE_SHIFTER_BLOCKING_I, [df], **kwargs)
+        self._add_all_dynamic_mappings('PHASE_SHIFTER_BLOCKING_I', [df], **kwargs)
 
     def add_tap_changer_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -838,7 +834,7 @@ class ModelMapping:
                                                                 side='HIGH_VOLTAGE',
                                                                 model_name='TapChangerAutomaton')
         """
-        self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER, [df], **kwargs)
+        self._add_all_dynamic_mappings('TAP_CHANGER', [df], **kwargs)
 
     def add_tap_changer_blocking_automation_system(self, df: DataFrame, tfo_df: DataFrame, mp1_df: DataFrame,
                                                    mp2_df: Optional[DataFrame] = None, mp3_df: Optional[DataFrame] = None,
@@ -897,7 +893,7 @@ class ModelMapping:
                 model_mapping.add_tap_changer_blocking_automation_system(df, tfo_df, measurement1_df, measurement2_df)
         """
         dfs = [df, tfo_df, mp1_df, mp2_df, mp3_df, mp4_df, mp5_df]
-        self._add_all_dynamic_mappings(DynamicMappingType.TAP_CHANGER_BLOCKING, [DataFrame() if df is None else df for df in dfs])
+        self._add_all_dynamic_mappings('TAP_CHANGER_BLOCKING', [DataFrame() if df is None else df for df in dfs])
 
     def add_dynamic_model(self, category_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None, **kwargs: ArrayLike) -> None:
         """
@@ -932,10 +928,7 @@ class ModelMapping:
             df = [df]
         self._add_all_dynamic_mappings(category_name, df, **kwargs)
 
-    def _add_all_dynamic_mappings(self, category_name: Union[DynamicMappingType, str], mapping_dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
-        #TODO remove
-        if isinstance(category_name, DynamicMappingType):
-            category_name = category_name.name
+    def _add_all_dynamic_mappings(self, category_name: str, mapping_dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_dynamic_mappings_meta_data(category_name)
         c_dfs = _get_c_dataframes(mapping_dfs, metadata, **kwargs)
         _pp.add_all_dynamic_mappings(self._handle, category_name, c_dfs)
