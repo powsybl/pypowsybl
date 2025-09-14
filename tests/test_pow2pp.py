@@ -14,15 +14,15 @@ from pypowsybl.adapters.pow2pp import convert_to_pandapower
 
 
 def test_transnet_exmple_net():
-    pow = pypowsybl.network.load(
+    pow = pypowsybl.network.load(  # noqa
         "/home/ankur/Dokumente/githubdev/GridCal/src/tests/data/grids/state-estimation/19700101T0000Z_.zip"
     )
     net = convert_to_pandapower(pow)
     print(net)
-    pp_result = run_pypowsybl_powerflow(pow)
+    pp_result = run_pypowsybl_powerflow(pow)  # noqa
 
     # Run pandapower power flow
-    pp_net_result = run_pandapower_powerflow(net)
+    pp_net_result = run_pandapower_powerflow(net)  # noqa
 
 
 def test_conversion_on_example_networks():
@@ -77,10 +77,10 @@ def test_conversion_on_example_networks():
             # Run power flow on both networks for comparison
             try:
                 # Run pypowsybl power flow
-                pp_result = run_pypowsybl_powerflow(network)
+                pp_result = run_pypowsybl_powerflow(network)  # noqa
 
                 # Run pandapower power flow
-                pp_net_result = run_pandapower_powerflow(pandapower_net)
+                pp_net_result = run_pandapower_powerflow(pandapower_net)  # noqa
 
                 # Compare results
                 compare_powerflow_results(
