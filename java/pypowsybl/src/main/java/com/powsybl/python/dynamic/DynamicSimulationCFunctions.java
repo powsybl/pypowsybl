@@ -186,6 +186,13 @@ public final class DynamicSimulationCFunctions {
                 Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getCategories())));
     }
 
+    @CEntryPoint(name = "getCategoriesInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getCategoriesInformation(IsolateThread thread,
+                                                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.categoriesDataFrameMapper(),
+                DynamicMappingHandler.getDynamicMappingAdders());
+    }
+
     @CEntryPoint(name = "getSupportedModels")
     public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
                                                                        CCharPointer categoryNamePtr,

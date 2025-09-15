@@ -9,11 +9,13 @@ package com.powsybl.dataframe.dynamic;
 
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
+import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
 import com.powsybl.timeseries.DoublePoint;
 import com.powsybl.timeseries.DoubleTimeSeries;
 import com.powsybl.timeseries.TimeSeries;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,6 +53,14 @@ public final class DynamicSimulationDataframeMappersUtils {
                 .doubles("time", TimelineEvent::time)
                 .strings("model", TimelineEvent::modelName)
                 .strings("message", TimelineEvent::message)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<DynamicMappingAdder>, Void> categoriesDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, CategoryInformation, Void>()
+                .itemsStreamProvider(c -> c.stream().map(DynamicMappingAdder::getCategoryInformation))
+                .stringsIndex("name", CategoryInformation::name)
+                .strings("attribute", CategoryInformation::attribute)
                 .build();
     }
 }

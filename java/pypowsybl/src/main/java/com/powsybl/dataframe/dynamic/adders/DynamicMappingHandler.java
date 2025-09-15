@@ -45,6 +45,10 @@ public final class DynamicMappingHandler {
         return ADDERS.keySet().stream().sorted().toList();
     }
 
+    public static Collection<DynamicMappingAdder> getDynamicMappingAdders() {
+        return ADDERS.values();
+    }
+
     public static Collection<String> getSupportedModels(String category) {
         return ADDERS.get(category).getSupportedModels().stream().map(ModelInfo::name).toList();
     }

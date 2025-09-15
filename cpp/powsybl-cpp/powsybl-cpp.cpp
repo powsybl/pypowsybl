@@ -1710,6 +1710,10 @@ std::vector<std::string> getCategories() {
     return vector.get();
 }
 
+SeriesArray* getCategoriesInformation() {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCategoriesInformation));
+}
+
 std::vector<std::string> getSupportedModels(std::string categoryName) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, (char*) categoryName.c_str()));
     return vector.get();

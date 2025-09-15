@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
@@ -36,6 +37,11 @@ public interface DynamicMappingAdder {
      * Returns dynamic model category
      */
     String getCategory();
+
+    /**
+     * Returns dynamic model category information
+     */
+    CategoryInformation getCategoryInformation();
 
     /**
      * Returns supported model names for the given adder

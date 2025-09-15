@@ -933,6 +933,7 @@ std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingTyp
 void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryName, dataframe_array* dataframes);
 std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string categoryName);
 std::vector<std::string> getCategories();
+SeriesArray* getCategoriesInformation();
 std::vector<std::string> getSupportedModels(std::string categoryName);
 
 // results

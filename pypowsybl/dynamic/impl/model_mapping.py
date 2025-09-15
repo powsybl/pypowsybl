@@ -18,16 +18,24 @@ class ModelMapping:
 
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
-        self._categories = _pp.get_categories()
 
-    def get_categories(self) -> List[str]:
+    def get_categories_names(self) -> List[str]:
         """
         Get the dynamic model categories
 
         Returns:
             list of the categories
         """
-        return self._categories
+        return _pp.get_categories()
+
+    def get_categories_information(self) -> List[str]:
+        """
+        Get more informations about categories
+
+        Returns:
+            a dataframe with information about categories
+        """
+        return _pp.get_categories_informations()
 
     def get_supported_models(self, category_name: str) -> List[str]:
         """

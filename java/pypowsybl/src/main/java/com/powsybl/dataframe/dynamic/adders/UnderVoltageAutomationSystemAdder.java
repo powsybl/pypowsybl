@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -34,6 +36,9 @@ public class UnderVoltageAutomationSystemAdder extends AbstractSimpleDynamicMode
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(GENERATOR));
 
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(UnderVoltageAutomationSystemBuilder.CATEGORY,
+            CategoryAttributeUtils.createFromMetadata(METADATA));
+
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
         return Collections.singletonList(METADATA);
@@ -42,6 +47,11 @@ public class UnderVoltageAutomationSystemAdder extends AbstractSimpleDynamicMode
     @Override
     public String getCategory() {
         return UnderVoltageAutomationSystemBuilder.CATEGORY;
+    }
+
+    @Override
+    public CategoryInformation getCategoryInformation() {
+        return CATEGORY_INFORMATION;
     }
 
     @Override

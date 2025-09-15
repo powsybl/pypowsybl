@@ -215,6 +215,7 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("category_name"), py::arg("dataframes"));
     m.def("get_dynamic_mappings_meta_data", &pypowsybl::getDynamicMappingsMetaData, py::arg("category_name"));
     m.def("get_categories", &pypowsybl::getCategories);
+    m.def("get_categories_information", &pypowsybl::getCategoriesInformation);
     m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("category_name"));
 
     // timeseries mapping
