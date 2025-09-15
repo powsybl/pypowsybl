@@ -341,7 +341,7 @@ def create_lines(
                 "length_km": 1.0,  # Default length
                 "r_ohm_per_km": line["r"],
                 "x_ohm_per_km": line["x"],
-                "c_nf_per_km": 0,  # Simplified
+                "c_nf_per_km": capacitance_farads* 1e9 ,  # Simplified
                 "max_i_ka": 1000.0,  # Default
                 "in_service": line["connected1"] and line["connected2"],
                 "parallel": 1,
