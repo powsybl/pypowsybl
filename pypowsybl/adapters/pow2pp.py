@@ -91,7 +91,6 @@ def convert_to_pandapower(network: pp.network.Network) -> pdp.pandapowerNet:
     create_3w_transformers(pandapower_net, network)
     create_shunts(pandapower_net, network)
     create_switches(pandapower_net, network)
-    create_busbar_sections(pandapower_net, network)
 
     return pandapower_net
 
