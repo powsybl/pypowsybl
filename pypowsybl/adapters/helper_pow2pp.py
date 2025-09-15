@@ -2,7 +2,6 @@ import traceback
 
 import numpy as np
 import pandapower
-import VeraGridEngine
 import pandas as pd
 import pypowsybl
 from pypowsybl import PyPowsyblError

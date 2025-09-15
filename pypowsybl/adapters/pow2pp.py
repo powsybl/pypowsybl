@@ -1,5 +1,4 @@
 import math
-import traceback
 from typing import Any, Literal
 
 import pandapower
@@ -7,17 +6,25 @@ import pandapower as pdp
 import pandas as pd
 import pypowsybl
 import pypowsybl as pp
-from pypowsybl import PyPowsyblError
-from pypowsybl.adapters.helper_pow2pp import create_switches, set_index_as_column, catch_exceptions, \
-    drop_irrelevant_columns, find_voltage_levels
+from ems_logger import structlog
 from pypowsybl.network import Network
-from VeraGridEngine.basic_structures import Logger
+
+from helper_pow2pp import (
+    catch_exceptions,
+    create_switches,
+    drop_irrelevant_columns,
+    find_voltage_levels,
+    set_index_as_column,
+)
 
 
 IDENTIFIER_COLUMN_NAME = "uuid"
+log = structlog.get_logger(
+    name="convert_powsybl_to_pandapower",
+)
 
 CREATE_EXT_FOR_SLACK = False
-logger = Logger()
+
 
 def find_bus_ids(
     element_table: pd.DataFrame,
@@ -84,6 +91,7 @@ def convert_to_pandapower(network: pp.network.Network) -> pdp.pandapowerNet:
     create_3w_transformers(pandapower_net, network)
     create_shunts(pandapower_net, network)
     create_switches(pandapower_net, network)
+    create_busbar_sections(pandapower_net, network)
 
     return pandapower_net
 
@@ -202,7 +210,7 @@ def create_generators(
 
             if ext_grid_data:
                 pandapower_net.ext_grid = pd.DataFrame(ext_grid_data)
-                logger.add_info(
+                log.info(
                     f"Created {len(ext_grid_data)} external grid(s) from slack generators"
                 )
         else:
@@ -245,7 +253,10 @@ def create_generators(
                     "name": gen_id,
                     "bus": bus_idx,
                     "p_mw": gen["target_p"],
-                    "q_mvar": math.sqrt(gen["rated_s"] ** 2 - gen["target_p"] ** 2),
+                    "q_mvar": gen.get(
+                        "target_q",
+                        math.sqrt(max(0, gen["rated_s"] ** 2 - gen["target_p"] ** 2)),
+                    ),
                     "sn_mva": gen["rated_s"],
                     "in_service": gen.get("connected", True),
                     "scaling": 1.0,
@@ -296,8 +307,8 @@ def create_generators(
 
             if gen_data:
                 pandapower_net.gen = pd.DataFrame(gen_data)
-                logger.add_info(
-                    "Created {len(gen_data)} regular generators, excluded {len(slack_gen_ids)} slack generators"
+                log.info(
+                    f"Created {len(gen_data)} regular generators, excluded {len(slack_gen_ids)} slack generators"
                 )
 
 
@@ -353,7 +364,7 @@ def identify_slack_generators(
                 generators[IDENTIFIER_COLUMN_NAME].isin(slack_ext["element_id"])
             ]
     except Exception as exc:
-        logger.add_info(f"slack extension not found {exc}")
+        log.info(f"slack extension not found {exc}")
         # Fallback: pick generator(s) with the largest max_p_mw
     if not generators.empty and "max_p_mw" in generators:
         max_p = generators["max_p_mw"].max()
@@ -445,7 +456,7 @@ def create_2w_transformers(
                 "i0_percent": trafo.get("i0_percent", 0),
                 "shift_degree": 0,
                 "tap_side": trafo.get("tap_side", "hv"),
-                "tap2_side":trafo.get("tap2_side", "hv"),
+                "tap2_side": trafo.get("tap2_side", "hv"),
                 "tap_pos": trafo.get("tap_pos", 0),
                 "tap2_pos": trafo.get("tap2_pos", 0),
                 "tap_neutral": trafo.get("tap_neutral", 0),
@@ -460,10 +471,10 @@ def create_2w_transformers(
                 "tap2_step_degree": trafo.get("tap2_step_degree", 0),
                 "in_service": trafo["in_service"],
                 "parallel": 1,
-                "oltc": trafo.get("oltc",False),
+                "oltc": trafo.get("oltc", False),
                 "power_station_unit": False,
-                #tap_changer_type # only consider if in power flow if calc_v_angle=True
-                #tap2_changer_type
+                # tap_changer_type # only consider if in power flow if calc_v_angle=True
+                # tap2_changer_type
                 # "leakage_resistance_ratio_hv": 1,
                 # "lleakage_reactance_ratio_hv": 10,
                 "df": 1,
@@ -539,7 +550,7 @@ def calculate_iron_losses_and_open_loop_losses(trafo_table: pd.DataFrame) -> Non
             # Set reasonable defaults
             trafo_table.loc[idx, "pfe_kw"] = 10.0  # Typical iron losses in kW
             trafo_table.loc[idx, "i0_percent"] = 0.5  # Typical no-load current
-            logger.add_warning(
+            log.warning(
                 f"Warning: Using default values for transformer losses {idx}: {e}"
             )
 
@@ -559,207 +570,14 @@ def create_shunts(
     shunts["p_mw"] = shunts["g"] * shunts["vn_kv"] ** 2
     shunts["q_mvar"] = shunts["b"] * shunts["vn_kv"] ** 2
     shunts["in_service"] = shunts.get("connected", True)
-    shunts["step"] = shunts.get("section_count", 1)
-    shunts["max_step"] = shunts.get("max_section_count", 1)
+    # in the above lines P & Q are calculated based on g,b
+    # g & b in powsybl are already calculated for the current step/section and is
+    # aggregate so we must specify step=1 , else internally in pandapower
+    # S will be mutliplied by step value (see documentation)
+    shunts["step"] = 1  # shunts.get("section_count", 1)
+    shunts["max_step"] = 1  # shunts.get("max_section_count", 1)
 
     pandapower_net.shunt = drop_irrelevant_columns(shunts, "shunt")
-
-
-#
-# @catch_exceptions
-# def create_switches(
-#     pandapower_net: pandapower.pandapowerNet, powsybl_net: Network
-# ) -> None:
-#     """
-#     Handle switch conversion from powsybl to pandapower.
-#     Pandapower supports two types of switches: bus-bus and bus-element.
-#     """
-#     switches = powsybl_net.get_switches(all_attributes=True)
-#
-#     if switches.empty:
-#         return
-#
-#     set_index_as_column(switches)
-#
-#     # Map powsybl switch types to pandapower types
-#     switch_type_mapping = {
-#         "BREAKER": "CB",
-#         "DISCONNECTOR": "DS",
-#         "LOAD_BREAK_SWITCH": "LBS",
-#     }
-#     switches["type"] = switches["kind"].map(switch_type_mapping).fillna("DS")
-#
-#     # Set switch status
-#     switches["closed"] = ~switches["open"]
-#
-#     # Process switches based on topology type
-#     voltage_levels = powsybl_net.get_voltage_levels()
-#
-#     switch_data = []
-#     for vl_id, voltage_level in voltage_levels.iterrows():
-#         try:
-#             # Try node-breaker topology first
-#             vl_switches = process_node_breaker_switches(
-#                 powsybl_net, vl_id, switches, pandapower_net
-#             )
-#             switch_data.append(vl_switches)
-#         except PyPowsyblError:
-#             # Fall back to bus-breaker topology
-#             vl_switches = process_bus_breaker_switches(
-#                 powsybl_net, vl_id, switches, pandapower_net
-#             )
-#             switch_data.append(vl_switches)
-#
-#     if switch_data:
-#         all_switches = pd.concat(switch_data, ignore_index=True)
-#         pandapower_net.switch = drop_irrelevant_columns(all_switches, "switch")
-#
-#
-# def process_node_breaker_switches(
-#     powsybl_net: Network, vl_id: str, all_switches: pd.DataFrame, pandapower_net
-# ) -> pd.DataFrame:
-#     """Process switches in node-breaker topology"""
-#     nb_topology = powsybl_net.get_node_breaker_topology(vl_id)
-#     vl_switches = all_switches[all_switches["voltage_level_id"] == vl_id].copy()
-#
-#     if vl_switches.empty:
-#         return pd.DataFrame()
-#
-#     switch_list = []
-#
-#     for _, switch in vl_switches.iterrows():
-#         node1 = switch["node1"]
-#         node2 = switch["node2"]
-#
-#         # Get connectable information for both nodes
-#         conn1 = get_connectable_for_node(
-#             nb_topology, node1, pandapower_net, powsybl_net
-#         )
-#         conn2 = get_connectable_for_node(
-#             nb_topology, node2, pandapower_net, powsybl_net
-#         )
-#
-#         switch_info = {
-#             IDENTIFIER_COLUMN_NAME: switch[IDENTIFIER_COLUMN_NAME],
-#             "name": switch["name"],
-#             "type": switch["type"],
-#             "closed": switch["closed"],
-#             "z_ohm": 0.001,
-#         }
-#
-#         # Determine switch type (bus-bus or bus-element)
-#         if conn1["type"] == "bus" and conn2["type"] == "bus":
-#             # Bus-bus switch
-#             switch_info.update(
-#                 {"bus": conn1["bus_id"], "element": conn2["bus_id"], "et": "b"}
-#             )
-#         elif conn1["type"] == "bus" and conn2["type"] == "element":
-#             # Bus-element switch
-#             switch_info.update(
-#                 {
-#                     "bus": conn1["bus_id"],
-#                     "element": conn2["element_id"],
-#                     "et": conn2["element_type"],
-#                 }
-#             )
-#         elif conn1["type"] == "element" and conn2["type"] == "bus":
-#             # Element-bus switch
-#             switch_info.update(
-#                 {
-#                     "bus": conn2["bus_id"],
-#                     "element": conn1["element_id"],
-#                     "et": conn1["element_type"],
-#                 }
-#             )
-#         else:
-#             # Element-element switch - create an intermediate bus
-#             intermediate_bus = create_intermediate_bus(
-#                 pandapower_net, vl_id, powsybl_net
-#             )
-#             switch_info.update(
-#                 {
-#                     "bus": intermediate_bus,
-#                     "element": conn1["element_id"],
-#                     "et": conn1["element_type"],
-#                 }
-#             )
-#             # Create second switch for the other element
-#             switch_info2 = switch_info.copy()
-#             switch_info2.update(
-#                 {
-#                     "bus": intermediate_bus,
-#                     "element": conn2["element_id"],
-#                     "et": conn2["element_type"],
-#                 }
-#             )
-#             switch_list.append(switch_info2)
-#
-#         switch_list.append(switch_info)
-#
-#     return pd.DataFrame(switch_list)
-#
-#
-# def process_bus_breaker_switches(
-#     powsybl_net: Network, vl_id: str, all_switches: pd.DataFrame, pandapower_net
-# ) -> pd.DataFrame:
-#     """Process switches in bus-breaker topology"""
-#     # bb_topology = powsybl_net.get_bus_breaker_topology(vl_id)
-#     vl_switches = all_switches[all_switches["voltage_level_id"] == vl_id].copy()
-#
-#     if vl_switches.empty:
-#         return pd.DataFrame()
-#
-#     switch_list = []
-#
-#     for _, switch in vl_switches.iterrows():
-#         bus1_id = switch["bus1_id"]
-#         bus2_id = switch["bus2_id"]
-#
-#         # Get pandapower bus indices
-#         bus1_idx = get_pandapower_bus_index(pandapower_net, bus1_id)
-#         bus2_idx = get_pandapower_bus_index(pandapower_net, bus2_id)
-#
-#         if pd.notna(bus1_idx) and pd.notna(bus2_idx):
-#             # Bus-bus switch
-#             switch_info = {
-#                 IDENTIFIER_COLUMN_NAME: switch[IDENTIFIER_COLUMN_NAME],
-#                 "name": switch["name"],
-#                 "type": switch["type"],
-#                 "closed": switch["closed"],
-#                 "bus": bus1_idx,
-#                 "element": bus2_idx,
-#                 "et": "b",
-#                 "z_ohm": 0.001,
-#             }
-#             switch_list.append(switch_info)
-#
-#     return pd.DataFrame(switch_list)
-#
-#
-# def get_connectable_for_node(
-#     nb_topology, node_id: int, pandapower_net, powsybl_net
-# ) -> dict:
-#     """Get connectable information for a node in node-breaker topology"""
-#     node_info = nb_topology.nodes.loc[node_id]
-#
-#     if node_info["connectable"] and pd.notna(node_info["connectable_id"]):
-#         # This node is connected to a specific element
-#         element_id = node_info["connectable_id"]
-#         element_type = map_element_type(node_info["connectable_type"])
-#         return {
-#             "type": "element",
-#             "element_id": element_id,
-#             "element_type": element_type,
-#         }
-#     else:
-#         # This node represents a bus
-#         return {
-#             "type": "bus",
-#             "bus_id": create_or_get_bus_for_node(
-#                 pandapower_net, node_id, nb_topology, powsybl_net
-#             ),
-#         }
-#
 
 
 def map_element_type(powsybl_type: str) -> str:
@@ -898,8 +716,9 @@ def create_3w_transformers(
     trafo3w = find_bus_ids(trafo3w, pandapower_net, "lv_bus", "bus3_id")
 
     # Add tap changer parameters
-    trafo3w = add_tap_parameters_for_3w_ratio_tap_changer(powsybl_net, trafo3w)
-    trafo3w = add_tap_parameters_for_3w_phase_tap_changer(powsybl_net, trafo3w)
+    trafo3w = add_tap_parameters_for_3w_ratio_and_phase_tap_changer(
+        powsybl_net, trafo3w
+    )
 
     # Convert impedance parameters
     calculate_3w_impedance_parameters(trafo3w)
@@ -918,7 +737,7 @@ def create_3w_transformers(
     # Set vector group (default to Dyn5 if not specified)
     trafo3w["vector_group"] = "Dyn5"
     trafo3w["df"] = 0.0
-    trafo3w.loc[:, "tap_side"] = "hv"
+    trafo3w.loc[:, "tap_side"] = trafo3w.get("tap_side", "mv")
     trafo3w.loc[:, "scaling"] = 1.0
 
     pandapower_net.trafo3w = drop_irrelevant_columns(trafo3w, "trafo3w")
@@ -943,105 +762,295 @@ def create_3w_transformers(
     #     pandapower_net.res_trafo3w = res_trafo3w
 
 
-def add_tap_parameters_for_3w_ratio_tap_changer(
+def add_tap_parameters_for_3w_ratio_and_phase_tap_changer(
     powsybl_net: pypowsybl.network.Network, trafo_table: pd.DataFrame
 ) -> pd.DataFrame:
-    """Add ratio tap changer parameters for 3-winding transformers"""
+    """Add ratio and phase tap changer parameters for 3-winding transformers"""
     ratio_tap_changers = powsybl_net.get_ratio_tap_changers()
+    phase_tap_changers = powsybl_net.get_phase_tap_changers()
 
-    if ratio_tap_changers.empty:
+    if ratio_tap_changers.empty and phase_tap_changers.empty:
         return trafo_table
 
     # Filter for 3w transformer tap changers
     trafo_ids = trafo_table[IDENTIFIER_COLUMN_NAME].unique()
     ratio_tap_changers = ratio_tap_changers[ratio_tap_changers.index.isin(trafo_ids)]
+    phase_tap_changers = phase_tap_changers[phase_tap_changers.index.isin(trafo_ids)]
 
-    if ratio_tap_changers.empty:
+    if ratio_tap_changers.empty and phase_tap_changers.empty:
         return trafo_table
+
+    # Get 3-winding transformers data to check for multiple tap changers
+    three_w_trafos = powsybl_net.get_3_windings_transformers()
 
     # Process each transformer
     for trafo_id in trafo_ids:
-        if trafo_id in ratio_tap_changers.index:
-            tap_changer = ratio_tap_changers.loc[trafo_id]
-            steps = powsybl_net.get_ratio_tap_changer_steps().loc[trafo_id]
+        # Check which windings have active tap changers
+        if trafo_id in three_w_trafos.index:
+            trafo_data = three_w_trafos.loc[trafo_id]
+            active_tap_sides = []
 
-            # Determine which winding has the tap changer
-            regulated_side = tap_changer.get("regulated_side", "ONE")
-            winding_map = {"ONE": "hv", "TWO": "mv", "THREE": "lv"}
+            # Check which windings have active tap changers (not -99999)
+            for i in range(1, 4):
+                ratio_pos = trafo_data.get(f"ratio_tap_position{i}", -99999)
+                phase_pos = trafo_data.get(f"phase_tap_position{i}", -99999)
+                if ratio_pos != -99999 or phase_pos != -99999:
+                    active_tap_sides.append(i)
+
+            # If no active tap changers, skip
+            if not active_tap_sides:
+                continue
+
+            # Warn if multiple active tap changers found on different sides
+            if len(active_tap_sides) > 1:
+                log.warning(
+                    f"Transformer {trafo_id} has multiple active tap changers "
+                    f"on windings {active_tap_sides}. Pandapower can only model "
+                    f"tap changers on one side per 3-winding transformer. "
+                    f"Only the MV active winding (winding {active_tap_sides[1]}) "
+                    f"will be used."
+                )
+
+            # Use the first active winding
+            active_side = active_tap_sides[0]
+            winding_map = {1: "hv", 2: "mv", 3: "lv"}
+            tap_side = winding_map.get(active_side, "mv")
+
+            # Get tap changer data for this winding
+            ratio_tap_data = None
+            phase_tap_data = None
+            ratio_steps = None
+            phase_steps = None
+
+            if trafo_id in ratio_tap_changers.index:
+                ratio_tap_data = ratio_tap_changers.loc[trafo_id]
+                # Check if this ratio tap changer is on the active side
+                regulated_side = ratio_tap_data.get("regulated_side", "TWO")
+                side_map = {"ONE": 1, "TWO": 2, "THREE": 3}
+                if side_map.get(regulated_side, 2) == active_side:
+                    ratio_steps = powsybl_net.get_ratio_tap_changer_steps().loc[
+                        trafo_id
+                    ]
+
+            if trafo_id in phase_tap_changers.index:
+                phase_tap_data = phase_tap_changers.loc[trafo_id]
+                # Check if this phase tap changer is on the active side
+                regulated_side = phase_tap_data.get("regulated_side", "TWO")
+                side_map = {"ONE": 1, "TWO": 2, "THREE": 3}
+                if side_map.get(regulated_side, 2) == active_side:
+                    phase_steps = powsybl_net.get_phase_tap_changer_steps().loc[
+                        trafo_id
+                    ]
 
             # Set tap parameters
             idx = trafo_table[trafo_table[IDENTIFIER_COLUMN_NAME] == trafo_id].index
             if not idx.empty:
-                trafo_table.loc[idx, "tap_side"] = winding_map.get(regulated_side, "hv")
-                trafo_table.loc[idx, "tap_step_degree"] = (
-                    0  # considering pure ratio, phase is handled for tap_2
+                trafo_table.loc[idx, "tap_side"] = tap_side
+
+                # Get current positions
+                ratio_pos = trafo_data.get(f"ratio_tap_position{active_side}", -99999)
+                phase_pos = trafo_data.get(f"phase_tap_position{active_side}", -99999)
+
+                has_ratio = (
+                    ratio_pos != -99999
+                    and ratio_tap_data is not None
+                    and ratio_steps is not None
                 )
-                trafo_table.loc[idx, "tap_pos"] = tap_changer["tap"]
-                trafo_table.loc[idx, "tap_min"] = tap_changer["low_tap"]
-                trafo_table.loc[idx, "tap_max"] = tap_changer["high_tap"]
-                trafo_table.loc[idx, "tap_neutral"] = (
-                    tap_changer["high_tap"] - tap_changer["low_tap"]
-                ) / 2 + tap_changer["low_tap"]
+                has_phase = (
+                    phase_pos != -99999
+                    and phase_tap_data is not None
+                    and phase_steps is not None
+                )
 
-                # Calculate tap step percentage
-                if len(steps) > 1:
-                    neutral_pos = trafo_table.loc[idx, "tap_neutral"].values[0]
-                    if neutral_pos in steps.index and (neutral_pos + 1) in steps.index:
-                        rho_neutral = steps.loc[neutral_pos, "rho"]
-                        rho_next = steps.loc[neutral_pos + 1, "rho"]
-                        step_percent = (rho_next - rho_neutral) * 100
-                        trafo_table.loc[idx, "tap_step_percent"] = step_percent
+                # Calculate neutral positions first
+                ratio_neutral = None
+                phase_neutral = None
+
+                if has_ratio:
+                    ratio_neutral = (
+                        ratio_tap_data["high_tap"] - ratio_tap_data["low_tap"]
+                    ) / 2 + ratio_tap_data["low_tap"]
+                    trafo_table.loc[idx, "ratio_neutral"] = ratio_neutral
+
+                if has_phase:
+                    phase_neutral = (
+                        phase_tap_data["high_tap"] - phase_tap_data["low_tap"]
+                    ) / 2 + phase_tap_data["low_tap"]
+                    trafo_table.loc[idx, "phase_neutral"] = phase_neutral
+
+                # we create tap_min & tap_max only from ratio values
+
+                trafo_table.loc[idx, "tap_max"] = ratio_tap_data["high_tap"]
+                trafo_table.loc[idx, "tap_min"] = ratio_tap_data["low_tap"]
+
+                # Handle individual tap changers and calculate their step values
+                if has_ratio:
+                    _process_tap_changer_trafo3w(
+                        trafo_table,
+                        idx,
+                        ratio_tap_data,
+                        ratio_steps,
+                        ratio_pos,
+                        "ratio",
+                        "ratio_",
+                    )
+
+                if has_phase:
+                    _process_tap_changer_trafo3w(
+                        trafo_table,
+                        idx,
+                        phase_tap_data,
+                        phase_steps,
+                        phase_pos,
+                        "phase",
+                        "phase_",
+                    )
+
+                # Combine ratio and phase effects if both present
+                if has_ratio and has_phase:
+                    # Check if neutral positions are the same only then combine
+                    if ratio_neutral == phase_neutral and ratio_pos == phase_pos:
+                        # Get combined rho and alpha values
+                        ratio_rho = (
+                            ratio_steps.loc[ratio_pos, "rho"]
+                            if "rho" in ratio_steps.columns
+                            else 1.0
+                        )
+                        ratio_alpha = (
+                            ratio_steps.loc[ratio_pos, "alpha"]
+                            if "alpha" in ratio_steps.columns
+                            else 0.0
+                        )
+
+                        phase_rho = (
+                            phase_steps.loc[phase_pos, "rho"]
+                            if "rho" in phase_steps.columns
+                            else 1.0
+                        )
+                        phase_alpha = (
+                            phase_steps.loc[phase_pos, "alpha"]
+                            if "alpha" in phase_steps.columns
+                            else 0.0
+                        )
+
+                        # Combined effect (multiplicative for rho, additive for alpha)
+                        combined_rho = ratio_rho * phase_rho
+                        combined_alpha = ratio_alpha + phase_alpha
+
+                        # Calculate combined step percentages and degrees
+                        if ratio_pos != ratio_neutral:
+                            combined_step_percent = (
+                                (combined_rho - 1.0)
+                                * 100.0
+                                / (ratio_pos - ratio_neutral)
+                            )
+                            combined_step_degree = combined_alpha / (
+                                ratio_pos - ratio_neutral
+                            )
+                        else:
+                            combined_step_percent = 0.0
+                            combined_step_degree = 0.0
+
+                        # Store combined values
+                        trafo_table.loc[idx, "tap_step_percent"] = combined_step_percent
+                        trafo_table.loc[idx, "tap_step_degree"] = combined_step_degree
+                        trafo_table.loc[idx, "tap_pos"] = ratio_pos
+                        trafo_table.loc[idx, "tap_neutral"] = ratio_neutral
+                    else:
+                        # Warn and use only ratio tap changer
+                        log.warning(
+                            f"Transformer {trafo_id} has different neutral positions for ratio "
+                            f"({ratio_neutral}) and phase ({phase_neutral}) tap changers. "
+                            f"Cannot combine effects. Using only ratio tap changer."
+                        )
+                        trafo_table.loc[idx, "tap_step_percent"] = trafo_table.loc[
+                            idx, "ratio_step_percent"
+                        ]
+                        trafo_table.loc[idx, "tap_step_degree"] = trafo_table.loc[
+                            idx, "ratio_step_degree"
+                        ]
+                        trafo_table.loc[idx, "tap_pos"] = ratio_pos
+                        trafo_table.loc[idx, "tap_neutral"] = ratio_neutral
+
+                elif has_ratio:
+                    # Only ratio tap changer
+                    trafo_table.loc[idx, "tap_step_percent"] = trafo_table.loc[
+                        idx, "ratio_step_percent"
+                    ]
+                    trafo_table.loc[idx, "tap_step_degree"] = trafo_table.loc[
+                        idx, "ratio_step_degree"
+                    ]
+                    trafo_table.loc[idx, "tap_pos"] = ratio_pos
+                    trafo_table.loc[idx, "tap_neutral"] = ratio_neutral
+
+                elif has_phase:
+                    # Only phase tap changer
+                    trafo_table.loc[idx, "tap_step_percent"] = trafo_table.loc[
+                        idx, "phase_step_percent"
+                    ]
+                    trafo_table.loc[idx, "tap_step_degree"] = trafo_table.loc[
+                        idx, "phase_step_degree"
+                    ]
+                    trafo_table.loc[idx, "tap_pos"] = phase_pos
+                    trafo_table.loc[idx, "tap_neutral"] = phase_neutral
+
+                else:
+                    # No active tap changers
+                    trafo_table.loc[idx, "tap_step_percent"] = 0.0
+                    trafo_table.loc[idx, "tap_step_degree"] = 0.0
+                    trafo_table.loc[idx, "tap_pos"] = 0.0
+                    trafo_table.loc[idx, "tap_neutral"] = 0.0
 
     return trafo_table
 
 
-def add_tap_parameters_for_3w_phase_tap_changer(
-    powsybl_net: pypowsybl.network.Network, trafo_table: pd.DataFrame
-) -> pd.DataFrame:
-    """Add phase tap changer parameters for 3-winding transformers"""
-    phase_tap_changers = powsybl_net.get_phase_tap_changers()
+def _process_tap_changer_trafo3w(
+    trafo_table, idx, tap_data, steps, current_pos, tap_type, prefix
+):
+    """Process individual tap changer (ratio or phase)"""
+    if current_pos not in steps.index:
+        raise ValueError(
+            f"Tap position {current_pos} not found in steps for {tap_type} tap changer"
+        )
 
-    if phase_tap_changers.empty:
-        return trafo_table
+    # Calculate neutral position
+    tap_neutral = (tap_data["high_tap"] - tap_data["low_tap"]) / 2 + tap_data["low_tap"]
+    trafo_table.loc[idx, f"{prefix}neutral"] = tap_neutral
+    trafo_table.loc[idx, f"{prefix}tap_pos"] = current_pos
+    trafo_table.loc[idx, f"{prefix}tap_min"] = tap_data["low_tap"]
+    trafo_table.loc[idx, f"{prefix}tap_max"] = tap_data["high_tap"]
 
-    # Filter for 3w transformer tap changers
-    trafo_ids = trafo_table[IDENTIFIER_COLUMN_NAME].unique()
-    phase_tap_changers = phase_tap_changers[phase_tap_changers.index.isin(trafo_ids)]
+    if tap_type == "ratio":
+        alpha = 0.0
+        rho = steps.loc[current_pos, "rho"]
+        if "alpha" in steps.columns:
+            alpha = steps.loc[current_pos, "alpha"]
 
-    if phase_tap_changers.empty:
-        return trafo_table
+        if current_pos == tap_neutral:
+            step_percent = 0.0
+            step_degree = 0.0
+        else:
+            step_percent = (rho - 1.0) * 100.0 / (current_pos - tap_neutral)
+            step_degree = alpha / (current_pos - tap_neutral)
 
-    # Process each transformer
-    for trafo_id in trafo_ids:
-        if trafo_id in phase_tap_changers.index:
-            tap_changer = phase_tap_changers.loc[trafo_id]
-            steps = powsybl_net.get_phase_tap_changer_steps().loc[trafo_id]
+        trafo_table.loc[idx, f"{prefix}step_percent"] = step_percent
+        trafo_table.loc[idx, f"{prefix}step_degree"] = step_degree
 
-            # Determine which winding has the tap changer
-            regulated_side = tap_changer.get("regulated_side", "ONE")
-            winding_map = {"ONE": "hv", "TWO": "mv", "THREE": "lv"}
-            tap_side = winding_map.get(regulated_side, "hv")
+    elif tap_type == "phase":
+        rho = 1.0
+        alpha = steps.loc[current_pos, "alpha"]
+        if "rho" in steps.columns:
+            rho = steps.loc[current_pos, "rho"]
 
-            # Set tap parameters with '2' suffix for phase tap changers
-            idx = trafo_table[trafo_table[IDENTIFIER_COLUMN_NAME] == trafo_id].index
-            if not idx.empty:
-                trafo_table.loc[idx, "tap2_pos"] = tap_changer["tap"]
-                trafo_table.loc[idx, "tap2_min"] = tap_changer["low_tap"]
-                trafo_table.loc[idx, "tap2_max"] = tap_changer["high_tap"]
-                trafo_table.loc[idx, "tap2_neutral"] = (
-                    tap_changer["high_tap"] - tap_changer["low_tap"]
-                ) / 2 + tap_changer["low_tap"]
+        if current_pos == tap_neutral:
+            step_percent = 0.0
+            step_degree = 0.0
+        else:
+            step_percent = (rho - 1.0) * 100.0 / (current_pos - tap_neutral)
+            step_degree = alpha / (current_pos - tap_neutral)
 
-                # Calculate tap step degree
-                if len(steps) > 1:
-                    neutral_pos = trafo_table.loc[idx, "tap2_neutral"].values[0]
-                    if neutral_pos in steps.index and (neutral_pos + 1) in steps.index:
-                        alpha_neutral = steps.loc[neutral_pos, "alpha"]
-                        alpha_next = steps.loc[neutral_pos + 1, "alpha"]
-                        step_degree = alpha_next - alpha_neutral
-                        trafo_table.loc[idx, "tap2_step_degree"] = step_degree
-
-    return trafo_table
+        trafo_table.loc[idx, f"{prefix}step_percent"] = step_percent
+        trafo_table.loc[idx, f"{prefix}step_degree"] = step_degree
 
 
 def calculate_3w_impedance_parameters(
@@ -1127,7 +1136,7 @@ def calculate_3w_impedance_parameters(
             vk_hm, vkr_hm = to_percent(
                 Z_hm, vh, S_hm
             )  # HV–MV: Vref = HV (use higher-voltage winding)
-            vk_ml, vkr_ml = to_percent(Z_ml, vm, S_ml)  # MV–LV: Vref = MV
+            vk_ml, vkr_ml = to_percent(Z_ml, vh, S_ml)  # MV–LV: Vref = HV
             vk_hl, vkr_hl = to_percent(Z_hl, vh, S_hl)  # HV–LV: Vref = HV
 
         elif conv == "global_max":
@@ -1261,9 +1270,9 @@ def add_tap_parameters_for_ratio_tap_changer(
             trafo_table.loc[idx, "tap_voltage_deadband_pu"] = (
                 ratio_tap_changers.loc[trafo_id, "target_deadband"] / trafo_v
             )
-            trafo_table.loc[idx,"oltc"]=ratio_tap_changers.loc[trafo_id,"on_load"]
+            trafo_table.loc[idx, "oltc"] = ratio_tap_changers.loc[trafo_id, "on_load"]
         else:
-            trafo_table.loc[idx,"oltc"]=False
+            trafo_table.loc[idx, "oltc"] = False
             trafo_table.loc[idx, "tap_min"] = 0
             trafo_table.loc[idx, "tap_max"] = 0
             trafo_table.loc[idx, "tap_neutral"] = 0
@@ -1310,7 +1319,6 @@ def add_tap_parameters_for_phase_tap_changer(
         trafo_id = trafo[IDENTIFIER_COLUMN_NAME]
 
         if trafo_id in phase_tap_changers.index:
-
             # Basic tap parameters
             trafo_table.loc[idx, "tap2_pos"] = phase_tap_changers.loc[trafo_id, "tap"]
             trafo_table.loc[idx, "tap2_min"] = phase_tap_changers.loc[
@@ -1368,10 +1376,10 @@ def calculate_detailed_tap_parameters(
     tap_neutral = trafo_table.loc[idx, f"{prefix}neutral"]
     trafo_table.loc[idx, f"{prefix}tap_pos"] = current_pos
     if tap_type == "ratio":
-        alpha=0.
+        alpha = 0.0
         rho = steps.loc[current_pos, "rho"]
         if "alpha" in steps.columns:
-            alpha = steps.loc[current_pos, "alpha"] # if alpha value is there
+            alpha = steps.loc[current_pos, "alpha"]  # if alpha value is there
         if current_pos == tap_neutral:
             step_percent = 0.0
             step_degree = 0.0
@@ -1381,11 +1389,11 @@ def calculate_detailed_tap_parameters(
         trafo_table.loc[idx, f"{prefix}step_percent"] = step_percent
         trafo_table.loc[idx, f"{prefix}step_degree"] = step_degree
 
-    elif tap_type=="phase":  # phase shifter
-        rho=0.
+    elif tap_type == "phase":  # phase shifter
+        rho = 0.0
         alpha = steps.loc[current_pos, "alpha"]
         if "rho" in steps.columns:
-            rho = steps.loc[current_pos, "rho"] # if rho is present
+            rho = steps.loc[current_pos, "rho"]  # if rho is present
         if current_pos == tap_neutral:
             step_percent = 0.0
             step_degree = 0.0
@@ -1396,4 +1404,4 @@ def calculate_detailed_tap_parameters(
         trafo_table.loc[idx, f"{prefix}step_degree"] = step_degree
         trafo_table.loc[idx, f"{prefix}step_percent"] = step_percent
     else:
-        logger.add_warning(f"{tap_type} not processed")
+        log.warning(f"{tap_type} not processed")
