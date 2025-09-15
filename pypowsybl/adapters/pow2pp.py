@@ -1,12 +1,12 @@
 import math
 from typing import Any, Literal
-
+from logging import Logger
 import pandapower
 import pandapower as pdp
+import numpy as np
 import pandas as pd
 import pypowsybl
 import pypowsybl as pp
-from ems_logger import structlog
 from pypowsybl.network import Network
 
 from helper_pow2pp import (
@@ -16,12 +16,9 @@ from helper_pow2pp import (
     find_voltage_levels,
     set_index_as_column,
 )
-
-
+log = Logger()
+frequency=50
 IDENTIFIER_COLUMN_NAME = "uuid"
-log = structlog.get_logger(
-    name="convert_powsybl_to_pandapower",
-)
 
 CREATE_EXT_FOR_SLACK = False
 
@@ -329,7 +326,13 @@ def create_lines(
 
         if from_bus_idx is None or to_bus_idx is None:
             continue
+        # Convert b1 + b2 to c_nf_per_km
+        b1 = lines.get('b1', 0)
+        b2 = lines.get('b2', 0)
+        total_susceptance = b1 + b2
 
+        # Convert susceptance to capacitance
+        capacitance_farads = total_susceptance / (2 * np.pi * frequency)
         line_data.append(
             {
                 "name": line_id,

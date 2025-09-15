@@ -1,4 +1,4 @@
-import traceback
+from logging import Logger
 
 import numpy as np
 import pandapower
@@ -7,7 +7,7 @@ import pypowsybl
 from pypowsybl import PyPowsyblError
 from pypowsybl.network import Network
 from collections.abc import Sequence
-from VeraGridEngine.basic_structures import Logger
+
 
 IDENTIFIER_COLUMN_NAME = "uuid"
 empty_net = pandapower.create_empty_network()
@@ -18,7 +18,7 @@ def catch_exceptions(func):
         try:
             func(*args, **kwargs)
         except Exception as e:
-            logger.add_warning(
+            logger.warning(
                 f"An unexpected exception occurred in function {func.__name__}: {e}",
             )
 
