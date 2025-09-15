@@ -327,8 +327,8 @@ def create_lines(
         if from_bus_idx is None or to_bus_idx is None:
             continue
         # Convert b1 + b2 to c_nf_per_km
-        b1 = lines.get('b1', 0)
-        b2 = lines.get('b2', 0)
+        b1 = line.get('b1', 0)
+        b2 = line.get('b2', 0)
         total_susceptance = b1 + b2
 
         # Convert susceptance to capacitance
