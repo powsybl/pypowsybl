@@ -18,11 +18,11 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractAutomationSystemSeries<T extends AbstractAutomationSystemModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
+public abstract class AbstractAutomationSystemSeries<T extends AbstractAutomationSystemModelBuilder<T>> extends AbstractDynamicModelSeries<T> {
 
     protected final StringSeries dynamicModelIds;
 
-    AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
+    public AbstractAutomationSystemSeries(UpdatingDataframe dataframe) {
         super(dataframe);
         this.dynamicModelIds = PersistentStringSeries.copyOf(dataframe, DYNAMIC_MODEL_ID);
     }

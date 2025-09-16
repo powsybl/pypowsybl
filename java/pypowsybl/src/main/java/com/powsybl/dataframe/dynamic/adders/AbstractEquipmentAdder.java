@@ -17,7 +17,7 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEquipmentAdder extends AbstractSimpleDynamicModelAdder {
+public abstract class AbstractEquipmentAdder extends AbstractSimpleDynamicModelAdder {
 
     protected static final List<SeriesMetadata> EQUIPMENT_METADATA = List.of(
             SeriesMetadata.stringIndex(STATIC_ID),
