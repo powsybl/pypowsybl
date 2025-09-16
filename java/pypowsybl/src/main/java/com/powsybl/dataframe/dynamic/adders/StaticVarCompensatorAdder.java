@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class StaticVarCompensatorAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(BaseStaticVarCompensatorBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "StaticVarCompensator",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return BaseStaticVarCompensatorBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

@@ -36,9 +36,6 @@ public final class DynamicModelDataframeConstants {
     public static final String R_PU = "r_pu";
     public static final String PHASE_SHIFTER_ID = "phase_shifter_id";
 
-    // Dataframe names
-    public static final String U_MEASUREMENT_DATAFRAME = "U measurement";
-
     private DynamicModelDataframeConstants() {
     }
 }

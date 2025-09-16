@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class BaseBusAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(StandardBusBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "Bus",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return StandardBusBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

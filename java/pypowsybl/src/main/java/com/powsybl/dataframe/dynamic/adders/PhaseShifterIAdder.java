@@ -37,7 +37,8 @@ public class PhaseShifterIAdder extends AbstractSimpleDynamicModelAdder {
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(TRANSFORMER));
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(PhaseShifterIAutomationSystemBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "PhaseShifterI",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override
@@ -47,7 +48,7 @@ public class PhaseShifterIAdder extends AbstractSimpleDynamicModelAdder {
 
     @Override
     public String getCategory() {
-        return PhaseShifterIAutomationSystemBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

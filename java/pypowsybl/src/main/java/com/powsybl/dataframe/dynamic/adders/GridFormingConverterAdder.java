@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class GridFormingConverterAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(GridFormingConverterBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "GridFormingConverter",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return GridFormingConverterBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

@@ -41,7 +41,8 @@ public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimple
             SeriesMetadata.strings(I_MEASUREMENT_2),
             SeriesMetadata.strings(I_MEASUREMENT_2_SIDE));
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(DynamicTwoLevelOverloadManagementSystemBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "TwoLevelOverloadManagementSystem",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override
@@ -51,7 +52,7 @@ public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimple
 
     @Override
     public String getCategory() {
-        return DynamicTwoLevelOverloadManagementSystemBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

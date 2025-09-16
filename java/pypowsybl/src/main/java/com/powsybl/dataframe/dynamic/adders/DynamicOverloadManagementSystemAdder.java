@@ -39,7 +39,8 @@ public class DynamicOverloadManagementSystemAdder extends AbstractSimpleDynamicM
             SeriesMetadata.strings(I_MEASUREMENT),
             SeriesMetadata.strings(I_MEASUREMENT_SIDE));
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(DynamicOverloadManagementSystemBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "OverloadManagementSystem",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override
@@ -49,7 +50,7 @@ public class DynamicOverloadManagementSystemAdder extends AbstractSimpleDynamicM
 
     @Override
     public String getCategory() {
-        return DynamicOverloadManagementSystemBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

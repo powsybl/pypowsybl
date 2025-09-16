@@ -24,12 +24,12 @@ import java.util.Collection;
 public class BaseGeneratorAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
-            BaseGeneratorBuilder.CATEGORY,
+            "SimplifiedGenerator",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return BaseGeneratorBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

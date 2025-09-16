@@ -16,6 +16,7 @@ import com.powsybl.timeseries.DoubleTimeSeries;
 import com.powsybl.timeseries.TimeSeries;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,7 +59,9 @@ public final class DynamicSimulationDataframeMappersUtils {
 
     public static DataframeMapper<Collection<DynamicMappingAdder>, Void> categoriesDataFrameMapper() {
         return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, CategoryInformation, Void>()
-                .itemsStreamProvider(c -> c.stream().map(DynamicMappingAdder::getCategoryInformation))
+                .itemsStreamProvider(a -> a.stream()
+                        .map(DynamicMappingAdder::getCategoryInformation)
+                        .sorted(Comparator.comparing(CategoryInformation::name)))
                 .stringsIndex("name", CategoryInformation::name)
                 .strings("attribute", CategoryInformation::attribute)
                 .build();

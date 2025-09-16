@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class HvdcPAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(HvdcPBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "HvdcP",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return HvdcPBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

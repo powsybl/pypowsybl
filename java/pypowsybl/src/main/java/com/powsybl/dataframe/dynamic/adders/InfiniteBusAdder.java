@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class InfiniteBusAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(InfiniteBusBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "InfiniteBus",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return InfiniteBusBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

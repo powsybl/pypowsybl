@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class SignalNGeneratorAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(SignalNGeneratorBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "SignalNGenerator",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return SignalNGeneratorBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

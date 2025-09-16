@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class WeccAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(WeccBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "Wecc",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return WeccBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(SynchronizedGeneratorBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "SynchronizedGenerator",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return SynchronizedGeneratorBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

@@ -13,8 +13,13 @@ import pandas as pd
 def set_up():
     pp.set_config_read(False)
 
-def test_categories_information()
-    assert model_mapping.get_categories()
+def test_categories_information():
+    model_mapping = dyn.ModelMapping()
+    assert model_mapping.get_categories_names()
+    info_df = model_mapping.get_categories_information()
+    assert info_df.loc['SimplifiedGenerator']['attribute'] == 'index : static_id (str), parameter_set_id (str), model_name (str)'
+    assert info_df.loc['PhaseShifterP']['attribute'] == 'index : dynamic_model_id (str), parameter_set_id (str), model_name (str), transformer (str)'
+    assert info_df.loc['TapChangerBlocking']['attribute'] == '[dataframe "Tcb"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe "Transformers"] index : dynamic_model_id (str), transformer_id (str) / [dataframe "U measurement 1"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 2"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 3"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 4"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 5"] index : dynamic_model_id (str), measurement_point_id (str)'
 
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()
@@ -58,10 +63,10 @@ def test_add_mapping():
     # Equipment with default model name and dynamic id
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab')
     # Equipment model from Supported models
-    model_name = model_mapping.get_supported_models('BASE_LOAD')[0]
+    model_name = model_mapping.get_supported_models('Load')[0]
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name=model_name)
     # Dynamic model from category name
-    model_mapping.add_dynamic_model(category_name='BASE_LOAD', static_id='LOAD', parameter_set_id='lab', model_name='LoadPQ')
+    model_mapping.add_dynamic_model(category_name='Load', static_id='LOAD', parameter_set_id='lab', model_name='LoadPQ')
 
 
 def test_dynamic_dataframe():

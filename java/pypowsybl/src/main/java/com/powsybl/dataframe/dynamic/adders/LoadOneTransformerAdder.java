@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class LoadOneTransformerAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(LoadOneTransformerBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "LoadOneTransformer",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return LoadOneTransformerBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override

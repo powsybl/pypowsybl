@@ -23,12 +23,13 @@ import java.util.Collection;
  */
 public class LineAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(LineBuilder.CATEGORY,
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "Line",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
     public String getCategory() {
-        return LineBuilder.CATEGORY;
+        return CATEGORY_INFORMATION.name();
     }
 
     @Override
