@@ -165,6 +165,22 @@ def test_sensi_zone():
     assert r['FFR2AA1  DDE3AA1  1']['reference_values'] == pytest.approx(1324.666, abs=1e-3)
 
 
+def test_sensi_zone_non_auto_var():
+    n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
+    zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
+    zone_be = pp.sensitivity.create_country_zone(n, 'BE')
+    sa = pp.sensitivity.create_ac_analysis()
+    sa.set_zones([zone_fr, zone_be])
+    sa.add_factor_matrix(functions_ids=['BBE2AA1  FFR3AA1  1', 'FFR2AA1  DDE3AA1  1'],
+                         variables_ids=['FR', 'BE'],
+                         contingencies_ids = [],
+                         contingency_context_type=pp.sensitivity.ContingencyContextType.NONE,
+                         sensitivity_function_type=pp.sensitivity.SensitivityFunctionType.BRANCH_CURRENT_1,
+                         sensitivity_variable_type=pp.sensitivity.SensitivityVariableType.INJECTION_ACTIVE_POWER,
+                         matrix_id='m')
+    result = sa.run(n)
+
+
 def test_sensi_power_transfer():
     n = pp.network.load(str(DATA_DIR.joinpath('simple-eu.uct')))
     zone_fr = pp.sensitivity.create_country_zone(n, 'FR')
@@ -343,6 +359,7 @@ def test_busbar_section_sensi():
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm1')
     result = analysis.run(network)
     assert -0.8 == pytest.approx(result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'], 1e-4)
+
 
 def test_transfo3_sensi():
     network = pp.network.create_micro_grid_be_network()

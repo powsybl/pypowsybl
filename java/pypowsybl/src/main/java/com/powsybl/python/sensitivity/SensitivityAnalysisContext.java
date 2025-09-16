@@ -203,15 +203,17 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                 for (String variableId : rows) {
                     for (String functionId : columns) {
                         SensitivityVariableType variableType = matrix.getVariableType();
-                        boolean variableSet = false;
+                        boolean variableSet = variableType != null && variableSetsById.containsKey(variableId);
+                        if (variableType == null) {
+                            variableType = guessVariableType(network, variableId);
+                        }
                         if (variableType == null) {
                             if (variableSetsById.containsKey(variableId)) {
                                 variableSet = true;
                                 variableType = SensitivityVariableType.INJECTION_ACTIVE_POWER;
+                            } else {
+                                throw new PowsyblException("Variable '" + variableId + "' not found");
                             }
-                        }
-                        if (variableType == null) {
-                            variableType = guessVariableType(network, variableId);
                         }
                         for (ContingencyContext cCtx : contingencyContexts) {
                             handler.onFactor(matrix.getFunctionType(), functionId, variableType, variableId, variableSet, cCtx);
