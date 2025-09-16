@@ -151,7 +151,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
         return count;
     }
 
-    private SensitivityVariableType getVariableType(Network network, String variableId) {
+    private SensitivityVariableType guessVariableType(Network network, String variableId) {
         Identifiable<?> identifiable = network.getIdentifiable(variableId);
         if (identifiable instanceof Injection<?>) {
             return SensitivityVariableType.INJECTION_ACTIVE_POWER;
@@ -205,15 +205,13 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
                         SensitivityVariableType variableType = matrix.getVariableType();
                         boolean variableSet = false;
                         if (variableType == null) {
-                            variableType = getVariableType(network, variableId);
-                            if (variableType == null) {
-                                if (variableSetsById.containsKey(variableId)) {
-                                    variableSet = true;
-                                    variableType = SensitivityVariableType.INJECTION_ACTIVE_POWER;
-                                } else {
-                                    throw new PowsyblException("Variable '" + variableId + "' not found");
-                                }
+                            if (variableSetsById.containsKey(variableId)) {
+                                variableSet = true;
+                                variableType = SensitivityVariableType.INJECTION_ACTIVE_POWER;
                             }
+                        }
+                        if (variableType == null) {
+                            variableType = guessVariableType(network, variableId);
                         }
                         for (ContingencyContext cCtx : contingencyContexts) {
                             handler.onFactor(matrix.getFunctionType(), functionId, variableType, variableId, variableSet, cCtx);
