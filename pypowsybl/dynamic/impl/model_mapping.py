@@ -917,7 +917,7 @@ class ModelMapping:
 
             .. code-block:: python
 
-                model_mapping.add_dynamic_model(category_name='BASE_LOAD'
+                model_mapping.add_dynamic_model(category_name='Load'
                                             static_id='LOAD',
                                             parameter_set_id='lab',
                                             model_name='LoadPQ')
@@ -930,7 +930,7 @@ class ModelMapping:
                                         index='static_id',
                                         columns=['static_id', 'parameter_set_id', 'model_name'],
                                         data=[('LOAD', 'lab', 'BUS', 'LoadPQ')])
-                    model_mapping.add_dynamic_model(category_name='BASE_LOAD', df)
+                    model_mapping.add_dynamic_model(category_name='Load', df)
         """
         if not isinstance(df, List):
             df = [df]
