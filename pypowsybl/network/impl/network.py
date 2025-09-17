@@ -433,6 +433,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                            None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
                                            None if nad_profile is None else nad_profile._create_nad_branch_labels_c_dataframe(), # pylint: disable=protected-access
                                            None if nad_profile is None else nad_profile._create_nad_three_wt_labels_c_dataframe(), # pylint: disable=protected-access
+                                           None if nad_profile is None else nad_profile._create_nad_injections_labels_c_dataframe(), # pylint: disable=protected-access
                                            None if nad_profile is None else nad_profile._create_nad_bus_descriptions_c_dataframe(), # pylint: disable=protected-access
                                            None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe(), # pylint: disable=protected-access
                                            None if nad_profile is None else nad_profile._create_nad_bus_node_styles_c_dataframe(), # pylint: disable=protected-access
@@ -478,6 +479,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                                     nad_p, None if fixed_positions is None else self._create_nad_positions_c_dataframe(fixed_positions),
                                                     None if nad_profile is None else nad_profile._create_nad_branch_labels_c_dataframe(), # pylint: disable=protected-access
                                                     None if nad_profile is None else nad_profile._create_nad_three_wt_labels_c_dataframe(), # pylint: disable=protected-access
+                                                    None if nad_profile is None else nad_profile._create_nad_injections_labels_c_dataframe(), # pylint: disable=protected-access
                                                     None if nad_profile is None else nad_profile._create_nad_bus_descriptions_c_dataframe(), # pylint: disable=protected-access
                                                     None if nad_profile is None else nad_profile._create_nad_vl_descriptions_c_dataframe(), # pylint: disable=protected-access
                                                     None if nad_profile is None else nad_profile._create_nad_bus_node_styles_c_dataframe(), # pylint: disable=protected-access
@@ -1366,7 +1368,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **model_type**:
               - **max_section_count**: The maximum number of sections that may be switched on
-              - **section_count**: The current number of section that may be switched on
+              - **section_count**: The number of section in service (input for the computation)
+              - **solved_section_count**: The number of section in service (output of a computation, ``NaN`` before any loadflow)
               - **p**: the active flow on the shunt, ``NaN`` if no loadflow has been computed (in MW)
               - **q**: the reactive flow on the shunt, ``NaN`` if no loadflow has been computed  (in MVAr)
               - **i**: the current in the shunt, ``NaN`` if no loadflow has been computed  (in A)
@@ -2443,11 +2446,12 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **side**: the ratio tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
-              - **tap**: the current tap position
+              - **tap**: the current tap position (input of a loadflow)
+              - **solved_tap_position**: the tap position obtained after running a loadflow (``NaN`` before any computation)
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
               - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
-              - **on_load**: true if the tap changer has on-load regulation capability
+              - **oltc**: true if the tap changer has on-load regulation capability
               - **regulating**: true if the tap changer is in regulation
               - **target_v**: the target voltage in kV, if the tap changer is in regulation
               - **target_deadband**: the regulation deadband around the target voltage, in kV
@@ -2464,12 +2468,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === =================== ======= ======== ========== ==== ========== ======== =============== =================
+            \          side tap solved_tap_position low_tap high_tap step_count oltc regulating target_v target_deadband regulating_bus_id
+            ========== ==== === =================== ======= ======== ========== ==== ========== ======== =============== =================
             id
-            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1                 NaN       0        2          3 True       True    158.0             0.0          VLLOAD_0
+            ========== ==== === =================== ======= ======== ========== ==== ========== ======== =============== =================
 
             .. code-block:: python
 
@@ -2478,12 +2482,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
-            \          side tap low_tap high_tap step_count on_load regulating target_v target_deadband regulating_bus_id
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            ========== ==== === =================== ======= ======== ========== ==== ========== ======== =============== ================= ==============
+            \          side tap solved_tap_position low_tap high_tap step_count oltc regulating target_v target_deadband regulating_bus_id regulated_side
+            ========== ==== === =================== ======= ======== ========== ==== ========== ======== =============== ================= ==============
             id
-            NHV2_NLOAD        1       0        2          3    True       True    158.0             0.0          VLLOAD_0
-            ========== ==== === ======= ======== ========== ======= ========== ======== =============== =================
+            NHV2_NLOAD        1                 nan       0        2          3 True       True    158.0             0.0          VLLOAD_0            TWO
+            ========== ==== === =================== ======= ======== ========== ==== ========== ======== =============== ================= ==============
 
             .. code-block:: python
 
@@ -2519,10 +2523,12 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **side**: the phase tap changer side in case of a belonging to a 3 windings transformer, empty for a 2 windings transformer
-              - **tap**: the current tap position
+              - **tap**: the current tap position (input of a loadflow)
+              - **solved_tap_position**: the tap position obtained after running a loadflow (``NaN`` before any computation)
               - **low_tap**: the low tap position (usually 0, but could be different depending on the data origin)
               - **high_tap**: the high tap position
               - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
+              - **oltc**: true if the tap changer has on-load regulation capability
               - **regulating**: true if the phase shifter is in regulation
               - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
@@ -2540,12 +2546,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
-            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= =================== ======== ========== ==== ========== =============== ================ =============== =================
+            \   side tap low_tap solved_tap_position high_tap step_count oltc regulating regulation_mode regulation_value target_deadband regulating_bus_id
+            === ==== === ======= =================== ======== ========== ==== ========== =============== ================ =============== =================
             id
-            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0                 NaN       32         33 True      False CURRENT_LIMITER              NaN             NaN           S1VL1_0
+            === ==== === ======= =================== ======== ========== ==== ========== =============== ================ =============== =================
 
             .. code-block:: python
 
@@ -2554,12 +2560,12 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will output something like:
 
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
-            \   side tap low_tap high_tap step_count regulating regulation_mode regulation_value target_deadband regulating_bus_id
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            === ==== === ======= =================== ======== ========== ==== ========== =============== ================ =============== ================= ==============
+            \   side tap low_tap solved_tap_position high_tap step_count oltc regulating regulation_mode regulation_value target_deadband regulating_bus_id regulated_side
+            === ==== === ======= =================== ======== ========== ==== ========== =============== ================ =============== ================= ==============
             id
-            TWT       15       0       32         33      False       FIXED_TAP              NaN             NaN           S1VL1_0
-            === ==== === ======= ======== ========== ========== =============== ================ =============== =================
+            TWT       15       0                 NaN       32         33 True      False CURRENT_LIMITER              NaN             NaN           S1VL1_0            ONE
+            === ==== === ======= =================== ======== ========== ==== ========== =============== ================ =============== ================= ==============
 
             .. code-block:: python
 
@@ -3479,7 +3485,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Attributes that can be updated are:
 
             - `tap`
-            - `on_load`
+            - `oltc`
             - `regulating`,
             - `regulated_side`,
             - `target_v`
@@ -4941,10 +4947,10 @@ class Network:  # pylint: disable=too-many-public-methods
             - **id**: the transformer where this tap changer will be created
             - **tap**: the current tap position
             - **low_tap**: the number of the lowest tap position (default 0)
-            - **on_load**: true if the transformer has on-load voltage regulation capability
+            - **oltc**: true if the transformer has on-load voltage regulation capability
             - **target_v**: the target voltage, in kV
             - **target_deadband**: the target voltage regulation deadband, in kV
-            - **regulating**: true if the tap changer should regulate voltage (**on_load** must be true to set this to true)
+            - **regulating**: true if the tap changer should regulate voltage (**oltc** must be true to set this to true)
             - **regulated_side**: the side where voltage is regulated (ONE or TWO if two-winding transformer, ONE, TWO
               or THREE if three-winding transformer)
             - **side**: Side of the tap changer (only for three-winding transformers)
@@ -4965,7 +4971,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 rtc_df = pd.DataFrame.from_records(
                     index='id',
-                    columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap'],
+                    columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap'],
                     data=[('NGEN_NHV1', 2, 200, False, 0, 1)])
                 steps_df = pd.DataFrame.from_records(
                     index='id',
@@ -5089,8 +5095,9 @@ class Network:  # pylint: disable=too-many-public-methods
             - **value**: the value of the limit in A, MVA or MW
             - **acceptable_duration**: the maximum number of seconds during which we can operate under that limit
             - **fictitious**: fictitious limit ?
+            - **group_name**: Name of the operational limit group to add the limit to (if not specified, the limit is added to the group "DEFAULT")
 
-            For each location of the network defined by a couple (element_id, side):
+            For each location of the network defined by a couple (element_id, side) and each group_name:
 
             - if operational limits already exist, they will be replaced
             - multiple limits may be defined, typically with different acceptable_duration
@@ -5607,9 +5614,9 @@ class Network:  # pylint: disable=too-many-public-methods
 
                 >>> network.add_elements_properties(id='GENERATOR-1', prop1='value1', prop2='value2')
                 >>> network.get_generators(attributes=['prop1', 'prop2'], id='GENERATOR-1')
-                         toto
+                              prop1  prop2
                 id
-                VLEJUP7  tutu
+                GENERATOR-1  value1 value2
 
             You can also update multiple elements at once, for example with a dataframe:
 
@@ -5674,3 +5681,24 @@ class Network:  # pylint: disable=too-many-public-methods
         if isinstance(ids, str):
             ids = [ids]
         _pp.remove_extensions(self._handle, extension_name, ids)
+
+    def apply_solved_values(self) -> None:
+        """
+        Replaces the "input" values used for load flow calculation by their solved values returned by the
+        load flow calculation. The copied values are :
+        - **solved_tap_position** -> **tap** for ratio/phase tap changers
+        - **solved_section_count** -> **section_count** for shunt/compensators
+        - **targetP/Q** -> **P/Q** for generators, dangling lines, batteries
+        - **targetV** -> **V** for generators and dangling lines
+        - **P0/Q0** -> **P/Q** for loads
+        """
+        _pp.apply_solved_values(self._handle)
+
+    def apply_solved_tap_position_and_section_count_values(self) -> None:
+        """
+        Replaces the "input" values used for load flow calculation by their solved values returned by the
+        load flow calculation, only for tap position and section count. The copied values are :
+        - **solved_tap_position** -> **tap** for ratio/phase tap changers
+        - **solved_section_count** -> **section_count** for shunt/compensators
+        """
+        _pp.apply_solved_tap_and_section_count_values(self._handle)

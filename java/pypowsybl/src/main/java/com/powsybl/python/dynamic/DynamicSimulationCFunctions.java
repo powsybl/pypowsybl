@@ -8,16 +8,19 @@
 package com.powsybl.python.dynamic;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
-import static com.powsybl.python.commons.Util.convert;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.*;
+import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.timeseries.DoubleTimeSeries;
@@ -90,17 +93,34 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new PythonEventModelsSupplier()));
     }
 
-    @CEntryPoint(name = "runDynamicModel")
-    public static ObjectHandle runDynamicModel(IsolateThread thread,
-                                               ObjectHandle dynamicContextHandle,
-                                               ObjectHandle networkHandle,
-                                               ObjectHandle dynamicMappingHandle,
-                                               ObjectHandle eventModelsSupplierHandle,
-                                               ObjectHandle outputVariablesSupplierHandle,
-                                               int startTime,
-                                               int stopTime,
-                                               ObjectHandle reportNodeHandle,
-            ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createDynamicSimulationParameters")
+    public static DynamicSimulationParametersPointer createDynamicSimulationParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            DynamicSimulationParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(DynamicSimulationParametersPointer.class));
+            copyToCDynamicSimulationParameters(paramsPtr);
+            return paramsPtr;
+        });
+    }
+
+    @CEntryPoint(name = "freeDynamicSimulationParameters")
+    public static void freeDynamicSimulationParameters(IsolateThread thread, DynamicSimulationParametersPointer parametersPtr,
+                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, () -> {
+            freeProviderParameters(parametersPtr.getProviderParameters());
+            UnmanagedMemory.free(parametersPtr);
+        });
+    }
+
+    @CEntryPoint(name = "runDynamicSimulation")
+    public static ObjectHandle runDynamicSimulation(IsolateThread thread,
+                                                    ObjectHandle dynamicContextHandle,
+                                                    ObjectHandle networkHandle,
+                                                    ObjectHandle dynamicMappingHandle,
+                                                    ObjectHandle eventModelsSupplierHandle,
+                                                    ObjectHandle outputVariablesSupplierHandle,
+                                                    DynamicSimulationParametersPointer parametersPtr,
+                                                    ObjectHandle reportNodeHandle,
+                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
             Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -111,8 +131,8 @@ public final class DynamicSimulationCFunctions {
             if (reportNode == null) {
                 reportNode = ReportNode.NO_OP;
             }
-            DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
-                    stopTime);
+            DynamicSimulationParameters dynamicSimulationParameters =
+                    DynamicSimulationParametersCUtils.createDynamicSimulationParameters(parametersPtr);
             DynamicSimulationResult result = dynamicContext.run(network,
                     dynamicMapping,
                     eventModelsSupplier,
@@ -259,5 +279,20 @@ public final class DynamicSimulationCFunctions {
             DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
             return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.timelineEventDataFrameMapper(), simulationResult.getTimeLine());
         });
+    }
+
+    @CEntryPoint(name = "getDynamicSimulationProviderParametersNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getDynamicSimulationProviderParametersNames(IsolateThread thread,
+                                                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(getSpecificParametersInfo().stream()
+                .map(Parameter::getName)
+                .collect(Collectors.toList())));
+    }
+
+    @CEntryPoint(name = "createDynamicSimulationProviderParametersSeriesArray")
+    static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createDynamicSimulationProviderParametersSeriesArray(IsolateThread thread,
+                                                                                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () ->
+                Dataframes.createCDataframe(SPECIFIC_PARAMETERS_MAPPER, getSpecificParametersInfo()));
     }
 }

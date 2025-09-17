@@ -22,7 +22,7 @@
     <artifactId>pypowsybl-parent</artifactId>
 
     <packaging>pom</packaging>
-    <version>1.12.0-SNAPSHOT</version>
+    <version>1.13.0-SNAPSHOT</version>
     <description>PyPowSyBl Java part parent project</description>
     <url>https://www.powsybl.org</url>
 
@@ -47,7 +47,7 @@
             <organizationUrl>http://www.rte-france.com</organizationUrl>
         </developer>
         <developer>
-            <name>Hugo Kulesza</name>
+            <name>Hugo KULESZA</name>
             <email>hugo.kulesza@rte-france.com</email>
             <organization>RTE</organization>
             <organizationUrl>http://www.rte-france.com</organizationUrl>
@@ -69,7 +69,7 @@
     <properties>
         <java.version>17</java.version>
         <powsybl-dependencies.version>2025.1.0</powsybl-dependencies.version>
-        <powsybl-open-reac.version>0.12.0</powsybl-open-reac.version>
+        <powsybl-open-reac.version>0.14.0</powsybl-open-reac.version>
     </properties>
 
     <dependencyManagement>

@@ -10,6 +10,7 @@ package com.powsybl.dataframe.impl;
 import com.powsybl.commons.PowsyblException;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /**
  * POJO representation of a series.
@@ -21,40 +22,47 @@ public class Series {
     private final String name;
     private final double[] doubles;
     private final int[] ints;
+    private final OptionalInt[] optionalInts;
     private final boolean[] booleans;
     private final String[] strings;
 
     public Series(String name, double[] values) {
-        this(false, name, values, null, null, null);
+        this(false, name, values, null, null, null, null);
     }
 
     public Series(String name, String[] values) {
-        this(false, name, null, null, null, values);
+        this(false, name, null, null, null, null, values);
     }
 
     public Series(String name, int[] values) {
-        this(false, name, null, values, null, null);
+        this(false, name, null, values, null, null, null);
+    }
+
+    public Series(String name, OptionalInt[] values) {
+        this(false, name, null, null, values, null, null);
     }
 
     public Series(String name, boolean[] values) {
-        this(false, name, null, null, values, null);
+        this(false, name, null, null, null, values, null);
     }
 
-    public Series(boolean index, String name, double[] doubles, int[] ints, boolean[] booleans, String[] strings) {
+    public Series(boolean index, String name, double[] doubles, int[] ints,
+                  OptionalInt[] optionalInts, boolean[] booleans, String[] strings) {
         this.index = index;
         this.name = name;
         this.doubles = doubles;
         this.ints = ints;
+        this.optionalInts = optionalInts;
         this.booleans = booleans;
         this.strings = strings;
     }
 
     public static Series index(String name, String[] values) {
-        return new Series(true, name, null, null, null, values);
+        return new Series(true, name, null, null, null, null, values);
     }
 
     public static Series index(String name, int[] values) {
-        return new Series(true, name, null, values, null, null);
+        return new Series(true, name, null, values, null, null, null);
     }
 
     public boolean isIndex() {
@@ -73,6 +81,11 @@ public class Series {
     public int[] getInts() {
         return Optional.ofNullable(ints)
             .orElseThrow(() -> createException(getName(), "int"));
+    }
+
+    public OptionalInt[] getOptionalInts() {
+        return Optional.ofNullable(optionalInts)
+                .orElseThrow(() -> createException(getName(), "optional ints"));
     }
 
     public boolean[] getBooleans() {

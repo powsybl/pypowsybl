@@ -236,8 +236,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("create_event_mapping", &pypowsybl::createEventMapping);
 
     //running simulations
-    m.def("run_dynamic_model", &pypowsybl::runDynamicModel, py::call_guard<py::gil_scoped_release>(),
-        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("start"), py::arg("stop"), py::arg("report_node"));
+    m.def("run_dynamic_simulation", &pypowsybl::runDynamicSimulation, py::call_guard<py::gil_scoped_release>(),
+        py::arg("dynamic_model"), py::arg("network"), py::arg("dynamic_mapping"), py::arg("event_mapping"), py::arg("timeseries_mapping"), py::arg("parameters"), py::arg("report_node"));
 
     //model mapping
     m.def("add_all_dynamic_mappings", ::addDynamicMappingsBind, py::arg("dynamic_mapping_handle"), py::arg("mapping_type"), py::arg("dataframes"));
@@ -374,6 +374,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_sub_network", &pypowsybl::getSubNetwork, "Get a sub network from its ID", py::arg("network"), py::arg("sub_network_id"));
 
     m.def("detach_sub_network", &pypowsybl::detachSubNetwork, "Detach a sub network from its parent", py::arg("sub_network"));
+
+    m.def("apply_solved_values", &pypowsybl::applySolvedValues, "Copy solved values to input", py::arg("network"));
+
+    m.def("apply_solved_tap_and_section_count_values", &pypowsybl::applySolvedTapPositionAndSolvedSectionCount, "Copy solved values of tap position and section count to input", py::arg("network"));
 
     m.def("update_connectable_status", &pypowsybl::updateConnectableStatus, "Update a connectable (branch or injection) status");
 
@@ -630,6 +634,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
 
+    py::class_<pypowsybl::DynamicSimulationParameters>(m, "DynamicSimulationParameters")
+            .def(py::init(&pypowsybl::createDynamicSimulationParameters))
+            .def_readwrite("start_time", &pypowsybl::DynamicSimulationParameters::start_time)
+            .def_readwrite("stop_time", &pypowsybl::DynamicSimulationParameters::stop_time)
+            .def_readwrite("provider_parameters_keys", &pypowsybl::DynamicSimulationParameters::provider_parameters_keys)
+            .def_readwrite("provider_parameters_values", &pypowsybl::DynamicSimulationParameters::provider_parameters_values);
+
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
@@ -678,7 +689,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
         .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
-        .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details);
+        .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details)
+        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"));
@@ -700,7 +712,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("write_network_area_diagram_svg", &pypowsybl::writeNetworkAreaDiagramSvg, "Write network area diagram SVG",
           py::arg("network"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("voltage_level_ids"),
           py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
-          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"),
+          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("injections_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"),
           py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
 
     m.def("get_network_area_diagram_svg", &pypowsybl::getNetworkAreaDiagramSvg, "Get network area diagram SVG as a string",
@@ -708,7 +720,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           
     m.def("get_network_area_diagram_svg_and_metadata", &pypowsybl::getNetworkAreaDiagramSvgAndMetadata, "Get network area diagram SVG and its metadata as a list of strings",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"), py::arg("high_nominal_voltage_bound"), py::arg("low_nominal_voltage_bound"), py::arg("nad_parameters"), py::arg("fixed_positions"),
-          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
+          py::arg("branch_labels"), py::arg("three_wt_labels"), py::arg("injections_labels"), py::arg("bus_descriptions"), py::arg("vl_descriptions"), py::arg("bus_node_styles"), py::arg("edge_styles"), py::arg("three_wt_styles"));
 
     m.def("get_network_area_diagram_displayed_voltage_levels", &pypowsybl::getNetworkAreaDiagramDisplayedVoltageLevels, "Get network area diagram displayed voltage level",
           py::arg("network"), py::arg("voltage_level_ids"), py::arg("depth"));
@@ -1018,6 +1030,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
                     default:
                         throw pypowsybl::PyPowsyblError("Series type not supported: " + std::to_string(s.type));
                 }
+            })
+            .def_property_readonly("mask", [](const series& s) {
+                if (s.mask != nullptr) {
+                    return py::array(py::dtype::of<int>(), s.data.length, s.mask, py::cast(s.mask));
+                } else {
+                    return py::array();
+                }
             });
     bindArray<pypowsybl::SeriesArray>(m, "SeriesArray");
 
@@ -1129,10 +1148,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
     m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
     m.def("get_loadflow_provider_parameters_names", &pypowsybl::getLoadFlowProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
+    m.def("create_loadflow_parameters_from_json", &pypowsybl::createLoadFlowParametersFromJson, "create loadflow parameters from a JSON string", py::arg("parameters_json"));
+    m.def("write_loadflow_parameters_to_json", &pypowsybl::writeLoadFlowParametersToJson, "write loadflow parameters to a JSON string", py::arg("parameters"));
     m.def("create_loadflow_provider_parameters_series_array", &pypowsybl::createLoadFlowProviderParametersSeriesArray, "Create a parameters series array for a given loadflow provider",
           py::arg("provider"));
     m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
     m.def("get_sensitivity_analysis_provider_parameters_names", &pypowsybl::getSensitivityAnalysisProviderParametersNames, "get provider parameters for a sensitivity analysis provider", py::arg("provider"));
+    m.def("get_dynamic_simulation_provider_parameters_names", &pypowsybl::getDynamicSimulationProviderParametersNames, "get dynamic simulation provider parameters for Dynawo");
+    m.def("create_dynamic_simulation_provider_parameters_series_array", &pypowsybl::createDynamicSimulationProviderParametersSeriesArray, "Create a parameters series array for Dynawo");
     m.def("update_extensions", pypowsybl::updateNetworkElementsExtensionsWithSeries, "Update extensions of network elements for a given element type with a series",
           py::call_guard<py::gil_scoped_release>(), py::arg("network"), py::arg("name"), py::arg("table_name"), py::arg("dataframe"));
     m.def("remove_extensions", &pypowsybl::removeExtensions, "Remove extensions from network elements",
@@ -1283,8 +1306,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_cost_results", &pypowsybl::getCostResults, "Get rao cost results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_virtual_cost_names", &pypowsybl::getVirtualCostNames, "Get virtual cost names", py::arg("rao_result"));
     m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
-    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
-    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, py::call_guard<py::gil_scoped_release>(), "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
