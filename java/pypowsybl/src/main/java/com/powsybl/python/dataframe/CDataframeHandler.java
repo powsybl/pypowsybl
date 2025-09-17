@@ -20,6 +20,8 @@ import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.PointerBase;
 
+import java.util.OptionalInt;
+
 import static org.graalvm.word.WordFactory.nullPointer;
 
 /**
@@ -27,6 +29,7 @@ import static org.graalvm.word.WordFactory.nullPointer;
  *
  * @author Sylvain Leclerc {@literal <sylvain.leclerc at rte-france.com>}
  */
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 public class CDataframeHandler implements DataframeHandler {
 
     public static final int STRING_SERIES_TYPE = 0;
@@ -56,28 +59,48 @@ public class CDataframeHandler implements DataframeHandler {
     public StringSeriesWriter newStringIndex(String name, int size) {
         CCharPointerPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointerPointer.class));
         addIndex(name, size, dataPtr, STRING_SERIES_TYPE);
-        return (i, v) -> dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(v));
+        return new StringSeriesWriter() {
+            @Override
+            public void set(int i, String v) {
+                dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(v));
+            }
+        };
     }
 
     @Override
     public IntSeriesWriter newIntIndex(String name, int size) {
         CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
         addIndex(name, size, dataPtr, INT_SERIES_TYPE);
-        return (i, v) -> dataPtr.addressOf(i).write(v);
+        return new IntSeriesWriter() {
+            @Override
+            public void set(int i, int v) {
+                dataPtr.addressOf(i).write(v);
+            }
+        };
     }
 
     @Override
     public StringSeriesWriter newStringSeries(String name, int size) {
         CCharPointerPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointerPointer.class));
         addSeries(name, size, dataPtr, STRING_SERIES_TYPE);
-        return (i, v) -> dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(v));
+        return new StringSeriesWriter() {
+            @Override
+            public void set(int i, String v) {
+                dataPtr.addressOf(i).write(CTypeUtil.toCharPtr(v));
+            }
+        };
     }
 
     @Override
     public IntSeriesWriter newIntSeries(String name, int size) {
         CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
         addSeries(name, size, dataPtr, INT_SERIES_TYPE);
-        return (i, v) -> dataPtr.addressOf(i).write(v);
+        return new IntSeriesWriter() {
+            @Override
+            public void set(int i, int v) {
+                dataPtr.addressOf(i).write(v);
+            }
+        };
     }
 
     @Override
@@ -85,12 +108,15 @@ public class CDataframeHandler implements DataframeHandler {
         CIntPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
         CIntPointer maskPtr = UnmanagedMemory.calloc(size * SizeOf.get(CIntPointer.class));
         addOptionalSeries(name, size, dataPtr, maskPtr, INT_SERIES_TYPE);
-        return (i, v) -> {
-            if (v.isEmpty()) {
-                dataPtr.addressOf(i).write(0);
-                maskPtr.addressOf(i).write(1);
-            } else {
-                dataPtr.addressOf(i).write(v.getAsInt());
+        return new OptionalIntSeriesWriter() {
+            @Override
+            public void set(int index, OptionalInt value) {
+                if (value.isEmpty()) {
+                    dataPtr.addressOf(index).write(0);
+                    maskPtr.addressOf(index).write(1);
+                } else {
+                    dataPtr.addressOf(index).write(value.getAsInt());
+                }
             }
         };
     }
@@ -99,14 +125,24 @@ public class CDataframeHandler implements DataframeHandler {
     public BooleanSeriesWriter newBooleanSeries(String name, int size) {
         CCharPointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CCharPointer.class));
         addSeries(name, size, dataPtr, BOOLEAN_SERIES_TYPE);
-        return (i, v) -> dataPtr.addressOf(i).write(v ? (byte) 1 : 0);
+        return new BooleanSeriesWriter() {
+            @Override
+            public void set(int i, boolean v) {
+                dataPtr.addressOf(i).write(v ? (byte) 1 : 0);
+            }
+        };
     }
 
     @Override
     public DoubleSeriesWriter newDoubleSeries(String name, int size) {
         CDoublePointer dataPtr = UnmanagedMemory.calloc(size * SizeOf.get(CDoublePointer.class));
         addSeries(name, size, dataPtr, DOUBLE_SERIES_TYPE);
-        return (i, v) -> dataPtr.addressOf(i).write(v);
+        return new DoubleSeriesWriter() {
+            @Override
+            public void set(int i, double v) {
+                dataPtr.addressOf(i).write(v);
+            }
+        };
     }
 
     private void addSeries(String name, int count, PointerBase dataPtr, int type) {
