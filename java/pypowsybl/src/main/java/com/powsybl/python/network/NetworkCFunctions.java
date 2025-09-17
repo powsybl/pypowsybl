@@ -1152,6 +1152,7 @@ public final class NetworkCFunctions {
     }
 
     private static void applySldCustomLabels(DataframePointer customLabels, DataframePointer customFeederInfo, SldParameters parameters) {
+        final String labelAttributeName = "label";
         UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
         UpdatingDataframe customFeederInfoDataframe = createDataframe(customFeederInfo);
         if (customLabelsDataframe != null || customFeederInfoDataframe != null) {
@@ -1159,7 +1160,7 @@ public final class NetworkCFunctions {
             if (customLabelsDataframe != null) {
                 parameters.getSvgParameters().setDisplayEquipmentNodesLabel(true);
                 customLabelsMap = getSldCustomLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
-                        customLabelsDataframe.getStrings("label"), customLabelsDataframe.getStrings("additional_label"));
+                        customLabelsDataframe.getStrings(labelAttributeName), customLabelsDataframe.getStrings("additional_label"));
             } else {
                 customLabelsMap = Collections.emptyMap();
             }
@@ -1171,7 +1172,7 @@ public final class NetworkCFunctions {
                         customFeederInfoDataframe.getStrings("type"),
                         customFeederInfoDataframe.getStrings("side"),
                         customFeederInfoDataframe.getStrings("direction"),
-                        customFeederInfoDataframe.getStrings("label")
+                        customFeederInfoDataframe.getStrings(labelAttributeName)
                 );
 
             } else {
