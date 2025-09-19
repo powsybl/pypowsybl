@@ -546,7 +546,8 @@ public final class RaoCFunctions {
         paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
         paramsPtr.setSensitivityParameters(
             convertToSensitivityAnalysisParametersPointer(
-                searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters()));
+                searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters(),
+                searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
         paramsPtr.setSensitivityFailureOvercost(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
 
         convertExtensionData(parameters, paramsPtr);
