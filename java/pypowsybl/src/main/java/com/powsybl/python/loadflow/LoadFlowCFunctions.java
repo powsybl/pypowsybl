@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.loadflow;
 
+import com.powsybl.commons.extensions.Extension;
 import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Country;
@@ -39,13 +40,16 @@ import org.slf4j.LoggerFactory;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.allocArrayPointer;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.freeArrayPointer;
 import static com.powsybl.python.commons.Util.createCharPtrArray;
 import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.loadflow.LoadFlowCUtils.getLoadFlowProvider;
 
 /**
  * C functions related to loadflow.
@@ -158,7 +162,7 @@ public final class LoadFlowCFunctions {
 
     @CEntryPoint(name = "createLoadFlowParameters")
     public static LoadFlowParametersPointer createLoadFlowParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters()));
+        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters(), null));
     }
 
     @CEntryPoint(name = "createLoadFlowParametersFromJson")
@@ -167,7 +171,7 @@ public final class LoadFlowCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             String parametersJson = CTypeUtil.toString(parametersJsonPtr);
             try (InputStream is = new ByteArrayInputStream(parametersJson.getBytes(StandardCharsets.UTF_8))) {
-                return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is));
+                return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is), null);
             }
         });
     }
@@ -232,7 +236,7 @@ public final class LoadFlowCFunctions {
         ptr.slackBusResults().setPtr(slackBusResultPointer);
     }
 
-    public static void copyToCLoadFlowParameters(LoadFlowParameters parameters, LoadFlowParametersPointer cParameters) {
+    public static void copyToCLoadFlowParameters(LoadFlowParameters parameters, LoadFlowParametersPointer cParameters, String loadFlowProvider) {
         cParameters.setVoltageInitMode(parameters.getVoltageInitMode().ordinal());
         cParameters.setTransformerVoltageControlOn(parameters.isTransformerVoltageControlOn());
         cParameters.setUseReactiveLimits(parameters.isUseReactiveLimits());
@@ -256,14 +260,34 @@ public final class LoadFlowCFunctions {
         cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
         cParameters.setHvdcAcEmulation(parameters.isHvdcAcEmulation());
         cParameters.setDcPowerFactor(parameters.getDcPowerFactor());
-        cParameters.getProviderParameters().setProviderParametersValuesCount(0);
-        cParameters.getProviderParameters().setProviderParametersKeysCount(0);
+        if (loadFlowProvider != null) {
+            Map<String, String> providerParameters = getProviderSpecificParameters(parameters, loadFlowProvider);
+            cParameters.getProviderParameters().setProviderParametersKeys(Util.getStringListAsPtr(providerParameters.keySet().stream().toList()));
+            cParameters.getProviderParameters().setProviderParametersKeysCount(providerParameters.size());
+            cParameters.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(providerParameters.values().stream().toList()));
+            cParameters.getProviderParameters().setProviderParametersValuesCount(providerParameters.size());
+        } else {
+            cParameters.getProviderParameters().setProviderParametersValuesCount(0);
+            cParameters.getProviderParameters().setProviderParametersKeysCount(0);
+        }
     }
 
-    public static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters) {
+    public static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters, String provider) {
         LoadFlowParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(LoadFlowParametersPointer.class));
-        copyToCLoadFlowParameters(parameters, paramsPtr);
+        copyToCLoadFlowParameters(parameters, paramsPtr, provider);
         return paramsPtr;
+    }
+
+    public static Map<String, String> getProviderSpecificParameters(LoadFlowParameters parameters, String providerName) {
+        var provider = getLoadFlowProvider(providerName);
+        var parametersClass = provider.getSpecificParametersClass();
+        if (parametersClass.isPresent()) {
+            Extension<LoadFlowParameters> configured = parameters.getExtension(parametersClass.get());
+            if (configured != null) {
+                return provider.createMapFromSpecificParameters(configured);
+            }
+        }
+        return Collections.emptyMap();
     }
 
     @CEntryPoint(name = "getLoadFlowProviderParametersNames")

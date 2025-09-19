@@ -181,12 +181,12 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "createSensitivityAnalysisParameters")
     public static SensitivityAnalysisParametersPointer createSensitivityAnalysisParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters()));
+        return doCatch(exceptionHandlerPtr, () -> convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(), null));
     }
 
-    public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
+    public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters, String loadFlowProvider) {
         SensitivityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SensitivityAnalysisParametersPointer.class));
-        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters());
+        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters(), loadFlowProvider);
         paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
         paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;
