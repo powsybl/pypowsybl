@@ -306,11 +306,16 @@ public final class LoadFlowCFunctions {
         cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
         cParameters.setHvdcAcEmulation(parameters.isHvdcAcEmulation());
         cParameters.setDcPowerFactor(parameters.getDcPowerFactor());
-        Map<String, String> providerParameters = getProviderSpecificParameters(parameters, loadFlowProvider == null ? "" : loadFlowProvider);
-        cParameters.getProviderParameters().setProviderParametersKeys(Util.getStringListAsPtr(providerParameters.keySet().stream().toList()));
-        cParameters.getProviderParameters().setProviderParametersKeysCount(providerParameters.size());
-        cParameters.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(providerParameters.values().stream().toList()));
-        cParameters.getProviderParameters().setProviderParametersValuesCount(providerParameters.size());
+        if (loadFlowProvider != null) {
+            Map<String, String> providerParameters = getProviderSpecificParameters(parameters, loadFlowProvider);
+            cParameters.getProviderParameters().setProviderParametersKeys(Util.getStringListAsPtr(providerParameters.keySet().stream().toList()));
+            cParameters.getProviderParameters().setProviderParametersKeysCount(providerParameters.size());
+            cParameters.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(providerParameters.values().stream().toList()));
+            cParameters.getProviderParameters().setProviderParametersValuesCount(providerParameters.size());
+        } else {
+            cParameters.getProviderParameters().setProviderParametersValuesCount(0);
+            cParameters.getProviderParameters().setProviderParametersKeysCount(0);
+        }
     }
 
     public static LoadFlowParametersPointer convertToLoadFlowParametersPointer(LoadFlowParameters parameters, String provider) {
@@ -321,8 +326,9 @@ public final class LoadFlowCFunctions {
 
     public static Map<String, String> getProviderSpecificParameters(LoadFlowParameters parameters, String providerName) {
         var provider = getLoadFlowProvider(providerName);
-        if (provider.getSpecificParametersClass().isPresent()) {
-            Extension<LoadFlowParameters> configured = parameters.getExtension(provider.getSpecificParametersClass().get());
+        var parametersClass = provider.getSpecificParametersClass();
+        if (parametersClass.isPresent()) {
+            Extension<LoadFlowParameters> configured = parameters.getExtension(parametersClass.get());
             if (configured != null) {
                 return provider.createMapFromSpecificParameters(configured);
             }
