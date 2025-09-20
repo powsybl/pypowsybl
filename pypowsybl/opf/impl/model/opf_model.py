@@ -5,7 +5,6 @@ from pyoptinterface import ipopt
 
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
-from pypowsybl.opf.impl.model.function_context import FunctionContext
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -50,12 +49,9 @@ class OpfModel:
         for variable_bounds in variable_bounds:
             variable_bounds.add(parameters, network_cache, variable_context, model)
 
-        # register functions
-        function_context = FunctionContext.build(model)
-
         # constraints
         for constraint in constraints:
-            constraint.add(parameters, network_cache, variable_context, function_context, model)
+            constraint.add(parameters, network_cache, variable_context, model)
 
         # cost function
         logger.debug(f"Using cost function: '{cost_function.name}'")

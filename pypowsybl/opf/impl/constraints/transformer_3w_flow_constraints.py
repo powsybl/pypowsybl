@@ -1,9 +1,9 @@
 from math import hypot, atan2
 
-from pyoptinterface import ipopt, nlfunc
+from pyoptinterface import ipopt
 
+from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.model.constraints import Constraints
-from pypowsybl.opf.impl.model.function_context import FunctionContext
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -13,7 +13,7 @@ class Transformer3wFlowConstraints(Constraints):
     @staticmethod
     def _create_leg_constraint(leg_r: float, leg_x: float, leg_g: float, leg_b: float, rho: float, alpha: float,
                                bus_id: str, t3_index: int, leg_index: int, parameters: ModelParameters, network_cache: NetworkCache,
-                               variable_context: VariableContext, function_context: FunctionContext, model: ipopt.Model):
+                               variable_context: VariableContext, model: ipopt.Model):
         r = leg_r
         x = leg_x
         if parameters.twt_split_shunt_admittance:
@@ -41,59 +41,17 @@ class Transformer3wFlowConstraints(Constraints):
             q1_var = variable_context.t3_closed_branch_q1_vars[leg_index]
             p2_var = variable_context.t3_closed_branch_p2_vars[leg_index]
             q2_var = variable_context.t3_closed_branch_q2_vars[leg_index]
-            model.add_nl_constraint(
-                function_context.cbf_index,
-                vars=nlfunc.Vars(
-                    v1=v1_var,
-                    v2=v2_var,
-                    ph1=ph1_var,
-                    ph2=ph2_var,
-                    p1=p1_var,
-                    q1=q1_var,
-                    p2=p2_var,
-                    q2=q2_var
-                ),
-                params=nlfunc.Params(
-                    y=y,
-                    ksi=ksi,
-                    g1=g1,
-                    b1=b1,
-                    g2=g2,
-                    b2=b2,
-                    r1=r1,
-                    a1=a1
-                ),
-                eq=0.0,
-            )
+
+            BranchFlowConstraints.add_closed_branch_constraint(a1, b1, b2, g1, g2, ksi, model, p1_var, p2_var, ph1_var, ph2_var, q1_var, q2_var, r1, v1_var, v2_var, y)
         else:
             v2_var = variable_context.t3_middle_v_vars[t3_index]
             ph2_var = variable_context.t3_middle_ph_vars[t3_index]
             p2_var = variable_context.t3_open_side1_branch_p2_vars[leg_index]
             q2_var = variable_context.t3_open_side1_branch_q2_vars[leg_index]
-            model.add_nl_constraint(
-                function_context.o1bf_index,
-                vars=nlfunc.Vars(
-                    v2=v2_var,
-                    ph2=ph2_var,
-                    p2=p2_var,
-                    q2=q2_var
-                ),
-                params=nlfunc.Params(
-                    y=y,
-                    ksi=ksi,
-                    g1=g1,
-                    b1=b1,
-                    g2=g2,
-                    b2=b2,
-                    a1=a1,
-                    r1=r1,
-                ),
-                eq=0.0,
-            )
+            BranchFlowConstraints.add_open_side1_branch_constraint(b1, b2, g1, g2, ksi, model, p2_var, q2_var, v2_var, y)
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, function_context: FunctionContext,
-            model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: ipopt.Model) -> None:
         for t3_num, row in enumerate(network_cache.transformers_3w.itertuples(index=False)):
             t3_index = variable_context.t3_num_2_index[t3_num]
             leg1_r, leg2_r, leg3_r = row.r1_at_current_tap, row.r2_at_current_tap, row.r3_at_current_tap
@@ -107,6 +65,6 @@ class Transformer3wFlowConstraints(Constraints):
                 leg1_index = variable_context.t3_leg1_num_2_index[t3_num]
                 leg2_index = variable_context.t3_leg2_num_2_index[t3_num]
                 leg3_index = variable_context.t3_leg3_num_2_index[t3_num]
-                self._create_leg_constraint(leg1_r, leg1_x, leg1_g, leg1_b, rho1, alpha1, bus1_id, t3_index, leg1_index, parameters, network_cache, variable_context, function_context, model)
-                self._create_leg_constraint(leg2_r, leg2_x, leg2_g, leg2_b, rho2, alpha2, bus2_id, t3_index, leg2_index, parameters, network_cache, variable_context, function_context, model)
-                self._create_leg_constraint(leg3_r, leg3_x, leg3_g, leg3_b, rho3, alpha3, bus3_id, t3_index, leg3_index, parameters, network_cache, variable_context, function_context, model)
+                self._create_leg_constraint(leg1_r, leg1_x, leg1_g, leg1_b, rho1, alpha1, bus1_id, t3_index, leg1_index, parameters, network_cache, variable_context, model)
+                self._create_leg_constraint(leg2_r, leg2_x, leg2_g, leg2_b, rho2, alpha2, bus2_id, t3_index, leg2_index, parameters, network_cache, variable_context, model)
+                self._create_leg_constraint(leg3_r, leg3_x, leg3_g, leg3_b, rho3, alpha3, bus3_id, t3_index, leg3_index, parameters, network_cache, variable_context, model)

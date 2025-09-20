@@ -1,9 +1,9 @@
 from math import hypot, atan2
 
-from pyoptinterface import ipopt, nlfunc
+from pyoptinterface import ipopt
 
+from pypowsybl.opf.impl.constraints.branch_flow_constraints import R2, A2, BranchFlowConstraints
 from pypowsybl.opf.impl.model.constraints import Constraints
-from pypowsybl.opf.impl.model.function_context import FunctionContext
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -11,8 +11,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 class DanglingLineFlowConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, function_context: FunctionContext,
-            model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: ipopt.Model) -> None:
         for dl_num, row in enumerate(network_cache.dangling_lines.itertuples(index=False)):
             r, x, g, b, bus_id = row.r, row.x, row.g, row.b, row.bus_id
             if bus_id:
@@ -35,27 +34,5 @@ class DanglingLineFlowConstraints(Constraints):
                 q1_var = variable_context.dl_branch_q1_vars[dl_index]
                 p2_var = variable_context.dl_branch_p2_vars[dl_index]
                 q2_var = variable_context.dl_branch_q2_vars[dl_index]
-                model.add_nl_constraint(
-                    function_context.cbf_index,
-                    vars=nlfunc.Vars(
-                        v1=v1_var,
-                        v2=v2_var,
-                        ph1=ph1_var,
-                        ph2=ph2_var,
-                        p1=p1_var,
-                        q1=q1_var,
-                        p2=p2_var,
-                        q2=q2_var
-                    ),
-                    params=nlfunc.Params(
-                        y=y,
-                        ksi=ksi,
-                        g1=g1,
-                        b1=b1,
-                        g2=g2,
-                        b2=b2,
-                        r1=r1,
-                        a1=a1
-                    ),
-                    eq=0.0,
-                )
+
+                BranchFlowConstraints.add_closed_branch_constraint(a1, b1, b2, g1, g2, ksi, model, p1_var, p2_var, ph1_var, ph2_var, q1_var, q2_var, r1, v1_var, v2_var, y)

@@ -2,7 +2,6 @@ import pyoptinterface as poi
 from pyoptinterface import ipopt
 
 from pypowsybl.opf.impl.model.constraints import Constraints
-from pypowsybl.opf.impl.model.function_context import FunctionContext
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -11,7 +10,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 class PowerBalanceConstraints(Constraints):
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, function_context: FunctionContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: ipopt.Model) -> None:
         for bus_expr in self.create_bus_expr_list(network_cache, variable_context):
             model.add_linear_constraint(bus_expr, poi.Eq, 0.0)
 

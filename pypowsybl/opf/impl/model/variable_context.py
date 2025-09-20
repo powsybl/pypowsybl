@@ -60,8 +60,8 @@ class VariableContext:
     @staticmethod
     def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
         bus_count = len(network_cache.buses)
-        v_vars = model.add_variables(range(bus_count), name="v")
-        ph_vars = model.add_variables(range(bus_count), name="ph")
+        v_vars = model.add_m_variables(bus_count, name="v")
+        ph_vars = model.add_m_variables(bus_count, name="ph")
 
         gen_count = len(network_cache.generators)
         gen_p_nums = []
@@ -85,8 +85,8 @@ class VariableContext:
         if too_small_q_bounds_generator_ids:
             logger.warning(f"{len(too_small_q_bounds_generator_ids)} generators have too small reactive power bounds")
 
-        gen_p_vars = model.add_variables(range(len(gen_p_nums)), name="gen_p")
-        gen_q_vars = model.add_variables(range(len(gen_q_nums)), name="gen_q")
+        gen_p_vars = model.add_m_variables(len(gen_p_nums), name="gen_p")
+        gen_q_vars = model.add_m_variables(len(gen_q_nums), name="gen_q")
 
         shunt_nums = []
         shunt_count = len(network_cache.shunts)
@@ -95,8 +95,8 @@ class VariableContext:
             if row.bus_id:
                 shunt_num_2_index[shunt_num] = len(shunt_nums)
                 shunt_nums.append(shunt_num)
-        shunt_p_vars = model.add_variables(range(len(shunt_nums)), name="shunt_p")
-        shunt_q_vars = model.add_variables(range(len(shunt_nums)), name="shunt_q")
+        shunt_p_vars = model.add_m_variables(len(shunt_nums), name="shunt_p")
+        shunt_q_vars = model.add_m_variables(len(shunt_nums), name="shunt_q")
 
         svc_nums = []
         svc_count = len(network_cache.static_var_compensators)
@@ -105,7 +105,7 @@ class VariableContext:
             if row.bus_id:
                 svc_num_2_index[svc_num] = len(svc_nums)
                 svc_nums.append(svc_num)
-        svc_q_vars = model.add_variables(range(len(svc_nums)), name="svc_q")
+        svc_q_vars = model.add_m_variables(len(svc_nums), name="svc_q")
 
         vsc_cs_nums = []
         vsc_cs_count = len(network_cache.vsc_converter_stations)
@@ -114,8 +114,8 @@ class VariableContext:
             if row.bus_id:
                 vsc_cs_num_2_index[vsc_cs_num] = len(vsc_cs_nums)
                 vsc_cs_nums.append(vsc_cs_num)
-        vsc_cs_p_vars = model.add_variables(range(len(vsc_cs_nums)), name="vsc_cs_p_vars")
-        vsc_cs_q_vars = model.add_variables(range(len(vsc_cs_nums)), name="vsc_cs_q_vars")
+        vsc_cs_p_vars = model.add_m_variables(len(vsc_cs_nums), name="vsc_cs_p_vars")
+        vsc_cs_q_vars = model.add_m_variables(len(vsc_cs_nums), name="vsc_cs_q_vars")
 
         closed_branch_nums = []
         open_side1_branch_nums = []
@@ -132,14 +132,14 @@ class VariableContext:
             elif row.bus1_id:
                 branch_num_2_index[branch_num] = len(open_side2_branch_nums)
                 open_side2_branch_nums.append(branch_num)
-        closed_branch_p1_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_p1')
-        closed_branch_q1_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_q1')
-        closed_branch_p2_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_p2')
-        closed_branch_q2_vars = model.add_variables(range(len(closed_branch_nums)), name='closed_branch_q2')
-        open_side1_branch_p2_vars = model.add_variables(range(len(open_side1_branch_nums)), name='open_side1_branch_p2')
-        open_side1_branch_q2_vars = model.add_variables(range(len(open_side1_branch_nums)), name='open_side1_branch_q2')
-        open_side2_branch_p1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_p1')
-        open_side2_branch_q1_vars = model.add_variables(range(len(open_side2_branch_nums)), name='open_side2_branch_q1')
+        closed_branch_p1_vars = model.add_m_variables(len(closed_branch_nums), name='closed_branch_p1')
+        closed_branch_q1_vars = model.add_m_variables(len(closed_branch_nums), name='closed_branch_q1')
+        closed_branch_p2_vars = model.add_m_variables(len(closed_branch_nums), name='closed_branch_p2')
+        closed_branch_q2_vars = model.add_m_variables(len(closed_branch_nums), name='closed_branch_q2')
+        open_side1_branch_p2_vars = model.add_m_variables(len(open_side1_branch_nums), name='open_side1_branch_p2')
+        open_side1_branch_q2_vars = model.add_m_variables(len(open_side1_branch_nums), name='open_side1_branch_q2')
+        open_side2_branch_p1_vars = model.add_m_variables(len(open_side2_branch_nums), name='open_side2_branch_p1')
+        open_side2_branch_q1_vars = model.add_m_variables(len(open_side2_branch_nums), name='open_side2_branch_q1')
 
         dl_count = len(network_cache.dangling_lines)
         dl_nums = []
@@ -149,12 +149,12 @@ class VariableContext:
                 dl_num_2_index[dl_num] = len(dl_nums)
                 dl_nums.append(dl_num)
 
-        dl_v_vars = model.add_variables(range(len(dl_nums)), name="dl_v")
-        dl_ph_vars = model.add_variables(range(len(dl_nums)), name="dl_ph")
-        dl_branch_p1_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_p1")
-        dl_branch_p2_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_p2")
-        dl_branch_q1_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_q1")
-        dl_branch_q2_vars = model.add_variables(range(len(dl_nums)), name="dl_branch_q2")
+        dl_v_vars = model.add_m_variables(len(dl_nums), name="dl_v")
+        dl_ph_vars = model.add_m_variables(len(dl_nums), name="dl_ph")
+        dl_branch_p1_vars = model.add_m_variables(len(dl_nums), name="dl_branch_p1")
+        dl_branch_p2_vars = model.add_m_variables(len(dl_nums), name="dl_branch_p2")
+        dl_branch_q1_vars = model.add_m_variables(len(dl_nums), name="dl_branch_q1")
+        dl_branch_q2_vars = model.add_m_variables(len(dl_nums), name="dl_branch_q2")
 
         t3_count = len(network_cache.transformers_3w)
         t3_nums = []
@@ -190,14 +190,14 @@ class VariableContext:
                     t3_leg3_num_2_index[t3_num] = len(t3_open_side2_leg_nums)
                     t3_open_side2_leg_nums.append(t3_num)
 
-        t3_middle_v_vars = model.add_variables(range(len(t3_nums)), name="t3_v")
-        t3_middle_ph_vars = model.add_variables(range(len(t3_nums)), name="t3_ph")
-        t3_closed_branch_p1_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_p1")
-        t3_closed_branch_p2_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_p2")
-        t3_closed_branch_q1_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_q1")
-        t3_closed_branch_q2_vars = model.add_variables(range(len(t3_closed_branch_leg_nums)), name="t3_closed_branch_q2")
-        t3_open_side1_p2_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side1_branch_p2")
-        t3_open_side1_q2_vars = model.add_variables(range(len(t3_open_side2_leg_nums)), name="t3_open_side1_branch_q2")
+        t3_middle_v_vars = model.add_m_variables(len(t3_nums), name="t3_v")
+        t3_middle_ph_vars = model.add_m_variables(len(t3_nums), name="t3_ph")
+        t3_closed_branch_p1_vars = model.add_m_variables(len(t3_closed_branch_leg_nums), name="t3_closed_branch_p1")
+        t3_closed_branch_p2_vars = model.add_m_variables(len(t3_closed_branch_leg_nums), name="t3_closed_branch_p2")
+        t3_closed_branch_q1_vars = model.add_m_variables(len(t3_closed_branch_leg_nums), name="t3_closed_branch_q1")
+        t3_closed_branch_q2_vars = model.add_m_variables(len(t3_closed_branch_leg_nums), name="t3_closed_branch_q2")
+        t3_open_side1_p2_vars = model.add_m_variables(len(t3_open_side2_leg_nums), name="t3_open_side1_branch_p2")
+        t3_open_side1_q2_vars = model.add_m_variables(len(t3_open_side2_leg_nums), name="t3_open_side1_branch_q2")
 
         return VariableContext(v_vars, ph_vars,
                                gen_p_vars, gen_q_vars,
