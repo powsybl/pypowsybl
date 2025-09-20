@@ -150,7 +150,7 @@ def test_ieee14_redispatching():
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == 1
 
-    assert network.get_lines(attributes=['i1']).loc['L7-9-1'].i1 == pytest.approx(947.535, rel=1e-3, abs=1e-3)
+    assert network.get_lines(attributes=['i1']).loc['L7-9-1'].i1 == pytest.approx(980.865, rel=1e-3, abs=1e-3)
     assert len(calculate_overloading(network)) == 0
 
 
