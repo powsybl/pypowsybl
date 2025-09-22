@@ -2028,6 +2028,10 @@ SeriesArray* getNetworkActionResults(const JavaHandle& cracHandle, const JavaHan
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkActionResults, cracHandle, resultHandle));
 }
 
+SeriesArray* getPstRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getPstRangeActionResults, cracHandle, resultHandle));
+}
+
 SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCostResults, cracHandle, resultHandle));
 }

@@ -35,12 +35,14 @@ public final class RaoDataframes {
     private static final String MARGIN = "margin";
     private static final String INITIAL_INSTANT = "initial";
     private static final String SIDE = "side";
+    private static final String REMEDIAL_ACTION_ID = "remedial_action_id";
 
     private static final DataframeMapper<Crac, RaoResult> FLOW_CNEC_RESULT_MAPPER = createFlowCnecResultMapper();
     private static final DataframeMapper<Crac, RaoResult> ANGLE_CNEC_RESULT_MAPPER = createAngleCnecResultMapper();
     private static final DataframeMapper<Crac, RaoResult> VOLTAGE_CNEC_RESULT_MAPPER = createVoltageCnecResultMapper();
     private static final DataframeMapper<Crac, RaoResult> RA_RESULT_MAPPER = createRemedialActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> NETWORK_ACTION_RESULT_MAPPER = createNetworkActionResultMapper();
+    private static final DataframeMapper<Crac, RaoResult> PST_RANGE_ACTION_RESULT_MAPPER = createPstRangeActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> COST_RESULT_MAPPER = createCostResultMapper();
 
     public static DataframeMapper<Crac, RaoResult> flowCnecMapper() {
@@ -63,6 +65,10 @@ public final class RaoDataframes {
         return NETWORK_ACTION_RESULT_MAPPER;
     }
 
+    public static DataframeMapper<Crac, RaoResult> pstRangeActionResultMapper() {
+        return PST_RANGE_ACTION_RESULT_MAPPER;
+    }
+
     public static DataframeMapper<Crac, RaoResult> costResultMapper() {
         return COST_RESULT_MAPPER;
     }
@@ -76,6 +82,8 @@ public final class RaoDataframes {
     public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, String contingency, double optimizedTap, double optimizedSetPoint) { }
 
     public record ActivatedNetworkActionResult(String remedialActionId, Instant instant, String contingency) { }
+
+    public record ActivatedPstRangeActionResult(String remedialActionId, Instant instant, String contingency, int optimizedTap) { }
 
     public record CostResult(Instant instant, double functionalCost, double virtualCost, double cost) { }
 
@@ -203,6 +211,22 @@ public final class RaoDataframes {
         return results;
     }
 
+    private static List<ActivatedPstRangeActionResult> getActivatedPstRangeActions(Crac crac, RaoResult raoResult) {
+        List<ActivatedPstRangeActionResult> results = new ArrayList<>();
+        for (PstRangeAction pstRangeAction : crac.getPstRangeActions()) {
+            for (State state : crac.getStates()) {
+                Optional<Contingency> contingencyOpt = state.getContingency();
+                // Only go through activated remedial actions
+                if (raoResult.isActivatedDuringState(state, pstRangeAction)) {
+                    int optimalTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
+                    ActivatedPstRangeActionResult result = new ActivatedPstRangeActionResult(pstRangeAction.getId(), state.getInstant(), contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "", optimalTap);
+                    results.add(result);
+                }
+            }
+        }
+        return results;
+    }
+
     private static Pair<Double, Double> getOptimizedRangeActionValues(RemedialAction<?> ra, State state, RaoResult raoResult) {
         double optimizedTap = Double.NaN; // Use a double for tap so we can set it to NaN when not relevant
         double optimizedSetPoint = Double.NaN;
@@ -301,7 +325,7 @@ public final class RaoDataframes {
         return new DataframeMapperBuilder<Crac, ActivatedRemedialActionResult, RaoResult>()
             .itemsProvider(RaoDataframes::getActivatedRemedialActions)
             .intsIndex(INDEX, e -> index.getAndIncrement())
-            .strings("remedial_action_id", ActivatedRemedialActionResult::remedialActionId)
+            .strings(REMEDIAL_ACTION_ID, ActivatedRemedialActionResult::remedialActionId)
             .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
             .strings(CONTINGENCY, ActivatedRemedialActionResult::contingency)
             .doubles("optimized_tap", ActivatedRemedialActionResult::optimizedTap)
@@ -314,9 +338,21 @@ public final class RaoDataframes {
         return new DataframeMapperBuilder<Crac, ActivatedNetworkActionResult, RaoResult>()
             .itemsProvider(RaoDataframes::getActivatedNetworkActions)
             .intsIndex(INDEX, e -> index.getAndIncrement())
-            .strings("remedial_action_id", ActivatedNetworkActionResult::remedialActionId)
+            .strings(REMEDIAL_ACTION_ID, ActivatedNetworkActionResult::remedialActionId)
             .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
             .strings(CONTINGENCY, ActivatedNetworkActionResult::contingency)
+            .build();
+    }
+
+    private static DataframeMapper<Crac, RaoResult> createPstRangeActionResultMapper() {
+        AtomicInteger index = new AtomicInteger();
+        return new DataframeMapperBuilder<Crac, ActivatedPstRangeActionResult, RaoResult>()
+            .itemsProvider(RaoDataframes::getActivatedPstRangeActions)
+            .intsIndex(INDEX, e -> index.getAndIncrement())
+            .strings(REMEDIAL_ACTION_ID, ActivatedPstRangeActionResult::remedialActionId)
+            .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
+            .strings(CONTINGENCY, ActivatedPstRangeActionResult::contingency)
+            .ints("optimized_tap", ActivatedPstRangeActionResult::optimizedTap)
             .build();
     }
 

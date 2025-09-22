@@ -110,6 +110,15 @@ For network actions:
     Index(['remedial_action_id', 'optimized_instant', 'contingency'],
           dtype='object')
 
+For PST range actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_network_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'],
+          dtype='object')
+
 Finally cost results can also be retrieved. Generic cost results are available in a dataframe :
 
 .. doctest::
