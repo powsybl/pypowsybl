@@ -244,6 +244,15 @@ public final class RaoCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getNetworkActionResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.networkActionResultMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
     @CEntryPoint(name = "getRaResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {

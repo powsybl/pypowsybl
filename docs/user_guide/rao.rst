@@ -99,6 +99,17 @@ For each remedial action, optimized instant and a contingency (if applicable) th
 For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
 Optimized tap and optimized set point are set to NaN when not applicable (not a range action).
 
+It is possible to get the results of activated remedial actions for a specific type of remedial action only.
+
+For network actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_network_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency'],
+          dtype='object')
+
 Finally cost results can also be retrieved. Generic cost results are available in a dataframe :
 
 .. doctest::

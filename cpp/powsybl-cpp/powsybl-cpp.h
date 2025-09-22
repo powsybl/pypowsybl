@@ -1016,6 +1016,7 @@ SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& 
 SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getNetworkActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
