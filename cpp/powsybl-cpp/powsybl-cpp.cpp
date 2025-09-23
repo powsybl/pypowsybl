@@ -2020,8 +2020,8 @@ SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandl
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecResults, cracHandle, resultHandle));
 }
 
-SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
-    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRaResults, cracHandle, resultHandle));
+SeriesArray* getRemedialActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRemedialActionResults, cracHandle, resultHandle));
 }
 
 SeriesArray* getNetworkActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
