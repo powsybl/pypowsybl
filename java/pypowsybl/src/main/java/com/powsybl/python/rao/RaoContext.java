@@ -11,6 +11,7 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.glsk.api.GlskDocument;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
+import com.powsybl.openrao.commons.OpenRaoException;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.monitoring.Monitoring;
@@ -21,6 +22,11 @@ import com.powsybl.openrao.monitoring.results.RaoResultWithVoltageMonitoring;
 import com.powsybl.openrao.raoapi.Rao;
 import com.powsybl.openrao.raoapi.RaoInput;
 import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * @author Bertrand Rix {@literal <bertrand.rix at artelys.com>}
@@ -50,7 +56,22 @@ public class RaoContext {
         if (glsks != null) {
             inputBuilder.withGlskProvider(glsks.getZonalGlsks(network));
         }
-        return Rao.run(inputBuilder.build(), parameters);
+        RaoResult raoResult = Rao.run(inputBuilder.build(), parameters);
+        // perform round trip on RAO result to always use the same implementation
+        return roundTrip(raoResult);
+    }
+
+    private RaoResult roundTrip(RaoResult raoResult) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        Properties properties = new Properties();
+        properties.setProperty("rao-result.export.json.flows-in-amperes", "true");
+        properties.setProperty("rao-result.export.json.flows-in-megawatts", "true");
+        raoResult.write("JSON", crac, properties, outputStream);
+        try {
+            return RaoResult.read(new ByteArrayInputStream(outputStream.toByteArray()), crac);
+        } catch (IOException e) {
+            throw new OpenRaoException("An error occurred during the round trip on RAO Result.");
+        }
     }
 
     public RaoResultWithVoltageMonitoring runVoltageMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
