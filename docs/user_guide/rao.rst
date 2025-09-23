@@ -105,8 +105,7 @@ For network actions:
 
     >>> ra_results = rao_result.get_network_action_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'contingency'],
-          dtype='object')
+    Index(['remedial_action_id', 'optimized_instant', 'contingency'], dtype='object')
 
 For PST range actions:
 
@@ -114,8 +113,7 @@ For PST range actions:
 
     >>> ra_results = rao_result.get_pst_range_action_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'],
-          dtype='object')
+    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'], dtype='object')
 
 For other non-PST range actions:
 
@@ -123,8 +121,7 @@ For other non-PST range actions:
 
     >>> ra_results = rao_result.get_range_action_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'],
-          dtype='object')
+    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'], dtype='object')
 
 Finally cost results can also be retrieved. Generic cost results are available in a dataframe :
 
