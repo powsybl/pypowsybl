@@ -89,15 +89,43 @@ Remedial action results are also available in a pandas dataframe :
 
 .. doctest::
 
-    >>> ra_results = rao_result.get_ra_results()
+    >>> ra_results = rao_result.get_remedial_action_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'contingency',
-           'optimized_tap', 'optimized_set_point'],
-          dtype='object')
+    Index(['remedial_action_id', 'optimized_instant', 'contingency'], dtype='object')
 
 For each remedial action, optimized instant and a contingency (if applicable) the activation information is available.
 For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
 Optimized tap and optimized set point are set to NaN when not applicable (not a range action).
+
+It is possible to get the results of activated remedial actions for a specific type of remedial action only.
+
+For network actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_network_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency'], dtype='object')
+
+For PST range actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_pst_range_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency',
+           'optimized_tap'],
+          dtype='object')
+
+For other non-PST range actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_range_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency',
+           'optimized_set_point'],
+          dtype='object')
 
 Finally cost results can also be retrieved. Generic cost results are available in a dataframe :
 
