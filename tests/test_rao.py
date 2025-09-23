@@ -209,8 +209,8 @@ def test_rao_cnec_results():
     nl_be_cnec_side1 = nl_be_cnec.loc[nl_be_cnec['side'] == 'ONE'][['cnec_id', 'optimized_instant', 'flow', 'margin']]
     nl_be_cnec_side1 = nl_be_cnec_side1.sort_values(['optimized_instant'], ascending=[True])
     expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'flow', 'margin'],
-                            data=[['NNL2AA1  BBE3AA1  1 - preventive', 'initial', 499.996955, -89.996955],
-                                  ['NNL2AA1  BBE3AA1  1 - preventive', 'preventive', 211.496250, 198.503750]])
+                            data=[['NNL2AA1  BBE3AA1  1 - preventive', 'initial', 500.0, -90.0],
+                                  ['NNL2AA1  BBE3AA1  1 - preventive', 'preventive', 211.5, 198.50]])
     expected = expected.sort_values(['optimized_instant'], ascending=[True])
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), nl_be_cnec_side1.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
@@ -258,10 +258,10 @@ def test_rao_cost_results():
     assert ['functional_cost', 'virtual_cost', 'cost'] == list(cost_results_df.columns)
     expected = pd.DataFrame(index=pd.Series(name='optimized_instant', data=['initial', 'preventive', 'outage', 'curative']),
                             columns=['functional_cost', 'virtual_cost', 'cost'],
-                            data=[[133.304310, 0.0, 133.304310],
-                                  [237.646702, 0.0, 237.646702],
-                                  [237.646702, 0.0, 237.646702],
-                                  [-187.219238, 0.0, -187.219238]])
+                            data=[[133.3, 0.0, 133.3],
+                                  [237.65, 0.0, 237.65],
+                                  [237.65, 0.0, 237.65],
+                                  [-187.22, 0.0, -187.22]])
     pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False, check_like=True)
 
     assert ['sensitivity-failure-cost'] == result.get_virtual_cost_names()
