@@ -244,6 +244,15 @@ public final class RaoCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getRaResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+            return Dataframes.createCDataframe(RaoDataframes.raResultMapper(), crac, new DataframeFilter(), result);
+        });
+    }
+
     @CEntryPoint(name = "getNetworkActionResults")
     public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
@@ -262,12 +271,12 @@ public final class RaoCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getRaResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getRangeActionResults")
+    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRangeActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Crac crac = ObjectHandles.getGlobal().get(cracHandle);
             RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(RaoDataframes.raResultMapper(), crac, new DataframeFilter(), result);
+            return Dataframes.createCDataframe(RaoDataframes.rangeActionResultMapper(), crac, new DataframeFilter(), result);
         });
     }
 

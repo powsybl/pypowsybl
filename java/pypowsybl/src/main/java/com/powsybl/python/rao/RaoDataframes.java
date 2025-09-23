@@ -43,6 +43,7 @@ public final class RaoDataframes {
     private static final DataframeMapper<Crac, RaoResult> RA_RESULT_MAPPER = createRemedialActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> NETWORK_ACTION_RESULT_MAPPER = createNetworkActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> PST_RANGE_ACTION_RESULT_MAPPER = createPstRangeActionResultMapper();
+    private static final DataframeMapper<Crac, RaoResult> RANGE_ACTION_RESULT_MAPPER = createRangeActionResultMapper();
     private static final DataframeMapper<Crac, RaoResult> COST_RESULT_MAPPER = createCostResultMapper();
 
     public static DataframeMapper<Crac, RaoResult> flowCnecMapper() {
@@ -69,6 +70,10 @@ public final class RaoDataframes {
         return PST_RANGE_ACTION_RESULT_MAPPER;
     }
 
+    public static DataframeMapper<Crac, RaoResult> rangeActionResultMapper() {
+        return RANGE_ACTION_RESULT_MAPPER;
+    }
+
     public static DataframeMapper<Crac, RaoResult> costResultMapper() {
         return COST_RESULT_MAPPER;
     }
@@ -84,6 +89,8 @@ public final class RaoDataframes {
     public record ActivatedNetworkActionResult(String remedialActionId, Instant instant, String contingency) { }
 
     public record ActivatedPstRangeActionResult(String remedialActionId, Instant instant, String contingency, int optimizedTap) { }
+
+    public record ActivatedRangeActionResult(String remedialActionId, Instant instant, String contingency, double optimizedSetPoint) { }
 
     public record CostResult(Instant instant, double functionalCost, double virtualCost, double cost) { }
 
@@ -218,9 +225,28 @@ public final class RaoDataframes {
                 Optional<Contingency> contingencyOpt = state.getContingency();
                 // Only go through activated remedial actions
                 if (raoResult.isActivatedDuringState(state, pstRangeAction)) {
-                    int optimalTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
-                    ActivatedPstRangeActionResult result = new ActivatedPstRangeActionResult(pstRangeAction.getId(), state.getInstant(), contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "", optimalTap);
+                    int optimizedTap = raoResult.getOptimizedTapOnState(state, pstRangeAction);
+                    ActivatedPstRangeActionResult result = new ActivatedPstRangeActionResult(pstRangeAction.getId(), state.getInstant(), contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "", optimizedTap);
                     results.add(result);
+                }
+            }
+        }
+        return results;
+    }
+
+    private static List<ActivatedRangeActionResult> getActivatedRangeActions(Crac crac, RaoResult raoResult) {
+        List<ActivatedRangeActionResult> results = new ArrayList<>();
+        for (RangeAction<?> rangeAction : crac.getRangeActions()) {
+            // PST range actions are dealt with separately since they rely on taps instead of set-points
+            if (!(rangeAction instanceof PstRangeAction)) {
+                for (State state : crac.getStates()) {
+                    Optional<Contingency> contingencyOpt = state.getContingency();
+                    // Only go through activated remedial actions
+                    if (raoResult.isActivatedDuringState(state, rangeAction)) {
+                        double optimizedSetPoint = raoResult.getOptimizedSetPointOnState(state, rangeAction);
+                        ActivatedRangeActionResult result = new ActivatedRangeActionResult(rangeAction.getId(), state.getInstant(), contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "", optimizedSetPoint);
+                        results.add(result);
+                    }
                 }
             }
         }
@@ -353,6 +379,18 @@ public final class RaoDataframes {
             .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
             .strings(CONTINGENCY, ActivatedPstRangeActionResult::contingency)
             .ints("optimized_tap", ActivatedPstRangeActionResult::optimizedTap)
+            .build();
+    }
+
+    private static DataframeMapper<Crac, RaoResult> createRangeActionResultMapper() {
+        AtomicInteger index = new AtomicInteger();
+        return new DataframeMapperBuilder<Crac, ActivatedRangeActionResult, RaoResult>()
+            .itemsProvider(RaoDataframes::getActivatedRangeActions)
+            .intsIndex(INDEX, e -> index.getAndIncrement())
+            .strings(REMEDIAL_ACTION_ID, ActivatedRangeActionResult::remedialActionId)
+            .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
+            .strings(CONTINGENCY, ActivatedRangeActionResult::contingency)
+            .doubles("optimized_set_point", ActivatedRangeActionResult::optimizedSetPoint)
             .build();
     }
 

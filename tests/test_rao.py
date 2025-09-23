@@ -283,6 +283,29 @@ def test_rao_pst_range_action_results():
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), pst_range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
+def test_rao_range_action_results():
+    network = pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+
+    result = rao_runner.run(network, parameters)
+
+    # Ra results
+    print(result.get_range_action_results())
+    print(result.get_pst_range_action_results())
+    print(result.get_network_action_results())
+    range_action_results = result.get_range_action_results()
+    range_action_results = range_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
+    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'] == list(range_action_results.columns)
+    expected = pd.DataFrame(
+        columns=['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'],
+        data=[])
+    expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
+
 def test_rao_cost_results():
     network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
     parameters = RaoParameters()
