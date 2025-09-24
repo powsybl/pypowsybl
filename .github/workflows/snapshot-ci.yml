@@ -323,6 +323,11 @@ jobs:
         run: pip3 install -r requirements.txt
         working-directory: ./pypowsybl
 
+      - name: Linter
+        run: |
+          python3 -m black pypowsybl --check
+          python3 -m isort --profile black --check pypowsybl
+
       - name: Build wheel
         run: python3 setup.py bdist_wheel
         working-directory: ./pypowsybl
