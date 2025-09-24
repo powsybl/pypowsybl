@@ -5,9 +5,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from __future__ import (
-    annotations,
-)  # Necessary for type alias like _DataFrame to work with sphinx
+
+# Necessary for type alias like _DataFrame to work with sphinx
+from __future__ import annotations
 
 import datetime
 import io
