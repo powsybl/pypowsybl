@@ -32,7 +32,10 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
             network: the underlying network
             sn:      the base power, in MW
         """
-        warnings.warn("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead", DeprecationWarning)
+        warnings.warn(
+            "Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead",
+            DeprecationWarning,
+        )
         self._network = pickle.loads(pickle.dumps(network))
         self._network.per_unit = True
         self._network.nominal_apparent_power = sn
@@ -198,73 +201,97 @@ class PerUnitView:  # pylint: disable=too-many-public-methods
         """
         return self._network.get_ratio_tap_changers()
 
-    def update_buses(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_buses(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update buses from per-united data.
         """
         self._network.update_buses(df, **kwargs)
 
-    def update_generators(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_generators(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update generators from per-united data.
         """
         self._network.update_generators(df, **kwargs)
 
-    def update_loads(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_loads(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update loads from per-united data.
         """
         self._network.update_loads(df, **kwargs)
 
-    def update_batteries(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_batteries(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update batteries from per-united data.
         """
         self._network.update_batteries(df, **kwargs)
 
-    def update_dangling_lines(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_dangling_lines(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update dangling lines from per-united data.
         """
         self._network.update_dangling_lines(df, **kwargs)
 
-    def update_vsc_converter_stations(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_vsc_converter_stations(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update VSC converter stations from per-united data.
         """
         self._network.update_vsc_converter_stations(df, **kwargs)
 
-    def update_static_var_compensators(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_static_var_compensators(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update static var compensators from per-united data.
         """
         self._network.update_static_var_compensators(df, **kwargs)
 
-    def update_hvdc_lines(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_hvdc_lines(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update HVDC lines from per-united data.
         """
         self._network.update_hvdc_lines(df, **kwargs)
 
-    def update_lines(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_lines(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update lines from per-united data.
         """
         self._network.update_lines(df, **kwargs)
 
-    def update_2_windings_transformers(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_2_windings_transformers(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update 2 windings transformers from per-united data.
         """
         self._network.update_2_windings_transformers(df, **kwargs)
 
-    def update_3_windings_transformers(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_3_windings_transformers(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update 3 windings transformers from per-united data.
         """
         self._network.update_3_windings_transformers(df, **kwargs)
 
-    def update_lcc_converter_station(self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_lcc_converter_station(
+        self, df: Optional[pd.DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
         """
         Update LCC converter stations from per-united data.
         """

@@ -8,9 +8,10 @@ from typing import List
 
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import LoadFlowComponentStatus as ComponentStatus
+
 from .slack_bus_result import SlackBusResult
 
-ComponentStatus.__name__ = 'ComponentStatus'
+ComponentStatus.__name__ = "ComponentStatus"
 ComponentStatus.__module__ = __name__
 
 
@@ -65,13 +66,15 @@ class ComponentResult:
         return self._res.distributed_active_power
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"connected_component_num={self.connected_component_num!r}" \
-               f", synchronous_component_num={self.synchronous_component_num!r}" \
-               f", status={self.status.name}" \
-               f", status_text={self.status_text}" \
-               f", iteration_count={self.iteration_count!r}" \
-               f", reference_bus_id={self.reference_bus_id!r}" \
-               f", slack_bus_results={self.slack_bus_results}" \
-               f", distributed_active_power={self.distributed_active_power!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"connected_component_num={self.connected_component_num!r}"
+            f", synchronous_component_num={self.synchronous_component_num!r}"
+            f", status={self.status.name}"
+            f", status_text={self.status_text}"
+            f", iteration_count={self.iteration_count!r}"
+            f", reference_bus_id={self.reference_bus_id!r}"
+            f", slack_bus_results={self.slack_bus_results}"
+            f", distributed_active_power={self.distributed_active_power!r}"
+            f")"
+        )

@@ -7,12 +7,12 @@
 from typing import Dict, Optional
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode
+from pypowsybl._pypowsybl import InitialVoltageProfileMode, ShortCircuitStudyType
 
 ShortCircuitStudyType.__module__ = __name__
-ShortCircuitStudyType.__name__ = 'ShortCircuitStudyType'
+ShortCircuitStudyType.__name__ = "ShortCircuitStudyType"
 InitialVoltageProfileMode.__module__ = __name__
-InitialVoltageProfileMode.__name__ = 'InitialVoltageProfileMode'
+InitialVoltageProfileMode.__name__ = "InitialVoltageProfileMode"
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -40,15 +40,17 @@ class Parameters:  # pylint: disable=too-few-public-methods
         initial_voltage_profile_mode: specify how the computation is initialized. It can be NOMINAL, CONFIGURED or PREVIOUS_VALUE
     """
 
-    def __init__(self,
-                 with_feeder_result: Optional[bool] = None,
-                 with_limit_violations: Optional[bool] = None,
-                 with_voltage_result: Optional[bool] = None,
-                 min_voltage_drop_proportional_threshold: Optional[float] = None,
-                 study_type: Optional[ShortCircuitStudyType] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None,
-                 with_fortescue_result: Optional[bool] = None,
-                 initial_voltage_profile_mode: Optional[InitialVoltageProfileMode] = None):
+    def __init__(
+        self,
+        with_feeder_result: Optional[bool] = None,
+        with_limit_violations: Optional[bool] = None,
+        with_voltage_result: Optional[bool] = None,
+        min_voltage_drop_proportional_threshold: Optional[float] = None,
+        study_type: Optional[ShortCircuitStudyType] = None,
+        provider_parameters: Optional[Dict[str, str]] = None,
+        with_fortescue_result: Optional[bool] = None,
+        initial_voltage_profile_mode: Optional[InitialVoltageProfileMode] = None,
+    ):
         self._init_with_default_values()
         if with_feeder_result is not None:
             self.with_feeder_result = with_feeder_result
@@ -57,7 +59,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if with_voltage_result is not None:
             self.with_voltage_result = with_voltage_result
         if min_voltage_drop_proportional_threshold is not None:
-            self.min_voltage_drop_proportional_threshold = min_voltage_drop_proportional_threshold
+            self.min_voltage_drop_proportional_threshold = (
+                min_voltage_drop_proportional_threshold
+            )
         if study_type is not None:
             self.study_type = study_type
         if provider_parameters is not None:
@@ -67,14 +71,22 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if initial_voltage_profile_mode is not None:
             self.initial_voltage_profile_mode = initial_voltage_profile_mode
 
-    def _init_from_c(self, c_parameters: _pypowsybl.ShortCircuitAnalysisParameters) -> None:
+    def _init_from_c(
+        self, c_parameters: _pypowsybl.ShortCircuitAnalysisParameters
+    ) -> None:
         self.with_feeder_result = c_parameters.with_feeder_result
         self.with_limit_violations = c_parameters.with_limit_violations
         self.with_voltage_result = c_parameters.with_voltage_result
-        self.min_voltage_drop_proportional_threshold = c_parameters.min_voltage_drop_proportional_threshold
+        self.min_voltage_drop_proportional_threshold = (
+            c_parameters.min_voltage_drop_proportional_threshold
+        )
         self.study_type = c_parameters.study_type
         self.provider_parameters = dict(
-            zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+            zip(
+                c_parameters.provider_parameters_keys,
+                c_parameters.provider_parameters_values,
+            )
+        )
         self.with_fortescue_result = c_parameters.with_fortescue_result
         self.initial_voltage_profile_mode = c_parameters.initial_voltage_profile_mode
 
@@ -95,19 +107,23 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.with_limit_violations = self.with_limit_violations
         c_parameters.study_type = self.study_type
         c_parameters.with_fortescue_result = self.with_fortescue_result
-        c_parameters.min_voltage_drop_proportional_threshold = self.min_voltage_drop_proportional_threshold
+        c_parameters.min_voltage_drop_proportional_threshold = (
+            self.min_voltage_drop_proportional_threshold
+        )
         c_parameters.initial_voltage_profile_mode = self.initial_voltage_profile_mode
         c_parameters.provider_parameters_keys = []
         c_parameters.provider_parameters_values = []
         return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"with_feeder_result={self.with_feeder_result!r}" \
-               f", with_limit_violations={self.with_limit_violations!r}" \
-               f", with_voltage_result={self.with_voltage_result!r}" \
-               f", min_voltage_drop_proportional_threshold={self.min_voltage_drop_proportional_threshold!r}" \
-               f", study_type={self.study_type!r}" \
-               f", with_fortescue_result={self.with_fortescue_result!r}" \
-               f", initial_voltage_profile_mode={self.initial_voltage_profile_mode!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"with_feeder_result={self.with_feeder_result!r}"
+            f", with_limit_violations={self.with_limit_violations!r}"
+            f", with_voltage_result={self.with_voltage_result!r}"
+            f", min_voltage_drop_proportional_threshold={self.min_voltage_drop_proportional_threshold!r}"
+            f", study_type={self.study_type!r}"
+            f", with_fortescue_result={self.with_fortescue_result!r}"
+            f", initial_voltage_profile_mode={self.initial_voltage_profile_mode!r}"
+            f")"
+        )

@@ -8,13 +8,15 @@
 import warnings
 
 import pypowsybl._pypowsybl as _pp  # pylint: disable=protected-access
-
 from pypowsybl.report import ReportNode
 
-DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
+DEPRECATED_REPORTER_WARNING = (
+    "Use of deprecated attribute reporter. Use report_node instead."
+)
+
 
 class Reporter(ReportNode):  # pylint: disable=too-few-public-methods
-    def __init__(self, task_key: str = '', default_name: str = ''):
+    def __init__(self, task_key: str = "", default_name: str = ""):
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         ReportNode.__init__(self, task_key, default_name)
 

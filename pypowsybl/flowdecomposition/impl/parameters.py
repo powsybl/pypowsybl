@@ -9,6 +9,7 @@ from typing import Optional
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import RescaleMode
 
+
 class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a flowdecomposition execution.
@@ -36,16 +37,19 @@ class Parameters:  # pylint: disable=too-few-public-methods
             This will reduce memory footprint of flow decomposition but increase computation time.
             If setting a too high value, a max integer error may be thrown.
     """
+
     DISABLE_LOSSES_COMPENSATION_EPSILON = -1
     DISABLE_SENSITIVITY_EPSILON = -1
 
-    def __init__(self,
-                 enable_losses_compensation: Optional[bool] = None,
-                 losses_compensation_epsilon: Optional[float] = None,
-                 sensitivity_epsilon: Optional[float] = None,
-                 rescale_mode: Optional[RescaleMode] = None,
-                 dc_fallback_enabled_after_ac_divergence: Optional[bool] = None,
-                 sensitivity_variable_batch_size: Optional[int] = None):
+    def __init__(
+        self,
+        enable_losses_compensation: Optional[bool] = None,
+        losses_compensation_epsilon: Optional[float] = None,
+        sensitivity_epsilon: Optional[float] = None,
+        rescale_mode: Optional[RescaleMode] = None,
+        dc_fallback_enabled_after_ac_divergence: Optional[bool] = None,
+        sensitivity_variable_batch_size: Optional[int] = None,
+    ):
 
         self._init_with_default_values()
         if enable_losses_compensation is not None:
@@ -57,18 +61,26 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if rescale_mode is not None:
             self.rescale_mode = rescale_mode
         if dc_fallback_enabled_after_ac_divergence is not None:
-            self.dc_fallback_enabled_after_ac_divergence = dc_fallback_enabled_after_ac_divergence
+            self.dc_fallback_enabled_after_ac_divergence = (
+                dc_fallback_enabled_after_ac_divergence
+            )
         if sensitivity_variable_batch_size is not None:
             self.sensitivity_variable_batch_size = sensitivity_variable_batch_size
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.FlowDecompositionParameters()
         self.enable_losses_compensation = default_parameters.enable_losses_compensation
-        self.losses_compensation_epsilon = default_parameters.losses_compensation_epsilon
+        self.losses_compensation_epsilon = (
+            default_parameters.losses_compensation_epsilon
+        )
         self.sensitivity_epsilon = default_parameters.sensitivity_epsilon
         self.rescale_mode = default_parameters.rescale_mode
-        self.dc_fallback_enabled_after_ac_divergence = default_parameters.dc_fallback_enabled_after_ac_divergence
-        self.sensitivity_variable_batch_size = default_parameters.sensitivity_variable_batch_size
+        self.dc_fallback_enabled_after_ac_divergence = (
+            default_parameters.dc_fallback_enabled_after_ac_divergence
+        )
+        self.sensitivity_variable_batch_size = (
+            default_parameters.sensitivity_variable_batch_size
+        )
 
     def _to_c_parameters(self) -> _pypowsybl.FlowDecompositionParameters:
         c_parameters = _pypowsybl.FlowDecompositionParameters()
@@ -76,16 +88,22 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.losses_compensation_epsilon = self.losses_compensation_epsilon
         c_parameters.sensitivity_epsilon = self.sensitivity_epsilon
         c_parameters.rescale_mode = self.rescale_mode
-        c_parameters.dc_fallback_enabled_after_ac_divergence = self.dc_fallback_enabled_after_ac_divergence
-        c_parameters.sensitivity_variable_batch_size = self.sensitivity_variable_batch_size
+        c_parameters.dc_fallback_enabled_after_ac_divergence = (
+            self.dc_fallback_enabled_after_ac_divergence
+        )
+        c_parameters.sensitivity_variable_batch_size = (
+            self.sensitivity_variable_batch_size
+        )
         return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"enable_losses_compensation={self.enable_losses_compensation!r}" \
-               f", losses_compensation_epsilon={self.losses_compensation_epsilon!r}" \
-               f", sensitivity_epsilon={self.sensitivity_epsilon!r}" \
-               f", rescale_mode={self.rescale_mode!r}" \
-               f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}" \
-               f", sensitivity_variable_batch_size={self.sensitivity_variable_batch_size}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"enable_losses_compensation={self.enable_losses_compensation!r}"
+            f", losses_compensation_epsilon={self.losses_compensation_epsilon!r}"
+            f", sensitivity_epsilon={self.sensitivity_epsilon!r}"
+            f", rescale_mode={self.rescale_mode!r}"
+            f", dc_fallback_enabled_after_ac_divergence={self.dc_fallback_enabled_after_ac_divergence}"
+            f", sensitivity_variable_batch_size={self.sensitivity_variable_batch_size}"
+            f")"
+        )

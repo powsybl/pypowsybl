@@ -1,12 +1,14 @@
 from typing import Optional
 
-from pypowsybl._pypowsybl import (
-    RaoParameters
-)
+from pypowsybl._pypowsybl import RaoParameters
+
 
 class MultithreadingParameters:
-    def __init__(self, available_cpus: Optional[int] = None,
-                 rao_parameters: Optional[RaoParameters] = None) -> None:
+    def __init__(
+        self,
+        available_cpus: Optional[int] = None,
+        rao_parameters: Optional[RaoParameters] = None,
+    ) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:
@@ -21,6 +23,6 @@ class MultithreadingParameters:
         self.available_cpus = c_parameters.available_cpus
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"available_cpus={self.available_cpus!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}(" f"available_cpus={self.available_cpus!r}" f")"
+        )

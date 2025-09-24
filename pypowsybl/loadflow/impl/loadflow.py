@@ -8,23 +8,26 @@ import asyncio
 import warnings
 from asyncio import Future
 from typing import List, Optional
+
 from pandas import DataFrame
+
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
-    ConnectedComponentMode,
     BalanceType,
-    VoltageInitMode,
+    ConnectedComponentMode,
     LoadFlowValidationParameters,
-    run_loadflow_validation
+    VoltageInitMode,
+    run_loadflow_validation,
 )
 from pypowsybl.network import Network
-from pypowsybl.utils import create_data_frame_from_series_array
 from pypowsybl.report import ReportNode
+from pypowsybl.utils import create_data_frame_from_series_array
+
 from .component_result import ComponentResult
 from .loadflow_results_future_wrapper import LoadFlowResultsFutureWrapper
 from .parameters import Parameters
-from .validation_result import ValidationResult
 from .validation_parameters import ValidationParameters, ValidationType
+from .validation_result import ValidationResult
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -34,9 +37,13 @@ BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
 
 
-def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
-           report_node: Optional[ReportNode] = None) -> \
-        List[ComponentResult]:  # pylint: disable=protected-access
+def run_ac(
+    network: Network,
+    parameters: Optional[Parameters] = None,
+    provider: str = "",
+    reporter: Optional[ReportNode] = None,
+    report_node: Optional[ReportNode] = None,
+) -> List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run an AC load flow on a network.
 
@@ -51,15 +58,35 @@ def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: 
         A list of component results, one for each component of the network.
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated attribute reporter. Use report_node instead.",
+            DeprecationWarning,
+        )
         report_node = reporter
-    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
-    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
-                                                                    None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
+    p = (
+        parameters._to_c_parameters()
+        if parameters is not None
+        else _pypowsybl.LoadFlowParameters()
+    )  # pylint: disable=protected-access
+    return [
+        ComponentResult(res)
+        for res in _pypowsybl.run_loadflow(
+            network._handle,
+            False,
+            p,
+            provider,
+            None if report_node is None else report_node._report_node,
+        )
+    ]  # pylint: disable=protected-access
 
 
-def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Optional[Parameters] = None, provider: str = '',
-                 report_node: Optional[ReportNode] = None) -> Future:  # pylint: disable=protected-access
+def run_ac_async(
+    network: Network,
+    variant_id: str = "InitialState",
+    parameters: Optional[Parameters] = None,
+    provider: str = "",
+    report_node: Optional[ReportNode] = None,
+) -> Future:  # pylint: disable=protected-access
     """
     Run an AC load flow on a network asynchronously.
 
@@ -73,21 +100,34 @@ def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters:
     Returns:
         A future list of component results, one for each component of the network.
     """
-    c_parameters = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    c_parameters = (
+        parameters._to_c_parameters()
+        if parameters is not None
+        else _pypowsybl.LoadFlowParameters()
+    )  # pylint: disable=protected-access
     loop = asyncio.get_running_loop()
     results_future = loop.create_future()
-    _pypowsybl.run_loadflow_async(network._handle,
-                                  variant_id,
-                                  False,
-                                  c_parameters,
-                                  provider,
-                                  None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
-                                  LoadFlowResultsFutureWrapper(loop, results_future))
+    _pypowsybl.run_loadflow_async(
+        network._handle,
+        variant_id,
+        False,
+        c_parameters,
+        provider,
+        (
+            None if report_node is None else report_node._report_node
+        ),  # pylint: disable=protected-access
+        LoadFlowResultsFutureWrapper(loop, results_future),
+    )
     return results_future
 
 
-def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
-           report_node: Optional[ReportNode] = None) -> List[ComponentResult]:  # pylint: disable=protected-access
+def run_dc(
+    network: Network,
+    parameters: Optional[Parameters] = None,
+    provider: str = "",
+    reporter: Optional[ReportNode] = None,
+    report_node: Optional[ReportNode] = None,
+) -> List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run a DC load flow on a network.
 
@@ -102,11 +142,26 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
         A list of component results, one for each component of the network.
     """
     if reporter is not None:
-        warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+        warnings.warn(
+            "Use of deprecated attribute reporter. Use report_node instead.",
+            DeprecationWarning,
+        )
         report_node = reporter
-    p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
-    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, True, p, provider,
-                                                                    None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
+    p = (
+        parameters._to_c_parameters()
+        if parameters is not None
+        else _pypowsybl.LoadFlowParameters()
+    )  # pylint: disable=protected-access
+    return [
+        ComponentResult(res)
+        for res in _pypowsybl.run_loadflow(
+            network._handle,
+            True,
+            p,
+            provider,
+            None if report_node is None else report_node._report_node,
+        )
+    ]  # pylint: disable=protected-access
 
 
 def set_default_provider(provider: str) -> None:
@@ -139,7 +194,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_loadflow_provider_names()
 
 
-def get_provider_parameters_names(provider:  Optional[str] = None) -> List[str]:
+def get_provider_parameters_names(provider: Optional[str] = None) -> List[str]:
     """
     Get list of parameters for the specified loadflow provider.
 
@@ -149,10 +204,12 @@ def get_provider_parameters_names(provider:  Optional[str] = None) -> List[str]:
     Returns:
         the list of provider's parameters
     """
-    return _pypowsybl.get_loadflow_provider_parameters_names('' if provider is None else provider)
+    return _pypowsybl.get_loadflow_provider_parameters_names(
+        "" if provider is None else provider
+    )
 
 
-def get_provider_parameters(provider:  Optional[str] = None) -> DataFrame:
+def get_provider_parameters(provider: Optional[str] = None) -> DataFrame:
     """
     Supported loadflow specific parameters for a given provider.
 
@@ -177,12 +234,17 @@ def get_provider_parameters(provider:  Optional[str] = None) -> DataFrame:
            >>> parameters['possible_values']['slackBusSelectionMode']
            '[FIRST, MOST_MESHED, NAME, LARGEST_GENERATOR]'
     """
-    series_array = _pypowsybl.create_loadflow_provider_parameters_series_array('' if provider is None else provider)
+    series_array = _pypowsybl.create_loadflow_provider_parameters_series_array(
+        "" if provider is None else provider
+    )
     return create_data_frame_from_series_array(series_array)
 
 
-def run_validation(network: Network, validation_types: Optional[List[ValidationType]] = None,
-                   validation_parameters: Optional[ValidationParameters] = None) -> ValidationResult:
+def run_validation(
+    network: Network,
+    validation_types: Optional[List[ValidationType]] = None,
+    validation_parameters: Optional[ValidationParameters] = None,
+) -> ValidationResult:
     """
     Checks that the network data are consistent with AC loadflow equations.
 
@@ -196,16 +258,24 @@ def run_validation(network: Network, validation_types: Optional[List[ValidationT
     """
     if validation_types is None:
         validation_types = ValidationType.ALL
-    validation_config = validation_parameters.to_c_parameters() if validation_parameters is not None else LoadFlowValidationParameters()
+    validation_config = (
+        validation_parameters.to_c_parameters()
+        if validation_parameters is not None
+        else LoadFlowValidationParameters()
+    )
     res_by_type = {}
     for validation_type in validation_types:
-        series_array = run_loadflow_validation(network._handle, validation_type, validation_config)
+        series_array = run_loadflow_validation(
+            network._handle, validation_type, validation_config
+        )
         res_by_type[validation_type] = create_data_frame_from_series_array(series_array)
 
-    return ValidationResult(buses=res_by_type.get(ValidationType.BUSES, None),
-                            branch_flows=res_by_type.get(ValidationType.FLOWS, None),
-                            generators=res_by_type.get(ValidationType.GENERATORS, None),
-                            svcs=res_by_type.get(ValidationType.SVCS, None),
-                            shunts=res_by_type.get(ValidationType.SHUNTS, None),
-                            twts=res_by_type.get(ValidationType.TWTS, None),
-                            t3wts=res_by_type.get(ValidationType.TWTS3W, None))
+    return ValidationResult(
+        buses=res_by_type.get(ValidationType.BUSES, None),
+        branch_flows=res_by_type.get(ValidationType.FLOWS, None),
+        generators=res_by_type.get(ValidationType.GENERATORS, None),
+        svcs=res_by_type.get(ValidationType.SVCS, None),
+        shunts=res_by_type.get(ValidationType.SHUNTS, None),
+        twts=res_by_type.get(ValidationType.TWTS, None),
+        t3wts=res_by_type.get(ValidationType.TWTS3W, None),
+    )

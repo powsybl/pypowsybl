@@ -11,10 +11,20 @@ class SldParameters:
     """
     This class represents sld parameters for a single line diagram svg generation."""
 
-    def __init__(self, use_name: bool = False, center_name: bool = False, diagonal_label: bool = False,
-                 nodes_infos: bool = False, tooltip_enabled: bool = False, topological_coloring: bool = True,
-                 component_library: str = 'Convergence', display_current_feeder_info: bool = False,
-                 active_power_unit: str = "", reactive_power_unit: str = "", current_unit: str = ""):
+    def __init__(
+        self,
+        use_name: bool = False,
+        center_name: bool = False,
+        diagonal_label: bool = False,
+        nodes_infos: bool = False,
+        tooltip_enabled: bool = False,
+        topological_coloring: bool = True,
+        component_library: str = "Convergence",
+        display_current_feeder_info: bool = False,
+        active_power_unit: str = "",
+        reactive_power_unit: str = "",
+        current_unit: str = "",
+    ):
         self._use_name = use_name
         self._center_name = center_name
         self._diagonal_label = diagonal_label

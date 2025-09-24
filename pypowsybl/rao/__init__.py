@@ -4,16 +4,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from .impl.parameters import (
+    LoadFlowAndSensitivityParameters,
+    MultithreadingParameters,
+    NotOptimizedCnecsParameters,
+    ObjectiveFunctionParameters,
+    Parameters,
+    RangeActionOptimizationParameters,
+    SecondPreventiveRaoParameters,
+    TopoOptimizationParameters,
+)
 from .impl.rao import Rao
 from .impl.rao_result import RaoResult
-from .impl.parameters import Parameters
-from .impl.parameters import ObjectiveFunctionParameters
-from .impl.parameters import RangeActionOptimizationParameters
-from .impl.parameters import TopoOptimizationParameters
-from .impl.parameters import MultithreadingParameters
-from .impl.parameters import SecondPreventiveRaoParameters
-from .impl.parameters import NotOptimizedCnecsParameters
-from .impl.parameters import LoadFlowAndSensitivityParameters
-from .impl.util import (
-  create_rao
-)
+from .impl.util import create_rao

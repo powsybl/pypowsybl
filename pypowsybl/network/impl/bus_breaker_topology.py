@@ -6,6 +6,7 @@
 #
 import networkx as nx
 from pandas import DataFrame
+
 import pypowsybl._pypowsybl as _pp
 from pypowsybl.utils import create_data_frame_from_series_array
 
@@ -22,11 +23,14 @@ class BusBreakerTopology:
 
     def __init__(self, network_handle: _pp.JavaHandle, voltage_level_id: str):
         self._elements = create_data_frame_from_series_array(
-            _pp.get_bus_breaker_view_elements(network_handle, voltage_level_id))
+            _pp.get_bus_breaker_view_elements(network_handle, voltage_level_id)
+        )
         self._switchs = create_data_frame_from_series_array(
-            _pp.get_bus_breaker_view_switches(network_handle, voltage_level_id))
+            _pp.get_bus_breaker_view_switches(network_handle, voltage_level_id)
+        )
         self._buses = create_data_frame_from_series_array(
-            _pp.get_bus_breaker_view_buses(network_handle, voltage_level_id))
+            _pp.get_bus_breaker_view_buses(network_handle, voltage_level_id)
+        )
 
     @property
     def switches(self) -> DataFrame:
@@ -80,5 +84,5 @@ class BusBreakerTopology:
         """
         graph = nx.Graph()
         graph.add_nodes_from(self._buses.index.tolist())
-        graph.add_edges_from(self._switchs[['bus1_id', 'bus2_id']].values.tolist())
+        graph.add_edges_from(self._switchs[["bus1_id", "bus2_id"]].values.tolist())
         return graph

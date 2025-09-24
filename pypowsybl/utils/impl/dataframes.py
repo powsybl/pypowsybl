@@ -11,11 +11,16 @@ Provides utility methods for dataframes handling:
  - creation of C API dataframes
  - ...
 """
-from typing import List, Dict as _Dict, Optional
-from typing import Optional as _Optional, Any as _Any
-from pandas import DataFrame, Index, MultiIndex
+from typing import Any as _Any
+from typing import Dict as _Dict
+from typing import List
+from typing import Optional
+from typing import Optional as _Optional
+
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
+from pandas import DataFrame, Index, MultiIndex
+
 import pypowsybl._pypowsybl as _pp
 
 
@@ -27,8 +32,10 @@ def _to_array(value: _Any) -> np.ndarray:
     if as_array.ndim == 0:
         as_array = np.expand_dims(as_array, axis=0)
     if as_array.ndim != 1:
-        raise ValueError(f'Network elements update: expecting only scalar or 1 dimension array '
-                         f'as keyword argument, got {as_array.ndim} dimensions')
+        raise ValueError(
+            f"Network elements update: expecting only scalar or 1 dimension array "
+            f"as keyword argument, got {as_array.ndim} dimensions"
+        )
     return as_array
 
 
@@ -47,34 +54,44 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFra
             if expected_size is None:
                 expected_size = size
             elif size != expected_size:
-                raise ValueError(f'Network elements update: all arguments must have the same size, '
-                                 f'got size {size} for series {key}, expected {expected_size}')
+                raise ValueError(
+                    f"Network elements update: all arguments must have the same size, "
+                    f"got size {size} for series {key}, expected {expected_size}"
+                )
             columns[key] = col
 
     index = None
     if len(index_columns) == 1:
         index_name = index_columns[0]
         if not index_name in columns:
-            raise ValueError('No data provided for index: ' + index_name)
+            raise ValueError("No data provided for index: " + index_name)
         index = Index(name=index_name, data=columns[index_name])
     elif len(index_columns) > 1:
-        index = MultiIndex.from_arrays(names=index_columns, arrays=[columns[name] for name in index_columns])
+        index = MultiIndex.from_arrays(
+            names=index_columns, arrays=[columns[name] for name in index_columns]
+        )
     data = dict((k, v) for k, v in columns.items() if k not in index_columns)
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: Optional[DataFrame] = None, **kwargs: _Any) -> DataFrame:
+def _adapt_df_or_kwargs(
+    metadata: List[_pp.SeriesMetadata], df: Optional[DataFrame] = None, **kwargs: _Any
+) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
     if df is None:
         return _adapt_kwargs(metadata, **kwargs)
     if kwargs:
-        raise RuntimeError('You must provide data in only one form: dataframe or named arguments')
+        raise RuntimeError(
+            "You must provide data in only one form: dataframe or named arguments"
+        )
     return df
 
 
-def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]) -> _pp.Dataframe:
+def _create_c_dataframe(
+    df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
+) -> _pp.Dataframe:
     """
     Creates the C representation of a dataframe.
     """
@@ -98,7 +115,7 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
     columns_names.extend(df.columns.values)
     for series_name in df.columns.values:
         if series_name not in metadata_by_name:
-            raise ValueError(f'No column named {series_name}')
+            raise ValueError(f"No column named {series_name}")
         series = df[series_name]
         series_type = metadata_by_name[series_name].type
         columns_types.append(series_type)
@@ -111,11 +128,15 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
 
-def _find_index_in_metadata(series_metadata: List[_pp.SeriesMetadata]) -> _pp.SeriesMetadata:
+def _find_index_in_metadata(
+    series_metadata: List[_pp.SeriesMetadata],
+) -> _pp.SeriesMetadata:
     return [s for s in series_metadata if s.is_index][0]
 
 
-def _add_index_to_kwargs(series_metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> _Dict:
+def _add_index_to_kwargs(
+    series_metadata: List[_pp.SeriesMetadata], **kwargs: _Any
+) -> _Dict:
     """autofill kwargs with a default index (like pandas would do)
 
     Args:
@@ -135,7 +156,7 @@ def _add_index_to_kwargs(series_metadata: List[_pp.SeriesMetadata], **kwargs: _A
 
 def _create_properties_c_dataframe(df: DataFrame) -> _pp.Dataframe:
     """
-       Creates the C representation of a dataframe of properties.
+    Creates the C representation of a dataframe of properties.
     """
     is_index = []
     columns_names = []
@@ -168,19 +189,24 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
         if expected_size is None:
             expected_size = size
         elif size != expected_size:
-            raise ValueError(f'properties creation/update: all arguments must have the same size, '
-                             f'got size {size} for series {key}, expected {expected_size}')
+            raise ValueError(
+                f"properties creation/update: all arguments must have the same size, "
+                f"got size {size} for series {key}, expected {expected_size}"
+            )
         columns[key] = col
-    index_name = 'id'
+    index_name = "id"
     if index_name not in columns:
-        raise ValueError('No data provided for index: ' + index_name)
+        raise ValueError("No data provided for index: " + index_name)
     index = Index(name=index_name, data=columns[index_name])
-    data = dict((k, v) for k, v in columns.items() if k != 'id')
+    data = dict((k, v) for k, v in columns.items() if k != "id")
     return DataFrame(index=index, data=data)
 
 
-def _get_c_dataframes(dfs: List[_Optional[DataFrame]], metadata: List[List[_pp.SeriesMetadata]],
-                      **kwargs: _ArrayLike) -> List[_Optional[_pp.Dataframe]]:
+def _get_c_dataframes(
+    dfs: List[_Optional[DataFrame]],
+    metadata: List[List[_pp.SeriesMetadata]],
+    **kwargs: _ArrayLike,
+) -> List[_Optional[_pp.Dataframe]]:
     c_dfs: List[_Optional[_pp.Dataframe]] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     for i, df in enumerate(dfs):

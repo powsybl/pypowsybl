@@ -1,18 +1,19 @@
 from typing import Optional
 
-from pypowsybl._pypowsybl import (
-    RaoParameters
-)
-from pypowsybl.sensitivity import Parameters as SensitivityParameters
+from pypowsybl._pypowsybl import RaoParameters
 from pypowsybl.loadflow.impl.util import parameters_from_c
+from pypowsybl.sensitivity import Parameters as SensitivityParameters
 
 
 class LoadFlowAndSensitivityParameters:
-    def __init__(self, load_flow_provider:  Optional[str] = None,
-                 sensitivity_provider:  Optional[str] = None,
-                 sensitivity_parameters: Optional[SensitivityParameters] = None,
-                 sensitivity_failure_overcost: Optional[float] = None,
-                 rao_parameters: Optional[RaoParameters] = None) -> None:
+    def __init__(
+        self,
+        load_flow_provider: Optional[str] = None,
+        sensitivity_provider: Optional[str] = None,
+        sensitivity_parameters: Optional[SensitivityParameters] = None,
+        sensitivity_failure_overcost: Optional[float] = None,
+        rao_parameters: Optional[RaoParameters] = None,
+    ) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:
@@ -33,13 +34,22 @@ class LoadFlowAndSensitivityParameters:
         self.load_flow_provider = c_parameters.load_flow_provider
         self.sensitivity_provider = c_parameters.sensitivity_provider
         self.sensitivity_failure_overcost = c_parameters.sensitivity_failure_overcost
-        sensitivity_provider_params = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
-        self.sensitivity_parameters = SensitivityParameters(parameters_from_c(c_parameters.sensitivity_parameters.loadflow_parameters),
-                                                            sensitivity_provider_params)
+        sensitivity_provider_params = dict(
+            zip(
+                c_parameters.provider_parameters_keys,
+                c_parameters.provider_parameters_values,
+            )
+        )
+        self.sensitivity_parameters = SensitivityParameters(
+            parameters_from_c(c_parameters.sensitivity_parameters.loadflow_parameters),
+            sensitivity_provider_params,
+        )
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"load_flow_provider={self.load_flow_provider!r}" \
-               f", sensitivity_provider={self.sensitivity_provider!r}" \
-               f", sensitivity_failure_overcost={self.sensitivity_failure_overcost!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"load_flow_provider={self.load_flow_provider!r}"
+            f", sensitivity_provider={self.sensitivity_provider!r}"
+            f", sensitivity_failure_overcost={self.sensitivity_failure_overcost!r}"
+            f")"
+        )

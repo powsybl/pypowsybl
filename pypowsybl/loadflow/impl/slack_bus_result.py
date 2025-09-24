@@ -27,7 +27,9 @@ class SlackBusResult:
         return self._res.active_power_mismatch
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"id={self.id!r}" \
-               f", active_power_mismatch={self.active_power_mismatch!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"id={self.id!r}"
+            f", active_power_mismatch={self.active_power_mismatch!r}"
+            f")"
+        )

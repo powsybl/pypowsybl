@@ -6,8 +6,11 @@
 #
 import warnings
 from typing import Dict, List, Optional
+
 import pandas as pd
+
 from pypowsybl import _pypowsybl
+
 from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
 from .sensitivity_analysis_result import DEFAULT_MATRIX_ID
 
@@ -20,14 +23,19 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
     of requested factors, on the base case and on post contingency states.
     """
 
-    def __init__(self,
-                 result_context_ptr: _pypowsybl.JavaHandle,
-                 functions_ids: Dict[str, List[str]],
-                 function_data_frame_index: Dict[str, List[str]]):
-        DcSensitivityAnalysisResult.__init__(self, result_context_ptr, functions_ids, function_data_frame_index)
+    def __init__(
+        self,
+        result_context_ptr: _pypowsybl.JavaHandle,
+        functions_ids: Dict[str, List[str]],
+        function_data_frame_index: Dict[str, List[str]],
+    ):
+        DcSensitivityAnalysisResult.__init__(
+            self, result_context_ptr, functions_ids, function_data_frame_index
+        )
 
-    def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> \
-    Optional[pd.DataFrame]:
+    def get_bus_voltages_sensitivity_matrix(
+        self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: Optional[str] = None
+    ) -> Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
           Use :meth:`get_sensitivity_matrix` instead.
@@ -39,12 +47,15 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the matrix of sensitivities
         """
-        warnings.warn("get_bus_voltages_sensitivity_matrix is deprecated, use get_sensitivity_matrix instead",
-                      DeprecationWarning)
+        warnings.warn(
+            "get_bus_voltages_sensitivity_matrix is deprecated, use get_sensitivity_matrix instead",
+            DeprecationWarning,
+        )
         return self.get_sensitivity_matrix(matrix_id, contingency_id)
 
-    def get_reference_voltages(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
-        pd.DataFrame]:
+    def get_reference_voltages(
+        self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: Optional[str] = None
+    ) -> Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
           Use :meth:`get_reference_matrix` instead.
@@ -57,6 +68,10 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
         Returns:
             the values of bus voltages
         """
-        warnings.warn("get_reference_voltages is deprecated, use get_reference_matrix instead",
-                      DeprecationWarning)
-        return self.get_reference_matrix(matrix_id, contingency_id, 'reference_voltages')
+        warnings.warn(
+            "get_reference_voltages is deprecated, use get_reference_matrix instead",
+            DeprecationWarning,
+        )
+        return self.get_reference_matrix(
+            matrix_id, contingency_id, "reference_voltages"
+        )

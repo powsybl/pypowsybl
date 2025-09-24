@@ -11,7 +11,7 @@ class Svg:
     """
     This class represents a single line diagram."""
 
-    def __init__(self, content: str, metadata:  Optional[str] = None):
+    def __init__(self, content: str, metadata: Optional[str] = None):
         self._content = content
         self._metadata = metadata
 

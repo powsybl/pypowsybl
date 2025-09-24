@@ -5,12 +5,14 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import List
+
 from pypowsybl import _pypowsybl
+
 from .short_circuit_analysis import ShortCircuitAnalysis
 
 
 def create_analysis() -> ShortCircuitAnalysis:
-    """ Creates a short-circuit analysis object, which can be used to run a short-circuit analysis on a network
+    """Creates a short-circuit analysis object, which can be used to run a short-circuit analysis on a network
 
     Examples:
         .. code-block::
@@ -55,7 +57,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_shortcircuit_provider_names()
 
 
-def get_provider_parameters_names(provider: str = '') -> List[str]:
+def get_provider_parameters_names(provider: str = "") -> List[str]:
     """
     Get list of parameters for the specified short-circuit analysis provider.
 

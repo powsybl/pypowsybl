@@ -6,15 +6,19 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from os import PathLike
-from typing import Union, Any
-import pandas as pd
+from typing import Any, Union
+
 import numpy as np
+import pandas as pd
+
 from pypowsybl import _pypowsybl
 
 PathOrStr = Union[str, PathLike]
 
 
-def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> pd.DataFrame:
+def create_data_frame_from_series_array(
+    series_array: _pypowsybl.SeriesArray,
+) -> pd.DataFrame:
     series_dict: dict[str, Any] = {}
     index_data = []
     index_names = []
@@ -28,7 +32,7 @@ def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) ->
             else:
                 series_dict[series.name] = series.data
     if not index_names:
-        raise ValueError('No index in returned dataframe')
+        raise ValueError("No index in returned dataframe")
     if len(index_names) == 1:
         index = pd.Index(index_data[0], name=index_names[0])
     else:

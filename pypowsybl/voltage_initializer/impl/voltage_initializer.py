@@ -6,12 +6,14 @@
 
 from pypowsybl._pypowsybl import run_voltage_initializer
 from pypowsybl.network import Network
+
 from .voltage_initializer_parameters import VoltageInitializerParameters
 from .voltage_initializer_results import VoltageInitializerResults
 
 
-def run(network: Network, params: VoltageInitializerParameters, debug: bool = False) \
-        -> VoltageInitializerResults:
+def run(
+    network: Network, params: VoltageInitializerParameters, debug: bool = False
+) -> VoltageInitializerResults:
     """
     Run voltage initializer on the network with the given params.
 

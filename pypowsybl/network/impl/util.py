@@ -4,8 +4,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Optional, Dict
+from typing import Dict, List, Optional
+
 from pandas import DataFrame
+
 import pypowsybl._pypowsybl as _pp
 from pypowsybl.utils import create_data_frame_from_series_array
 
@@ -14,8 +16,10 @@ ParamsDict = Optional[Dict[str, str]]
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
-    return f'SeriesMetadata(name={self.name}, type={self.type}, ' \
-           f'is_index={self.is_index}, is_modifiable={self.is_modifiable}, is_default={self.is_default})'
+    return (
+        f"SeriesMetadata(name={self.name}, type={self.type}, "
+        f"is_index={self.is_index}, is_modifiable={self.is_modifiable}, is_default={self.is_default})"
+    )
 
 
 _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore

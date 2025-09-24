@@ -9,7 +9,7 @@ import pypowsybl._pypowsybl as _pp  # pylint: disable=protected-access
 
 
 class ReportNode:  # pylint: disable=too-few-public-methods
-    def __init__(self, task_key: str = '', default_name: str = ''):
+    def __init__(self, task_key: str = "", default_name: str = ""):
         self._report_node_handle = _pp.create_report_node(task_key, default_name)
 
     def __repr__(self) -> str:

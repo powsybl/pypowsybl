@@ -4,6 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from .impl.flowdecomposition import (FlowDecomposition, ContingencyContextType)
-from .impl.parameters import (Parameters, RescaleMode)
-from .impl.util import (create_decomposition)
+from .impl.flowdecomposition import ContingencyContextType, FlowDecomposition
+from .impl.parameters import Parameters, RescaleMode
+from .impl.util import create_decomposition
