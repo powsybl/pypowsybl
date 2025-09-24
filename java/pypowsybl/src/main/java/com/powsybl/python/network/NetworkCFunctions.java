@@ -999,6 +999,7 @@ public final class NetworkCFunctions {
         cParameters.setEdgeInfoDisplayed(edgeInfo);
         cParameters.setVoltageLevelDetails(parameters.getSvgParameters().isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
+        cParameters.setMaxSteps(parameters.getLayoutParameters().getMaxSteps());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1070,6 +1071,8 @@ public final class NetworkCFunctions {
                 .setBusLegend(nadParametersPointer.isBusLegend())
                 .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
                 .setEdgeInfoDisplayed(edgeInfo);
+        nadParameters.getLayoutParameters()
+                .setMaxSteps(nadParametersPointer.getMaxSteps());
         return nadParameters;
     }
 
