@@ -1583,6 +1583,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
     voltage_level_details = (bool) src->voltage_level_details;
     injections_added = (bool) src->injections_added;
+    max_steps = src->max_steps;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1615,6 +1616,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.edge_info_displayed = (int) edge_info_displayed;
     res.voltage_level_details = (unsigned char) voltage_level_details;
     res.injections_added = (unsigned char) injections_added;
+    res.max_steps = max_steps;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
