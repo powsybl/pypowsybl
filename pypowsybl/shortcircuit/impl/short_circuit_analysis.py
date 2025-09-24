@@ -9,11 +9,13 @@ from typing import List, Optional
 
 from numpy.typing import ArrayLike
 from pandas import DataFrame
-from pypowsybl.report import ReportNode
-from pypowsybl.network import Network
-from pypowsybl.utils import _get_c_dataframes
+
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ShortCircuitStudyType
+from pypowsybl.network import Network
+from pypowsybl.report import ReportNode
+from pypowsybl.utils import _get_c_dataframes
+
 from .parameters import Parameters
 from .short_circuit_analysis_result import ShortCircuitAnalysisResult
 
@@ -28,13 +30,29 @@ class ShortCircuitAnalysis:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def set_branch_fault(self, branch_id: ArrayLike, element_id: str, r: ArrayLike, x: ArrayLike,
-                         proportional_location: ArrayLike) -> None:
-        self.set_faults(id=branch_id, element_id=element_id, r=r, x=x,
-                        proportional_location=proportional_location, fault_type='BRANCH_FAULT')
+    def set_branch_fault(
+        self,
+        branch_id: ArrayLike,
+        element_id: str,
+        r: ArrayLike,
+        x: ArrayLike,
+        proportional_location: ArrayLike,
+    ) -> None:
+        self.set_faults(
+            id=branch_id,
+            element_id=element_id,
+            r=r,
+            x=x,
+            proportional_location=proportional_location,
+            fault_type="BRANCH_FAULT",
+        )
 
-    def set_bus_fault(self, bus_id: str, element_id: str, r: ArrayLike, x: ArrayLike) -> None:
-        self.set_faults(id=bus_id, element_id=element_id, r=r, x=x, fault_type='BUS_FAULT')
+    def set_bus_fault(
+        self, bus_id: str, element_id: str, r: ArrayLike, x: ArrayLike
+    ) -> None:
+        self.set_faults(
+            id=bus_id, element_id=element_id, r=r, x=x, fault_type="BUS_FAULT"
+        )
 
     def _set_faults(self, dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
         metadata = _pypowsybl.get_faults_dataframes_metadata()
@@ -85,9 +103,15 @@ class ShortCircuitAnalysis:
         """
         self._set_faults([df], **kwargs)
 
-    def run(self, network: Network, parameters: Optional[Parameters] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> ShortCircuitAnalysisResult:
-        """ Runs a short-circuit analysis.
+    def run(
+        self,
+        network: Network,
+        parameters: Optional[Parameters] = None,
+        provider: str = "",
+        reporter: Optional[ReportNode] = None,
+        report_node: Optional[ReportNode] = None,
+    ) -> ShortCircuitAnalysisResult:
+        """Runs a short-circuit analysis.
 
         Args:
             network:    Network on which the short-circuit analysis will be computed
@@ -100,12 +124,25 @@ class ShortCircuitAnalysis:
             A short-circuit analysis result.
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn(
+                "Use of deprecated attribute reporter. Use report_node instead.",
+                DeprecationWarning,
+            )
             report_node = reporter
 
-        p = parameters._to_c_parameters() if parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
+        p = (
+            parameters._to_c_parameters()
+            if parameters is not None
+            else Parameters()._to_c_parameters()
+        )  # pylint: disable=protected-access
 
         return ShortCircuitAnalysisResult(
-            _pypowsybl.run_shortcircuit_analysis(self._handle, network._handle, p, provider,
-                                                 None if report_node is None else report_node._report_node), # pylint: disable=protected-access
-            p.with_fortescue_result)
+            _pypowsybl.run_shortcircuit_analysis(
+                self._handle,
+                network._handle,
+                p,
+                provider,
+                None if report_node is None else report_node._report_node,
+            ),  # pylint: disable=protected-access
+            p.with_fortescue_result,
+        )

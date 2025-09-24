@@ -7,17 +7,23 @@
 from __future__ import annotations
 
 import warnings
-from typing import List, Dict
+from typing import Dict, List
 
 from pypowsybl import _pypowsybl
+from pypowsybl._pypowsybl import (
+    ContingencyContextType,
+    PyPowsyblError,
+    SensitivityFunctionType,
+    SensitivityVariableType,
+)
 from pypowsybl.security import ContingencyContainer
-from pypowsybl._pypowsybl import PyPowsyblError, ContingencyContextType, SensitivityFunctionType, SensitivityVariableType
+
 from .sensitivity_analysis_result import DEFAULT_MATRIX_ID, TO_REMOVE
 from .zone import Zone
 
 
 class SensitivityAnalysis(ContingencyContainer):
-    """ Base class for sensitivity analysis. Do not instantiate it directly!"""
+    """Base class for sensitivity analysis. Do not instantiate it directly!"""
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         ContingencyContainer.__init__(self, handle)
@@ -33,8 +39,13 @@ class SensitivityAnalysis(ContingencyContainer):
         """
         _zones = []
         for zone in zones:
-            _zones.append(_pypowsybl.Zone(zone.id, list(zone.shift_keys_by_injections_ids.keys()),
-                                          list(zone.shift_keys_by_injections_ids.values())))
+            _zones.append(
+                _pypowsybl.Zone(
+                    zone.id,
+                    list(zone.shift_keys_by_injections_ids.keys()),
+                    list(zone.shift_keys_by_injections_ids.values()),
+                )
+            )
         _pypowsybl.set_zones(self._handle, _zones)
 
     @staticmethod
@@ -47,16 +58,22 @@ class SensitivityAnalysis(ContingencyContainer):
                 branch_data_frame_index.append(variable_id)
             elif isinstance(variable_id, tuple):  # this is a power transfer
                 if len(variable_id) != 2:
-                    raise PyPowsyblError('Power transfer factor should be describe with a tuple 2')
+                    raise PyPowsyblError(
+                        "Power transfer factor should be describe with a tuple 2"
+                    )
                 flatten_variables_ids.append(variable_id[0])
                 flatten_variables_ids.append(variable_id[1])
-                branch_data_frame_index.append(variable_id[0] + ' -> ' + variable_id[1])
+                branch_data_frame_index.append(variable_id[0] + " -> " + variable_id[1])
                 branch_data_frame_index.append(TO_REMOVE)
             else:
-                raise PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
+                raise PyPowsyblError(
+                    f"Unsupported factor variable type {type(variable_id)}"
+                )
         return (flatten_variables_ids, branch_data_frame_index)
 
-    def set_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str]) -> None:
+    def set_branch_flow_factor_matrix(
+        self, branches_ids: List[str], variables_ids: List[str]
+    ) -> None:
         """
         .. deprecated:: 0.14.0
           Use :meth:`add_branch_flow_factor_matrix` instead.
@@ -73,12 +90,18 @@ class SensitivityAnalysis(ContingencyContainer):
             branches_ids:  IDs of branches for which active power flow sensitivities should be computed
             variables_ids: variables which may impact branch flows,to which we should compute sensitivities
         """
-        warnings.warn("set_branch_flow_factor_matrix is deprecated, use add_branch_flow_factor_matrix instead",
-                      DeprecationWarning)
+        warnings.warn(
+            "set_branch_flow_factor_matrix is deprecated, use add_branch_flow_factor_matrix instead",
+            DeprecationWarning,
+        )
         self.add_branch_flow_factor_matrix(branches_ids, variables_ids)
 
-    def add_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
-                                      matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+    def add_branch_flow_factor_matrix(
+        self,
+        branches_ids: List[str],
+        variables_ids: List[str],
+        matrix_id: str = DEFAULT_MATRIX_ID,
+    ) -> None:
         """
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
 
@@ -92,11 +115,22 @@ class SensitivityAnalysis(ContingencyContainer):
             variables_ids: variables which may impact branch flows,to which we should compute sensitivities
             matrix_id:     The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        self.add_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.ALL,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
+        self.add_factor_matrix(
+            branches_ids,
+            variables_ids,
+            [],
+            ContingencyContextType.ALL,
+            SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+            SensitivityVariableType.AUTO_DETECT,
+            matrix_id,
+        )
 
-    def add_precontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
-                                                     matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+    def add_precontingency_branch_flow_factor_matrix(
+        self,
+        branches_ids: List[str],
+        variables_ids: List[str],
+        matrix_id: str = DEFAULT_MATRIX_ID,
+    ) -> None:
         """
         Defines branch active power flow factor matrix for the base case, with a list of branches IDs and a list of variables.
 
@@ -110,12 +144,23 @@ class SensitivityAnalysis(ContingencyContainer):
             variables_ids: variables which may impact branch flows,to which we should compute sensitivities
             matrix_id:     The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        self.add_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.NONE,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
+        self.add_factor_matrix(
+            branches_ids,
+            variables_ids,
+            [],
+            ContingencyContextType.NONE,
+            SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+            SensitivityVariableType.AUTO_DETECT,
+            matrix_id,
+        )
 
-    def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
-                                                      contingencies_ids: List[str],
-                                                      matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+    def add_postcontingency_branch_flow_factor_matrix(
+        self,
+        branches_ids: List[str],
+        variables_ids: List[str],
+        contingencies_ids: List[str],
+        matrix_id: str = DEFAULT_MATRIX_ID,
+    ) -> None:
         """
         Defines branch active power flow factor matrix for specific post contingencies states, with a list of branches IDs and a list of variables.
 
@@ -130,14 +175,26 @@ class SensitivityAnalysis(ContingencyContainer):
             contingencies_ids: List of the IDs of the contingencies to simulate
             matrix_id:         The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        self.add_factor_matrix(branches_ids, variables_ids, contingencies_ids, ContingencyContextType.SPECIFIC,
-                               SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
+        self.add_factor_matrix(
+            branches_ids,
+            variables_ids,
+            contingencies_ids,
+            ContingencyContextType.SPECIFIC,
+            SensitivityFunctionType.BRANCH_ACTIVE_POWER_1,
+            SensitivityVariableType.AUTO_DETECT,
+            matrix_id,
+        )
 
-    def add_factor_matrix(self, functions_ids: List[str], variables_ids: List[str], contingencies_ids: List[str],
-                          contingency_context_type: ContingencyContextType,
-                          sensitivity_function_type: SensitivityFunctionType,
-                          sensitivity_variable_type: SensitivityVariableType = SensitivityVariableType.AUTO_DETECT,
-                          matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+    def add_factor_matrix(
+        self,
+        functions_ids: List[str],
+        variables_ids: List[str],
+        contingencies_ids: List[str],
+        contingency_context_type: ContingencyContextType,
+        sensitivity_function_type: SensitivityFunctionType,
+        sensitivity_variable_type: SensitivityVariableType = SensitivityVariableType.AUTO_DETECT,
+        matrix_id: str = DEFAULT_MATRIX_ID,
+    ) -> None:
         """
         Defines branch active power factor matrix, with a list of branches IDs and a list of variables.
 
@@ -178,9 +235,18 @@ class SensitivityAnalysis(ContingencyContainer):
             sensitivity_variable_type:  the variable type of sensitivity to compute, automatically guessed (best effort) if value is AUTO_DETECT
             matrix_id:                  The matrix unique identifier, to be used to retrieve the sensibility value
         """
-        (flatten_variables_ids, function_data_frame_index) = self._process_variable_ids(variables_ids)
-        _pypowsybl.add_factor_matrix(self._handle, matrix_id, functions_ids,
-                                     flatten_variables_ids, contingencies_ids, contingency_context_type,
-                                     sensitivity_function_type, sensitivity_variable_type)
+        (flatten_variables_ids, function_data_frame_index) = self._process_variable_ids(
+            variables_ids
+        )
+        _pypowsybl.add_factor_matrix(
+            self._handle,
+            matrix_id,
+            functions_ids,
+            flatten_variables_ids,
+            contingencies_ids,
+            contingency_context_type,
+            sensitivity_function_type,
+            sensitivity_variable_type,
+        )
         self.functions_ids[matrix_id] = functions_ids
         self.function_data_frame_index[matrix_id] = function_data_frame_index

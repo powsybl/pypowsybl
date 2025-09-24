@@ -4,11 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 from pypowsybl import _pypowsybl
+
 from .flowdecomposition import FlowDecomposition
 
 
 def create_decomposition() -> FlowDecomposition:
-    """ Creates a flow decomposition objet, which can be used to run a flow decomposition on a network
+    """Creates a flow decomposition objet, which can be used to run a flow decomposition on a network
 
     Example:
         .. code-block::

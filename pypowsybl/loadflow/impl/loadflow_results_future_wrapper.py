@@ -7,7 +7,8 @@
 from asyncio import AbstractEventLoop, Future
 from typing import List
 
-from pypowsybl import _pypowsybl, PyPowsyblError
+from pypowsybl import PyPowsyblError, _pypowsybl
+
 from .component_result import ComponentResult
 
 
@@ -17,7 +18,11 @@ class LoadFlowResultsFutureWrapper:
         self._future = future
 
     def set_results(self, results: List[_pypowsybl.LoadFlowComponentResult]) -> None:
-        self._loop.call_soon_threadsafe(self._future.set_result, [ComponentResult(result) for result in results])
+        self._loop.call_soon_threadsafe(
+            self._future.set_result, [ComponentResult(result) for result in results]
+        )
 
     def set_exception_message(self, message: str) -> None:
-        self._loop.call_soon_threadsafe(self._future.set_exception, PyPowsyblError(message))
+        self._loop.call_soon_threadsafe(
+            self._future.set_exception, PyPowsyblError(message)
+        )

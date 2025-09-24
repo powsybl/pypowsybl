@@ -4,14 +4,18 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Callable, Optional
+from typing import Callable, List, Optional
+
 from pypowsybl import _pypowsybl
+
 
 class ContingencyContainer:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def add_single_element_contingency(self, element_id: str, contingency_id:  Optional[str] = None) -> None:
+    def add_single_element_contingency(
+        self, element_id: str, contingency_id: Optional[str] = None
+    ) -> None:
         """
         Add one N-1 contingency.
 
@@ -20,9 +24,13 @@ class ContingencyContainer:
             contingency_id: The ID of the contingency.
                 If ``None``, element_id will be used.
         """
-        _pypowsybl.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
+        _pypowsybl.add_contingency(
+            self._handle, contingency_id if contingency_id else element_id, [element_id]
+        )
 
-    def add_multiple_elements_contingency(self, elements_ids: List[str], contingency_id: str) -> None:
+    def add_multiple_elements_contingency(
+        self, elements_ids: List[str], contingency_id: str
+    ) -> None:
         """
         Add one N-K contingency.
 
@@ -32,8 +40,11 @@ class ContingencyContainer:
         """
         _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
-    def add_single_element_contingencies(self, elements_ids: List[str],
-                                         contingency_id_provider: Optional[Callable[[str], str]] = None) -> None:
+    def add_single_element_contingencies(
+        self,
+        elements_ids: List[str],
+        contingency_id_provider: Optional[Callable[[str], str]] = None,
+    ) -> None:
         """
         Add multiple N-1 contingencies.
 
@@ -44,7 +55,11 @@ class ContingencyContainer:
                 If ``None``, the element ID will be used as the contingency ID for each N-1 contingency.
         """
         for element_id in elements_ids:
-            contingency_id = contingency_id_provider(element_id) if contingency_id_provider else element_id
+            contingency_id = (
+                contingency_id_provider(element_id)
+                if contingency_id_provider
+                else element_id
+            )
             _pypowsybl.add_contingency(self._handle, contingency_id, [element_id])
 
     def add_contingencies_from_json_file(self, path_to_json_file: str) -> None:

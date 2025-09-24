@@ -21,9 +21,14 @@ class IncreasedViolationsParameters:  # pylint: disable=too-few-public-methods
                                          have increased of more than 1 kV between N and post-contingency are considered "increased"
     """
 
-    def __init__(self, flow_proportional_threshold: float, low_voltage_proportional_threshold: float,
-                 low_voltage_absolute_threshold: float, high_voltage_proportional_threshold: float,
-                 high_voltage_absolute_threshold: float):
+    def __init__(
+        self,
+        flow_proportional_threshold: float,
+        low_voltage_proportional_threshold: float,
+        low_voltage_absolute_threshold: float,
+        high_voltage_proportional_threshold: float,
+        high_voltage_absolute_threshold: float,
+    ):
         self.flow_proportional_threshold = flow_proportional_threshold
         self.low_voltage_proportional_threshold = low_voltage_proportional_threshold
         self.low_voltage_absolute_threshold = low_voltage_absolute_threshold
@@ -31,10 +36,12 @@ class IncreasedViolationsParameters:  # pylint: disable=too-few-public-methods
         self.high_voltage_absolute_threshold = high_voltage_absolute_threshold
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f", flow_proportional_threshold={self.flow_proportional_threshold!r}" \
-               f", low_voltage_proportional_threshold={self.low_voltage_proportional_threshold!r}" \
-               f", low_voltage_absolute_threshold={self.low_voltage_absolute_threshold!r}" \
-               f", high_voltage_proportional_threshold={self.high_voltage_proportional_threshold!r}" \
-               f", high_voltage_absolute_threshold={self.high_voltage_absolute_threshold!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f", flow_proportional_threshold={self.flow_proportional_threshold!r}"
+            f", low_voltage_proportional_threshold={self.low_voltage_proportional_threshold!r}"
+            f", low_voltage_absolute_threshold={self.low_voltage_absolute_threshold!r}"
+            f", high_voltage_proportional_threshold={self.high_voltage_proportional_threshold!r}"
+            f", high_voltage_absolute_threshold={self.high_voltage_absolute_threshold!r}"
+            f")"
+        )

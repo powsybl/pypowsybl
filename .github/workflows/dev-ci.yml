@@ -45,6 +45,11 @@ jobs:
       - name: Install dependencies
         run: pip3 install -r requirements.txt
 
+      - name: Linter
+        run: |
+          python3 -m black pypowsybl --check
+          python3 -m isort --profile black --check pypowsybl
+
       - name: Build wheel
         run: |
           python3 setup.py bdist_wheel
@@ -149,6 +154,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+
+      - name: Linter
+        run: |
+          python -m black pypowsybl --check
+          python -m isort --profile black --check pypowsybl
 
       - name: Build wheel
         env:

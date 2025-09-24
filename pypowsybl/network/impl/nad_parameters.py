@@ -4,20 +4,31 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pypowsybl._pypowsybl as _pp
-from pypowsybl._pypowsybl import (
-    NadLayoutType, EdgeInfoType
-)
+from pypowsybl._pypowsybl import EdgeInfoType, NadLayoutType
+
 
 class NadParameters:
     """
     This class represents nad parameters for a network area diagram svg generation."""
 
-    def __init__(self, edge_name_displayed: bool = False, id_displayed: bool = False,
-                 edge_info_along_edge: bool = True, power_value_precision: int = 0, angle_value_precision: int = 1,
-                 current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
-                 substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
-                 scaling_factor: int = 150000, radius_factor: float = 150.0,
-                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER, voltage_level_details: bool = True, injections_added: bool = False):
+    def __init__(
+        self,
+        edge_name_displayed: bool = False,
+        id_displayed: bool = False,
+        edge_info_along_edge: bool = True,
+        power_value_precision: int = 0,
+        angle_value_precision: int = 1,
+        current_value_precision: int = 0,
+        voltage_value_precision: int = 1,
+        bus_legend: bool = True,
+        substation_description_displayed: bool = False,
+        layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
+        scaling_factor: int = 150000,
+        radius_factor: float = 150.0,
+        edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER,
+        voltage_level_details: bool = True,
+        injections_added: bool = False,
+    ):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -119,7 +130,9 @@ class NadParameters:
         c_parameters.current_value_precision = self._current_value_precision
         c_parameters.voltage_value_precision = self._voltage_value_precision
         c_parameters.bus_legend = self._bus_legend
-        c_parameters.substation_description_displayed = self._substation_description_displayed
+        c_parameters.substation_description_displayed = (
+            self._substation_description_displayed
+        )
         c_parameters.layout_type = self._layout_type
         c_parameters.scaling_factor = self._scaling_factor
         c_parameters.radius_factor = self._radius_factor
@@ -129,20 +142,22 @@ class NadParameters:
         return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"edge_name_displayed={self._edge_name_displayed}" \
-               f", edge_info_along_edge={self._edge_info_along_edge}" \
-               f", id_displayed={self._id_displayed}" \
-               f", power_value_precision={self._power_value_precision}" \
-               f", angle_value_precision={self._angle_value_precision}" \
-               f", current_value_precision={self._current_value_precision}" \
-               f", voltage_value_precision={self._voltage_value_precision}" \
-               f", bus_legend={self._bus_legend}" \
-               f", substation_description_displayed={self._substation_description_displayed}" \
-               f", layout_type={self._layout_type}" \
-               f", scaling_factor={self._scaling_factor}" \
-               f", radius_factor={self._radius_factor}" \
-               f", edge_info_displayed={self._edge_info_displayed}" \
-               f", voltage_level_details={self._voltage_level_details}" \
-               f", injections_added={self._injections_added}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"edge_name_displayed={self._edge_name_displayed}"
+            f", edge_info_along_edge={self._edge_info_along_edge}"
+            f", id_displayed={self._id_displayed}"
+            f", power_value_precision={self._power_value_precision}"
+            f", angle_value_precision={self._angle_value_precision}"
+            f", current_value_precision={self._current_value_precision}"
+            f", voltage_value_precision={self._voltage_value_precision}"
+            f", bus_legend={self._bus_legend}"
+            f", substation_description_displayed={self._substation_description_displayed}"
+            f", layout_type={self._layout_type}"
+            f", scaling_factor={self._scaling_factor}"
+            f", radius_factor={self._radius_factor}"
+            f", edge_info_displayed={self._edge_info_displayed}"
+            f", voltage_level_details={self._voltage_level_details}"
+            f", injections_added={self._injections_added}"
+            f")"
+        )

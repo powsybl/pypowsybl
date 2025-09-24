@@ -5,18 +5,21 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import Union, List, Optional
+from typing import List, Optional, Union
+
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
+from pypowsybl._pypowsybl import ConditionType, ContingencyContextType
 from pypowsybl._pypowsybl import PostContingencyComputationStatus as ComputationStatus
+from pypowsybl._pypowsybl import Side, ViolationType
 from pypowsybl.network import Network
 from pypowsybl.report import ReportNode
+
+from .contingency_container import ContingencyContainer
 from .parameters import Parameters
 from .security_analysis_result import SecurityAnalysisResult
-from .contingency_container import ContingencyContainer
 
-ComputationStatus.__name__ = 'ComputationStatus'
+ComputationStatus.__name__ = "ComputationStatus"
 ComputationStatus.__module__ = __name__
 
 
@@ -28,9 +31,15 @@ class SecurityAnalysis(ContingencyContainer):
     def __init__(self, handle: _pypowsybl.JavaHandle):
         ContingencyContainer.__init__(self, handle)
 
-    def run_ac(self, network: Network, parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
-               provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> SecurityAnalysisResult:
-        """ Runs an AC security analysis.
+    def run_ac(
+        self,
+        network: Network,
+        parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
+        provider: str = "",
+        reporter: Optional[ReportNode] = None,
+        report_node: Optional[ReportNode] = None,
+    ) -> SecurityAnalysisResult:
+        """Runs an AC security analysis.
 
         Args:
             network:    Network on which the security analysis will be computed
@@ -44,18 +53,41 @@ class SecurityAnalysis(ContingencyContainer):
             A security analysis result, containing information about violations and monitored elements
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn(
+                "Use of deprecated attribute reporter. Use report_node instead.",
+                DeprecationWarning,
+            )
             report_node = reporter
-        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
-                                                                                        pypowsybl.loadflow.Parameters) else parameters
-        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
+        security_parameters = (
+            Parameters(load_flow_parameters=parameters)
+            if isinstance(parameters, pypowsybl.loadflow.Parameters)
+            else parameters
+        )
+        p = (
+            security_parameters._to_c_parameters()
+            if security_parameters is not None
+            else Parameters()._to_c_parameters()
+        )  # pylint: disable=protected-access
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False,
-                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
+            _pypowsybl.run_security_analysis(
+                self._handle,
+                network._handle,
+                p,
+                provider,
+                False,
+                None if report_node is None else report_node._report_node,
+            )
+        )  # pylint: disable=protected-access
 
-    def run_dc(self, network: Network, parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
-               provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> SecurityAnalysisResult:
-        """ Runs a DC security analysis.
+    def run_dc(
+        self,
+        network: Network,
+        parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
+        provider: str = "",
+        reporter: Optional[ReportNode] = None,
+        report_node: Optional[ReportNode] = None,
+    ) -> SecurityAnalysisResult:
+        """Runs a DC security analysis.
 
         Args:
             network:    Network on which the security analysis will be computed
@@ -69,22 +101,42 @@ class SecurityAnalysis(ContingencyContainer):
             A security analysis result, containing information about violations and monitored elements
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn(
+                "Use of deprecated attribute reporter. Use report_node instead.",
+                DeprecationWarning,
+            )
             report_node = reporter
-        security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
-                                                                                        pypowsybl.loadflow.Parameters) else parameters
-        p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
+        security_parameters = (
+            Parameters(load_flow_parameters=parameters)
+            if isinstance(parameters, pypowsybl.loadflow.Parameters)
+            else parameters
+        )
+        p = (
+            security_parameters._to_c_parameters()
+            if security_parameters is not None
+            else Parameters()._to_c_parameters()
+        )  # pylint: disable=protected-access
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
-                                             # pylint: disable=protected-access
-                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
+            _pypowsybl.run_security_analysis(
+                self._handle,
+                network._handle,
+                p,
+                provider,
+                True,
+                # pylint: disable=protected-access
+                None if report_node is None else report_node._report_node,
+            )
+        )  # pylint: disable=protected-access
 
-    def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
-                               contingency_ids: Optional[Union[List[str], str]] = None,
-                               branch_ids: Optional[List[str]] = None,
-                               voltage_level_ids: Optional[List[str]] = None,
-                               three_windings_transformer_ids: Optional[List[str]] = None) -> None:
-        """ Add elements to be monitored by the security analysis. The security analysis result
+    def add_monitored_elements(
+        self,
+        contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
+        contingency_ids: Optional[Union[List[str], str]] = None,
+        branch_ids: Optional[List[str]] = None,
+        voltage_level_ids: Optional[List[str]] = None,
+        three_windings_transformer_ids: Optional[List[str]] = None,
+    ) -> None:
+        """Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
         Args:
@@ -96,9 +148,15 @@ class SecurityAnalysis(ContingencyContainer):
             three_windings_transformer_ids: list of 3 winding transformers to be monitored
         """
 
-        if contingency_context_type in (ContingencyContextType.ALL, ContingencyContextType.NONE) and contingency_ids:
-            raise ValueError('Contingencies list must be empty when defining monitored elements '
-                             'for NONE or ALL contingencies')
+        if (
+            contingency_context_type
+            in (ContingencyContextType.ALL, ContingencyContextType.NONE)
+            and contingency_ids
+        ):
+            raise ValueError(
+                "Contingencies list must be empty when defining monitored elements "
+                "for NONE or ALL contingencies"
+            )
 
         if three_windings_transformer_ids is None:
             three_windings_transformer_ids = []
@@ -107,18 +165,26 @@ class SecurityAnalysis(ContingencyContainer):
         if voltage_level_ids is None:
             voltage_level_ids = []
         if contingency_ids is None:
-            contingency_ids = ['']
+            contingency_ids = [""]
         elif isinstance(contingency_ids, str):
             contingency_ids = [contingency_ids]
 
-        _pypowsybl.add_monitored_elements(self._handle, contingency_context_type, branch_ids, voltage_level_ids,
-                                          three_windings_transformer_ids, contingency_ids)
+        _pypowsybl.add_monitored_elements(
+            self._handle,
+            contingency_context_type,
+            branch_ids,
+            voltage_level_ids,
+            three_windings_transformer_ids,
+            contingency_ids,
+        )
 
-    def add_precontingency_monitored_elements(self,
-                                              branch_ids: Optional[List[str]] = None,
-                                              voltage_level_ids: Optional[List[str]] = None,
-                                              three_windings_transformer_ids: Optional[List[str]] = None) -> None:
-        """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
+    def add_precontingency_monitored_elements(
+        self,
+        branch_ids: Optional[List[str]] = None,
+        voltage_level_ids: Optional[List[str]] = None,
+        three_windings_transformer_ids: Optional[List[str]] = None,
+    ) -> None:
+        """Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
         Args:
@@ -126,16 +192,21 @@ class SecurityAnalysis(ContingencyContainer):
             voltage_level_ids: list of voltage levels to be monitored
             three_windings_transformer_ids: list of 3 winding transformers to be monitored
         """
-        return self.add_monitored_elements(ContingencyContextType.NONE,
-                                           branch_ids=branch_ids,
-                                           voltage_level_ids=voltage_level_ids,
-                                           three_windings_transformer_ids=three_windings_transformer_ids)
+        return self.add_monitored_elements(
+            ContingencyContextType.NONE,
+            branch_ids=branch_ids,
+            voltage_level_ids=voltage_level_ids,
+            three_windings_transformer_ids=three_windings_transformer_ids,
+        )
 
-    def add_postcontingency_monitored_elements(self, contingency_ids: Union[List[str], str],
-                                               branch_ids: Optional[List[str]] = None,
-                                               voltage_level_ids: Optional[List[str]] = None,
-                                               three_windings_transformer_ids: Optional[List[str]] = None) -> None:
-        """ Add elements to be monitored by the security analysis for specific contingencies.
+    def add_postcontingency_monitored_elements(
+        self,
+        contingency_ids: Union[List[str], str],
+        branch_ids: Optional[List[str]] = None,
+        voltage_level_ids: Optional[List[str]] = None,
+        three_windings_transformer_ids: Optional[List[str]] = None,
+    ) -> None:
+        """Add elements to be monitored by the security analysis for specific contingencies.
         The security analysis result will provide additional information for those elements, like the power and current values.
 
         Args:
@@ -144,11 +215,18 @@ class SecurityAnalysis(ContingencyContainer):
             voltage_level_ids: list of voltage levels to be monitored
             three_windings_transformer_ids: list of 3 winding transformers to be monitored
         """
-        return self.add_monitored_elements(ContingencyContextType.SPECIFIC, contingency_ids,
-                                           branch_ids, voltage_level_ids, three_windings_transformer_ids)
+        return self.add_monitored_elements(
+            ContingencyContextType.SPECIFIC,
+            contingency_ids,
+            branch_ids,
+            voltage_level_ids,
+            three_windings_transformer_ids,
+        )
 
-    def add_load_active_power_action(self, action_id: str, load_id: str, is_relative: bool, active_power: float) -> None:
-        """ Add a load action, modifying the load active power
+    def add_load_active_power_action(
+        self, action_id: str, load_id: str, is_relative: bool, active_power: float
+    ) -> None:
+        """Add a load action, modifying the load active power
 
         Args:
             action_id: unique ID for the action
@@ -157,10 +235,14 @@ class SecurityAnalysis(ContingencyContainer):
             active_power: the active power change
 
         """
-        _pypowsybl.add_load_active_power_action(self._handle, action_id, load_id, is_relative, active_power)
+        _pypowsybl.add_load_active_power_action(
+            self._handle, action_id, load_id, is_relative, active_power
+        )
 
-    def add_load_reactive_power_action(self, action_id: str, load_id: str, is_relative: bool, reactive_power: float) -> None:
-        """ Add a load action, modifying the load reactive power
+    def add_load_reactive_power_action(
+        self, action_id: str, load_id: str, is_relative: bool, reactive_power: float
+    ) -> None:
+        """Add a load action, modifying the load reactive power
 
         Args:
             action_id: unique ID for the action
@@ -169,10 +251,14 @@ class SecurityAnalysis(ContingencyContainer):
             reactive_power: the reactive power change
 
         """
-        _pypowsybl.add_load_reactive_power_action(self._handle, action_id, load_id, is_relative, reactive_power)
+        _pypowsybl.add_load_reactive_power_action(
+            self._handle, action_id, load_id, is_relative, reactive_power
+        )
 
-    def add_generator_active_power_action(self, action_id: str, generator_id: str, is_relative: bool, active_power: float) -> None:
-        """ Add a generator action, modifying the generator active power
+    def add_generator_active_power_action(
+        self, action_id: str, generator_id: str, is_relative: bool, active_power: float
+    ) -> None:
+        """Add a generator action, modifying the generator active power
 
         Args:
             action_id: unique ID for the action
@@ -181,10 +267,12 @@ class SecurityAnalysis(ContingencyContainer):
             active_power: the active power change
 
         """
-        _pypowsybl.add_generator_active_power_action(self._handle, action_id, generator_id, is_relative, active_power)
+        _pypowsybl.add_generator_active_power_action(
+            self._handle, action_id, generator_id, is_relative, active_power
+        )
 
     def add_switch_action(self, action_id: str, switch_id: str, open: bool) -> None:
-        """ Add a switch action, modifying the switch open/close status
+        """Add a switch action, modifying the switch open/close status
 
         Args:
             action_id: unique ID for the action
@@ -194,8 +282,15 @@ class SecurityAnalysis(ContingencyContainer):
         """
         _pypowsybl.add_switch_action(self._handle, action_id, switch_id, open)
 
-    def add_phase_tap_changer_position_action(self, action_id: str, transformer_id: str, is_relative: bool, tap_position: int, side: Side = Side.NONE) -> None:
-        """ Add a phase tap changer tap position action, modifying the tap position of the tap changer
+    def add_phase_tap_changer_position_action(
+        self,
+        action_id: str,
+        transformer_id: str,
+        is_relative: bool,
+        tap_position: int,
+        side: Side = Side.NONE,
+    ) -> None:
+        """Add a phase tap changer tap position action, modifying the tap position of the tap changer
 
         Args:
             action_id: unique ID for the action
@@ -204,10 +299,19 @@ class SecurityAnalysis(ContingencyContainer):
             tap_position: The tap position (either a delta if is_relative is true, or the final value if is_relative if false)
             side: Side of the tap changer (for three windings transformers)
         """
-        _pypowsybl.add_phase_tap_changer_position_action(self._handle, action_id, transformer_id, is_relative, tap_position, side)
+        _pypowsybl.add_phase_tap_changer_position_action(
+            self._handle, action_id, transformer_id, is_relative, tap_position, side
+        )
 
-    def add_ratio_tap_changer_position_action(self, action_id: str, transformer_id: str, is_relative: bool, tap_position: int, side: Side = Side.NONE) -> None:
-        """ Add a ratio tap changer tap position action, modifying the tap position of the tap changer
+    def add_ratio_tap_changer_position_action(
+        self,
+        action_id: str,
+        transformer_id: str,
+        is_relative: bool,
+        tap_position: int,
+        side: Side = Side.NONE,
+    ) -> None:
+        """Add a ratio tap changer tap position action, modifying the tap position of the tap changer
 
         Args:
             action_id: unique ID for the action
@@ -216,20 +320,32 @@ class SecurityAnalysis(ContingencyContainer):
             tap_position: The tap position (either a delta if is_relative is true, or the final value if is_relative if false)
             side: Side of the tap changer (for three windings transformers)
         """
-        _pypowsybl.add_ratio_tap_changer_position_action(self._handle, action_id, transformer_id, is_relative, tap_position, side)
+        _pypowsybl.add_ratio_tap_changer_position_action(
+            self._handle, action_id, transformer_id, is_relative, tap_position, side
+        )
 
-    def add_shunt_compensator_position_action(self, action_id: str, shunt_id: str, section: int) -> None:
-        """ Add a shunt compensator section action, modifying the section of the shunt compensator
+    def add_shunt_compensator_position_action(
+        self, action_id: str, shunt_id: str, section: int
+    ) -> None:
+        """Add a shunt compensator section action, modifying the section of the shunt compensator
 
         Args:
             action_id: unique ID for the action
             shunt_id: transformer identifier
             section: The new section of the shunt compensator
         """
-        _pypowsybl.add_shunt_compensator_position_action(self._handle, action_id, shunt_id, section)
+        _pypowsybl.add_shunt_compensator_position_action(
+            self._handle, action_id, shunt_id, section
+        )
 
-    def add_terminals_connection_action(self, action_id: str, element_id: str, side: Side = Side.NONE, opening: bool = True) -> None:
-        """ Add a terminals connection action, connecting/disconnecting one or multiple sides of a network element
+    def add_terminals_connection_action(
+        self,
+        action_id: str,
+        element_id: str,
+        side: Side = Side.NONE,
+        opening: bool = True,
+    ) -> None:
+        """Add a terminals connection action, connecting/disconnecting one or multiple sides of a network element
 
         Args:
             action_id: unique ID for the action
@@ -237,13 +353,20 @@ class SecurityAnalysis(ContingencyContainer):
             side: The side of the element to modify (all if side=None)
             opening: True to open the terminals, False otherwise
         """
-        _pypowsybl.add_terminals_connection_action(self._handle, action_id, element_id, side, opening)
+        _pypowsybl.add_terminals_connection_action(
+            self._handle, action_id, element_id, side, opening
+        )
 
-
-    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
-                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: Optional[List[str]] = None,
-                              violation_types: Optional[List[ViolationType]] = None) -> None:
-        """ Add an operator strategy to the specified contingency
+    def add_operator_strategy(
+        self,
+        operator_strategy_id: str,
+        contingency_id: str,
+        action_ids: List[str],
+        condition_type: ConditionType = ConditionType.TRUE_CONDITION,
+        violation_subject_ids: Optional[List[str]] = None,
+        violation_types: Optional[List[ViolationType]] = None,
+    ) -> None:
+        """Add an operator strategy to the specified contingency
 
         Args:
             operator_strategy_id: unique ID for the operator strategy
@@ -257,7 +380,15 @@ class SecurityAnalysis(ContingencyContainer):
             violation_types = []
         if violation_subject_ids is None:
             violation_subject_ids = []
-        _pypowsybl.add_operator_strategy(self._handle, operator_strategy_id, contingency_id, action_ids, condition_type, violation_subject_ids, violation_types)
+        _pypowsybl.add_operator_strategy(
+            self._handle,
+            operator_strategy_id,
+            contingency_id,
+            action_ids,
+            condition_type,
+            violation_subject_ids,
+            violation_types,
+        )
 
     def add_actions_from_json_file(self, path_to_json_file: str) -> None:
         """

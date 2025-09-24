@@ -5,12 +5,13 @@
 # SPDX-License-Identifier: MPL-2.0
 
 from typing import Dict
+
 from pypowsybl._pypowsybl import (
+    JavaHandle,
     VoltageInitializerStatus,
-    voltage_initializer_get_status,
-    voltage_initializer_get_indicators,
     voltage_initializer_apply_all_modifications,
-    JavaHandle
+    voltage_initializer_get_indicators,
+    voltage_initializer_get_status,
 )
 from pypowsybl.network import Network
 
@@ -22,8 +23,12 @@ class VoltageInitializerResults:
 
     def __init__(self, result_handle: JavaHandle) -> None:
         self._handle = result_handle
-        self._status: VoltageInitializerStatus = voltage_initializer_get_status(self._handle)
-        self._indicators: Dict[str, str] = voltage_initializer_get_indicators(self._handle)
+        self._status: VoltageInitializerStatus = voltage_initializer_get_status(
+            self._handle
+        )
+        self._indicators: Dict[str, str] = voltage_initializer_get_indicators(
+            self._handle
+        )
 
     def apply_all_modifications(self, network: Network) -> None:
         """

@@ -5,9 +5,10 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Dict, Optional
+
+from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl.loadflow.impl.util import parameters_from_c
-from pypowsybl import _pypowsybl
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -29,8 +30,11 @@ class Parameters:  # pylint: disable=too-few-public-methods
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self, load_flow_parameters: Optional[LfParameters] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        load_flow_parameters: Optional[LfParameters] = None,
+        provider_parameters: Optional[Dict[str, str]] = None,
+    ):
         self._init_with_default_values()
         if load_flow_parameters is not None:
             self.load_flow_parameters = load_flow_parameters
@@ -39,19 +43,31 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        self.load_flow_parameters = parameters_from_c(default_parameters.loadflow_parameters)
+        self.load_flow_parameters = parameters_from_c(
+            default_parameters.loadflow_parameters
+        )
         self.provider_parameters = dict(
-            zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+            zip(
+                default_parameters.provider_parameters_keys,
+                default_parameters.provider_parameters_values,
+            )
+        )
 
     def _to_c_parameters(self) -> _pypowsybl.SensitivityAnalysisParameters:
         c_parameters = _pypowsybl.SensitivityAnalysisParameters()
-        c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()  # pylint: disable=protected-access
+        c_parameters.loadflow_parameters = (
+            self.load_flow_parameters._to_c_parameters()
+        )  # pylint: disable=protected-access
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
-        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        c_parameters.provider_parameters_values = list(
+            self.provider_parameters.values()
+        )
         return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"load_flow_parameters={self.load_flow_parameters}" \
-               f", provider_parameters={self.provider_parameters!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"load_flow_parameters={self.load_flow_parameters}"
+            f", provider_parameters={self.provider_parameters!r}"
+            f")"
+        )

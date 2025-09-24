@@ -1,17 +1,17 @@
 from typing import Optional
 
-from pypowsybl._pypowsybl import (
-    RaoParameters,
-    ObjectiveFunctionType,
-    Unit
-)
+from pypowsybl._pypowsybl import ObjectiveFunctionType, RaoParameters, Unit
+
 
 class ObjectiveFunctionParameters:
-    def __init__(self, objective_function_type: Optional[ObjectiveFunctionType] = None,
-                 unit: Optional[Unit] = None,
-                 curative_min_obj_improvement: Optional[float] = None,
-                 enforce_curative_security: Optional[bool] = None,
-                 rao_parameters: Optional[RaoParameters] = None) -> None:
+    def __init__(
+        self,
+        objective_function_type: Optional[ObjectiveFunctionType] = None,
+        unit: Optional[Unit] = None,
+        curative_min_obj_improvement: Optional[float] = None,
+        enforce_curative_security: Optional[bool] = None,
+        rao_parameters: Optional[RaoParameters] = None,
+    ) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:
@@ -35,9 +35,11 @@ class ObjectiveFunctionParameters:
         self.enforce_curative_security = c_parameters.enforce_curative_security
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"objective_function_type={self.objective_function_type.name}" \
-               f", unit={self.unit.name}" \
-               f", curative_min_obj_improvement={self.curative_min_obj_improvement!r}" \
-               f", enforce_curative_security={self.enforce_curative_security!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"objective_function_type={self.objective_function_type.name}"
+            f", unit={self.unit.name}"
+            f", curative_min_obj_improvement={self.curative_min_obj_improvement!r}"
+            f", enforce_curative_security={self.enforce_curative_security!r}"
+            f")"
+        )

@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Optional
+
 import pandas as pd
 
 OptionalDf = Optional[pd.DataFrame]
@@ -15,8 +16,16 @@ class ValidationResult:
     The result of a loadflow validation.
     """
 
-    def __init__(self, branch_flows: OptionalDf, buses: OptionalDf, generators: OptionalDf, svcs: OptionalDf,
-                 shunts: OptionalDf, twts: OptionalDf, t3wts: OptionalDf):
+    def __init__(
+        self,
+        branch_flows: OptionalDf,
+        buses: OptionalDf,
+        generators: OptionalDf,
+        svcs: OptionalDf,
+        shunts: OptionalDf,
+        twts: OptionalDf,
+        t3wts: OptionalDf,
+    ):
         self._branch_flows = branch_flows
         self._buses = buses
         self._generators = generators
@@ -24,14 +33,19 @@ class ValidationResult:
         self._shunts = shunts
         self._twts = twts
         self._t3wts = t3wts
-        self._valid = self._is_valid_or_unchecked(self.branch_flows) and self._is_valid_or_unchecked(self.buses) \
-                      and self._is_valid_or_unchecked(self.generators) and self._is_valid_or_unchecked(self.svcs) \
-                      and self._is_valid_or_unchecked(self.shunts) and self._is_valid_or_unchecked(self.twts) \
-                      and self._is_valid_or_unchecked(self.t3wts)
+        self._valid = (
+            self._is_valid_or_unchecked(self.branch_flows)
+            and self._is_valid_or_unchecked(self.buses)
+            and self._is_valid_or_unchecked(self.generators)
+            and self._is_valid_or_unchecked(self.svcs)
+            and self._is_valid_or_unchecked(self.shunts)
+            and self._is_valid_or_unchecked(self.twts)
+            and self._is_valid_or_unchecked(self.t3wts)
+        )
 
     @staticmethod
     def _is_valid_or_unchecked(df: OptionalDf) -> bool:
-        return df is None or df['validated'].all()
+        return df is None or df["validated"].all()
 
     @property
     def branch_flows(self) -> OptionalDf:

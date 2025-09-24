@@ -5,12 +5,17 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Optional
+
 from numpy.typing import ArrayLike
 from pandas import DataFrame
+
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import EventMappingType  # pylint: disable=protected-access
-from pypowsybl.utils import _add_index_to_kwargs, \
-    _adapt_df_or_kwargs, _create_c_dataframe  # pylint: disable=protected-access
+from pypowsybl.utils import (  # pylint: disable=protected-access
+    _adapt_df_or_kwargs,
+    _add_index_to_kwargs,
+    _create_c_dataframe,
+)
 
 
 class EventMapping:
@@ -21,8 +26,10 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_disconnection(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
-        """ Creates an equipment disconnection event
+    def add_disconnection(
+        self, df: Optional[DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
+        """Creates an equipment disconnection event
 
         Args:
             df: Attributes as a dataframe.
@@ -48,8 +55,10 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.DISCONNECT, df, **kwargs)
 
-    def add_active_power_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
-        """ Creates an equipment active power variation event
+    def add_active_power_variation(
+        self, df: Optional[DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
+        """Creates an equipment active power variation event
 
         Args:
             df: Attributes as a dataframe.
@@ -73,10 +82,14 @@ class EventMapping:
 
                 event_mapping.add_active_power_variation(static_id='LOAD', start_time=14, delta_p=2)
         """
-        self._add_all_event_mappings(EventMappingType.ACTIVE_POWER_VARIATION, df, **kwargs)
+        self._add_all_event_mappings(
+            EventMappingType.ACTIVE_POWER_VARIATION, df, **kwargs
+        )
 
-    def add_node_fault(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
-        """ Creates a bus node fault event
+    def add_node_fault(
+        self, df: Optional[DataFrame] = None, **kwargs: ArrayLike
+    ) -> None:
+        """Creates a bus node fault event
 
         Args:
             df: Attributes as a dataframe.
@@ -104,7 +117,12 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.NODE_FAULT, df, **kwargs)
 
-    def _add_all_event_mappings(self, mapping_type: EventMappingType, mapping_df: Optional[DataFrame], **kwargs: ArrayLike) -> None:
+    def _add_all_event_mappings(
+        self,
+        mapping_type: EventMappingType,
+        mapping_df: Optional[DataFrame],
+        **kwargs: ArrayLike
+    ) -> None:
         metadata = _pp.get_event_mappings_meta_data(mapping_type)
         if kwargs:
             kwargs = _add_index_to_kwargs(metadata, **kwargs)

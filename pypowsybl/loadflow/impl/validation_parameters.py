@@ -6,12 +6,20 @@
 #
 from typing import Optional
 
-from pypowsybl._pypowsybl import ValidationType, LoadFlowValidationParameters
+from pypowsybl._pypowsybl import LoadFlowValidationParameters, ValidationType
+
 from .parameters import Parameters
 from .util import parameters_from_c
 
-ValidationType.ALL = [ValidationType.BUSES, ValidationType.FLOWS, ValidationType.GENERATORS, ValidationType.SHUNTS,
-                      ValidationType.SVCS, ValidationType.TWTS, ValidationType.TWTS3W]
+ValidationType.ALL = [
+    ValidationType.BUSES,
+    ValidationType.FLOWS,
+    ValidationType.GENERATORS,
+    ValidationType.SHUNTS,
+    ValidationType.SVCS,
+    ValidationType.TWTS,
+    ValidationType.TWTS3W,
+]
 
 
 class ValidationParameters:  # pylint: disable=too-few-public-methods
@@ -49,17 +57,20 @@ class ValidationParameters:  # pylint: disable=too-few-public-methods
             The default value is ``False``.
     """
 
-    def __init__(self, threshold: Optional[float] = None,
-                 verbose: Optional[bool] = None,
-                 loadflow_name:  Optional[str] = None,
-                 epsilon_x: Optional[float] = None,
-                 apply_reactance_correction: Optional[bool] = None,
-                 loadflow_parameters: Optional[Parameters] = None,
-                 ok_missing_values: Optional[bool] = None,
-                 no_requirement_if_reactive_bound_inversion: Optional[bool] = None,
-                 compare_results: Optional[bool] = None,
-                 check_main_component_only: Optional[bool] = None,
-                 no_requirement_if_setpoint_outside_power_bounds: Optional[bool] = None):
+    def __init__(
+        self,
+        threshold: Optional[float] = None,
+        verbose: Optional[bool] = None,
+        loadflow_name: Optional[str] = None,
+        epsilon_x: Optional[float] = None,
+        apply_reactance_correction: Optional[bool] = None,
+        loadflow_parameters: Optional[Parameters] = None,
+        ok_missing_values: Optional[bool] = None,
+        no_requirement_if_reactive_bound_inversion: Optional[bool] = None,
+        compare_results: Optional[bool] = None,
+        check_main_component_only: Optional[bool] = None,
+        no_requirement_if_setpoint_outside_power_bounds: Optional[bool] = None,
+    ):
         self._init_with_default_values()
         if threshold is not None:
             self.threshold = threshold
@@ -76,13 +87,17 @@ class ValidationParameters:  # pylint: disable=too-few-public-methods
         if ok_missing_values is not None:
             self.ok_missing_values = ok_missing_values
         if no_requirement_if_reactive_bound_inversion is not None:
-            self.no_requirement_if_reactive_bound_inversion = no_requirement_if_reactive_bound_inversion
+            self.no_requirement_if_reactive_bound_inversion = (
+                no_requirement_if_reactive_bound_inversion
+            )
         if compare_results is not None:
             self.compare_results = compare_results
         if check_main_component_only is not None:
             self.check_main_component_only = check_main_component_only
         if no_requirement_if_setpoint_outside_power_bounds is not None:
-            self.no_requirement_if_setpoint_outside_power_bounds = no_requirement_if_setpoint_outside_power_bounds
+            self.no_requirement_if_setpoint_outside_power_bounds = (
+                no_requirement_if_setpoint_outside_power_bounds
+            )
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(LoadFlowValidationParameters())
@@ -95,10 +110,14 @@ class ValidationParameters:  # pylint: disable=too-few-public-methods
         self.apply_reactance_correction = c_parameters.apply_reactance_correction
         self.loadflow_parameters = parameters_from_c(c_parameters.loadflow_parameters)
         self.ok_missing_values = c_parameters.ok_missing_values
-        self.no_requirement_if_reactive_bound_inversion = c_parameters.no_requirement_if_reactive_bound_inversion
+        self.no_requirement_if_reactive_bound_inversion = (
+            c_parameters.no_requirement_if_reactive_bound_inversion
+        )
         self.compare_results = c_parameters.compare_results
         self.check_main_component_only = c_parameters.check_main_component_only
-        self.no_requirement_if_setpoint_outside_power_bounds = c_parameters.no_requirement_if_setpoint_outside_power_bounds
+        self.no_requirement_if_setpoint_outside_power_bounds = (
+            c_parameters.no_requirement_if_setpoint_outside_power_bounds
+        )
 
     def to_c_parameters(self) -> LoadFlowValidationParameters:
         c_parameters = LoadFlowValidationParameters()
@@ -107,24 +126,32 @@ class ValidationParameters:  # pylint: disable=too-few-public-methods
         c_parameters.loadflow_name = self.loadflow_name
         c_parameters.epsilon_x = self.epsilon_x
         c_parameters.apply_reactance_correction = self.apply_reactance_correction
-        c_parameters.loadflow_parameters = self.loadflow_parameters._to_c_parameters()  # pylint: disable=protected-access
+        c_parameters.loadflow_parameters = (
+            self.loadflow_parameters._to_c_parameters()
+        )  # pylint: disable=protected-access
         c_parameters.ok_missing_values = self.ok_missing_values
-        c_parameters.no_requirement_if_reactive_bound_inversion = self.no_requirement_if_reactive_bound_inversion
+        c_parameters.no_requirement_if_reactive_bound_inversion = (
+            self.no_requirement_if_reactive_bound_inversion
+        )
         c_parameters.compare_results = self.compare_results
         c_parameters.check_main_component_only = self.check_main_component_only
-        c_parameters.no_requirement_if_setpoint_outside_power_bounds = self.no_requirement_if_setpoint_outside_power_bounds
+        c_parameters.no_requirement_if_setpoint_outside_power_bounds = (
+            self.no_requirement_if_setpoint_outside_power_bounds
+        )
         return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"threshold={self.threshold}" \
-               f", verbose={self.verbose!r}" \
-               f", loadflow_name={self.loadflow_name!r}" \
-               f", epsilon_x={self.epsilon_x!r}" \
-               f", apply_reactance_correction={self.apply_reactance_correction!r}" \
-               f", loadflow_parameters={self.loadflow_parameters!r}" \
-               f", ok_missing_values={self.ok_missing_values!r}" \
-               f", no_requirement_if_reactive_bound_inversion={self.no_requirement_if_reactive_bound_inversion}" \
-               f", compare_results={self.compare_results!r}" \
-               f", no_requirement_if_setpoint_outside_power_bounds={self.no_requirement_if_setpoint_outside_power_bounds}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"threshold={self.threshold}"
+            f", verbose={self.verbose!r}"
+            f", loadflow_name={self.loadflow_name!r}"
+            f", epsilon_x={self.epsilon_x!r}"
+            f", apply_reactance_correction={self.apply_reactance_correction!r}"
+            f", loadflow_parameters={self.loadflow_parameters!r}"
+            f", ok_missing_values={self.ok_missing_values!r}"
+            f", no_requirement_if_reactive_bound_inversion={self.no_requirement_if_reactive_bound_inversion}"
+            f", compare_results={self.compare_results!r}"
+            f", no_requirement_if_setpoint_outside_power_bounds={self.no_requirement_if_setpoint_outside_power_bounds}"
+            f")"
+        )

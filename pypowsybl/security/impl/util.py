@@ -7,12 +7,18 @@
 from typing import List
 
 from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import LimitViolation, PreContingencyResult, PostContingencyResult, OperatorStrategyResult
+from pypowsybl._pypowsybl import (
+    LimitViolation,
+    OperatorStrategyResult,
+    PostContingencyResult,
+    PreContingencyResult,
+)
+
 from .security import SecurityAnalysis
 
 
 def create_analysis() -> SecurityAnalysis:
-    """ Creates a security analysis objet, which can be used to run a security analysis on a network
+    """Creates a security analysis objet, which can be used to run a security analysis on a network
 
     Examples:
         .. code-block::
@@ -57,7 +63,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_security_analysis_provider_names()
 
 
-def get_provider_parameters_names(provider: str = '') -> List[str]:
+def get_provider_parameters_names(provider: str = "") -> List[str]:
     """
     Get list of parameters for the specified security analysis provider.
 
@@ -70,45 +76,55 @@ def get_provider_parameters_names(provider: str = '') -> List[str]:
 
 
 def _post_contingency_result_repr(self: PostContingencyResult) -> str:
-    return f"{self.__class__.__name__}(" \
-           f"contingency_id={self.contingency_id!r}" \
-           f", status={self.status.name}" \
-           f", limit_violations=[{len(self.limit_violations)}]" \
-           f")"
+    return (
+        f"{self.__class__.__name__}("
+        f"contingency_id={self.contingency_id!r}"
+        f", status={self.status.name}"
+        f", limit_violations=[{len(self.limit_violations)}]"
+        f")"
+    )
 
 
 PostContingencyResult.__repr__ = _post_contingency_result_repr  # type: ignore
 
 
 def _pre_contingency_result_repr(self: PreContingencyResult) -> str:
-    return f"{self.__class__.__name__}(" \
-           f", status={self.status.name}" \
-           f", limit_violations=[{len(self.limit_violations)}]" \
-           f")"
+    return (
+        f"{self.__class__.__name__}("
+        f", status={self.status.name}"
+        f", limit_violations=[{len(self.limit_violations)}]"
+        f")"
+    )
 
 
 PreContingencyResult.__repr__ = _pre_contingency_result_repr  # type: ignore
 
 
 def _limit_violation_repr(self: LimitViolation) -> str:
-    return f"{self.__class__.__name__}(" \
-           f"subject_id={self.subject_id!r}" \
-           f", subject_name={self.subject_name!r}" \
-           f", limit_type={self.limit_type.name}" \
-           f", limit={self.limit!r}" \
-           f", limit_name={self.limit_name!r}" \
-           f", acceptable_duration={self.acceptable_duration!r}" \
-           f", limit_reduction={self.limit_reduction!r}" \
-           f", value={self.value!r}" \
-           f", side={self.side.name}" \
-           f")"
+    return (
+        f"{self.__class__.__name__}("
+        f"subject_id={self.subject_id!r}"
+        f", subject_name={self.subject_name!r}"
+        f", limit_type={self.limit_type.name}"
+        f", limit={self.limit!r}"
+        f", limit_name={self.limit_name!r}"
+        f", acceptable_duration={self.acceptable_duration!r}"
+        f", limit_reduction={self.limit_reduction!r}"
+        f", value={self.value!r}"
+        f", side={self.side.name}"
+        f")"
+    )
+
 
 def _operator_strategy_result_repr(self: OperatorStrategyResult) -> str:
-    return f"{self.__class__.__name__}(" \
-           f"operator_strategy_id={self.operator_strategy_id!r}" \
-           f", status={self.status.name}" \
-           f", limit_violations=[{len(self.limit_violations)}]" \
-           f")"
+    return (
+        f"{self.__class__.__name__}("
+        f"operator_strategy_id={self.operator_strategy_id!r}"
+        f", status={self.status.name}"
+        f", limit_violations=[{len(self.limit_violations)}]"
+        f")"
+    )
+
 
 OperatorStrategyResult.__repr__ = _operator_strategy_result_repr  # type: ignore
 

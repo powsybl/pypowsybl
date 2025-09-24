@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import Dict, Optional
+
 from pypowsybl import _pypowsybl
 
 
@@ -24,9 +25,12 @@ class Parameters:  # pylint: disable=too-few-public-methods
             currently Dynawo is the only provider handled by pypowsybl
     """
 
-    def __init__(self, start_time: Optional[float] = None,
-                 stop_time: Optional[float] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        start_time: Optional[float] = None,
+        stop_time: Optional[float] = None,
+        provider_parameters: Optional[Dict[str, str]] = None,
+    ):
         self._init_with_default_values()
         if start_time is not None:
             self.start_time = start_time
@@ -40,19 +44,27 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.start_time = default_parameters.start_time
         self.stop_time = default_parameters.stop_time
         self.provider_parameters = dict(
-            zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
+            zip(
+                default_parameters.provider_parameters_keys,
+                default_parameters.provider_parameters_values,
+            )
+        )
 
     def _to_c_parameters(self) -> _pypowsybl.DynamicSimulationParameters:
         c_parameters = _pypowsybl.DynamicSimulationParameters()
         c_parameters.start_time = self.start_time
         c_parameters.stop_time = self.stop_time
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
-        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        c_parameters.provider_parameters_values = list(
+            self.provider_parameters.values()
+        )
         return c_parameters
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"start_time={self.start_time}" \
-               f"stop_time={self.stop_time}" \
-               f", provider_parameters={self.provider_parameters!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"start_time={self.start_time}"
+            f"stop_time={self.stop_time}"
+            f", provider_parameters={self.provider_parameters!r}"
+            f")"
+        )

@@ -5,29 +5,30 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-import os as _os
+import atexit as _atexit
 import inspect as _inspect
 import logging
-import atexit as _atexit
-from pypowsybl import _pypowsybl
-from pypowsybl._pypowsybl import PyPowsyblError
+import os as _os
+
 from pypowsybl import (
-    network,
-    loadflow,
-    security,
-    sensitivity,
-    glsk,
-    flowdecomposition,
-    shortcircuit,
+    _pypowsybl,
     dynamic,
+    flowdecomposition,
+    glsk,
     grid2op,
+    loadflow,
+    network,
     rao,
     report,
-    voltage_initializer
+    security,
+    sensitivity,
+    shortcircuit,
+    voltage_initializer,
 )
+from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl.network import per_unit_view
 
-__version__ = '1.13.0.dev1'
+__version__ = "1.13.0.dev1"
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
@@ -48,13 +49,13 @@ __all__ = [
     "grid2op",
     "dynamic",
     "rao",
-    "report"
+    "report",
 ]
 
 
 # setup a default logger that is the powsybl logger with by default no handler to avoid printing logs >= WARNING
 # to std err
-powsyblLogger = logging.getLogger('powsybl')
+powsyblLogger = logging.getLogger("powsybl")
 powsyblLogger.addHandler(logging.NullHandler())
 _pypowsybl.set_logger(powsyblLogger)
 
@@ -63,6 +64,7 @@ _atexit.register(_pypowsybl.close)
 
 # log substratvm max heap size
 _pypowsybl.log_max_memory()
+
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not

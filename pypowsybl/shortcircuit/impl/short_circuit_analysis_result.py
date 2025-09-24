@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pandas as pd
+
 from pypowsybl import _pypowsybl
 from pypowsybl.utils import create_data_frame_from_series_array
 
@@ -32,7 +33,9 @@ class ShortCircuitAnalysisResult:
         angles on each phase (in kV)
 
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_fault_results(self._handle, self._with_fortescue_result))
+        return create_data_frame_from_series_array(
+            _pypowsybl.get_fault_results(self._handle, self._with_fortescue_result)
+        )
 
     @property
     def feeder_results(self) -> pd.DataFrame:
@@ -43,7 +46,9 @@ class ShortCircuitAnalysisResult:
         A. If the feeder is a branch or a three-winding transformer, the side to which the result applies.
         The dataframe should be empty if the with_feeder_result parameter is set to false.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_feeder_results(self._handle, self._with_fortescue_result))
+        return create_data_frame_from_series_array(
+            _pypowsybl.get_feeder_results(self._handle, self._with_fortescue_result)
+        )
 
     @property
     def limit_violations(self) -> pd.DataFrame:
@@ -60,7 +65,9 @@ class ShortCircuitAnalysisResult:
         - side: in case of a limit on a branch, the side where the violation has been detected
         It should be empty when the parameter with_limit_violations is set to false
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_limit_violations(self._handle))
+        return create_data_frame_from_series_array(
+            _pypowsybl.get_short_circuit_limit_violations(self._handle)
+        )
 
     @property
     def voltage_bus_results(self) -> pd.DataFrame:
@@ -72,4 +79,8 @@ class ShortCircuitAnalysisResult:
         - voltage: the calculated voltage in kV
         It should be empty when the parameter with_voltage_result is set to false.
         """
-        return create_data_frame_from_series_array(_pypowsybl.get_short_circuit_bus_results(self._handle, self._with_fortescue_result))
+        return create_data_frame_from_series_array(
+            _pypowsybl.get_short_circuit_bus_results(
+                self._handle, self._with_fortescue_result
+            )
+        )

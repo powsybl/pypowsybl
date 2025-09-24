@@ -4,12 +4,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Sequence, Dict, Optional, Any
+from typing import Any, Dict, Optional, Sequence
+
 from pypowsybl._pypowsybl import (
-    ConnectedComponentMode,
     BalanceType,
+    ConnectedComponentMode,
+    LoadFlowParameters,
     VoltageInitMode,
-    LoadFlowParameters
 )
 
 # enforcing some class metadata on classes imported from C extension,
@@ -71,22 +72,25 @@ class Parameters:  # pylint: disable=too-few-public-methods
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self, voltage_init_mode: Optional[VoltageInitMode] = None,
-                 transformer_voltage_control_on: Optional[bool] = None,
-                 use_reactive_limits: Optional[bool] = None,
-                 phase_shifter_regulation_on: Optional[bool] = None,
-                 twt_split_shunt_admittance: Optional[bool] = None,
-                 shunt_compensator_voltage_control_on: Optional[bool] = None,
-                 read_slack_bus: Optional[bool] = None,
-                 write_slack_bus: Optional[bool] = None,
-                 distributed_slack: Optional[bool] = None,
-                 balance_type: Optional[BalanceType] = None,
-                 dc_use_transformer_ratio: Optional[bool] = None,
-                 countries_to_balance: Optional[Sequence[str]] = None,
-                 connected_component_mode: Optional[ConnectedComponentMode] = None,
-                 dc_power_factor: Optional[float] = None,
-                 hvdc_ac_emulation: Optional[bool] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        voltage_init_mode: Optional[VoltageInitMode] = None,
+        transformer_voltage_control_on: Optional[bool] = None,
+        use_reactive_limits: Optional[bool] = None,
+        phase_shifter_regulation_on: Optional[bool] = None,
+        twt_split_shunt_admittance: Optional[bool] = None,
+        shunt_compensator_voltage_control_on: Optional[bool] = None,
+        read_slack_bus: Optional[bool] = None,
+        write_slack_bus: Optional[bool] = None,
+        distributed_slack: Optional[bool] = None,
+        balance_type: Optional[BalanceType] = None,
+        dc_use_transformer_ratio: Optional[bool] = None,
+        countries_to_balance: Optional[Sequence[str]] = None,
+        connected_component_mode: Optional[ConnectedComponentMode] = None,
+        dc_power_factor: Optional[float] = None,
+        hvdc_ac_emulation: Optional[bool] = None,
+        provider_parameters: Optional[Dict[str, str]] = None,
+    ):
         self._init_with_default_values()
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
@@ -99,7 +103,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if twt_split_shunt_admittance is not None:
             self.twt_split_shunt_admittance = twt_split_shunt_admittance
         if shunt_compensator_voltage_control_on is not None:
-            self.shunt_compensator_voltage_control_on = shunt_compensator_voltage_control_on
+            self.shunt_compensator_voltage_control_on = (
+                shunt_compensator_voltage_control_on
+            )
         if read_slack_bus is not None:
             self.read_slack_bus = read_slack_bus
         if write_slack_bus is not None:
@@ -123,11 +129,15 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def _init_from_c(self, c_parameters: LoadFlowParameters) -> None:
         self.voltage_init_mode = c_parameters.voltage_init_mode
-        self.transformer_voltage_control_on = c_parameters.transformer_voltage_control_on
+        self.transformer_voltage_control_on = (
+            c_parameters.transformer_voltage_control_on
+        )
         self.use_reactive_limits = c_parameters.use_reactive_limits
         self.phase_shifter_regulation_on = c_parameters.phase_shifter_regulation_on
         self.twt_split_shunt_admittance = c_parameters.twt_split_shunt_admittance
-        self.shunt_compensator_voltage_control_on = c_parameters.shunt_compensator_voltage_control_on
+        self.shunt_compensator_voltage_control_on = (
+            c_parameters.shunt_compensator_voltage_control_on
+        )
         self.read_slack_bus = c_parameters.read_slack_bus
         self.write_slack_bus = c_parameters.write_slack_bus
         self.distributed_slack = c_parameters.distributed_slack
@@ -138,7 +148,11 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.hvdc_ac_emulation = c_parameters.hvdc_ac_emulation
         self.dc_power_factor = c_parameters.dc_power_factor
         self.provider_parameters = dict(
-            zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
+            zip(
+                c_parameters.provider_parameters_keys,
+                c_parameters.provider_parameters_values,
+            )
+        )
 
     def _init_with_default_values(self) -> None:
         self._init_from_c(LoadFlowParameters())
@@ -146,11 +160,15 @@ class Parameters:  # pylint: disable=too-few-public-methods
     def _to_c_parameters(self) -> LoadFlowParameters:
         c_parameters = LoadFlowParameters()
         c_parameters.voltage_init_mode = self.voltage_init_mode
-        c_parameters.transformer_voltage_control_on = self.transformer_voltage_control_on
+        c_parameters.transformer_voltage_control_on = (
+            self.transformer_voltage_control_on
+        )
         c_parameters.use_reactive_limits = self.use_reactive_limits
         c_parameters.phase_shifter_regulation_on = self.phase_shifter_regulation_on
         c_parameters.twt_split_shunt_admittance = self.twt_split_shunt_admittance
-        c_parameters.shunt_compensator_voltage_control_on = self.shunt_compensator_voltage_control_on
+        c_parameters.shunt_compensator_voltage_control_on = (
+            self.shunt_compensator_voltage_control_on
+        )
         c_parameters.read_slack_bus = self.read_slack_bus
         c_parameters.write_slack_bus = self.write_slack_bus
         c_parameters.distributed_slack = self.distributed_slack
@@ -161,40 +179,50 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.hvdc_ac_emulation = self.hvdc_ac_emulation
         c_parameters.dc_power_factor = self.dc_power_factor
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
-        c_parameters.provider_parameters_values = list(self.provider_parameters.values())
+        c_parameters.provider_parameters_values = list(
+            self.provider_parameters.values()
+        )
         return c_parameters
 
     @staticmethod
     def from_json(json_str: str) -> "Parameters":
         parameters = Parameters()
-        parameters._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str))
+        parameters._init_from_c(
+            pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str)
+        )
         return parameters
 
     def to_json(self) -> str:
-        return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(self._to_c_parameters())
+        return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(
+            self._to_c_parameters()
+        )
 
     def __getstate__(self) -> Dict[str, Any]:
-        return {'json': self.to_json()}
+        return {"json": self.to_json()}
 
     def __setstate__(self, state: Dict[str, Any]) -> None:
-        self._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(state['json']))
+        self._init_from_c(
+            pypowsybl._pypowsybl.create_loadflow_parameters_from_json(state["json"])
+        )
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(" \
-               f"voltage_init_mode={self.voltage_init_mode.name}" \
-               f", transformer_voltage_control_on={self.transformer_voltage_control_on!r}" \
-               f", use_reactive_limits={self.use_reactive_limits!r}" \
-               f", phase_shifter_regulation_on={self.phase_shifter_regulation_on!r}" \
-               f", twt_split_shunt_admittance={self.twt_split_shunt_admittance!r}" \
-               f", shunt_compensator_voltage_control_on={self.shunt_compensator_voltage_control_on!r}" \
-               f", read_slack_bus={self.read_slack_bus!r}" \
-               f", write_slack_bus={self.write_slack_bus!r}" \
-               f", distributed_slack={self.distributed_slack!r}" \
-               f", balance_type={self.balance_type.name}" \
-               f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}" \
-               f", countries_to_balance={self.countries_to_balance}" \
-               f", connected_component_mode={self.connected_component_mode!r}" \
-               f", hvdc_ac_emulation={self.hvdc_ac_emulation!r}" \
-               f", dc_power_factor={self.dc_power_factor!r}" \
-               f", provider_parameters={self.provider_parameters!r}" \
-               f")"
+        return (
+            f"{self.__class__.__name__}("
+            f"voltage_init_mode={self.voltage_init_mode.name}"
+            f", transformer_voltage_control_on={self.transformer_voltage_control_on!r}"
+            f", use_reactive_limits={self.use_reactive_limits!r}"
+            f", phase_shifter_regulation_on={self.phase_shifter_regulation_on!r}"
+            f", twt_split_shunt_admittance={self.twt_split_shunt_admittance!r}"
+            f", shunt_compensator_voltage_control_on={self.shunt_compensator_voltage_control_on!r}"
+            f", read_slack_bus={self.read_slack_bus!r}"
+            f", write_slack_bus={self.write_slack_bus!r}"
+            f", distributed_slack={self.distributed_slack!r}"
+            f", balance_type={self.balance_type.name}"
+            f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}"
+            f", countries_to_balance={self.countries_to_balance}"
+            f", connected_component_mode={self.connected_component_mode!r}"
+            f", hvdc_ac_emulation={self.hvdc_ac_emulation!r}"
+            f", dc_power_factor={self.dc_power_factor!r}"
+            f", provider_parameters={self.provider_parameters!r}"
+            f")"
+        )
