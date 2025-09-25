@@ -50,7 +50,7 @@ public class RaoContext {
         if (glsks != null) {
             inputBuilder.withGlskProvider(glsks.getZonalGlsks(network));
         }
-        return Rao.run(inputBuilder.build(), parameters);
+        return Rao.find("SearchTreeRao").run(inputBuilder.build(), parameters);
     }
 
     public RaoResultWithVoltageMonitoring runVoltageMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
