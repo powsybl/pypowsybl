@@ -42,6 +42,7 @@ public final class ReportCFunctions {
             String defaultName = CTypeUtil.toString(defaultNamePtr);
             ReportNode reportNode = ReportNode.newRootReportNode()
                 .withMessageTemplate(taskKey, defaultName)
+                .withAllResourceBundlesFromClasspath()
                 .build();
             return ObjectHandles.getGlobal().create(reportNode);
         });
