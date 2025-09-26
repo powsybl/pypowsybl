@@ -10,6 +10,7 @@ import warnings
 import pandas as pd
 from pandas import DataFrame
 from numpy.typing import ArrayLike
+from pypowsybl._pypowsybl import DistributionMode
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import ElementType
 from pypowsybl._pypowsybl import NetworkModificationType
@@ -21,6 +22,7 @@ from pypowsybl.utils import (
     create_data_frame_from_series_array
 )
 from .network import Network
+from pypowsybl._pypowsybl import ScalingParameters
 
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
@@ -1057,3 +1059,22 @@ def replace_3_2_windings_transformers_with_3_windings_transformers(network: Netw
     _pp.split_or_merge_transformers(network._handle, transformer_ids, True,
                                     None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
+
+def scale_proportional(network: Network, asked: int, distribution_mode: DistributionMode, injections_ids: List[str], limit_min: int, limit_max: int, scaling_parameters: ScalingParameters) -> int:
+    """
+    Creates a generator scalable on the network
+
+    Args:
+        network: the network to create the injections and scale them on
+        asked: the value asked to adjust the scalable active power
+        distribution_mode: parameters
+        injections_ids: the ids of the injections
+        limit_min : the lower limit of the injections
+        limit_max: the upper limit of the injections
+        scaling_parameters: the scaling parameters
+
+    Return:
+        The actual value of the scalable active power adjustment.
+    """
+    p = scaling_parameters._to_c_parameters() if scaling_parameters is not None else _pp.ScalingParameters()
+    return _pp.scale_proportional(network._handle, asked, distribution_mode, injections_ids, limit_min, limit_max, p)
