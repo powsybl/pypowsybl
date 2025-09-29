@@ -85,8 +85,6 @@ public final class RaoDataframes {
 
     public record ActivatedRemedialActionResult(String remedialActionId, Instant instant, String contingency) { }
 
-    public record ActivatedNetworkActionResult(String remedialActionId, Instant instant, String contingency) { }
-
     public record ActivatedPstRangeActionResult(String remedialActionId, Instant instant, String contingency, int optimizedTap) { }
 
     public record ActivatedRangeActionResult(String remedialActionId, Instant instant, String contingency, double optimizedSetPoint) { }
@@ -192,14 +190,14 @@ public final class RaoDataframes {
         return results;
     }
 
-    private static List<ActivatedNetworkActionResult> getActivatedNetworkActions(Crac crac, RaoResult raoResult) {
-        List<ActivatedNetworkActionResult> results = new ArrayList<>();
+    private static List<ActivatedRemedialActionResult> getActivatedNetworkActions(Crac crac, RaoResult raoResult) {
+        List<ActivatedRemedialActionResult> results = new ArrayList<>();
         for (NetworkAction networkAction : crac.getNetworkActions()) {
             for (State state : crac.getStates()) {
                 Optional<Contingency> contingencyOpt = state.getContingency();
                 // Only go through activated remedial actions
                 if (raoResult.isActivatedDuringState(state, networkAction)) {
-                    ActivatedNetworkActionResult result = new ActivatedNetworkActionResult(networkAction.getId(), state.getInstant(), contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "");
+                    ActivatedRemedialActionResult result = new ActivatedRemedialActionResult(networkAction.getId(), state.getInstant(), contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "");
                     results.add(result);
                 }
             }
@@ -333,12 +331,12 @@ public final class RaoDataframes {
 
     private static DataframeMapper<Crac, RaoResult> createNetworkActionResultMapper() {
         AtomicInteger index = new AtomicInteger();
-        return new DataframeMapperBuilder<Crac, ActivatedNetworkActionResult, RaoResult>()
+        return new DataframeMapperBuilder<Crac, ActivatedRemedialActionResult, RaoResult>()
             .itemsProvider(RaoDataframes::getActivatedNetworkActions)
             .intsIndex(INDEX, e -> index.getAndIncrement())
-            .strings(REMEDIAL_ACTION_ID, ActivatedNetworkActionResult::remedialActionId)
+            .strings(REMEDIAL_ACTION_ID, ActivatedRemedialActionResult::remedialActionId)
             .strings(OPTIMIZED_INSTANT, r -> r.instant() != null ? r.instant().getId() : INITIAL_INSTANT)
-            .strings(CONTINGENCY, ActivatedNetworkActionResult::contingency)
+            .strings(CONTINGENCY, ActivatedRemedialActionResult::contingency)
             .build();
     }
 
