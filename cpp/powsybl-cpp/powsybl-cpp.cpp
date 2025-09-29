@@ -2042,9 +2042,9 @@ JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
 
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters) {
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider) {
     auto c_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get(), (char*) raoProvider.data());
 }
 
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {

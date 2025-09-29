@@ -1288,7 +1288,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_rao", &pypowsybl::createRao, "Create rao context");
     m.def("run_rao", &pypowsybl::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
-        py::arg("network"), py::arg("rao_context"), py::arg("parameters"));
+        py::arg("network"), py::arg("rao_context"), py::arg("parameters"), py::arg("rao_provider"));
     m.def("set_crac_source", ::setCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
             py::arg("network"), py::arg("rao_context"), py::arg("crac_source"));
     m.def("set_glsk_source", ::setGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source",

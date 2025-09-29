@@ -128,12 +128,13 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "runRao")
     public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
-                              PyPowsyblApiHeader.RaoParametersPointer parametersPointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                      PyPowsyblApiHeader.RaoParametersPointer parametersPointer, CCharPointer raoProviderPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             Network network = ObjectHandles.getGlobal().get(networkHandle);
             RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
             RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
-            return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters));
+            String raoProvider = CTypeUtil.toString(raoProviderPtr);
+            return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters, raoProvider));
         });
     }
 
