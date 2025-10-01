@@ -1302,7 +1302,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_flow_cnec_results", &pypowsybl::getFlowCnecResults, "Get rao flow cnec results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_angle_cnec_results", &pypowsybl::getAngleCnecResults, "Get rao angle cnec results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_voltage_cnec_results", &pypowsybl::getVoltageCnecResults, "Get rao voltage cnec results", py::arg("crac"), py::arg("rao_result"));
-    m.def("get_ra_results", &pypowsybl::getRaResults, "Get rao remedial actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_remedial_action_results", &pypowsybl::getRemedialActionResults, "Get rao remedial actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_network_action_results", &pypowsybl::getNetworkActionResults, "Get RAO network actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_pst_range_action_results", &pypowsybl::getPstRangeActionResults, "Get RAO PST range actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_range_action_results", &pypowsybl::getRangeActionResults, "Get RAO range actions results (non-PST)", py::arg("crac"), py::arg("rao_result"));
     m.def("get_cost_results", &pypowsybl::getCostResults, "Get rao cost results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_virtual_cost_names", &pypowsybl::getVirtualCostNames, "Get virtual cost names", py::arg("rao_result"));
     m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
