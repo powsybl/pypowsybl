@@ -1024,7 +1024,7 @@ std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
 
 JavaHandle createDefaultRaoParameters();
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters);
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider);
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 
