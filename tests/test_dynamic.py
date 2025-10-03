@@ -9,7 +9,6 @@ import pypowsybl.dynamic as dyn
 import pytest
 import pandas as pd
 
-
 @pytest.fixture(autouse=True)
 def set_up():
     pp.set_config_read(False)
@@ -135,3 +134,22 @@ def test_add_output_variables():
     variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
     variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
     variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
+
+
+def test_default_parameters():
+    parameters = dyn.Parameters()
+    assert 0.0 == parameters.start_time
+    assert 10.0 == parameters.stop_time
+    assert not parameters.provider_parameters
+
+
+def test_parameters():
+    dynawo_param = {
+        'solver.type': 'IDA',
+        'precision': '1e-5'
+    }
+    parameters = dyn.Parameters(start_time=20, stop_time=100, provider_parameters=dynawo_param)
+    assert 20.0 == parameters.start_time
+    assert 100.0 == parameters.stop_time
+    assert 'IDA'== parameters.provider_parameters['solver.type']
+    assert '1e-5' == parameters.provider_parameters['precision']

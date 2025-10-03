@@ -11,7 +11,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.sld.layout.MatrixZoneLayoutFactory;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.SldParameters;
-import com.powsybl.sld.library.ComponentLibrary;
+import com.powsybl.sld.library.SldComponentLibrary;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -102,9 +102,9 @@ public final class SingleLineDiagramUtil {
     }
 
     static List<String> getComponentLibraryNames() {
-        return ComponentLibrary.findAll()
+        return SldComponentLibrary.findAll()
                 .stream()
-                .map(ComponentLibrary::getName)
+                .map(SldComponentLibrary::getName)
                 .toList();
     }
 }

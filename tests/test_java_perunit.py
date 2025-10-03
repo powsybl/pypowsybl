@@ -128,11 +128,10 @@ def test_shunt_compensators_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
+                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count', 'solved_section_count',
                                      'voltage_regulation_on', 'target_v', 'target_deadband', 'regulating_bus_id',
-                                     'p', 'q', 'i',
-                                     'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0, -19.2, 'LINEAR', 1, 1, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 0, -19.2, 'LINEAR', 1, 1, nan, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
                                    'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False, atol=1e-2)
 
@@ -213,9 +212,9 @@ def test_get_static_var_compensators_per_unit():
     n.per_unit = True
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
     n.update_static_var_compensators(pd.DataFrame.from_records(
@@ -224,9 +223,9 @@ def test_get_static_var_compensators_per_unit():
 
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
 
@@ -354,9 +353,9 @@ def test_ratio_tap_changers_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, 0, 2, 3, True, True, 1.05, 0.0, 'VLLOAD_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 1, nan, 0, 2, 3, True, True, 1.05, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 

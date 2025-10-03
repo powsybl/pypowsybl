@@ -4,16 +4,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import pathlib
 import json
+import pathlib
+import pickle
 import re
+import tempfile
+
+import pytest
+from pypowsybl._pypowsybl import LoadFlowComponentStatus
 
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
-from pypowsybl._pypowsybl import LoadFlowComponentStatus
-from pypowsybl.loadflow import ValidationType
-import pytest
 import pypowsybl.report as rp
+from pypowsybl.loadflow import ValidationType
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -229,6 +232,7 @@ def test_get_provider_parameters_names():
                                    'maxPlausibleTargetVoltage',
                                    'minRealisticVoltage',
                                    'maxRealisticVoltage',
+                                   'minNominalVoltageRealisticVoltageCheck',
                                    'reactiveRangeCheckMode',
                                    'lowImpedanceThreshold',
                                    'networkCacheEnabled',
@@ -281,11 +285,12 @@ def test_get_provider_parameters_names():
                                    'areaInterchangePMaxMismatch',
                                    'voltageRemoteControlRobustMode',
                                    'forceTargetQInReactiveLimits',
-                                   'disableInconsistentVoltageControls']
+                                   'disableInconsistentVoltageControls',
+                                   'extrapolateReactiveLimits']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 74 == len(specific_parameters)
+    assert 76 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
@@ -349,5 +354,24 @@ def test_wrong_regulated_bus_id():
     parameters = lf.ValidationParameters()
     validation = pp.loadflow.run_validation(net, validation_parameters=parameters)
 
-def test():
-    pass
+
+def test_parameters_to_json():
+    p = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES)
+    json = p.to_json()
+    p2 = pp.loadflow.Parameters.from_json(json)
+    assert p2.voltage_init_mode == pp.loadflow.VoltageInitMode.DC_VALUES
+    json2 = p2.to_json()
+    assert json == json2
+
+
+def test_parameters_pickle():
+    p = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES, dc_power_factor=0.33333)
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        data_file = tmp_dir_path.joinpath('parameters.pkl')
+        with open(data_file, 'wb') as f:
+            pickle.dump(p, f)
+        with open(data_file, 'rb') as f:
+            p2 = pickle.load(f)
+            assert p2.voltage_init_mode == pp.loadflow.VoltageInitMode.DC_VALUES
+            assert p2.dc_power_factor == 0.33333

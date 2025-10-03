@@ -51,6 +51,7 @@ public final class NetworkDataframes {
     private static final String MAX_Q_AT_P = "max_q_at_p";
     private static final String REGULATED_BUS_ID = "regulated_bus_id";
     private static final String REGULATED_BUS_BREAKER_BUS_ID = "regulated_bus_breaker_bus_id";
+    private static final String REGULATING = "regulating";
 
     private NetworkDataframes() {
     }
@@ -427,6 +428,7 @@ public final class NetworkDataframes {
                 .enums("model_type", ShuntCompensatorModelType.class, ShuntCompensator::getModelType)
                 .ints("max_section_count", ShuntCompensator::getMaximumSectionCount)
                 .ints("section_count", ShuntCompensator::getSectionCount, ShuntCompensator::setSectionCount)
+                .optionalInts("solved_section_count", ShuntCompensator::findSolvedSectionCount)
                 .booleans("voltage_regulation_on", ShuntCompensator::isVoltageRegulatorOn, ShuntCompensator::setVoltageRegulatorOn)
                 .doubles("target_v", (sc, context) -> perUnitTargetV(context, sc.getTargetV(), sc.getRegulatingTerminal(), sc.getTerminal()),
                     (sc, v, context) -> sc.setTargetV(unPerUnitTargetV(context, v, sc.getRegulatingTerminal(), sc.getTerminal())))
@@ -812,6 +814,7 @@ public final class NetworkDataframes {
                     (svc, targetQ, context) -> svc.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .enums("regulation_mode", StaticVarCompensator.RegulationMode.class,
                         StaticVarCompensator::getRegulationMode, StaticVarCompensator::setRegulationMode)
+                .booleans(REGULATING, StaticVarCompensator::isRegulating, StaticVarCompensator::setRegulating)
                 .strings("regulated_element_id", svc -> NetworkUtil.getRegulatedElementId(svc::getRegulatingTerminal),
                         (svc, elementId) -> NetworkUtil.setRegulatingTerminal(svc::setRegulatingTerminal, svc.getNetwork(), elementId))
                 .strings(REGULATED_BUS_ID, svc -> getBusId(svc.getRegulatingTerminal()), false)
@@ -919,6 +922,8 @@ public final class NetworkDataframes {
                 .doubles("angle", (busbar, context) -> perUnitAngle(context, busbar.getAngle()))
                 .strings("voltage_level_id", bbs -> bbs.getTerminal().getVoltageLevel().getId())
                 .strings("bus_id", bbs -> getBusId(bbs.getTerminal()))
+                .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
+                .ints("node", bbs -> getNode(bbs.getTerminal()), false)
                 .booleans("connected", bbs -> bbs.getTerminal().isConnected(), connectInjection())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
@@ -1292,11 +1297,12 @@ public final class NetworkDataframes {
                 .stringsIndex("id", TapChangerRow::getId)
                 .strings("side", TapChangerRow::getSide)
                 .ints("tap", row -> row.getRtc().getTapPosition(), (row, p) -> row.getRtc().setTapPosition(p))
+                .optionalInts("solved_tap_position", row -> row.getRtc().findSolvedTapPosition())
                 .ints("low_tap", row -> row.getRtc().getLowTapPosition())
                 .ints("high_tap", row -> row.getRtc().getHighTapPosition())
                 .ints("step_count", row -> row.getRtc().getStepCount())
-                .booleans("on_load", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
-                .booleans("regulating", row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
+                .booleans("oltc", row -> row.getRtc().hasLoadTapChangingCapabilities(), (row, v) -> row.getRtc().setLoadTapChangingCapabilities(v))
+                .booleans(REGULATING, row -> row.getRtc().isRegulating(), (row, v) -> row.getRtc().setRegulating(v))
                 .doubles("target_v", (row, context) -> getTransformerTargetV(row.getRtc(), context),
                         (row, targetV, context) -> setTransformerTargetV(row.getRtc(), targetV, context))
                 .doubles("target_deadband", (row, context) -> row.getRtc().getTargetDeadband(),
@@ -1431,10 +1437,12 @@ public final class NetworkDataframes {
                 .stringsIndex("id", TapChangerRow::getId)
                 .strings("side", TapChangerRow::getSide)
                 .ints("tap", t -> t.getPtc().getTapPosition(), (t, v) -> t.getPtc().setTapPosition(v))
+                .optionalInts("solved_tap_position", t -> t.getPtc().findSolvedTapPosition())
                 .ints("low_tap", t -> t.getPtc().getLowTapPosition())
                 .ints("high_tap", t -> t.getPtc().getHighTapPosition())
                 .ints("step_count", t -> t.getPtc().getStepCount())
-                .booleans("regulating", t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
+                .booleans("oltc", t -> t.getPtc().hasLoadTapChangingCapabilities(), (t, v) -> t.getPtc().setLoadTapChangingCapabilities(v))
+                .booleans(REGULATING, t -> t.getPtc().isRegulating(), (t, v) -> t.getPtc().setRegulating(v))
                 .enums("regulation_mode", PhaseTapChanger.RegulationMode.class, t -> t.getPtc().getRegulationMode(), (t, v) -> t.getPtc().setRegulationMode(v))
                 .doubles("regulation_value", (t, context) -> t.getPtc().getRegulationValue(),
                     (t, v, context) -> t.getPtc().setRegulationValue(v))

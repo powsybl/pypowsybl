@@ -88,6 +88,9 @@ public final class CommonCFunctions {
         } else {
             UnmanagedMemory.free(seriesPointer.data().getPtr());
         }
+        if (seriesPointer.getMask().isNonNull()) {
+            UnmanagedMemory.free(seriesPointer.getMask());
+        }
         UnmanagedMemory.free(seriesPointer.getName());
     }
 

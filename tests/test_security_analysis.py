@@ -4,7 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import numpy as np
 import pytest
 import pypowsybl as pp
 import pandas as pd
@@ -203,7 +202,6 @@ def test_loadflow_parameters():
     parameters.load_flow_parameters.countries_to_balance = ['FR']
     res = sa.run_ac(network, parameters=parameters)
     assert res.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
-
 
 def test_security_analysis_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()

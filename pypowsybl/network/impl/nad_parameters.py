@@ -17,7 +17,7 @@ class NadParameters:
                  current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
                  substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
                  scaling_factor: int = 150000, radius_factor: float = 150.0,
-                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER, voltage_level_details: bool = True):
+                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER, voltage_level_details: bool = True, injections_added: bool = False):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -32,6 +32,7 @@ class NadParameters:
         self._radius_factor = radius_factor
         self._edge_info_displayed = edge_info_displayed
         self._voltage_level_details = voltage_level_details
+        self._injections_added = injections_added
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -103,6 +104,11 @@ class NadParameters:
         """voltage_level_details"""
         return self._voltage_level_details
 
+    @property
+    def injections_added(self) -> bool:
+        """injections_added"""
+        return self._injections_added
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_name_displayed = self._edge_name_displayed
@@ -119,6 +125,7 @@ class NadParameters:
         c_parameters.radius_factor = self._radius_factor
         c_parameters.edge_info_displayed = self._edge_info_displayed
         c_parameters.voltage_level_details = self._voltage_level_details
+        c_parameters.injections_added = self._injections_added
         return c_parameters
 
     def __repr__(self) -> str:
@@ -137,4 +144,5 @@ class NadParameters:
                f", radius_factor={self._radius_factor}" \
                f", edge_info_displayed={self._edge_info_displayed}" \
                f", voltage_level_details={self._voltage_level_details}" \
+               f", injections_added={self._injections_added}" \
                f")"

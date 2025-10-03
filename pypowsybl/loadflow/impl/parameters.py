@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Sequence, Dict
+from typing import Sequence, Dict, Optional, Any
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
     BalanceType,
@@ -18,6 +18,8 @@ from pypowsybl._pypowsybl import (
 VoltageInitMode.__module__ = __name__
 BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
+
+import pypowsybl._pypowsybl
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -69,22 +71,22 @@ class Parameters:  # pylint: disable=too-few-public-methods
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self, voltage_init_mode: VoltageInitMode = None,
-                 transformer_voltage_control_on: bool = None,
-                 use_reactive_limits: bool = None,
-                 phase_shifter_regulation_on: bool = None,
-                 twt_split_shunt_admittance: bool = None,
-                 shunt_compensator_voltage_control_on: bool = None,
-                 read_slack_bus: bool = None,
-                 write_slack_bus: bool = None,
-                 distributed_slack: bool = None,
-                 balance_type: BalanceType = None,
-                 dc_use_transformer_ratio: bool = None,
-                 countries_to_balance: Sequence[str] = None,
-                 connected_component_mode: ConnectedComponentMode = None,
-                 dc_power_factor: float = None,
-                 hvdc_ac_emulation: bool = None,
-                 provider_parameters: Dict[str, str] = None):
+    def __init__(self, voltage_init_mode: Optional[VoltageInitMode] = None,
+                 transformer_voltage_control_on: Optional[bool] = None,
+                 use_reactive_limits: Optional[bool] = None,
+                 phase_shifter_regulation_on: Optional[bool] = None,
+                 twt_split_shunt_admittance: Optional[bool] = None,
+                 shunt_compensator_voltage_control_on: Optional[bool] = None,
+                 read_slack_bus: Optional[bool] = None,
+                 write_slack_bus: Optional[bool] = None,
+                 distributed_slack: Optional[bool] = None,
+                 balance_type: Optional[BalanceType] = None,
+                 dc_use_transformer_ratio: Optional[bool] = None,
+                 countries_to_balance: Optional[Sequence[str]] = None,
+                 connected_component_mode: Optional[ConnectedComponentMode] = None,
+                 dc_power_factor: Optional[float] = None,
+                 hvdc_ac_emulation: Optional[bool] = None,
+                 provider_parameters: Optional[Dict[str, str]] = None):
         self._init_with_default_values()
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
@@ -161,6 +163,21 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
+
+    @staticmethod
+    def from_json(json_str: str) -> "Parameters":
+        parameters = Parameters()
+        parameters._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str))
+        return parameters
+
+    def to_json(self) -> str:
+        return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(self._to_c_parameters())
+
+    def __getstate__(self) -> Dict[str, Any]:
+        return {'json': self.to_json()}
+
+    def __setstate__(self, state: Dict[str, Any]) -> None:
+        self._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(state['json']))
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \

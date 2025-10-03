@@ -15,14 +15,14 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>pypowsybl-parent</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.13.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>pypowsybl</artifactId>
     <description>A C interface to powsybl, for pypowsybl implementation</description>
 
     <packaging>jar</packaging>
-    <version>1.12.0-SNAPSHOT</version>
+    <version>1.13.0-SNAPSHOT</version>
 
     <properties>
         <commons-collections4.version>4.4</commons-collections4.version>
@@ -164,6 +164,10 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>${commons-csv.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.re2j</groupId>
+            <artifactId>re2j</artifactId>
         </dependency>
         <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
         <dependency>
@@ -374,6 +378,11 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

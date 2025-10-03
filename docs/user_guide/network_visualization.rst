@@ -269,7 +269,7 @@ Network-area diagrams can be customized through NadParameters:
 
     >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False))
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False, injections_added=True))
 
     - edge_name_displayed: if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
@@ -282,6 +282,7 @@ Network-area diagrams can be customized through NadParameters:
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
     - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
     - voltage_level_details: if true, additional information about voltage levels is displayed in text boxes. The content of the additional information is determined by the label provider that is used.
+    - injections_added: if true, the injections present on the bus nodes of the voltage levels are displayed.
 
 
 
@@ -409,6 +410,14 @@ Similarly to the edge_styles, the three_wt_styles parameter can be used to set t
     - edge3, width3 and dash3 is the color, the width and the dash pattern for the third transformer's leg
 
 The optional parameter nad_profile can also be set in the write_network_area_diagram function.
+
+We can create a NadProfile, initialized with default content (in terms of branch_labels, vl_descriptions, and bus_descriptions), by using the get_default_nad_profile function:
+
+.. code-block:: python
+
+    >>> default_profile = network.get_default_nad_profile()
+
+This is useful for example if we want to update just a few labels and rely on the defaults for the other ones.
 
 Network area diagram using geographical data
 --------------------------------------------

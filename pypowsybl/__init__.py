@@ -9,7 +9,7 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
-from pypowsybl import _pypowsybl, voltage_initializer
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
     network,
@@ -19,11 +19,15 @@ from pypowsybl import (
     glsk,
     flowdecomposition,
     shortcircuit,
-    rao
+    dynamic,
+    grid2op,
+    rao,
+    report,
+    voltage_initializer
 )
 from pypowsybl.network import per_unit_view
 
-__version__ = '1.12.0.dev1'
+__version__ = '1.13.0.dev1'
 
 # set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
@@ -41,7 +45,10 @@ __all__ = [
     "flowdecomposition",
     "shortcircuit",
     "voltage_initializer",
-    "grid2op"
+    "grid2op",
+    "dynamic",
+    "rao",
+    "report"
 ]
 
 

@@ -1,13 +1,15 @@
+from typing import Optional
+
 from pypowsybl._pypowsybl import (
     RaoParameters,
     ExecutionCondition
 )
 
 class SecondPreventiveRaoParameters:
-    def __init__(self, execution_condition: ExecutionCondition = None,
-                 re_optimize_curative_range_actions: bool = None,
-                 hint_from_first_preventive_rao: bool = None,
-                 rao_parameters: RaoParameters = None) -> None:
+    def __init__(self, execution_condition: Optional[ExecutionCondition] = None,
+                 re_optimize_curative_range_actions: Optional[bool] = None,
+                 hint_from_first_preventive_rao: Optional[bool] = None,
+                 rao_parameters: Optional[RaoParameters] = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:
