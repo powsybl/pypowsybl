@@ -46,6 +46,10 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? ((sqrt(3) * nominalV) / (context.getNominalApparentPower() * pow(10, 3))) * i : i;
     }
 
+    public static double unPerUnitI(NetworkDataframeContext context, double i, double nominalV) {
+        return context.isPerUnit() ? i / ((sqrt(3) * nominalV) / (context.getNominalApparentPower() * pow(10, 3))) : i;
+    }
+
     public static double perUnitGSide1(NetworkDataframeContext context, Line line) {
         return perUnitG(context, line.getG1(), line.getR(), line.getX(),
             line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV());
