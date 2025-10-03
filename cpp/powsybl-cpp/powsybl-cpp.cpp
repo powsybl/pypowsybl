@@ -1675,9 +1675,11 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode) {
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle* eventMapping, JavaHandle* timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters  = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), (reportNode == nullptr) ? nullptr : *reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping,
+    (eventMapping == nullptr) ? nullptr : *eventMapping, (timeSeriesMapping == nullptr) ? nullptr : *timeSeriesMapping,
+    c_parameters.get(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
