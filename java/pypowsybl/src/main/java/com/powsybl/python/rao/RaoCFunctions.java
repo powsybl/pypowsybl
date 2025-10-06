@@ -63,7 +63,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "createRao")
     public static ObjectHandle createRao(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() {
                 return ObjectHandles.getGlobal().create(new RaoContext());
@@ -78,7 +78,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "loadRaoParameters")
     public static RaoParametersPointer loadRaoParameters(IsolateThread thread, CCharPointer parametersBuffer, int paramersBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<RaoParametersPointer>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public RaoParametersPointer get() throws IOException {
                 ByteBuffer bufferParameters = CTypeConversion.asByteBuffer(parametersBuffer, paramersBufferSize);
@@ -91,7 +91,7 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "serializeRaoParameters")
     public static ArrayPointer<CCharPointer> serializeRaoParameters(IsolateThread thread, RaoParametersPointer raoParameters,
                                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointer> get() throws IOException {
                 RaoParameters parameters = convertToRaoParameters(raoParameters);
@@ -147,14 +147,15 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "runRao")
     public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
-                              RaoParametersPointer parametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+                              RaoParametersPointer parametersPointer, CCharPointer raoProviderPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
                 RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
-                return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters));
+                String raoProvider = CTypeUtil.toString(raoProviderPtr);
+                return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters, raoProvider));
             }
         });
     }
@@ -163,7 +164,7 @@ public final class RaoCFunctions {
     public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                      CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -182,7 +183,7 @@ public final class RaoCFunctions {
     public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                      CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
@@ -199,7 +200,7 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "serializeRaoResultsToBuffer")
     public static ArrayPointer<CCharPointer> serializeRaoResultsToBuffer(IsolateThread thread, ObjectHandle raoResultHandle,
         ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointer> get() throws IOException {
                 RaoResult raoResult = ObjectHandles.getGlobal().get(raoResultHandle);
@@ -219,7 +220,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getRaoResultStatus")
     public static RaoComputationStatus getRaoResultStatus(IsolateThread thread, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new Supplier<RaoComputationStatus>() {
+        return doCatch(exceptionHandlerPtr, new Supplier<>() {
             @Override
             public RaoComputationStatus get() {
                 RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
@@ -241,7 +242,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getCrac")
     public static ObjectHandle getCrac(IsolateThread thread, ObjectHandle raoContextHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
@@ -257,7 +258,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getFlowCnecResults")
     public static ArrayPointer<SeriesPointer> getFlowCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Crac crac = ObjectHandles.getGlobal().get(cracHandle);
@@ -269,7 +270,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getAngleCnecResults")
     public static ArrayPointer<SeriesPointer> getAngleCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Crac crac = ObjectHandles.getGlobal().get(cracHandle);
@@ -281,7 +282,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getVoltageCnecResults")
     public static ArrayPointer<SeriesPointer> getVoltageCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Crac crac = ObjectHandles.getGlobal().get(cracHandle);
@@ -291,22 +292,58 @@ public final class RaoCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getRaResults")
-    public static ArrayPointer<SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+    @CEntryPoint(name = "getRemedialActionResults")
+    public static ArrayPointer<SeriesPointer> getRemedialActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Crac crac = ObjectHandles.getGlobal().get(cracHandle);
                 RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-                return Dataframes.createCDataframe(RaoDataframes.raResultMapper(), crac, new DataframeFilter(), result);
+                return Dataframes.createCDataframe(RaoDataframes.remedialActionResultMapper(), crac, new DataframeFilter(), result);
+            }
+        });
+    }
 
+    @CEntryPoint(name = "getNetworkActionResults")
+    public static ArrayPointer<SeriesPointer> getNetworkActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.networkActionResultMapper(), crac, new DataframeFilter(), result);
+
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getPstRangeActionResults")
+    public static ArrayPointer<SeriesPointer> getPstRangeActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.pstRangeActionResultMapper(), crac, new DataframeFilter(), result);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getRangeActionResults")
+    public static ArrayPointer<SeriesPointer> getRangeActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.rangeActionResultMapper(), crac, new DataframeFilter(), result);
             }
         });
     }
 
     @CEntryPoint(name = "getCostResults")
     public static ArrayPointer<SeriesPointer> getCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Crac crac = ObjectHandles.getGlobal().get(cracHandle);
@@ -319,7 +356,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getVirtualCostNames")
     public static ArrayPointer<CCharPointerPointer> getVirtualCostNames(IsolateThread thread, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() throws IOException {
                 RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
@@ -330,7 +367,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getVirtualCostResults")
     public static ArrayPointer<SeriesPointer> getVirtualCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer virtualCostNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 Crac crac = ObjectHandles.getGlobal().get(cracHandle);
