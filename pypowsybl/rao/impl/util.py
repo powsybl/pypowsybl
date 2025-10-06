@@ -16,7 +16,7 @@ def create_rao() -> Rao:
     return Rao(_pypowsybl.create_rao())
 
 class RaoLogFilter:
-    def filter(self, record):
+    def filter(self, record) -> bool:
         # Filter and keep only logs from open rao package
         if re.search(".*com\\.powsybl\\.openrao.*", record.java_logger_name):
             return True

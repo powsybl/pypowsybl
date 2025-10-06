@@ -157,3 +157,26 @@ The 'RaoResult' object can also be serialized to json:
 .. doctest::
 
     >>> rao_result.serialize(str(DATA_DIR.joinpath("rao/results.json")))
+
+Rao logs filter
+---------------
+
+Open rao logs can be retrieved in the global powsybl logger. However if a user is only interested in the logs coming from
+open rao, a RaoLogFilter is available :
+
+    >>> import pypowsybl as pp
+    >>> import logging
+    >>> from pypowsybl.rao import (Parameters as RaoParameters, RaoLogFilter)
+    >>>
+    >>> logging.basicConfig(stream=sys.stdout)
+    >>> logger = logging.getLogger('powsybl')
+    >>> logger.setLevel(logging.INFO)
+    >>> logger.addFilter(RaoLogFilter())
+    >>>
+    >>> network =  pp.network.load(str(DATA_DIR.joinpath("rao/rao_network.uct")))
+    >>> parameters = RaoParameters()
+    >>> parameters.load_from_file_source(str(DATA_DIR.joinpath("rao/rao_parameters.json")))
+    >>> rao_runner = pp.rao.create_rao()
+    >>> rao_runner.set_crac_file_source(network, str(DATA_DIR.joinpath("rao/rao_crac.json")))
+    >>> rao_runner.set_glsk_file_source(network, str(DATA_DIR.joinpath("rao/rao_glsk.xml")))
+    >>> rao_result = rao_runner.run(network, parameters)
