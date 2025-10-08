@@ -19,7 +19,7 @@ def create_rao() -> Rao:
 class RaoLogFilter:
     def filter(self, record: LogRecord) -> bool:
         # Filter and keep only logs from open rao package
-        if re.search(".*com\\.powsybl\\.openrao.*", getattr(record, 'java_logger_name')):
+        if re.search("com\\.powsybl\\.openrao.*", getattr(record, 'java_logger_name')):
             return True
         else:
             return False
