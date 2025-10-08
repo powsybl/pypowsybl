@@ -164,6 +164,8 @@ Rao logs filter
 Open rao logs can be retrieved in the global powsybl logger. However if a user is only interested in the logs coming from
 open rao, a RaoLogFilter is available :
 
+.. doctest::
+
     >>> import pypowsybl as pp
     >>> import logging
     >>> import sys
