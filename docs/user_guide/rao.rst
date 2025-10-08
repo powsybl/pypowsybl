@@ -166,6 +166,7 @@ open rao, a RaoLogFilter is available :
 
     >>> import pypowsybl as pp
     >>> import logging
+    >>> import sys
     >>> from pypowsybl.rao import (Parameters as RaoParameters, RaoLogFilter)
     >>>
     >>> logging.basicConfig(stream=sys.stdout)
