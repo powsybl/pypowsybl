@@ -219,17 +219,10 @@ def test_rao_angle_monitoring_topological_action():
                                   check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_voltage_monitoring():
-    import logging
-    logging.getLogger('powsybl').setLevel(logging.DEBUG)
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s')
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
     load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
-
-    print(network.get_generators(True).max_p)
-    print(network.get_generators(True).min_p)
-
 
     rao_runner = pp.rao.create_rao()
     rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
