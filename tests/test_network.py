@@ -1262,9 +1262,13 @@ def test_sld_profile():
                                                           ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
                                                           ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1'),
                                                           ('B1-G', 'ARROW_ACTIVE', None, 'IN', 'G VALUE1')])
-    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df)
+    sld_styles_df = pd.DataFrame.from_records(index='id', columns=['id', 'color', 'bus_width', 'width', 'dash'],
+                                              data=[('B1', 'orange', '4px', '2px', '2, 2')])
+
+    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df, styles=sld_styles_df)
     assert isinstance(diagram_profile.labels, pd.DataFrame)
     assert isinstance(diagram_profile.feeders_info, pd.DataFrame)
+    assert isinstance(diagram_profile.styles, pd.DataFrame)
     sld1=n.get_single_line_diagram('VL1', sld_profile=diagram_profile)
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0

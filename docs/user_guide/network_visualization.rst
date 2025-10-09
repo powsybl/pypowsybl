@@ -227,7 +227,10 @@ The single line diagram can be further customized using an SldProfile. For examp
                                                   ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
                                                   ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1')])
 
-    >>> diagram_profile=pn.SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df)
+    >>> sld_styles_df = pd.DataFrame.from_records(index='id', columns=['id', 'color', 'bus_width', 'width', 'dash'], 
+                                      data=[('B1', 'orange', '4px', '2px', '')])
+
+    >>> diagram_profile=pn.SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df, styles= sld_styles_df)
     >>> network.get_single_line_diagram('VL1', sld_profile=diagram_profile)
 
 In the labels dataframe:
@@ -241,6 +244,14 @@ In the feeders_info dataframe:
     - side: for feeders with multiple sides (e.g. lines, transformers), determines  at which side the feeder info is placed. E.g. ONE, TWO.
     - direction: is direction of the arrows (IN, OUT).
     - label: defines  the label for the  feeder info element..
+
+In the styles dataframe:
+    - id is the bus id
+    - color: is the color for the bus and the elements connected to the bus
+    - bus_width: is the width for the bus
+    - width: is the width for the elements connected to the bus
+    - dash: is a string that specifies the lengths of alternating dashes and gaps, separated by commas and/or spaces
+    
 
 The optional parameter sld_profile can also be set for the write_single_line_diagram_svg, get_matrix_multi_substation_single_line_diagram, and write_matrix_multi_substation_single_line_diagram_svg functions.
 

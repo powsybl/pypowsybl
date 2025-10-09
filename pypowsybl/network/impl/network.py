@@ -310,7 +310,8 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
                                           '' if metadata_file is None else path_to_str(metadata_file), p,
                                           None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
-                                          None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                          None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                          None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
                                           )
 
     def write_matrix_multi_substation_single_line_diagram_svg(self, matrix_ids: List[List[str]], svg_file: PathOrStr,
@@ -335,7 +336,8 @@ class Network:  # pylint: disable=too-many-public-methods
                                                                       metadata_file),
                                                                   p,
                                                                   None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
-                                                                  None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                                                  None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                                                  None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
                                                                   )
 
     def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
@@ -355,7 +357,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
         svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p,
                                                                                    None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
-                                                                                   None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                                                                   None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                                                                   None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
                                                                                    )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
@@ -376,7 +379,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
         svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p,
                                                                                                            None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
-                                                                                                           None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
                                                                                                            )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
