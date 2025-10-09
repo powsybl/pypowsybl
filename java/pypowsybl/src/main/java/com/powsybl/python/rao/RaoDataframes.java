@@ -166,8 +166,8 @@ public final class RaoDataframes {
                 instant,
                 contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
                 TwoSides.ONE,
-                result.getVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
-                result.getVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
+                result.getMinVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
+                result.getMaxVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
                 result.getMargin(instant, cnec, Unit.KILOVOLT)
             ));
         } catch (OpenRaoException exception) {

@@ -177,6 +177,10 @@ def test_rao_from_buffers():
                                     'networkActionResults', 'rangeActionResults']
 
 def test_rao_angle_monitoring_redispatching():
+    """
+    AngleCNECs are required in CRAC in order to run voltage monitoring.
+    """
+
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
@@ -198,6 +202,10 @@ def test_rao_angle_monitoring_redispatching():
                                   check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_angle_monitoring_topological_action():
+    """
+    AngleCNECs are required in CRAC in order to run voltage monitoring.
+    """
+
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
@@ -219,6 +227,10 @@ def test_rao_angle_monitoring_topological_action():
                                   check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_voltage_monitoring():
+    """
+    VoltageCNECs are required in CRAC in order to run voltage monitoring.
+    """
+
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
@@ -232,7 +244,7 @@ def test_rao_voltage_monitoring():
     voltage_cnec_results = result_with_voltage_monitoring.get_voltage_cnec_results()
 
     expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'],
-                            data=[["vc", "curative", "coL1", None, 363.622121, 363.622121, -13.622121]])
+                            data=[["vc", "curative", "coL1", "ONE", 363.622121, 363.622121, -13.622121]])
 
     assert RaoComputationStatus.DEFAULT == result_with_voltage_monitoring.status()
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), voltage_cnec_results.reset_index(drop=True),
