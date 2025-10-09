@@ -180,7 +180,6 @@ open rao, a RaoLogFilter is available :
     >>>
     >>> logging.basicConfig(stream=sys.stdout) # Setup logging
     >>> logger = logging.getLogger('powsybl')
-    >>> logger.setLevel(logging.INFO)
+    >>> logger.setLevel(logging.ERROR)
     >>> logger.addFilter(RaoLogFilter())
-    >>> rao_result = rao_runner.run(network, parameters) # doctest: +ELLIPSIS
-    ...
+    >>> rao_result = rao_runner.run(network, parameters)
