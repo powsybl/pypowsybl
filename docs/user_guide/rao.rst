@@ -182,4 +182,5 @@ open rao, a RaoLogFilter is available :
     >>> logger = logging.getLogger('powsybl')
     >>> logger.setLevel(logging.INFO)
     >>> logger.addFilter(RaoLogFilter())
-    >>> rao_result = rao_runner.run(network, parameters)
+    >>> rao_result = rao_runner.run(network, parameters) # doctest: +ELLIPSIS
+    ...
