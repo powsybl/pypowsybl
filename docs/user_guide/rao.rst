@@ -171,15 +171,15 @@ open rao, a RaoLogFilter is available :
     >>> import sys
     >>> from pypowsybl.rao import (Parameters as RaoParameters, RaoLogFilter)
     >>>
-    >>> logging.basicConfig(stream=sys.stdout)
-    >>> logger = logging.getLogger('powsybl')
-    >>> logger.setLevel(logging.INFO)
-    >>> logger.addFilter(RaoLogFilter())
-    >>>
     >>> network =  pp.network.load(str(DATA_DIR.joinpath("rao/rao_network.uct")))
     >>> parameters = RaoParameters()
     >>> parameters.load_from_file_source(str(DATA_DIR.joinpath("rao/rao_parameters.json")))
     >>> rao_runner = pp.rao.create_rao()
     >>> rao_runner.set_crac_file_source(network, str(DATA_DIR.joinpath("rao/rao_crac.json")))
     >>> rao_runner.set_glsk_file_source(network, str(DATA_DIR.joinpath("rao/rao_glsk.xml")))
+    >>>
+    >>> logging.basicConfig(stream=sys.stdout) # Setup logging
+    >>> logger = logging.getLogger('powsybl')
+    >>> logger.setLevel(logging.INFO)
+    >>> logger.addFilter(RaoLogFilter())
     >>> rao_result = rao_runner.run(network, parameters)
