@@ -178,7 +178,7 @@ def test_rao_from_buffers():
 
 def test_rao_angle_monitoring_redispatching():
     """
-    AngleCNECs are required in CRAC in order to run voltage monitoring.
+    AngleCNECs are required in CRAC in order to run angle monitoring.
     """
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
@@ -203,7 +203,7 @@ def test_rao_angle_monitoring_redispatching():
 
 def test_rao_angle_monitoring_topological_action():
     """
-    AngleCNECs are required in CRAC in order to run voltage monitoring.
+    AngleCNECs are required in CRAC in order to run angle monitoring.
     """
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
