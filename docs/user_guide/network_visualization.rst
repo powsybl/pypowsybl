@@ -216,7 +216,7 @@ The single line diagram can be further customized using an SldProfile. For examp
 
     >>> network = pn.create_ieee14()
 
-    >>> sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'label2'], 
+    >>> sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'additional_label'], 
                                       data=[('B1-G', 'MY-GENERATOR', 'GEN'),
                                             ('L1-5-1', 'MY-LINE1', None),
                                             ('L1-2-1', 'MY-LINE2', None),
