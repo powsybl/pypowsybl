@@ -27,7 +27,7 @@
     <properties>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-csv.version>1.11.0</commons-csv.version>
-        <graalvm.version>23.0.0</graalvm.version>
+        <graalvm.version>23.1.2</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
@@ -177,7 +177,7 @@
         </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
-            <artifactId>graal-sdk</artifactId>
+            <artifactId>nativeimage</artifactId>
             <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>

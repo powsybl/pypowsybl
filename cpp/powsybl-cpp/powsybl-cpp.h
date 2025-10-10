@@ -1015,13 +1015,16 @@ RaoComputationStatus getRaoResultStatus(const JavaHandle& raoResult);
 SeriesArray* getFlowCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getAngleCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
-SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getRemedialActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getNetworkActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getPstRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
+SeriesArray* getRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
 
 JavaHandle createDefaultRaoParameters();
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters);
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider);
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 
