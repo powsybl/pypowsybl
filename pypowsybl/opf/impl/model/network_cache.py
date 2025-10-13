@@ -23,6 +23,7 @@ class NetworkCache:
         self._transformers_3w = self._build_3w_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
         self._dangling_lines = self._build_dangling_lines(network, self.buses)
+        self._batteries = self._build_batteries(network, self.buses)
         self._current_limits1, self._current_limits2 = self._build_current_limits(network)
         self._slack_terminal = self._build_stack_terminal(network, self.buses)
 
@@ -163,6 +164,14 @@ class NetworkCache:
     def _build_dangling_lines(network: Network, buses: DataFrame):
         dangling_lines = network.get_dangling_lines(attributes=['bus_id', 'r', 'x', 'g', 'b', 'p0', 'q0', 'paired'])
         return NetworkCache._filter_injections(dangling_lines, buses)
+
+    @staticmethod
+    def _build_batteries(network: Network, buses: DataFrame):
+        batteries = network.get_batteries(attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q'])
+        voltage_regulation = network.get_extensions('voltageRegulation')
+        batteries = pd.merge(batteries, voltage_regulation, left_index=True, right_on='battery_id', how='left')
+        batteries['voltage_regulator_on'] = batteries['voltage_regulator_on'].fillna(False)
+        return NetworkCache._filter_injections(batteries, buses)
 
     @staticmethod
     def _build_current_limits(network: Network) -> tuple[DataFrame, DataFrame]:
