@@ -171,7 +171,10 @@ class NetworkCache:
         voltage_regulation = network.get_extensions('voltageRegulation')
         batteries = pd.merge(batteries, voltage_regulation, left_index=True, right_on='battery_id', how='left')
         batteries['voltage_regulator_on'] = batteries['voltage_regulator_on'].fillna(False)
-        return NetworkCache._filter_injections(batteries, buses)
+        batteries = NetworkCache._filter_injections(batteries, buses)
+        # FIXME to remove when extensions will be per united
+        batteries['target_v'] /= batteries['nominal_v']
+        return batteries
 
     @staticmethod
     def _build_current_limits(network: Network) -> tuple[DataFrame, DataFrame]:
