@@ -21,6 +21,7 @@ from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_const
 from pypowsybl.opf.impl.constraints.transformer_3w_flow_constraints import Transformer3wFlowConstraints
 from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
+from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -73,7 +74,8 @@ class OptimalPowerFlow:
         else:
             cost_function = MinimizeAgainstReferenceCostFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
-                                           parameters.twt_split_shunt_admittance)
+                                           parameters.twt_split_shunt_admittance,
+                                           Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]))
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
         logger.info("Starting optimization...")
@@ -86,7 +88,7 @@ class OptimalPowerFlow:
         logger.info(f"Optimization ends with status {status} in {time.perf_counter() - start:.3f} seconds.")
 
         # for debugging
-        opf_model.analyze_violations()
+        opf_model.analyze_violations(model_parameters)
 
         # update network
         opf_model.update_network()

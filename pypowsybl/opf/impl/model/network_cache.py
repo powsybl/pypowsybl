@@ -24,7 +24,7 @@ class NetworkCache:
         self._branches = self._build_branches(network, self.buses)
         self._dangling_lines = self._build_dangling_lines(network, self.buses)
         self._current_limits1, self._current_limits2 = self._build_current_limits(network)
-        self._slack_terminal = self._network.get_extensions('slackTerminal')
+        self._slack_terminal = self._build_stack_terminal(network, self.buses)
 
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
@@ -169,6 +169,11 @@ class NetworkCache:
         limits = network.get_operational_limits(attributes=['side', 'type', 'name', 'value'])
         limits = limits[(limits['type'] == 'CURRENT') & (limits['name'] == 'permanent_limit')]
         return limits[limits['side'] == 'ONE'][['value']], limits[limits['side'] == 'TWO'][['value']]
+
+    @staticmethod
+    def _build_stack_terminal(network, buses: DataFrame):
+        slack_terminal = network.get_extensions('slackTerminal')
+        return NetworkCache._filter_injections(slack_terminal, buses)
 
     @property
     def network(self) -> Network:

@@ -65,11 +65,11 @@ class OpfModel:
     def update_network(self):
         self.variable_context.update_network(self.network_cache, self.model)
 
-    def analyze_violations(self) -> None:
+    def analyze_violations(self, parameters: ModelParameters) -> None:
         # check voltage bounds
         for bus_num, (bus_id, row) in enumerate(self.network_cache.buses.iterrows()):
             v = self.model.get_value(self.variable_context.v_vars[bus_num])
-            v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit)
+            v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit, parameters.default_voltage_bounds)
             if not v_bounds.contains(v):
                 logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in {v_bounds}")
 
