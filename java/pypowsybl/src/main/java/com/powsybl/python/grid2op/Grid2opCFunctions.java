@@ -14,7 +14,9 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowComponentResultPointer;
 import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -27,6 +29,9 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
+
+import java.io.IOException;
+import java.util.function.BooleanSupplier;
 
 import static com.powsybl.python.commons.Util.doCatch;
 import static com.powsybl.python.loadflow.LoadFlowCFunctions.createLoadFlowComponentResultArrayPointer;
@@ -138,81 +143,108 @@ public final class Grid2opCFunctions {
     public static ObjectHandle createBackend(IsolateThread thread, ObjectHandle networkHandle, boolean considerOpenBranchReactiveFlow,
                                              boolean checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, boolean connectAllElementsToFirstBus,
                                              ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Backend backend = new Backend(network, considerOpenBranchReactiveFlow, checkIsolatedAndDisconnectedInjections, busesPerVoltageLevel, connectAllElementsToFirstBus);
-            return ObjectHandles.getGlobal().create(backend);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                Backend backend = new Backend(network, considerOpenBranchReactiveFlow, checkIsolatedAndDisconnectedInjections, busesPerVoltageLevel, connectAllElementsToFirstBus);
+                return ObjectHandles.getGlobal().create(backend);
+            }
         });
     }
 
     @CEntryPoint(name = "freeGrid2opBackend")
     public static void freeBackend(IsolateThread thread, ObjectHandle backendHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            backend.close();
-            ObjectHandles.getGlobal().destroy(backendHandle);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                backend.close();
+                ObjectHandles.getGlobal().destroy(backendHandle);
+            }
         });
     }
 
     @CEntryPoint(name = "getGrid2opStringValue")
     public static ArrayPointer<CCharPointerPointer> getStringValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opStringValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.getStringValue(valueType);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() throws IOException {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                return backend.getStringValue(valueType);
+            }
         });
     }
 
     @CEntryPoint(name = "getGrid2opIntegerValue")
     public static ArrayPointer<CIntPointer> getIntegerValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opIntegerValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.getIntegerValue(valueType);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CIntPointer>>() {
+            @Override
+            public ArrayPointer<CIntPointer> get() throws IOException {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                return backend.getIntegerValue(valueType);
+            }
         });
     }
 
     @CEntryPoint(name = "getGrid2opDoubleValue")
     public static ArrayPointer<CDoublePointer> getDoubleValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opDoubleValueType valueType, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.getDoubleValue(valueType);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CDoublePointer>>() {
+            @Override
+            public ArrayPointer<CDoublePointer> get() throws IOException {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                return backend.getDoubleValue(valueType);
+            }
         });
     }
 
     @CEntryPoint(name = "updateGrid2opDoubleValue")
     public static void updateDoubleValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opUpdateDoubleValueType valueType,
                                          CDoublePointer valuePtr, CIntPointer changedPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            backend.updateDoubleValue(valueType, valuePtr, changedPtr);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                backend.updateDoubleValue(valueType, valuePtr, changedPtr);
+            }
         });
     }
 
     @CEntryPoint(name = "updateGrid2opIntegerValue")
     public static void updateIntegerValue(IsolateThread thread, ObjectHandle backendHandle, Grid2opUpdateIntegerValueType valueType,
                                           CIntPointer valuePtr, CIntPointer changedPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            backend.updateIntegerValue(valueType, valuePtr, changedPtr);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                backend.updateIntegerValue(valueType, valuePtr, changedPtr);
+            }
         });
     }
 
     @CEntryPoint(name = "checkGrid2opIsolatedAndDisconnectedInjections")
     public static boolean checkIsolatedAndDisconnectedInjections(IsolateThread thread, ObjectHandle backendHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            return backend.checkIsolatedAndDisconnectedInjections();
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                return backend.checkIsolatedAndDisconnectedInjections();
+            }
         });
     }
 
     @CEntryPoint(name = "runGrid2opLoadFlow")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle backendHandle, boolean dc,
-                                                                                                                 PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                                                                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, () -> {
-            Backend backend = ObjectHandles.getGlobal().get(backendHandle);
-            LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, backend.getLoadFlowProvider());
-            LoadFlowResult result = backend.runLoadFlow(parameters);
-            return createLoadFlowComponentResultArrayPointer(result);
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle backendHandle, boolean dc,
+                                                                           PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
+                                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return Util.doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<LoadFlowComponentResultPointer>>() {
+            @Override
+            public ArrayPointer<LoadFlowComponentResultPointer> get() throws IOException {
+                Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, backend.getLoadFlowProvider());
+                LoadFlowResult result = backend.runLoadFlow(parameters);
+                return createLoadFlowComponentResultArrayPointer(result);
+            }
         });
     }
 }
