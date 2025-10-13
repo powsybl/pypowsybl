@@ -44,8 +44,20 @@ class RaoResult:
         serie_flow = _pypowsybl.get_voltage_cnec_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
-    def get_ra_results(self) -> DataFrame:
-        serie_flow = _pypowsybl.get_ra_results(self._handle_crac, self._handle_result)
+    def get_remedial_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_remedial_action_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_network_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_network_action_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_pst_range_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_pst_range_action_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_range_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_range_action_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
     def get_cost_results(self) -> DataFrame:

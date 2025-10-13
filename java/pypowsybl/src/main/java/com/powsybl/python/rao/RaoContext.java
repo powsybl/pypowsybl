@@ -42,7 +42,7 @@ public class RaoContext {
         this.glsks = glskDocument;
     }
 
-    public RaoResult run(Network network, RaoParameters parameters) {
+    public RaoResult run(Network network, RaoParameters parameters, String raoProvider) {
         if (crac == null) {
             throw new PowsyblException("Providing a crac source is mandatory to run a Rao.");
         }
@@ -50,7 +50,7 @@ public class RaoContext {
         if (glsks != null) {
             inputBuilder.withGlskProvider(glsks.getZonalGlsks(network));
         }
-        return Rao.run(inputBuilder.build(), parameters);
+        return Rao.find(raoProvider).run(inputBuilder.build(), parameters);
     }
 
     public RaoResultWithVoltageMonitoring runVoltageMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
