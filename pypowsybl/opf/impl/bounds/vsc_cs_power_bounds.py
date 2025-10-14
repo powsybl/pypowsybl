@@ -23,7 +23,7 @@ class VscCsPowerBounds(VariableBounds):
                 model.set_variable_bounds(variable_context.vsc_cs_p_vars[vsc_cs_num],
                                           *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(
+                q_bounds = Bounds.get_reactive_power_bounds(row).reduce(
                     parameters.reactive_bounds_reduction).mirror()
                 logger.log(TRACE_LEVEL,
                            f"Add reactive power bounds {q_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")

@@ -86,6 +86,6 @@ class OpfModel:
                 gen_q_index = self.variable_context.gen_q_num_2_index[gen_num]
                 if gen_q_index != -1: # valid
                     q = self.model.get_value(self.variable_context.gen_q_vars[gen_q_index])
-                    q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
+                    q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                     if not q_bounds.contains(q):
                         logger.error(f"Generator reactive power violation: generator '{gen_id}' (num={gen_num}) {q} not in {q_bounds}")

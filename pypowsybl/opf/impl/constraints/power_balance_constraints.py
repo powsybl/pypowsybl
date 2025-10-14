@@ -67,6 +67,19 @@ class PowerBalanceConstraints(Constraints):
                 else:
                     buses_balance.q_gen[bus_num].append(variable_context.gen_q_vars[gen_q_index])
 
+        # batteries
+        for bat_num, bat_row in enumerate(network_cache.batteries.itertuples(index=False)):
+            bus_id = bat_row.bus_id
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                bat_p_index = variable_context.bat_p_num_2_index[bat_num]
+                bat_q_index = variable_context.bat_q_num_2_index[bat_num]
+                buses_balance.p_gen[bus_num].append(variable_context.bat_p_vars[bat_p_index])
+                if bat_q_index == -1:  # invalid
+                    buses_balance.q_load[bus_num] += bat_row.target_q
+                else:
+                    buses_balance.q_gen[bus_num].append(variable_context.bat_q_vars[bat_q_index])
+
         # static var compensators
         for svc_num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
             bus_id = row.bus_id

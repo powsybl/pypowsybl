@@ -168,12 +168,13 @@ class NetworkCache:
     @staticmethod
     def _build_batteries(network: Network, buses: DataFrame):
         batteries = network.get_batteries(attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q'])
-        voltage_regulation = network.get_extensions('voltageRegulation')
-        batteries = pd.merge(batteries, voltage_regulation, left_index=True, right_on='battery_id', how='left')
-        batteries['voltage_regulator_on'] = batteries['voltage_regulator_on'].fillna(False)
-        batteries = NetworkCache._filter_injections(batteries, buses)
-        # FIXME to remove when extensions will be per united
-        batteries['target_v'] /= batteries['nominal_v']
+        if len(batteries):
+            voltage_regulation = network.get_extensions('voltageRegulation')
+            batteries = pd.merge(batteries, voltage_regulation, left_index=True, right_on='id', how='left')
+            batteries['voltage_regulator_on'] = batteries['voltage_regulator_on'].fillna(False)
+            batteries = NetworkCache._filter_injections(batteries, buses)
+            # FIXME to remove when extensions will be per united
+            batteries['target_v'] /= batteries['nominal_v']
         return batteries
 
     @staticmethod
@@ -242,6 +243,10 @@ class NetworkCache:
     @property
     def dangling_lines(self) -> DataFrame:
         return self._dangling_lines
+
+    @property
+    def batteries(self) -> DataFrame:
+        return self._batteries
 
     @property
     def current_limits1(self) -> DataFrame:

@@ -18,6 +18,8 @@ class VariableContext:
     ph_vars: Any
     gen_p_vars: Any
     gen_q_vars: Any
+    bat_p_vars: Any
+    bat_q_vars: Any
     shunt_p_vars: Any
     shunt_q_vars: Any
     svc_q_vars: Any
@@ -48,6 +50,8 @@ class VariableContext:
     branch_num_2_index: list[int]
     gen_p_num_2_index: list[int]
     gen_q_num_2_index: list[int]
+    bat_p_num_2_index: list[int]
+    bat_q_num_2_index: list[int]
     shunt_num_2_index: list[int]
     svc_num_2_index: list[int]
     vsc_cs_num_2_index: list[int]
@@ -74,7 +78,7 @@ class VariableContext:
                 gen_p_num_2_index[gen_num] = len(gen_p_nums)
                 gen_p_nums.append(gen_num)
 
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
+                q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                 if network_cache.is_too_small_reactive_power_bounds(q_bounds):
                     too_small_q_bounds_generator_ids.append(row.Index)
                     logger.log(TRACE_LEVEL, f"Too small reactive power bounds {q_bounds} for generator '{row.Index}' (num={gen_num})")
@@ -82,11 +86,32 @@ class VariableContext:
                     gen_q_num_2_index[gen_num] = len(gen_q_nums)
                     gen_q_nums.append(gen_num)
 
-        if too_small_q_bounds_generator_ids:
-            logger.warning(f"{len(too_small_q_bounds_generator_ids)} generators have too small reactive power bounds")
-
         gen_p_vars = model.add_m_variables(len(gen_p_nums), name="gen_p")
         gen_q_vars = model.add_m_variables(len(gen_q_nums), name="gen_q")
+
+        bat_count = len(network_cache.batteries)
+        bat_p_nums = []
+        bat_q_nums = []
+        bat_p_num_2_index = [-1] * bat_count
+        bat_q_num_2_index = [-1] * bat_count
+        for bat_num, row in enumerate(network_cache.batteries.itertuples()):
+            if row.bus_id:
+                bat_p_num_2_index[bat_num] = len(bat_p_nums)
+                bat_p_nums.append(bat_num)
+
+                q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
+                if network_cache.is_too_small_reactive_power_bounds(q_bounds):
+                    too_small_q_bounds_generator_ids.append(row.Index)
+                    logger.log(TRACE_LEVEL, f"Too small reactive power bounds {q_bounds} for battery '{row.Index}' (num={bat_num})")
+                else:
+                    bat_q_num_2_index[bat_num] = len(bat_q_nums)
+                    bat_q_nums.append(bat_num)
+
+        bat_p_vars = model.add_m_variables(len(bat_p_nums), name="bat_p")
+        bat_q_vars = model.add_m_variables(len(bat_q_nums), name="bat_q")
+
+        if too_small_q_bounds_generator_ids:
+            logger.warning(f"{len(too_small_q_bounds_generator_ids)} generators|batteries have too small reactive power bounds")
 
         shunt_nums = []
         shunt_count = len(network_cache.shunts)
@@ -201,6 +226,7 @@ class VariableContext:
 
         return VariableContext(v_vars, ph_vars,
                                gen_p_vars, gen_q_vars,
+                               bat_p_vars, bat_q_vars,
                                shunt_p_vars, shunt_q_vars,
                                svc_q_vars,
                                vsc_cs_p_vars, vsc_cs_q_vars,
@@ -217,6 +243,7 @@ class VariableContext:
                                t3_open_side1_p2_vars, t3_open_side1_q2_vars,
                                branch_num_2_index,
                                gen_p_num_2_index, gen_q_num_2_index,
+                               bat_p_num_2_index, bat_q_num_2_index,
                                shunt_num_2_index,
                                svc_num_2_index,
                                vsc_cs_num_2_index,
@@ -244,6 +271,8 @@ class VariableContext:
                 gen_target_p.append(target_p)
                 gen_p.append(p)
 
+                target_q = None
+                target_v = None
                 if gen_q_index == -1:
                     gen_target_q.append(row.target_q)
                     gen_q.append(-row.target_q)
@@ -260,7 +289,7 @@ class VariableContext:
                     target_v = v
                     gen_target_v.append(target_v)
 
-                    q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
+                    q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                     voltage_regulator_on = q_bounds.contains(q)
                     gen_voltage_regulator_on.append(voltage_regulator_on)
 
@@ -268,6 +297,55 @@ class VariableContext:
 
         network_cache.network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
                                         voltage_regulator_on=gen_voltage_regulator_on, p=gen_p, q=gen_q)
+
+    def _update_batteries(self, network_cache: NetworkCache, model: ipopt.Model):
+        bat_ids = []
+        bat_target_p = []
+        bat_target_q = []
+        bat_target_v = []
+        bat_voltage_regulator_on = []
+        bat_p = []
+        bat_q = []
+        for bat_num, (bat_id, row) in enumerate(network_cache.batteries.iterrows()):
+            bus_id = row.bus_id
+            if bus_id:
+                bat_ids.append(bat_id)
+
+                bat_p_index = self.bat_p_num_2_index[bat_num]
+                bat_q_index = self.bat_q_num_2_index[bat_num]
+
+                p = model.get_value(self.bat_p_vars[bat_p_index])
+                target_p = -p
+                bat_target_p.append(target_p)
+                bat_p.append(p)
+
+                target_q = None
+                target_v = None
+                if bat_q_index == -1:
+                    bat_target_q.append(row.target_q)
+                    bat_q.append(-row.target_q)
+                    bat_target_v.append(row.target_v)
+                    bat_voltage_regulator_on.append(False)
+                else:
+                    q = model.get_value(self.gen_q_vars[bat_q_index])
+                    target_q = -q
+                    bat_target_q.append(target_q)
+                    bat_q.append(q)
+
+                    bus_num = network_cache.buses.index.get_loc(row.bus_id)
+                    v = model.get_value(self.v_vars[bus_num])
+                    target_v = v
+                    bat_target_v.append(target_v)
+
+                    q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
+                    voltage_regulator_on = q_bounds.contains(q)
+                    bat_voltage_regulator_on.append(voltage_regulator_on)
+
+                logger.log(TRACE_LEVEL, f"Update battery '{bat_id}' (num={bat_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
+
+        network_cache.network.update_batteries(id=bat_ids, target_p=bat_target_p, target_q=bat_target_q, p=bat_p, q=bat_q)
+        network_cache.network.update_extensions("voltageRegulation", id=bat_ids, voltage_regulator_on=bat_voltage_regulator_on,
+                                                target_v=bat_target_v)
 
     def _update_vsc_converter_stations(self, network_cache: NetworkCache, model: ipopt.Model):
         vsc_cs_ids = []
@@ -295,7 +373,7 @@ class VariableContext:
                 target_v = v
                 vsc_cs_target_v.append(target_v)
 
-                q_bounds = Bounds.get_generator_reactive_power_bounds(row).mirror()
+                q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                 voltage_regulator_on = q_bounds.contains(q)
                 vsc_cs_voltage_regulator_on.append(voltage_regulator_on)
 
@@ -528,6 +606,7 @@ class VariableContext:
 
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)
+        self._update_batteries(network_cache, model)
         self._update_vsc_converter_stations(network_cache, model)
         self._update_hvdc_lines(network_cache, model)
         self._update_static_var_compensators(network_cache, model)

@@ -24,6 +24,6 @@ class GeneratorPowerBounds(VariableBounds):
 
                 gen_q_index = variable_context.gen_q_num_2_index[gen_num]
                 if gen_q_index != -1: # valid
-                    q_bounds = Bounds.get_generator_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
+                    q_bounds = Bounds.get_reactive_power_bounds(row).reduce(parameters.reactive_bounds_reduction).mirror()
                     logger.log(TRACE_LEVEL, f"Add reactive power bounds {q_bounds} to generator '{row.Index}' (num={gen_num})")
                     model.set_variable_bounds(variable_context.gen_q_vars[gen_q_index], *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))

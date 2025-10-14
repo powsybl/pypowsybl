@@ -4,6 +4,7 @@ import time
 import pyoptinterface as poi
 
 from pypowsybl.network import Network
+from pypowsybl.opf.impl.bounds.battery_power_bounds import BatteryPowerBounds
 from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
 from pypowsybl.opf.impl.bounds.dangling_line_voltage_bounds import DanglingLineVoltageBounds
 from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBounds
@@ -58,16 +59,17 @@ class OptimalPowerFlow:
         variable_bounds = [BusVoltageBounds(),
                            SlackBusAngleBounds(),
                            GeneratorPowerBounds(),
+                           BatteryPowerBounds(),
                            VscCsPowerBounds(),
                            DanglingLineVoltageBounds(),
                            Transformer3wMiddleVoltageBounds()]
         constraints: list[Constraints] = [BranchFlowConstraints(),
-                       ShuntFlowConstraints(),
-                       StaticVarCompensatorReactiveLimitsConstraints(),
-                       HvdcLineConstraints(),
-                       PowerBalanceConstraints(),
-                       DanglingLineFlowConstraints(),
-                       Transformer3wFlowConstraints()]
+                                          ShuntFlowConstraints(),
+                                          StaticVarCompensatorReactiveLimitsConstraints(),
+                                          HvdcLineConstraints(),
+                                          PowerBalanceConstraints(),
+                                          DanglingLineFlowConstraints(),
+                                          Transformer3wFlowConstraints()]
         if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
             constraints.append(CurrentLimitConstraints())
             cost_function = RedispatchingCostFunction(1.0, 1.0, 1.0)

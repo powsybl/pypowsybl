@@ -45,7 +45,7 @@ class Bounds:
         return default_voltage_bounds  # FIXME get from voltage level dataframe
 
     @staticmethod
-    def get_generator_reactive_power_bounds(row: Any) -> 'Bounds':
+    def get_reactive_power_bounds(row: Any) -> 'Bounds':
         return Bounds(row.min_q_at_target_p, row.max_q_at_target_p)
 
     @staticmethod
