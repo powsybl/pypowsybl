@@ -327,13 +327,13 @@ class VariableContext:
                     bat_target_v.append(row.target_v)
                     bat_voltage_regulator_on.append(False)
                 else:
-                    q = model.get_value(self.gen_q_vars[bat_q_index])
+                    q = model.get_value(self.bat_q_vars[bat_q_index])
                     target_q = -q
                     bat_target_q.append(target_q)
                     bat_q.append(q)
 
                     bus_num = network_cache.buses.index.get_loc(row.bus_id)
-                    v = model.get_value(self.v_vars[bus_num])
+                    v = model.get_value(self.v_vars[bus_num]) * row.nominal_v  # FIXME
                     target_v = v
                     bat_target_v.append(target_v)
 
