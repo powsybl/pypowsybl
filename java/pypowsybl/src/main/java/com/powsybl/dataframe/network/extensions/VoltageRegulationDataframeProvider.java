@@ -34,7 +34,7 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(VoltageRegulation.NAME, "it allows to specify the voltage regulation mode for batteries",
-                "index : battery_id (str), voltage_regulator_on (bool), target_v (float)");
+                "index : id (str), voltage_regulator_on (bool), target_v (float)");
     }
 
     private Stream<VoltageRegulation> itemsStream(Network network) {
@@ -46,7 +46,7 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
     private VoltageRegulation getOrThrow(Network network, String id) {
         Battery battery = network.getBattery(id);
         if (battery == null) {
-            throw new PowsyblException("Invalid battery id : could not find " + id);
+            throw new PowsyblException("Battery '" + id + "' not found");
         }
         return battery.getExtension(VoltageRegulation.class);
     }
@@ -54,7 +54,7 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("battery_id", vr -> vr.getExtendable().getId())
+                .stringsIndex("id", vr -> vr.getExtendable().getId())
                 .booleans("voltage_regulator_on", VoltageRegulation::isVoltageRegulatorOn, VoltageRegulation::setVoltageRegulatorOn)
                 .doubles("target_v", (vr, context) -> vr.getTargetV(), (vr, targetV, context) -> vr.setTargetV(targetV))
                 .build();

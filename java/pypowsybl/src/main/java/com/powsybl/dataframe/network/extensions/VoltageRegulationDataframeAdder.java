@@ -28,7 +28,7 @@ import java.util.List;
 public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
-            SeriesMetadata.stringIndex("battery_id"),
+            SeriesMetadata.stringIndex("id"),
             SeriesMetadata.booleans("voltage_regulator_on"),
             SeriesMetadata.doubles("target_v")
     );
@@ -39,21 +39,21 @@ public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
     }
 
     private static class VoltageRegulationSerie {
-        private final StringSeries batteryId;
+        private final StringSeries id;
         private final IntSeries voltageRegulatorOn;
         private final DoubleSeries targetV;
 
         VoltageRegulationSerie(UpdatingDataframe dataframe) {
-            this.batteryId = dataframe.getStrings("battery_id");
+            this.id = dataframe.getStrings("id");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.targetV = dataframe.getDoubles("target_v");
         }
 
         void create(Network network, int row) {
-            String id = this.batteryId.get(row);
-            Battery battery = network.getBattery(id);
+            String batteryId = this.id.get(row);
+            Battery battery = network.getBattery(batteryId);
             if (battery == null) {
-                throw new PowsyblException("Invalid battery id : could not find " + id);
+                throw new PowsyblException("Battery '" + batteryId + "' not found");
             }
             VoltageRegulationAdder adder = battery.newExtension(VoltageRegulationAdder.class);
             SeriesUtils.applyIfPresent(voltageRegulatorOn, row, value -> adder.withVoltageRegulatorOn(value != 0));
