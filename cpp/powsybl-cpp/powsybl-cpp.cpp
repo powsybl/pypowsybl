@@ -585,7 +585,7 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
         delete ptr;
     });
 }
-  
+
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
     providerParametersToCStruct(params.provider_parameters, provider_parameters_keys, provider_parameters_values);
