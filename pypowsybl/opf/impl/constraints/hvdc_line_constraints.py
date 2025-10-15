@@ -6,12 +6,12 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 
-def hvdc_line_losses(p, r, nominal_v, sb):
-    return r * p * p / (nominal_v * nominal_v) / sb
+def hvdc_line_losses(p, r, sb):
+    return r * p * p / sb
 
 
 def add_converter_losses(p, loss_factor):
-    return p * (100.0 - loss_factor) / 100.0
+    return p * (1.0 - loss_factor / 100.0)
 
 
 class HvdcLineConstraints(Constraints):
@@ -32,10 +32,12 @@ class HvdcLineConstraints(Constraints):
             loss_factor2 = cs2_row.loss_factor
             sb = network_cache.network.nominal_apparent_power
             if NetworkCache.is_rectifier(cs1_id, hvdc_line_row):
-                p_eq = add_converter_losses(add_converter_losses(p1_var, loss_factor1) - hvdc_line_losses(p1_var, r, nominal_v, sb),
+                p_rectifier = add_converter_losses(p1_var, loss_factor1)
+                p_eq = add_converter_losses(p_rectifier - hvdc_line_losses(p_rectifier, r, sb),
                                             loss_factor2) + p2_var
             else:
-                p_eq = add_converter_losses(add_converter_losses(p2_var, loss_factor2) - hvdc_line_losses(p2_var, r, nominal_v, sb),
+                p_rectifier = add_converter_losses(p2_var, loss_factor2)
+                p_eq = add_converter_losses(p_rectifier - hvdc_line_losses(p_rectifier, r, sb),
                                             loss_factor1) + p1_var
 
             model.add_quadratic_constraint(p_eq == 0.0)
