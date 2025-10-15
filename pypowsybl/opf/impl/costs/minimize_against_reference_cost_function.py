@@ -1,4 +1,5 @@
 import pyoptinterface as poi
+from pandas import DataFrame
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
@@ -12,6 +13,7 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
+
         for gen_num, gen_row in enumerate(network_cache.generators.itertuples(index=False)):
             if gen_row.bus_id:
                 gen_p_expr = poi.ExprBuilder()
@@ -22,6 +24,17 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
                     bus_num = network_cache.buses.index.get_loc(gen_row.bus_id)
                     v_var = variable_context.v_vars[bus_num]
                     cost += (v_var - gen_row.target_v) * (v_var - gen_row.target_v)
+
+        for bat_num, bat_row in enumerate(network_cache.batteries.itertuples(index=False)):
+            if bat_row.bus_id:
+                bat_p_expr = poi.ExprBuilder()
+                bat_p_expr += variable_context.bat_p_vars[bat_num]
+                bat_p_expr += bat_row.target_p
+                cost += bat_p_expr * bat_p_expr
+                if bat_row.voltage_regulator_on:
+                    bus_num = network_cache.buses.index.get_loc(bat_row.bus_id)
+                    v_var = variable_context.v_vars[bus_num]
+                    cost += (v_var - bat_row.target_v) * (v_var - bat_row.target_v)
 
         for vsc_cs_num, vsc_cs_row in enumerate(network_cache.vsc_converter_stations.itertuples()):
             if vsc_cs_row.bus_id:
