@@ -251,136 +251,179 @@ class VariableContext:
                                t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
-        gen_ids = []
-        gen_target_p = []
-        gen_target_q = []
-        gen_target_v = []
-        gen_voltage_regulator_on = []
-        gen_p = []
-        gen_q = []
+        connected_gen_ids = []
+        connected_gen_target_p = []
+        connected_gen_target_q = []
+        connected_gen_target_v = []
+        connected_gen_voltage_regulator_on = []
+        connected_gen_p = []
+        connected_gen_q = []
+        disconnected_gen_ids = []
         for gen_num, (gen_id, row) in enumerate(network_cache.generators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                gen_ids.append(gen_id)
+                connected_gen_ids.append(gen_id)
 
                 gen_p_index = self.gen_p_num_2_index[gen_num]
                 gen_q_index = self.gen_q_num_2_index[gen_num]
 
                 p = model.get_value(self.gen_p_vars[gen_p_index])
                 target_p = -p
-                gen_target_p.append(target_p)
-                gen_p.append(p)
+                connected_gen_target_p.append(target_p)
+                connected_gen_p.append(p)
 
-                target_q = None
-                target_v = None
                 if gen_q_index == -1:
-                    gen_target_q.append(row.target_q)
-                    gen_q.append(-row.target_q)
-                    gen_target_v.append(row.target_v)
-                    gen_voltage_regulator_on.append(False)
+                    target_q = row.target_q
+                    q = -row.target_q
+                    target_v = row.target_v
+                    voltage_regulator_on = False
                 else:
                     q = model.get_value(self.gen_q_vars[gen_q_index])
                     target_q = -q
-                    gen_target_q.append(target_q)
-                    gen_q.append(q)
 
                     regulated_bus_num = network_cache.buses.index.get_loc(row.regulated_bus_id)
                     v = model.get_value(self.v_vars[regulated_bus_num])
                     target_v = v
-                    gen_target_v.append(target_v)
 
                     q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                     voltage_regulator_on = q_bounds.contains(q)
-                    gen_voltage_regulator_on.append(voltage_regulator_on)
 
-                logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
+                connected_gen_target_q.append(target_q)
+                connected_gen_target_v.append(target_v)
+                connected_gen_voltage_regulator_on.append(voltage_regulator_on)
+                connected_gen_q.append(q)
 
-        network_cache.network.update_generators(id=gen_ids, target_p=gen_target_p, target_q=gen_target_q, target_v=gen_target_v,
-                                        voltage_regulator_on=gen_voltage_regulator_on, p=gen_p, q=gen_q)
+                logger.log(TRACE_LEVEL, f"Update generator '{gen_id}' (num={gen_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}, p={p}, q={q}")
+            else:
+                disconnected_gen_ids.append(gen_id)
+                logger.log(TRACE_LEVEL, f"Update disconnected generator '{gen_id}' (num={gen_num})")
+
+        if connected_gen_ids:
+            network_cache.network.update_generators(id=connected_gen_ids,
+                                                    target_p=connected_gen_target_p,
+                                                    target_q=connected_gen_target_q,
+                                                    target_v=connected_gen_target_v,
+                                                    voltage_regulator_on=connected_gen_voltage_regulator_on,
+                                                    p=connected_gen_p,
+                                                    q=connected_gen_q)
+
+        if disconnected_gen_ids:
+            network_cache.network.update_generators(id=disconnected_gen_ids,
+                                                    p=[0.0] * len(disconnected_gen_ids),
+                                                    q=[0.0] * len(disconnected_gen_ids))
 
     def _update_batteries(self, network_cache: NetworkCache, model: ipopt.Model):
-        bat_ids = []
-        bat_target_p = []
-        bat_target_q = []
-        bat_target_v = []
-        bat_voltage_regulator_on = []
-        bat_p = []
-        bat_q = []
+        connected_bat_ids = []
+        connected_bat_target_p = []
+        connected_bat_target_q = []
+        connected_bat_target_v = []
+        connected_bat_voltage_regulator_on = []
+        connected_bat_p = []
+        connected_bat_q = []
+        disconnected_bat_ids = []
         for bat_num, (bat_id, row) in enumerate(network_cache.batteries.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                bat_ids.append(bat_id)
+                connected_bat_ids.append(bat_id)
 
                 bat_p_index = self.bat_p_num_2_index[bat_num]
                 bat_q_index = self.bat_q_num_2_index[bat_num]
 
                 p = model.get_value(self.bat_p_vars[bat_p_index])
                 target_p = -p
-                bat_target_p.append(target_p)
-                bat_p.append(p)
+                connected_bat_target_p.append(target_p)
+                connected_bat_p.append(p)
 
-                target_q = None
-                target_v = None
                 if bat_q_index == -1:
-                    bat_target_q.append(row.target_q)
-                    bat_q.append(-row.target_q)
-                    bat_target_v.append(row.target_v)
-                    bat_voltage_regulator_on.append(False)
+                    target_q = row.target_q
+                    q = -row.target_q
+                    target_v = row.target_v
+                    voltage_regulator_on = False
                 else:
                     q = model.get_value(self.bat_q_vars[bat_q_index])
                     target_q = -q
-                    bat_target_q.append(target_q)
-                    bat_q.append(q)
 
                     bus_num = network_cache.buses.index.get_loc(row.bus_id)
                     v = model.get_value(self.v_vars[bus_num]) * row.nominal_v  # FIXME
                     target_v = v
-                    bat_target_v.append(target_v)
 
                     q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                     voltage_regulator_on = q_bounds.contains(q)
-                    bat_voltage_regulator_on.append(voltage_regulator_on)
 
-                logger.log(TRACE_LEVEL, f"Update battery '{bat_id}' (num={bat_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
+                connected_bat_target_q.append(target_q)
+                connected_bat_target_v.append(target_v)
+                connected_bat_voltage_regulator_on.append(voltage_regulator_on)
+                connected_bat_q.append(q)
 
-        network_cache.network.update_batteries(id=bat_ids, target_p=bat_target_p, target_q=bat_target_q, p=bat_p, q=bat_q)
-        network_cache.network.update_extensions("voltageRegulation", id=bat_ids, voltage_regulator_on=bat_voltage_regulator_on,
-                                                target_v=bat_target_v)
+                logger.log(TRACE_LEVEL, f"Update battery '{bat_id}' (num={bat_num}): target_p={target_p}, target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}, p={p}, q={q}")
+            else:
+                disconnected_bat_ids.append(bat_id)
+                logger.log(TRACE_LEVEL, f"Update disconnected battery '{bat_id}' (num={bat_num})")
+
+        if connected_bat_ids:
+            network_cache.network.update_batteries(id=connected_bat_ids,
+                                                   target_p=connected_bat_target_p,
+                                                   target_q=connected_bat_target_q,
+                                                   p=connected_bat_p,
+                                                   q=connected_bat_q)
+            network_cache.network.update_extensions("voltageRegulation",
+                                                    id=connected_bat_ids,
+                                                    voltage_regulator_on=connected_bat_voltage_regulator_on,
+                                                    target_v=connected_bat_target_v)
+
+        if disconnected_bat_ids:
+            network_cache.network.update_batteries(id=disconnected_bat_ids,
+                                                   p=[0.0] * len(disconnected_bat_ids),
+                                                   q=[0.0] * len(disconnected_bat_ids))
 
     def _update_vsc_converter_stations(self, network_cache: NetworkCache, model: ipopt.Model):
-        vsc_cs_ids = []
-        vsc_cs_target_q = []
-        vsc_cs_target_v = []
-        vsc_cs_voltage_regulator_on = []
-        vsc_cs_p = []
-        vsc_cs_q = []
+        connected_vsc_cs_ids = []
+        connected_vsc_cs_target_q = []
+        connected_vsc_cs_target_v = []
+        connected_vsc_cs_voltage_regulator_on = []
+        connected_vsc_cs_p = []
+        connected_vsc_cs_q = []
+        disconnected_vsc_cs_ids = []
         for vsc_cs_num, (vsc_cs_id, row) in enumerate(network_cache.vsc_converter_stations.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                vsc_cs_ids.append(vsc_cs_id)
+                connected_vsc_cs_ids.append(vsc_cs_id)
                 vsc_cs_index = self.vsc_cs_num_2_index[vsc_cs_num]
 
                 p = model.get_value(self.vsc_cs_p_vars[vsc_cs_index])
-                vsc_cs_p.append(p)
+                connected_vsc_cs_p.append(p)
 
                 q = model.get_value(self.vsc_cs_q_vars[vsc_cs_index])
                 target_q = -q
-                vsc_cs_target_q.append(target_q)
-                vsc_cs_q.append(q)
+                connected_vsc_cs_target_q.append(target_q)
+                connected_vsc_cs_q.append(q)
 
                 regulated_bus_num = network_cache.buses.index.get_loc(row.regulated_bus_id)
                 v = model.get_value(self.v_vars[regulated_bus_num])
                 target_v = v
-                vsc_cs_target_v.append(target_v)
+                connected_vsc_cs_target_v.append(target_v)
 
                 q_bounds = Bounds.get_reactive_power_bounds(row).mirror()
                 voltage_regulator_on = q_bounds.contains(q)
-                vsc_cs_voltage_regulator_on.append(voltage_regulator_on)
+                connected_vsc_cs_voltage_regulator_on.append(voltage_regulator_on)
 
-                logger.log(TRACE_LEVEL, f"Update VSC converter station '{vsc_cs_id}' (num={vsc_cs_num}): target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}")
+                logger.log(TRACE_LEVEL, f"Update VSC converter station '{vsc_cs_id}' (num={vsc_cs_num}): target_q={target_q}, target_v={target_v}, voltage_regulator_on={voltage_regulator_on}, p={p}, q={q}")
+            else:
+                disconnected_vsc_cs_ids.append(vsc_cs_id)
+                logger.log(TRACE_LEVEL, f"Update disconnected VSC converter station '{vsc_cs_id}' (num={vsc_cs_num})")
 
-        network_cache.network.update_vsc_converter_stations(id=vsc_cs_ids, target_q=vsc_cs_target_q, target_v=vsc_cs_target_v,
-                                                            voltage_regulator_on=vsc_cs_voltage_regulator_on, p=vsc_cs_p, q=vsc_cs_q)
+        if connected_vsc_cs_ids:
+            network_cache.network.update_vsc_converter_stations(id=connected_vsc_cs_ids,
+                                                                target_q=connected_vsc_cs_target_q,
+                                                                target_v=connected_vsc_cs_target_v,
+                                                                voltage_regulator_on=connected_vsc_cs_voltage_regulator_on,
+                                                                p=connected_vsc_cs_p,
+                                                                q=connected_vsc_cs_q)
+
+        if disconnected_vsc_cs_ids:
+            network_cache.network.update_vsc_converter_stations(id=disconnected_vsc_cs_ids,
+                                                                p=[0.0] * len(disconnected_vsc_cs_ids),
+                                                                q=[0.0] * len(disconnected_vsc_cs_ids))
 
     def _update_hvdc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
         hvdc_line_ids = []
@@ -399,60 +442,82 @@ class VariableContext:
         network_cache.network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p)
 
     def _update_static_var_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
-        svc_ids = []
-        svc_target_q = []
-        svc_target_v = []
-        svc_regulation_mode = []
-        svc_p = []
-        svc_q = []
+        connected_svc_ids = []
+        connected_svc_target_q = []
+        connected_svc_target_v = []
+        connected_svc_regulation_mode = []
+        connected_svc_p = []
+        connected_svc_q = []
+        disconnected_svc_ids = []
         for svc_num, (svc_id, row) in enumerate(network_cache.static_var_compensators.iterrows()):
             bus_id = row.bus_id
             if bus_id:
-                svc_ids.append(svc_id)
+                connected_svc_ids.append(svc_id)
 
-                svc_p.append(0.0)
+                connected_svc_p.append(0.0)
 
                 svc_index = self.svc_num_2_index[svc_num]
                 q = model.get_value(self.svc_q_vars[svc_index])
                 target_q = -q
-                svc_target_q.append(target_q)
-                svc_q.append(q)
+                connected_svc_target_q.append(target_q)
+                connected_svc_q.append(q)
 
                 regulated_bus_num = network_cache.buses.index.get_loc(row.regulated_bus_id)
                 v = model.get_value(self.v_vars[regulated_bus_num])
                 target_v = v
-                svc_target_v.append(target_v)
+                connected_svc_target_v.append(target_v)
 
                 q_bounds = Bounds(row.b_min * v * v, row.b_max * v * v)
                 regulation_mode = 'VOLTAGE' if q_bounds.contains(q) else 'REACTIVE_POWER'
-                svc_regulation_mode.append(regulation_mode)
+                connected_svc_regulation_mode.append(regulation_mode)
 
                 logger.log(TRACE_LEVEL, f"Update SVC '{svc_id}' (num={svc_num}): target_q={target_q}, target_v={target_v}, regulation_mode={regulation_mode}")
+            else:
+                disconnected_svc_ids.append(svc_id)
+                logger.log(TRACE_LEVEL, f"Update disconnected SVC '{svc_id}' (num={svc_num})")
 
-        network_cache.network.update_static_var_compensators(id=svc_ids, target_q=svc_target_q, target_v=svc_target_v,
-                                                             regulation_mode=svc_regulation_mode, p=svc_p, q=svc_q)
+        if connected_svc_ids:
+            network_cache.network.update_static_var_compensators(id=connected_svc_ids,
+                                                                 target_q=connected_svc_target_q,
+                                                                 target_v=connected_svc_target_v,
+                                                                 regulation_mode=connected_svc_regulation_mode,
+                                                                 p=connected_svc_p,
+                                                                 q=connected_svc_q)
+
+        if disconnected_svc_ids:
+            network_cache.network.update_static_var_compensators(id=disconnected_svc_ids,
+                                                                 p=[0.0] * len(disconnected_svc_ids),
+                                                                 q=[0.0] * len(disconnected_svc_ids))
 
     def _update_shunt_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
-        shunt_ids = []
-        shunt_p = []
-        shunt_q = []
+        connected_shunt_ids = []
+        connected_shunt_p = []
+        connected_shunt_q = []
+        disconnected_shunt_ids = []
         for shunt_num, (shunt_id, row) in enumerate(network_cache.shunts.iterrows()):
             bus_id = row.bus_id
             if bus_id:
                 shunt_index = self.shunt_num_2_index[shunt_num]
                 p = model.get_value(self.shunt_p_vars[shunt_index])
                 q = model.get_value(self.shunt_q_vars[shunt_index])
+                connected_shunt_ids.append(shunt_id)
+                connected_shunt_p.append(p)
+                connected_shunt_q.append(q)
+
+                logger.log(TRACE_LEVEL, f"Update shunt '{shunt_id}' (num={shunt_num}): p={p} q={q}")
             else:
-                p = 0.0
-                q = 0.0
-            shunt_ids.append(shunt_id)
-            shunt_p.append(p)
-            shunt_q.append(q)
+                disconnected_shunt_ids.append(shunt_id)
+                logger.log(TRACE_LEVEL, f"Update disconnected shunt '{shunt_id}' (num={shunt_num})")
 
-            logger.log(TRACE_LEVEL,
-                           f"Update shunt '{shunt_id}' (num={shunt_num}): p={p} q={q}")
+        if connected_shunt_ids:
+            network_cache.network.update_shunt_compensators(id=connected_shunt_ids,
+                                                            p=connected_shunt_p,
+                                                            q=connected_shunt_q)
 
-        network_cache.network.update_shunt_compensators(id=shunt_ids, p=shunt_p, q=shunt_q)
+        if disconnected_shunt_ids:
+            network_cache.network.update_shunt_compensators(id=disconnected_shunt_ids,
+                                                            p=[0.0] * len(disconnected_shunt_ids),
+                                                            q=[0.0] * len(disconnected_shunt_ids))
 
     def _update_branches(self, network_cache: NetworkCache, model: ipopt.Model):
         branch_ids = []
@@ -574,35 +639,45 @@ class VariableContext:
         network_cache.network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
 
     def _update_dangling_lines(self, network_cache: NetworkCache, model: ipopt.Model):
-        dl_ids = []
-        dl_v = []
-        dl_angle = []
-        dl_p = []
-        dl_q = []
+        connected_dl_ids = []
+        connected_dl_v = []
+        connected_dl_angle = []
+        connected_dl_p = []
+        connected_dl_q = []
+        disconnected_dl_ids = []
         for dl_num, (dl_id, row) in enumerate(network_cache.dangling_lines.iterrows()):
             dl_index = self.dl_num_2_index[dl_num]
 
             if row.bus_id:
                 v = model.get_value(self.dl_v_vars[dl_index])
                 angle = model.get_value(self.dl_ph_vars[dl_index])
-                dl_ids.append(dl_id)
-                dl_v.append(v * row.nominal_v)
-                dl_angle.append(math.degrees(angle))
+                connected_dl_ids.append(dl_id)
+                connected_dl_v.append(v * row.nominal_v)
+                connected_dl_angle.append(math.degrees(angle))
                 p = model.get_value(self.dl_branch_p1_vars[dl_index])
                 q = model.get_value(self.dl_branch_q1_vars[dl_index])
+                connected_dl_p.append(p)
+                connected_dl_q.append(q)
+                logger.log(TRACE_LEVEL, f"Update dangling line '{dl_id}' (num={dl_num}): v={v}, angle={angle}, p={p}, q={q}")
             else:
-                v = math.nan
-                angle = math.nan
-                p = 0.0
-                q = 0.0
+                disconnected_dl_ids.append(dl_id)
+                logger.log(TRACE_LEVEL, f"Update disconnected dangling line '{dl_id}' (num={dl_num})")
 
-            dl_p.append(p)
-            dl_q.append(q)
+        if connected_dl_ids:
+            network_cache.network.update_dangling_lines(id=connected_dl_ids,
+                                                        p=connected_dl_p,
+                                                        q=connected_dl_q)
+            network_cache.network.add_elements_properties(id=connected_dl_ids,
+                                                          v=connected_dl_v,
+                                                          angle=connected_dl_angle)
 
-            logger.log(TRACE_LEVEL, f"Update dangline line '{dl_id}' (num={dl_num}): v={v}, angle={angle}, p={p}, q={q}")
-
-        network_cache.network.update_dangling_lines(id=dl_ids, p=dl_p, q=dl_q)
-        network_cache.network.add_elements_properties(id=dl_ids, v=dl_v, angle=dl_angle)
+        if disconnected_dl_ids:
+            network_cache.network.update_dangling_lines(id=disconnected_dl_ids,
+                                                        p=[0.0] * len(disconnected_dl_ids),
+                                                        q=[0.0] * len(disconnected_dl_ids))
+            network_cache.network.add_elements_properties(id=disconnected_dl_ids,
+                                                          v=[math.nan] * len(disconnected_dl_ids),
+                                                          angle=[math.nan] * len(disconnected_dl_ids))
 
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)
