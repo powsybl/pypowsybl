@@ -612,4 +612,5 @@ def test_get_extensions_information():
     assert extensions_information.loc['linePosition']['attributes'] == 'index : id (str), num (int), latitude (float), longitude (float)'
     assert extensions_information.loc['referencePriorities']['detail'] == 'Defines the angle reference generator, busbar section or load of a power flow calculation, i.e. which bus will be used with a zero-voltage angle.'
     assert extensions_information.loc['referencePriorities']['attributes'] == 'index : id (str), priority (int)'
+    assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
     assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float)'

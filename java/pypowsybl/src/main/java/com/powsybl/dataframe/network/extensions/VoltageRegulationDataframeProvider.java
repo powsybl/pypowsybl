@@ -48,7 +48,11 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
         if (battery == null) {
             throw new PowsyblException("Battery '" + id + "' not found");
         }
-        return battery.getExtension(VoltageRegulation.class);
+        VoltageRegulation extension = battery.getExtension(VoltageRegulation.class);
+        if (extension == null) {
+            throw new PowsyblException("Voltage regulation extension for battery '" + id + "' not found");
+        }
+        return extension;
     }
 
     @Override
