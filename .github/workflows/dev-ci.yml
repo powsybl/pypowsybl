@@ -99,14 +99,6 @@ jobs:
           path: |
             dist/binaries.zip
 
-#      - name: Test standalone cpp build
-#        shell: bash
-#        working-directory: ./dist
-#        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-#          unzip binaries.zip && mkdir build && cd build
-#          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-#          cmake --build . --config Release
-
   manylinux_python_build:
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
@@ -179,12 +171,12 @@ jobs:
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
             bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
           }
-          - {
-            name: darwin-arm64,
-            os: macos-15-xlarge,
-            macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-          }
+#          - {
+#            name: darwin-arm64,
+#            os: macos-15-xlarge,
+#            macosx_deployment_target: "11", # first arm64 version of macosx
+#            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
+#          }
           - {
             name: windows,
             os: windows-2022,
@@ -249,14 +241,6 @@ jobs:
           retention-days: 1
           path: |
             dist/binaries.zip
-
-#      - name: Test standalone cpp build
-#        shell: bash
-#        working-directory: ./dist
-#        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-#          unzip binaries.zip && mkdir build && cd build
-#          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-#          cmake --build . --config Release
 
   macos_windows_python_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel (using pre-build native libraries)
