@@ -11,7 +11,7 @@ on:
 
 jobs:
   manylinux_complete_build:
-    name: Build linux ${{ matrix.python.name }} wheel
+    name: Build linux natibve libraries and ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
     strategy:
@@ -106,10 +106,21 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+          name: binaries-linux.zip
           retention-days: 1
           path: |
             dist/binaries.zip
+
+      - name: Upload release binaries
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/binaries.zip
+          asset_name: binaries-${{ github.event.release.tag_name }}-linux.zip
+          asset_content_type: application/zip
 
   manylinux_python_build:
     name: Build linux ${{ matrix.python.name }} wheel (without rebuilding native libraries)
@@ -155,7 +166,7 @@ jobs:
       - name: Download native libraries
         uses: actions/download-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+          name: binaries-linux.zip
 
       - name: Set up native libraries
         run: |
@@ -194,7 +205,7 @@ jobs:
           path: wheelhouse/*.whl
 
   macos_windows_complete_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    name: Build ${{ matrix.config.name }} native libraries and ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
@@ -277,10 +288,21 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-${{ matrix.config.name }}.zip
+          name: binaries-${{ matrix.config.name }}.zip
           retention-days: 1
           path: |
             dist/binaries.zip
+
+      - name: Upload release binaries
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./dist/binaries.zip
+          asset_name: binaries-${{ github.event.release.tag_name }}-${{ matrix.config.name }}.zip
+          asset_content_type: application/zip
 
   macos_windows_python_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel (without rebuilding native libraries)
@@ -341,7 +363,7 @@ jobs:
       - name: Download native libraries
         uses: actions/download-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-${{ matrix.config.name }}.zip
+          name: binaries-${{ matrix.config.name }}.zip
 
       - name: Set up native libraries
         run: |

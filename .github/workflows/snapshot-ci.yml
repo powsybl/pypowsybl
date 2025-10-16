@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_pypowsybl:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    name: Build ${{ matrix.config.name }} native libraries and ${{ matrix.python.name }} wheel
     runs-on: ${{ matrix.config.os }}
     outputs:
       core-version: ${{ env.CORE_VERSION }}
@@ -343,7 +343,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ github.run_number }}-${{ matrix.config.name }}.zip
+          name: binaries-${{ matrix.config.name }}.zip
           retention-days: 1
           path: |
             pypowsybl/dist/binaries.zip
@@ -411,7 +411,7 @@ jobs:
       - name: Download native libraries
         uses: actions/download-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-${{ matrix.config.name }}.zip
+          name: binaries-${{ matrix.config.name }}.zip
 
       - name: Set up native libraries
         run: |

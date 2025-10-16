@@ -94,7 +94,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+          name: binaries-linux.zip
           retention-days: 1
           path: |
             dist/binaries.zip
@@ -127,7 +127,7 @@ jobs:
       - name: Download native libraries
         uses: actions/download-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-linux.zip
+          name: binaries-linux.zip
 
       - name: Set up native libraries
         run: |
@@ -237,7 +237,7 @@ jobs:
       - name: Upload binaries
         uses: actions/upload-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-${{ matrix.config.name }}.zip
+          name: binaries-${{ matrix.config.name }}.zip
           retention-days: 1
           path: |
             dist/binaries.zip
@@ -291,7 +291,7 @@ jobs:
       - name: Download native libraries
         uses: actions/download-artifact@v4
         with:
-          name: binaries-${{ github.event.pull_request.number }}-${{ matrix.config.name }}.zip
+          name: binaries-${{ matrix.config.name }}.zip
 
       - name: Set up native libraries
         run: |
