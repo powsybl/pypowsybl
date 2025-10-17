@@ -25,6 +25,7 @@ public class LoadTwoTransformersTapChangersAdder extends AbstractEquipmentAdder 
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "LoadTwoTransformersTapChangers",
+            "Load with two transformers with tap changer",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

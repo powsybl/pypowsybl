@@ -25,6 +25,7 @@ public class LoadOneTransformerAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "LoadOneTransformer",
+            "Load with one transformer",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

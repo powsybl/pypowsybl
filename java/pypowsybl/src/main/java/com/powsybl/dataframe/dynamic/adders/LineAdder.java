@@ -25,6 +25,7 @@ public class LineAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "Line",
+            "Standard line",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

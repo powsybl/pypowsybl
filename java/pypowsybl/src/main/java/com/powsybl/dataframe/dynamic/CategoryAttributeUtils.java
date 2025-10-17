@@ -22,10 +22,6 @@ public final class CategoryAttributeUtils {
     private CategoryAttributeUtils() {
     }
 
-    public static CategoryInformation createFromMetadata(String name, List<SeriesMetadata> metadata) {
-        return new CategoryInformation(name, createFromMetadata(metadata));
-    }
-
     public static String createFromMetadata(List<List<SeriesMetadata>> metadataList, List<String> metaDataName) {
         if (metadataList.size() != metaDataName.size()) {
             throw new PowsyblException("Name list and metadata list size mismatch");

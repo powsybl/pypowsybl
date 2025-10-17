@@ -40,6 +40,7 @@ public class TapChangerAutomationSystemAdder extends AbstractSimpleDynamicModelA
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "TapChanger",
+            "Tap changer",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override

@@ -51,6 +51,7 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "TapChangerBlocking",
+            "Tap changer blocking automation system",
             CategoryAttributeUtils.createFromMetadata(METADATA_LIST, List.of("Tcb", "Transformers", "U measurement 1",
                     "U measurement 2", "U measurement 3", "U measurement 4", "U measurement 5")));
 

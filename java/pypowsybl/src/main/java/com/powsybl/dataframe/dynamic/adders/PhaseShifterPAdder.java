@@ -38,6 +38,7 @@ public class PhaseShifterPAdder extends AbstractSimpleDynamicModelAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "PhaseShifterP",
+            "Phase shifter P",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override

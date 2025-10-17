@@ -41,6 +41,7 @@ public class DynamicOverloadManagementSystemAdder extends AbstractSimpleDynamicM
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "OverloadManagementSystem",
+            "Overload management system",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override

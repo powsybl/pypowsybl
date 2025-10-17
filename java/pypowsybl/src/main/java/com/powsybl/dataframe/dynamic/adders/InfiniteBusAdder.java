@@ -25,6 +25,7 @@ public class InfiniteBusAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "InfiniteBus",
+            "Infinite bus",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

@@ -25,6 +25,7 @@ public class SignalNGeneratorAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "SignalNGenerator",
+            "Signal N generator",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

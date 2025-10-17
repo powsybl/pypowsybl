@@ -38,6 +38,7 @@ public class UnderVoltageAutomationSystemAdder extends AbstractSimpleDynamicMode
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "UnderVoltageAutomationSystem",
+            "Under voltage automation system",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override

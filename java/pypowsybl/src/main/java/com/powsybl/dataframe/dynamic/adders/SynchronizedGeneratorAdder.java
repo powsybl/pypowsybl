@@ -25,6 +25,7 @@ public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "SynchronizedGenerator",
+            "Generator synchronized with the network frequency",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

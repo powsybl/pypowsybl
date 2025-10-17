@@ -10,5 +10,5 @@ package com.powsybl.dataframe.dynamic;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public record CategoryInformation(String name, String attribute) {
+public record CategoryInformation(String name, String description, String attribute) {
 }

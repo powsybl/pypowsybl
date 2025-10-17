@@ -65,6 +65,7 @@ class DynamicSimulationDataframeMappersTest {
                 List.of(new BaseLoadAdder(), new TapChangerBlockingAutomationSystemAdder(), new PhaseShifterBlockingIAdder()));
         assertThat(series).satisfiesExactly(
                 names -> assertThat(names.getStrings()).containsExactly("Load", "PhaseShifterBlockingI", "TapChangerBlocking"),
+                desc -> assertThat(desc.getStrings()).containsExactly("Standard load", "Phase shifter blocking I", "Tap changer blocking automation system"),
                 attr -> assertThat(attr.getStrings()).containsExactly(
                         "index : static_id (str), parameter_set_id (str), model_name (str)",
                         "index : dynamic_model_id (str), parameter_set_id (str), model_name (str), phase_shifter_id (str)",

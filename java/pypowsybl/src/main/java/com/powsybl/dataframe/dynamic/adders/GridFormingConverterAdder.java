@@ -25,6 +25,7 @@ public class GridFormingConverterAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "GridFormingConverter",
+            "Grid forming converter",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

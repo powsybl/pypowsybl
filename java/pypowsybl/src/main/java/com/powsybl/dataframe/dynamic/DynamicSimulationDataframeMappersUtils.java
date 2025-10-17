@@ -63,6 +63,7 @@ public final class DynamicSimulationDataframeMappersUtils {
                         .map(DynamicMappingAdder::getCategoryInformation)
                         .sorted(Comparator.comparing(CategoryInformation::name)))
                 .stringsIndex("name", CategoryInformation::name)
+                .strings("description", CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
                 .build();
     }

@@ -43,6 +43,7 @@ public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimple
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "TwoLevelOverloadManagementSystem",
+            "Overload management system with two monitored lines",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override

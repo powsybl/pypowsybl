@@ -18,8 +18,11 @@ def test_categories_information():
     assert model_mapping.get_categories_names()
     info_df = model_mapping.get_categories_information()
     assert info_df.loc['SimplifiedGenerator']['attribute'] == 'index : static_id (str), parameter_set_id (str), model_name (str)'
+    assert info_df.loc['SimplifiedGenerator']['description'] == 'Simplified generator not synchronized with the network frequency'
     assert info_df.loc['PhaseShifterP']['attribute'] == 'index : dynamic_model_id (str), parameter_set_id (str), model_name (str), transformer (str)'
+    assert info_df.loc['PhaseShifterP']['description'] == 'Phase shifter P'
     assert info_df.loc['TapChangerBlocking']['attribute'] == '[dataframe "Tcb"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe "Transformers"] index : dynamic_model_id (str), transformer_id (str) / [dataframe "U measurement 1"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 2"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 3"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 4"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 5"] index : dynamic_model_id (str), measurement_point_id (str)'
+    assert info_df.loc['TapChangerBlocking']['description'] == 'Tap changer blocking automation system'
 
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()

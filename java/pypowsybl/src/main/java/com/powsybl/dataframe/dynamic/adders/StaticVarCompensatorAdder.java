@@ -25,6 +25,7 @@ public class StaticVarCompensatorAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "StaticVarCompensator",
+            "Static VAR compensator",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override

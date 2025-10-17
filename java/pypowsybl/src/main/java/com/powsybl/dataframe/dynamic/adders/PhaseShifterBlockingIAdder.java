@@ -38,6 +38,7 @@ public class PhaseShifterBlockingIAdder extends AbstractSimpleDynamicModelAdder 
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "PhaseShifterBlockingI",
+            "Phase shifter blocking I",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
     @Override

@@ -25,6 +25,7 @@ public class BaseGeneratorAdder extends AbstractEquipmentAdder {
 
     private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
             "SimplifiedGenerator",
+            "Simplified generator not synchronized with the network frequency",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
     @Override
