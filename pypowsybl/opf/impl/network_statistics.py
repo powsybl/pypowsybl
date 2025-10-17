@@ -3,6 +3,7 @@ import logging
 
 import numpy as np
 from pypowsybl._pypowsybl import ElementType
+from tabulate import tabulate
 
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
@@ -30,30 +31,15 @@ class NetworkStatistics:
     def print(self):
         for (element_type, attribute_id), initial_values in self._initial_values.items():
             final_values = self._get_column(element_type, attribute_id)
-            changes = final_values - initial_values
-            statistics = {
-                'initial': {
-                    'min': initial_values.min(),
-                    'max': initial_values.max(),
-                    'mean': initial_values.mean(),
-                    'std': initial_values.std(),
-                    'median': initial_values.median()
-                },
-                'final': {
-                    'min': final_values.min(),
-                    'max': final_values.max(),
-                    'mean': final_values.mean(),
-                    'std': final_values.std(),
-                    'median': final_values.median()
-                },
-                'changes': {
-                    'min': changes.min(),
-                    'max': changes.max(),
-                    'mean': changes.mean(),
-                    'std': changes.std(),
-                    'median': changes.median(),
-                    'abs_mean': np.abs(changes).mean(),
-                    'abs_max': np.abs(changes).max()
-                }
-            }
-            logger.info(f"Statistics of {element_type} {attribute_id}: {json.dumps(statistics, indent=4)}")
+
+            table_data = [
+                ['Initial', initial_values.min(), initial_values.max(), initial_values.mean(),
+                 initial_values.std(), np.median(initial_values)],
+                ['Final', final_values.min(), final_values.max(), final_values.mean(),
+                 final_values.std(), np.median(final_values)]
+            ]
+
+            headers = ['', 'Min', 'Max', 'Mean', 'Std', 'Median']
+            table = tabulate(table_data, headers=headers, floatfmt='.3f', tablefmt='simple')
+
+            logger.info(f"\nStatistics: {element_type} - {attribute_id}\n{table}")
