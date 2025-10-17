@@ -2,6 +2,7 @@ import logging
 import time
 
 import pyoptinterface as poi
+from pypowsybl._pypowsybl import ElementType
 
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds.battery_power_bounds import BatteryPowerBounds
@@ -27,6 +28,7 @@ from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
+from pypowsybl.opf.impl.network_statistics import NetworkStatistics
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters, OptimalPowerFlowMode
 
 logger = logging.getLogger(__name__)
@@ -80,6 +82,14 @@ class OptimalPowerFlow:
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]))
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
+        network_stats = NetworkStatistics(network_cache)
+        network_stats.add(ElementType.GENERATOR, 'target_v')
+        network_stats.add(ElementType.BATTERY, 'target_v')
+        network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_v')
+        network_stats.add(ElementType.GENERATOR, 'target_p')
+        network_stats.add(ElementType.BATTERY, 'target_p')
+        network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
+
         logger.info("Starting optimization...")
         start = time.perf_counter()
 
@@ -94,6 +104,8 @@ class OptimalPowerFlow:
 
         # update network
         opf_model.update_network()
+
+        network_stats.print()
 
         network_cache.network.per_unit = False # FIXME design to improve
 
