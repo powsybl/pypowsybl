@@ -6,12 +6,13 @@ on:
       - main
       - 'release-v**'
       - 'full-sonar-analysis-**'
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'
+  release:
+    types:
+      - published
 
 jobs:
   manylinux_complete_build:
-    name: Build linux natibve libraries and ${{ matrix.python.name }} wheel
+    name: Build linux native libraries and ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
     strategy:
@@ -112,7 +113,7 @@ jobs:
             dist/binaries.zip
 
       - name: Upload release binaries
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ github.event_name == 'release' }}
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -294,7 +295,7 @@ jobs:
             dist/binaries.zip
 
       - name: Upload release binaries
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ github.event_name == 'release' }}
         uses: actions/upload-release-asset@v1.0.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -420,7 +421,7 @@ jobs:
             download/**/*.whl
 
       - name: Release on PyPi
-        if: startsWith(github.ref, 'refs/tags/')
+        if: ${{ github.event_name == 'release' }}
         shell: bash
         run: |
           python -m pip install --user --upgrade twine packaging
