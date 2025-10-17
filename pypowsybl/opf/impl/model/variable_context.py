@@ -298,19 +298,14 @@ class VariableContext:
                 disconnected_gen_ids.append(gen_id)
                 logger.log(TRACE_LEVEL, f"Update disconnected generator '{gen_id}' (num={gen_num})")
 
-        if connected_gen_ids:
-            network_cache.network.update_generators(id=connected_gen_ids,
-                                                    target_p=connected_gen_target_p,
-                                                    target_q=connected_gen_target_q,
-                                                    target_v=connected_gen_target_v,
-                                                    voltage_regulator_on=connected_gen_voltage_regulator_on,
-                                                    p=connected_gen_p,
-                                                    q=connected_gen_q)
-
-        if disconnected_gen_ids:
-            network_cache.network.update_generators(id=disconnected_gen_ids,
-                                                    p=[0.0] * len(disconnected_gen_ids),
-                                                    q=[0.0] * len(disconnected_gen_ids))
+        network_cache.update_generators(connected_gen_ids,
+                                        connected_gen_target_p,
+                                        connected_gen_target_q,
+                                        connected_gen_target_v,
+                                        connected_gen_voltage_regulator_on,
+                                        connected_gen_p,
+                                        connected_gen_q,
+                                        disconnected_gen_ids)
 
     def _update_batteries(self, network_cache: NetworkCache, model: ipopt.Model):
         connected_bat_ids = []
@@ -360,21 +355,14 @@ class VariableContext:
                 disconnected_bat_ids.append(bat_id)
                 logger.log(TRACE_LEVEL, f"Update disconnected battery '{bat_id}' (num={bat_num})")
 
-        if connected_bat_ids:
-            network_cache.network.update_batteries(id=connected_bat_ids,
-                                                   target_p=connected_bat_target_p,
-                                                   target_q=connected_bat_target_q,
-                                                   p=connected_bat_p,
-                                                   q=connected_bat_q)
-            network_cache.network.update_extensions("voltageRegulation",
-                                                    id=connected_bat_ids,
-                                                    voltage_regulator_on=connected_bat_voltage_regulator_on,
-                                                    target_v=connected_bat_target_v)
-
-        if disconnected_bat_ids:
-            network_cache.network.update_batteries(id=disconnected_bat_ids,
-                                                   p=[0.0] * len(disconnected_bat_ids),
-                                                   q=[0.0] * len(disconnected_bat_ids))
+        network_cache.update_batteries(connected_bat_ids,
+                                       connected_bat_target_p,
+                                       connected_bat_target_q,
+                                       connected_bat_target_v,
+                                       connected_bat_voltage_regulator_on,
+                                       connected_bat_p,
+                                       connected_bat_q,
+                                       disconnected_bat_ids)
 
     def _update_vsc_converter_stations(self, network_cache: NetworkCache, model: ipopt.Model):
         connected_vsc_cs_ids = []
@@ -412,18 +400,13 @@ class VariableContext:
                 disconnected_vsc_cs_ids.append(vsc_cs_id)
                 logger.log(TRACE_LEVEL, f"Update disconnected VSC converter station '{vsc_cs_id}' (num={vsc_cs_num})")
 
-        if connected_vsc_cs_ids:
-            network_cache.network.update_vsc_converter_stations(id=connected_vsc_cs_ids,
-                                                                target_q=connected_vsc_cs_target_q,
-                                                                target_v=connected_vsc_cs_target_v,
-                                                                voltage_regulator_on=connected_vsc_cs_voltage_regulator_on,
-                                                                p=connected_vsc_cs_p,
-                                                                q=connected_vsc_cs_q)
-
-        if disconnected_vsc_cs_ids:
-            network_cache.network.update_vsc_converter_stations(id=disconnected_vsc_cs_ids,
-                                                                p=[0.0] * len(disconnected_vsc_cs_ids),
-                                                                q=[0.0] * len(disconnected_vsc_cs_ids))
+        network_cache.update_vsc_converter_stations(connected_vsc_cs_ids,
+                                                    connected_vsc_cs_target_q,
+                                                    connected_vsc_cs_target_v,
+                                                    connected_vsc_cs_voltage_regulator_on,
+                                                    connected_vsc_cs_p,
+                                                    connected_vsc_cs_q,
+                                                    disconnected_vsc_cs_ids)
 
     def _update_hvdc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
         hvdc_line_ids = []
@@ -439,7 +422,7 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update HVDC line '{hvdc_line_id}': target_p={target_p}")
 
-        network_cache.network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p)
+        network_cache.update_hvdc_lines(hvdc_line_ids, hvdc_line_target_p)
 
     def _update_static_var_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
         connected_svc_ids = []
@@ -476,18 +459,13 @@ class VariableContext:
                 disconnected_svc_ids.append(svc_id)
                 logger.log(TRACE_LEVEL, f"Update disconnected SVC '{svc_id}' (num={svc_num})")
 
-        if connected_svc_ids:
-            network_cache.network.update_static_var_compensators(id=connected_svc_ids,
-                                                                 target_q=connected_svc_target_q,
-                                                                 target_v=connected_svc_target_v,
-                                                                 regulation_mode=connected_svc_regulation_mode,
-                                                                 p=connected_svc_p,
-                                                                 q=connected_svc_q)
-
-        if disconnected_svc_ids:
-            network_cache.network.update_static_var_compensators(id=disconnected_svc_ids,
-                                                                 p=[0.0] * len(disconnected_svc_ids),
-                                                                 q=[0.0] * len(disconnected_svc_ids))
+        network_cache.update_static_var_compensators(connected_svc_ids,
+                                                     connected_svc_target_q,
+                                                     connected_svc_target_v,
+                                                     connected_svc_regulation_mode,
+                                                     connected_svc_p,
+                                                     connected_svc_q,
+                                                     disconnected_svc_ids)
 
     def _update_shunt_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
         connected_shunt_ids = []
@@ -509,15 +487,7 @@ class VariableContext:
                 disconnected_shunt_ids.append(shunt_id)
                 logger.log(TRACE_LEVEL, f"Update disconnected shunt '{shunt_id}' (num={shunt_num})")
 
-        if connected_shunt_ids:
-            network_cache.network.update_shunt_compensators(id=connected_shunt_ids,
-                                                            p=connected_shunt_p,
-                                                            q=connected_shunt_q)
-
-        if disconnected_shunt_ids:
-            network_cache.network.update_shunt_compensators(id=disconnected_shunt_ids,
-                                                            p=[0.0] * len(disconnected_shunt_ids),
-                                                            q=[0.0] * len(disconnected_shunt_ids))
+        network_cache.update_shunt_compensators(connected_shunt_ids, connected_shunt_p, connected_shunt_q, disconnected_shunt_ids)
 
     def _update_branches(self, network_cache: NetworkCache, model: ipopt.Model):
         branch_ids = []
@@ -556,7 +526,7 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update branch '{branch_id}': p1={p1} p2={p2} q1={q1} q2={q2}")
 
-        network_cache.network.update_branches(id=branch_ids, p1=branch_p1, p2=branch_p2, q1=branch_q1, q2=branch_q2)
+        network_cache.update_branches(branch_ids, branch_p1, branch_p2, branch_q1, branch_q2)
 
     def _update_transformers_3w(self, network_cache: NetworkCache, model: ipopt.Model):
         t3_ids = []
@@ -620,8 +590,7 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update 3 windings transformer '{t3_id}': p1={p1} p2={p2} p3={p3} q1={q1} q2={q2} q3={q3} v={v} angle={angle}")
 
-        network_cache.network.update_3_windings_transformers(id=t3_ids, p1=t3_p1, p2=t3_p2, p3=t3_p3, q1=t3_q1, q2=t3_q2, q3=t3_q3)
-        network_cache.network.add_elements_properties(id=t3_ids, v=t3_v, angle=t3_angle)
+        network_cache.update_transformers_3w(t3_ids, t3_p1, t3_p2, t3_p3, t3_q1, t3_q2, t3_q3, t3_v, t3_angle)
 
     def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
         bus_ids = []
@@ -636,7 +605,7 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update bus '{bus_id}' (num={bus_num}): v={v}, angle={angle}")
 
-        network_cache.network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
+        network_cache.update_buses(bus_ids, bus_v_mag, bus_v_angle)
 
     def _update_dangling_lines(self, network_cache: NetworkCache, model: ipopt.Model):
         connected_dl_ids = []
@@ -663,21 +632,12 @@ class VariableContext:
                 disconnected_dl_ids.append(dl_id)
                 logger.log(TRACE_LEVEL, f"Update disconnected dangling line '{dl_id}' (num={dl_num})")
 
-        if connected_dl_ids:
-            network_cache.network.update_dangling_lines(id=connected_dl_ids,
-                                                        p=connected_dl_p,
-                                                        q=connected_dl_q)
-            network_cache.network.add_elements_properties(id=connected_dl_ids,
-                                                          v=connected_dl_v,
-                                                          angle=connected_dl_angle)
-
-        if disconnected_dl_ids:
-            network_cache.network.update_dangling_lines(id=disconnected_dl_ids,
-                                                        p=[0.0] * len(disconnected_dl_ids),
-                                                        q=[0.0] * len(disconnected_dl_ids))
-            network_cache.network.add_elements_properties(id=disconnected_dl_ids,
-                                                          v=[math.nan] * len(disconnected_dl_ids),
-                                                          angle=[math.nan] * len(disconnected_dl_ids))
+        network_cache.update_dangling_lines(connected_dl_ids,
+                                            connected_dl_v,
+                                            connected_dl_angle,
+                                            connected_dl_p,
+                                            connected_dl_q,
+                                            disconnected_dl_ids)
 
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)

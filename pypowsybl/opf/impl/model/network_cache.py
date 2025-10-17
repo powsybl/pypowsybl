@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 from pandas import DataFrame
 
@@ -267,3 +269,193 @@ class NetworkCache:
 
     def is_too_small_reactive_power_bounds(self, q_bounds: Bounds):
         return abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / self._network.nominal_apparent_power
+
+    def update_generators(self,
+                          connected_gen_ids: list[str],
+                          connected_gen_target_p: list[float],
+                          connected_gen_target_q: list[float],
+                          connected_gen_target_v: list[float],
+                          connected_gen_voltage_regulator_on: list[bool],
+                          connected_gen_p: list[float],
+                          connected_gen_q: list[float],
+                          disconnected_gen_ids: list[str] = None):
+
+        if connected_gen_ids:
+            self._network.update_generators(id=connected_gen_ids,
+                                            target_p=connected_gen_target_p,
+                                            target_q=connected_gen_target_q,
+                                            target_v=connected_gen_target_v,
+                                            voltage_regulator_on=connected_gen_voltage_regulator_on,
+                                            p=connected_gen_p,
+                                            q=connected_gen_q)
+
+        if disconnected_gen_ids:
+            self._network.update_generators(id=disconnected_gen_ids,
+                                            p=[0.0] * len(disconnected_gen_ids),
+                                            q=[0.0] * len(disconnected_gen_ids))
+
+        self._generators = self._build_generators(self._network, self._buses)
+
+    def update_batteries(self,
+                         connected_bat_ids: list[str],
+                         connected_bat_target_p: list[float],
+                         connected_bat_target_q: list[float],
+                         connected_bat_target_v: list[float],
+                         connected_bat_voltage_regulator_on: list[bool],
+                         connected_bat_p: list[float],
+                         connected_bat_q: list[float],
+                         disconnected_bat_ids: list[str] = None):
+        if connected_bat_ids:
+            self._network.update_batteries(id=connected_bat_ids,
+                                           target_p=connected_bat_target_p,
+                                           target_q=connected_bat_target_q,
+                                           p=connected_bat_p,
+                                           q=connected_bat_q)
+            self._network.update_extensions("voltageRegulation",
+                                            id=connected_bat_ids,
+                                            voltage_regulator_on=connected_bat_voltage_regulator_on,
+                                            target_v=connected_bat_target_v)
+
+        if disconnected_bat_ids:
+            self._network.update_batteries(id=disconnected_bat_ids,
+                                           p=[0.0] * len(disconnected_bat_ids),
+                                           q=[0.0] * len(disconnected_bat_ids))
+
+        self._batteries = self._build_batteries(self._network, self._buses)
+
+    def update_vsc_converter_stations(self,
+                                      connected_vsc_cs_ids: list[str],
+                                      connected_vsc_cs_target_q: list[float],
+                                      connected_vsc_cs_target_v: list[float],
+                                      connected_vsc_cs_voltage_regulator_on: list[bool],
+                                      connected_vsc_cs_p: list[float],
+                                      connected_vsc_cs_q: list[float],
+                                      disconnected_vsc_cs_ids: list[str]):
+
+        if connected_vsc_cs_ids:
+            self._network.update_vsc_converter_stations(id=connected_vsc_cs_ids,
+                                                        target_q=connected_vsc_cs_target_q,
+                                                        target_v=connected_vsc_cs_target_v,
+                                                        voltage_regulator_on=connected_vsc_cs_voltage_regulator_on,
+                                                        p=connected_vsc_cs_p,
+                                                        q=connected_vsc_cs_q)
+
+        if disconnected_vsc_cs_ids:
+            self._network.update_vsc_converter_stations(id=disconnected_vsc_cs_ids,
+                                                        p=[0.0] * len(disconnected_vsc_cs_ids),
+                                                        q=[0.0] * len(disconnected_vsc_cs_ids))
+
+        self._vsc_converter_stations = self._build_vsc_converter_stations(self._network, self._buses)
+
+    def update_hvdc_lines(self, hvdc_line_ids: list[str], hvdc_line_target_p: list[float]):
+        self._network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p)
+        self._hvdc_lines = self._build_hvdc_lines(self._network, self._vsc_converter_stations, self._lcc_converter_stations, self._buses)
+
+    def update_static_var_compensators(self,
+                                       connected_svc_ids: list[str],
+                                       connected_svc_target_q: list[float],
+                                       connected_svc_target_v: list[float],
+                                       connected_svc_regulation_mode: list[str],
+                                       connected_svc_p: list[float],
+                                       connected_svc_q: list[float],
+                                       disconnected_svc_ids: list[str]):
+        if connected_svc_ids:
+            self._network.update_static_var_compensators(id=connected_svc_ids,
+                                                         target_q=connected_svc_target_q,
+                                                         target_v=connected_svc_target_v,
+                                                         regulation_mode=connected_svc_regulation_mode,
+                                                         p=connected_svc_p,
+                                                         q=connected_svc_q)
+
+        if disconnected_svc_ids:
+            self._network.update_static_var_compensators(id=disconnected_svc_ids,
+                                                         p=[0.0] * len(disconnected_svc_ids),
+                                                         q=[0.0] * len(disconnected_svc_ids))
+
+        self._static_var_compensators = self._build_static_var_compensators(self._network, self._buses)
+
+    def update_shunt_compensators(self,
+                                  connected_shunt_ids: list[str],
+                                  connected_shunt_p: list[float],
+                                  connected_shunt_q: list[float],
+                                  disconnected_shunt_ids: list[str]):
+        if connected_shunt_ids:
+            self._network.update_shunt_compensators(id=connected_shunt_ids,
+                                                    p=connected_shunt_p,
+                                                    q=connected_shunt_q)
+
+        if disconnected_shunt_ids:
+            self._network.update_shunt_compensators(id=disconnected_shunt_ids,
+                                                    p=[0.0] * len(disconnected_shunt_ids),
+                                                    q=[0.0] * len(disconnected_shunt_ids))
+
+        self._shunts = self._build_shunt_compensators(self._network, self._buses)
+
+    def update_branches(self,
+                        branch_ids: list[str],
+                        branch_p1: list[float],
+                        branch_p2: list[float],
+                        branch_q1: list[float],
+                        branch_q2: list[float]):
+        self._network.update_branches(id=branch_ids,
+                                      p1=branch_p1,
+                                      p2=branch_p2,
+                                      q1=branch_q1,
+                                      q2=branch_q2)
+
+        self._branches = self._build_branches(self._network, self._buses)
+
+    def update_transformers_3w(self,
+                               t3_ids: list[str],
+                               t3_p1: list[float],
+                               t3_p2: list[float],
+                               t3_p3: list[float],
+                               t3_q1: list[float],
+                               t3_q2: list[float],
+                               t3_q3: list[float],
+                               t3_v: list[float],
+                               t3_angle: list[float]):
+        self._network.update_3_windings_transformers(id=t3_ids,
+                                                     p1=t3_p1,
+                                                     p2=t3_p2,
+                                                     p3=t3_p3,
+                                                     q1=t3_q1,
+                                                     q2=t3_q2,
+                                                     q3=t3_q3)
+        self._network.add_elements_properties(id=t3_ids,
+                                              v=t3_v,
+                                              angle=t3_angle)
+
+        self._transformers_3w = self._build_3w_transformers(self._network, self._buses)
+
+    def update_buses(self,
+                     bus_ids: list[str],
+                     bus_v_mag: list[float],
+                     bus_v_angle: list[float]):
+        self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
+        self._buses = self._build_buses(self._network, self._voltage_levels)
+
+    def update_dangling_lines(self,
+                              connected_dl_ids: list[str],
+                              connected_dl_v: list[float],
+                              connected_dl_angle: list[float],
+                              connected_dl_p: list[float],
+                              connected_dl_q: list[float],
+                              disconnected_dl_ids: list[str]):
+        if connected_dl_ids:
+            self._network.update_dangling_lines(id=connected_dl_ids,
+                                                        p=connected_dl_p,
+                                                        q=connected_dl_q)
+            self._network.add_elements_properties(id=connected_dl_ids,
+                                                          v=connected_dl_v,
+                                                          angle=connected_dl_angle)
+
+        if disconnected_dl_ids:
+            self._network.update_dangling_lines(id=disconnected_dl_ids,
+                                                        p=[0.0] * len(disconnected_dl_ids),
+                                                        q=[0.0] * len(disconnected_dl_ids))
+            self._network.add_elements_properties(id=disconnected_dl_ids,
+                                                          v=[math.nan] * len(disconnected_dl_ids),
+                                                          angle=[math.nan] * len(disconnected_dl_ids))
+
+        self._dangling_lines = self._build_dangling_lines(self._network, self._buses)
