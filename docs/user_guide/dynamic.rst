@@ -98,11 +98,10 @@ To run a Dynawo simulation:
     variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value') # and so on
 
     # simulations parameters
-    start_time = 0
-    end_time = 50
+    parameters = dyn.Parameters(start_time=0, stop_time=50)
     sim = dyn.Simulation()
     # running the simulation
-    results = sim.run(network, model_mapping, event_mapping, variables_mapping, start_time, end_time)
+    results = sim.run(network, model_mapping, event_mapping, variables_mapping, parameters)
     # getting the results
     results.status()
     results.status_text() # error description if the simulation fails
