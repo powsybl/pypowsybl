@@ -27,7 +27,11 @@ public class EnumSeriesMapper<T, C, E extends Enum<E>> implements SeriesMapper<T
     }
 
     public EnumSeriesMapper(String name, Class<E> enumClass, Function<T, E> value, BiConsumer<T, E> updater, boolean defaultAttribute) {
-        this.metadata = new SeriesMetadata(false, name, updater != null, SeriesDataType.STRING, defaultAttribute);
+        this(name, enumClass, value, updater, defaultAttribute, false);
+    }
+
+    public EnumSeriesMapper(String name, Class<E> enumClass, Function<T, E> value, BiConsumer<T, E> updater, boolean defaultAttribute, boolean index) {
+        this.metadata = new SeriesMetadata(index, name, updater != null, SeriesDataType.STRING, defaultAttribute);
         this.enumClass = enumClass;
         this.updater = updater;
         this.value = value;
@@ -40,7 +44,9 @@ public class EnumSeriesMapper<T, C, E extends Enum<E>> implements SeriesMapper<T
 
     @Override
     public void createSeries(List<T> items, DataframeHandler factory, C context) {
-        DataframeHandler.StringSeriesWriter writer = factory.newStringSeries(metadata.getName(), items.size());
+        boolean index = getMetadata().isIndex();
+        DataframeHandler.StringSeriesWriter writer = index ? factory.newStringIndex(metadata.getName(), items.size())
+            : factory.newStringSeries(metadata.getName(), items.size());
         for (int i = 0; i < items.size(); i++) {
             writer.set(i, Objects.toString(value.apply(items.get(i)), ""));
         }
