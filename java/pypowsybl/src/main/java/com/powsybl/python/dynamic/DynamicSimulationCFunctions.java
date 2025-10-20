@@ -174,19 +174,22 @@ public final class DynamicSimulationCFunctions {
     public static DataframesMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
                                                                        CCharPointer categoryNamePtr,
                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String categoryName = CTypeUtil.toString(categoryNamePtr);
-            List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(categoryName);
-            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
-            int i = 0;
-            for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
-                i++;
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframesMetadataPointer get() {
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
+                List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(categoryName);
+                DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+                int i = 0;
+                for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    i++;
+                }
+                DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+                res.setDataframesMetadata(dataframeMetadataArray);
+                res.setDataframesCount(metadata.size());
+                return res;
             }
-            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
-            res.setDataframesMetadata(dataframeMetadataArray);
-            res.setDataframesCount(metadata.size());
-            return res;
         });
     }
 
@@ -208,8 +211,12 @@ public final class DynamicSimulationCFunctions {
     public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
                                                                        CCharPointer categoryNamePtr,
                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () ->
-            Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr)))));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() throws IOException {
+                return Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr))));
+            }
+        });
     }
 
     @CEntryPoint(name = "addEventMappings")
