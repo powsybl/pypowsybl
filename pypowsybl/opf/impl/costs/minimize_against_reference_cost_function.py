@@ -48,16 +48,4 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
                     v_var = variable_context.v_vars[bus_num]
                     cost += (v_var - vsc_cs_row.target_v) * (v_var - vsc_cs_row.target_v)
 
-        for conv_num, conv_row in enumerate(network_cache.voltage_source_converters.itertuples()):
-            if conv_row.bus_id:
-                if conv_row.control_mode == "P_PCC":
-                    conv_p_expr = poi.ExprBuilder()
-                    conv_p_expr += variable_context.conv_p_vars[conv_num]
-                    conv_p_expr -= conv_row.target_p
-                    cost += conv_p_expr * conv_p_expr
-                if conv_row.voltage_regulator_on:
-                    bus_num = network_cache.buses.index.get_loc(conv_row.bus_id)
-                    v_var = variable_context.v_vars[bus_num]
-                    cost += (v_var - conv_row.target_v_ac) * (v_var - conv_row.target_v_ac)
-
         return cost

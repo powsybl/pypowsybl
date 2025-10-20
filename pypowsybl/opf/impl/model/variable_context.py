@@ -685,7 +685,7 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update dc_node '{dc_node_id}' (num={dc_node_num}): v={v}")
 
-        # network_cache.network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
+        network_cache.network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
 
     def _update_dc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
         dc_line_ids = []
@@ -708,6 +708,10 @@ class VariableContext:
         conv_ids = []
         conv_p = []
         conv_q = []
+        conv_target_p = []
+        conv_target_q = []
+        conv_target_v_dc = []
+        conv_target_v_ac = []
         conv_p_dc1 = []
         conv_p_dc2 = []
         for conv_num, (conv_id, row) in enumerate(network_cache.voltage_source_converters.iterrows()):
@@ -716,21 +720,28 @@ class VariableContext:
             dc_node2_id = row.dc_node2_id
             v1 = 0
             v2 = 0
+
             if row.dc_connected1:
                 dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
                 v1 = model.get_value(self.v_dc_vars[dc_node1_num])
             if row.dc_connected2:
                 dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
                 v2 = model.get_value(self.v_dc_vars[dc_node2_num])
+            v_dc = v1 - v2
+            conv_target_v_dc.append(v_dc)
             if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+
                 conv_ids.append(conv_id)
                 conv_index = self.conv_num_2_index[conv_num]
 
                 p = model.get_value(self.conv_p_vars[conv_index])
                 conv_p.append(p)
+                conv_target_p.append(p)
 
                 q = model.get_value(self.conv_q_vars[conv_index])
                 conv_q.append(q)
+                conv_target_q.append(q)
 
                 i = model.get_value(self.conv_i_vars[conv_index])
                 p_dc1 = i*v1
@@ -738,9 +749,15 @@ class VariableContext:
                 conv_p_dc1.append(p_dc1)
                 conv_p_dc2.append(p_dc2)
 
-                logger.log(TRACE_LEVEL, f"Update VSC converter station '{conv_id}' (num={conv_num}): p={p}, q={q}, p_dc1={p_dc1}, p_dc2={p_dc2}")
+                v_ac = model.get_value(self.v_vars[bus_num])
+                conv_target_v_ac.append(v_ac)
 
-        network_cache.network.update_voltage_source_converters(id=conv_ids, p=conv_p, q=conv_q, p_dc1=conv_p_dc1, p_dc2=conv_p_dc2)
+                logger.log(TRACE_LEVEL, f"Update VSC converter station '{conv_id}' (num={conv_num}): p={p}, q={q}, "
+                                        f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p}, target_q={q}, target_v_dc={v_dc}, target_v_ac={v_ac}")
+
+        network_cache.network.update_voltage_source_converters(id=conv_ids, p=conv_p, q=conv_q, p_dc1=conv_p_dc1,
+                                                               p_dc2=conv_p_dc2, target_p=conv_target_p, target_q=conv_target_q,
+                                                               target_v_dc=conv_target_v_dc, target_v_ac=conv_target_v_ac)
 
     def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
         self._update_generators(network_cache, model)

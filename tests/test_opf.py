@@ -84,6 +84,11 @@ def run_opf_then_lf(network: pp.network.Network,
 
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
+    print(network.get_dc_nodes())
+    print(network.get_dc_lines())
+    print(network.get_voltage_source_converters())
+    print(network.get_buses())
+    print(network.get_lines())
     print(lf_result[0].status)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
