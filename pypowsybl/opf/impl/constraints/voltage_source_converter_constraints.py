@@ -33,12 +33,12 @@ class VoltageSourceConverterConstraints(Constraints):
                 if control_mode == "P_PCC":
                     p_ac_eq = conv_p_var - target_p
                     model.add_nl_constraint(p_ac_eq == 0.0)
-                elif control_mode == "V_DC":
-                    if dc_connected2:
-                        dc_node_v_eq = v1_var - v2_var - target_v_dc
-                    else:
-                        dc_node_v_eq = v1_var - target_v_dc
-                    model.add_nl_constraint(dc_node_v_eq == 0.0)
+                # elif control_mode == "V_DC":
+                #     if dc_connected2:
+                #         dc_node_v_eq = v1_var - v2_var - target_v_dc
+                #     else:
+                #         dc_node_v_eq = v1_var - target_v_dc
+                #     model.add_nl_constraint(dc_node_v_eq == 0.0)
 
                 if voltage_regulator_on:
                     bus_v_eq = bus_v_var - target_v_ac
@@ -48,7 +48,6 @@ class VoltageSourceConverterConstraints(Constraints):
                     model.add_nl_constraint(q_ac_eq == 0.0)
 
                 i_ac_var = nl.sqrt(nl.pow(conv_p_var,2) + nl.pow(conv_q_var,2))/1000.0
-
                 p_loss = idle_loss + switching_loss*i_ac_var + resistive_loss*nl.pow(i_ac_var,2)
                 if dc_connected2:
                     conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var*(v1_var - v2_var + 0.001)

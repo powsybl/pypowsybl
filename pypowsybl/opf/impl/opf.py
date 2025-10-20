@@ -20,6 +20,7 @@ from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
 from pypowsybl.opf.impl.bounds.dc_node_voltage_bounds import DcNodeVoltageBounds
+from pypowsybl.opf.impl.bounds.dc_line_current_bounds import DcLineCurrentBounds
 from pypowsybl.opf.impl.bounds.voltage_source_converter_power_bounds import VoltageSourceConverterPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.constraints.current_limit_constraints import CurrentLimitConstraints
@@ -36,6 +37,8 @@ from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurr
 from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
 from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
+from pypowsybl.opf.impl.costs.maximal_dc_voltage_cost_function import MaximalDcVoltageCostFunction
+from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
@@ -79,7 +82,8 @@ class OptimalPowerFlow:
                            VscCsPowerBounds(),
                            BoundaryLineVoltageBounds(),
                            Transformer3wMiddleVoltageBounds(),
-                           VoltageSourceConverterPowerBounds()]
+                           VoltageSourceConverterPowerBounds(),
+                           DcNodeVoltageBounds()]
         constraints: list[Constraints] = [BranchFlowConstraints(),
                                           ShuntFlowConstraints(),
                                           StaticVarCompensatorReactiveLimitsConstraints(),
@@ -95,7 +99,9 @@ class OptimalPowerFlow:
             constraints.append(CurrentLimitConstraints())
             cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
         else:
-            cost_function = MinimizeAgainstReferenceCostFunction()
+            # cost_function = MinimizeAgainstReferenceCostFunction()
+            # cost_function = MaximalDcVoltageCostFunction()
+            cost_function = MinimizeDcLossesFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                            parameters.twt_split_shunt_admittance,
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),

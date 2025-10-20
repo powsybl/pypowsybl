@@ -691,7 +691,11 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update dc_node '{dc_node_id}' (num={dc_node_num}): v={v}")
 
+<<<<<<< HEAD
         network_cache.update_dc_nodes(dc_node_ids, dc_node_v)
+=======
+        network_cache.network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
+>>>>>>> 2f9806ea (Add DC losses function, fix network update)
 
     def _update_dc_lines(self, network_cache: NetworkCache, model: Model):
         dc_line_ids = []
@@ -735,12 +739,18 @@ class VariableContext:
                 v2 = model.get_value(self.v_dc_vars[dc_node2_num])
             v_dc = v1 - v2
             conv_target_v_dc.append(v_dc)
+<<<<<<< HEAD
             if bus1_id:
                 bus_num = network_cache.buses.index.get_loc(bus1_id)
+=======
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+>>>>>>> 2f9806ea (Add DC losses function, fix network update)
 
                 conv_ids.append(conv_id)
                 conv_index = self.conv_num_2_index[conv_num]
 
+<<<<<<< HEAD
                 p_ac = model.get_value(self.conv_p_vars[conv_index])
                 conv_p.append(p_ac)
                 conv_target_p.append(p_ac)
@@ -748,6 +758,15 @@ class VariableContext:
                 q_ac = model.get_value(self.conv_q_vars[conv_index])
                 conv_q.append(q_ac)
                 conv_target_q.append(q_ac)
+=======
+                p = model.get_value(self.conv_p_vars[conv_index])
+                conv_p.append(p)
+                conv_target_p.append(p)
+
+                q = model.get_value(self.conv_q_vars[conv_index])
+                conv_q.append(q)
+                conv_target_q.append(q)
+>>>>>>> 2f9806ea (Add DC losses function, fix network update)
 
                 i = model.get_value(self.conv_i_vars[conv_index])
                 p_dc1 = i * v1
@@ -758,9 +777,18 @@ class VariableContext:
                 v_ac = model.get_value(self.v_vars[bus_num])
                 conv_target_v_ac.append(v_ac)
 
+<<<<<<< HEAD
                 logger.log(TRACE_LEVEL,
                            f"Update voltage source converter '{conv_id}' (num={conv_num}): p_ac={p_ac}, q_ac={q_ac}, "
                            f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p_ac}, target_q={q_ac}, target_v_dc={v_dc}, target_v_ac={v_ac}")
+=======
+                logger.log(TRACE_LEVEL, f"Update VSC converter station '{conv_id}' (num={conv_num}): p={p}, q={q}, "
+                                        f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p}, target_q={q}, target_v_dc={v_dc}, target_v_ac={v_ac}")
+
+        network_cache.network.update_voltage_source_converters(id=conv_ids, p=conv_p, q=conv_q, p_dc1=conv_p_dc1,
+                                                               p_dc2=conv_p_dc2, target_p=conv_target_p, target_q=conv_target_q,
+                                                               target_v_dc=conv_target_v_dc, target_v_ac=conv_target_v_ac)
+>>>>>>> 2f9806ea (Add DC losses function, fix network update)
 
         network_cache.update_voltage_source_converters(conv_ids, conv_p, conv_q, conv_p_dc1, conv_p_dc2, conv_target_p,
                                                        conv_target_q, conv_target_v_dc, conv_target_v_ac)
