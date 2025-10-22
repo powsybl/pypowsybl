@@ -30,7 +30,6 @@ from pypowsybl.opf.impl.constraints.dc_current_balance_constraints import DcCurr
 from pypowsybl.opf.impl.constraints.dc_ground_constraints import DcGroundConstraints
 from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
-from pypowsybl.opf.impl.costs.maximal_dc_voltage_cost_function import MaximalDcVoltageCostFunction
 from pypowsybl.opf.impl.costs.minimize_dc_losses import MinimizeDcLossesFunction
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
@@ -91,21 +90,20 @@ class OptimalPowerFlow:
             constraints.append(CurrentLimitConstraints())
             cost_function = RedispatchingCostFunction(1.0, 1.0, 1.0)
         else:
-            # cost_function = MinimizeAgainstReferenceCostFunction()
-            # cost_function = MaximalDcVoltageCostFunction()
             cost_function = MinimizeDcLossesFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                            parameters.twt_split_shunt_admittance,
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]))
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
+        #BATTERY don't have target_v attribute and VSC_CONVERTER no target_p
         network_stats = NetworkStatistics(network_cache)
         network_stats.add(ElementType.GENERATOR, 'target_v')
-        network_stats.add(ElementType.BATTERY, 'target_v')
+        # network_stats.add(ElementType.BATTERY, 'target_v')
         network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_v')
         network_stats.add(ElementType.GENERATOR, 'target_p')
         network_stats.add(ElementType.BATTERY, 'target_p')
-        network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
+        # network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
 
         logger.info("Starting optimization...")
         start = time.perf_counter()

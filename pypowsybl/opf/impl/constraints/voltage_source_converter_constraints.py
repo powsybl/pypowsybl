@@ -33,12 +33,8 @@ class VoltageSourceConverterConstraints(Constraints):
                 if control_mode == "P_PCC":
                     p_ac_eq = conv_p_var - target_p
                     model.add_nl_constraint(p_ac_eq == 0.0)
-                # elif control_mode == "V_DC":
-                #     if dc_connected2:
-                #         dc_node_v_eq = v1_var - v2_var - target_v_dc
-                #     else:
-                #         dc_node_v_eq = v1_var - target_v_dc
-                #     model.add_nl_constraint(dc_node_v_eq == 0.0)
+
+                # if control_mode == "V_DC", we let the opf determine the value of U
 
                 if voltage_regulator_on:
                     bus_v_eq = bus_v_var - target_v_ac
@@ -47,11 +43,17 @@ class VoltageSourceConverterConstraints(Constraints):
                     q_ac_eq = conv_q_var - target_q
                     model.add_nl_constraint(q_ac_eq == 0.0)
 
+                # P_loss = loss_1 + loss_2*I_ac + loss_3*I_ac**2 with the 3 loss coefficients
                 i_ac_var = nl.sqrt(nl.pow(conv_p_var,2) + nl.pow(conv_q_var,2))/1000.0
                 p_loss = idle_loss + switching_loss*i_ac_var + resistive_loss*nl.pow(i_ac_var,2)
+
+                u_var = 0
+                if dc_connected1:
+                    u_var+= v1_var
                 if dc_connected2:
-                    conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var*(v1_var - v2_var + 0.001)
-                else:
-                    conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * (v1_var + 0.001)
+                    u_var-= v2_var
+                # P_dc = -P_ac - P_loss because we consider that the power P_dc injected in DC is positive,
+                # and the power P_ac flowing out of AC is negative
+                conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * (u_var + 0.001)
 
                 model.add_nl_constraint(conv_p_dc_eq == 0.0)

@@ -254,6 +254,7 @@ class VariableContext:
             converter_nums.append(converter_num)
         conv_p_vars = model.add_m_variables(len(converter_nums), name="conv_p_vars")
         conv_q_vars = model.add_m_variables(len(converter_nums), name="conv_q_vars")
+        # for one converter, conv_i is the DC current flowing from dc_node1 to dc_node2
         conv_i_vars = model.add_m_variables(len(converter_nums), name="conv_i_vars")
 
         return VariableContext(v_vars, ph_vars,
