@@ -16,8 +16,8 @@ class DcNodeVoltageBounds(VariableBounds):
             variable_context: VariableContext, model: ipopt.Model):
         for dc_node_num, row in enumerate(network_cache.dc_nodes.itertuples()):
             #TODO add voltage limits in DC NODE core modelization
-            low_voltage_limit = -1.2
-            high_voltage_limit = 1.2
+            low_voltage_limit = -1
+            high_voltage_limit = 1
             v_bounds = Bounds(low_voltage_limit, high_voltage_limit)
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to dc_node '{row.Index}' (num={dc_node_num})'")
             model.set_variable_bounds(variable_context.v_dc_vars[dc_node_num],

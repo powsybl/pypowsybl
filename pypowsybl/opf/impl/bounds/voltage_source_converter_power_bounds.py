@@ -17,8 +17,8 @@ class VoltageSourceConverterPowerBounds(VariableBounds):
         # Voltage source converter active and reactive power bounds
         for converter_num, row in enumerate(network_cache.voltage_source_converters.itertuples()):
             #TODO implements max P, Q in converter core modelization
-            max_p = 100000.0
-            max_q = 100000.0
+            max_p = 100.0
+            max_q = 100.0
             p_bounds = Bounds(-max_p, max_p).mirror()
             logger.log(TRACE_LEVEL,
                        f"Add active power bounds {p_bounds} to converter '{row.Index}' (num={converter_num})")
