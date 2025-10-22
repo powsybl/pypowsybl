@@ -565,6 +565,30 @@ def test_voltage_per_reactive_power_control():
     assert network.get_extensions('voltagePerReactivePowerControl').empty
 
 
+def test_batteries_voltage_regulation():
+    network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
+    assert network.get_extensions('voltageRegulation').empty
+
+    network.create_extensions('voltageRegulation', id='BAT', voltage_regulator_on=True, target_v=400.0)
+    e = network.get_extensions('voltageRegulation')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT']),
+        columns=['voltage_regulator_on', 'target_v'],
+        data=[[True, 400.0]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('voltageRegulation', id=['BAT'], voltage_regulator_on=False, target_v=399.0)
+    e = network.get_extensions('voltageRegulation')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT']),
+        columns=['voltage_regulator_on', 'target_v'],
+        data=[[False, 399.0]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('voltageRegulation', ['BAT'])
+    assert network.get_extensions('voltageRegulation').empty
+
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
@@ -614,3 +638,5 @@ def test_get_extensions_information():
     assert extensions_information.loc['referencePriorities']['attributes'] == 'index : id (str), priority (int)'
     assert extensions_information.loc['voltagePerReactivePowerControl']['detail'] == 'Models the voltage control static var compensators'
     assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
+    assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
+    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float)'
