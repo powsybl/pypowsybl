@@ -423,7 +423,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("AREA_VOLTAGE_LEVELS", element_type::AREA_VOLTAGE_LEVELS)
             .value("AREA_BOUNDARIES", element_type::AREA_BOUNDARIES)
             .value("INTERNAL_CONNECTION", element_type::INTERNAL_CONNECTION)
-            .value("PROPERTIES", element_type::PROPERTIES);
+            .value("PROPERTIES", element_type::PROPERTIES)
+            .value("DC_LINE", element_type::DC_LINE)
+            .value("DC_NODE", element_type::DC_NODE)
+            .value("VOLTAGE_SOURCE_CONVERTER", element_type::VOLTAGE_SOURCE_CONVERTER)
+            .value("DC_GROUND", element_type::DC_GROUND);
 
     py::enum_<filter_attributes_type>(m, "FilterAttributesType")
             .value("ALL_ATTRIBUTES", filter_attributes_type::ALL_ATTRIBUTES)
