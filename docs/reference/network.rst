@@ -154,6 +154,7 @@ Network elements can be modified using dataframes:
    Network.update_batteries
    Network.update_branches
    Network.update_buses
+   Network.update_busbar_sections
    Network.update_dangling_lines
    Network.update_dangling_lines_generation
    Network.update_generators
