@@ -367,6 +367,7 @@ def test_switch_action():
 def test_tap_changer_action():
     n = pp.network.create_micro_grid_be_network()
 
+    parameters = pp.loadflow.Parameters(provider_parameters={'slackDistributionFailureBehavior': 'LEAVE_ON_SLACK_BUS'})
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
 
@@ -378,7 +379,7 @@ def test_tap_changer_action():
     sa.add_operator_strategy('Strategy_PhaseTapChanger', 'BE-G2_contingency', ['PhaseTapChanger_Action'])
     sa.add_operator_strategy('Strategy_RatioTapChanger', 'BE-G2_contingency', ['RatioTapChanger_Action'])
 
-    sa_result = sa.run_ac(n)
+    sa_result = sa.run_ac(n, parameters)
     df = sa_result.branch_results
 
     assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
@@ -389,13 +390,14 @@ def test_tap_changer_action():
 def test_shunt_action():
     n = pp.network.create_micro_grid_be_network()
 
+    parameters = pp.loadflow.Parameters(provider_parameters={'slackDistributionFailureBehavior': 'LEAVE_ON_SLACK_BUS'})
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
     sa.add_monitored_elements(branch_ids=['ffbabc27-1ccd-4fdc-b037-e341706c8d29'])
 
     sa.add_shunt_compensator_position_action(action_id='ShuntCompensator_Action', shunt_id='d771118f-36e9-4115-a128-cc3d9ce3e3da', section=1)
     sa.add_operator_strategy('Strategy_ShuntCompensator', 'BE-G2_contingency', ['ShuntCompensator_Action'])
-    sa_result = sa.run_ac(n)
+    sa_result = sa.run_ac(n, parameters)
     df = sa_result.branch_results
 
     assert df.loc['', '', 'ffbabc27-1ccd-4fdc-b037-e341706c8d29']['p1'] == pytest.approx(-11.218, abs=1e-2)
