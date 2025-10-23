@@ -38,14 +38,14 @@ class Rao:
     def set_glsk_buffer_source(self, network: Network, glsk_source: io.BytesIO) -> None:
         _pypowsybl.set_glsk_source(network._handle, self._handle, glsk_source.getbuffer())
 
-    def run(self, network: Network, parameters: Optional[RaoParameters] = None) -> RaoResult:
+    def run(self, network: Network, parameters: Optional[RaoParameters] = None, rao_provider: str = "SearchTreeRao") -> RaoResult:
         """
         Run a rao from a set of input buffers
         """
         if parameters is None:
             parameters = RaoParameters()
 
-        rao_result = _pypowsybl.run_rao(network=network._handle, rao_context=self._handle, parameters=parameters._to_c_parameters())
+        rao_result = _pypowsybl.run_rao(network=network._handle, rao_context=self._handle, parameters=parameters._to_c_parameters(), rao_provider=rao_provider)
         crac_handle = _pypowsybl.get_crac(self._handle)
         return RaoResult(rao_result, crac_handle)
 
