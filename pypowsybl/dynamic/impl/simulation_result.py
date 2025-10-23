@@ -5,6 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pandas as pd
+from datetime import datetime
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import DynamicSimulationStatus
 from pypowsybl.utils import create_data_frame_from_series_array
@@ -18,6 +19,7 @@ class SimulationResult:
         self._status = _pp.get_dynamic_simulation_results_status(self._handle)
         self._status_text = _pp.get_dynamic_simulation_results_status_text(self._handle)
         self._curves = create_data_frame_from_series_array(_pp.get_dynamic_curves(self._handle))
+        self._curves.index.map(lambda x: pd.Timestamp(x))
         self._fsv = create_data_frame_from_series_array(_pp.get_final_state_values(self._handle))
         self._timeline = create_data_frame_from_series_array(_pp.get_timeline(self._handle))
 

@@ -55,8 +55,8 @@ public final class TimeSeriesConverter {
             throw new TimeSeriesException("Time series must have the same index");
         }
 
-        int size = timeSeriesList.get(0).getMetadata().getIndex().getPointCount();
-        convertSingleDoubleTimeSeries(timeSeriesList.get(0), dataframeHandler, size);
+        int size = timeSeriesList.getFirst().getMetadata().getIndex().getPointCount();
+        convertSingleDoubleTimeSeries(timeSeriesList.getFirst(), dataframeHandler, size);
         for (int i = 1; i < timeSeriesList.size(); i++) {
             DoubleTimeSeries timeSeries = timeSeriesList.get(i);
             DataframeHandler.DoubleSeriesWriter writer = dataframeHandler.newDoubleSeries(timeSeries.getMetadata().getName(), size);
@@ -69,11 +69,11 @@ public final class TimeSeriesConverter {
     }
 
     private static void convertSingleDoubleTimeSeries(DoubleTimeSeries timeSeries, DataframeHandler dataframeHandler, int size) {
-        DataframeHandler.IntSeriesWriter indexWriter = dataframeHandler.newIntIndex(INDEX_NAME, size);
+        DataframeHandler.StringSeriesWriter indexWriter = dataframeHandler.newStringIndex(INDEX_NAME, size);
         DataframeHandler.DoubleSeriesWriter writer = dataframeHandler.newDoubleSeries(timeSeries.getMetadata().getName(), size);
         int i = 0;
         for (DoublePoint point : timeSeries) {
-            indexWriter.set(i, (int) (point.getInstant().toEpochMilli() % Integer.MAX_VALUE));
+            indexWriter.set(i, point.getInstant().toString());
             writer.set(i, point.getValue());
             i++;
         }
