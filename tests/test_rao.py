@@ -8,6 +8,9 @@ import pathlib
 import io
 import unittest
 import pandas as pd
+import logging
+import queue
+from logging import handlers
 from numpy import nan
 
 import pypowsybl as pp
@@ -29,7 +32,8 @@ from pypowsybl.rao import (
     MultithreadingParameters,
     SecondPreventiveRaoParameters,
     NotOptimizedCnecsParameters,
-    LoadFlowAndSensitivityParameters)
+    LoadFlowAndSensitivityParameters,
+    RaoLogFilter)
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -192,13 +196,7 @@ def test_rao_monitoring():
     assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
 
 def test_rao_cnec_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Flow cnecs
     df_flow_cnecs = result.get_flow_cnec_results()
@@ -220,36 +218,61 @@ def test_rao_cnec_results():
     df_angle_cnecs = result.get_angle_cnec_results()
     assert ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
 
-def test_rao_ra_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+def test_rao_remedial_action_results():
+    result = run_rao_12_node_with_curative()
 
     # Ra results
-    ra_results = result.get_ra_results()
+    ra_results = result.get_remedial_action_results()
     ra_results = ra_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
-    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap', 'optimized_set_point'] == list(ra_results.columns)
-    expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap', 'optimized_set_point'],
-                            data=[['close NL2 BE3 2', 'preventive', "", nan, nan],
-                                  ['pst-range-action', 'curative', "Contingency DE2 DE3", 6, nan],
-                                  ['pst-range-action', 'preventive', "", -10, nan]])
+    assert ['remedial_action_id', 'optimized_instant', 'contingency'] == list(ra_results.columns)
+    expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'contingency'],
+                            data=[['close NL2 BE3 2', 'preventive', ""],
+                                  ['pst-range-action', 'curative', "Contingency DE2 DE3"],
+                                  ['pst-range-action', 'preventive', ""]])
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), ra_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
+def test_rao_network_action_results():
+    result = run_rao_12_node_with_curative()
+
+    # Ra results
+    network_action_results = result.get_network_action_results()
+    network_action_results = network_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
+    assert ['remedial_action_id', 'optimized_instant', 'contingency'] == list(network_action_results.columns)
+    expected = pd.DataFrame(columns=['remedial_action_id', 'optimized_instant', 'contingency'],
+                            data=[['close NL2 BE3 2', 'preventive', ""]])
+    expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), network_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
+
+def test_rao_pst_range_action_results():
+    result = run_rao_12_node_with_curative()
+
+    # Ra results
+    pst_range_action_results = result.get_pst_range_action_results()
+    pst_range_action_results = pst_range_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
+    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'] == list(pst_range_action_results.columns)
+    expected = pd.DataFrame(
+        columns=['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_tap'],
+        data=[['pst-range-action', 'curative', "Contingency DE2 DE3", 6],
+              ['pst-range-action', 'preventive', "", -10]])
+    expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), pst_range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
+
+def test_rao_range_action_results():
+    result = run_rao_12_node_with_curative()
+
+    # Ra results
+    range_action_results = result.get_range_action_results()
+    range_action_results = range_action_results.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
+    assert ['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'] == list(range_action_results.columns)
+    expected = pd.DataFrame(
+        columns=['remedial_action_id', 'optimized_instant', 'contingency', 'optimized_set_point'],
+        data=[])
+    expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
+
 def test_rao_cost_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Cost results
     cost_results_df = result.get_cost_results()
@@ -273,6 +296,34 @@ def test_rao_cost_results():
                                   [0.0],
                                   [0.0]])
     pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False, check_like=True)
+
+def test_rao_log_filter():
+    logger = logging.getLogger('powsybl')
+    logger.setLevel(logging.INFO)
+    logger.addFilter(RaoLogFilter())
+
+    # Redirect to queue
+    q = queue.Queue()
+    handler = handlers.QueueHandler(q)
+    logger.addHandler(handler)
+
+    run_rao_12_node_with_curative()
+
+    # Only open rao logs
+    for i in range(len(q.queue)):
+        assert("com.powsybl.openrao" in q.queue[i].java_logger_name)
+
+
+def run_rao_12_node_with_curative():
+    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+
+    return rao_runner.run(network, parameters)
+
 
 if __name__ == '__main__':
     unittest.main()

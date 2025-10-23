@@ -1147,6 +1147,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_network_element_properties", &pypowsybl::addNetworkElementProperties, "add properties on network elements", py::arg("network"), py::arg("dataframe"));
     m.def("remove_network_element_properties", &pypowsybl::removeNetworkElementProperties, "remove properties on network elements", py::arg("network"), py::arg("ids"), py::arg("properties"));
     m.def("get_loadflow_provider_parameters_names", &pypowsybl::getLoadFlowProviderParametersNames, "get provider parameters for a loadflow provider", py::arg("provider"));
+    m.def("create_loadflow_parameters_from_json", &pypowsybl::createLoadFlowParametersFromJson, "create loadflow parameters from a JSON string", py::arg("parameters_json"));
+    m.def("write_loadflow_parameters_to_json", &pypowsybl::writeLoadFlowParametersToJson, "write loadflow parameters to a JSON string", py::arg("parameters"));
     m.def("create_loadflow_provider_parameters_series_array", &pypowsybl::createLoadFlowProviderParametersSeriesArray, "Create a parameters series array for a given loadflow provider",
           py::arg("provider"));
     m.def("get_security_analysis_provider_parameters_names", &pypowsybl::getSecurityAnalysisProviderParametersNames, "get provider parameters for a security analysis provider", py::arg("provider"));
@@ -1285,7 +1287,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("create_rao", &pypowsybl::createRao, "Create rao context");
     m.def("run_rao", &pypowsybl::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
-        py::arg("network"), py::arg("rao_context"), py::arg("parameters"));
+        py::arg("network"), py::arg("rao_context"), py::arg("parameters"), py::arg("rao_provider"));
     m.def("set_crac_source", ::setCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
             py::arg("network"), py::arg("rao_context"), py::arg("crac_source"));
     m.def("set_glsk_source", ::setGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source",
@@ -1299,12 +1301,15 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_flow_cnec_results", &pypowsybl::getFlowCnecResults, "Get rao flow cnec results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_angle_cnec_results", &pypowsybl::getAngleCnecResults, "Get rao angle cnec results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_voltage_cnec_results", &pypowsybl::getVoltageCnecResults, "Get rao voltage cnec results", py::arg("crac"), py::arg("rao_result"));
-    m.def("get_ra_results", &pypowsybl::getRaResults, "Get rao remedial actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_remedial_action_results", &pypowsybl::getRemedialActionResults, "Get rao remedial actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_network_action_results", &pypowsybl::getNetworkActionResults, "Get RAO network actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_pst_range_action_results", &pypowsybl::getPstRangeActionResults, "Get RAO PST range actions results", py::arg("crac"), py::arg("rao_result"));
+    m.def("get_range_action_results", &pypowsybl::getRangeActionResults, "Get RAO range actions results (non-PST)", py::arg("crac"), py::arg("rao_result"));
     m.def("get_cost_results", &pypowsybl::getCostResults, "Get rao cost results", py::arg("crac"), py::arg("rao_result"));
     m.def("get_virtual_cost_names", &pypowsybl::getVirtualCostNames, "Get virtual cost names", py::arg("rao_result"));
     m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
-    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
-    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, py::call_guard<py::gil_scoped_release>(), "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)

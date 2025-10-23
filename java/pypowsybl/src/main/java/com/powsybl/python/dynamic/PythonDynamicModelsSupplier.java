@@ -32,9 +32,7 @@ public class PythonDynamicModelsSupplier implements DynamicModelsSupplier {
 
     @Override
     public List<DynamicModel> get(Network network, ReportNode reportNode) {
-        ReportNode supplierReportNode = SupplierReport.createSupplierReportNode(reportNode,
-                "pypowsyblDynamicModels",
-                "PyPowsybl Dynamic Models Supplier");
+        ReportNode supplierReportNode = SupplierReport.createDynawoModelsSupplierReportNode(reportNode);
         return dynamicModelList.stream().map(f -> f.apply(network, supplierReportNode)).filter(Objects::nonNull).toList();
     }
 

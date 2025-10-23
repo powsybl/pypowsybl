@@ -27,9 +27,7 @@ public class PythonEventModelsSupplier implements EventModelsSupplier {
 
     @Override
     public List<EventModel> get(Network network, ReportNode reportNode) {
-        ReportNode supplierReportNode = SupplierReport.createSupplierReportNode(reportNode,
-                "pypowsyblEventModels",
-                "PyPowsybl Event Models Supplier");
+        ReportNode supplierReportNode = SupplierReport.createEventModelsSupplierReportNode(reportNode);
         return eventSupplierList.stream().map(f -> f.apply(network, supplierReportNode)).filter(Objects::nonNull).toList();
     }
 
