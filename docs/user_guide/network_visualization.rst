@@ -28,6 +28,10 @@ Note that a loadflow can be run before writing the diagram so that it displays r
 .. image:: ../_static/images/ieee14_vl4.svg
    :class: forced-white-background
 
+
+Customizing with SldParameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Single-line diagrams can be customized through SldParameters:
 
 .. code-block:: python
@@ -206,6 +210,8 @@ Or in a Jupyter Notebook:
 The substation diagrams will be arranged in a grid, based on the content of the matrix parameter. An empty string in the matrix will result in an empty spot in the grid.
 
 
+Customizing with SldProfile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The single line diagram can be further customized using an SldProfile. For example, to set the labels for feeders and buses by using dataframes:
 
@@ -223,15 +229,18 @@ The single line diagram can be further customized using an SldProfile. For examp
                                             ('B1', 'MY-BUS1', None)])
 
     >>> sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
-                                            data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
-                                                  ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
-                                                  ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1')])
+                                            data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE1'),
+                                                  ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE1'),
+                                                  ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT1')])
 
     >>> sld_styles_df = pd.DataFrame.from_records(index='id', columns=['id', 'color', 'bus_width', 'width', 'dash'], 
                                       data=[('B1', 'orange', '4px', '2px', '')])
 
     >>> diagram_profile=pn.SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df, styles= sld_styles_df)
     >>> network.get_single_line_diagram('VL1', sld_profile=diagram_profile)
+
+.. image:: ../_static/images/sld_profile.svg
+    :class: forced-white-background
 
 In the labels dataframe:
     - id: is the network element id

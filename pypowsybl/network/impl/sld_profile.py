@@ -13,7 +13,7 @@ from pypowsybl.utils import _create_c_dataframe
 
 class SldProfile:
     """
-    This class represents parameters to customize a single line diagram (e.g., labels, styles)."""
+    This class represents parameters to customize a single line diagram (labels, styles and arrows)."""
 
     _sld_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('label',0,False,False,False),
