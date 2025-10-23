@@ -28,6 +28,10 @@ Note that a loadflow can be run before writing the diagram so that it displays r
 .. image:: ../_static/images/ieee14_vl4.svg
    :class: forced-white-background
 
+
+Customizing with SldParameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Single-line diagrams can be customized through SldParameters:
 
 .. code-block:: python
@@ -206,6 +210,8 @@ Or in a Jupyter Notebook:
 The substation diagrams will be arranged in a grid, based on the content of the matrix parameter. An empty string in the matrix will result in an empty spot in the grid.
 
 
+Customizing with SldProfile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The single line diagram can be further customized using an SldProfile. For example, to set the labels for feeders and buses by using dataframes:
 
