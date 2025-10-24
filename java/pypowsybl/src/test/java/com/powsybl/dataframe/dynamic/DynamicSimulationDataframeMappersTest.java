@@ -9,14 +9,15 @@ package com.powsybl.dataframe.dynamic;
 
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dynamicsimulation.TimelineEvent;
+import com.powsybl.timeseries.*;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils.fsvDataFrameMapper;
-import static com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils.timelineEventDataFrameMapper;
+import static com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils.*;
 import static com.powsybl.python.network.Dataframes.createSeries;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -37,6 +38,29 @@ class DynamicSimulationDataframeMappersTest {
         assertThat(series).satisfiesExactly(
                 col1 -> assertThat(col1.getStrings()).containsExactly("GEN_Upu_value", "LOAD_load_PPu"),
                 col2 -> assertThat(col2.getDoubles()).containsExactly(45.8, 22.1));
+    }
+
+    @Test
+    void testCurveDataframesMapper() {
+        Instant t0 = Instant.ofEpochSecond(0);
+        Instant t1 = t0.plusNanos(10);
+        Instant t2 = t1.plusMillis(20);
+        Instant t3 = t2.plusSeconds(4);
+        TimeSeriesIndex index = new IrregularTimeSeriesIndex(new Instant[]{t0, t1, t2, t3});
+        Map<String, DoubleTimeSeries> curves = new LinkedHashMap<>();
+        curves.put("curve1", TimeSeries.createDouble("curve1", index, 1d, 2d, 2d, 3d));
+        curves.put("curve2", TimeSeries.createDouble("curve2", index, 4d, 5d, 6d, 6d));
+        List<Series> series = TimeSeriesConverter.createSeries(curves.values().stream().toList());
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("timestamp", "curve1", "curve2");
+        assertThat(series).satisfiesExactly(
+                col1 -> assertThat(col1.getStrings()).containsExactly("1970-01-01T00:00:00Z",
+                        "1970-01-01T00:00:00.000000010Z",
+                        "1970-01-01T00:00:00.020000010Z",
+                        "1970-01-01T00:00:04.020000010Z"),
+                col2 -> assertThat(col2.getDoubles()).containsExactly(1d, 2d, 2d, 3d),
+                col2 -> assertThat(col2.getDoubles()).containsExactly(4d, 5d, 6d, 6d));
     }
 
     @Test
