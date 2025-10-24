@@ -13,7 +13,7 @@ from pypowsybl.utils import _create_c_dataframe
 
 class SldProfile:
     """
-    This class represents parameters to customize a single line diagram (e.g., labels)."""
+    This class represents parameters to customize a single line diagram (labels, styles and arrows)."""
 
     _sld_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
                   _pp.SeriesMetadata('label',0,False,False,False),
@@ -25,9 +25,16 @@ class SldProfile:
                   _pp.SeriesMetadata('direction',0,False,False,False),
                   _pp.SeriesMetadata('label',0,False,False,False)]
 
-    def __init__(self, labels: Optional[DataFrame] = None, feeders_info: Optional[DataFrame] = None):
+    _sld_style_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
+                  _pp.SeriesMetadata('color',0,False,False,False),
+                  _pp.SeriesMetadata('bus_width',0,False,False,False),
+                  _pp.SeriesMetadata('width',0,False,False,False),
+                  _pp.SeriesMetadata('dash',0,False,False,False)]
+
+    def __init__(self, labels: Optional[DataFrame] = None, feeders_info: Optional[DataFrame] = None, styles: Optional[DataFrame] = None):
         self._labels = labels
         self._feeders_info = feeders_info
+        self._styles = styles
 
     @property
     def labels(self) -> Optional[DataFrame]:
@@ -38,7 +45,11 @@ class SldProfile:
     def feeders_info(self) -> Optional[DataFrame]:
         """feeders_info"""
         return self._feeders_info
-
+    
+    @property
+    def styles(self) -> Optional[DataFrame]:
+        """styles"""
+        return self._styles
 
     def _create_sld_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._labels is None else _create_c_dataframe(self._labels.fillna(''),
@@ -47,3 +58,7 @@ class SldProfile:
     def _create_sld_feeders_info_c_dataframe(self) -> Optional[_pp.Dataframe]:
         return None if self._feeders_info is None else _create_c_dataframe(self._feeders_info.fillna(''),
                                                                            SldProfile._sld_feeders_info_metadata)
+
+    def _create_sld_styles_c_dataframe(self) -> Optional[_pp.Dataframe]:
+        return None if self._styles is None else _create_c_dataframe(self._styles.fillna(''),
+                                                                           SldProfile._sld_style_metadata)

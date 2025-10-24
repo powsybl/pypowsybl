@@ -59,6 +59,7 @@ import com.powsybl.sld.svg.CustomLabelProvider.FeederContext;
 import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
+import com.powsybl.sld.svg.styles.iidm.CustomTopologicalStyleProvider;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -1252,6 +1253,7 @@ public final class NetworkCFunctions {
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
                                                  DataframePointer labels,
                                                  DataframePointer feederInfos,
+                                                 DataframePointer styles,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
@@ -1262,6 +1264,7 @@ public final class NetworkCFunctions {
                 String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
                 SldParameters sldParameters = convertSldParameters(sldParametersPtr);
                 applySldCustomLabels(labels, feederInfos, sldParameters);
+                applySldCustomStyles(styles, sldParameters);
                 SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParameters);
             }
         });
@@ -1271,7 +1274,7 @@ public final class NetworkCFunctions {
     public static void writeMatrixMultiSubstationSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                 int substationIdCount, int substationIdRowCount,
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
-                                                 DataframePointer labels, DataframePointer feederInfos,
+                                                 DataframePointer labels, DataframePointer feederInfos, DataframePointer styles,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
@@ -1282,6 +1285,7 @@ public final class NetworkCFunctions {
                 String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
                 SldParameters sldParameters = convertSldParameters(sldParametersPtr);
                 applySldCustomLabels(labels, feederInfos, sldParameters);
+                applySldCustomStyles(styles, sldParameters);
 
                 SingleLineDiagramUtil.writeMatrixMultiSubstationSvg(network, matrixIds, svgFileStr, metadataFileStr, sldParameters);
             }
@@ -1360,6 +1364,35 @@ public final class NetworkCFunctions {
         }
     }
 
+    private static Map<String, CustomTopologicalStyleProvider.CustomStyle> getSldCustomStyles(int rowCount, StringSeries idS, StringSeries colorS,
+                                                                                              StringSeries busWidthS, StringSeries widthS, StringSeries dashS) {
+        Map<String, CustomTopologicalStyleProvider.CustomStyle> styles = new HashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            String id = idS.get(i);
+            CustomTopologicalStyleProvider.CustomStyle style = new CustomTopologicalStyleProvider.CustomStyle(
+                    getNonEmptyValueFromSeries(colorS, i),
+                    getNonEmptyValueFromSeries(busWidthS, i),
+                    getNonEmptyValueFromSeries(widthS, i),
+                    getNonEmptyValueFromSeries(dashS, i)
+            );
+            styles.put(id, style);
+        }
+        return styles;
+    }
+
+    private static void applySldCustomStyles(DataframePointer customStyles, SldParameters parameters) {
+        UpdatingDataframe customStylesDataframe = createDataframe(customStyles);
+        if (customStylesDataframe != null) {
+            final Map<String, CustomTopologicalStyleProvider.CustomStyle> customStylesMap = getSldCustomStyles(
+                    customStylesDataframe.getRowCount(), customStylesDataframe.getStrings("id"),
+                    customStylesDataframe.getStrings("color"), customStylesDataframe.getStrings("bus_width"),
+                    customStylesDataframe.getStrings("width"), customStylesDataframe.getStrings("dash"));
+
+            parameters.setStyleProviderFactory((network, componentLibrary) ->
+                    new com.powsybl.sld.svg.styles.iidm.CustomTopologicalStyleProvider(network, componentLibrary, customStylesMap));
+        }
+    }
+
     @CEntryPoint(name = "getSingleLineDiagramSvg")
     public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -1379,6 +1412,7 @@ public final class NetworkCFunctions {
                                                                                        SldParametersPointer sldParametersPtr,
                                                                                        DataframePointer labels,
                                                                                        DataframePointer feederInfos,
+                                                                                       DataframePointer styles,
                                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
@@ -1387,6 +1421,7 @@ public final class NetworkCFunctions {
                 String containerIdStr = CTypeUtil.toString(containerId);
                 SldParameters sldParameters = convertSldParameters(sldParametersPtr);
                 applySldCustomLabels(labels, feederInfos, sldParameters);
+                applySldCustomStyles(styles, sldParameters);
                 List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
                 return createCharPtrArray(svgAndMeta);
             }
@@ -1399,6 +1434,7 @@ public final class NetworkCFunctions {
                                                                                            SldParametersPointer sldParametersPtr,
                                                                                            DataframePointer labels,
                                                                                            DataframePointer feederInfos,
+                                                                                           DataframePointer styles,
                                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
@@ -1407,6 +1443,7 @@ public final class NetworkCFunctions {
                 String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
                 SldParameters sldParameters = convertSldParameters(sldParametersPtr);
                 applySldCustomLabels(labels, feederInfos, sldParameters);
+                applySldCustomStyles(styles, sldParameters);
                 List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
                 return createCharPtrArray(svgAndMeta);
             }
