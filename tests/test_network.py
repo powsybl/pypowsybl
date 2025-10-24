@@ -2548,6 +2548,63 @@ def test_terminals():
         n.update_terminals(element_id='LINE_S2S3', connected=False, element_side='side')
     assert "No enum constant" in str(e)
 
+def test_dc_nodes():
+    n = pp.network.create_ac_dc_network()
+    n.update_dc_nodes(pd.DataFrame(data={'nominal_v' : 500}, index=['dnDummy']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dn3', 'dn4', 'dnDummy']),
+                            columns=['name', 'nominal_v', 'v'],
+                            data=[['', 400, nan], ['', 400, nan], ['', 500, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
+
+    dc_nodes = n.get_dc_nodes(attributes=['nominal_v'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dn3', 'dn4', 'dnDummy']),
+                            columns=['nominal_v'],
+                            data=[[400], [400], [500]])
+    pd.testing.assert_frame_equal(expected, dc_nodes, check_dtype=False, atol=1e-2)
+
+def test_dc_lines():
+    n = pp.network.create_ac_dc_network()
+    n.update_dc_lines(pd.DataFrame(data={'r':1.0, 'i1':10.0, 'i2':10.0},
+                                   index=['dl34']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dl34']),
+                            columns=['name', 'dc_node1_id', 'dc_node2_id', 'r', 'i1', 'p1', 'i2', 'p2'],
+                            data=[['', 'dn3', 'dn4', 1.0, 10.0, nan, 10.0, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_lines(), check_dtype=False)
+
+    dc_lines = n.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dl34']),
+        columns=['dc_node1_id', 'dc_node2_id'],
+        data=[['dn3', 'dn4']])
+    pd.testing.assert_frame_equal(expected, dc_lines, check_dtype=False, atol=1e-2)
+
+def test_voltage_source_converters():
+    n = pp.network.create_ac_dc_network()
+    n.update_voltage_source_converters(pd.DataFrame(data={'dc_connected1':True, 'dc_connected2':False, 'voltage_regulator_on':False,
+                                                          'control_mode':'P_PCC', 'regulated_element_id': 'conv23',
+                                                          'target_v_dc':400.0, 'target_v_ac':400.0, 'target_p':-50.0, 'target_q':0.0,
+                                                          'idle_loss':0.5, 'switching_loss':1.0, 'resistive_loss':0.2,
+                                                          'p_ac':10.0, 'q_ac':10.0, 'p_dc1':10.0, 'p_dc2':10.0},
+                                                    index=['conv23']))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['conv23', 'conv45']),
+                            columns=['name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
+                                     'dc_connected1', 'dc_connected2', 'regulated_element_id', 'voltage_regulator_on',
+                                     'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
+                                     'switching_loss', 'resistive_loss', 'p_ac', 'q_ac', 'p_dc1', 'p_dc2'],
+                            data=[['', 'vl2', 'vl2_0', '', 'dn3', 'dnDummy', True, False, 'conv23', False, 'P_PCC',
+                                   400.0, 400.0, -50.0, 0.0, 0.5, 1.0, 0.2, 10.0, 10.0, 10.0, 10.0],
+                                  ['', 'vl5', 'vl5_0', '', 'dn4', 'dnDummy', True, False, 'conv45', False, 'V_DC',
+                                   400.0, nan, nan, 0.0, 0.5, 1.0, 0.2, nan, nan, nan, nan]])
+
+    pd.testing.assert_frame_equal(expected, n.get_voltage_source_converters(), check_dtype=False)
+
+    voltage_source_converters = n.get_voltage_source_converters(attributes=['voltage_level_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['conv23', 'conv45']),
+                            columns=['voltage_level_id'],
+                            data=[['vl2'], ['vl5']])
+    pd.testing.assert_frame_equal(expected, voltage_source_converters, check_dtype=False, atol=1e-2)
+
 
 def test_nad_parameters():
     nad_parameters = NadParameters()
