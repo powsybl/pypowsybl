@@ -181,21 +181,79 @@ def test_rao_from_buffers():
                                     'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
                                     'networkActionResults', 'rangeActionResults']
 
-def test_rao_monitoring():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
+def test_rao_angle_monitoring_redispatching():
+    """
+    AngleCNECs are required in CRAC in order to run angle monitoring.
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json"))
-    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/rao_glsk.xml"))
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
     result = rao_runner.run(network, parameters)
 
-    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, LfParameters())
-    assert RaoComputationStatus.DEFAULT == result_with_voltage_monitoring.status()
+    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
 
-    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, LfParameters())
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
+                            data=[["acCur1", "curative", "coL1", -3.783208, 2.216792]])
+
     assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
+                                  check_dtype=False, check_index_type=False, check_like=True)
+
+def test_rao_angle_monitoring_topological_action():
+    """
+    AngleCNECs are required in CRAC in order to run angle monitoring.
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
+    result = rao_runner.run(network, parameters)
+
+    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
+
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
+                            data=[["acCur1", "curative", "coL1", -7.713852, -4.713852]])
+
+    assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
+                                  check_dtype=False, check_index_type=False, check_like=True)
+
+def test_rao_voltage_monitoring():
+    """
+    VoltageCNECs are required in CRAC in order to run voltage monitoring.
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
+    result = rao_runner.run(network, parameters)
+
+    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    voltage_cnec_results = result_with_voltage_monitoring.get_voltage_cnec_results()
+
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'],
+                            data=[["vc", "curative", "coL1", "ONE", 363.622121, 363.622121, -13.622121]])
+
+    assert RaoComputationStatus.DEFAULT == result_with_voltage_monitoring.status()
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), voltage_cnec_results.reset_index(drop=True),
+                                  check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_cnec_results():
     result = run_rao_12_node_with_curative()

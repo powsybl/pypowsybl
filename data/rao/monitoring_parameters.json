@@ -1,0 +1,138 @@
+{
+  "version" : "3.1",
+  "objective-function" : {
+    "type" : "SECURE_FLOW",
+    "unit" : "MW"
+  },
+  "range-actions-optimization" : {
+    "pst-ra-min-impact-threshold" : 0.01,
+    "hvdc-ra-min-impact-threshold" : 0.001,
+    "injection-ra-min-impact-threshold" : 0.001
+  },
+  "topological-actions-optimization" : {
+    "relative-minimum-impact-threshold" : 0.0,
+    "absolute-minimum-impact-threshold" : 0.0
+  },
+  "not-optimized-cnecs" : {
+    "do-not-optimize-curative-cnecs-for-tsos-without-cras" : false
+  },
+  "extensions" : {
+    "open-rao-search-tree-parameters" : {
+      "objective-function" : {
+        "curative-min-obj-improvement" : 0.0
+      },
+      "range-actions-optimization" : {
+        "max-mip-iterations" : 5,
+        "pst-sensitivity-threshold" : 1.0E-6,
+        "pst-model" : "CONTINUOUS",
+        "hvdc-sensitivity-threshold" : 1.0E-6,
+        "injection-ra-sensitivity-threshold" : 1.0E-6,
+        "ra-range-shrinking" : "DISABLED",
+        "linear-optimization-solver" : {
+          "solver" : "CBC",
+          "relative-mip-gap" : 0.001,
+          "solver-specific-parameters" : null
+        }
+      },
+      "topological-actions-optimization" : {
+        "max-preventive-search-tree-depth" : 5,
+        "max-curative-search-tree-depth" : 5,
+        "predefined-combinations" : [ ],
+        "skip-actions-far-from-most-limiting-element" : false,
+        "max-number-of-boundaries-for-skipping-actions" : 0
+      },
+      "second-preventive-rao" : {
+        "execution-condition" : "DISABLED",
+        "hint-from-first-preventive-rao" : false
+      },
+      "load-flow-and-sensitivity-computation" : {
+        "load-flow-provider" : "OpenLoadFlow",
+        "sensitivity-provider" : "OpenLoadFlow",
+        "sensitivity-failure-overcost" : 10000.0,
+        "sensitivity-parameters" : {
+          "version" : "1.0",
+          "load-flow-parameters" : {
+            "version" : "1.9",
+            "voltageInitMode" : "UNIFORM_VALUES",
+            "transformerVoltageControlOn" : false,
+            "phaseShifterRegulationOn" : false,
+            "useReactiveLimits" : true,
+            "twtSplitShuntAdmittance" : true,
+            "shuntCompensatorVoltageControlOn" : false,
+            "readSlackBus" : false,
+            "writeSlackBus" : false,
+            "dc" : false,
+            "distributedSlack" : true,
+            "balanceType" : "PROPORTIONAL_TO_GENERATION_P",
+            "dcUseTransformerRatio" : false,
+            "countriesToBalance" : [ "GR", "BE", "SK", "TR", "CH", "RS", "PL", "UA", "BG", "ES", "ME", "CZ", "HR", "AL", "RO", "HU", "AT", "FR", "PT", "DE", "MK", "BA", "SI", "IT", "NL" ],
+            "connectedComponentMode" : "MAIN",
+            "hvdcAcEmulation" : true,
+            "dcPowerFactor" : 1.0,
+            "extensions" : {
+              "open-load-flow-parameters" : {
+                "slackBusSelectionMode" : "MOST_MESHED",
+                "slackBusesIds" : [ ],
+                "slackDistributionFailureBehavior" : "LEAVE_ON_SLACK_BUS",
+                "lowImpedanceBranchMode" : "REPLACE_BY_ZERO_IMPEDANCE_LINE",
+                "loadPowerFactorConstant" : false,
+                "plausibleActivePowerLimit" : 10000.0,
+                "newtonRaphsonStoppingCriteriaType" : "UNIFORM_CRITERIA",
+                "maxActivePowerMismatch" : 0.01,
+                "maxReactivePowerMismatch" : 0.01,
+                "maxVoltageMismatch" : 1.0E-4,
+                "maxAngleMismatch" : 1.0E-5,
+                "maxRatioMismatch" : 1.0E-5,
+                "maxSusceptanceMismatch" : 1.0E-4,
+                "slackBusPMaxMismatch" : 1.0,
+                "voltagePerReactivePowerControl" : false,
+                "maxNewtonRaphsonIterations" : 30,
+                "maxOuterLoopIterations" : 20,
+                "newtonRaphsonConvEpsPerEq" : 1.0E-4,
+                "voltageInitModeOverride" : "NONE",
+                "transformerVoltageControlMode" : "WITH_GENERATOR_VOLTAGE_CONTROL",
+                "shuntVoltageControlMode" : "WITH_GENERATOR_VOLTAGE_CONTROL",
+                "minPlausibleTargetVoltage" : 0.8,
+                "maxPlausibleTargetVoltage" : 1.2,
+                "minNominalVoltageTargetVoltageCheck" : 20.0,
+                "minRealisticVoltage" : 0.5,
+                "maxRealisticVoltage" : 1.5,
+                "lowImpedanceThreshold" : 1.0E-8,
+                "reactiveRangeCheckMode" : "MAX",
+                "networkCacheEnabled" : false,
+                "svcVoltageMonitoring" : true,
+                "stateVectorScalingMode" : "NONE",
+                "maxSlackBusCount" : 1,
+                "debugDir" : null,
+                "incrementalTransformerRatioTapControlOuterLoopMaxTapShift" : 3,
+                "secondaryVoltageControl" : false,
+                "reactiveLimitsMaxPqPvSwitch" : 3,
+                "phaseShifterControlMode" : "CONTINUOUS_WITH_DISCRETISATION",
+                "alwaysUpdateNetwork" : false,
+                "mostMeshedSlackBusSelectorMaxNominalVoltagePercentile" : 95.0,
+                "reportedFeatures" : [ ],
+                "slackBusCountryFilter" : [ ],
+                "actionableSwitchesIds" : [ ],
+                "asymmetrical" : false,
+                "reactivePowerDispatchMode" : "Q_EQUAL_PROPORTION",
+                "outerLoopNames" : null,
+                "useActiveLimits" : true,
+                "lineSearchStateVectorScalingMaxIteration" : 10,
+                "lineSearchStateVectorScalingStepFold" : 1.3333333333333333,
+                "maxVoltageChangeStateVectorScalingMaxDv" : 0.1,
+                "maxVoltageChangeStateVectorScalingMaxDphi" : 0.17453292519943295,
+                "linePerUnitMode" : "IMPEDANCE",
+                "useLoadModel" : false,
+                "dcApproximationType" : "IGNORE_R",
+                "simulateAutomationSystems" : false
+              }
+            }
+          }
+        }
+      },
+      "multi-threading" : {
+        "available-cpus" : 4
+      }
+    }
+  }
+}
