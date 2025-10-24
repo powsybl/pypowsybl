@@ -41,7 +41,10 @@ from .impl.network_creation_util import (
     load_from_string,
     load_from_binary_buffer,
     load_from_binary_buffers,
-    _create_network)
+    _create_network,
+    create_ac_dc_network,
+    create_ac_dc_bipolar_network
+)
 from .impl.util import (
     get_extensions_names,
     get_single_line_diagram_component_library_names,

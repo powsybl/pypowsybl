@@ -2902,6 +2902,124 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.AREA_BOUNDARIES, all_attributes, attributes, **kwargs)
 
+    def get_dc_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of DC lines
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of DC lines.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dc_node1_id**: dc node where this dc line is connected, on side 1
+              - **dc_node2_id**: dc node where this dc line is connected, on side 2
+              - **p1**: the active flow on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **i1**: the current on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+              - **p2**: the active flow on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **i2**: the current on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+
+            This dataframe is indexed on the dc line ID.
+        """
+        return self.get_elements(ElementType.DC_LINE, all_attributes, attributes, **kwargs)
+
+    def get_dc_nodes(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dc nodes.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the dc nodes dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **nominal_v**: dc node nominal voltage
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+
+            This dataframe is indexed on the dc node ID.
+        """
+        return self.get_elements(ElementType.DC_NODE, all_attributes, attributes, **kwargs)
+
+    def get_voltage_source_converters(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of voltage source converters.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the voltage source converters dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **voltage_level_id**: at which substation the converter is connected
+              - **bus1_id**: bus where this converter is connected, on side 1
+              - **bus2_id** (optional): bus where this converter is connected, on side 2
+              - **dc_node1_id**: dc node where this converter is connected, on side 1
+              - **dc_node2_id**: dc node where this converter is connected, on side 2
+              - **regulated_element_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **dc_connected1**: ``True`` if the converter is connected to a dc node, side 1
+              - **dc_connected2**: ``True`` if the converter is connected to a dc node, side 2
+              - **voltage_regulator_on**: the voltage regulator status
+              - **control_mode**: the control mode of the converter
+              - **target_p**: the active power setpoint
+              - **target_q**: the reactive power setpoint
+              - **target_v_dc**: the DC voltage setpoint
+              - **target_v_ac**: the AC voltage setpoint
+              - **idle_loss**: the idle loss coefficient
+              - **switching_loss**: the switching loss coefficient
+              - **resistive_loss**: the resistive loss coefficient
+              - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
+              - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
+              - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            This dataframe is indexed on the converter ID.
+        """
+        return self.get_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, all_attributes, attributes, **kwargs)
+
+    def get_dc_grounds(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dc grounds.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the dc grounds dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dc_node_id**: dc node identifier
+              - **r**: dc ground resistance
+
+            This dataframe is indexed on the dc ground ID.
+        """
+        return self.get_elements(ElementType.DC_GROUND, all_attributes, attributes, **kwargs)
+
     def _update_elements(self, element_type: ElementType, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
@@ -3929,6 +4047,129 @@ class Network:  # pylint: disable=too-many-public-methods
         df = _adapt_df_or_kwargs(metadata, df, **kwargs)
         c_df = _create_c_dataframe(df, metadata)
         _pp.update_extensions(self._handle, extension_name, table_name, c_df)
+
+    def update_dc_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `i1`
+            - `i2`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_lines`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_lines(id='L-1', i1 = 1.2)
+                network.update_dc_lines(id=['L-1', 'L-2'], r=[0.5, 2.0])
+        """
+        return self._update_elements(ElementType.DC_LINE, df, **kwargs)
+
+    def update_dc_nodes(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc nodes with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
+
+            - `v`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_nodes`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_nodes(id='DN1', v=400.0)
+                network.update_dc_nodes(id=['DN1', 'DN2'], v=[400.0, 63.5])
+        """
+        return self._update_elements(ElementType.DC_NODE, df, **kwargs)
+
+    def update_voltage_source_converters(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update voltage source converters with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `target_v_dc`
+            - `target_v_ac`
+            - `target_p`
+            - `target_q`
+            - `p_ac`
+            - `q_ac`
+            - `p_dc1`
+            - `p_dc2`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_voltage_source_converters`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_voltage_source_converters(id='CONV-1', p=40)
+                network.update_voltage_source_converters(id=['CONV-1', 'CONV-2'], target_p=[40, 40])
+        """
+        return self._update_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, df, **kwargs)
+
+    def update_dc_grounds(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc grounds with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_grounds`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_grounds(id='DG1', r=1.0)
+                network.update_dc_grounds(id=['DN1', 'DN2'], r=[2.0, 0.0])
+        """
+        return self._update_elements(ElementType.DC_NODE, df, **kwargs)
 
     def create_extensions(self, extension_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None,
                           **kwargs: ArrayLike) -> None:
@@ -5080,6 +5321,149 @@ class Network:  # pylint: disable=too-many-public-methods
                                           max_p=1000, target_p=800)
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
+
+    def create_dc_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC lines.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC line
+            - **name**: an optional human-readable name
+            - **dc_node1_id**: the DC node where the new DC line will be connected on side 1.
+              It must already exist.
+            - **dc_node2_id**: the DC node where the new DC line will be connected on side 2.
+              It must already exist.
+            - **r**: the resistance of the DC line, in Ohm
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_lines(id='DL1', dc_node1_id='DN1', dc_node2_id='DN2', r=1.0)
+        """
+        return self._create_elements(ElementType.DC_LINE, [df], **kwargs)
+
+    def create_dc_nodes(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC nodes.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC node
+            - **name**: an optional human-readable name
+            - **nominal_v**: the nominal voltage of the DC node
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_nodes(id='DN1', nominal_v=400.0)
+        """
+        return self._create_elements(ElementType.DC_NODE, [df], **kwargs)
+
+    def create_voltage_source_converters(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates voltage source converter.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new voltage source converter
+            - **name**: an optional human-readable name
+            - **voltage_level_id**: the voltage level where the new converter will be connected.
+              The voltage level must already exist.
+            - **bus_id1** the bus where the new converter will be connected on side 1.
+                It must already exist.
+            - **bus_id2** the bus where the new converter will be connected on side 2.
+                It must already exist.
+            - **dc_node1_id**: the DC node where the new converter will be connected on DC side 1.
+              It must already exist.
+            - **dc_node2_id**: the DC node where the new converter will be connected on DC side 2.
+              It must already exist.
+            - **dc_connected1**: defines if the converter is connected at the dc node 1 (boolean)
+            - **dc_connected2**: defines if the converter is connected at the dc node 2 (boolean)
+            - **regulating_element_id**: the network PCC element
+                It must already exist.
+            - **voltage_regulator_on**: defines if the converter regulates AC voltage (boolean)
+            - **control_mode** the control mode of the converter (V_DC or P_PCC)
+            - **target_p** the AC active power setpoint
+            - **target_q** the AC reactive power setpoint
+            - **target_v_ac** the AC voltage setpoint
+            - **target_v_dc** the DC voltage setpoint
+            - **idle_loss** the idle loss coefficient
+            - **switching_loss** the switching loss coefficient
+            - **resistive_loss** the resistive loss coefficient
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_voltage_source_converter(id='VSC-1', voltage_level_id='VL1',dc_node1_id='DN1',
+                dc_node2_id='DN2', bus1_id='B1', voltage_regulator_on=0, control_mode='P_PCC', target_p=50.0,
+                target_q=50.0, target_v_ac=300.0, target_v_dc=400.0, idle_loss=1.0, switching_loss=2.0,
+                resistive_loss=3.0)
+
+        """
+        return self._create_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, [df], **kwargs)
+
+    def create_dc_grounds(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC grounds.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC ground
+            - **name**: an optional human-readable name
+            - **dc_node_id** the id of the DC Node connected to the DC ground
+            - **r**: the resistance of the DC ground
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_grounds(id='DG1', dc_node_id="DN1", r=1.0)
+        """
+        return self._create_elements(ElementType.DC_GROUND, [df], **kwargs)
 
     def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
