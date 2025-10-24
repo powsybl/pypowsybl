@@ -414,7 +414,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
     // Second preventive rao parameters
     execution_condition = static_cast<ExecutionCondition>(src->execution_condition);
-    re_optimize_curative_range_actions = (bool) src->re_optimize_curative_range_actions;
     hint_from_first_preventive_rao = (bool) src->hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
@@ -464,7 +463,6 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
 
     // Second preventive rao parameters
     res.execution_condition = int(execution_condition);
-    res.re_optimize_curative_range_actions = re_optimize_curative_range_actions;
     res.hint_from_first_preventive_rao = hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters

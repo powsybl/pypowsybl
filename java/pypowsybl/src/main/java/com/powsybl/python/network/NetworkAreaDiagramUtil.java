@@ -30,10 +30,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -141,7 +138,9 @@ public final class NetworkAreaDiagramUtil {
         return graph.getBranchEdgeStream()
                 .filter(be -> !(BranchEdge.DANGLING_LINE_EDGE.equals(be.getType())))
                 .collect(Collectors.toMap(Identifiable::getEquipmentId, branchEdge -> {
-                    EdgeInfo e1 = labelProvider.getEdgeInfo(graph, branchEdge, BranchEdge.Side.ONE).orElse(null);
+                    String branchId = branchEdge.getEquipmentId();
+                    String type = branchEdge.getType();
+                    EdgeInfo e1 = labelProvider.getBranchEdgeInfo(branchId, BranchEdge.Side.ONE, type).orElse(null);
                     String side1Label = "";
                     EdgeInfo.Direction dir1 = null;
                     if (e1 != null) {
@@ -150,7 +149,7 @@ public final class NetworkAreaDiagramUtil {
 
                     }
 
-                    EdgeInfo e2 = labelProvider.getEdgeInfo(graph, branchEdge, BranchEdge.Side.TWO).orElse(null);
+                    EdgeInfo e2 = labelProvider.getBranchEdgeInfo(branchId, BranchEdge.Side.TWO, type).orElse(null);
                     String side2Label = "";
                     EdgeInfo.Direction dir2 = null;
                     if (e2 != null) {
@@ -158,7 +157,7 @@ public final class NetworkAreaDiagramUtil {
                         dir2 = e2.getDirection().orElse(null);
                     }
 
-                    String edgeLabel = labelProvider.getLabel(branchEdge);
+                    String edgeLabel = labelProvider.getBranchLabel(branchId);
 
                     return new CustomLabelProvider.BranchLabels(side1Label, edgeLabel, side2Label, dir1, dir2);
                 }));
@@ -180,7 +179,7 @@ public final class NetworkAreaDiagramUtil {
 
         for (ThreeWtEdge edge : dataList) {
             ThreeWtEdge.Side side = edge.getSide();
-            Optional<EdgeInfo> edgeInfo = labelProvider.getEdgeInfo(graph, edge);
+            Optional<EdgeInfo> edgeInfo = labelProvider.getThreeWindingTransformerEdgeInfo(edge.getEquipmentId(), side);
             if (edgeInfo.isPresent()) {
                 EdgeInfo.Direction dir = edgeInfo.get().getDirection().orElse(null);
                 String label = edgeInfo.get().getExternalLabel().orElse("");
@@ -221,12 +220,14 @@ public final class NetworkAreaDiagramUtil {
     }
 
     public static Map<String, String> getBusDescriptionsMap(Graph graph, LabelProvider labelProvider) {
-        return graph.getBusNodesStream()
-                .filter(busNode -> !(busNode instanceof BoundaryBusNode))
-                .collect(Collectors.toMap(
-                        BusNode::getEquipmentId,
-                        labelProvider::getBusDescription
-                ));
+        Map<String, String> busDescriptions = new HashMap<>();
+        graph.getVoltageLevelNodesStream()
+            .forEach(vlNode -> vlNode.getBusNodeStream()
+                    .filter(busNode -> !(busNode instanceof BoundaryBusNode))
+                    .forEach(busNode -> busDescriptions.put(busNode.getEquipmentId(),
+                            labelProvider.getVoltageLevelLegend(vlNode.getEquipmentId()).getBusLegend(busNode.getEquipmentId())))
+            );
+        return busDescriptions;
     }
 
     public static Map<String, String> getBusDescriptionsMap(Network network, SvgParameters pars) {
@@ -242,7 +243,7 @@ public final class NetworkAreaDiagramUtil {
                 .filter(vlNode -> !(vlNode instanceof BoundaryNode))
                 .collect(Collectors.toMap(
                         VoltageLevelNode::getEquipmentId,
-                        labelProvider::getVoltageLevelDescription
+                        vlNode -> labelProvider.getVoltageLevelLegend(vlNode.getEquipmentId()).legendHeader()
                 ));
     }
 
@@ -253,12 +254,12 @@ public final class NetworkAreaDiagramUtil {
                 .filter(vlNode -> !(vlNode instanceof BoundaryNode))
                 .collect(Collectors.filtering(
                         c1 -> {
-                            List<String> details = labelProvider.getVoltageLevelDetails(c1);
+                            List<String> details = labelProvider.getVoltageLevelLegend(c1.getEquipmentId()).legendFooter();
                             return details != null && !details.isEmpty();
                         },
                         Collectors.toMap(
                                 VoltageLevelNode::getEquipmentId,
-                                labelProvider::getVoltageLevelDetails
+                                vlNode -> labelProvider.getVoltageLevelLegend(vlNode.getEquipmentId()).legendFooter()
                         )));
     }
 

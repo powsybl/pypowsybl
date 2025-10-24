@@ -239,7 +239,7 @@ public final class Util {
             case PHASE_TAP_CHANGER -> PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER;
             case REACTIVE_CAPABILITY_CURVE_POINT -> PyPowsyblApiHeader.ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION ->
-                    PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
+                PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
             case OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
             case SELECTED_OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_OPERATIONAL_LIMITS;
@@ -365,14 +365,14 @@ public final class Util {
             case CREATE_FEEDER_BAY -> DataframeNetworkModificationType.CREATE_FEEDER_BAY;
             case CREATE_LINE_FEEDER -> DataframeNetworkModificationType.CREATE_LINE_FEEDER;
             case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER ->
-                    DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
+                DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
             case CREATE_LINE_ON_LINE -> DataframeNetworkModificationType.CREATE_LINE_ON_LINE;
             case REVERT_CREATE_LINE_ON_LINE -> DataframeNetworkModificationType.REVERT_CREATE_LINE_ON_LINE;
             case CONNECT_VOLTAGE_LEVEL_ON_LINE -> DataframeNetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE;
             case REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE ->
-                    DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
+                DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
             case REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE ->
-                    DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
+                DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
         };
     }
 

@@ -3,6 +3,7 @@
   "includes":[
     {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.NetworkFactoryService\\E"},
     {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.Importer\\E"},
-    {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.Exporter\\E"}
+    {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.Exporter\\E"},
+    {"pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.ImportPostProcessor\\E"}
   ]}
 }

@@ -62,7 +62,7 @@ To see the list of available post processors:
 .. doctest::
 
    >>> pp.network.get_import_post_processors()
-   ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines']
+   ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines']
 
 Then a list of post processors can be pass to the load function:
 

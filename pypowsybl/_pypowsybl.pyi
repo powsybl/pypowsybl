@@ -946,7 +946,6 @@ class RaoParameters:
     max_number_of_boundaries_for_skipping_actions: int
     available_cpus: int
     execution_condition: ExecutionCondition
-    re_optimize_curative_range_actions: bool
     hint_from_first_preventive_rao: bool
     do_not_optimize_curative_cnecs_for_tsos_without_cras: bool
     load_flow_provider: str

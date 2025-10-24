@@ -63,7 +63,7 @@ def test_load_cgmes_two_zip():
 
 
 def test_load_post_processor():
-    assert ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
 
 

@@ -243,8 +243,8 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution', 'startWithFrozenACEmulation']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution', 'startWithFrozenACEmulation']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
 
@@ -366,6 +366,7 @@ def test_switch_action():
 
 def test_tap_changer_action():
     n = pp.network.create_micro_grid_be_network()
+    n.update_generators(id='3a3b27be-b18b-4385-b557-6735d733baf0', max_p=210)
 
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
@@ -388,6 +389,7 @@ def test_tap_changer_action():
 
 def test_shunt_action():
     n = pp.network.create_micro_grid_be_network()
+    n.update_generators(id='3a3b27be-b18b-4385-b557-6735d733baf0', max_p=210)
 
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')

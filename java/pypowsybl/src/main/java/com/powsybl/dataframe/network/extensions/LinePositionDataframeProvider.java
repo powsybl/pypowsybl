@@ -54,7 +54,7 @@ public class LinePositionDataframeProvider extends AbstractSingleDataframeNetwor
                 .flatMap(lp -> IntStream.range(0, lp.getCoordinates().size()).mapToObj(num -> new LineCoordinate(lp, num)));
     }
 
-    private static class LineCoordinateGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, LineCoordinate> {
+    private static final class LineCoordinateGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, LineCoordinate> {
 
         @Override
         public LineCoordinate getItem(Network network, UpdatingDataframe updatingDataframe, int row) {

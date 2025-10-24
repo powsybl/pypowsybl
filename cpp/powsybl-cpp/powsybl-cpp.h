@@ -568,7 +568,6 @@ public:
 
     // Second preventive rao parameters
     ExecutionCondition execution_condition;
-    bool re_optimize_curative_range_actions;
     bool hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
