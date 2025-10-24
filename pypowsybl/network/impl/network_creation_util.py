@@ -8,6 +8,7 @@ import io
 import warnings
 from os import PathLike
 from typing import Union, Dict, List, Optional
+import pypowsybl as pp
 import pypowsybl._pypowsybl as _pp
 from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
@@ -184,6 +185,86 @@ def create_metrix_tutorial_six_buses_network(allow_variant_multi_thread_access: 
     """
     return _create_network('metrix_tutorial_six_buses', '', allow_variant_multi_thread_access)
 
+def create_ac_dc_network() -> Network:
+        """
+    Create an instance of an AC DC network case, for AC DC loadflow
+
+    Returns:
+        a new instance of an AC DC network case
+    """
+        n = pp.network.create_empty()
+        n.create_dc_nodes(id='dn3', nominal_v=400)
+        n.create_dc_nodes(id='dn4', nominal_v=400)
+        n.create_dc_nodes(id='dnDummy', nominal_v=400)
+        n.create_voltage_levels(id='vl1', topology_kind='BUS_BREAKER', nominal_v=400)
+        n.create_buses(id='b1', voltage_level_id='vl1')
+        n.create_generators(id='g1', voltage_level_id='vl1', bus_id='b1', target_p=102.56, min_p=0, max_p=500,
+                            target_v=390,
+                            voltage_regulator_on=True)
+        n.create_voltage_levels(id='vl2', topology_kind='BUS_BREAKER', nominal_v=400)
+        n.create_buses(id='b2', voltage_level_id='vl2')
+        n.create_loads(id='ld2', voltage_level_id='vl2', bus_id='b2', p0=50, q0=10)
+        n.create_voltage_levels(id='vl5', topology_kind='BUS_BREAKER', nominal_v=400)
+        n.create_buses(id='b5', voltage_level_id='vl5')
+        n.create_loads(id='ld5', voltage_level_id='vl5', bus_id='b5', p0=50, q0=10)
+        n.create_dc_lines(id='dl34', dc_node1_id='dn3', dc_node2_id='dn4', r=0.1)
+        n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
+        n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
+        n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3', dc_node2_id='dnDummy',
+                                           bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
+                                           target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                           dc_connected1=1, dc_connected2=0)
+        n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4', dc_node2_id='dnDummy',
+                                           bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                           target_v_dc=400.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                           dc_connected1=1, dc_connected2=0)
+        return n
+
+
+def create_ac_dc_bipolar_network() -> Network:
+    """
+Create an instance of an AC DC bipolar network case, for AC DC loadflow
+
+Returns:
+    a new instance of an AC DC bipolar network case
+"""
+    n = pp.network.create_empty()
+    n.create_dc_nodes(id='dn3p', nominal_v=400)
+    n.create_dc_nodes(id='dn3n', nominal_v=400)
+    n.create_dc_nodes(id='dn4p', nominal_v=400)
+    n.create_dc_nodes(id='dn4n', nominal_v=400)
+    n.create_dc_nodes(id='dnGp', nominal_v=400)
+    n.create_dc_nodes(id='dnGn', nominal_v=400)
+    n.create_dc_nodes(id='dnGr', nominal_v=400)
+    n.create_dc_grounds(id='Gr', r=0.0, dc_node_id='dnGr')
+    n.create_voltage_levels(id='vl1', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b1', voltage_level_id='vl1')
+    n.create_generators(id='g1', voltage_level_id='vl1', bus_id='b1', target_p=102.56, min_p=0, max_p=500,
+                        target_v=390,
+                        voltage_regulator_on=True)
+    n.create_voltage_levels(id='vl2', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b2', voltage_level_id='vl2')
+    n.create_loads(id='ld2', voltage_level_id='vl2', bus_id='b2', p0=20, q0=10)
+    n.create_voltage_levels(id='vl5', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b5', voltage_level_id='vl5')
+    n.create_loads(id='ld5', voltage_level_id='vl5', bus_id='b5', p0=50, q0=10)
+    n.create_dc_lines(id='dl3Gp', dc_node1_id='dn3p', dc_node2_id='dnGp', r=0.1)
+    n.create_dc_lines(id='dl3Gn', dc_node1_id='dn3n', dc_node2_id='dnGn', r=0.1)
+    n.create_dc_lines(id='dlG4p', dc_node1_id='dnGp', dc_node2_id='dn4p', r=0.1)
+    n.create_dc_lines(id='dlG4n', dc_node1_id='dnGn', dc_node2_id='dn4n', r=0.1)
+    n.create_dc_lines(id='dlGp', dc_node1_id='dnGp', dc_node2_id='dnGr', r=1000)
+    n.create_dc_lines(id='dlGn', dc_node1_id='dnGn', dc_node2_id='dnGr', r=1000)
+    n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
+    n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
+    n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
+                                       bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
+                                       target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
+                                       bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                       target_v_dc=400.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    return n
 
 def is_loadable(file: Union[str, PathLike]) -> bool:
     """
