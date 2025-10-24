@@ -219,7 +219,7 @@ jobs:
           }
           - {
             name: darwin-arm64,
-            os: macos-15,
+            os: macos-15-xlarge,
             macosx_deployment_target: "11", # first arm64 version of macosx
             bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
           }
@@ -308,6 +308,7 @@ jobs:
   macos_windows_python_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel (without rebuilding native libraries)
     runs-on: ${{ matrix.config.os }}
+    needs: macos_windows_complete_build
     strategy:
       matrix:
         config:
