@@ -308,6 +308,7 @@ jobs:
   macos_windows_python_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel (without rebuilding native libraries)
     runs-on: ${{ matrix.config.os }}
+    needs: macos_windows_complete_build
     strategy:
       matrix:
         config:
