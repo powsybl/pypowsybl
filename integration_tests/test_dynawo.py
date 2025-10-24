@@ -11,7 +11,6 @@ import pypowsybl.report as rp
 from pypowsybl._pypowsybl import DynamicSimulationStatus
 import pandas as pd
 from pathlib import Path
-import logging
 
 def test_simulation():
     """
@@ -71,8 +70,6 @@ def test_minimal_simulation():
     and configured its path in your config.yml.
     """
     network = pp.network.create_ieee14()
-    logging.basicConfig()
-    logging.getLogger('powsybl').setLevel(logging.DEBUG)
     model_mapping = dyn.ModelMapping()
     generator_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
