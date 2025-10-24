@@ -9,7 +9,7 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
-from pypowsybl import _pypowsybl, voltage_initializer
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
     network,
@@ -19,7 +19,11 @@ from pypowsybl import (
     glsk,
     flowdecomposition,
     shortcircuit,
-    rao
+    dynamic,
+    grid2op,
+    rao,
+    report,
+    voltage_initializer
 )
 from pypowsybl.network import per_unit_view
 
@@ -41,7 +45,10 @@ __all__ = [
     "flowdecomposition",
     "shortcircuit",
     "voltage_initializer",
-    "grid2op"
+    "grid2op",
+    "dynamic",
+    "rao",
+    "report"
 ]
 
 

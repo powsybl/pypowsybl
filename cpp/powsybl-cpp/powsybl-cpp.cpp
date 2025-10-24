@@ -945,12 +945,12 @@ SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type va
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::runLoadFlowValidation, network, validationType, c_validation_parameters.get()));
 }
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info) {
     auto c_parameters = parameters.to_c_struct();
-    PowsyblCaller::get()->callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+    PowsyblCaller::get()->callJava(::writeSingleLineDiagramSvg, network, (char*) containerId.data(), (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get(), labels, feeders_info);
 }
 
-void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters) {
+void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info) {
     auto c_parameters = parameters.to_c_struct();
     int nbRows = matrixIds.size();
     std::vector<std::string> substationIds;
@@ -961,21 +961,21 @@ void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, c
         }
     }
     ToCharPtrPtr substationIdPtr(substationIds);
-    PowsyblCaller::get()->callJava(::writeMatrixMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), substationIds.size(), nbRows, (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get());
+    PowsyblCaller::get()->callJava(::writeMatrixMultiSubstationSingleLineDiagramSvg, network, substationIdPtr.get(), substationIds.size(), nbRows, (char*) svgFile.data(), (char*) metadataFile.data(), c_parameters.get(), labels, feeders_info);
 }
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId) {
     return toString(PowsyblCaller::get()->callJava<char*>(::getSingleLineDiagramSvg, network, (char*) containerId.data()));
 }
 
-std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters) {
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info) {
     auto c_parameters = parameters.to_c_struct();
-    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get());
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getSingleLineDiagramSvgAndMetadata, network, (char*) containerId.data(), c_parameters.get(), labels, feeders_info);
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
 
-std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters){
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info){
     auto c_parameters = parameters.to_c_struct();
     int nbRows = matrixIds.size();
     std::vector<std::string> substationIds;
@@ -986,7 +986,7 @@ std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle
         }
     }
     ToCharPtrPtr substationIdPtr(substationIds);
-    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getMatrixMultiSubstationSvgAndMetadata, network, substationIdPtr.get(), substationIds.size(), nbRows, c_parameters.get());
+    auto svgAndMetadataArrayPtr = PowsyblCaller::get()->callJava<array*>(::getMatrixMultiSubstationSvgAndMetadata, network, substationIdPtr.get(), substationIds.size(), nbRows, c_parameters.get(), labels, feeders_info);
     ToStringVector svgAndMetadata(svgAndMetadataArrayPtr);
     return svgAndMetadata.get();
 }
@@ -1383,6 +1383,19 @@ SeriesArray* createLoadFlowProviderParametersSeriesArray(const std::string& prov
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::createLoadFlowProviderParametersSeriesArray, (char*) provider.data()));
 }
 
+LoadFlowParameters* createLoadFlowParametersFromJson(const std::string& parametersJson) {
+    loadflow_parameters* parametersPtr = PowsyblCaller::get()->callJava<loadflow_parameters*>(::createLoadFlowParametersFromJson, (char*) parametersJson.data());
+    LoadFlowParameters* parameters = new LoadFlowParameters(parametersPtr);
+    // memory has been allocated on java side, we need to clean it up on java side
+    PowsyblCaller::get()->callJava(::freeLoadFlowParameters, parametersPtr);
+    return parameters;
+}
+
+std::string writeLoadFlowParametersToJson(const LoadFlowParameters& parameters) {
+    auto parametersPtr = parameters.to_c_struct();
+    return toString(PowsyblCaller::get()->callJava<char*>(::writeLoadFlowParametersToJson, parametersPtr.get()));
+}
+
 std::vector<std::string> getSecurityAnalysisProviderParametersNames(const std::string& securityAnalysisProvider) {
     auto providerParametersArrayPtr = pypowsybl::PowsyblCaller::get()->callJava<array*>(::getSecurityAnalysisProviderParametersNames, (char*) securityAnalysisProvider.c_str());
     ToStringVector providerParameters(providerParametersArrayPtr);
@@ -1662,9 +1675,9 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle reportNode) {
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters  = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
@@ -2007,8 +2020,20 @@ SeriesArray* getVoltageCnecResults(const JavaHandle& cracHandle, const JavaHandl
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecResults, cracHandle, resultHandle));
 }
 
-SeriesArray* getRaResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
-    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRaResults, cracHandle, resultHandle));
+SeriesArray* getRemedialActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRemedialActionResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getNetworkActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkActionResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getPstRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getPstRangeActionResults, cracHandle, resultHandle));
+}
+
+SeriesArray* getRangeActionResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getRangeActionResults, cracHandle, resultHandle));
 }
 
 SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle) {
@@ -2029,9 +2054,9 @@ JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
 
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters) {
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider) {
     auto c_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get(), (char*) raoProvider.data());
 }
 
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {

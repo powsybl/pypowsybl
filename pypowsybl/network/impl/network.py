@@ -44,6 +44,7 @@ from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
 from .nad_parameters import NadParameters
 from .nad_profile import NadProfile
+from .sld_profile import SldProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
@@ -290,7 +291,7 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: Optional[PathOrStr] = None,
-                                      parameters: Optional[SldParameters] = None) -> None:
+                                      parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -299,6 +300,7 @@ class Network:  # pylint: disable=too-many-public-methods
             svg_file: a svg file path
             metadata_file: a json metadata file path
             parameters: single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
         """
 
         svg_file = path_to_str(svg_file)
@@ -306,11 +308,15 @@ class Network:  # pylint: disable=too-many-public-methods
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
-                                          '' if metadata_file is None else path_to_str(metadata_file), p)
+                                          '' if metadata_file is None else path_to_str(metadata_file), p,
+                                          None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                          None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                          )
 
     def write_matrix_multi_substation_single_line_diagram_svg(self, matrix_ids: List[List[str]], svg_file: PathOrStr,
                                                               metadata_file: Optional[PathOrStr] = None,
-                                                              parameters: Optional[SldParameters] = None) -> None:
+                                                              parameters: Optional[SldParameters] = None,
+                                                              sld_profile: Optional[SldProfile] = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -319,6 +325,7 @@ class Network:  # pylint: disable=too-many-public-methods
             svg_file: a svg file path
             metadata_file: a json metadata file path
             parameters: single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
         """
 
         svg_file = path_to_str(svg_file)
@@ -326,15 +333,19 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.write_matrix_multi_substation_single_line_diagram_svg(self._handle, matrix_ids, svg_file,
                                                                   '' if metadata_file is None else path_to_str(
                                                                       metadata_file),
-                                                                  p)
+                                                                  p,
+                                                                  None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                                                  None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                                                  )
 
-    def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
             parameters: single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
 
         Returns:
             the single line diagram
@@ -342,16 +353,20 @@ class Network:  # pylint: disable=too-many-public-methods
 
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
-        svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
+        svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p,
+                                                                                   None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                                                                   None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                                                                   )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
-    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: Optional[SldParameters] = None) -> Svg:
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
         """
         Create a single line diagram from multiple substations
 
         Args:
             matrix_ids: a two-dimensional list of substation id
             parameters:single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
 
         Returns:
             the single line diagram
@@ -359,7 +374,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
-        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p)
+        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p,
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe() # pylint: disable=protected-access
+                                                                                                           )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Optional[Union[str, List[str]]] = None,
@@ -3673,7 +3691,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return self._update_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def update_busbar_sections(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
-        """Update phase tap changers with a ``Pandas`` dataframe.
+        """Update bus bar sections with a ``Pandas`` dataframe.
 
         Args:
             df: the data to be updated, as a dataframe.

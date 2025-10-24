@@ -52,6 +52,11 @@ import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.sld.SldParameters;
 import com.powsybl.sld.library.ConvergenceComponentLibrary;
 import com.powsybl.sld.library.SldComponentLibrary;
+import com.powsybl.sld.model.nodes.NodeSide;
+import com.powsybl.sld.svg.CustomLabelProvider.CustomFeederInfos;
+import com.powsybl.sld.svg.CustomLabelProvider.CustomLabels;
+import com.powsybl.sld.svg.CustomLabelProvider.FeederContext;
+import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import org.apache.commons.io.IOUtils;
@@ -72,6 +77,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
 import java.util.zip.ZipOutputStream;
 
@@ -88,10 +94,10 @@ import static com.powsybl.python.dataframe.CDataframeHandler.*;
  *
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  */
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class NetworkCFunctions {
 
-    private static final ExportersLoader EXPORTERS_LOADER_SUPPLIER = new ExportersServiceLoader();
     private static final ImportersLoader IMPORTERS_LOADER_SUPPLIER = new ImportersServiceLoader();
 
     private NetworkCFunctions() {
@@ -99,7 +105,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkImportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkImportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Importer.getFormats().stream().sorted().toList()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                return createCharPtrArray(Importer.getFormats().stream().sorted().toList());
+            }
+        });
     }
 
     @CEntryPoint(name = "getNetworkImportSupportedExtensions")
@@ -109,7 +120,12 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getNetworkExportFormats")
     public static ArrayPointer<CCharPointerPointer> getNetworkExportFormats(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(Exporter.getFormats().stream().sorted().toList()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                return createCharPtrArray(Exporter.getFormats().stream().sorted().toList());
+            }
+        });
     }
 
     @CEntryPoint(name = "getNetworkImportPostProcessors")
@@ -120,28 +136,39 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "createNetwork")
     public static ObjectHandle createNetwork(IsolateThread thread, CCharPointer name, CCharPointer id, boolean allowVariantMultiThreadAccess,
                                              ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String networkName = CTypeUtil.toString(name);
-            String networkId = CTypeUtil.toString(id);
-            Network network = Networks.create(networkName, networkId);
-            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
-            return ObjectHandles.getGlobal().create(network);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                String networkName = CTypeUtil.toString(name);
+                String networkId = CTypeUtil.toString(id);
+                Network network = Networks.create(networkName, networkId);
+                network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
+                return ObjectHandles.getGlobal().create(network);
+            }
         });
     }
 
     @CEntryPoint(name = "getNetworkMetadata")
     public static NetworkMetadataPointer getNetworkMetadata(IsolateThread thread, ObjectHandle networkHandle,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createNetworkMetadata(network);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public NetworkMetadataPointer get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return createNetworkMetadata(network);
+            }
         });
     }
 
     @CEntryPoint(name = "freeNetworkMetadata")
     public static void freeNetworkMetadata(IsolateThread thread, NetworkMetadataPointer ptr,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeNetworkMetadata(ptr));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeNetworkMetadata(ptr);
+            }
+        });
     }
 
     private static NetworkMetadataPointer createNetworkMetadata(Network network) {
@@ -169,15 +196,18 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "isNetworkLoadable")
     public static boolean isNetworkLoadable(IsolateThread thread, CCharPointer file, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String fileStr = CTypeUtil.toString(file);
-            ReadOnlyDataSource dataSource = DataSource.fromPath(Path.of(fileStr));
-            for (Importer importer : Importer.list()) {
-                if (importer.exists(dataSource)) {
-                    return true;
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                String fileStr = CTypeUtil.toString(file);
+                ReadOnlyDataSource dataSource = DataSource.fromPath(Path.of(fileStr));
+                for (Importer importer : Importer.list()) {
+                    if (importer.exists(dataSource)) {
+                        return true;
+                    }
                 }
+                return false;
             }
-            return false;
         });
     }
 
@@ -188,17 +218,20 @@ public final class NetworkCFunctions {
                                            ObjectHandle reportNodeHandle,
                                            boolean allowVariantMultiThreadAccess,
                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String fileStr = CTypeUtil.toString(file);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            if (reportNode == null) {
-                reportNode = ReportNode.NO_OP;
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                String fileStr = CTypeUtil.toString(file);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
+                var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+                Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, new ImportersServiceLoader(), reportNode);
+                network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
+                return ObjectHandles.getGlobal().create(network);
             }
-            var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
-            Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
-            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
-            return ObjectHandles.getGlobal().create(network);
         });
     }
 
@@ -210,21 +243,24 @@ public final class NetworkCFunctions {
                                                      ObjectHandle reportNodeHandle,
                                                      boolean allowVariantMultiThreadAccess,
                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String fileNameStr = CTypeUtil.toString(fileName);
-            String fileContentStr = CTypeUtil.toString(fileContent);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
-                if (reportNode == null) {
-                    reportNode = ReportNode.NO_OP;
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                String fileNameStr = CTypeUtil.toString(fileName);
+                String fileContentStr = CTypeUtil.toString(fileContent);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                try (InputStream is = new ByteArrayInputStream(fileContentStr.getBytes(StandardCharsets.UTF_8))) {
+                    if (reportNode == null) {
+                        reportNode = ReportNode.NO_OP;
+                    }
+                    var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+                    Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+                    network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
+                    return ObjectHandles.getGlobal().create(network);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
-                var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
-                Network network = Network.read(fileNameStr, is, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
-                network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
-                return ObjectHandles.getGlobal().create(network);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
             }
         });
     }
@@ -237,42 +273,45 @@ public final class NetworkCFunctions {
                                                             ObjectHandle reportNodeHandle,
                                                             boolean allowVariantMultiThreadAccess,
                                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
-            List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
-            for (int i = 0; i < bufferCount; ++i) {
-                ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
-                Optional<CompressionFormat> format = detectCompressionFormat(buffer);
-                if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                    InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
-                    String commonBasename = null;
-                    try {
-                        for (String filename : ds.listNames(".*")) {
-                            String basename = DataSourceUtil.getBaseName(filename);
-                            commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
+                List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
+                for (int i = 0; i < bufferCount; ++i) {
+                    ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
+                    Optional<CompressionFormat> format = detectCompressionFormat(buffer);
+                    if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
+                        InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
+                        String commonBasename = null;
+                        try {
+                            for (String filename : ds.listNames(".*")) {
+                                String basename = DataSourceUtil.getBaseName(filename);
+                                commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
+                            }
+                        } catch (IOException e) {
+                            throw new PowsyblException("Unsupported network data format in zip buffer.");
                         }
-                    } catch (IOException e) {
-                        throw new PowsyblException("Unsupported network data format in zip buffer.");
+                        if (commonBasename != null) {
+                            ds.setBaseName(commonBasename);
+                        }
+                        dataSourceList.add(ds);
+                    } else {
+                        throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
                     }
-                    if (commonBasename != null) {
-                        ds.setBaseName(commonBasename);
-                    }
-                    dataSourceList.add(ds);
-                } else {
-                    throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
                 }
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
+                MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+                var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+                // FIXME there is no way to pass the import config with powsybl 2024.2.0. To FIX when upgrading to next release.
+                Network network = Network.read(dataSource, parameters, reportNode);
+                network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
+                return ObjectHandles.getGlobal().create(network);
             }
-            if (reportNode == null) {
-                reportNode = ReportNode.NO_OP;
-            }
-            MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
-            var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
-            // FIXME there is no way to pass the import config with powsybl 2024.2.0. To FIX when upgrading to next release.
-            Network network = Network.read(dataSource, parameters, reportNode);
-            network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
-            return ObjectHandles.getGlobal().create(network);
         });
     }
 
@@ -281,16 +320,19 @@ public final class NetworkCFunctions {
                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                    ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String fileStr = CTypeUtil.toString(file);
-            String formatStr = CTypeUtil.toString(format);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            if (reportNode == null) {
-                reportNode = ReportNode.NO_OP;
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String fileStr = CTypeUtil.toString(file);
+                String formatStr = CTypeUtil.toString(format);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
+                network.write(new ExportersServiceLoader(), formatStr, parameters, Paths.get(fileStr), reportNode);
             }
-            network.write(EXPORTERS_LOADER_SUPPLIER, formatStr, parameters, Paths.get(fileStr), reportNode);
         });
     }
 
@@ -299,29 +341,32 @@ public final class NetworkCFunctions {
                                                    CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                    CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                    ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String formatStr = CTypeUtil.toString(format);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            MemDataSource dataSource = new MemDataSource();
-            var exporter = Exporter.find(formatStr);
-            if (exporter == null) {
-                throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
-            }
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            exporter.export(network, parameters, dataSource, reportNode);
-            try {
-                var names = dataSource.listNames(".*?");
-                if (names.size() != 1) {
-                    throw new PowsyblException("Currently we only support string export for single file format(ex, 'XIIDM').");
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public CCharPointer get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String formatStr = CTypeUtil.toString(format);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                MemDataSource dataSource = new MemDataSource();
+                var exporter = Exporter.find(formatStr);
+                if (exporter == null) {
+                    throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
                 }
-                try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
-                     ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-                    IOUtils.copy(is, os);
-                    return CTypeUtil.toCharPtr(os.toString(StandardCharsets.UTF_8));
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                exporter.export(network, parameters, dataSource, reportNode);
+                try {
+                    var names = dataSource.listNames(".*?");
+                    if (names.size() != 1) {
+                        throw new PowsyblException("Currently we only support string export for single file format(ex, 'XIIDM').");
+                    }
+                    try (InputStream is = new ByteArrayInputStream(dataSource.getData(Iterables.getOnlyElement(names)));
+                         ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+                        IOUtils.copy(is, os);
+                        return CTypeUtil.toCharPtr(os.toString());
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
             }
         });
     }
@@ -331,33 +376,41 @@ public final class NetworkCFunctions {
                                                                        CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                                                        CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                                                        ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String formatStr = CTypeUtil.toString(format);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            var exporter = Exporter.find(formatStr);
-            if (exporter == null) {
-                throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String formatStr = CTypeUtil.toString(format);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                var exporter = Exporter.find(formatStr);
+                if (exporter == null) {
+                    throw new PowsyblException("No exporter found for '" + formatStr + "' to export as a string");
+                }
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                // to support all kind of export: simple file or multiple to an archive,
+                // best is to write to a zip file
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                try (ZipOutputStream zos = new ZipOutputStream(bos)) {
+                    DataSource dataSource = new ZipMemDataSource("file", zos);
+                    exporter.export(network, parameters, dataSource, reportNode);
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+                byte[] bytes = bos.toByteArray();
+                return Util.createByteArray(bytes);
             }
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            // to support all kind of export: simple file or multiple to an archive,
-            // best is to write to a zip file
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            try (ZipOutputStream zos = new ZipOutputStream(bos)) {
-                DataSource dataSource = new ZipMemDataSource("file", zos);
-                exporter.export(network, parameters, dataSource, reportNode);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-            byte[] bytes = bos.toByteArray();
-            return Util.createByteArray(bytes);
         });
     }
 
     @CEntryPoint(name = "freeBinaryBuffer")
     public static void freeBinaryBuffer(IsolateThread thread, PyPowsyblApiHeader.ArrayPointer<CCharPointer> byteArrayPtr,
                                                PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeArrayPointer(byteArrayPtr));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeArrayPointer(byteArrayPtr);
+            }
+        });
     }
 
     @CEntryPoint(name = "reduceNetwork")
@@ -368,31 +421,34 @@ public final class NetworkCFunctions {
                                      CIntPointer depthsPtr, int depthsCount,
                                      boolean withDanglingLines,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            ReductionOptions options = new ReductionOptions();
-            options.withDanglingLlines(withDanglingLines);
-            List<NetworkPredicate> predicates = new ArrayList<>();
-            if (vMax != Double.MAX_VALUE || vMin != 0) {
-                predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
-            }
-            if (idsCount != 0) {
-                List<String> ids = toStringList(idsPtrPtr, idsCount);
-                predicates.add(new IdentifierNetworkPredicate(ids));
-            }
-            if (depthsCount != 0) {
-                final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
-                final List<String> voltageLeveles = toStringList(vlsPtrPtr, vlsCount);
-                for (int i = 0; i < depths.size(); i++) {
-                    predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                ReductionOptions options = new ReductionOptions();
+                options.withDanglingLlines(withDanglingLines);
+                List<NetworkPredicate> predicates = new ArrayList<>();
+                if (vMax != Double.MAX_VALUE || vMin != 0) {
+                    predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
                 }
+                if (idsCount != 0) {
+                    List<String> ids = toStringList(idsPtrPtr, idsCount);
+                    predicates.add(new IdentifierNetworkPredicate(ids));
+                }
+                if (depthsCount != 0) {
+                    final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
+                    final List<String> voltageLeveles = toStringList(vlsPtrPtr, vlsCount);
+                    for (int i = 0; i < depths.size(); i++) {
+                        predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
+                    }
+                }
+                final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
+                NetworkReducer.builder()
+                        .withNetworkPredicate(orNetworkPredicate)
+                        .withReductionOptions(options)
+                        .build()
+                        .reduce(network);
             }
-            final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
-            NetworkReducer.builder()
-                    .withNetworkPredicate(orNetworkPredicate)
-                    .withReductionOptions(options)
-                    .build()
-                    .reduce(network);
         });
     }
 
@@ -412,44 +468,59 @@ public final class NetworkCFunctions {
                                                                           CDoublePointer nominalVoltagePtr, int nominalVoltageCount,
                                                                           CCharPointerPointer countryPtr, int countryCount, boolean mainCc, boolean mainSc,
                                                                           boolean notConnectedToSameBusAtBothSides, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
-            Set<String> countries = new HashSet<>(toStringList(countryPtr, countryCount));
-            List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides);
-            return createCharPtrArray(elementsIds);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                Set<Double> nominalVoltages = new HashSet<>(CTypeUtil.toDoubleList(nominalVoltagePtr, nominalVoltageCount));
+                Set<String> countries = new HashSet<>(toStringList(countryPtr, countryCount));
+                List<String> elementsIds = NetworkUtil.getElementsIds(network, elementType, nominalVoltages, countries, mainCc, mainSc, notConnectedToSameBusAtBothSides);
+                return createCharPtrArray(elementsIds);
+            }
         });
     }
 
     @CEntryPoint(name = "cloneVariant")
     public static void cloneVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer src, CCharPointer variant, boolean mayOverwrite, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().cloneVariant(CTypeUtil.toString(src), CTypeUtil.toString(variant), mayOverwrite);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.getVariantManager().cloneVariant(CTypeUtil.toString(src), CTypeUtil.toString(variant), mayOverwrite);
+            }
         });
     }
 
     @CEntryPoint(name = "setWorkingVariant")
     public static void setWorkingVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().setWorkingVariant(CTypeUtil.toString(variant));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.getVariantManager().setWorkingVariant(CTypeUtil.toString(variant));
+            }
         });
     }
 
     @CEntryPoint(name = "removeVariant")
     public static void removeVariant(IsolateThread thread, ObjectHandle networkHandle, CCharPointer variant, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.getVariantManager().removeVariant(CTypeUtil.toString(variant));
+            }
         });
     }
 
     @CEntryPoint(name = "getVariantsIds")
     public static ArrayPointer<CCharPointerPointer> getVariantsIds(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createCharPtrArray(List.copyOf(network.getVariantManager().getVariantIds()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return createCharPtrArray(List.copyOf(network.getVariantManager().getVariantIds()));
+            }
         });
     }
 
@@ -475,29 +546,35 @@ public final class NetworkCFunctions {
                                                                                boolean perUnit,
                                                                                double nominalApparentPower,
                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
-        return Util.doCatch(exceptionHandlerPtr, () -> {
-            NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
-            return Dataframes.createCDataframe(mapper, network, dataframeFilter, new NetworkDataframeContext(perUnit, nominalApparentPower));
+        return Util.doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                NetworkDataframeMapper mapper = NetworkDataframes.getDataframeMapper(convert(elementType));
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                DataframeFilter dataframeFilter = createDataframeFilter(filterAttributesType, attributesPtrPtr, attributesCount, selectedElementsDataframe);
+                return Dataframes.createCDataframe(mapper, network, dataframeFilter, new NetworkDataframeContext(perUnit, nominalApparentPower));
+            }
         });
     }
 
     @CEntryPoint(name = "createNetworkElementsExtensionSeriesArray")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                           CCharPointer extensionName,
-                                                                                                           CCharPointer cTableName,
-                                                                                                           PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ArrayPointer<SeriesPointer> createNetworkElementsExtensionSeriesArray(IsolateThread thread, ObjectHandle networkHandle,
+                                                                                        CCharPointer extensionName,
+                                                                                        CCharPointer cTableName,
+                                                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         String name = CTypeUtil.toString(extensionName);
         String tempName = CTypeUtil.toString(cTableName);
         String tableName = tempName.isEmpty() ? null : tempName;
-        return doCatch(exceptionHandlerPtr, () -> {
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
-            if (mapper != null) {
-                Network network = ObjectHandles.getGlobal().get(networkHandle);
-                return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), NetworkDataframeContext.DEFAULT);
-            } else {
-                throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
+                if (mapper != null) {
+                    Network network = ObjectHandles.getGlobal().get(networkHandle);
+                    return Dataframes.createCDataframe(mapper, network, new DataframeFilter(), NetworkDataframeContext.DEFAULT);
+                } else {
+                    throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
+                }
             }
         });
     }
@@ -512,12 +589,16 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "getExtensionsNames")
     public static ArrayPointer<CCharPointerPointer> getExtensionsNames(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(List.copyOf(NetworkExtensions.getExtensionsNames())));
+        return doCatch(exceptionHandlerPtr, () -> {
+            return createCharPtrArray(List.copyOf(NetworkExtensions.getExtensionsNames()));
+        });
     }
 
     @CEntryPoint(name = "getExtensionsInformation")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> NetworkExtensions.getExtensionInformation(NetworkDataframeContext.DEFAULT));
+    public static ArrayPointer<SeriesPointer> getExtensionsInformation(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> {
+            return NetworkExtensions.getExtensionInformation(NetworkDataframeContext.DEFAULT);
+        });
     }
 
     @CEntryPoint(name = "createElement")
@@ -525,14 +606,17 @@ public final class NetworkCFunctions {
                                      ElementType elementType,
                                      DataframeArrayPointer cDataframes,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            DataframeElementType type = convert(elementType);
-            List<UpdatingDataframe> dataframes = new ArrayList<>();
-            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
-                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                DataframeElementType type = convert(elementType);
+                List<UpdatingDataframe> dataframes = new ArrayList<>();
+                for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                    dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+                }
+                NetworkElementAdders.addElements(type, network, dataframes);
             }
-            NetworkElementAdders.addElements(type, network, dataframes);
         });
     }
 
@@ -541,11 +625,14 @@ public final class NetworkCFunctions {
                                                        DataframePointer dataframe, boolean perUnit,
                                                        double nominalApparentPower,
                                                        PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            UpdatingDataframe updatingDataframe = createDataframe(dataframe);
-            NetworkDataframes.getDataframeMapper(convert(elementType))
-                .updateSeries(network, updatingDataframe, new NetworkDataframeContext(perUnit, nominalApparentPower));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                UpdatingDataframe updatingDataframe = createDataframe(dataframe);
+                NetworkDataframes.getDataframeMapper(convert(elementType))
+                        .updateSeries(network, updatingDataframe, new NetworkDataframeContext(perUnit, nominalApparentPower));
+            }
         });
     }
 
@@ -553,10 +640,13 @@ public final class NetworkCFunctions {
     public static void removeAliases(IsolateThread thread, ObjectHandle networkHandle,
                                      DataframePointer cDataframe,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            UpdatingDataframe dataframe = createDataframe(cDataframe);
-            AliasDataframeAdder.deleteElements(network, dataframe);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                UpdatingDataframe dataframe = createDataframe(cDataframe);
+                AliasDataframeAdder.deleteElements(network, dataframe);
+            }
         });
     }
 
@@ -564,48 +654,54 @@ public final class NetworkCFunctions {
     public static void removeInternalConnections(IsolateThread thread, ObjectHandle networkHandle,
                                      DataframePointer cDataframe,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            UpdatingDataframe dataframe = createDataframe(cDataframe);
-            InternalConnectionDataframeAdder.deleteElements(network, dataframe);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                UpdatingDataframe dataframe = createDataframe(cDataframe);
+                InternalConnectionDataframeAdder.deleteElements(network, dataframe);
+            }
         });
     }
 
     @CEntryPoint(name = "removeNetworkElements")
     public static void removeNetworkElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer cElementIds,
                                              int elementCount, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
-            elementIds.forEach(elementId -> {
-                Identifiable<?> identifiable = network.getIdentifiable(elementId);
-                if (identifiable == null) {
-                    throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
-                }
-                if (identifiable instanceof Connectable) {
-                    ((Connectable<?>) identifiable).remove();
-                } else if (identifiable instanceof HvdcLine hvdcLine) {
-                    hvdcLine.remove();
-                } else if (identifiable instanceof VoltageLevel voltageLevel) {
-                    voltageLevel.remove();
-                } else if (identifiable instanceof Substation substation) {
-                    substation.remove();
-                } else if (identifiable instanceof Switch sw) {
-                    VoltageLevel voltageLevel = sw.getVoltageLevel();
-                    switch (voltageLevel.getTopologyKind()) {
-                        case NODE_BREAKER -> voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
-                        case BUS_BREAKER -> voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
-                        default ->
-                                throw new PowsyblException("this voltage level does not have a proper topology kind");
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> elementIds = CTypeUtil.toStringList(cElementIds, elementCount);
+                elementIds.forEach(elementId -> {
+                    Identifiable<?> identifiable = network.getIdentifiable(elementId);
+                    if (identifiable == null) {
+                        throw new PowsyblException(String.format("identifiable with id : %s was not found", elementId));
                     }
-                } else if (identifiable instanceof TieLine tieLine) {
-                    tieLine.remove();
-                } else if (identifiable instanceof Area area) {
-                    area.remove();
-                } else {
-                    throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
-                }
-            });
+                    if (identifiable instanceof Connectable) {
+                        ((Connectable<?>) identifiable).remove();
+                    } else if (identifiable instanceof HvdcLine hvdcLine) {
+                        hvdcLine.remove();
+                    } else if (identifiable instanceof VoltageLevel voltageLevel) {
+                        voltageLevel.remove();
+                    } else if (identifiable instanceof Substation substation) {
+                        substation.remove();
+                    } else if (identifiable instanceof Switch sw) {
+                        VoltageLevel voltageLevel = sw.getVoltageLevel();
+                        switch (voltageLevel.getTopologyKind()) {
+                            case NODE_BREAKER -> voltageLevel.getNodeBreakerView().removeSwitch(identifiable.getId());
+                            case BUS_BREAKER -> voltageLevel.getBusBreakerView().removeSwitch(identifiable.getId());
+                            default ->
+                                    throw new PowsyblException("this voltage level does not have a proper topology kind");
+                        }
+                    } else if (identifiable instanceof Area area) {
+                        area.remove();
+                    } else if (identifiable instanceof TieLine tieLine) {
+                        tieLine.remove();
+                    } else {
+                        throw new PowsyblException(String.format("identifiable with id : %s can't be removed", identifiable.getId()));
+                    }
+                });
+            }
         });
     }
 
@@ -617,7 +713,7 @@ public final class NetworkCFunctions {
         int columnsNumber = dataframe.getSeriesCount();
         DefaultUpdatingDataframe updatingDataframe = new DefaultUpdatingDataframe(elementCount);
         for (int i = 0; i < columnsNumber; i++) {
-            PyPowsyblApiHeader.SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
+            SeriesPointer seriesPointer = dataframe.getSeries().addressOf(i);
             String name = CTypeUtil.toString(seriesPointer.getName());
             switch (seriesPointer.getType()) {
                 case STRING_SERIES_TYPE ->
@@ -633,90 +729,117 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getNodeBreakerViewSwitches")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.NodeBreakerView nodeBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr)).getNodeBreakerView();
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewSwitches(), nodeBreakerView);
+    public static ArrayPointer<SeriesPointer> getNodeBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                VoltageLevel.NodeBreakerView nodeBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
+                return Dataframes.createCDataframe(Dataframes.nodeBreakerViewSwitches(), nodeBreakerView);
+            }
         });
     }
 
     @CEntryPoint(name = "getNodeBreakerViewNodes")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewNodes(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.NodeBreakerView nodeBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr)).getNodeBreakerView();
+    public static ArrayPointer<SeriesPointer> getNodeBreakerViewNodes(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                VoltageLevel.NodeBreakerView nodeBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
 
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewNodes(), nodeBreakerView);
+                return Dataframes.createCDataframe(Dataframes.nodeBreakerViewNodes(), nodeBreakerView);
 
+            }
         });
     }
 
     @CEntryPoint(name = "getNodeBreakerViewInternalConnections")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNodeBreakerViewInternalConnections(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.NodeBreakerView nodeBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr)).getNodeBreakerView();
-            return Dataframes.createCDataframe(Dataframes.nodeBreakerViewInternalConnection(), nodeBreakerView);
+    public static ArrayPointer<SeriesPointer> getNodeBreakerViewInternalConnections(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                VoltageLevel.NodeBreakerView nodeBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevel)).getNodeBreakerView();
+                return Dataframes.createCDataframe(Dataframes.nodeBreakerViewInternalConnection(), nodeBreakerView);
+            }
         });
     }
 
     @CEntryPoint(name = "getBusBreakerViewSwitches")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel.BusBreakerView busBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr)).getBusBreakerView();
-            return Dataframes.createCDataframe(Dataframes.busBreakerViewSwitches(), busBreakerView);
+    public static PyPowsyblApiHeader.ArrayPointer<SeriesPointer> getBusBreakerViewSwitches(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                VoltageLevel.BusBreakerView busBreakerView = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevel)).getBusBreakerView();
+                return Dataframes.createCDataframe(Dataframes.busBreakerViewSwitches(), busBreakerView);
+            }
         });
     }
 
     @CEntryPoint(name = "getBusBreakerViewBuses")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewBuses(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel voltageLevel = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr));
-            return Dataframes.createCDataframe(Dataframes.busBreakerViewBuses(), voltageLevel);
+    public static PyPowsyblApiHeader.ArrayPointer<SeriesPointer> getBusBreakerViewBuses(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                VoltageLevel voltageLevel = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr));
+                return Dataframes.createCDataframe(Dataframes.busBreakerViewBuses(), voltageLevel);
+            }
         });
     }
 
     @CEntryPoint(name = "getBusBreakerViewElements")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getBusBreakerViewElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            VoltageLevel voltageLevel = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr));
-            return Dataframes.createCDataframe(Dataframes.busBreakerViewElements(), voltageLevel);
+    public static PyPowsyblApiHeader.ArrayPointer<SeriesPointer> getBusBreakerViewElements(IsolateThread thread, ObjectHandle networkHandle, CCharPointer voltageLevelPtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                VoltageLevel voltageLevel = NetworkUtils.getVoltageLevelOrThrow(network, CTypeUtil.toString(voltageLevelPtr));
+                return Dataframes.createCDataframe(Dataframes.busBreakerViewElements(), voltageLevel);
+            }
         });
     }
 
     @CEntryPoint(name = "merge")
     public static ObjectHandle merge(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network[] networks = new Network[networkCount];
-            for (int i = 0; i < networkCount; ++i) {
-                ObjectHandle networkHandle = networkHandles.read(i);
-                Network network = ObjectHandles.getGlobal().get(networkHandle);
-                networks[i] = network;
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Network[] networks = new Network[networkCount];
+                for (int i = 0; i < networkCount; ++i) {
+                    ObjectHandle networkHandle = networkHandles.read(i);
+                    Network network = ObjectHandles.getGlobal().get(networkHandle);
+                    networks[i] = network;
+                }
+                return ObjectHandles.getGlobal().create(Network.merge(networks));
             }
-            return ObjectHandles.getGlobal().create(Network.merge(networks));
         });
     }
 
     @CEntryPoint(name = "getSeriesMetadata")
     public static DataframeMetadataPointer getSeriesMetadata(IsolateThread thread, ElementType elementType,
                                                              ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DataframeElementType type = convert(elementType);
-            List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
-            return CTypeUtil.createSeriesMetadata(seriesMetadata);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframeMetadataPointer get() {
+                DataframeElementType type = convert(elementType);
+                List<SeriesMetadata> seriesMetadata = NetworkDataframes.getDataframeMapper(type).getSeriesMetadata();
+                return CTypeUtil.createSeriesMetadata(seriesMetadata);
+            }
         });
     }
 
     @CEntryPoint(name = "freeDataframeMetadata")
     public static void freeDataframeMetadata(IsolateThread thread, DataframeMetadataPointer metadata, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeDataframeMetadataContent(metadata);
-            UnmanagedMemory.free(metadata);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeDataframeMetadataContent(metadata);
+                UnmanagedMemory.free(metadata);
+            }
         });
     }
 
@@ -724,56 +847,65 @@ public final class NetworkCFunctions {
     public static DataframesMetadataPointer getCreationMetadata(IsolateThread thread,
                                                                 ElementType elementType,
                                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DataframeElementType type = convert(elementType);
-            List<List<SeriesMetadata>> metadata = NetworkElementAdders.getAdder(type).getMetadata();
-            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
-            int i = 0;
-            for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
-                i++;
-            }
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframesMetadataPointer get() {
+                DataframeElementType type = convert(elementType);
+                List<List<SeriesMetadata>> metadata = NetworkElementAdders.getAdder(type).getMetadata();
+                DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+                int i = 0;
+                for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    i++;
+                }
 
-            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
-            res.setDataframesMetadata(dataframeMetadataArray);
-            res.setDataframesCount(metadata.size());
-            return res;
+                DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+                res.setDataframesMetadata(dataframeMetadataArray);
+                res.setDataframesCount(metadata.size());
+                return res;
+            }
         });
     }
 
     @CEntryPoint(name = "freeDataframesMetadata")
     public static void freeDataframesMetadata(IsolateThread thread, DataframesMetadataPointer cMetadata, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            for (int i = 0; i < cMetadata.getDataframesCount(); i++) {
-                DataframeMetadataPointer cDataframeMetadata = cMetadata.getDataframesMetadata().addressOf(i);
-                freeDataframeMetadataContent(cDataframeMetadata);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < cMetadata.getDataframesCount(); i++) {
+                    DataframeMetadataPointer cDataframeMetadata = cMetadata.getDataframesMetadata().addressOf(i);
+                    freeDataframeMetadataContent(cDataframeMetadata);
+                }
+                UnmanagedMemory.free(cMetadata.getDataframesMetadata());
+                UnmanagedMemory.free(cMetadata);
             }
-            UnmanagedMemory.free(cMetadata.getDataframesMetadata());
-            UnmanagedMemory.free(cMetadata);
         });
     }
 
     @CEntryPoint(name = "addNetworkElementProperties")
     public static void addNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, DataframePointer properties, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            UpdatingDataframe propertiesDataframe = createDataframe(properties);
-            Objects.requireNonNull(propertiesDataframe);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            StringSeries idSerie = propertiesDataframe.getStrings("id");
-            if (idSerie == null) {
-                throw new PowsyblException("id is missing");
-            }
-            for (SeriesMetadata column : propertiesDataframe.getSeriesMetadata()) {
-                if (!column.isIndex() && column.getType() == SeriesDataType.STRING) {
-                    String seriesName = column.getName();
-                    StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
-                    for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
-                        String id = idSerie.get(i);
-                        Identifiable<?> identifiable = network.getIdentifiable(id);
-                        if (identifiable != null) {
-                            identifiable.setProperty(seriesName, columnSerie.get(i));
-                        } else {
-                            throw new PowsyblException(String.format("identifiable with id : %s does not exist", id));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                UpdatingDataframe propertiesDataframe = createDataframe(properties);
+                Objects.requireNonNull(propertiesDataframe);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                StringSeries idSerie = propertiesDataframe.getStrings("id");
+                if (idSerie == null) {
+                    throw new PowsyblException("id is missing");
+                }
+                for (SeriesMetadata column : propertiesDataframe.getSeriesMetadata()) {
+                    if (!column.isIndex() && column.getType() == SeriesDataType.STRING) {
+                        String seriesName = column.getName();
+                        StringSeries columnSerie = propertiesDataframe.getStrings(seriesName);
+                        for (int i = 0; i < propertiesDataframe.getRowCount(); i++) {
+                            String id = idSerie.get(i);
+                            Identifiable<?> identifiable = network.getIdentifiable(id);
+                            if (identifiable != null) {
+                                identifiable.setProperty(seriesName, columnSerie.get(i));
+                            } else {
+                                throw new PowsyblException(String.format("identifiable with id : %s does not exist", id));
+                            }
                         }
                     }
                 }
@@ -783,14 +915,17 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "removeNetworkElementProperties")
     public static void removeNetworkElementProperties(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer idsPointer, int idsCount, CCharPointerPointer propertiesPointer, int propertiesCount, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> ids = CTypeUtil.toStringList(idsPointer, idsCount);
-            List<String> properties = CTypeUtil.toStringList(propertiesPointer, propertiesCount);
-            ids.forEach(id -> properties.forEach(property -> {
-                Identifiable<?> identifiable = NetworkUtils.getIdentifiableOrThrow(network, id);
-                identifiable.removeProperty(property);
-            }));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> ids = CTypeUtil.toStringList(idsPointer, idsCount);
+                List<String> properties = CTypeUtil.toStringList(propertiesPointer, propertiesCount);
+                ids.forEach(id -> properties.forEach(property -> {
+                    Identifiable<?> identifiable = NetworkUtils.getIdentifiableOrThrow(network, id);
+                    identifiable.removeProperty(property);
+                }));
+            }
         });
     }
 
@@ -821,17 +956,20 @@ public final class NetworkCFunctions {
     public static void updateNetworkElementsExtensionsWithSeries(IsolateThread thread, ObjectHandle networkHandle, CCharPointer namePtr,
                                                                  CCharPointer tableNamePtr, DataframePointer dataframe,
                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String name = CTypeUtil.toString(namePtr);
-            String tmpName = CTypeUtil.toString(tableNamePtr);
-            String tableName = tmpName.isEmpty() ? null : tmpName;
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
-            if (mapper != null) {
-                Network network = ObjectHandles.getGlobal().get(networkHandle);
-                UpdatingDataframe updatingDataframe = createDataframe(dataframe);
-                mapper.updateSeries(network, updatingDataframe, NetworkDataframeContext.DEFAULT);
-            } else {
-                throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                String name = CTypeUtil.toString(namePtr);
+                String tmpName = CTypeUtil.toString(tableNamePtr);
+                String tableName = tmpName.isEmpty() ? null : tmpName;
+                NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
+                if (mapper != null) {
+                    Network network = ObjectHandles.getGlobal().get(networkHandle);
+                    UpdatingDataframe updatingDataframe = createDataframe(dataframe);
+                    mapper.updateSeries(network, updatingDataframe, NetworkDataframeContext.DEFAULT);
+                } else {
+                    throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
+                }
             }
         });
     }
@@ -841,27 +979,33 @@ public final class NetworkCFunctions {
                                         CCharPointer namePtr,
                                         CCharPointerPointer idsPtr, int idsCount,
                                         PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String name = CTypeUtil.toString(namePtr);
-            List<String> ids = CTypeUtil.toStringList(idsPtr, idsCount);
-            NetworkExtensions.removeExtensions(network, name, ids);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String name = CTypeUtil.toString(namePtr);
+                List<String> ids = CTypeUtil.toStringList(idsPtr, idsCount);
+                NetworkExtensions.removeExtensions(network, name, ids);
+            }
         });
     }
 
     @CEntryPoint(name = "getExtensionSeriesMetadata")
     public static DataframeMetadataPointer getExtensionSeriesMetadata(IsolateThread thread, CCharPointer namePtr, CCharPointer tableNamePtr,
                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String name = CTypeUtil.toString(namePtr);
-            String tmpName = CTypeUtil.toString(tableNamePtr);
-            String tableName = tmpName.equals("") ? null : tmpName;
-            NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
-            if (mapper != null) {
-                List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
-                return CTypeUtil.createSeriesMetadata(seriesMetadata);
-            } else {
-                throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframeMetadataPointer get() {
+                String name = CTypeUtil.toString(namePtr);
+                String tmpName = CTypeUtil.toString(tableNamePtr);
+                String tableName = tmpName.equals("") ? null : tmpName;
+                NetworkDataframeMapper mapper = NetworkDataframes.getExtensionDataframeMapper(name, tableName);
+                if (mapper != null) {
+                    List<SeriesMetadata> seriesMetadata = mapper.getSeriesMetadata();
+                    return CTypeUtil.createSeriesMetadata(seriesMetadata);
+                } else {
+                    throw new PowsyblException(errorMessageForWrongExtensionName(name, tableName));
+                }
             }
         });
     }
@@ -871,14 +1015,17 @@ public final class NetworkCFunctions {
                                         CCharPointer namePtr,
                                         DataframeArrayPointer cDataframes,
                                         ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String name = CTypeUtil.toString(namePtr);
-            List<UpdatingDataframe> dataframes = new ArrayList<>();
-            for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
-                dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String name = CTypeUtil.toString(namePtr);
+                List<UpdatingDataframe> dataframes = new ArrayList<>();
+                for (int i = 0; i < cDataframes.getDataframesCount(); i++) {
+                    dataframes.add(createDataframe(cDataframes.getDataframes().addressOf(i)));
+                }
+                NetworkElementAdders.addExtensions(name, network, dataframes);
             }
-            NetworkElementAdders.addExtensions(name, network, dataframes);
         });
     }
 
@@ -886,66 +1033,81 @@ public final class NetworkCFunctions {
     public static DataframesMetadataPointer getExtensionsCreationMetadata(IsolateThread thread,
                                                                           CCharPointer namePtr,
                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String name = CTypeUtil.toString(namePtr);
-            List<List<SeriesMetadata>> metadata = NetworkElementAdders.getExtensionAdder(name).getMetadata();
-            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
-            int i = 0;
-            for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
-                i++;
-            }
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframesMetadataPointer get() {
+                String name = CTypeUtil.toString(namePtr);
+                List<List<SeriesMetadata>> metadata = NetworkElementAdders.getExtensionAdder(name).getMetadata();
+                DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+                int i = 0;
+                for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    i++;
+                }
 
-            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
-            res.setDataframesMetadata(dataframeMetadataArray);
-            res.setDataframesCount(metadata.size());
-            return res;
+                DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+                res.setDataframesMetadata(dataframeMetadataArray);
+                res.setDataframesCount(metadata.size());
+                return res;
+            }
         });
     }
 
     @CEntryPoint(name = "createImporterParametersSeriesArray")
     static ArrayPointer<SeriesPointer> createImporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String format = CTypeUtil.toString(formatPtr);
-            Importer importer = Importer.find(format);
-            if (importer == null) {
-                throw new PowsyblException("Format '" + format + "' not supported");
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                String format = CTypeUtil.toString(formatPtr);
+                Importer importer = Importer.find(format);
+                if (importer == null) {
+                    throw new PowsyblException("Format '" + format + "' not supported");
+                }
+                return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer);
             }
-            return Dataframes.createCDataframe(Dataframes.importerParametersMapper(), importer);
         });
     }
 
     @CEntryPoint(name = "createExporterParametersSeriesArray")
     static ArrayPointer<SeriesPointer> createExporterParametersSeriesArray(IsolateThread thread, CCharPointer formatPtr,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            String format = CTypeUtil.toString(formatPtr);
-            var exporter = Exporter.find(format);
-            if (exporter == null) {
-                throw new PowsyblException("Format '" + format + "' not supported");
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                String format = CTypeUtil.toString(formatPtr);
+                var exporter = Exporter.find(format);
+                if (exporter == null) {
+                    throw new PowsyblException("Format '" + format + "' not supported");
+                }
+                return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter);
             }
-            return Dataframes.createCDataframe(Dataframes.exporterParametersMapper(), exporter);
         });
     }
 
     @CEntryPoint(name = "updateSwitchPosition")
     public static boolean updateSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open,
                                                ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String idStr = CTypeUtil.toString(id);
-            return NetworkUtil.updateSwitchPosition(network, idStr, open);
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String idStr = CTypeUtil.toString(id);
+                return NetworkUtil.updateSwitchPosition(network, idStr, open);
+            }
         });
     }
 
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String idStr = CTypeUtil.toString(id);
-            return NetworkUtil.updateConnectableStatus(network, idStr, connected);
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String idStr = CTypeUtil.toString(id);
+                return NetworkUtil.updateConnectableStatus(network, idStr, connected);
+            }
         });
     }
 
@@ -971,7 +1133,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "createSldParameters")
     public static SldParametersPointer createSldParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToSldParametersPointer(SingleLineDiagramUtil.createSldParameters()));
+        return doCatch(exceptionHandlerPtr, () -> {
+            return convertToSldParametersPointer(SingleLineDiagramUtil.createSldParameters());
+        });
     }
 
     public static NadParametersPointer convertToNadParametersPointer(NadParameters parameters) {
@@ -1003,7 +1167,9 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "createNadParameters")
     public static NadParametersPointer createNadParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToNadParametersPointer(NetworkAreaDiagramUtil.createNadParameters()));
+        return doCatch(exceptionHandlerPtr, () -> {
+            return convertToNadParametersPointer(NetworkAreaDiagramUtil.createNadParameters());
+        });
     }
 
     public static void freeSldParametersPointer(SldParametersPointer sldParametersPtr) {
@@ -1013,16 +1179,22 @@ public final class NetworkCFunctions {
     @CEntryPoint(name = "freeSldParameters")
     public static void freeSldParameters(IsolateThread thread, SldParametersPointer sldParametersPtr,
                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            freeSldParametersPointer(sldParametersPtr);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeSldParametersPointer(sldParametersPtr);
+            }
         });
     }
 
     @CEntryPoint(name = "freeNadParameters")
     public static void freeNadParameters(IsolateThread thread, NadParametersPointer nadParametersPointer,
                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            UnmanagedMemory.free(nadParametersPointer);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                UnmanagedMemory.free(nadParametersPointer);
+            }
         });
     }
 
@@ -1070,20 +1242,28 @@ public final class NetworkCFunctions {
                 .setBusLegend(nadParametersPointer.isBusLegend())
                 .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
                 .setEdgeInfoDisplayed(edgeInfo);
+        nadParameters.getLayoutParameters()
+                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;
     }
 
     @CEntryPoint(name = "writeSingleLineDiagramSvg")
     public static void writeSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
+                                                 DataframePointer labels,
+                                                 DataframePointer feederInfos,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String containerIdStr = CTypeUtil.toString(containerId);
-            String svgFileStr = CTypeUtil.toString(svgFile);
-            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
-            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
-            SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParameters);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String containerIdStr = CTypeUtil.toString(containerId);
+                String svgFileStr = CTypeUtil.toString(svgFile);
+                String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+                SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+                applySldCustomLabels(labels, feederInfos, sldParameters);
+                SingleLineDiagramUtil.writeSvg(network, containerIdStr, svgFileStr, metadataFileStr, sldParameters);
+            }
         });
     }
 
@@ -1091,57 +1271,153 @@ public final class NetworkCFunctions {
     public static void writeMatrixMultiSubstationSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                 int substationIdCount, int substationIdRowCount,
                                                  CCharPointer svgFile, CCharPointer metadataFile, SldParametersPointer sldParametersPtr,
+                                                 DataframePointer labels, DataframePointer feederInfos,
                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
-            String svgFileStr = CTypeUtil.toString(svgFile);
-            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
-            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+                String svgFileStr = CTypeUtil.toString(svgFile);
+                String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+                SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+                applySldCustomLabels(labels, feederInfos, sldParameters);
 
-            SingleLineDiagramUtil.writeMatrixMultiSubstationSvg(network, matrixIds, svgFileStr, metadataFileStr, sldParameters);
+                SingleLineDiagramUtil.writeMatrixMultiSubstationSvg(network, matrixIds, svgFileStr, metadataFileStr, sldParameters);
+            }
         });
+    }
+
+    private static Map<String, CustomLabels> getSldCustomLabels(int rowCount, StringSeries idSeries,
+                                                                StringSeries labels, StringSeries additionalLabels) {
+        Map<String, CustomLabels> nadCustomBranchLabels = new HashMap<>();
+        for (int i = 0; i < rowCount; i++) {
+            String id = idSeries.get(i);
+            String label = getValueFromSeriesOrNull(labels, i);
+            String additionalLabel = getValueFromSeriesOrNull(additionalLabels, i);
+            nadCustomBranchLabels.put(id, new CustomLabels(label, additionalLabel));
+        }
+        return nadCustomBranchLabels;
+    }
+
+    private static Map<FeederContext, List<CustomFeederInfos>> getSldCustomFeederInfos(
+            int rowCount,
+            StringSeries ids,
+            StringSeries componentTypes,
+            StringSeries sides,
+            StringSeries directions,
+            StringSeries labels
+    ) {
+        Map<FeederContext, List<CustomFeederInfos>> customFeederInfo = new LinkedHashMap<>();
+        IntStream.range(0, rowCount)
+                .forEach(i -> {
+                    String id = ids.get(i);
+                    String componentType = componentTypes.get(i);
+                    String side = getNonEmptyValueFromSeries(sides, i);
+                    String direction = directions.get(i);
+                    String label = labels.get(i);
+                    FeederContext fc = new FeederContext(id, side == null ? null : NodeSide.valueOf(side));
+                    CustomFeederInfos feederInfo = new CustomFeederInfos(
+                            componentType, LabelProvider.LabelDirection.valueOf(direction), label);
+
+                    customFeederInfo.computeIfAbsent(fc, k -> new ArrayList<>()).add(feederInfo);
+                });
+        return customFeederInfo;
+    }
+
+    private static void applySldCustomLabels(DataframePointer customLabels, DataframePointer customFeederInfo, SldParameters parameters) {
+        final String labelAttributeName = "label";
+        UpdatingDataframe customLabelsDataframe = createDataframe(customLabels);
+        UpdatingDataframe customFeederInfoDataframe = createDataframe(customFeederInfo);
+        if (customLabelsDataframe != null || customFeederInfoDataframe != null) {
+            final Map<String, CustomLabels> customLabelsMap;
+            if (customLabelsDataframe != null) {
+                parameters.getSvgParameters().setDisplayEquipmentNodesLabel(true);
+                customLabelsMap = getSldCustomLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
+                        customLabelsDataframe.getStrings(labelAttributeName), customLabelsDataframe.getStrings("additional_label"));
+            } else {
+                customLabelsMap = Collections.emptyMap();
+            }
+
+            final Map<FeederContext, List<CustomFeederInfos>> feederInfoMap;
+            if (customFeederInfoDataframe != null) {
+                feederInfoMap = getSldCustomFeederInfos(customFeederInfoDataframe.getRowCount(),
+                        customFeederInfoDataframe.getStrings("id"),
+                        customFeederInfoDataframe.getStrings("type"),
+                        customFeederInfoDataframe.getStrings("side"),
+                        customFeederInfoDataframe.getStrings("direction"),
+                        customFeederInfoDataframe.getStrings(labelAttributeName)
+                );
+
+            } else {
+                feederInfoMap = Collections.emptyMap();
+            }
+
+            parameters.setLabelProviderFactory((network, componentLibrary, layoutParameters, svgParameters) ->
+                    new com.powsybl.sld.svg.CustomLabelProvider(customLabelsMap, feederInfoMap, parameters.getComponentLibrary(),
+                            parameters.getLayoutParameters(), parameters.getSvgParameters()));
+
+        }
     }
 
     @CEntryPoint(name = "getSingleLineDiagramSvg")
     public static CCharPointer getSingleLineDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String containerIdStr = CTypeUtil.toString(containerId);
-            String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
-            return CTypeUtil.toCharPtr(svg);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public CCharPointer get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String containerIdStr = CTypeUtil.toString(containerId);
+                String svg = SingleLineDiagramUtil.getSvg(network, containerIdStr);
+                return CTypeUtil.toCharPtr(svg);
+            }
         });
     }
 
     @CEntryPoint(name = "getSingleLineDiagramSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getSingleLineDiagramSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointer containerId,
-                                                                                       SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String containerIdStr = CTypeUtil.toString(containerId);
-            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
-            List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
-            return createCharPtrArray(svgAndMeta);
+                                                                                       SldParametersPointer sldParametersPtr,
+                                                                                       DataframePointer labels,
+                                                                                       DataframePointer feederInfos,
+                                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String containerIdStr = CTypeUtil.toString(containerId);
+                SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+                applySldCustomLabels(labels, feederInfos, sldParameters);
+                List<String> svgAndMeta = SingleLineDiagramUtil.getSvgAndMetadata(network, containerIdStr, sldParameters);
+                return createCharPtrArray(svgAndMeta);
+            }
         });
     }
 
     @CEntryPoint(name = "getMatrixMultiSubstationSvgAndMetadata")
     public static ArrayPointer<CCharPointerPointer> getMatrixMultiSubstationSvgAndMetadata(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer substationIdsPointer,
                                                                                            int substationIdCount, int substationIdRowCount,
-                                                                                           SldParametersPointer sldParametersPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
-            SldParameters sldParameters = convertSldParameters(sldParametersPtr);
-            List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
-            return createCharPtrArray(svgAndMeta);
+                                                                                           SldParametersPointer sldParametersPtr,
+                                                                                           DataframePointer labels,
+                                                                                           DataframePointer feederInfos,
+                                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String[][] matrixIds = CTypeUtil.toString2DArray(substationIdsPointer, substationIdCount, substationIdRowCount);
+                SldParameters sldParameters = convertSldParameters(sldParametersPtr);
+                applySldCustomLabels(labels, feederInfos, sldParameters);
+                List<String> svgAndMeta = SingleLineDiagramUtil.getMatrixMultiSubstationSvgAndMetadata(network, matrixIds, sldParameters);
+                return createCharPtrArray(svgAndMeta);
+            }
         });
     }
 
     @CEntryPoint(name = "getSingleLineDiagramComponentLibraryNames")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getSingleLineDiagramComponentLibraryNames(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> createCharPtrArray(SingleLineDiagramUtil.getComponentLibraryNames()));
+        return doCatch(exceptionHandlerPtr, () -> {
+            return createCharPtrArray(SingleLineDiagramUtil.getComponentLibraryNames());
+        });
     }
 
     @CEntryPoint(name = "writeNetworkAreaDiagramSvg")
@@ -1151,16 +1427,19 @@ public final class NetworkCFunctions {
                                                   DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels, DataframePointer injectionLabels,
                                                   DataframePointer busDescriptions, DataframePointer vlDescriptions, DataframePointer busNodeStyles,
                                                   DataframePointer edgeStyles, DataframePointer threeWtStyles, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String svgFileStr = CTypeUtil.toString(svgFile);
-            String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
-            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
-            applyFixedPositions(fixedPositions, nadParameters);
-            applyCustomLabels(branchLabels, threeWtLabels, injectionLabels, busDescriptions, vlDescriptions, nadParameters);
-            applyCustomStyles(busNodeStyles, edgeStyles, threeWtStyles, nadParameters);
-            NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String svgFileStr = CTypeUtil.toString(svgFile);
+                String metadataFileStr = metadataFile.isNonNull() ? CTypeUtil.toString(metadataFile) : null;
+                List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+                NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+                applyFixedPositions(fixedPositions, nadParameters);
+                applyCustomLabels(branchLabels, threeWtLabels, injectionLabels, busDescriptions, vlDescriptions, nadParameters);
+                applyCustomStyles(busNodeStyles, edgeStyles, threeWtStyles, nadParameters);
+                NetworkAreaDiagramUtil.writeSvg(network, voltageLevelIds, depth, svgFileStr, metadataFileStr, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+            }
         });
     }
 
@@ -1168,12 +1447,15 @@ public final class NetworkCFunctions {
     public static CCharPointer getNetworkAreaDiagramSvg(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                         int voltageLevelIdCount, int depth, double highNominalVoltageBound,
                                                         double lowNominalVoltageBound, NadParametersPointer nadParametersPointer, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
-            String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
-            return CTypeUtil.toCharPtr(svg);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public CCharPointer get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+                NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+                String svg = NetworkAreaDiagramUtil.getSvg(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+                return CTypeUtil.toCharPtr(svg);
+            }
         });
     }
 
@@ -1515,25 +1797,31 @@ public final class NetworkCFunctions {
                                                                                         DataframePointer fixedPositions, DataframePointer branchLabels, DataframePointer threeWtLabels, DataframePointer injectionLabels, DataframePointer busDescriptions,
                                                                                         DataframePointer vlDescriptions, DataframePointer busNodeStyles, DataframePointer edgeStyles,
                                                                                         DataframePointer threeWtStyles, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
-            applyFixedPositions(fixedPositions, nadParameters);
-            applyCustomLabels(branchLabels, threeWtLabels, injectionLabels, busDescriptions, vlDescriptions, nadParameters);
-            applyCustomStyles(busNodeStyles, edgeStyles, threeWtStyles, nadParameters);
-            List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
-            return createCharPtrArray(svgAndMeta);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+                NadParameters nadParameters = convertNadParameters(nadParametersPointer, network);
+                applyFixedPositions(fixedPositions, nadParameters);
+                applyCustomLabels(branchLabels, threeWtLabels, injectionLabels, busDescriptions, vlDescriptions, nadParameters);
+                applyCustomStyles(busNodeStyles, edgeStyles, threeWtStyles, nadParameters);
+                List<String> svgAndMeta = NetworkAreaDiagramUtil.getSvgAndMetadata(network, voltageLevelIds, depth, highNominalVoltageBound, lowNominalVoltageBound, nadParameters);
+                return createCharPtrArray(svgAndMeta);
+            }
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDisplayedVoltageLevels")
     public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getNetworkAreaDiagramDisplayedVoltageLevels(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer voltageLevelIdsPointer,
                                                                                                                    int voltageLevelIdCount, int depth, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
-            return createCharPtrArray(NetworkAreaDiagramUtil.getDisplayedVoltageLevels(network, voltageLevelIds, depth));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> voltageLevelIds = toStringList(voltageLevelIdsPointer, voltageLevelIdCount);
+                return createCharPtrArray(NetworkAreaDiagramUtil.getDisplayedVoltageLevels(network, voltageLevelIds, depth));
+            }
         });
     }
 
@@ -1546,42 +1834,55 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultBranchLabels")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultBranchLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SvgParameters pars = getNadSvgParsForDefaultLabels();
-            Map<String, CustomLabelProvider.BranchLabels> labelMap = NetworkAreaDiagramUtil.getBranchLabelsMap(network, pars);
-            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BRANCH_LABELS_MAPPER, labelMap);
+    public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultBranchLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SvgParameters pars = getNadSvgParsForDefaultLabels();
+                Map<String, CustomLabelProvider.BranchLabels> labelMap = NetworkAreaDiagramUtil.getBranchLabelsMap(network, pars);
+                return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BRANCH_LABELS_MAPPER, labelMap);
+            }
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultThreeWtLabels")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultThreeWtLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SvgParameters pars = getNadSvgParsForDefaultLabels();
-            Map<String, CustomLabelProvider.ThreeWtLabels> labelMap = NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(network, pars);
-            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.TWT_LABELS_MAPPER, labelMap);
+    public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultThreeWtLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SvgParameters pars = getNadSvgParsForDefaultLabels();
+                Map<String, CustomLabelProvider.ThreeWtLabels> labelMap = NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(network, pars);
+                return Dataframes.createCDataframe(NetworkAreaDiagramUtil.TWT_LABELS_MAPPER, labelMap);
+            }
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultBusDescriptions")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultBusDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SvgParameters pars = getNadSvgParsForDefaultLabels();
-            Map<String, String> labelMap = NetworkAreaDiagramUtil.getBusDescriptionsMap(network, pars);
-            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BUS_DESCRIPTIONS_MAPPER, labelMap);
+    public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultBusDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SvgParameters pars = getNadSvgParsForDefaultLabels();
+                Map<String, String> labelMap = NetworkAreaDiagramUtil.getBusDescriptionsMap(network, pars);
+                return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BUS_DESCRIPTIONS_MAPPER, labelMap);
+            }
         });
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultVlDescriptions")
-    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getNetworkAreaDiagramDefaultVlDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            SvgParameters pars = getNadSvgParsForDefaultLabels();
-            List<NetworkAreaDiagramUtil.VlInfos> vlInfos = NetworkAreaDiagramUtil.getVlDescriptionsWithType(network, pars);
-            return Dataframes.createCDataframe(NetworkAreaDiagramUtil.VL_DESCRIPTIONS_MAPPER, vlInfos);
+    public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultVlDescriptions(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SvgParameters pars = getNadSvgParsForDefaultLabels();
+                List<NetworkAreaDiagramUtil.VlInfos> vlInfos = NetworkAreaDiagramUtil.getVlDescriptionsWithType(network, pars);
+                return Dataframes.createCDataframe(NetworkAreaDiagramUtil.VL_DESCRIPTIONS_MAPPER, vlInfos);
+
+            }
         });
     }
 
@@ -1613,9 +1914,12 @@ public final class NetworkCFunctions {
     public static void setMinValidationLevel(IsolateThread thread, ObjectHandle networkHandle,
                                              ValidationLevelType levelType,
                                              ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.setMinimumAcceptableValidationLevel(Util.convert(levelType));
+            }
         });
     }
 
@@ -1624,58 +1928,73 @@ public final class NetworkCFunctions {
                                                                                    NetworkModificationType networkModificationType,
                                                                                    ElementType elementType,
                                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DataframeNetworkModificationType modificationType = convert(networkModificationType);
-            DataframeElementType type = convert(elementType);
-            List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(modificationType).getMetadata(type);
-            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
-            int i = 0;
-            for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
-                i++;
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframesMetadataPointer get() {
+                DataframeNetworkModificationType modificationType = convert(networkModificationType);
+                DataframeElementType type = convert(elementType);
+                List<List<SeriesMetadata>> metadata = NetworkModifications.getModification(modificationType).getMetadata(type);
+                DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+                int i = 0;
+                for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                    createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    i++;
+                }
+                DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+                res.setDataframesMetadata(dataframeMetadataArray);
+                res.setDataframesCount(metadata.size());
+                return res;
             }
-            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
-            res.setDataframesMetadata(dataframeMetadataArray);
-            res.setDataframesCount(metadata.size());
-            return res;
         });
     }
 
     @CEntryPoint(name = "getSubNetwork")
     public static ObjectHandle getSubNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer subNetworkId, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String subNetworkIdStr = CTypeUtil.toString(subNetworkId);
-            Network subnetwork = network.getSubnetwork(subNetworkIdStr);
-            if (subnetwork == null) {
-                throw new PowsyblException("Sub network '" + subNetworkIdStr + "' not found");
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String subNetworkIdStr = CTypeUtil.toString(subNetworkId);
+                Network subnetwork = network.getSubnetwork(subNetworkIdStr);
+                if (subnetwork == null) {
+                    throw new PowsyblException("Sub network '" + subNetworkIdStr + "' not found");
+                }
+                return ObjectHandles.getGlobal().create(subnetwork);
             }
-            return ObjectHandles.getGlobal().create(subnetwork);
         });
     }
 
     @CEntryPoint(name = "detachSubNetwork")
     public static ObjectHandle detachSubNetwork(IsolateThread thread, ObjectHandle subNetworkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
-            Network detachNetwork = subNetwork.detach();
-            return ObjectHandles.getGlobal().create(detachNetwork);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Network subNetwork = ObjectHandles.getGlobal().get(subNetworkHandle);
+                Network detachNetwork = subNetwork.detach();
+                return ObjectHandles.getGlobal().create(detachNetwork);
+            }
         });
     }
 
     @CEntryPoint(name = "applySolvedValues")
     public static void applyAllSolvedValues(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            applySolvedValues(network);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                applySolvedValues(network);
+            }
         });
     }
 
     @CEntryPoint(name = "applySolvedTapPositionAndSolvedSectionCount")
     public static void applySolvedTapPositionAndSectionCount(IsolateThread thread, ObjectHandle networkHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            applySolvedTapPositionAndSolvedSectionCount(network);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                applySolvedTapPositionAndSolvedSectionCount(network);
+            }
         });
     }
 }
