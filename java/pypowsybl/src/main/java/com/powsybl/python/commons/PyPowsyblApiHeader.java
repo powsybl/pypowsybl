@@ -1192,42 +1192,6 @@ public final class PyPowsyblApiHeader {
         void setStopTime(double stopTime);
     }
 
-    @CEnum("DynamicMappingType")
-    public enum DynamicMappingType {
-        BASE_LOAD,
-        LOAD_ONE_TRANSFORMER,
-        LOAD_ONE_TRANSFORMER_TAP_CHANGER,
-        LOAD_TWO_TRANSFORMERS,
-        LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
-        BASE_GENERATOR,
-        SYNCHRONIZED_GENERATOR,
-        SYNCHRONOUS_GENERATOR,
-        WECC,
-        GRID_FORMING_CONVERTER,
-        SIGNAL_N_GENERATOR,
-        HVDC_P,
-        HVDC_VSC,
-        BASE_TRANSFORMER,
-        BASE_STATIC_VAR_COMPENSATOR,
-        BASE_LINE,
-        BASE_BUS,
-        INFINITE_BUS,
-        OVERLOAD_MANAGEMENT_SYSTEM,
-        TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
-        UNDER_VOLTAGE,
-        PHASE_SHIFTER_I,
-        PHASE_SHIFTER_P,
-        PHASE_SHIFTER_BLOCKING_I,
-        TAP_CHANGER,
-        TAP_CHANGER_BLOCKING;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native DynamicMappingType fromCValue(int value);
-    }
-
     @CEnum("EventMappingType")
     public enum EventMappingType {
         DISCONNECT,

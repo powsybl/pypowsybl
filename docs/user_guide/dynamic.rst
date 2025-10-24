@@ -64,15 +64,28 @@ To run a Dynawo simulation:
 
     import pypowsybl.dynamic as dyn
     import pypowsybl as pp
+    from pandas import DataFrame
 
     # load a network
     network = pp.network.create_eurostag_tutorial_example1_network()
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
+    # can be written with kwargs...
     model_mapping.add_base_load(static_id='LOAD',
                                 parameter_set_id='LAB',
                                 model_name='LoadAlphaBeta') # and so on
+    # or dataframe
+    gen_df = DataFrame.from_records(
+        index='static_id',
+        columns=['static_id', 'parameter_set_id', 'model_name'],
+        data=[('GEN', 'GENPV', 'GeneratorPV')])
+    model_mapping.add_synchronized_generator(gen_df)
+    # can also be created with the proper category
+    model_mapping.add_dynamic_model(category_name='SynchronizedGenerator'
+                                    static_id='GEN2',
+                                    parameter_set_id='GENPQ',
+                                    model_name='GeneratorPQ')
 
     # events mapping
     event_mapping = dyn.EventMapping()

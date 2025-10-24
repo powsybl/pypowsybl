@@ -12,6 +12,10 @@ ModelMapping
    :toctree: api/
 
     ModelMapping
+    ModelMapping.get_categories_names
+    ModelMapping.get_categories_information
+    ModelMapping.get_supported_models
+    ModelMapping.add_dynamic_model
     ModelMapping.add_base_load
     ModelMapping.add_load_one_transformer
     ModelMapping.add_load_one_transformer_tap_changer

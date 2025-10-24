@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystemBuilder;
@@ -47,11 +49,27 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
             U_MEASUREMENT_METADATA,
             U_MEASUREMENT_METADATA);
 
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "TapChangerBlocking",
+            "Tap changer blocking automation system",
+            CategoryAttributeUtils.createFromMetadata(METADATA_LIST, List.of("Tcb", "Transformers", "U measurement 1",
+                    "U measurement 2", "U measurement 3", "U measurement 4", "U measurement 5")));
+
     private static final int MAX_MEASUREMENTS = 5;
 
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
         return METADATA_LIST;
+    }
+
+    @Override
+    public String getCategory() {
+        return CATEGORY_INFORMATION.name();
+    }
+
+    @Override
+    public CategoryInformation getCategoryInformation() {
+        return CATEGORY_INFORMATION;
     }
 
     @Override

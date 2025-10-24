@@ -9,4 +9,4 @@ from .impl.event_mapping import EventMapping, EventMappingType
 from .impl.simulation_result import SimulationResult
 from .impl.simulation import Simulation
 from .impl.parameters import Parameters
-from .impl.model_mapping import ModelMapping, DynamicMappingType
+from .impl.model_mapping import ModelMapping
