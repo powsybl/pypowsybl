@@ -25,8 +25,8 @@ class Simulation:  # pylint: disable=too-few-public-methods
     def run(self,
             network: Network,
             model_mapping: ModelMapping,
-            event_mapping: EventMapping,
-            timeseries_mapping: OutputVariableMapping,
+            event_mapping: Optional[EventMapping] = None,
+            timeseries_mapping: Optional[OutputVariableMapping] = None,
             parameters: Optional[Parameters] = None,
             report_node: Optional[ReportNode] = None
             ) -> SimulationResult:
@@ -36,8 +36,8 @@ class Simulation:  # pylint: disable=too-few-public-methods
                     self._handle,
                     network._handle, # pylint: disable=protected-access
                     model_mapping._handle, # pylint: disable=protected-access
-                    event_mapping._handle, # pylint: disable=protected-access
-                    timeseries_mapping._handle, # pylint: disable=protected-access
+                    None if event_mapping is None else event_mapping._handle, # pylint: disable=protected-access
+                    None if timeseries_mapping is None else timeseries_mapping._handle, # pylint: disable=protected-access
                     parameters._to_c_parameters() if parameters is not None else _pp.DynamicSimulationParameters(), # pylint: disable=protected-access
                     None if report_node is None else report_node._report_node) # pylint: disable=protected-access
         )

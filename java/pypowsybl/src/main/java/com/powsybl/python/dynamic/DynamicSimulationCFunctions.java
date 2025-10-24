@@ -133,7 +133,13 @@ public final class DynamicSimulationCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
                 EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
+                if (eventModelsSupplier == null) {
+                    eventModelsSupplier = EventModelsSupplier.empty();
+                }
                 OutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesSupplierHandle);
+                if (outputVariablesSupplier == null) {
+                    outputVariablesSupplier = OutputVariablesSupplier.empty();
+                }
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 if (reportNode == null) {
                     reportNode = ReportNode.NO_OP;
