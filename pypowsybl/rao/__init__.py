@@ -15,5 +15,6 @@ from .impl.parameters import SecondPreventiveRaoParameters
 from .impl.parameters import NotOptimizedCnecsParameters
 from .impl.parameters import LoadFlowAndSensitivityParameters
 from .impl.util import (
-  create_rao
+  create_rao,
+  RaoLogFilter
 )

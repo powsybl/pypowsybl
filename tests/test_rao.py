@@ -8,6 +8,10 @@ import pathlib
 import io
 import unittest
 import pandas as pd
+import logging
+import queue
+from logging import handlers
+from numpy import nan
 
 import pypowsybl as pp
 import pypowsybl.sensitivity
@@ -28,7 +32,8 @@ from pypowsybl.rao import (
     MultithreadingParameters,
     SecondPreventiveRaoParameters,
     NotOptimizedCnecsParameters,
-    LoadFlowAndSensitivityParameters)
+    LoadFlowAndSensitivityParameters,
+    RaoLogFilter)
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -193,13 +198,7 @@ def test_rao_monitoring():
     assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
 
 def test_rao_cnec_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Flow cnecs
     df_flow_cnecs = result.get_flow_cnec_results()
@@ -222,14 +221,7 @@ def test_rao_cnec_results():
     assert ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
 
 def test_rao_remedial_action_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Ra results
     ra_results = result.get_remedial_action_results()
@@ -243,14 +235,7 @@ def test_rao_remedial_action_results():
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), ra_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_network_action_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Ra results
     network_action_results = result.get_network_action_results()
@@ -262,14 +247,7 @@ def test_rao_network_action_results():
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), network_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_pst_range_action_results():
-    network = pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Ra results
     pst_range_action_results = result.get_pst_range_action_results()
@@ -283,14 +261,7 @@ def test_rao_pst_range_action_results():
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), pst_range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_range_action_results():
-    network = pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Ra results
     range_action_results = result.get_range_action_results()
@@ -303,14 +274,7 @@ def test_rao_range_action_results():
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
 def test_rao_cost_results():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters)
+    result = run_rao_12_node_with_curative()
 
     # Cost results
     cost_results_df = result.get_cost_results()
@@ -334,6 +298,34 @@ def test_rao_cost_results():
                                   [0.0],
                                   [0.0]])
     pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False, check_like=True)
+
+def test_rao_log_filter():
+    logger = logging.getLogger('powsybl')
+    logger.setLevel(logging.INFO)
+    logger.addFilter(RaoLogFilter())
+
+    # Redirect to queue
+    q = queue.Queue()
+    handler = handlers.QueueHandler(q)
+    logger.addHandler(handler)
+
+    run_rao_12_node_with_curative()
+
+    # Only open rao logs
+    for i in range(len(q.queue)):
+        assert("com.powsybl.openrao" in q.queue[i].java_logger_name)
+
+
+def run_rao_12_node_with_curative():
+    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+
+    return rao_runner.run(network, parameters)
+
 
 if __name__ == '__main__':
     unittest.main()
