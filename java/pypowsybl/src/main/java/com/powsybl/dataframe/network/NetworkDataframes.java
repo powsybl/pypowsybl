@@ -1672,10 +1672,10 @@ public final class NetworkDataframes {
             throw new PowsyblException("element " + id + " not found");
         }
         String groupName = dataframe.getStringValue("group_name", index)
-                .orElse("DEFAULT");
+                .orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID);
         String sideStr = dataframe.getStringValue("side", index).orElse(null);
         OperationalLimitsGroup group;
-        if (sideStr == null | sideStr.equals("NONE")) {
+        if (sideStr == null || sideStr.equals("NONE")) {
             if (identifiable instanceof DanglingLine) {
                 group = ((DanglingLine) identifiable).getOperationalLimitsGroup(groupName)
                         .orElseThrow(() -> new IllegalArgumentException("No limit group named " + groupName + " for element " + id));
@@ -1697,7 +1697,7 @@ public final class NetworkDataframes {
         int acceptableDuration = dataframe.getIntValue("acceptable_duration", index)
                 .orElseThrow(() -> new IllegalArgumentException("acceptable_duration column is missing"));
         if (!checkLimitExist(limits, acceptableDuration)) {
-
+            throw new PowsyblException("No limit found for the specified values.");
         }
         TemporaryLimitData.Side side = TemporaryLimitData.Side.valueOf(sideStr);
         return new TemporaryLimitData(id, "", side, 0, type, IdentifiableType.LINE, acceptableDuration, false, groupName,
@@ -1711,9 +1711,8 @@ public final class NetworkDataframes {
                     return ((Branch) identifiable).getOperationalLimitsGroup1(groupName);
                 } case TWO -> {
                     return ((Branch) identifiable).getOperationalLimitsGroup2(groupName);
-                } default -> {
+                } default ->
                     throw new PowsyblException("side must be ONE or TWO for this element : " + identifiable.getId());
-                }
             }
         } else if (identifiable instanceof ThreeWindingsTransformer) {
             switch (side) {
@@ -1723,9 +1722,8 @@ public final class NetworkDataframes {
                     return ((ThreeWindingsTransformer) identifiable).getLeg2().getOperationalLimitsGroup(groupName);
                 } case THREE -> {
                     return ((ThreeWindingsTransformer) identifiable).getLeg3().getOperationalLimitsGroup(groupName);
-                } default -> {
+                } default ->
                     throw new PowsyblException("side must be ONE, TWO or THREE for this element : " + identifiable.getId());
-                }
             }
         }
         return Optional.empty();
