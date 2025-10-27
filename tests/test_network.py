@@ -2815,9 +2815,9 @@ def test_apply_solved_values():
 
 def test_update_network():
     network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
-    assert 0.0 == network.get_loads()["p0"]["EnergyConsumer"]
+    assert math.isnan(network.get_loads()["p0"]["EnergyConsumer"])
     network.update_from_file(DATA_DIR.joinpath('load_SSH.xml'))
-    assert 0.0 == network.get_loads()["p0"]["EnergyConsumer"]
+    assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
 
 
 if __name__ == '__main__':
