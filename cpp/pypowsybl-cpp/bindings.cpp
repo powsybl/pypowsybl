@@ -882,7 +882,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("max_number_of_boundaries_for_skipping_actions", &pypowsybl::RaoParameters::max_number_of_boundaries_for_skipping_actions)
             .def_readwrite("available_cpus", &pypowsybl::RaoParameters::available_cpus)
             .def_readwrite("execution_condition", &pypowsybl::RaoParameters::execution_condition)
-            .def_readwrite("re_optimize_curative_range_actions", &pypowsybl::RaoParameters::re_optimize_curative_range_actions)
             .def_readwrite("hint_from_first_preventive_rao", &pypowsybl::RaoParameters::hint_from_first_preventive_rao)
             .def_readwrite("do_not_optimize_curative_cnecs_for_tsos_without_cras", &pypowsybl::RaoParameters::do_not_optimize_curative_cnecs_for_tsos_without_cras)
             .def_readwrite("load_flow_provider", &pypowsybl::RaoParameters::load_flow_provider)
