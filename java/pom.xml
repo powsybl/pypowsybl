@@ -76,6 +76,7 @@
         <dependencies>
             <dependency>
                 <groupId>com.powsybl</groupId>
+<!-- The new DC component dataframe adders need powsybl 7.0.0 for DC topology processing-->
                 <artifactId>powsybl-core</artifactId>
                 <version>7.0.0</version>
                 <type>pom</type>
