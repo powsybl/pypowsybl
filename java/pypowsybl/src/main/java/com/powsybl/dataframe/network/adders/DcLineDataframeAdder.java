@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2022, RTE (http://www.rte-france.com)
+ * Copyright (c) 2025, SuperGrid Institute (https://www.supergrid-institute.com)
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,9 +15,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
- * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
- * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
+ * @author Denis BONNAND {@literal <denis.bonnand at supergrid-institute.com>}
  */
 public class DcLineDataframeAdder extends AbstractSimpleAdder {
 
