@@ -15,7 +15,7 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>powsybl-parent</artifactId>
-        <version>23</version>
+        <version>24</version>
         <relativePath/>
     </parent>
 
@@ -68,7 +68,7 @@
 
     <properties>
         <java.version>21</java.version>
-        <powsybl-dependencies.version>2025.1.0</powsybl-dependencies.version>
+        <powsybl-dependencies.version>2025.2.0</powsybl-dependencies.version>
         <powsybl-open-reac.version>0.14.0</powsybl-open-reac.version>
     </properties>
 

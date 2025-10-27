@@ -575,7 +575,6 @@ typedef struct rao_parameters_struct {
   int available_cpus; // Multithreading parameters
 
   int execution_condition;  // Second preventive rao parameters
-  unsigned char re_optimize_curative_range_actions;
   unsigned char hint_from_first_preventive_rao;
 
   unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters

@@ -1583,12 +1583,6 @@ public final class PyPowsyblApiHeader {
         @CField("execution_condition")
         void setExecutionCondition(int executionCondition);
 
-        @CField("re_optimize_curative_range_actions")
-        boolean getReOptimizeCurativeRangeActions();
-
-        @CField("re_optimize_curative_range_actions")
-        void setReOptimizeCurativeRangeActions(boolean reOptimizeCurativeRangeActions);
-
         @CField("hint_from_first_preventive_rao")
         boolean getHintFromFirstPreventiveRao();
 

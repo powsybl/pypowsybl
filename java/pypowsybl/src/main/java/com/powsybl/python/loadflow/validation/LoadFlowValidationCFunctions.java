@@ -97,18 +97,13 @@ public final class LoadFlowValidationCFunctions {
 
     private static ArrayPointer<SeriesPointer> createCDataFrame(InMemoryValidationWriter validationWriter, PyPowsyblApiHeader.ValidationType validationType) {
         return switch (validationType) {
-            case FLOWS ->
-                    Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
-            case BUSES ->
-                    Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
-            case GENERATORS ->
-                    Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
+            case FLOWS -> Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
+            case BUSES -> Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
+            case GENERATORS -> Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
             case SVCS -> Dataframes.createCDataframe(Validations.svcsValidationMapper(), validationWriter.getSvcData());
-            case SHUNTS ->
-                    Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
+            case SHUNTS -> Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
             case TWTS -> Dataframes.createCDataframe(Validations.twtsValidationMapper(), validationWriter.getTwtData());
-            case TWTS3W ->
-                    Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
+            case TWTS3W -> Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
         };
     }
 
