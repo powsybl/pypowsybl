@@ -316,22 +316,25 @@ public final class NetworkCFunctions {
     }
 
     @CEntryPoint(name = "updateNetwork")
-    public static void updateNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file, ObjectHandle reportNodeHandle,
+    public static void updateNetwork(IsolateThread thread, ObjectHandle networkHandle, CCharPointer file,
                                      CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
                                      CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
                                      CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
-                                     ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            String fileStr = CTypeUtil.toString(file);
-            Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
-            ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-            if (reportNode == null) {
-                reportNode = ReportNode.NO_OP;
+                                     ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String fileStr = CTypeUtil.toString(file);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
+                ReadOnlyDataSource ds = DataSource.fromPath(Paths.get(fileStr));
+                var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+                network.update(ds, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
             }
-            ReadOnlyDataSource ds = DataSource.fromPath(Paths.get(fileStr));
-            var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
-            network.update(ds, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
         });
     }
 

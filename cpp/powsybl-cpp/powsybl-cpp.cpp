@@ -831,7 +831,7 @@ void updateNetwork(const JavaHandle& network, const std::string& file, const std
     ToCharPtrPtr parameterNamesPtr(parameterNames);
     ToCharPtrPtr parameterValuesPtr(parameterValues);
     ToCharPtrPtr postProcessorsPtr(postProcessors);
-    return PowsyblCaller::get()->callJava<JavaHandle>(::updateNetwork, network, (char*) file.data(), parameterNamesPtr.get(),
+    PowsyblCaller::get()->callJava(::updateNetwork, network, (char*) file.data(), parameterNamesPtr.get(),
                               parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(),
                               postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
