@@ -183,7 +183,7 @@ Reports
 
 Reports contain detailed computation information. To see those reports, pass a report_node argument to the run command.
 
-.. code-block:: python::
+.. code-block:: python
 
     >>> report_node = pp.report.ReportNode()
     >>> network = pn.create_eurostag_tutorial_example1_network()
