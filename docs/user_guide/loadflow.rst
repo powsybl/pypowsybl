@@ -183,7 +183,7 @@ Reports
 
 Reports contain detailed computation information. To see those reports, pass a report_node argument to the run command.
 
-.. doctest::
+.. code-block:: python::
     :options: +NORMALIZE_WHITESPACE
    
     >>> report_node = pp.report.ReportNode()
