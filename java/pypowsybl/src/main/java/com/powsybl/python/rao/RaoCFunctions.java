@@ -446,7 +446,6 @@ public final class RaoCFunctions {
 
         // Second preventive parameters
         searchTreeParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
-        searchTreeParameters.getSecondPreventiveRaoParameters().setReOptimizeCurativeRangeActions(paramPointer.getReOptimizeCurativeRangeActions());
         searchTreeParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
 
         // Not opitmized cnec parameters
@@ -532,7 +531,6 @@ public final class RaoCFunctions {
 
         // Second preventive parameters
         paramsPtr.setExecutionCondition(searchTreeParameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
-        paramsPtr.setReOptimizeCurativeRangeActions(searchTreeParameters.getSecondPreventiveRaoParameters().getReOptimizeCurativeRangeActions());
         paramsPtr.setHintFromFirstPreventiveRao(searchTreeParameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
 
         // Not opitmized cnec parameters

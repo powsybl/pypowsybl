@@ -91,7 +91,6 @@ class Parameters:
         c_parameters.available_cpus = self.multithreading_parameters.available_cpus
 
         c_parameters.execution_condition = self.second_preventive_rao_parameters.execution_condition
-        c_parameters.re_optimize_curative_range_actions = self.second_preventive_rao_parameters.re_optimize_curative_range_actions
         c_parameters.hint_from_first_preventive_rao = self.second_preventive_rao_parameters.hint_from_first_preventive_rao
 
         c_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras = self.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras

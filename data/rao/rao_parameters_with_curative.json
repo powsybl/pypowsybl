@@ -1,5 +1,5 @@
 {
-  "version" : "3.1",
+  "version" : "3.2",
   "objective-function" : {
     "type" : "SECURE_FLOW",
     "unit" : "MW"
@@ -43,7 +43,6 @@
       },
       "second-preventive-rao" : {
         "execution-condition" : "DISABLED",
-        "re-optimize-curative-range-actions" : false,
         "hint-from-first-preventive-rao" : false
       },
       "load-flow-and-sensitivity-computation" : {
