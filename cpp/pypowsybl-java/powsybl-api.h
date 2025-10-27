@@ -103,6 +103,12 @@ typedef struct sensitivity_analysis_parameters_struct {
     struct loadflow_parameters_struct loadflow_parameters;
 } sensitivity_analysis_parameters;
 
+typedef struct dynamic_simulation_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
+    double start_time;
+    double stop_time;
+} dynamic_simulation_parameters;
+
 typedef struct limit_violation_struct {
     char* subject_id;
     char* subject_name;
@@ -273,6 +279,7 @@ typedef struct series_struct {
     unsigned char index;
     int type;
     array data;
+    int* mask;
 } series;
 
 /**
@@ -369,6 +376,7 @@ typedef struct nad_parameters_struct {
     double radius_factor;
     int edge_info_displayed;
     unsigned char voltage_level_details;
+    unsigned char injections_added;
 } nad_parameters;
 
 typedef enum {

@@ -67,11 +67,10 @@ public final class Util {
             .build();
 
     private Util() {
-
     }
 
     public static void setException(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, Throwable t) {
-        LoggerFactory.getLogger(CommonCFunctions.class).debug(t.getMessage(), t);
+        LoggerFactory.getLogger(CommonCFunctions.class).error(t.getMessage(), t);
         // we need to create a non null message as on C++ side a null message is considered as non exception to rethrow
         // typically a NullPointerException has a null message and an empty string message need to be set in order to
         // correctly handle the exception on C++ side

@@ -764,6 +764,12 @@ public final class PyPowsyblApiHeader {
         @CFieldAddress("data")
         <T extends PointerBase> ArrayPointer<T> data();
 
+        @CField("mask")
+        CIntPointer getMask();
+
+        @CField("mask")
+        void setMask(CIntPointer mask);
+
         SeriesPointer addressOf(int index);
     }
 
@@ -1159,6 +1165,31 @@ public final class PyPowsyblApiHeader {
 
         @CField("voltage_level_details")
         boolean isVoltageLevelDetails();
+
+        @CField("injections_added")
+        void setInjectionsAdded(boolean injectionsAdded);
+
+        @CField("injections_added")
+        boolean isInjectionsAdded();
+    }
+
+    @CStruct("dynamic_simulation_parameters")
+    public interface DynamicSimulationParametersPointer extends PointerBase {
+
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
+
+        @CField("start_time")
+        double getStartTime();
+
+        @CField("start_time")
+        void setStartTime(double startTime);
+
+        @CField("stop_time")
+        double getStopTime();
+
+        @CField("stop_time")
+        void setStopTime(double stopTime);
     }
 
     @CEnum("DynamicMappingType")

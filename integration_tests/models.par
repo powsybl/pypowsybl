@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<parametersSet xmlns="http://www.rte-france.com/dynawo">
+    <set id="LAB">
+        <par type="DOUBLE" name="load_alpha" value="1.5"/>
+        <par type="DOUBLE" name="load_beta" value="2.5"/>
+        <reference type="DOUBLE" name="load_P0Pu" origData="IIDM" origName="p_pu"/>
+        <reference type="DOUBLE" name="load_Q0Pu" origData="IIDM" origName="q_pu"/>
+        <reference type="DOUBLE" name="load_U0Pu" origData="IIDM" origName="v_pu"/>
+        <reference type="DOUBLE" name="load_UPhase0" origData="IIDM" origName="angle_pu"/>
+    </set>
+    <set id="GSTWPR_6">
+        <par type="BOOL" name="generator_UseApproximation" value="false"/>
+        <par type="INT" name="generator_ExcitationPu" value="1"/>
+        <par type="DOUBLE" name="generator_md" value="0.16"/>
+        <par type="DOUBLE" name="generator_mq" value="0.16"/>
+        <par type="DOUBLE" name="generator_nd" value="5.7"/>
+        <par type="DOUBLE" name="generator_nq" value="5.7"/>
+        <par type="DOUBLE" name="generator_MdPuEfd" value="0"/>
+        <par type="DOUBLE" name="generator_DPu" value="0"/>
+        <par type="DOUBLE" name="generator_H" value="4.9750000000000001"/>
+        <par type="DOUBLE" name="generator_RaPu" value="0.004"/>
+        <par type="DOUBLE" name="generator_XlPu" value="0.102"/>
+        <par type="DOUBLE" name="generator_XdPu" value="0.75"/>
+        <par type="DOUBLE" name="generator_XpdPu" value="0.225"/>
+        <par type="DOUBLE" name="generator_XppdPu" value="0.154"/>
+        <par type="DOUBLE" name="generator_Tpd0" value="3"/>
+        <par type="DOUBLE" name="generator_Tppd0" value="0.04"/>
+        <par type="DOUBLE" name="generator_XqPu" value="0.45"/>
+        <par type="DOUBLE" name="generator_XppqPu" value="0.2"/>
+        <par type="DOUBLE" name="generator_Tppq0" value="0.04"/>
+        <par type="DOUBLE" name="generator_UNom" value="15"/>
+        <par type="DOUBLE" name="generator_PNomTurb" value="74.4"/>
+        <par type="DOUBLE" name="generator_PNomAlt" value="74.4"/>
+        <par type="DOUBLE" name="generator_SNom" value="80"/>
+        <par type="DOUBLE" name="generator_SnTfo" value="80"/>
+        <par type="DOUBLE" name="generator_UNomHV" value="15"/>
+        <par type="DOUBLE" name="generator_UNomLV" value="15"/>
+        <par type="DOUBLE" name="generator_UBaseHV" value="15"/>
+        <par type="DOUBLE" name="generator_UBaseLV" value="15"/>
+        <par type="DOUBLE" name="generator_RTfPu" value="0.0"/>
+        <par type="DOUBLE" name="generator_XTfPu" value="0.0"/>
+        <par type="DOUBLE" name="PmPu_ValueIn" value="0"/>
+        <par type="DOUBLE" name="EfdPu_ValueIn" value="0"/>
+        <par type="DOUBLE" name="voltageRegulator_LagEfdMax" value="0"/>
+        <par type="DOUBLE" name="voltageRegulator_LagEfdMin" value="0"/>
+        <par type="DOUBLE" name="voltageRegulator_EfdMinPu" value="-5"/>
+        <par type="DOUBLE" name="voltageRegulator_EfdMaxPu" value="5"/>
+        <par type="DOUBLE" name="voltageRegulator_UsRefMinPu" value="0.8"/>
+        <par type="DOUBLE" name="voltageRegulator_UsRefMaxPu" value="1.2"/>
+        <par type="DOUBLE" name="voltageRegulator_Gain" value="20"/>
+        <par type="DOUBLE" name="governor_KGover" value="5"/>
+        <par type="DOUBLE" name="governor_PMin" value="0"/>
+        <par type="DOUBLE" name="governor_PMax" value="74.4"/>
+        <par type="DOUBLE" name="governor_PNom" value="74.4"/>
+        <par type="DOUBLE" name="URef_ValueIn" value="0"/>
+        <par type="DOUBLE" name="Pm_ValueIn" value="0"/>
+        <reference name="generator_P0Pu" origData="IIDM" origName="p_pu" type="DOUBLE"/>
+        <reference name="generator_Q0Pu" origData="IIDM" origName="q_pu" type="DOUBLE"/>
+        <reference name="generator_U0Pu" origData="IIDM" origName="v_pu" type="DOUBLE"/>
+        <reference name="generator_UPhase0" origData="IIDM" origName="angle_pu" type="DOUBLE"/>
+    </set>
+    <set id="GSTWPR_8">
+        <par type="BOOL" name="generator_UseApproximation" value="false"/>
+        <par type="INT" name="generator_ExcitationPu" value="1"/>
+        <par type="DOUBLE" name="generator_md" value="0"/>
+        <par type="DOUBLE" name="generator_mq" value="0"/>
+        <par type="DOUBLE" name="generator_nd" value="0"/>
+        <par type="DOUBLE" name="generator_nq" value="0"/>
+        <par type="DOUBLE" name="generator_MdPuEfd" value="0"/>
+        <par type="DOUBLE" name="generator_DPu" value="0"/>
+        <par type="DOUBLE" name="generator_H" value="2.748"/>
+        <par type="DOUBLE" name="generator_RaPu" value="0.0040000000000000001"/>
+        <par type="DOUBLE" name="generator_XlPu" value="0.11"/>
+        <par type="DOUBLE" name="generator_XdPu" value="1.53"/>
+        <par type="DOUBLE" name="generator_XpdPu" value="0.31"/>
+        <par type="DOUBLE" name="generator_XppdPu" value="0.275"/>
+        <par type="DOUBLE" name="generator_Tpd0" value="8.4"/>
+        <par type="DOUBLE" name="generator_Tppd0" value="0.096"/>
+        <par type="DOUBLE" name="generator_XqPu" value="0.99"/>
+        <par type="DOUBLE" name="generator_XppqPu" value="0.58"/>
+        <par type="DOUBLE" name="generator_Tppq0" value="0.56"/>
+        <par type="DOUBLE" name="generator_UNom" value="18"/>
+        <par type="DOUBLE" name="generator_PNomTurb" value="228"/>
+        <par type="DOUBLE" name="generator_PNomAlt" value="228"/>
+        <par type="DOUBLE" name="generator_SNom" value="250"/>
+        <par type="DOUBLE" name="generator_SnTfo" value="250"/>
+        <par type="DOUBLE" name="generator_UNomHV" value="13.8"/>
+        <par type="DOUBLE" name="generator_UNomLV" value="18"/>
+        <par type="DOUBLE" name="generator_UBaseHV" value="13.8"/>
+        <par type="DOUBLE" name="generator_UBaseLV" value="18"/>
+        <par type="DOUBLE" name="generator_RTfPu" value="0.0"/>
+        <par type="DOUBLE" name="generator_XTfPu" value="0.1"/>
+        <par type="DOUBLE" name="PmPu_ValueIn" value="0"/>
+        <par type="DOUBLE" name="EfdPu_ValueIn" value="0"/>
+        <par type="DOUBLE" name="voltageRegulator_LagEfdMax" value="0"/>
+        <par type="DOUBLE" name="voltageRegulator_LagEfdMin" value="0"/>
+        <par type="DOUBLE" name="voltageRegulator_EfdMinPu" value="-5"/>
+        <par type="DOUBLE" name="voltageRegulator_EfdMaxPu" value="5"/>
+        <par type="DOUBLE" name="voltageRegulator_UsRefMinPu" value="0.8"/>
+        <par type="DOUBLE" name="voltageRegulator_UsRefMaxPu" value="1.2"/>
+        <par type="DOUBLE" name="voltageRegulator_Gain" value="20"/>
+        <par type="DOUBLE" name="governor_KGover" value="5"/>
+        <par type="DOUBLE" name="governor_PMin" value="0"/>
+        <par type="DOUBLE" name="governor_PMax" value="228"/>
+        <par type="DOUBLE" name="governor_PNom" value="228"/>
+        <par type="DOUBLE" name="URef_ValueIn" value="0"/>
+        <par type="DOUBLE" name="Pm_ValueIn" value="0"/>
+        <reference name="generator_P0Pu" origData="IIDM" origName="p_pu" type="DOUBLE"/>
+        <reference name="generator_Q0Pu" origData="IIDM" origName="q_pu" type="DOUBLE"/>
+        <reference name="generator_U0Pu" origData="IIDM" origName="v_pu" type="DOUBLE"/>
+        <reference name="generator_UPhase0" origData="IIDM" origName="angle_pu" type="DOUBLE"/>
+    </set>
+</parametersSet>

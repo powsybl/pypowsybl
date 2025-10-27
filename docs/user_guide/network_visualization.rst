@@ -28,6 +28,10 @@ Note that a loadflow can be run before writing the diagram so that it displays r
 .. image:: ../_static/images/ieee14_vl4.svg
    :class: forced-white-background
 
+
+Customizing with SldParameters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Single-line diagrams can be customized through SldParameters:
 
 .. code-block:: python
@@ -205,6 +209,47 @@ Or in a Jupyter Notebook:
 
 The substation diagrams will be arranged in a grid, based on the content of the matrix parameter. An empty string in the matrix will result in an empty spot in the grid.
 
+
+Customizing with SldProfile
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The single line diagram can be further customized using an SldProfile. For example, to set the labels for feeders and buses by using dataframes:
+
+.. code-block:: python
+
+    >>> import pypowsybl.network as pn
+    >>> import pandas as pd
+
+    >>> network = pn.create_ieee14()
+
+    >>> sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'additional_label'], 
+                                      data=[('B1-G', 'MY-GENERATOR', 'GEN'),
+                                            ('L1-5-1', 'MY-LINE1', None),
+                                            ('L1-2-1', 'MY-LINE2', None),
+                                            ('B1', 'MY-BUS1', None)])
+
+    >>> sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
+                                            data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
+                                                  ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
+                                                  ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1')])
+
+    >>> diagram_profile=pn.SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df)
+    >>> network.get_single_line_diagram('VL1', sld_profile=diagram_profile)
+
+In the labels dataframe:
+    - id: is the network element id
+    - label: defines the label for the element
+    - additional_label: defines an additional label, displayed on the right side of the element
+
+In the feeders_info dataframe:
+    - id is the feeder id
+    - type: is a symbol type for the feeder info element. E.g., ARROW_ACTIVE, ARROW_REACTIVE, ARROW_CURRENT.
+    - side: for feeders with multiple sides (e.g. lines, transformers), determines  at which side the feeder info is placed. E.g. ONE, TWO.
+    - direction: is direction of the arrows (IN, OUT).
+    - label: defines  the label for the  feeder info element..
+
+The optional parameter sld_profile can also be set for the write_single_line_diagram_svg, get_matrix_multi_substation_single_line_diagram, and write_matrix_multi_substation_single_line_diagram_svg functions.
+
 Network area diagram
 --------------------
 
@@ -269,7 +314,7 @@ Network-area diagrams can be customized through NadParameters:
 
     >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False))
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False, injections_added=True))
 
     - edge_name_displayed: if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
@@ -282,6 +327,7 @@ Network-area diagrams can be customized through NadParameters:
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
     - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
     - voltage_level_details: if true, additional information about voltage levels is displayed in text boxes. The content of the additional information is determined by the label provider that is used.
+    - injections_added: if true, the injections present on the bus nodes of the voltage levels are displayed.
 
 
 

@@ -14,6 +14,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -139,6 +140,11 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
 
     public B intsIndex(String name, ToIntFunction<U> value) {
         series.add(new IntSeriesMapper<>(name, true, value));
+        return (B) this;
+    }
+
+    public B optionalInts(String name, Function<U, OptionalInt> value) {
+        series.add(new OptionalIntSeriesMapper<>(name, value));
         return (B) this;
     }
 

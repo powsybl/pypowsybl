@@ -27,7 +27,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile, SldProfile
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -889,18 +889,18 @@ def test_exception():
 def test_ratio_tap_changers():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 1, nan, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
                           data=[[0, False, 180]])
     n.update_ratio_tap_changers(update)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
+                            data=[['', 0, nan, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
@@ -909,11 +909,11 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
-                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['TWO', 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
+                            data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
+                                  ['TWO', 17, 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
     update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('84ed55f4-61f5-4d9d-8755-bba7b877a246', 'TWO')],
@@ -925,11 +925,11 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
-                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
+                            data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
+                                  ['TWO', 9, 17, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
     steps = n.get_ratio_tap_changer_steps()
@@ -941,8 +941,8 @@ def test_ratio_tap_changers_3_windings():
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
+            'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
     assert 0 == twt_values.low_tap
@@ -958,8 +958,8 @@ def test_phase_tap_changers():
     n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
+            'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
     assert twt_values.regulating
@@ -1118,7 +1118,8 @@ def test_nad():
                                                                          bus_legend=False,
                                                                          substation_description_displayed=True,
                                                                          edge_info_displayed=EdgeInfoType.CURRENT,
-                                                                         voltage_level_details=False
+                                                                         voltage_level_details=False,
+                                                                         injections_added=False
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -1142,7 +1143,8 @@ def test_nad():
                                                                             bus_legend=False,
                                                                             substation_description_displayed=True,
                                                                             edge_info_displayed=EdgeInfoType.REACTIVE_POWER,
-                                                                            voltage_level_details=False
+                                                                            voltage_level_details=False,
+                                                                            injections_added=False
                                                                             ))
 
 
@@ -1242,6 +1244,30 @@ def test_nad_profile():
     assert list(default_profile.three_wt_labels) == ['side1', 'side2', 'side3', 'arrow1', 'arrow2', 'arrow3']
     assert list(default_profile.bus_descriptions) == ['description']
     assert list(default_profile.vl_descriptions) == ['type', 'description']
+
+
+def test_sld_profile():
+    diagram_profile = SldProfile()
+    assert not diagram_profile.labels
+    diagram_profile = SldProfile(labels=None)
+    assert not diagram_profile.labels
+    n = pp.network.create_ieee14()
+    sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'additional_label'],
+                                              data=[('B1-G', 'MY-GENERATOR', 'MGEN'),
+                                                    ('L1-5-1', 'MY-LINE1', ''),
+                                                    ('L1-2-1', 'MY-LINE2', ''),
+                                                    ('B1', 'MY-BUS1', '')])
+    sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
+                                                    data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
+                                                          ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
+                                                          ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1'),
+                                                          ('B1-G', 'ARROW_ACTIVE', None, 'IN', 'G VALUE1')])
+    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df)
+    assert isinstance(diagram_profile.labels, pd.DataFrame)
+    assert isinstance(diagram_profile.feeders_info, pd.DataFrame)
+    sld1=n.get_single_line_diagram('VL1', sld_profile=diagram_profile)
+    assert re.search('.*<svg.*', sld1.svg)
+    assert len(sld1.metadata) > 0
 
 
 def test_current_limits():
@@ -1413,10 +1439,10 @@ def test_shunt():
     assert not df['fictitious']['SHUNT']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
+                                     'solved_section_count', 'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, False, nan, nan,
+                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, nan, False, nan, nan,
                                    'S1VL2_0', nan, 1920, nan, 'S1VL2', 'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     n.update_shunt_compensators(
@@ -1430,10 +1456,10 @@ def test_shunt():
                      data=[[True]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
+                                     'solved_section_count', 'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
+                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, nan, True, 50, 3,
                                    '', nan, 1900, nan, 'S1VL2', '', False]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     shunts = n.get_shunt_compensators(attributes=['bus_breaker_bus_id', 'node'])
@@ -2536,7 +2562,7 @@ def test_nad_parameters():
     assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
     assert nad_parameters.voltage_level_details
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER, False)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER, False, False)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2551,8 +2577,9 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
     assert nad_parameters.voltage_level_details == False
+    assert nad_parameters.injections_added == False
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT, True)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT, True, True)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2567,6 +2594,7 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
     assert nad_parameters.voltage_level_details
+    assert nad_parameters.injections_added
 
 
 def test_update_dangling_line():
@@ -2775,6 +2803,15 @@ def test_regulated_bus_id():
     assert 'S1VL2_0' == gens['regulated_bus_id']['GH1']
     assert 'S1VL2_7' == gens['regulated_bus_breaker_bus_id']['GH1']
 
+def test_apply_solved_values():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 607.0 == n.get_generators().loc["GEN", "target_p"]
+    assert pytest.approx(-302.78, abs=1e-2) == n.get_generators().loc["GEN", "p"]
+    n.apply_solved_tap_position_and_section_count_values()
+    assert 607.0 == n.get_generators().loc["GEN", "target_p"]
+    n.apply_solved_values()
+    assert pytest.approx(302.78, abs=1e-2) == n.get_generators().loc["GEN", "target_p"]
 
 if __name__ == '__main__':
     unittest.main()

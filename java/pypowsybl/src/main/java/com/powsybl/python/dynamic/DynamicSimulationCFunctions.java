@@ -8,16 +8,21 @@
 package com.powsybl.python.dynamic;
 
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
-import static com.powsybl.python.commons.Util.convert;
-import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.*;
+import static com.powsybl.python.dynamic.DynamicSimulationParametersCUtils.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
+import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
 import com.powsybl.timeseries.DoubleTimeSeries;
@@ -90,37 +95,66 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new PythonEventModelsSupplier()));
     }
 
-    @CEntryPoint(name = "runDynamicModel")
-    public static ObjectHandle runDynamicModel(IsolateThread thread,
-                                               ObjectHandle dynamicContextHandle,
-                                               ObjectHandle networkHandle,
-                                               ObjectHandle dynamicMappingHandle,
-                                               ObjectHandle eventModelsSupplierHandle,
-                                               ObjectHandle outputVariablesSupplierHandle,
-                                               int startTime,
-                                               int stopTime,
-                                               ObjectHandle reportNodeHandle,
-            ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "createDynamicSimulationParameters")
+    public static DynamicSimulationParametersPointer createDynamicSimulationParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
-            DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
-            OutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesSupplierHandle);
-            ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-            if (reportNode == null) {
-                reportNode = ReportNode.NO_OP;
+            DynamicSimulationParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(DynamicSimulationParametersPointer.class));
+            copyToCDynamicSimulationParameters(paramsPtr);
+            return paramsPtr;
+        });
+    }
+
+    @CEntryPoint(name = "freeDynamicSimulationParameters")
+    public static void freeDynamicSimulationParameters(IsolateThread thread, DynamicSimulationParametersPointer parametersPtr,
+                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeProviderParameters(parametersPtr.getProviderParameters());
+                UnmanagedMemory.free(parametersPtr);
             }
-            DynamicSimulationParameters dynamicSimulationParameters = new DynamicSimulationParameters(startTime,
-                    stopTime);
-            DynamicSimulationResult result = dynamicContext.run(network,
-                    dynamicMapping,
-                    eventModelsSupplier,
-                    outputVariablesSupplier,
-                    dynamicSimulationParameters,
-                    reportNode);
-            logger().info("Dynamic simulation ran successfully in java");
-            return ObjectHandles.getGlobal().create(result);
+        });
+    }
+
+    @CEntryPoint(name = "runDynamicSimulation")
+    public static ObjectHandle runDynamicSimulation(IsolateThread thread,
+                                                    ObjectHandle dynamicContextHandle,
+                                                    ObjectHandle networkHandle,
+                                                    ObjectHandle dynamicMappingHandle,
+                                                    ObjectHandle eventModelsSupplierHandle,
+                                                    ObjectHandle outputVariablesSupplierHandle,
+                                                    DynamicSimulationParametersPointer parametersPtr,
+                                                    ObjectHandle reportNodeHandle,
+                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ObjectHandle>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                DynamicSimulationContext dynamicContext = ObjectHandles.getGlobal().get(dynamicContextHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+                EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
+                if (eventModelsSupplier == null) {
+                    eventModelsSupplier = EventModelsSupplier.empty();
+                }
+                OutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesSupplierHandle);
+                if (outputVariablesSupplier == null) {
+                    outputVariablesSupplier = OutputVariablesSupplier.empty();
+                }
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
+                DynamicSimulationParameters dynamicSimulationParameters =
+                        DynamicSimulationParametersCUtils.createDynamicSimulationParameters(parametersPtr);
+                DynamicSimulationResult result = dynamicContext.run(network,
+                        dynamicMapping,
+                        eventModelsSupplier,
+                        outputVariablesSupplier,
+                        dynamicSimulationParameters,
+                        reportNode);
+                logger().info("Dynamic simulation ran successfully in java");
+                return ObjectHandles.getGlobal().create(result);
+            }
         });
     }
 
@@ -129,20 +163,23 @@ public final class DynamicSimulationCFunctions {
                                           DynamicMappingType mappingType,
                                           DataframeArrayPointer mappingDataframePtr,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
-            List<UpdatingDataframe> mappingDataframes = new ArrayList<>();
-            for (int i = 0; i < mappingDataframePtr.getDataframesCount(); i++) {
-                mappingDataframes.add(createDataframe(mappingDataframePtr.getDataframes().addressOf(i)));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
+                List<UpdatingDataframe> mappingDataframes = new ArrayList<>();
+                for (int i = 0; i < mappingDataframePtr.getDataframesCount(); i++) {
+                    mappingDataframes.add(createDataframe(mappingDataframePtr.getDataframes().addressOf(i)));
+                }
+                DynamicMappingHandler.addElements(mappingType, dynamicMapping, mappingDataframes);
             }
-            DynamicMappingHandler.addElements(mappingType, dynamicMapping, mappingDataframes);
         });
     }
 
     @CEntryPoint(name = "getDynamicMappingsMetaData")
     public static DataframesMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
-                                                                                          DynamicMappingType mappingType,
-                                                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                       DynamicMappingType mappingType,
+                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> {
             List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(mappingType);
             DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
@@ -170,10 +207,13 @@ public final class DynamicSimulationCFunctions {
                                         EventMappingType mappingType,
                                         DataframePointer mappingDataframePtr,
                                         ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            PythonEventModelsSupplier eventMapping = ObjectHandles.getGlobal().get(eventMappingHandle);
-            UpdatingDataframe mappingDataframe = createDataframe(mappingDataframePtr);
-            EventMappingHandler.addElements(mappingType, eventMapping, mappingDataframe);
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                PythonEventModelsSupplier eventMapping = ObjectHandles.getGlobal().get(eventMappingHandle);
+                UpdatingDataframe mappingDataframe = createDataframe(mappingDataframePtr);
+                EventMappingHandler.addElements(mappingType, eventMapping, mappingDataframe);
+            }
         });
     }
 
@@ -193,11 +233,15 @@ public final class DynamicSimulationCFunctions {
                                           boolean isDynamic,
                                           OutputVariableType variableType,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            String dynamicId = CTypeUtil.toString(dynamicIdPtr);
-            List<String> variables = toStringList(variablesPtrPtr, variableCount);
-            PythonOutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesHandle);
-            outputVariablesSupplier.addOutputVariables(dynamicId, variables, isDynamic, convert(variableType));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                String dynamicId = CTypeUtil.toString(dynamicIdPtr);
+                List<String> variables = toStringList(variablesPtrPtr, variableCount);
+                PythonOutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesHandle);
+                outputVariablesSupplier.addOutputVariables(dynamicId, variables, isDynamic, convert(variableType));
+
+            }
         });
     }
 
@@ -205,9 +249,12 @@ public final class DynamicSimulationCFunctions {
     public static DynamicSimulationStatus getDynamicSimulationResultsStatus(IsolateThread thread,
              ObjectHandle resultsHandle,
              ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
-            return convert(simulationResult.getStatus());
+        return doCatch(exceptionHandlerPtr, new Supplier<DynamicSimulationStatus>() {
+            @Override
+            public DynamicSimulationStatus get() {
+                DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
+                return convert(simulationResult.getStatus());
+            }
         });
     }
 
@@ -215,9 +262,12 @@ public final class DynamicSimulationCFunctions {
     public static CCharPointer getDynamicSimulationResultsStatusText(IsolateThread thread,
                                                                  ObjectHandle resultsHandle,
                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
-            return CTypeUtil.toCharPtr(simulationResult.getStatusText());
+        return doCatch(exceptionHandlerPtr, new PointerProvider<CCharPointer>() {
+            @Override
+            public CCharPointer get() throws IOException {
+                DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
+                return CTypeUtil.toCharPtr(simulationResult.getStatusText());
+            }
         });
     }
 
@@ -226,11 +276,15 @@ public final class DynamicSimulationCFunctions {
                                                               ObjectHandle resultHandle,
                                                               CCharPointer curveNamePtr,
                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-            String curveName = CTypeUtil.toString(curveNamePtr);
-            DoubleTimeSeries curve = result.getCurve(curveName);
-            return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.curvesDataFrameMapper(curveName), curve);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
+                String curveName = CTypeUtil.toString(curveNamePtr);
+                DoubleTimeSeries curve = result.getCurve(curveName);
+                return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.curvesDataFrameMapper(curveName), curve);
+
+            }
         });
     }
 
@@ -238,26 +292,52 @@ public final class DynamicSimulationCFunctions {
     public static ArrayPointer<CCharPointerPointer> getAllDynamicCurvesIds(IsolateThread thread,
                                                                            ObjectHandle resultHandle,
                                                                            ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-            return Util.createCharPtrArray(new ArrayList<>(result.getCurves().keySet()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() throws IOException {
+                DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
+                return Util.createCharPtrArray(new ArrayList<>(result.getCurves().keySet()));
+            }
         });
     }
 
     @CEntryPoint(name = "getFinalStateValues")
     public static ArrayPointer<SeriesPointer> getFinalStateValues(IsolateThread thread, ObjectHandle resultHandle,
                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
-        DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.fsvDataFrameMapper(), result.getFinalStateValues());
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
+                return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.fsvDataFrameMapper(), result.getFinalStateValues());
+            }
+        });
     }
 
     @CEntryPoint(name = "getTimeline")
     public static ArrayPointer<SeriesPointer> getTimeline(IsolateThread thread,
-                                                                     ObjectHandle resultsHandle,
-                                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
-            return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.timelineEventDataFrameMapper(), simulationResult.getTimeLine());
+                                                          ObjectHandle resultsHandle,
+                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                DynamicSimulationResult simulationResult = ObjectHandles.getGlobal().get(resultsHandle);
+                return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.timelineEventDataFrameMapper(), simulationResult.getTimeLine());
+            }
         });
+    }
+
+    @CEntryPoint(name = "getDynamicSimulationProviderParametersNames")
+    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getDynamicSimulationProviderParametersNames(IsolateThread thread,
+                                                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(getSpecificParametersInfo().stream()
+                .map(Parameter::getName)
+                .collect(Collectors.toList())));
+    }
+
+    @CEntryPoint(name = "createDynamicSimulationProviderParametersSeriesArray")
+    static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> createDynamicSimulationProviderParametersSeriesArray(IsolateThread thread,
+                                                                                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () ->
+                Dataframes.createCDataframe(SPECIFIC_PARAMETERS_MAPPER, getSpecificParametersInfo()));
     }
 }

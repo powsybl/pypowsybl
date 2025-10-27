@@ -89,15 +89,43 @@ Remedial action results are also available in a pandas dataframe :
 
 .. doctest::
 
-    >>> ra_results = rao_result.get_ra_results()
+    >>> ra_results = rao_result.get_remedial_action_results()
     >>> ra_results.columns
-    Index(['remedial_action_id', 'optimized_instant', 'contingency', 'activated',
-           'optimized_tap', 'optimized_set_point'],
-          dtype='object')
+    Index(['remedial_action_id', 'optimized_instant', 'contingency'], dtype='object')
 
 For each remedial action, optimized instant and a contingency (if applicable) the activation information is available.
 For range actions the optimized tap is also available for PstRangeAction and optimized set point for all other RangeActions.
 Optimized tap and optimized set point are set to NaN when not applicable (not a range action).
+
+It is possible to get the results of activated remedial actions for a specific type of remedial action only.
+
+For network actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_network_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency'], dtype='object')
+
+For PST range actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_pst_range_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency',
+           'optimized_tap'],
+          dtype='object')
+
+For other non-PST range actions:
+
+.. doctest::
+
+    >>> ra_results = rao_result.get_range_action_results()
+    >>> ra_results.columns
+    Index(['remedial_action_id', 'optimized_instant', 'contingency',
+           'optimized_set_point'],
+          dtype='object')
 
 Finally cost results can also be retrieved. Generic cost results are available in a dataframe :
 
@@ -129,3 +157,29 @@ The 'RaoResult' object can also be serialized to json:
 .. doctest::
 
     >>> rao_result.serialize(str(DATA_DIR.joinpath("rao/results.json")))
+
+Rao logs filter
+---------------
+
+Open rao logs can be retrieved in the global powsybl logger. However if a user is only interested in the logs coming from
+open rao, a RaoLogFilter is available :
+
+.. doctest::
+
+    >>> import pypowsybl as pp
+    >>> import logging
+    >>> import sys
+    >>> from pypowsybl.rao import (Parameters as RaoParameters, RaoLogFilter)
+    >>>
+    >>> network =  pp.network.load(str(DATA_DIR.joinpath("rao/rao_network.uct")))
+    >>> parameters = RaoParameters()
+    >>> parameters.load_from_file_source(str(DATA_DIR.joinpath("rao/rao_parameters.json")))
+    >>> rao_runner = pp.rao.create_rao()
+    >>> rao_runner.set_crac_file_source(network, str(DATA_DIR.joinpath("rao/rao_crac.json")))
+    >>> rao_runner.set_glsk_file_source(network, str(DATA_DIR.joinpath("rao/rao_glsk.xml")))
+    >>>
+    >>> logging.basicConfig(stream=sys.stdout) # Setup logging
+    >>> logger = logging.getLogger('powsybl')
+    >>> logger.setLevel(logging.ERROR)
+    >>> logger.addFilter(RaoLogFilter())
+    >>> rao_result = rao_runner.run(network, parameters)
