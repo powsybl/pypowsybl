@@ -3673,7 +3673,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return self._update_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def update_busbar_sections(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
-        """Update phase tap changers with a ``Pandas`` dataframe.
+        """Update bus bar sections with a ``Pandas`` dataframe.
 
         Args:
             df: the data to be updated, as a dataframe.
