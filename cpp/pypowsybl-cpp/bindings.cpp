@@ -667,19 +667,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
-          py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"));
 
     m.def("write_matrix_multi_substation_single_line_diagram_svg", &pypowsybl::writeMatrixMultiSubstationSingleLineDiagramSvg, "Write matrix multi-substation single line diagram SVG",
-          py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"));
 
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
-          py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"));
 
     m.def("get_matrix_multi_substation_single_line_diagram_svg_and_metadata", &pypowsybl::getMatrixMultiSubstationSvgAndMetadata, "Get matrix multi-substation single line diagram SVG and its metadata as a list of strings",
-          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"));
 
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
@@ -856,7 +856,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("max_number_of_boundaries_for_skipping_actions", &pypowsybl::RaoParameters::max_number_of_boundaries_for_skipping_actions)
             .def_readwrite("available_cpus", &pypowsybl::RaoParameters::available_cpus)
             .def_readwrite("execution_condition", &pypowsybl::RaoParameters::execution_condition)
-            .def_readwrite("re_optimize_curative_range_actions", &pypowsybl::RaoParameters::re_optimize_curative_range_actions)
             .def_readwrite("hint_from_first_preventive_rao", &pypowsybl::RaoParameters::hint_from_first_preventive_rao)
             .def_readwrite("do_not_optimize_curative_cnecs_for_tsos_without_cras", &pypowsybl::RaoParameters::do_not_optimize_curative_cnecs_for_tsos_without_cras)
             .def_readwrite("load_flow_provider", &pypowsybl::RaoParameters::load_flow_provider)

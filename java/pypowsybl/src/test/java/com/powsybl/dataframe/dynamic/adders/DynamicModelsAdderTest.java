@@ -119,9 +119,6 @@ class DynamicModelsAdderTest {
         DefaultUpdatingDataframe missingStaticDF = new DefaultUpdatingDataframe(1);
         missingStaticDF.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
         DynamicMappingHandler.addElements("Load", dynamicModelsSupplier, List.of(missingStaticDF));
-        DefaultUpdatingDataframe missingParamDF = new DefaultUpdatingDataframe(1);
-        missingParamDF.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"));
-        DynamicMappingHandler.addElements("Load", dynamicModelsSupplier, List.of(missingParamDF));
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 

@@ -70,7 +70,6 @@ def test_minimal_simulation():
     and configured its path in your config.yml.
     """
     network = pp.network.create_ieee14()
-
     model_mapping = dyn.ModelMapping()
     generator_mapping_df = pd.DataFrame(
         index=pd.Series(name='static_id', data=['B6-G', 'B8-G']),
@@ -80,9 +79,6 @@ def test_minimal_simulation():
         }
     )
     model_mapping.add_synchronous_generator(generator_mapping_df)
-
-    event_mapping = dyn.EventMapping()
-    variables_mapping = dyn.OutputVariableMapping()
 
     testPath = Path(__file__).parent
     dynawo_param = {
@@ -96,7 +92,7 @@ def test_minimal_simulation():
     param = dyn.Parameters(start_time=0, stop_time=100, provider_parameters=dynawo_param)
 
     sim = dyn.Simulation()
-    res = sim.run(network, model_mapping, event_mapping, variables_mapping, param)
+    res = sim.run(network=network, model_mapping=model_mapping, parameters=param)
 
     assert DynamicSimulationStatus.SUCCESS == res.status()
     assert "" == res.status_text()
