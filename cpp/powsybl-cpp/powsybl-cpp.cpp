@@ -414,7 +414,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
     // Second preventive rao parameters
     execution_condition = static_cast<ExecutionCondition>(src->execution_condition);
-    re_optimize_curative_range_actions = (bool) src->re_optimize_curative_range_actions;
     hint_from_first_preventive_rao = (bool) src->hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
@@ -464,7 +463,6 @@ void RaoParameters::load_to_c_struct(rao_parameters& res) const {
 
     // Second preventive rao parameters
     res.execution_condition = int(execution_condition);
-    res.re_optimize_curative_range_actions = re_optimize_curative_range_actions;
     res.hint_from_first_preventive_rao = hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
@@ -1675,9 +1673,11 @@ JavaHandle createEventMapping() {
     return PowsyblCaller::get()->callJava<JavaHandle>(::createEventMapping);
 }
 
-JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode) {
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle* eventMapping, JavaHandle* timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters  = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping, eventMapping, timeSeriesMapping, c_parameters.get(), (reportNode == nullptr) ? nullptr : *reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runDynamicSimulation, dynamicModelContext, network, dynamicMapping,
+    (eventMapping == nullptr) ? nullptr : *eventMapping, (timeSeriesMapping == nullptr) ? nullptr : *timeSeriesMapping,
+    c_parameters.get(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 void addDynamicMappings(JavaHandle dynamicMappingHandle, DynamicMappingType mappingType, dataframe_array* dataframes) {
