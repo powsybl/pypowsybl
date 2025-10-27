@@ -1657,14 +1657,10 @@ public final class NetworkDataframes {
 
     private static double unPerUnitLimitValue(NetworkDataframeContext context, TemporaryLimitData limit, double value) {
         return switch (limit.getType()) {
-            case CURRENT ->
-                    unPerUnitI(context, value, limit.getPerUnitingNominalV());
-            case ACTIVE_POWER, APPARENT_POWER ->
-                    unPerUnitPQ(context, value);
-            case VOLTAGE ->
-                    unPerUnitV(context, value, limit.getPerUnitingNominalV());
-            case VOLTAGE_ANGLE ->
-                    unPerUnitAngle(context, value);
+            case CURRENT -> unPerUnitI(context, value, limit.getPerUnitingNominalV());
+            case ACTIVE_POWER, APPARENT_POWER -> unPerUnitPQ(context, value);
+            case VOLTAGE -> unPerUnitV(context, value, limit.getPerUnitingNominalV());
+            case VOLTAGE_ANGLE -> unPerUnitAngle(context, value);
         };
     }
 
