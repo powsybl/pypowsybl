@@ -62,6 +62,13 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_update_network_cgmes():
+    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
+    assert math.isnan(network.get_loads()["p0"]["EnergyConsumer"])
+    network.update_from_file(DATA_DIR.joinpath('load_SSH.xml'))
+    assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
+
+
 def test_load_post_processor():
     assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
@@ -2812,13 +2819,6 @@ def test_apply_solved_values():
     assert 607.0 == n.get_generators().loc["GEN", "target_p"]
     n.apply_solved_values()
     assert pytest.approx(302.78, abs=1e-2) == n.get_generators().loc["GEN", "target_p"]
-
-def test_update_network():
-    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
-    assert math.isnan(network.get_loads()["p0"]["EnergyConsumer"])
-    network.update_from_file(DATA_DIR.joinpath('load_SSH.xml'))
-    assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
-
 
 if __name__ == '__main__':
     unittest.main()

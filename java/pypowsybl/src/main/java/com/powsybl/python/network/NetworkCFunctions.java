@@ -225,7 +225,7 @@ public final class NetworkCFunctions {
                     reportNode = ReportNode.NO_OP;
                 }
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
-                Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), ImportConfig.load(), parameters, new ImportersServiceLoader(), reportNode);
+                Network network = Network.read(Paths.get(fileStr), LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
                 network.getVariantManager().allowVariantMultiThreadAccess(allowVariantMultiThreadAccess);
                 return ObjectHandles.getGlobal().create(network);
             }
