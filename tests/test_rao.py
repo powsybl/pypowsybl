@@ -338,9 +338,8 @@ def parameters_round_trip():
 
     # Serialize
     serialized_params = params.serialize_to_binary_buffer()
-    params.serialize("D:/params_out.json")
 
-    # Compara serialized to initial buffer
+    # Compare serialized to initial buffer
     assert initial_buffer.getvalue() == serialized_params.getvalue()
 
 if __name__ == '__main__':
