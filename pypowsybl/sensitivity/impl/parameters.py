@@ -31,10 +31,10 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def __init__(self, load_flow_parameters: Optional[LfParameters] = None,
                  provider_parameters: Optional[Dict[str, str]] = None,
-                 flow_flow_sensitivity_value_threshold: float = None,
-                 voltage_voltage_sensitivity_value_threshold: float = None,
-                 flow_voltage_sensitivity_value_threshold: float = None,
-                 angle_flow_sensitivity_value_threshold: float = None,):
+                 flow_flow_sensitivity_value_threshold: Optional[float] = None,
+                 voltage_voltage_sensitivity_value_threshold: Optional[float] = None,
+                 flow_voltage_sensitivity_value_threshold: Optional[float] = None,
+                 angle_flow_sensitivity_value_threshold: Optional[float] = None,):
         self._init_with_default_values()
         if load_flow_parameters is not None:
             self.load_flow_parameters = load_flow_parameters
