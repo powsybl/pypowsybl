@@ -4054,12 +4054,11 @@ class Network:  # pylint: disable=too-many-public-methods
             :meth:`get_operational_limits`
 
         Examples:
-            Some examples using keyword arguments:
+            An example using keyword arguments:
 
             .. code-block:: python
 
-                network.update_generators(id='G-1', connected=True, target_p=500)
-                network.update_generators(id=['G-1', 'G-2'], target_v=[403, 401])
+                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
         """
         return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
 
