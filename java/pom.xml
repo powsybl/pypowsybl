@@ -76,10 +76,23 @@
         <dependencies>
             <dependency>
                 <groupId>com.powsybl</groupId>
+<!-- The new DC component dataframe adders need powsybl 7.0.0 for DC topology processing-->
+                <artifactId>powsybl-core</artifactId>
+                <version>7.0.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.powsybl</groupId>
                 <artifactId>powsybl-dependencies</artifactId>
                 <version>${powsybl-dependencies.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-open-loadflow</artifactId>
+                <version>2.0.0</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

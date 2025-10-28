@@ -110,6 +110,10 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
    Network.get_tie_lines
+   Network.get_dc_nodes
+   Network.get_dc_lines
+   Network.get_voltage_source_converters
+   Network.get_dc_grounds
    Network.get_grounds
    Network.get_sub_networks
    Network.get_sub_network
