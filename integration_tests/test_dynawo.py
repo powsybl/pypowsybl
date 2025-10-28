@@ -58,9 +58,11 @@ def test_simulation():
     assert report_node
     assert DynamicSimulationStatus.SUCCESS == res.status()
     assert "" == res.status_text()
-    assert 'B6-G_generator_PGen' in res.curves()
-    assert 'B6-G_generator_QGen' in res.curves()
-    assert 'B6-G_generator_UStatorPu' in res.curves()
+    curves_df = res.curves()
+    assert '1970-01-01T00:00:00Z' == curves_df.index.values[0]
+    assert 'B6-G_generator_PGen' in curves_df
+    assert 'B6-G_generator_QGen' in curves_df
+    assert 'B6-G_generator_UStatorPu' in curves_df
     assert False == res.final_state_values().loc['NETWORK_B3_Upu_value'].empty
     assert False == res.timeline().empty
 
