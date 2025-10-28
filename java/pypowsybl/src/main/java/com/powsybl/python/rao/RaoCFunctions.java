@@ -502,6 +502,7 @@ public final class RaoCFunctions {
         // Objective function parameters
         paramsPtr.setObjectiveFunctionType(parameters.getObjectiveFunctionParameters().getType().ordinal());
         paramsPtr.setUnit(parameters.getObjectiveFunctionParameters().getUnit().ordinal());
+        paramsPtr.setEnforceCurativeSecurity(parameters.getObjectiveFunctionParameters().getEnforceCurativeSecurity());
         paramsPtr.setCurativeMinObjImprovement(searchTreeParameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
 
         // Range action optimization solver
