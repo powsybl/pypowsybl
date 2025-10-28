@@ -104,6 +104,21 @@ The supported formats are:
     Export formats may support specific parameters,
     which you can find by using :func:`get_export_parameters`.
 
+Updating a network from a file
+------------------------------
+
+It is possible to only update part of a network data using the Network.update_from_file method (if the corresponding import format supports it).
+For example, you can import only an EQ file from a CGMES network, and then update it using the SSH file you need for the current situation.
+
+.. code-block::python
+
+    >>> network = pp.network.load('network_EQ.xml')
+    >>> network.get_generators()["target_p"]["GEN"]
+    numpy.nan
+    >>> network.update_from_file('network_SSH.xml')
+    >>> network.get_generators()["target_p"]["GEN"]
+    10.0
+
 Reading network elements data
 -----------------------------
 

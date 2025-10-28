@@ -13,6 +13,7 @@ import sys
 import datetime
 from datetime import timezone
 import warnings
+from os import PathLike
 from typing import (
     Sequence,
     List,
@@ -159,6 +160,24 @@ class Network:  # pylint: disable=too-many-public-methods
         self._source_format = att.source_format
         self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
         self._case_date = datetime.datetime.fromtimestamp(att.case_date, timezone.utc)
+
+    def update_from_file(self, file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
+             report_node: Optional[ReportNode] = None) -> None:
+        """
+        Updates a network by loading information from a file. File should be in a supported format.
+
+        Args:
+           file:       path to the network file
+           parameters: a dictionary of import parameters (optional)
+           post_processors: a list of import post processors (optional, will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        file = path_to_str(file)
+        _pp.update_network(self._handle, file,
+                           {} if parameters is None else parameters,
+                           [] if post_processors is None else post_processors,
+                           None if report_node is None else report_node._report_node)
+
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
