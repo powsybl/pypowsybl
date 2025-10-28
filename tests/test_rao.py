@@ -311,7 +311,8 @@ def test_rao_cost_results(rao_provider: str):
                                   [0.0]])
     pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False, check_like=True)
 
-def test_rao_log_filter():
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_log_filter(rao_provider: str):
     logger = logging.getLogger('powsybl')
     logger.setLevel(logging.INFO)
     logger.addFilter(RaoLogFilter())
@@ -321,7 +322,7 @@ def test_rao_log_filter():
     handler = handlers.QueueHandler(q)
     logger.addHandler(handler)
 
-    run_rao_12_node_with_curative()
+    run_rao_12_node_with_curative(rao_provider)
 
     # Only open rao logs
     for i in range(len(q.queue)):
