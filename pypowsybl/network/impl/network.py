@@ -166,8 +166,6 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         Updates a network by loading information from a file. File should be in a supported format.
 
-        Basic compression formats are also supported (gzip, bzip2).
-
         Args:
            file:       path to the network file
            parameters: a dictionary of import parameters (optional)
