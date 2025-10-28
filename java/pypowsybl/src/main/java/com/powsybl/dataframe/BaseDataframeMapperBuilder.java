@@ -204,6 +204,11 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return enums(name, enumClass, value, null, defaultAttribute);
     }
 
+    public <E extends Enum<E>> B enumsIndex(String name, Class<E> enumClass, Function<U, E> value) {
+        series.add(new EnumSeriesMapper<>(name, enumClass, value, null, true, true));
+        return (B) this;
+    }
+
     public DataframeMapper<T, C> build() {
         return new AbstractDataframeMapper<>(series) {
             @Override
