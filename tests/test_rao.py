@@ -103,6 +103,8 @@ def test_rao_parameters():
         sensitivity_failure_overcost=32.0
     )
 
+    provider_parameters = {'shifted_violation_penalty': '10.2'}
+
     parameters2 = RaoParameters(
         objective_function_parameters=objective_function_param,
         range_action_optimization_parameters=range_action_optim_param,
@@ -110,7 +112,8 @@ def test_rao_parameters():
         multithreading_parameters=multithreading_param,
         second_preventive_rao_parameters=second_preventive_params,
         not_optimized_cnecs_parameters=not_optimized_cnecs_parameters,
-        loadflow_and_sensitivity_parameters=sensitivity_parameters
+        loadflow_and_sensitivity_parameters=sensitivity_parameters,
+        provider_parameters=provider_parameters
     )
 
     assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
@@ -146,6 +149,9 @@ def test_rao_parameters():
 
     assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost == 32.0
     assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters.phase_shifter_regulation_on == True
+
+    assert float(parameters2.provider_parameters['shifted_violation_penalty']) == 10.2
+
 
 def test_rao_from_files():
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
@@ -324,6 +330,17 @@ def run_rao_12_node_with_curative():
 
     return rao_runner.run(network, parameters)
 
+def parameters_round_trip():
+    # Load from file
+    params = RaoParameters()
+    initial_buffer = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters_non_default.json"), "rb").read())
+    params.load_from_buffer_source(initial_buffer)
+
+    # Serialize
+    serialized_params = params.serialize_to_binary_buffer()
+
+    # Compare serialized to initial buffer
+    assert initial_buffer.getvalue() == serialized_params.getvalue()
 
 if __name__ == '__main__':
     unittest.main()

@@ -99,6 +99,10 @@ typedef struct security_analysis_parameters_struct {
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
+    double flow_flow_sensitivity_value_threshold;
+    double voltage_voltage_sensitivity_value_threshold;
+    double flow_voltage_sensitivity_value_threshold;
+    double angle_flow_sensitivity_value_threshold;
     struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
 } sensitivity_analysis_parameters;
