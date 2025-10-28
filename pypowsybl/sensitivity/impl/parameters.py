@@ -30,21 +30,41 @@ class Parameters:  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, load_flow_parameters: Optional[LfParameters] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None):
+                 provider_parameters: Optional[Dict[str, str]] = None,
+                 flow_flow_sensitivity_value_threshold: float = None,
+                 voltage_voltage_sensitivity_value_threshold: float = None,
+                 flow_voltage_sensitivity_value_threshold: float = None,
+                 angle_flow_sensitivity_value_threshold: float = None,):
         self._init_with_default_values()
         if load_flow_parameters is not None:
             self.load_flow_parameters = load_flow_parameters
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
+        if flow_flow_sensitivity_value_threshold is not None:
+            self.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold
+        if voltage_voltage_sensitivity_value_threshold is not None:
+            self.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold
+        if flow_voltage_sensitivity_value_threshold is not None:
+            self.flow_voltage_sensitivity_value_threshold = flow_voltage_sensitivity_value_threshold
+        if angle_flow_sensitivity_value_threshold is not None:
+            self.angle_flow_sensitivity_value_threshold = angle_flow_sensitivity_value_threshold
 
     def _init_with_default_values(self) -> None:
         default_parameters = _pypowsybl.SensitivityAnalysisParameters()
+        self.flow_flow_sensitivity_value_threshold = default_parameters.flow_flow_sensitivity_value_threshold
+        self.voltage_voltage_sensitivity_value_threshold = default_parameters.voltage_voltage_sensitivity_value_threshold
+        self.flow_voltage_sensitivity_value_threshold = default_parameters.flow_voltage_sensitivity_value_threshold
+        self.angle_flow_sensitivity_value_threshold = default_parameters.angle_flow_sensitivity_value_threshold
         self.load_flow_parameters = parameters_from_c(default_parameters.loadflow_parameters)
         self.provider_parameters = dict(
             zip(default_parameters.provider_parameters_keys, default_parameters.provider_parameters_values))
 
     def _to_c_parameters(self) -> _pypowsybl.SensitivityAnalysisParameters:
         c_parameters = _pypowsybl.SensitivityAnalysisParameters()
+        c_parameters.flow_flow_sensitivity_value_threshold = self.flow_flow_sensitivity_value_threshold
+        c_parameters.voltage_voltage_sensitivity_value_threshold = self.voltage_voltage_sensitivity_value_threshold
+        c_parameters.flow_voltage_sensitivity_value_threshold = self.flow_voltage_sensitivity_value_threshold
+        c_parameters.angle_flow_sensitivity_value_threshold = self.angle_flow_sensitivity_value_threshold
         c_parameters.loadflow_parameters = self.load_flow_parameters._to_c_parameters()  # pylint: disable=protected-access
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
@@ -52,6 +72,10 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
-               f"load_flow_parameters={self.load_flow_parameters}" \
+               f"flow_flow_sensitivity_value_threshold={self.flow_flow_sensitivity_value_threshold}" \
+               f", voltage_voltage_sensitivity_value_threshold={self.voltage_voltage_sensitivity_value_threshold}" \
+               f", flow_voltage_sensitivity_value_threshold={self.flow_voltage_sensitivity_value_threshold}" \
+               f", angle_flow_sensitivity_value_threshold={self.angle_flow_sensitivity_value_threshold}" \
+               f", load_flow_parameters={self.load_flow_parameters}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"

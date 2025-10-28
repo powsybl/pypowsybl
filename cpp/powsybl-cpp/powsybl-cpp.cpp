@@ -569,6 +569,10 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
 }
 
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
+    flow_flow_sensitivity_value_threshold(src->flow_flow_sensitivity_value_threshold),
+    voltage_voltage_sensitivity_value_threshold(src->voltage_voltage_sensitivity_value_threshold),
+    flow_voltage_sensitivity_value_threshold(src->flow_voltage_sensitivity_value_threshold),
+    angle_flow_sensitivity_value_threshold(src->angle_flow_sensitivity_value_threshold),
     loadflow_parameters(&src->loadflow_parameters)
 {
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
@@ -585,6 +589,10 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
 }
   
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
+    params.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold;
+    params.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold;
+    params.flow_voltage_sensitivity_value_threshold = flow_voltage_sensitivity_value_threshold;
+    params.angle_flow_sensitivity_value_threshold = angle_flow_sensitivity_value_threshold;
     loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
     providerParametersToCStruct(params.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }

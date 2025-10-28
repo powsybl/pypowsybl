@@ -630,6 +630,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::SensitivityAnalysisParameters>(m, "SensitivityAnalysisParameters")
             .def(py::init(&pypowsybl::createSensitivityAnalysisParameters))
+            .def_readwrite("flow_flow_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::flow_flow_sensitivity_value_threshold)
+            .def_readwrite("voltage_voltage_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::voltage_voltage_sensitivity_value_threshold)
+            .def_readwrite("flow_voltage_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::flow_voltage_sensitivity_value_threshold)
+            .def_readwrite("angle_flow_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::angle_flow_sensitivity_value_threshold)
             .def_readwrite("loadflow_parameters", &pypowsybl::SensitivityAnalysisParameters::loadflow_parameters)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);

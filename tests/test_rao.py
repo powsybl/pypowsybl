@@ -330,6 +330,18 @@ def run_rao_12_node_with_curative():
 
     return rao_runner.run(network, parameters)
 
+def parameters_round_trip():
+    # Load from file
+    params = RaoParameters()
+    initial_buffer = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters_non_default.json"), "rb").read())
+    params.load_from_buffer_source(initial_buffer)
+
+    # Serialize
+    serialized_params = params.serialize_to_binary_buffer()
+    params.serialize("D:/params_out.json")
+
+    # Compara serialized to initial buffer
+    assert initial_buffer.getvalue() == serialized_params.getvalue()
 
 if __name__ == '__main__':
     unittest.main()

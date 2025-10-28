@@ -231,6 +231,10 @@ public final class SensitivityAnalysisCFunctions {
     public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters, String loadFlowProvider) {
         SensitivityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SensitivityAnalysisParametersPointer.class));
         LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters(), loadFlowProvider);
+        paramsPtr.setFlowFlowSensitivityValueThreshold(parameters.getFlowFlowSensitivityValueThreshold());
+        paramsPtr.setVoltageVoltageSensitivityValueThreshold(parameters.getVoltageVoltageSensitivityValueThreshold());
+        paramsPtr.setFlowVoltageSensitivityValueThreshold(parameters.getFlowVoltageSensitivityValueThreshold());
+        paramsPtr.setAngleFlowSensitivityValueThreshold(parameters.getAngleFlowSensitivityValueThreshold());
         paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
         paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;

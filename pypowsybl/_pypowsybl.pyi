@@ -509,6 +509,10 @@ class SecurityAnalysisParameters:
     def __init__(self) -> None: ...
 
 class SensitivityAnalysisParameters:
+    flow_flow_sensitivity_value_threshold: float
+    voltage_voltage_sensitivity_value_threshold: float
+    flow_voltage_sensitivity_value_threshold: float
+    angle_flow_sensitivity_value_threshold: float
     loadflow_parameters: LoadFlowParameters
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
