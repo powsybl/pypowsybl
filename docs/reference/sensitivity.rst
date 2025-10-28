@@ -102,6 +102,9 @@ When the security analysis is completed, you can inspect its results:
     AcSensitivityAnalysisResult
     AcSensitivityAnalysisResult.get_bus_voltages_sensitivity_matrix
     AcSensitivityAnalysisResult.get_reference_voltages
+    SensitivityAnalysisResult
+    SensitivityAnalysisResult.get_sensitivity_matrix
+    SensitivityAnalysisResult.get_reference_matrix
 
 
 GLSK UCTE file loading

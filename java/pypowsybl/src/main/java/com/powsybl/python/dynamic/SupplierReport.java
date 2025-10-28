@@ -17,9 +17,21 @@ public final class SupplierReport {
     private SupplierReport() {
     }
 
-    public static ReportNode createSupplierReportNode(ReportNode reportNode, String key, String message) {
+    public static ReportNode createDynawoModelsSupplierReportNode(ReportNode reportNode) {
         return reportNode.newReportNode()
-                .withMessageTemplate(key, message)
+                .withMessageTemplate("pypowsybl.dynasim.pypowsyblDynamicModels")
+                .add();
+    }
+
+    public static ReportNode createEventModelsSupplierReportNode(ReportNode reportNode) {
+        return reportNode.newReportNode()
+                .withMessageTemplate("pypowsybl.dynasim.pypowsyblEventModels")
+                .add();
+    }
+
+    public static ReportNode createOutputVariablesSupplierReportNode(ReportNode reportNode) {
+        return reportNode.newReportNode()
+                .withMessageTemplate("pypowsybl.dynasim.pypowsyblOutputVariables")
                 .add();
     }
 }

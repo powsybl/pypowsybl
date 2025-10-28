@@ -8,6 +8,10 @@ import pathlib
 import io
 import unittest
 import pandas as pd
+import logging
+import queue
+from logging import handlers
+from numpy import nan
 import pytest
 
 import pypowsybl as pp
@@ -29,7 +33,8 @@ from pypowsybl.rao import (
     MultithreadingParameters,
     SecondPreventiveRaoParameters,
     NotOptimizedCnecsParameters,
-    LoadFlowAndSensitivityParameters)
+    LoadFlowAndSensitivityParameters,
+    RaoLogFilter)
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -86,7 +91,6 @@ def test_rao_parameters():
 
     second_preventive_params = SecondPreventiveRaoParameters(
         execution_condition=ExecutionCondition.COST_INCREASE,
-        re_optimize_curative_range_actions=False,
         hint_from_first_preventive_rao=False
     )
 
@@ -138,7 +142,6 @@ def test_rao_parameters():
     assert parameters2.multithreading_parameters.available_cpus == 8
 
     assert parameters2.second_preventive_rao_parameters.execution_condition == ExecutionCondition.COST_INCREASE
-    assert parameters2.second_preventive_rao_parameters.re_optimize_curative_range_actions == False
     assert parameters2.second_preventive_rao_parameters.hint_from_first_preventive_rao == False
 
     assert parameters2.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
@@ -202,13 +205,7 @@ def test_rao_monitoring(rao_provider: str):
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_cnec_results(rao_provider: str):
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Flow cnecs
     df_flow_cnecs = result.get_flow_cnec_results()
@@ -232,14 +229,7 @@ def test_rao_cnec_results(rao_provider: str):
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_remedial_action_results(rao_provider: str):
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     ra_results = result.get_remedial_action_results()
@@ -254,14 +244,7 @@ def test_rao_remedial_action_results(rao_provider: str):
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_network_action_results(rao_provider: str):
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     network_action_results = result.get_network_action_results()
@@ -274,14 +257,7 @@ def test_rao_network_action_results(rao_provider: str):
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_pst_range_action_results(rao_provider: str):
-    network = pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     pst_range_action_results = result.get_pst_range_action_results()
@@ -296,14 +272,7 @@ def test_rao_pst_range_action_results(rao_provider: str):
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_range_action_results(rao_provider: str):
-    network = pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     range_action_results = result.get_range_action_results()
@@ -317,14 +286,7 @@ def test_rao_range_action_results(rao_provider: str):
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_cost_results(rao_provider: str):
-    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
-    rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Cost results
     cost_results_df = result.get_cost_results()
@@ -348,6 +310,34 @@ def test_rao_cost_results(rao_provider: str):
                                   [0.0],
                                   [0.0]])
     pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False, check_like=True)
+
+def test_rao_log_filter():
+    logger = logging.getLogger('powsybl')
+    logger.setLevel(logging.INFO)
+    logger.addFilter(RaoLogFilter())
+
+    # Redirect to queue
+    q = queue.Queue()
+    handler = handlers.QueueHandler(q)
+    logger.addHandler(handler)
+
+    run_rao_12_node_with_curative()
+
+    # Only open rao logs
+    for i in range(len(q.queue)):
+        assert("com.powsybl.openrao" in q.queue[i].java_logger_name)
+
+
+def run_rao_12_node_with_curative(rao_provider: str):
+    network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
+
+    return rao_runner.run(network, parameters, rao_provider=rao_provider)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -33,7 +33,6 @@
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
-        <monitoring.version>6.4.0</monitoring.version>
     </properties>
 
     <build>
@@ -416,8 +415,7 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>monitoring</artifactId>
-            <version>${monitoring.version}</version>
+            <artifactId>open-rao-monitoring</artifactId>
         </dependency>
     </dependencies>
 </project>

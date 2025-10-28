@@ -27,7 +27,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile, SldProfile
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -63,7 +63,7 @@ def test_load_cgmes_two_zip():
 
 
 def test_load_post_processor():
-    assert ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
 
 
@@ -1244,6 +1244,34 @@ def test_nad_profile():
     assert list(default_profile.three_wt_labels) == ['side1', 'side2', 'side3', 'arrow1', 'arrow2', 'arrow3']
     assert list(default_profile.bus_descriptions) == ['description']
     assert list(default_profile.vl_descriptions) == ['type', 'description']
+
+
+def test_sld_profile():
+    diagram_profile = SldProfile()
+    assert not diagram_profile.labels
+    diagram_profile = SldProfile(labels=None)
+    assert not diagram_profile.labels
+    n = pp.network.create_ieee14()
+    sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'additional_label'],
+                                              data=[('B1-G', 'MY-GENERATOR', 'MGEN'),
+                                                    ('L1-5-1', 'MY-LINE1', ''),
+                                                    ('L1-2-1', 'MY-LINE2', ''),
+                                                    ('B1', 'MY-BUS1', '')])
+    sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
+                                                    data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
+                                                          ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
+                                                          ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1'),
+                                                          ('B1-G', 'ARROW_ACTIVE', None, 'IN', 'G VALUE1')])
+    sld_styles_df = pd.DataFrame.from_records(index='id', columns=['id', 'color', 'bus_width', 'width', 'dash'],
+                                              data=[('B1', 'orange', '4px', '2px', '2, 2')])
+
+    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df, styles=sld_styles_df)
+    assert isinstance(diagram_profile.labels, pd.DataFrame)
+    assert isinstance(diagram_profile.feeders_info, pd.DataFrame)
+    assert isinstance(diagram_profile.styles, pd.DataFrame)
+    sld1=n.get_single_line_diagram('VL1', sld_profile=diagram_profile)
+    assert re.search('.*<svg.*', sld1.svg)
+    assert len(sld1.metadata) > 0
 
 
 def test_current_limits():

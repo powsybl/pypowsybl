@@ -115,7 +115,7 @@ class VoltageInitializerParameters:
         Use this if voltage initializer cannot converge because of infeasibility.
 
         Args:
-            limits: A dictionary keys are voltage ids, values are (lower limit, upper limit)
+            limits: A dictionary where keys are voltage ids, values are (lower limit, upper limit)
         """
         for key in limits:
             self.add_specific_low_voltage_limits([(key, True, limits[key][0])])
