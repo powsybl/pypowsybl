@@ -703,15 +703,15 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info);
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
-void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info);
+void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
-std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info);
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
-std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info);
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
