@@ -1204,3 +1204,16 @@ def test_voltage_source_converter_creation():
     assert conv.dc_connected1 == True
     assert conv.dc_connected2 == False
     assert conv.regulated_element_id == 'l12'
+
+def test_dc_ground_creation():
+    n = pypowsybl.network.create_ac_dc_bipolar_network()
+    n.create_dc_grounds(pd.DataFrame(index=['DC_GROUND_TEST'],
+                                     columns=['r', 'dc_node_id'],
+                                     data=[[0.1, 'dn3p']]))
+
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['Gr', 'DC_GROUND_TEST']),
+        columns=['name', 'r', 'dc_node_id'],
+        data=[['', 0.0, 'dnGr'],
+              ['', 0.1, 'dn3p']])
+    pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)

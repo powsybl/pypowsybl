@@ -2605,6 +2605,19 @@ def test_voltage_source_converters():
                             data=[['vl2'], ['vl5']])
     pd.testing.assert_frame_equal(expected, voltage_source_converters, check_dtype=False, atol=1e-2)
 
+def test_dc_grounds():
+    n = pp.network.create_ac_dc_bipolar_network()
+    n.update_dc_grounds(pd.DataFrame(data={'r': 0.1}, index=['Gr']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['Gr']),
+                            columns=['name', 'r', 'dc_node_id'],
+                            data=[['', 0.1, 'dnGr']])
+    pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
+
+    dc_grounds = n.get_dc_grounds(attributes=['dc_node_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['Gr']),
+                            columns=['dc_node_id'],
+                            data=[['dnGr']])
+    pd.testing.assert_frame_equal(expected, dc_grounds, check_dtype=False)
 
 def test_nad_parameters():
     nad_parameters = NadParameters()

@@ -4167,9 +4167,9 @@ class Network:  # pylint: disable=too-many-public-methods
             .. code-block:: python
 
                 network.update_dc_grounds(id='DG1', r=1.0)
-                network.update_dc_grounds(id=['DN1', 'DN2'], r=[2.0, 0.0])
+                network.update_dc_grounds(id=['DG1', 'DG2'], r=[2.0, 0.0])
         """
-        return self._update_elements(ElementType.DC_NODE, df, **kwargs)
+        return self._update_elements(ElementType.DC_GROUND, df, **kwargs)
 
     def create_extensions(self, extension_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None,
                           **kwargs: ArrayLike) -> None:
