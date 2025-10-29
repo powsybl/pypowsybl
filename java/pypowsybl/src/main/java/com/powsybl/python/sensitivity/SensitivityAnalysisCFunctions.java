@@ -223,14 +223,18 @@ public final class SensitivityAnalysisCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public SensitivityAnalysisParametersPointer get() {
-                return convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters());
+                return convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(), null);
             }
         });
     }
 
-    public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters) {
+    public static SensitivityAnalysisParametersPointer convertToSensitivityAnalysisParametersPointer(SensitivityAnalysisParameters parameters, String loadFlowProvider) {
         SensitivityAnalysisParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(SensitivityAnalysisParametersPointer.class));
-        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters());
+        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), paramsPtr.getLoadFlowParameters(), loadFlowProvider);
+        paramsPtr.setFlowFlowSensitivityValueThreshold(parameters.getFlowFlowSensitivityValueThreshold());
+        paramsPtr.setVoltageVoltageSensitivityValueThreshold(parameters.getVoltageVoltageSensitivityValueThreshold());
+        paramsPtr.setFlowVoltageSensitivityValueThreshold(parameters.getFlowVoltageSensitivityValueThreshold());
+        paramsPtr.setAngleFlowSensitivityValueThreshold(parameters.getAngleFlowSensitivityValueThreshold());
         paramsPtr.getProviderParameters().setProviderParametersValuesCount(0);
         paramsPtr.getProviderParameters().setProviderParametersKeysCount(0);
         return paramsPtr;

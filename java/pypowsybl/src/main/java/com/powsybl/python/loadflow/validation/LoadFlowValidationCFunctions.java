@@ -128,7 +128,7 @@ public final class LoadFlowValidationCFunctions {
         }
         cParameters.setEpsilonX(parameters.getEpsilonX());
         cParameters.setApplyReactanceCorrection(parameters.applyReactanceCorrection());
-        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), cParameters.getLoadFlowParameters());
+        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), cParameters.getLoadFlowParameters(), null);
         cParameters.setOkMissingValues(parameters.areOkMissingValues());
         cParameters.setNoRequirementIfReactiveBoundInversion(parameters.isNoRequirementIfReactiveBoundInversion());
         cParameters.setCompareResults(parameters.isCompareResults());

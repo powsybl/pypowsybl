@@ -364,6 +364,10 @@ public:
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
     void load_to_c_struct(sensitivity_analysis_parameters& params) const;
 
+    double flow_flow_sensitivity_value_threshold;
+    double voltage_voltage_sensitivity_value_threshold;
+    double flow_voltage_sensitivity_value_threshold;
+    double angle_flow_sensitivity_value_threshold;
     LoadFlowParameters loadflow_parameters;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
@@ -665,6 +669,8 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
 
+void updateNetwork(const JavaHandle& network, const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
+
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 LoadFlowParameters* createLoadFlowParameters();
@@ -940,8 +946,7 @@ std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 // results
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
 std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
-SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
-std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getDynamicCurves(JavaHandle resultHandle);
 SeriesArray* getFinalStateValues(JavaHandle resultHandle);
 SeriesArray* getTimeline(JavaHandle resultHandle);
 

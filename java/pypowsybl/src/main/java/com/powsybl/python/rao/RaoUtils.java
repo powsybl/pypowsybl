@@ -11,6 +11,7 @@ import com.powsybl.openrao.raoapi.parameters.extensions.PtdfApproximation;
 import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoLoopFlowParameters;
 import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoMnecParameters;
 import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoRelativeMarginsParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoCostlyMinMarginParameters;
 
 import java.util.*;
 import java.util.function.Function;
@@ -24,6 +25,7 @@ public final class RaoUtils {
     public static final String MNEC_ST_EXT_PREFIX = "MNEC_ST_EXT_";
     public static final String RELATIVE_MARGIN_ST_EXT_PREFIX = "RELATIVE_MARGIN_ST_EXT_";
     public static final String LOOP_FLOW_ST_EXT_PREFIX = "LOOP_FLOW_ST_EXT_";
+    public static final String COSTLY_MIN_MARGIN_ST_EXT_PREFIX = "COSTLY_MIN_MARGIN_ST_EXT_";
 
     private RaoUtils() {
     }
@@ -78,6 +80,15 @@ public final class RaoUtils {
         return extension;
     }
 
+    static SearchTreeRaoCostlyMinMarginParameters buildCostlyMinMarginSearchTreeParametersExtension(Map<String, String> extensionDict) {
+        SearchTreeRaoCostlyMinMarginParameters extension = new SearchTreeRaoCostlyMinMarginParameters();
+        extractDouble(extensionDict, COSTLY_MIN_MARGIN_ST_EXT_PREFIX, "shifted_violation_penalty")
+            .ifPresent(extension::setShiftedViolationPenalty);
+        extractDouble(extensionDict, COSTLY_MIN_MARGIN_ST_EXT_PREFIX, "shifted_violation_threshold")
+            .ifPresent(extension::setShiftedViolationThreshold);
+        return extension;
+    }
+
     static Map<String, String> mnecParametersExtensionToMap(MnecParameters mnecParameters) {
         Map<String, String> map = new HashMap<>();
         map.put(MNEC_EXT_PREFIX + "acceptable_margin_decrease", String.valueOf(mnecParameters.getAcceptableMarginDecrease()));
@@ -125,6 +136,13 @@ public final class RaoUtils {
         Map<String, String> map = new HashMap<>();
         map.put(LOOP_FLOW_ST_EXT_PREFIX + "ptdf_approximation", String.valueOf(searchTreeExtension.getPtdfApproximation()));
         map.put(LOOP_FLOW_ST_EXT_PREFIX + "constraint_adjustment_coefficient", String.valueOf(searchTreeExtension.getConstraintAdjustmentCoefficient()));
+        return map;
+    }
+
+    static Map<String, String> costlyMinMarginParametersExtensionToMap(SearchTreeRaoCostlyMinMarginParameters searchTreeExtension) {
+        Map<String, String> map = new HashMap<>();
+        map.put(COSTLY_MIN_MARGIN_ST_EXT_PREFIX + "shifted_violation_penalty", String.valueOf(searchTreeExtension.getShiftedViolationPenalty()));
+        map.put(COSTLY_MIN_MARGIN_ST_EXT_PREFIX + "shifted_violation_threshold", String.valueOf(searchTreeExtension.getShiftedViolationThreshold()));
         return map;
     }
 

@@ -84,7 +84,6 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_busbar_sections
    Network.get_buses
    Network.get_bus_breaker_view_buses
-   Network.get_current_limits
    Network.get_dangling_lines
    Network.get_dangling_lines_generation
    Network.get_generators
@@ -166,6 +165,7 @@ Network elements can be modified using dataframes:
    Network.update_lines
    Network.update_loads
    Network.update_non_linear_shunt_compensator_sections
+   Network.update_operational_limits
    Network.update_phase_tap_changers
    Network.update_phase_tap_changer_steps
    Network.update_ratio_tap_changers
@@ -297,6 +297,7 @@ I/O
    load_from_string
    load_from_binary_buffer
    load_from_binary_buffers
+   Network.update_from_file
    Network.dump
    Network.dump_to_string
    get_import_formats

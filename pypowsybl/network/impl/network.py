@@ -13,6 +13,7 @@ import sys
 import datetime
 from datetime import timezone
 import warnings
+from os import PathLike
 from typing import (
     Sequence,
     List,
@@ -159,6 +160,24 @@ class Network:  # pylint: disable=too-many-public-methods
         self._source_format = att.source_format
         self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
         self._case_date = datetime.datetime.fromtimestamp(att.case_date, timezone.utc)
+
+    def update_from_file(self, file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
+             report_node: Optional[ReportNode] = None) -> None:
+        """
+        Updates a network by loading information from a file. File should be in a supported format.
+
+        Args:
+           file:       path to the network file
+           parameters: a dictionary of import parameters (optional)
+           post_processors: a list of import post processors (optional, will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        file = path_to_str(file)
+        _pp.update_network(self._handle, file,
+                           {} if parameters is None else parameters,
+                           [] if post_processors is None else post_processors,
+                           None if report_node is None else report_node._report_node)
+
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
@@ -4001,31 +4020,6 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_current_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
-        """
-        .. deprecated::
-          Use :meth:`get_operational_limits` instead.
-
-        Get the list of all current limits on the network paired with their branch id.
-
-        Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-
-        Returns:
-            all current limits on the network
-        """
-        warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
-        limits = self.get_operational_limits(all_attributes, attributes)
-        current_limits = limits[
-            limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
-        current_limits.index.rename('branch_id', inplace=True)
-        current_limits.set_index('name', append=True, inplace=True)
-        columns = ['side', 'value', 'acceptable_duration']
-        if 'fictitious' in current_limits.columns:
-            columns.append('fictitious')
-        return current_limits[columns]
-
     def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
@@ -4058,6 +4052,38 @@ class Network:  # pylint: disable=too-many-public-methods
         if show_inactive_sets:
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
         return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+
+    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Only the value of operational limits can be updated.
+            To define which limit must be modified, the following fields must be present :
+
+            - `element_id`
+            - `side`
+            - `type`
+            - `acceptable_duration`
+            - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
+
+        See Also:
+            :meth:`get_operational_limits`
+
+        Examples:
+            An example using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
+        """
+        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """

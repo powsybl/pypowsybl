@@ -46,6 +46,14 @@
     "allDeclaredFields":true,
     "queryAllDeclaredMethods":true,
     "queryAllDeclaredConstructors":true,
-    "methods":[{"name":"getDebugDir","parameterTypes":[] }]
+    "queryAllPublicConstructors" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allPublicClasses" : true,
+    "allPublicMethods" : true,
+    "allPublicConstructors" : true,
+    "methods":[{"name":"OpenSensitivityAnalysisParameters", "parameterTypes":[] },
+               {"name":"getDebugDir", "parameterTypes":[] },
+               {"name":"isStartWithFrozenACEmulation", "parameterTypes":[] }]
   }
 ]

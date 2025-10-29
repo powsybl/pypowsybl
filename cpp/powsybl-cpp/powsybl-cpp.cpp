@@ -569,6 +569,10 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
 }
 
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
+    flow_flow_sensitivity_value_threshold(src->flow_flow_sensitivity_value_threshold),
+    voltage_voltage_sensitivity_value_threshold(src->voltage_voltage_sensitivity_value_threshold),
+    flow_voltage_sensitivity_value_threshold(src->flow_voltage_sensitivity_value_threshold),
+    angle_flow_sensitivity_value_threshold(src->angle_flow_sensitivity_value_threshold),
     loadflow_parameters(&src->loadflow_parameters)
 {
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
@@ -585,6 +589,10 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
 }
   
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
+    params.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold;
+    params.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold;
+    params.flow_voltage_sensitivity_value_threshold = flow_voltage_sensitivity_value_threshold;
+    params.angle_flow_sensitivity_value_threshold = angle_flow_sensitivity_value_threshold;
     loadflow_parameters.load_to_c_struct(params.loadflow_parameters);
     providerParametersToCStruct(params.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
@@ -815,6 +823,25 @@ JavaHandle loadNetworkFromString(const std::string& fileName, const std::string&
                            postProcessorsPtr.get(), postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode,
                            allowVariantMultiThreadAccess);
 }
+
+void updateNetwork(const JavaHandle& network, const std::string& file, const std::map<std::string, std::string>& parameters,
+                   const std::vector<std::string>& postProcessors, JavaHandle* reportNode) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    ToCharPtrPtr parameterNamesPtr(parameterNames);
+    ToCharPtrPtr parameterValuesPtr(parameterValues);
+    ToCharPtrPtr postProcessorsPtr(postProcessors);
+    PowsyblCaller::get()->callJava(::updateNetwork, network, (char*) file.data(), parameterNamesPtr.get(),
+                              parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(),
+                              postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
 
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode) {
     std::vector<std::string> parameterNames;
@@ -1701,13 +1728,8 @@ std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle) {
     return PowsyblCaller::get()->callJava<std::string>(::getDynamicSimulationResultsStatusText, resultsHandle);
 }
 
-SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName) {
-    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getDynamicCurve, resultHandle, (char*) curveName.c_str()));
-}
-
-std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle) {
-    ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getAllDynamicCurvesIds, resultHandle));
-    return vector.get();
+SeriesArray* getDynamicCurves(JavaHandle resultHandle) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getDynamicCurves, resultHandle));
 }
 
 SeriesArray* getFinalStateValues(JavaHandle resultHandle) {
