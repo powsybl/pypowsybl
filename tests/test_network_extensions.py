@@ -588,6 +588,91 @@ def test_batteries_voltage_regulation():
     network.remove_extensions('voltageRegulation', ['BAT'])
     assert network.get_extensions('voltageRegulation').empty
 
+def test_synchronous_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'synchronousGeneratorProperties'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, numberOfWindings=3,
+                        governor="Proportional", voltageRegulator="Proportional", pss="",
+                        auxiliaries=True, internalTransformer=False, rpcl=True, rpcl2=False,
+                        uva="", fictitious=False, qlim=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.numberOfWindings == 3
+    assert e.governor == "Proportional"
+    assert e.voltageRegulator == "Proportional"
+    assert e.pss == ""
+    assert e.auxiliaries == True
+    assert e.internalTransformer == False
+    assert e.rpcl == True
+    assert e.rpcl2 == False
+    assert e.uva == ""
+    assert e.fictitious == False
+    assert e.qlim == False
+
+    n.update_extensions(extension_name, id=element_id, numberOfWindings=4,
+                        governor="ProportionalIntegral", voltageRegulator="ProportionalIntegral", pss="Pss",
+                        auxiliaries=False, internalTransformer=True, rpcl=False, rpcl2=True,
+                        uva="local", fictitious=True, qlim=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.numberOfWindings == 4
+    assert e.governor == "ProportionalIntegral"
+    assert e.voltageRegulator == "ProportionalIntegral"
+    assert e.pss == "Pss"
+    assert e.auxiliaries == False
+    assert e.internalTransformer == True
+    assert e.rpcl == False
+    assert e.rpcl2 == True
+    assert e.uva == "local"
+    assert e.fictitious == True
+    assert e.qlim == True
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_synchronized_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'synchronizedGeneratorProperties'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id,
+                        type="PV", rpcl2=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.type == "PV"
+    assert e.rpcl2 == True
+
+    n.update_extensions(extension_name, id=element_id, type="PfQ", rpcl2=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.type == "PfQ"
+    assert e.rpcl2 == False
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_synchronized_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'generatorConnectionLevel'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, level='TSO')
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.level == 'TSO'
+
+    n.update_extensions(extension_name, id=element_id, level='DSO')
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.level == 'DSO'
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
 
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
@@ -640,3 +725,6 @@ def test_get_extensions_information():
     assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
     assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
     assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float)'
+    assert extensions_information.loc['synchronousGeneratorProperties']['attributes'] == 'index : id (str), numberOfWindings (int), governor (str), voltageRegulator (str), pss (str), auxiliaries (bool), internalTransformer (bool), rpcl (bool), rpcl2 (bool), uva (str), fictitious (bool), qlim (bool)'
+    assert extensions_information.loc['synchronizedGeneratorProperties']['attributes'] == 'index : id (str), type (str), rpcl2 (bool)'
+    assert extensions_information.loc['generatorConnectionLevel']['attributes'] == 'index : id (str), level (str)'
