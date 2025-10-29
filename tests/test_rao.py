@@ -155,7 +155,6 @@ def test_rao_parameters():
     assert float(parameters2.provider_parameters['shifted_violation_penalty']) == 10.2
 
 
-def test_rao_from_files():
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_from_files(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
