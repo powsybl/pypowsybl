@@ -99,6 +99,10 @@ typedef struct security_analysis_parameters_struct {
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
+    double flow_flow_sensitivity_value_threshold;
+    double voltage_voltage_sensitivity_value_threshold;
+    double flow_voltage_sensitivity_value_threshold;
+    double angle_flow_sensitivity_value_threshold;
     struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
 } sensitivity_analysis_parameters;
@@ -571,7 +575,6 @@ typedef struct rao_parameters_struct {
   int available_cpus; // Multithreading parameters
 
   int execution_condition;  // Second preventive rao parameters
-  unsigned char re_optimize_curative_range_actions;
   unsigned char hint_from_first_preventive_rao;
 
   unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters

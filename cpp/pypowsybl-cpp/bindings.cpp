@@ -254,8 +254,7 @@ void dynamicSimulationBindings(py::module_& m) {
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
     m.def("get_dynamic_simulation_results_status_text", &pypowsybl::getDynamicSimulationResultsStatusText, py::arg("result_handle"));
-    m.def("get_dynamic_curve", &pypowsybl::getDynamicCurve, py::arg("report_handle"), py::arg("curve_name"));
-    m.def("get_all_dynamic_curves_ids", &pypowsybl::getAllDynamicCurvesIds, py::arg("report_handle"));
+    m.def("get_dynamic_curves", &pypowsybl::getDynamicCurves, py::arg("report_handle"));
     m.def("get_final_state_values", &pypowsybl::getFinalStateValues, py::arg("result_handle"));
     m.def("get_timeline", &pypowsybl::getTimeline, py::arg("result_handle"));
 }
@@ -488,6 +487,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
+    m.def("update_network", &pypowsybl::updateNetwork, "Update a network from a file", py::call_guard<py::gil_scoped_release>(),
+          py::arg("network"), py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
@@ -630,6 +632,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::SensitivityAnalysisParameters>(m, "SensitivityAnalysisParameters")
             .def(py::init(&pypowsybl::createSensitivityAnalysisParameters))
+            .def_readwrite("flow_flow_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::flow_flow_sensitivity_value_threshold)
+            .def_readwrite("voltage_voltage_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::voltage_voltage_sensitivity_value_threshold)
+            .def_readwrite("flow_voltage_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::flow_voltage_sensitivity_value_threshold)
+            .def_readwrite("angle_flow_sensitivity_value_threshold", &pypowsybl::SensitivityAnalysisParameters::angle_flow_sensitivity_value_threshold)
             .def_readwrite("loadflow_parameters", &pypowsybl::SensitivityAnalysisParameters::loadflow_parameters)
             .def_readwrite("provider_parameters_keys", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::SensitivityAnalysisParameters::provider_parameters_values);
@@ -693,19 +699,19 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
-          py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));
 
     m.def("write_matrix_multi_substation_single_line_diagram_svg", &pypowsybl::writeMatrixMultiSubstationSingleLineDiagramSvg, "Write matrix multi-substation single line diagram SVG",
-          py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("matrix_ids"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));
 
     m.def("get_single_line_diagram_svg", &pypowsybl::getSingleLineDiagramSvg, "Get single line diagram SVG as a string",
           py::arg("network"), py::arg("container_id"));
 
     m.def("get_single_line_diagram_svg_and_metadata", &pypowsybl::getSingleLineDiagramSvgAndMetadata, "Get single line diagram SVG and its metadata as a list of strings",
-          py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("container_id"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));
 
     m.def("get_matrix_multi_substation_single_line_diagram_svg_and_metadata", &pypowsybl::getMatrixMultiSubstationSvgAndMetadata, "Get matrix multi-substation single line diagram SVG and its metadata as a list of strings",
-          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"));
+          py::arg("network"), py::arg("matrix_ids"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));
 
     m.def("get_single_line_diagram_component_library_names", &pypowsybl::getSingleLineDiagramComponentLibraryNames, "Get supported component library providers for single line diagram");
 
@@ -882,7 +888,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("max_number_of_boundaries_for_skipping_actions", &pypowsybl::RaoParameters::max_number_of_boundaries_for_skipping_actions)
             .def_readwrite("available_cpus", &pypowsybl::RaoParameters::available_cpus)
             .def_readwrite("execution_condition", &pypowsybl::RaoParameters::execution_condition)
-            .def_readwrite("re_optimize_curative_range_actions", &pypowsybl::RaoParameters::re_optimize_curative_range_actions)
             .def_readwrite("hint_from_first_preventive_rao", &pypowsybl::RaoParameters::hint_from_first_preventive_rao)
             .def_readwrite("do_not_optimize_curative_cnecs_for_tsos_without_cras", &pypowsybl::RaoParameters::do_not_optimize_curative_cnecs_for_tsos_without_cras)
             .def_readwrite("load_flow_provider", &pypowsybl::RaoParameters::load_flow_provider)

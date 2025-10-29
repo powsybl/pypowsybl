@@ -437,6 +437,30 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
+        @CField("flow_flow_sensitivity_value_threshold")
+        double getFlowFlowSensitivityValueThreshold();
+
+        @CField("flow_flow_sensitivity_value_threshold")
+        void setFlowFlowSensitivityValueThreshold(double threshold);
+
+        @CField("voltage_voltage_sensitivity_value_threshold")
+        double getVoltageVoltageSensitivityValueThreshold();
+
+        @CField("voltage_voltage_sensitivity_value_threshold")
+        void setVoltageVoltageSensitivityValueThreshold(double threshold);
+
+        @CField("flow_voltage_sensitivity_value_threshold")
+        double getFlowVoltageSensitivityValueThreshold();
+
+        @CField("flow_voltage_sensitivity_value_threshold")
+        void setFlowVoltageSensitivityValueThreshold(double threshold);
+
+        @CField("angle_flow_sensitivity_value_threshold")
+        double getAngleFlowSensitivityValueThreshold();
+
+        @CField("angle_flow_sensitivity_value_threshold")
+        void setAngleFlowSensitivityValueThreshold(double threshold);
+
         @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
@@ -1578,12 +1602,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("execution_condition")
         void setExecutionCondition(int executionCondition);
-
-        @CField("re_optimize_curative_range_actions")
-        boolean getReOptimizeCurativeRangeActions();
-
-        @CField("re_optimize_curative_range_actions")
-        void setReOptimizeCurativeRangeActions(boolean reOptimizeCurativeRangeActions);
 
         @CField("hint_from_first_preventive_rao")
         boolean getHintFromFirstPreventiveRao();

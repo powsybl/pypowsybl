@@ -364,6 +364,10 @@ public:
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
     void load_to_c_struct(sensitivity_analysis_parameters& params) const;
 
+    double flow_flow_sensitivity_value_threshold;
+    double voltage_voltage_sensitivity_value_threshold;
+    double flow_voltage_sensitivity_value_threshold;
+    double angle_flow_sensitivity_value_threshold;
     LoadFlowParameters loadflow_parameters;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
@@ -568,7 +572,6 @@ public:
 
     // Second preventive rao parameters
     ExecutionCondition execution_condition;
-    bool re_optimize_curative_range_actions;
     bool hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
@@ -666,6 +669,8 @@ JavaHandle loadNetwork(const std::string& file, const std::map<std::string, std:
 
 JavaHandle loadNetworkFromString(const std::string& fileName, const std::string& fileContent, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
 
+void updateNetwork(const JavaHandle& network, const std::string& file, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, JavaHandle* reportNode);
+
 void saveNetwork(const JavaHandle& network, const std::string& file, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
 LoadFlowParameters* createLoadFlowParameters();
@@ -704,15 +709,15 @@ LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, co
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
-void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters);
+void writeSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
-void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters);
+void writeMatrixMultiSubstationSingleLineDiagramSvg(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const std::string& svgFile, const std::string& metadataFile, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
 std::string getSingleLineDiagramSvg(const JavaHandle& network, const std::string& containerId);
 
-std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters);
+std::vector<std::string> getSingleLineDiagramSvgAndMetadata(const JavaHandle& network, const std::string& containerId, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
-std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters);
+std::vector<std::string> getMatrixMultiSubstationSvgAndMetadata(const JavaHandle& network, const std::vector<std::vector<std::string>>& matrixIds, const SldParameters& parameters, dataframe* labels, dataframe* feeders_info, dataframe* styles);
 
 std::vector<std::string> getSingleLineDiagramComponentLibraryNames();
 
@@ -924,7 +929,7 @@ JavaHandle createDynamicModelMapping();
 JavaHandle createTimeseriesMapping();
 JavaHandle createEventMapping();
 
-JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle eventMapping, JavaHandle timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle reportNode);
+JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle network, JavaHandle dynamicMapping, JavaHandle* eventMapping, JavaHandle* timeSeriesMapping, DynamicSimulationParameters& parameters, JavaHandle* reportNode);
 
 // timeseries mapping
 void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
@@ -941,8 +946,7 @@ std::vector<std::string> getSupportedModels(DynamicMappingType mappingType);
 // results
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);
 std::string getDynamicSimulationResultsStatusText(JavaHandle resultsHandle);
-SeriesArray* getDynamicCurve(JavaHandle resultHandle, std::string curveName);
-std::vector<std::string> getAllDynamicCurvesIds(JavaHandle resultHandle);
+SeriesArray* getDynamicCurves(JavaHandle resultHandle);
 SeriesArray* getFinalStateValues(JavaHandle resultHandle);
 SeriesArray* getTimeline(JavaHandle resultHandle);
 
