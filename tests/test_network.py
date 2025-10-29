@@ -62,6 +62,13 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_update_network_cgmes():
+    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
+    assert math.isnan(network.get_loads()["p0"]["EnergyConsumer"])
+    network.update_from_file(DATA_DIR.joinpath('load_SSH.xml'))
+    assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
+
+
 def test_load_post_processor():
     assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
@@ -1245,7 +1252,7 @@ def test_nad_profile():
     assert list(default_profile.bus_descriptions) == ['description']
     assert list(default_profile.vl_descriptions) == ['type', 'description']
 
-
+    
 def test_sld_profile():
     diagram_profile = SldProfile()
     assert not diagram_profile.labels
@@ -1262,27 +1269,16 @@ def test_sld_profile():
                                                           ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
                                                           ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1'),
                                                           ('B1-G', 'ARROW_ACTIVE', None, 'IN', 'G VALUE1')])
-    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df)
+    sld_styles_df = pd.DataFrame.from_records(index='id', columns=['id', 'color', 'bus_width', 'width', 'dash'],
+                                              data=[('B1', 'orange', '4px', '2px', '2, 2')])
+
+    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df, styles=sld_styles_df)
     assert isinstance(diagram_profile.labels, pd.DataFrame)
     assert isinstance(diagram_profile.feeders_info, pd.DataFrame)
+    assert isinstance(diagram_profile.styles, pd.DataFrame)
     sld1=n.get_single_line_diagram('VL1', sld_profile=diagram_profile)
     assert re.search('.*<svg.*', sld1.svg)
     assert len(sld1.metadata) > 0
-
-
-def test_current_limits():
-    network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
-        assert 9 == len(network.get_current_limits())
-    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
-        assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
-    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
-        current_limit = network.get_current_limits().sort_index().loc['NHV1_NHV2_1', '10\'']
-        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
-                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
-                                columns=['side', 'value', 'acceptable_duration'],
-                                data=[['TWO', 1200.0, 600]])
-        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
 
 
 def test_deep_copy():
@@ -2129,47 +2125,48 @@ def test_limits():
     network = util.create_dangling_lines_network()
 
     expected = pd.DataFrame.from_records(
-        index='element_id',
+        index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
         data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False, 'DEFAULT', True),
               ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False, 'DEFAULT', True),
               ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False, 'DEFAULT', True)]
     )
-    pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False)
+    pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False,
+                                  check_index_type=False)
 
     network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False, 'DEFAULT', True),
-              ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False, 'DEFAULT', True),
-              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False, 'DEFAULT', True),
-              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False, 'DEFAULT', True)])
+        data=[('LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False, 'DEFAULT', True),
+              ('LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False, 'DEFAULT', True),
+              ('LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False, 'DEFAULT', True),
+              ('LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False, 'DEFAULT', True)])
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     limits = limits[limits['name'] == 'permanent_limit']
-    pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False, 'DEFAULT', True],
-              ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False, 'DEFAULT', True]])
+        data=[['LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False, 'DEFAULT', True],
+              ['LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False, 'DEFAULT', True]])
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_2']
     limits = limits[limits['name'] == '20\'']
-    pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
     network = util.create_three_windings_transformer_with_current_limits_network()
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False, 'DEFAULT', True],
-              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False, 'DEFAULT', True],
-              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False, 'DEFAULT', True]])
+        data=[['THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False, 'DEFAULT', True],
+              ['THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False, 'DEFAULT', True],
+              ['THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False, 'DEFAULT', True]])
     limits = network.get_operational_limits(all_attributes=True).loc['3WT']
     limits = limits[limits['name'] == '10\'']
-    pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
 
 def test_multiple_limit_groups():
     network = pp.network.create_eurostag_tutorial_example1_network()
@@ -2189,13 +2186,25 @@ def test_multiple_limit_groups():
     ]))
 
     limits = network.get_operational_limits(all_attributes=True)
-    assert('APPARENT_POWER' not in limits['type'].values)
+    assert('APPARENT_POWER' not in limits.index.get_level_values('type').to_list())
     all_limits = network.get_operational_limits(all_attributes=True, show_inactive_sets=True)
-    assert('APPARENT_POWER' in all_limits['type'].values)
+    assert('APPARENT_POWER' in all_limits.index.get_level_values('type').to_list())
 
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "DEFAULT")
     network.update_lines(id="NHV1_NHV2_1", selected_limits_group_1="SUMMER")
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "SUMMER")
+
+def test_update_limits():
+    network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 500
+    updating_df = pd.DataFrame.from_records(
+        index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_id', 'side', 'type', 'acceptable_duration', 'group_name', 'value'],
+        data=[('NHV1_NHV2_1', 'ONE', 'ACTIVE_POWER', -1, 'DEFAULT', 400)]
+    )
+    network.update_operational_limits(df=updating_df)
+    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 400
+
 
 def test_validation_level():
     n = pp.network.create_ieee14()

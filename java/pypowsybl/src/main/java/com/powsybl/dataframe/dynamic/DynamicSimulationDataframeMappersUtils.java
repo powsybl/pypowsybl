@@ -11,9 +11,6 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
-import com.powsybl.timeseries.DoublePoint;
-import com.powsybl.timeseries.DoubleTimeSeries;
-import com.powsybl.timeseries.TimeSeries;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -28,14 +25,6 @@ import java.util.function.Function;
 public final class DynamicSimulationDataframeMappersUtils {
 
     private DynamicSimulationDataframeMappersUtils() {
-    }
-
-    public static DataframeMapper<DoubleTimeSeries, Void> curvesDataFrameMapper(String colName) {
-        return new DataframeMapperBuilder<DoubleTimeSeries, DoublePoint, Void>()
-                .itemsStreamProvider(TimeSeries::stream)
-                .intsIndex("timestamp", pt -> (int) (pt.getTime() % Integer.MAX_VALUE))
-                .doubles(colName, DoublePoint::getValue)
-                .build();
     }
 
     public static DataframeMapper<Map<String, Double>, Void> fsvDataFrameMapper() {
