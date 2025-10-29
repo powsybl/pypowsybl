@@ -11,7 +11,6 @@ import pandas as pd
 import logging
 import queue
 from logging import handlers
-from numpy import nan
 import pytest
 
 import pypowsybl as pp
@@ -25,7 +24,6 @@ from pypowsybl._pypowsybl import (
     ExecutionCondition,
     Unit)
 from pypowsybl.rao import Parameters as RaoParameters
-from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl.rao import (
     ObjectiveFunctionParameters,
     RangeActionOptimizationParameters,
@@ -193,7 +191,7 @@ def test_rao_from_buffers(rao_provider: str):
     assert list(json_result.keys()) == expected_keys
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
-def test_rao_monitoring(rao_provider: str):
+def test_rao_angle_monitoring_redispatching(rao_provider: str):
     """
     AngleCNECs are required in CRAC in order to run angle monitoring.
     """
@@ -204,7 +202,7 @@ def test_rao_monitoring(rao_provider: str):
     load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json"))
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
     result = rao_runner.run(network, parameters, rao_provider=rao_provider)
 
     rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
@@ -218,7 +216,8 @@ def test_rao_monitoring(rao_provider: str):
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
                                   check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_angle_monitoring_topological_action():
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_angle_monitoring_topological_action(rao_provider: str):
     """
     AngleCNECs are required in CRAC in order to run angle monitoring.
     """
@@ -230,7 +229,7 @@ def test_rao_angle_monitoring_topological_action():
 
     rao_runner = pp.rao.create_rao()
     rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
-    result = rao_runner.run(network, parameters)
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
 
     rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
     result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
@@ -243,7 +242,8 @@ def test_rao_angle_monitoring_topological_action():
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
                                   check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_voltage_monitoring():
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_voltage_monitoring(rao_provider: str):
     """
     VoltageCNECs are required in CRAC in order to run voltage monitoring.
     """
@@ -255,7 +255,7 @@ def test_rao_voltage_monitoring():
 
     rao_runner = pp.rao.create_rao()
     rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
-    result = rao_runner.run(network, parameters)
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
 
     result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
     voltage_cnec_results = result_with_voltage_monitoring.get_voltage_cnec_results()
