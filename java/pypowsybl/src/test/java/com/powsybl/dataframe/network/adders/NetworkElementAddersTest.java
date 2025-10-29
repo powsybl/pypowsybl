@@ -746,4 +746,84 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addElements(DataframeElementType.DC_GROUND, network.getSubnetwork("VscAsymmetricalMonopole"), singletonList(dataframe));
         assertEquals(3, network.getDcGroundCount());
     }
+
+    @Test
+    void synchronousGeneratorPropertiesExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String genId = "GEN";
+        SynchronousGeneratorProperties extension = network.getGenerator(genId).getExtension(SynchronousGeneratorProperties.class);
+        assertNull(extension);
+        int numberOfWindings = 3;
+        String governor = "Proportional";
+        String voltageRegulator = "Proportional";
+        String pss = "";
+        String uva = "";
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", genId);
+        addIntColumn(dataframe, "numberOfWindings", numberOfWindings);
+        addStringColumn(dataframe, "governor", governor);
+        addStringColumn(dataframe, "voltageRegulator", voltageRegulator);
+        addStringColumn(dataframe, "pss", pss);
+        addIntColumn(dataframe, "auxiliaries", 1);
+        addIntColumn(dataframe, "internalTransformer", 0);
+        addIntColumn(dataframe, "rpcl", 1);
+        addIntColumn(dataframe, "rpcl2", 0);
+        addStringColumn(dataframe, "uva", uva);
+        addIntColumn(dataframe, "fictitious", 0);
+        addIntColumn(dataframe, "qlim", 0);
+        NetworkElementAdders.addExtensions("synchronousGeneratorProperties", network, singletonList(dataframe));
+
+        extension = network.getGenerator(genId).getExtension(SynchronousGeneratorProperties.class);
+        assertNotNull(extension);
+        assertEquals(numberOfWindings, extension.getNumberOfWindings());
+        assertEquals(governor, extension.getGovernor());
+        assertEquals(voltageRegulator, extension.getVoltageRegulator());
+        assertEquals(pss, extension.getPss());
+        assertTrue(extension.getAuxiliaries());
+        assertFalse(extension.getInternalTransformer());
+        assertTrue(extension.getRpcl());
+        assertFalse(extension.getRpcl2());
+        assertEquals(uva, extension.getUva());
+        assertFalse(extension.getFictitious());
+        assertFalse(extension.getQlim());
+    }
+
+    @Test
+    void synchronizedGeneratorPropertiesExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String genId = "GEN";
+        SynchronizedGeneratorProperties extension = network.getGenerator(genId).getExtension(SynchronizedGeneratorProperties.class);
+        assertNull(extension);
+        String type = "PV";
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", genId);
+        addStringColumn(dataframe, "type", type);
+        addIntColumn(dataframe, "rpcl2", 0);
+        NetworkElementAdders.addExtensions("synchronizedGeneratorProperties", network, singletonList(dataframe));
+
+        extension = network.getGenerator(genId).getExtension(SynchronizedGeneratorProperties.class);
+        assertNotNull(extension);
+        assertEquals(type, extension.getType());
+        assertFalse(extension.getRpcl2());
+    }
+
+    @Test
+    void generatorConnectionLevelExtension() {
+        var network = EurostagTutorialExample1Factory.create();
+        String genId = "GEN";
+        GeneratorConnectionLevel extension = network.getGenerator(genId).getExtension(GeneratorConnectionLevel.class);
+        assertNull(extension);
+        String level = "TSO";
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", genId);
+        addStringColumn(dataframe, "level", level);
+        NetworkElementAdders.addExtensions("generatorConnectionLevel", network, singletonList(dataframe));
+
+        extension = network.getGenerator(genId).getExtension(GeneratorConnectionLevel.class);
+        assertNotNull(extension);
+        assertEquals(GeneratorConnectionLevelType.valueOf(level), extension.getLevel());
+    }
 }
