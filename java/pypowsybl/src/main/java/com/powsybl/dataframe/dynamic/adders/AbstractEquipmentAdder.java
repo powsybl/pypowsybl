@@ -24,8 +24,7 @@ public abstract class AbstractEquipmentAdder extends AbstractSimpleDynamicModelA
             SeriesMetadata.strings(PARAMETER_SET_ID),
             SeriesMetadata.strings(MODEL_NAME));
 
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(EQUIPMENT_METADATA);
+    protected AbstractEquipmentAdder(String name, String description) {
+        super(Collections.singletonList(EQUIPMENT_METADATA), name, description);
     }
 }

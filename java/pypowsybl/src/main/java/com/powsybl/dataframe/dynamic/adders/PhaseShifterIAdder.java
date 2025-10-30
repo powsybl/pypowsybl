@@ -9,8 +9,6 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.dynamic.CategoryInformation;
-import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -23,7 +21,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
-import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.TRANSFORMER;
 import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 
 /**
@@ -37,24 +34,8 @@ public class PhaseShifterIAdder extends AbstractSimpleDynamicModelAdder {
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(TRANSFORMER));
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
-            "PhaseShifterI",
-            "Phase shifter I",
-            CategoryAttributeUtils.createFromMetadata(METADATA));
-
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
-    }
-
-    @Override
-    public String getCategory() {
-        return CATEGORY_INFORMATION.name();
-    }
-
-    @Override
-    public CategoryInformation getCategoryInformation() {
-        return CATEGORY_INFORMATION;
+    protected PhaseShifterIAdder() {
+        super(Collections.singletonList(METADATA), "PhaseShifterI", "Phase shifter I");
     }
 
     @Override

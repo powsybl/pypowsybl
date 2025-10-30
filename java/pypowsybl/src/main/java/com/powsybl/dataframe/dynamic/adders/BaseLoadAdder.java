@@ -8,8 +8,6 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dataframe.dynamic.CategoryInformation;
-import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.loads.BaseLoadBuilder;
@@ -23,19 +21,8 @@ import java.util.Collection;
  */
 public class BaseLoadAdder extends AbstractEquipmentAdder {
 
-    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
-            "Load",
-            "Standard load",
-            CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
-
-    @Override
-    public String getCategory() {
-        return CATEGORY_INFORMATION.name();
-    }
-
-    @Override
-    public CategoryInformation getCategoryInformation() {
-        return CATEGORY_INFORMATION;
+    public BaseLoadAdder() {
+        super("Load", "Standard load");
     }
 
     @Override
