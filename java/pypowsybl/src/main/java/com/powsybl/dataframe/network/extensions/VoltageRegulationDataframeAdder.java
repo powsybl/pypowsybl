@@ -15,8 +15,7 @@ import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.iidm.network.Battery;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.VoltageRegulationAdder;
 
 import java.util.Collections;
@@ -30,7 +29,9 @@ public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.booleans("voltage_regulator_on"),
-            SeriesMetadata.doubles("target_v")
+            SeriesMetadata.doubles("target_v"),
+            SeriesMetadata.strings("regulated_element_id")
+
     );
 
     @Override
@@ -42,11 +43,13 @@ public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
         private final StringSeries id;
         private final IntSeries voltageRegulatorOn;
         private final DoubleSeries targetV;
+        private final StringSeries regulatedElement;
 
         VoltageRegulationSerie(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.targetV = dataframe.getDoubles("target_v");
+            this.regulatedElement = dataframe.getStrings("regulated_element_id");
         }
 
         void create(Network network, int row) {
@@ -58,6 +61,8 @@ public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
             VoltageRegulationAdder adder = battery.newExtension(VoltageRegulationAdder.class);
             SeriesUtils.applyIfPresent(voltageRegulatorOn, row, value -> adder.withVoltageRegulatorOn(value != 0));
             SeriesUtils.applyIfPresent(targetV, row, adder::withTargetV);
+            SeriesUtils.applyIfPresent(regulatedElement, row,
+                    value -> adder.withRegulatingTerminal(getTerminal(network, value, batteryId)));
             adder.add();
         }
     }
@@ -68,5 +73,22 @@ public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row);
         }
+    }
+
+    public static Terminal getTerminal(Network network, String regulatedElement, String id) {
+        String targetElement = regulatedElement == null || regulatedElement.equals("") ? id : regulatedElement;
+        Identifiable<?> identifiable = network.getIdentifiable(targetElement);
+        if (identifiable instanceof Injection) {
+            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
+            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER && !targetElement.equals(id)) {
+                throw new UnsupportedOperationException("Cannot set regulated element to " + regulatedElement +
+                        ": not currently supported for bus breaker topologies.");
+            }
+            return terminal;
+        } else {
+            throw new UnsupportedOperationException("Cannot set regulated element to " + regulatedElement +
+                    ": the regulated element may only be a busbar section or an injection.");
+        }
+
     }
 }
