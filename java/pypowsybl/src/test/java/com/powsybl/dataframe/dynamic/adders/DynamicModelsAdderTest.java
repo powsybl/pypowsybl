@@ -17,7 +17,6 @@ import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.SvcTestCaseFactory;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,8 +30,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
-import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.*;
-import static com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType.BASE_TRANSFORMER;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -52,12 +49,12 @@ class DynamicModelsAdderTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("equipmentDataProvider")
-    void testEquipmentsAdder(PyPowsyblApiHeader.DynamicMappingType mappingType, Network network, String staticId) {
-        String expectedModelName = DynamicMappingHandler.getSupportedModels(mappingType).stream().findFirst().orElse("");
+    void testEquipmentsAdder(String category, Network network, String staticId) {
+        String expectedModelName = DynamicMappingHandler.getSupportedModels(category).stream().findFirst().orElse("");
         dataframe.addSeries(STATIC_ID, true, createTwoRowsSeries(staticId));
         dataframe.addSeries(PARAMETER_SET_ID, false, createTwoRowsSeries("eq_par"));
         dataframe.addSeries(MODEL_NAME, false, new TestStringSeries(expectedModelName, ""));
-        DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, List.of(dataframe));
+        DynamicMappingHandler.addElements(category, dynamicModelsSupplier, List.of(dataframe));
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", staticId)
@@ -67,13 +64,13 @@ class DynamicModelsAdderTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("automationSystemProvider")
-    void testAutomationSystemAdders(PyPowsyblApiHeader.DynamicMappingType mappingType, Consumer<DefaultUpdatingDataframe> updateDataframe) {
-        String expectedModelName = DynamicMappingHandler.getSupportedModels(mappingType).stream().findFirst().orElse("");
+    void testAutomationSystemAdders(String category, Consumer<DefaultUpdatingDataframe> updateDataframe) {
+        String expectedModelName = DynamicMappingHandler.getSupportedModels(category).stream().findFirst().orElse("");
         Network network = EurostagTutorialExample1Factory.createWithLFResults();
         String dynamicModelId = "BBM_automation_system";
         setupDataFrame(dataframe, dynamicModelId, expectedModelName);
         updateDataframe.accept(dataframe);
-        DynamicMappingHandler.addElements(mappingType, dynamicModelsSupplier, List.of(dataframe));
+        DynamicMappingHandler.addElements(category, dynamicModelsSupplier, List.of(dataframe));
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
@@ -83,8 +80,8 @@ class DynamicModelsAdderTest {
     }
 
     @Test
-    void testTapChangerBlockingAdders() {
-        String expectedModelName = DynamicMappingHandler.getSupportedModels(TAP_CHANGER_BLOCKING).stream().findFirst().orElse("");
+    void testTapChangerBlockingAdder() {
+        String expectedModelName = DynamicMappingHandler.getSupportedModels("TapChangerBlocking").stream().findFirst().orElse("");
         Network network = EurostagTutorialExample1Factory.createWithLFResults();
         String dynamicModelId = "BBM_TCB";
         String defaultDynamicModelId = dynamicModelId + DEFAULT_SUFFIX;
@@ -101,7 +98,7 @@ class DynamicModelsAdderTest {
         DefaultUpdatingDataframe m2DataFrame = new DefaultUpdatingDataframe(2);
         m2DataFrame.addSeries(DYNAMIC_MODEL_ID, true, new TestStringSeries(dynamicModelId, dynamicModelId));
         m2DataFrame.addSeries(MEASUREMENT_POINT_ID, false, new TestStringSeries("OLD_NLOAD_ID", "NLOAD"));
-        DynamicMappingHandler.addElements(TAP_CHANGER_BLOCKING, dynamicModelsSupplier, List.of(dataframe, tfoDataFrame, m1DataFrame, m2DataFrame));
+        DynamicMappingHandler.addElements("TapChangerBlocking", dynamicModelsSupplier, List.of(dataframe, tfoDataFrame, m1DataFrame, m2DataFrame));
 
         assertThat(dynamicModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).hasFieldOrPropertyWithValue("dynamicModelId", dynamicModelId)
@@ -121,7 +118,7 @@ class DynamicModelsAdderTest {
         Network network = EurostagTutorialExample1Factory.create();
         DefaultUpdatingDataframe missingStaticDF = new DefaultUpdatingDataframe(1);
         missingStaticDF.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
-        DynamicMappingHandler.addElements(BASE_LOAD, dynamicModelsSupplier, List.of(missingStaticDF));
+        DynamicMappingHandler.addElements("Load", dynamicModelsSupplier, List.of(missingStaticDF));
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 
@@ -132,43 +129,43 @@ class DynamicModelsAdderTest {
         wrongModelNameDF.addSeries(STATIC_ID, false, new TestStringSeries("LOAD"));
         wrongModelNameDF.addSeries(PARAMETER_SET_ID, false, new TestStringSeries("eq_par"));
         wrongModelNameDF.addSeries(MODEL_NAME, false, new TestStringSeries("wrongModelName"));
-        DynamicMappingHandler.addElements(BASE_LOAD, dynamicModelsSupplier, List.of(wrongModelNameDF));
+        DynamicMappingHandler.addElements("Load", dynamicModelsSupplier, List.of(wrongModelNameDF));
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
     }
 
-    static Stream<Arguments> equipmentDataProvider() {
+    private static Stream<Arguments> equipmentDataProvider() {
         return Stream.of(
-                Arguments.of(BASE_LOAD, EurostagTutorialExample1Factory.create(), "LOAD"),
-                Arguments.of(LOAD_ONE_TRANSFORMER, EurostagTutorialExample1Factory.create(), "LOAD"),
-                Arguments.of(LOAD_ONE_TRANSFORMER_TAP_CHANGER, EurostagTutorialExample1Factory.create(), "LOAD"),
-                Arguments.of(LOAD_TWO_TRANSFORMERS, EurostagTutorialExample1Factory.create(), "LOAD"),
-                Arguments.of(LOAD_TWO_TRANSFORMERS_TAP_CHANGERS, EurostagTutorialExample1Factory.create(), "LOAD"),
-                Arguments.of(BASE_GENERATOR, EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(SYNCHRONIZED_GENERATOR, EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(SYNCHRONOUS_GENERATOR, EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(WECC, EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(GRID_FORMING_CONVERTER, EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(SIGNAL_N_GENERATOR, EurostagTutorialExample1Factory.create(), "GEN"),
-                Arguments.of(BASE_TRANSFORMER, EurostagTutorialExample1Factory.create(), "NGEN_NHV1"),
-                Arguments.of(BASE_STATIC_VAR_COMPENSATOR, SvcTestCaseFactory.create(), "SVC2"),
-                Arguments.of(BASE_LINE, EurostagTutorialExample1Factory.create(), "NHV1_NHV2_1"),
-                Arguments.of(BASE_BUS, EurostagTutorialExample1Factory.create(), "NHV1"),
-                Arguments.of(INFINITE_BUS, EurostagTutorialExample1Factory.create(), "NHV1"),
-                Arguments.of(HVDC_P, HvdcTestNetwork.createVsc(), "L"),
-                Arguments.of(HVDC_VSC, HvdcTestNetwork.createVsc(), "L")
+                Arguments.of("Load", EurostagTutorialExample1Factory.create(), "LOAD"),
+                Arguments.of("LoadOneTransformer", EurostagTutorialExample1Factory.create(), "LOAD"),
+                Arguments.of("LoadOneTransformerTapChanger", EurostagTutorialExample1Factory.create(), "LOAD"),
+                Arguments.of("LoadTwoTransformers", EurostagTutorialExample1Factory.create(), "LOAD"),
+                Arguments.of("LoadTwoTransformersTapChangers", EurostagTutorialExample1Factory.create(), "LOAD"),
+                Arguments.of("SimplifiedGenerator", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("SynchronizedGenerator", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("SynchronousGenerator", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("Wecc", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("GridFormingConverter", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("SignalNGenerator", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("Transformer", EurostagTutorialExample1Factory.create(), "NGEN_NHV1"),
+                Arguments.of("StaticVarCompensator", SvcTestCaseFactory.create(), "SVC2"),
+                Arguments.of("Line", EurostagTutorialExample1Factory.create(), "NHV1_NHV2_1"),
+                Arguments.of("Bus", EurostagTutorialExample1Factory.create(), "NHV1"),
+                Arguments.of("InfiniteBus", EurostagTutorialExample1Factory.create(), "NHV1"),
+                Arguments.of("HvdcP", HvdcTestNetwork.createVsc(), "L"),
+                Arguments.of("HvdcVsc", HvdcTestNetwork.createVsc(), "L")
                 );
     }
 
-    static Stream<Arguments> automationSystemProvider() {
+    private static Stream<Arguments> automationSystemProvider() {
         return Stream.of(
-                Arguments.of(OVERLOAD_MANAGEMENT_SYSTEM,
+                Arguments.of("OverloadManagementSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
                             df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
                             df.addSeries(I_MEASUREMENT, false, createTwoRowsSeries(lineId));
                             df.addSeries(I_MEASUREMENT_SIDE, false, createTwoRowsSeries(TwoSides.ONE.toString()));
                         }),
-                Arguments.of(TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
+                Arguments.of("TwoLevelOverloadManagementSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             String lineId = "NGEN_NHV1";
                             df.addSeries(CONTROLLED_BRANCH, false, createTwoRowsSeries(lineId));
@@ -177,20 +174,20 @@ class DynamicModelsAdderTest {
                             df.addSeries(I_MEASUREMENT_2, false, createTwoRowsSeries("NHV1_NHV2_2"));
                             df.addSeries(I_MEASUREMENT_2_SIDE, false, createTwoRowsSeries(TwoSides.ONE.toString()));
                         }),
-                Arguments.of(PHASE_SHIFTER_I,
+                Arguments.of("PhaseShifterI",
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
-                Arguments.of(PHASE_SHIFTER_P,
+                Arguments.of("PhaseShifterP",
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(DynamicModelDataframeConstants.TRANSFORMER, false, createTwoRowsSeries("NGEN_NHV1"))),
-                Arguments.of(PHASE_SHIFTER_BLOCKING_I,
+                Arguments.of("PhaseShifterBlockingI",
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(PHASE_SHIFTER_ID, false, createTwoRowsSeries("PSI"))),
-                Arguments.of(TAP_CHANGER,
+                Arguments.of("TapChanger",
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"));
                             df.addSeries(SIDE, false, createTwoRowsSeries(TransformerSide.LOW_VOLTAGE.toString()));
                         }),
-                Arguments.of(TAP_CHANGER,
+                Arguments.of("TapChanger",
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(STATIC_ID, false, createTwoRowsSeries("LOAD"))),
-                Arguments.of(UNDER_VOLTAGE,
+                Arguments.of("UnderVoltageAutomationSystem",
                         (Consumer<DefaultUpdatingDataframe>) df -> df.addSeries(GENERATOR, false, createTwoRowsSeries("GEN")))
         );
     }

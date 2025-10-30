@@ -11,7 +11,7 @@ import pandas as pd
 import logging
 import queue
 from logging import handlers
-from numpy import nan
+import pytest
 
 import pypowsybl as pp
 import pypowsybl.sensitivity
@@ -24,7 +24,6 @@ from pypowsybl._pypowsybl import (
     ExecutionCondition,
     Unit)
 from pypowsybl.rao import Parameters as RaoParameters
-from pypowsybl.loadflow import Parameters as LfParameters
 from pypowsybl.rao import (
     ObjectiveFunctionParameters,
     RangeActionOptimizationParameters,
@@ -37,6 +36,7 @@ from pypowsybl.rao import (
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
+RAO_PROVIDERS = ["SearchTreeRao", "FastRao"]
 
 def test_default_rao_parameters():
     parameters = RaoParameters()
@@ -153,7 +153,8 @@ def test_rao_parameters():
     assert float(parameters2.provider_parameters['shifted_violation_penalty']) == 10.2
 
 
-def test_rao_from_files():
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_from_files(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
@@ -161,10 +162,11 @@ def test_rao_from_files():
     rao_runner = pp.rao.create_rao()
     rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json"))
     rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/rao_glsk.xml"))
-    result = rao_runner.run(network, parameters)
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
     assert RaoComputationStatus.DEFAULT == result.status()
 
-def test_rao_from_buffers():
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_from_buffers(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
     crac = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_crac.json"), "rb").read())
     glsks = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_glsk.xml"), "rb").read())
@@ -176,33 +178,98 @@ def test_rao_from_buffers():
     rao_runner = pp.rao.create_rao()
     rao_runner.set_crac_buffer_source(network, crac)
     rao_runner.set_glsk_buffer_source(network, glsks)
-    result = rao_runner.run(network, parameters)
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
     assert RaoComputationStatus.DEFAULT == result.status()
     json_result = result.to_json()
 
     assert json_result["computationStatus"] == "default"
-    assert list(json_result.keys()) == ['type', 'version', 'info', 'computationStatus', 'executionDetails', 'costResults',
-                                    'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
-                                    'networkActionResults', 'rangeActionResults']
+    expected_keys = ['type', 'version', 'info', 'computationStatus', 'executionDetails', 'costResults',
+                     'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
+                     'networkActionResults', 'rangeActionResults']
+    if rao_provider == "FastRao":
+        expected_keys.append("extensions")
+    assert list(json_result.keys()) == expected_keys
 
-def test_rao_monitoring():
-    network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_angle_monitoring_redispatching(rao_provider: str):
+    """
+    AngleCNECs are required in CRAC in order to run angle monitoring.
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json"))
-    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/rao_glsk.xml"))
-    result = rao_runner.run(network, parameters)
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
 
-    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, LfParameters())
-    assert RaoComputationStatus.DEFAULT == result_with_voltage_monitoring.status()
+    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
 
-    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, LfParameters())
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
+                            data=[["acCur1", "curative", "coL1", -3.783208, 2.216792]])
+
     assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
+                                  check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_cnec_results():
-    result = run_rao_12_node_with_curative()
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_angle_monitoring_topological_action(rao_provider: str):
+    """
+    AngleCNECs are required in CRAC in order to run angle monitoring.
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+
+    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
+
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
+                            data=[["acCur1", "curative", "coL1", -7.713852, -4.713852]])
+
+    assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
+                                  check_dtype=False, check_index_type=False, check_like=True)
+
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_voltage_monitoring(rao_provider: str):
+    """
+    VoltageCNECs are required in CRAC in order to run voltage monitoring.
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
+    parameters = RaoParameters()
+    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+
+    rao_runner = pp.rao.create_rao()
+    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+
+    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    voltage_cnec_results = result_with_voltage_monitoring.get_voltage_cnec_results()
+
+    expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'],
+                            data=[["vc", "curative", "coL1", "ONE", 363.622121, 363.622121, -13.622121]])
+
+    assert RaoComputationStatus.DEFAULT == result_with_voltage_monitoring.status()
+    pd.testing.assert_frame_equal(expected.reset_index(drop=True), voltage_cnec_results.reset_index(drop=True),
+                                  check_dtype=False, check_index_type=False, check_like=True)
+
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_cnec_results(rao_provider: str):
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Flow cnecs
     df_flow_cnecs = result.get_flow_cnec_results()
@@ -224,8 +291,9 @@ def test_rao_cnec_results():
     df_angle_cnecs = result.get_angle_cnec_results()
     assert ['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'] == list(df_angle_cnecs.columns)
 
-def test_rao_remedial_action_results():
-    result = run_rao_12_node_with_curative()
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_remedial_action_results(rao_provider: str):
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     ra_results = result.get_remedial_action_results()
@@ -238,8 +306,9 @@ def test_rao_remedial_action_results():
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), ra_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_network_action_results():
-    result = run_rao_12_node_with_curative()
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_network_action_results(rao_provider: str):
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     network_action_results = result.get_network_action_results()
@@ -250,8 +319,9 @@ def test_rao_network_action_results():
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True]) # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), network_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_pst_range_action_results():
-    result = run_rao_12_node_with_curative()
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_pst_range_action_results(rao_provider: str):
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     pst_range_action_results = result.get_pst_range_action_results()
@@ -264,8 +334,9 @@ def test_rao_pst_range_action_results():
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), pst_range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_range_action_results():
-    result = run_rao_12_node_with_curative()
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_range_action_results(rao_provider: str):
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Ra results
     range_action_results = result.get_range_action_results()
@@ -277,8 +348,9 @@ def test_rao_range_action_results():
     expected = expected.sort_values(['remedial_action_id', 'optimized_instant'], ascending=[True, True])  # Sort to avoid row order difference
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), range_action_results.reset_index(drop=True), check_dtype=False, check_index_type=False, check_like=True)
 
-def test_rao_cost_results():
-    result = run_rao_12_node_with_curative()
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_cost_results(rao_provider: str):
+    result = run_rao_12_node_with_curative(rao_provider)
 
     # Cost results
     cost_results_df = result.get_cost_results()
@@ -303,7 +375,8 @@ def test_rao_cost_results():
                                   [0.0]])
     pd.testing.assert_frame_equal(expected_virtual, virtual_cost_df, check_dtype=False, check_like=True)
 
-def test_rao_log_filter():
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_log_filter(rao_provider: str):
     logger = logging.getLogger('powsybl')
     logger.setLevel(logging.INFO)
     logger.addFilter(RaoLogFilter())
@@ -313,14 +386,14 @@ def test_rao_log_filter():
     handler = handlers.QueueHandler(q)
     logger.addHandler(handler)
 
-    run_rao_12_node_with_curative()
+    run_rao_12_node_with_curative(rao_provider)
 
     # Only open rao logs
     for i in range(len(q.queue)):
         assert("com.powsybl.openrao" in q.queue[i].java_logger_name)
 
 
-def run_rao_12_node_with_curative():
+def run_rao_12_node_with_curative(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
     parameters = RaoParameters()
     parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
@@ -328,7 +401,7 @@ def run_rao_12_node_with_curative():
     rao_runner = pp.rao.create_rao()
     rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
 
-    return rao_runner.run(network, parameters)
+    return rao_runner.run(network, parameters, rao_provider=rao_provider)
 
 def parameters_round_trip():
     # Load from file

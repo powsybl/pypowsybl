@@ -7,9 +7,13 @@
  */
 package com.powsybl.dataframe.dynamic;
 
-import com.powsybl.dataframe.*;
+import com.powsybl.dataframe.DataframeMapper;
+import com.powsybl.dataframe.DataframeMapperBuilder;
+import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
 
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,6 +43,17 @@ public final class DynamicSimulationDataframeMappersUtils {
                 .doubles("time", TimelineEvent::time)
                 .strings("model", TimelineEvent::modelName)
                 .strings("message", TimelineEvent::message)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<DynamicMappingAdder>, Void> categoriesDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, CategoryInformation, Void>()
+                .itemsStreamProvider(a -> a.stream()
+                        .map(DynamicMappingAdder::getCategoryInformation)
+                        .sorted(Comparator.comparing(CategoryInformation::name)))
+                .stringsIndex("name", CategoryInformation::name)
+                .strings("description", CategoryInformation::description)
+                .strings("attribute", CategoryInformation::attribute)
                 .build();
     }
 }
