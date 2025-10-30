@@ -573,16 +573,16 @@ def test_batteries_voltage_regulation():
     e = network.get_extensions('voltageRegulation')
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['BAT']),
-        columns=['voltage_regulator_on', 'target_v'],
-        data=[[True, 400.0]])
+        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
+        data=[[True, 400.0, 'BAT']])
     pd.testing.assert_frame_equal(expected, e, check_dtype=False)
 
     network.update_extensions('voltageRegulation', id=['BAT'], voltage_regulator_on=False, target_v=399.0)
     e = network.get_extensions('voltageRegulation')
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['BAT']),
-        columns=['voltage_regulator_on', 'target_v'],
-        data=[[False, 399.0]])
+        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
+        data=[[False, 399.0, 'BAT']])
     pd.testing.assert_frame_equal(expected, e, check_dtype=False)
 
     network.remove_extensions('voltageRegulation', ['BAT'])
@@ -639,4 +639,4 @@ def test_get_extensions_information():
     assert extensions_information.loc['voltagePerReactivePowerControl']['detail'] == 'Models the voltage control static var compensators'
     assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
     assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
-    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float)'
+    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float), regulated_element_id (str)'
