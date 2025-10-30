@@ -75,16 +75,11 @@ public class VoltageRegulationDataframeAdder extends AbstractSimpleAdder {
         }
     }
 
-    public static Terminal getTerminal(Network network, String regulatedElement, String id) {
-        String targetElement = regulatedElement == null || regulatedElement.equals("") ? id : regulatedElement;
+    protected static Terminal getTerminal(Network network, String regulatedElement, String id) {
+        String targetElement = regulatedElement == null || regulatedElement.isEmpty() ? id : regulatedElement;
         Identifiable<?> identifiable = network.getIdentifiable(targetElement);
         if (identifiable instanceof Injection) {
-            Terminal terminal = ((Injection<?>) identifiable).getTerminal();
-            if (terminal.getVoltageLevel().getTopologyKind() == TopologyKind.BUS_BREAKER && !targetElement.equals(id)) {
-                throw new UnsupportedOperationException("Cannot set regulated element to " + regulatedElement +
-                        ": not currently supported for bus breaker topologies.");
-            }
-            return terminal;
+            return ((Injection<?>) identifiable).getTerminal();
         } else {
             throw new UnsupportedOperationException("Cannot set regulated element to " + regulatedElement +
                     ": the regulated element may only be a busbar section or an injection.");
