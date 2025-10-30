@@ -48,6 +48,20 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.psse.model.pf.PsseGneDevice",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseInductionMachine",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.psse.model.pf.PsseInterareaTransfer",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
@@ -63,6 +77,55 @@
   },
   {
     "name":"com.powsybl.psse.model.pf.PsseLoad",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcBus",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcConverter",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcLink",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcMain",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcConverterx",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcBusx",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcLinkx",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
     "allPublicMethods":true,
@@ -97,6 +160,62 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationEquipmentTerminal",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationEquipmentTerminalCommonStart",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationEquipmentTerminalx",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationNode",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationNodex",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationRecord",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationSwitchingDevice",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseSubstation$PsseSubstationSwitchingDevicex",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.psse.model.pf.PsseSwitchedShunt",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,
@@ -123,6 +242,42 @@
     "allDeclaredMethods":true,
     "allPublicMethods":true,
     "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseTwoTerminalDcConverter",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseTwoTerminalDcTransmissionLine",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseTwoTerminalDcTransmissionLine$ConverterHeaderTransformer",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseVoltageSourceConverter",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseVoltageSourceConverterDcTransmissionLine",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allPublicMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.psse.model.pf.PsseVoltageSourceConverterDcTransmissionLine$ConverterHeaderTransformer",
+    "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
   },
   {
     "name":"com.powsybl.psse.model.pf.PsseZone",
@@ -173,83 +328,5 @@
   {
     "name":"com.powsybl.psse.model.pf.io.WindingRatesHeaderTransformer",
     "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseTwoTerminalDcTransmissionLine",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseTwoTerminalDcConverter",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseVoltageSourceConverterDcTransmissionLine",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseVoltageSourceConverterDcTransmissionLine$ConverterHeaderTransformer",
-    "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseGneDevice",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseInductionMachine",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcBus",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcConverter",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcLink",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseMultiTerminalDcTransmissionLine$PsseMultiTerminalDcMain",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseTwoTerminalDcTransmissionLine$ConverterHeaderTransformer",
-    "methods":[{"name":"<init>","parameterTypes":["java.lang.String[]"] }]
-  },
-  {
-    "name":"com.powsybl.psse.model.pf.PsseVoltageSourceConverter",
-    "allDeclaredFields":true,
-    "allDeclaredMethods":true,
-    "allPublicMethods":true,
-    "allDeclaredConstructors":true
   }
 ]
