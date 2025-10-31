@@ -8,7 +8,6 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
 import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
@@ -23,9 +22,9 @@ abstract class AbstractSimpleDynamicModelAdder implements DynamicMappingAdder {
     private final List<List<SeriesMetadata>> metadata;
     private final CategoryInformation categoryInformation;
 
-    protected AbstractSimpleDynamicModelAdder(List<List<SeriesMetadata>> metadata, String name, String description) {
+    protected AbstractSimpleDynamicModelAdder(List<List<SeriesMetadata>> metadata, CategoryInformation categoryInformation) {
         this.metadata = metadata;
-        this.categoryInformation = new CategoryInformation(name, description, CategoryAttributeUtils.createFromMetadata(metadata.getFirst()));
+        this.categoryInformation = categoryInformation;
     }
 
     @Override

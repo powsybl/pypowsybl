@@ -8,6 +8,8 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.loads.LoadOneTransformerTapChangerBuilder;
@@ -21,8 +23,13 @@ import java.util.Collection;
  */
 public class LoadOneTransformerTapChangerAdder extends AbstractEquipmentAdder {
 
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "LoadOneTransformerTapChanger",
+            "Load with one transformer and a tap changer",
+            CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
+
     protected LoadOneTransformerTapChangerAdder() {
-        super("LoadOneTransformerTapChanger", "Load with one transformer and a tap changer");
+        super(CATEGORY_INFORMATION);
     }
 
     @Override

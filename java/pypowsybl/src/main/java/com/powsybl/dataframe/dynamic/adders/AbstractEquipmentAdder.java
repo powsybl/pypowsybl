@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,7 +25,7 @@ public abstract class AbstractEquipmentAdder extends AbstractSimpleDynamicModelA
             SeriesMetadata.strings(PARAMETER_SET_ID),
             SeriesMetadata.strings(MODEL_NAME));
 
-    protected AbstractEquipmentAdder(String name, String description) {
-        super(Collections.singletonList(EQUIPMENT_METADATA), name, description);
+    protected AbstractEquipmentAdder(CategoryInformation categoryInformation) {
+        super(Collections.singletonList(EQUIPMENT_METADATA), categoryInformation);
     }
 }
