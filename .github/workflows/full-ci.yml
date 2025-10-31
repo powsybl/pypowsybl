@@ -10,6 +10,10 @@ on:
     types:
       - published
 
+
+permissions:
+  contents: write
+
 jobs:
   manylinux_complete_build:
     name: Build linux native libraries and ${{ matrix.python.name }} wheel
