@@ -9,8 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -44,19 +44,8 @@ public class DynamicOverloadManagementSystemAdder extends AbstractSimpleDynamicM
             "Overload management system",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
-    }
-
-    @Override
-    public String getCategory() {
-        return CATEGORY_INFORMATION.name();
-    }
-
-    @Override
-    public CategoryInformation getCategoryInformation() {
-        return CATEGORY_INFORMATION;
+    protected DynamicOverloadManagementSystemAdder() {
+        super(Collections.singletonList(METADATA), CATEGORY_INFORMATION);
     }
 
     @Override

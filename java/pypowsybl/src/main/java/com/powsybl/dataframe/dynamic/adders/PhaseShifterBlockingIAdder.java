@@ -41,19 +41,8 @@ public class PhaseShifterBlockingIAdder extends AbstractSimpleDynamicModelAdder 
             "Phase shifter blocking I",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
-    }
-
-    @Override
-    public String getCategory() {
-        return CATEGORY_INFORMATION.name();
-    }
-
-    @Override
-    public CategoryInformation getCategoryInformation() {
-        return CATEGORY_INFORMATION;
+    public PhaseShifterBlockingIAdder() {
+        super(Collections.singletonList(METADATA), CATEGORY_INFORMATION);
     }
 
     @Override

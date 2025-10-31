@@ -8,8 +8,8 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.loads.LoadTwoTransformersBuilder;
@@ -28,14 +28,8 @@ public class LoadTwoTransformersAdder extends AbstractEquipmentAdder {
             "Load with two transformers",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
-    @Override
-    public String getCategory() {
-        return CATEGORY_INFORMATION.name();
-    }
-
-    @Override
-    public CategoryInformation getCategoryInformation() {
-        return CATEGORY_INFORMATION;
+    protected LoadTwoTransformersAdder() {
+        super(CATEGORY_INFORMATION);
     }
 
     @Override

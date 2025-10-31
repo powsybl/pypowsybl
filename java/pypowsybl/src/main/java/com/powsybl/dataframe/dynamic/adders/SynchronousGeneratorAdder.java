@@ -8,8 +8,8 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
-import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.generators.SynchronousGeneratorBuilder;
@@ -29,14 +29,8 @@ public class SynchronousGeneratorAdder extends AbstractEquipmentAdder {
             "Generator participating in network frequency",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
-    @Override
-    public String getCategory() {
-        return CATEGORY_INFORMATION.name();
-    }
-
-    @Override
-    public CategoryInformation getCategoryInformation() {
-        return CATEGORY_INFORMATION;
+    protected SynchronousGeneratorAdder() {
+        super(CATEGORY_INFORMATION);
     }
 
     @Override
