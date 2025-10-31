@@ -19,6 +19,7 @@ import com.powsybl.dataframe.network.extensions.NetworkExtensions;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.*;
+import com.powsybl.iidm.network.test.DcDetailedNetworkFactory;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
@@ -26,10 +27,7 @@ import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -859,5 +857,52 @@ class NetworkDataframesTest {
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "boundary_type", "element", "side", "ac", "p", "q");
+    }
+
+    @Test
+    void dcNodes() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        List<Series> series = createDataFrame(DC_NODE, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "nominal_v", "v");
+        assertThat(series.get(0).getStrings())
+                .containsExactly("dcNodeGbNeg", "dcNodeGbPos", "dcNodeFrNeg", "dcNodeFrPos");
+        assertThat(series.get(2).getDoubles())
+                .containsExactly(250.0, 250.0, 250.0, 250.0);
+    }
+
+    @Test
+    void dcLines() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        List<Series> series = createDataFrame(DC_LINE, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "r", "i1", "p1", "i2", "p2");
+    }
+
+    @Test
+    void voltageSourceConverters() {
+        Network network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        List<Series> series = createDataFrame(VOLTAGE_SOURCE_CONVERTER, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "voltage_level_id", "bus1_id", "bus2_id", "dc_node1_id", "dc_node2_id",
+                        "dc_connected1", "dc_connected2", "regulated_element_id", "voltage_regulator_on", "control_mode",
+                        "target_v_dc", "target_v_ac", "target_p", "target_q", "idle_loss", "switching_loss", "resistive_loss", "p_ac",
+                        "q_ac", "p_dc1", "p_dc2");
+    }
+
+    @Test
+    void dcGrounds() {
+        Network network = DcDetailedNetworkFactory.createVscAsymmetricalMonopole();
+        List<Series> series = createDataFrame(DC_GROUND, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "r", "dc_node_id");
     }
 }

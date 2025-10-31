@@ -147,6 +147,10 @@ Supported elements are:
  - injections
  - branches (lines and two windings transformers)
  - terminals are a practical view of those objects which are very important in the java implementation
+ - DC nodes
+ - DC lines
+ - voltage source converters
+ - DC grounds
 
 Each element of the network is mapped to one row of the dataframe, an each element attribute
 is mapped to one column of the dataframe (a :class:`~pandas.Series`).

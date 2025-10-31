@@ -248,6 +248,12 @@ public final class NetworkUtil {
         }
     }
 
+    public static void setPccTerminal(Consumer<Terminal> adder, Network network, String elementId) {
+        //It may be necessary to precise which type of Connectable and which Terminal is needed
+        Connectable<?> connectable = network.getConnectable(elementId);
+        adder.accept(connectable.getTerminals().getFirst());
+    }
+
     public static String getRegulatedElementId(Supplier<Terminal> regulatingTerminalGetter) {
         Terminal terminal = regulatingTerminalGetter.get();
         return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
