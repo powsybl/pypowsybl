@@ -53,7 +53,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("security_analysis_test_with_power_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedPowerLimits()),
             factory("security_analysis_test_with_current_limits", () -> SecurityAnalysisTestNetworkFactory.createWithFixedCurrentLimits()),
             factory("metrix_tutorial_six_buses", () -> MetrixTutorialSixBusesFactory.create()),
-            factory("dc_detailed_lcc_bipole_ground_return", () -> DcDetaildc_detailed_lcc_bipole_ground_return_with_dc_line_segmentsedNetworkFactory.createLccBipoleGroundReturn()),
+            factory("dc_detailed_lcc_bipole_ground_return", () -> DcDetailedNetworkFactory.createLccBipoleGroundReturn()),
             factory("dc_detailed_lcc_bipole_ground_return_negative_pole_outage", () -> DcDetailedNetworkFactory.createLccBipoleGroundReturnNegativePoleOutage()),
             factory("dc_detailed_lcc_bipole_ground_return_with_dc_line_segments", () -> DcDetailedNetworkFactory.createLccBipoleGroundReturnWithDcLineSegments()),
             factory("dc_detailed_lcc_bipole_metallic_return", () -> DcDetailedNetworkFactory.createLccMonopoleMetallicReturn()),

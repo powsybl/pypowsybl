@@ -106,6 +106,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_NODE, dcNodes());
         mappers.put(DataframeElementType.VOLTAGE_SOURCE_CONVERTER, voltageSourceConverters());
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
+        mappers.put(DataframeElementType.DC_BUS, dcBuses());
         return Collections.unmodifiableMap(mappers);
     }
 
@@ -975,6 +976,7 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getDcNodeStream, getOrThrow(Network::getDcNode, "Dc node"))
                 .stringsIndex("id", DcNode::getId)
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("dc_bus_id", dn -> dn.getDcBus() == null ? "" : dn.getDcBus().getId())
                 .doubles("nominal_v", (dn, context) -> dn.getNominalV(), (dn, nominalV, context) -> dn.setNominalV(nominalV))
                 .doubles("v", (dn, context) -> perUnitV(context, dn.getV(), dn.getNominalV()),
                         (dn, v, context) -> dn.setV(unPerUnitV(context, v, dn.getNominalV())))
@@ -1018,7 +1020,7 @@ public final class NetworkDataframes {
                         (conv, dcConnected1) -> conv.getDcTerminal1().setConnected(dcConnected1))
                 .booleans("dc_connected2", conv -> conv.getDcTerminal2().isConnected(),
                         (conv, dcConnected2) -> conv.getDcTerminal2().setConnected(dcConnected2))
-                .strings("regulated_element_id", conv -> NetworkUtil.getRegulatedElementId(conv::getPccTerminal),
+                .strings("pcc_terminal_id", conv -> NetworkUtil.getRegulatedElementId(conv::getPccTerminal),
                         (conv, elementId) -> NetworkUtil.setPccTerminal(conv::setPccTerminal, conv.getNetwork(), elementId))
                 .booleans("voltage_regulator_on", VoltageSourceConverter::isVoltageRegulatorOn, VoltageSourceConverter::setVoltageRegulatorOn)
                 .enums("control_mode", AcDcConverter.ControlMode.class, VoltageSourceConverter::getControlMode, VoltageSourceConverter::setControlMode)
@@ -1055,9 +1057,23 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getDcGroundStream, getOrThrow(Network::getDcGround, "Dc ground"))
                 .stringsIndex("id", DcGround::getId)
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
-                .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
+                .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
+                .build();
+    }
+
+    private static NetworkDataframeMapper dcBuses() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getDcBusStream, getOrThrow(Network::getDcBus, "Dc bus"))
+                .stringsIndex("id", DcBus::getId)
+                .strings("name", db -> db.getOptionalName().orElse(""), Identifiable::setName)
+                .ints("connected_component", ifExistsInt(DcBus::getConnectedComponent, Component::getNum))
+                .ints("dc_component", ifExistsInt(DcBus::getDcComponent, Component::getNum))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                //FIXME: how can we get DcBus nominal voltage ?
+                .doubles("v", (db, context) -> perUnitV(context, db.getV(), (DcTerminal) null),
+                        (db, v, context) -> db.setV(unPerUnitV(context, v, (DcTerminal) null)))
                 .addProperties()
                 .build();
     }

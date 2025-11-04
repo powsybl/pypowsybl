@@ -184,7 +184,8 @@ typedef enum {
     DC_LINE,
     DC_NODE,
     VOLTAGE_SOURCE_CONVERTER,
-    DC_GROUND
+    DC_GROUND,
+    DC_BUS
 } element_type;
 
 typedef enum {

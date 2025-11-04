@@ -36,7 +36,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             SeriesMetadata.strings("bus2_id"),
             SeriesMetadata.strings("dc_node1_id"),
             SeriesMetadata.strings("dc_node2_id"),
-            SeriesMetadata.strings("regulating_element_id"),
+            SeriesMetadata.strings("pcc_terminal_id"),
             SeriesMetadata.ints("dc_connected1"),
             SeriesMetadata.ints("dc_connected2"),
             SeriesMetadata.ints("voltage_regulator_on"),
@@ -72,7 +72,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
         protected final StringSeries dcNodes2;
         private final IntSeries dcConnected1;
         private final IntSeries dcConnected2;
-        private final StringSeries regulatingElements;
+        private final StringSeries pccTerminals;
         protected final IntSeries voltageRegulatorOn;
         protected final StringSeries controlMode;
         protected final DoubleSeries targetP;
@@ -95,7 +95,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
             this.dcNodes2 = dataframe.getStrings("dc_node2_id");
             this.dcConnected1 = dataframe.getInts("dc_connected1");
             this.dcConnected2 = dataframe.getInts("dc_connected2");
-            this.regulatingElements = dataframe.getStrings("regulating_element_id");
+            this.pccTerminals = dataframe.getStrings("pcc_terminal_id");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.controlMode = dataframe.getStrings("control_mode");
             this.targetP = dataframe.getDoubles("target_p");
@@ -131,7 +131,7 @@ public class VoltageSourceConverterDataFrameAdder extends AbstractSimpleAdder {
                     applyBooleanIfPresent(dcConnected2, row, adder::setDcConnected2);
                 }
             });
-            applyIfPresent(regulatingElements, row, elementId -> NetworkUtil
+            applyIfPresent(pccTerminals, row, elementId -> NetworkUtil
                     .setPccTerminal(adder::setPccTerminal, network, elementId));
             applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
             applyIfPresent(controlMode, row, AcDcConverter.ControlMode.class, adder::setControlMode);

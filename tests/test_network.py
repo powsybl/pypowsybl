@@ -2554,7 +2554,9 @@ def test_dc_nodes():
     n.update_dc_nodes(pd.DataFrame(data={'nominal_v': 500}, index=['dcNodeFrPos']))
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
-        columns=['name', 'nominal_v', 'v'], data=[['', 250, nan], ['', 250, nan], ['', 250, nan], ['', 500, nan]])
+        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
+        data=[['', 'dcNodeGbNeg_dcBus', 250, nan], ['', 'dcNodeGbPos_dcBus', 250, nan],
+              ['', 'dcNodeFrNeg_dcBus', 250, nan], ['', 'dcNodeFrPos_dcBus', 500, nan]])
     pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
 
     dc_nodes = n.get_dc_nodes(attributes=['nominal_v'])
@@ -2575,7 +2577,8 @@ def test_dc_lines():
 
     dc_lines = n.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
-        columns=['dc_node1_id', 'dc_node2_id'], data=[['dcNodeFrNeg', 'dcNodeGbNeg'], ['dcNodeFrPos', 'dcNodeGbPos']])
+                            columns=['dc_node1_id', 'dc_node2_id'],
+                            data=[['dcNodeFrNeg', 'dcNodeGbNeg'], ['dcNodeFrPos', 'dcNodeGbPos']])
     pd.testing.assert_frame_equal(expected, dc_lines, check_dtype=False, atol=1e-2)
 
 
@@ -2583,13 +2586,13 @@ def test_voltage_source_converters():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.update_voltage_source_converters(pd.DataFrame(
         data={'dc_connected1': True, 'dc_connected2': True, 'voltage_regulator_on': False, 'control_mode': 'V_DC',
-              'regulated_element_id': 'VscFr', 'target_v_dc': 400.0, 'target_v_ac': 400.0, 'target_p': -50.0,
+              'pcc_terminal_id': 'VscFr', 'target_v_dc': 400.0, 'target_v_ac': 400.0, 'target_p': -50.0,
               'target_q': 0.0, 'idle_loss': 0.5, 'switching_loss': 1.0, 'resistive_loss': 0.2, 'p_ac': 10.0,
               'q_ac': 10.0, 'p_dc1': 10.0, 'p_dc2': 10.0}, index=['VscFr']))
 
     expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']),
                             columns=['name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
-                                     'dc_connected1', 'dc_connected2', 'regulated_element_id', 'voltage_regulator_on',
+                                     'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
                                      'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
                                      'switching_loss', 'resistive_loss', 'p_ac', 'q_ac', 'p_dc1', 'p_dc2'], data=[
             ['', 'VLDC-FR-xNodeDc1fr-150', 'VLDC-FR-xNodeDc1fr-150_0', '', 'dcNodeFrNeg', 'dcNodeFrPos', True, True,
@@ -2609,14 +2612,33 @@ def test_dc_grounds():
     n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
     n.update_dc_grounds(pd.DataFrame(data={'r': 1.0}, index=['dcGroundGb']))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']),
-                            columns=['name', 'r', 'dc_node_id'],
-                            data=[['', 1.0, 'dcNodeGbMid'], ['', 0.0, 'dcNodeFrMid']])
+                            columns=['name', 'dc_node_id', 'r'],
+                            data=[['', 'dcNodeGbMid', 1.0], ['', 'dcNodeFrMid', 0.0]])
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
 
     dc_grounds = n.get_dc_grounds(attributes=['dc_node_id'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']), columns=['dc_node_id'],
                             data=[['dcNodeGbMid'], ['dcNodeFrMid']])
     pd.testing.assert_frame_equal(expected, dc_grounds, check_dtype=False, atol=1e-2)
+
+
+def test_dc_buses():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_buses(pd.DataFrame(data={'v': 100}, index=['dcNodeFrPos_dcBus']))
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
+                                                  'dcNodeGbNeg_dcBus']),
+                            columns=['name', 'connected_component', 'dc_component', 'v'],
+                            data=[['', 0, 0, 100], ['', 0, 0, nan], ['', 0, 0, nan], ['', 0, 0, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_buses(), check_dtype=False)
+
+    dc_buses = n.get_dc_buses(attributes=['v'])
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
+                                                  'dcNodeGbNeg_dcBus']), columns=['v'],
+                            data=[[100], [nan], [nan], [nan]])
+    pd.testing.assert_frame_equal(expected, dc_buses, check_dtype=False, atol=1e-2)
+
 
 def test_nad_parameters():
     nad_parameters = NadParameters()

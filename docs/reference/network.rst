@@ -118,6 +118,7 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_dc_lines
    Network.get_voltage_source_converters
    Network.get_dc_grounds
+   Network.get_dc_buses
 
 Bus/Breaker or Node/Breaker topology description of a given voltage level can be retrieved using the following getters:
 
@@ -186,6 +187,7 @@ Network elements can be modified using dataframes:
    Network.update_dc_lines
    Network.update_voltage_source_converters
    Network.update_dc_grounds
+   Network.update_dc_buses
    Network.get_elements_properties
    Network.add_elements_properties
    Network.remove_elements_properties

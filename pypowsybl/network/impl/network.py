@@ -2947,6 +2947,7 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **nominal_v**: dc node nominal voltage
+              - **dc_bus_id**: at which dc bus the dc node belongs
               - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
 
 
@@ -3019,6 +3020,32 @@ class Network:  # pylint: disable=too-many-public-methods
             This dataframe is indexed on the dc ground ID.
         """
         return self.get_elements(ElementType.DC_GROUND, all_attributes, attributes, **kwargs)
+
+    def get_dc_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dc buses.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the dc buses dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **connected_component**: The connected component to which the dc bus belongs
+              - **dc_component**: The dc component to which the dc bus belongs
+              - **v**: dc bus voltage
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+
+            This dataframe is indexed on the dc bus ID.
+        """
+        return self.get_elements(ElementType.DC_BUS, all_attributes, attributes, **kwargs)
 
     def _update_elements(self, element_type: ElementType, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -4170,6 +4197,34 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dc_grounds(id=['DG1', 'DG2'], r=[2.0, 0.0])
         """
         return self._update_elements(ElementType.DC_GROUND, df, **kwargs)
+
+    def update_dc_buses(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc buses with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
+
+            - `v`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_buses`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_buses(id='DB1', v=400.0)
+                network.update_dc_buses(id=['DB1', 'DB2'], v=[400.0, 63.5])
+        """
+        return self._update_elements(ElementType.DC_BUS, df, **kwargs)
 
     def create_extensions(self, extension_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None,
                           **kwargs: ArrayLike) -> None:

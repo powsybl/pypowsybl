@@ -259,6 +259,7 @@ public final class Util {
             case DC_NODE -> PyPowsyblApiHeader.ElementType.DC_NODE;
             case VOLTAGE_SOURCE_CONVERTER -> PyPowsyblApiHeader.ElementType.VOLTAGE_SOURCE_CONVERTER;
             case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
+            case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
         };
     }
 
@@ -310,6 +311,7 @@ public final class Util {
             case DC_NODE -> DataframeElementType.DC_NODE;
             case VOLTAGE_SOURCE_CONVERTER -> DataframeElementType.VOLTAGE_SOURCE_CONVERTER;
             case DC_GROUND -> DataframeElementType.DC_GROUND;
+            case DC_BUS -> DataframeElementType.DC_BUS;
         };
     }
 
