@@ -1148,52 +1148,49 @@ def test_internal_connections_errors():
         network.remove_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
     assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)
 
+
 def test_dc_node_creation():
-    n = pypowsybl.network.create_ac_dc_network()
-    n.create_dc_nodes(pd.DataFrame(index=['DC_NODE_TEST'],
-                                columns=['nominal_v'],
-                                data=[[500.0]]))
-    n.create_dc_lines(pd.DataFrame(index=['DC_LINE_TEST'],
-                                columns=['r', 'dc_node1_id', 'dc_node2_id'],
-                                data=[[0.1, 'dn3', 'DC_NODE_TEST']]))
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_dc_nodes(pd.DataFrame(index=['DC_NODE_TEST'], columns=['nominal_v'], data=[[500.0]]))
 
     expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['dn3', 'dn4', 'dnDummy', 'DC_NODE_TEST']),
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos', 'DC_NODE_TEST']),
         columns=['name', 'nominal_v', 'v'],
-        data=[['', 400.0, nan],
-              ['', 400.0, nan],
-              ['', 400.0, nan],
-              ['', 500.0, nan]])
+        data=[['', 250.0, nan], ['', 250.0, nan], ['', 250.0, nan], ['', 250.0, nan], ['', 500.0, nan]])
     pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
 
-def test_dc_lines_creation():
-    n = pypowsybl.network.create_ac_dc_network()
 
-    n.create_dc_lines(pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']),
-                                columns=['r', 'dc_node1_id', 'dc_node2_id'],
-                                data=[[2, 'dn3', 'dn4']]))
+def test_dc_lines_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network().get_sub_network(
+        'VscSymmetricalMonopole')
+
+    n.create_dc_lines(
+        pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']), columns=['r', 'dc_node1_id', 'dc_node2_id'],
+                     data=[[2, 'dcNodeGbNeg', 'dcNodeGbPos']]))
     dc_line = n.get_dc_lines().loc['DC_LINE_TEST']
 
     assert dc_line.r == 2
-    assert dc_line.dc_node1_id == 'dn3'
-    assert dc_line.dc_node2_id == 'dn4'
+    assert dc_line.dc_node1_id == 'dcNodeGbNeg'
+    assert dc_line.dc_node2_id == 'dcNodeGbPos'
+
 
 def test_voltage_source_converter_creation():
-    n = pypowsybl.network.create_ac_dc_network()
-    n.create_buses(id = 'b2bis', voltage_level_id = 'vl2')
-    n.create_voltage_source_converters(pd.DataFrame(
-        index=pd.Series(name='id', data=['CONV_TEST']),
-        columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
-                 'voltage_regulator_on', 'idle_loss', 'switching_loss', 'resistive_loss', 'target_v_ac', 'dc_connected1',
-                 'dc_connected2', 'regulating_element_id'],
-        data=[['CONV_TEST', '', 'vl2', 'b2', 'b2bis', 'dn3', 'dnDummy', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'l12']]))
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    print(n.get_bus_breaker_view_buses())
+    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
+    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
+        columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id', 'control_mode',
+                 'target_p', 'voltage_regulator_on', 'idle_loss', 'switching_loss', 'resistive_loss', 'target_v_ac',
+                 'dc_connected1', 'dc_connected2', 'regulating_element_id'], data=[
+            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
+             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb']]))
     conv = n.get_voltage_source_converters().loc['CONV_TEST']
 
-    assert conv.voltage_level_id == 'vl2'
-    assert conv.bus1_id== 'vl2_0'
-    assert conv.bus2_id == 'vl2_1'
-    assert conv.dc_node1_id == 'dn3'
-    assert conv.dc_node2_id == 'dnDummy'
+    assert conv.voltage_level_id == 'VLDC-GB-xNodeDc1gb-150'
+    assert conv.bus1_id == 'VLDC-GB-xNodeDc1gb-150_0'
+    assert conv.bus2_id == 'VLDC-GB-xNodeDc1gb-150_1'
+    assert conv.dc_node1_id == 'dcNodeGbNeg'
+    assert conv.dc_node2_id == 'dcNodeGbPos'
     assert conv.control_mode == 'P_PCC'
     assert conv.target_p == 300
     assert conv.voltage_regulator_on == True
@@ -1203,17 +1200,15 @@ def test_voltage_source_converter_creation():
     assert conv.target_v_ac == 400
     assert conv.dc_connected1 == True
     assert conv.dc_connected2 == False
-    assert conv.regulated_element_id == 'l12'
+    assert conv.regulated_element_id == 'TRDC-GB-xNodeDc1gb'
+
 
 def test_dc_ground_creation():
-    n = pypowsybl.network.create_ac_dc_bipolar_network()
-    n.create_dc_grounds(pd.DataFrame(index=['DC_GROUND_TEST'],
-                                     columns=['r', 'dc_node_id'],
-                                     data=[[0.1, 'dn3p']]))
+    n = pypowsybl.network.create_dc_detailed_lcc_bipole_ground_return_network().get_sub_network('LccBipoleGroundReturn')
+    n.create_dc_grounds(
+        pd.DataFrame(index=['DC_GROUND_TEST'], columns=['r', 'dc_node_id'], data=[[0.1, 'dcNodeGbMid']]))
 
-    expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['Gr', 'DC_GROUND_TEST']),
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr', 'DC_GROUND_TEST']),
         columns=['name', 'r', 'dc_node_id'],
-        data=[['', 0.0, 'dnGr'],
-              ['', 0.1, 'dn3p']])
+        data=[['', 0.0, 'dcNodeGbMid'], ['', 0.0, 'dcNodeFrMid'], ['', 0.1, 'dcNodeGbMid']])
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
