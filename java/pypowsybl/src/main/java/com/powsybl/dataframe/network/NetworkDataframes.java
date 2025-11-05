@@ -1071,9 +1071,8 @@ public final class NetworkDataframes {
                 .ints("connected_component", ifExistsInt(DcBus::getConnectedComponent, Component::getNum))
                 .ints("dc_component", ifExistsInt(DcBus::getDcComponent, Component::getNum))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
-                //FIXME: how can we get DcBus nominal voltage ?
-                .doubles("v", (db, context) -> perUnitV(context, db.getV(), (DcTerminal) null),
-                        (db, v, context) -> db.setV(unPerUnitV(context, v, (DcTerminal) null)))
+                .doubles("v", (db, context) -> perUnitV(context, db.getV(), db.getDcNodes().iterator().next().getNominalV()),
+                        (db, v, context) -> db.setV(unPerUnitV(context, v, db.getDcNodes().iterator().next().getNominalV())))
                 .addProperties()
                 .build();
     }
