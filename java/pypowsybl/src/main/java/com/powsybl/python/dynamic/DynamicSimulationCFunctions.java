@@ -22,10 +22,10 @@ import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.DynamicSimulationDataframeMappersUtils;
+import com.powsybl.dataframe.dynamic.TimeSeriesConverter;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.report.ReportCUtils;
-import com.powsybl.timeseries.DoubleTimeSeries;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -51,7 +51,6 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DynamicMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.EventMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.commons.Util;
@@ -133,7 +132,13 @@ public final class DynamicSimulationCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
                 EventModelsSupplier eventModelsSupplier = ObjectHandles.getGlobal().get(eventModelsSupplierHandle);
+                if (eventModelsSupplier == null) {
+                    eventModelsSupplier = EventModelsSupplier.empty();
+                }
                 OutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesSupplierHandle);
+                if (outputVariablesSupplier == null) {
+                    outputVariablesSupplier = OutputVariablesSupplier.empty();
+                }
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 if (reportNode == null) {
                     reportNode = ReportNode.NO_OP;
@@ -154,46 +159,70 @@ public final class DynamicSimulationCFunctions {
 
     @CEntryPoint(name = "addDynamicMappings")
     public static void addDynamicMappings(IsolateThread thread, ObjectHandle dynamicMappingHandle,
-                                          DynamicMappingType mappingType,
+                                          CCharPointer categoryNamePtr,
                                           DataframeArrayPointer mappingDataframePtr,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
                 PythonDynamicModelsSupplier dynamicMapping = ObjectHandles.getGlobal().get(dynamicMappingHandle);
                 List<UpdatingDataframe> mappingDataframes = new ArrayList<>();
                 for (int i = 0; i < mappingDataframePtr.getDataframesCount(); i++) {
                     mappingDataframes.add(createDataframe(mappingDataframePtr.getDataframes().addressOf(i)));
                 }
-                DynamicMappingHandler.addElements(mappingType, dynamicMapping, mappingDataframes);
+                DynamicMappingHandler.addElements(categoryName, dynamicMapping, mappingDataframes);
             }
         });
     }
 
     @CEntryPoint(name = "getDynamicMappingsMetaData")
     public static DataframesMetadataPointer getDynamicMappingsMetaData(IsolateThread thread,
-                                                                       DynamicMappingType mappingType,
+                                                                       CCharPointer categoryNamePtr,
                                                                        ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(mappingType);
-            DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
-            int i = 0;
-            for (List<SeriesMetadata> dataframeMetadata : metadata) {
-                CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
-                i++;
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframesMetadataPointer get() {
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
+                List<List<SeriesMetadata>> metadata = DynamicMappingHandler.getMetadata(categoryName);
+                DataframeMetadataPointer dataframeMetadataArray = UnmanagedMemory.calloc(metadata.size() * SizeOf.get(DataframeMetadataPointer.class));
+                int i = 0;
+                for (List<SeriesMetadata> dataframeMetadata : metadata) {
+                    CTypeUtil.createSeriesMetadata(dataframeMetadata, dataframeMetadataArray.addressOf(i));
+                    i++;
+                }
+                DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
+                res.setDataframesMetadata(dataframeMetadataArray);
+                res.setDataframesCount(metadata.size());
+                return res;
             }
-            DataframesMetadataPointer res = UnmanagedMemory.calloc(SizeOf.get(DataframesMetadataPointer.class));
-            res.setDataframesMetadata(dataframeMetadataArray);
-            res.setDataframesCount(metadata.size());
-            return res;
         });
+    }
+
+    @CEntryPoint(name = "getCategories")
+    public static ArrayPointer<CCharPointerPointer> getCategories(IsolateThread thread,
+                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () ->
+                Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getCategories())));
+    }
+
+    @CEntryPoint(name = "getCategoriesInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getCategoriesInformation(IsolateThread thread,
+                                                                                          ExceptionHandlerPointer exceptionHandlerPtr) {
+        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.categoriesDataFrameMapper(),
+                DynamicMappingHandler.getDynamicMappingAdders());
     }
 
     @CEntryPoint(name = "getSupportedModels")
     public static ArrayPointer<CCharPointerPointer> getSupportedModels(IsolateThread thread,
-                                                                      DynamicMappingType mappingType,
-                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(mappingType))));
+                                                                       CCharPointer categoryNamePtr,
+                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() throws IOException {
+                return Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr))));
+            }
+        });
     }
 
     @CEntryPoint(name = "addEventMappings")
@@ -265,32 +294,15 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
-    @CEntryPoint(name = "getDynamicCurve")
-    public static ArrayPointer<SeriesPointer> getDynamicCurve(IsolateThread thread,
-                                                              ObjectHandle resultHandle,
-                                                              CCharPointer curveNamePtr,
-                                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "getDynamicCurves")
+    public static ArrayPointer<SeriesPointer> getDynamicCurves(IsolateThread thread,
+                                                               ObjectHandle resultHandle,
+                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<SeriesPointer>>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
                 DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-                String curveName = CTypeUtil.toString(curveNamePtr);
-                DoubleTimeSeries curve = result.getCurve(curveName);
-                return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.curvesDataFrameMapper(curveName), curve);
-
-            }
-        });
-    }
-
-    @CEntryPoint(name = "getAllDynamicCurvesIds")
-    public static ArrayPointer<CCharPointerPointer> getAllDynamicCurvesIds(IsolateThread thread,
-                                                                           ObjectHandle resultHandle,
-                                                                           ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
-            @Override
-            public ArrayPointer<CCharPointerPointer> get() throws IOException {
-                DynamicSimulationResult result = ObjectHandles.getGlobal().get(resultHandle);
-                return Util.createCharPtrArray(new ArrayList<>(result.getCurves().keySet()));
+                return TimeSeriesConverter.createCDataframe(result.getCurves().values().stream().toList());
             }
         });
     }

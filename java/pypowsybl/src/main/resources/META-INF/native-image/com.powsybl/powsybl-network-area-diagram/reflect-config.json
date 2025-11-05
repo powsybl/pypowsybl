@@ -18,6 +18,18 @@
     "allDeclaredConstructors":true
   },
   {
+    "name":"com.powsybl.nad.svg.metadata.InjectionMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.nad.svg.metadata.EdgeInfoMetadata",
+    "allDeclaredFields":true,
+    "allDeclaredMethods":true,
+    "allDeclaredConstructors":true
+  },
+  {
     "name":"com.powsybl.nad.svg.metadata.EdgeMetadata",
     "allDeclaredFields":true,
     "allDeclaredMethods":true,

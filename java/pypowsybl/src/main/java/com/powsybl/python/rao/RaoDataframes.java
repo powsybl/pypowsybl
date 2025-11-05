@@ -4,7 +4,6 @@ import com.powsybl.contingency.Contingency;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.iidm.network.TwoSides;
-import com.powsybl.openrao.commons.MinOrMax;
 import com.powsybl.openrao.commons.OpenRaoException;
 import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
@@ -166,8 +165,8 @@ public final class RaoDataframes {
                 instant,
                 contingencyOpt.isPresent() ? contingencyOpt.get().getId() : "",
                 TwoSides.ONE,
-                result.getVoltage(instant, cnec, MinOrMax.MIN, Unit.KILOVOLT),
-                result.getVoltage(instant, cnec, MinOrMax.MAX, Unit.KILOVOLT),
+                result.getMinVoltage(instant, cnec, Unit.KILOVOLT),
+                result.getMaxVoltage(instant, cnec, Unit.KILOVOLT),
                 result.getMargin(instant, cnec, Unit.KILOVOLT)
             ));
         } catch (OpenRaoException exception) {

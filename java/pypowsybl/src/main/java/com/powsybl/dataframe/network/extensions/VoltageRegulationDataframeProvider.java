@@ -13,13 +13,14 @@ import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
-import com.powsybl.iidm.network.Battery;
-import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.VoltageRegulation;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import static com.powsybl.dataframe.network.extensions.VoltageRegulationDataframeAdder.getTerminal;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -34,7 +35,7 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(VoltageRegulation.NAME, "it allows to specify the voltage regulation mode for batteries",
-                "index : id (str), voltage_regulator_on (bool), target_v (float)");
+                "index : id (str), voltage_regulator_on (bool), target_v (float), regulated_element_id (str)");
     }
 
     private Stream<VoltageRegulation> itemsStream(Network network) {
@@ -48,7 +49,11 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
         if (battery == null) {
             throw new PowsyblException("Battery '" + id + "' not found");
         }
-        return battery.getExtension(VoltageRegulation.class);
+        VoltageRegulation extension = battery.getExtension(VoltageRegulation.class);
+        if (extension == null) {
+            throw new PowsyblException("Voltage regulation extension for battery '" + id + "' not found");
+        }
+        return extension;
     }
 
     @Override
@@ -57,6 +62,8 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
                 .stringsIndex("id", vr -> vr.getExtendable().getId())
                 .booleans("voltage_regulator_on", VoltageRegulation::isVoltageRegulatorOn, VoltageRegulation::setVoltageRegulatorOn)
                 .doubles("target_v", (vr, context) -> vr.getTargetV(), (vr, targetV, context) -> vr.setTargetV(targetV))
+                .strings("regulated_element_id", this::getRegulatedBusId,
+                        (regulation, id) -> this.setRegulatedTerminal(id, regulation))
                 .build();
     }
 
@@ -71,5 +78,17 @@ public class VoltageRegulationDataframeProvider extends AbstractSingleDataframeN
     @Override
     public NetworkElementAdder createAdder() {
         return new VoltageRegulationDataframeAdder();
+    }
+
+    private String getRegulatedBusId(VoltageRegulation regulation) {
+        Terminal terminal = regulation.getRegulatingTerminal();
+        return terminal.getConnectable() != null ? terminal.getConnectable().getId() : null;
+    }
+
+    private void setRegulatedTerminal(String id, VoltageRegulation regulation) {
+        Identifiable<Battery> injection = regulation.getExtendable();
+        Network network = injection.getNetwork();
+        Terminal terminal = getTerminal(network, id, injection.getId());
+        regulation.setRegulatingTerminal(terminal);
     }
 }
