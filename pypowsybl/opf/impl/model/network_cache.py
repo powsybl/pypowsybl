@@ -28,6 +28,11 @@ class NetworkCache:
         self._batteries = self._build_batteries(network, self.buses)
         self._current_limits1, self._current_limits2 = self._build_current_limits(network)
         self._slack_terminal = self._build_stack_terminal(network, self.buses)
+        self._slack_terminal = self._network.get_extensions('slackTerminal')
+        self._dc_nodes = self._build_dc_nodes(network)
+        self._dc_lines = self._build_dc_lines(network, self.dc_nodes)
+        self._voltage_source_converters = self._build_voltage_source_converters(network, self.buses, self.dc_nodes)
+
 
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
@@ -191,6 +196,21 @@ class NetworkCache:
         slack_terminal = network.get_extensions('slackTerminal')
         return NetworkCache._filter_injections(slack_terminal, buses)
 
+    @staticmethod
+    def _build_dc_lines(network: Network, dc_nodes: DataFrame):
+        return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
+
+    @staticmethod
+    def _build_dc_nodes(network: Network):
+        return network.get_dc_nodes(attributes=['nominal_v'])
+
+    @staticmethod
+    def _build_voltage_source_converters(network: Network, buses: DataFrame, dc_nodes: DataFrame):
+        return network.get_voltage_source_converters(attributes=['dc_node1_id', 'dc_node2_id', 'bus_id', 'voltage_regulator_on',
+                                                                 'control_mode', 'target_p', 'target_q', 'target_v_dc', 'target_v_ac',
+                                                                 'idle_loss', 'switching_loss', 'resistive_loss',
+                                                                 'dc_connected1', 'dc_connected2'])
+
     @property
     def network(self) -> Network:
         return self._network
@@ -262,6 +282,18 @@ class NetworkCache:
     @property
     def slack_terminal(self) -> DataFrame:
         return self._slack_terminal
+
+    @property
+    def dc_lines(self) -> DataFrame:
+        return self._dc_lines
+
+    @property
+    def dc_nodes(self) -> DataFrame:
+        return self._dc_nodes
+
+    @property
+    def voltage_source_converters(self) -> DataFrame:
+        return self._voltage_source_converters
 
     @staticmethod
     def is_rectifier(vsc_cs_id: str, hvdc_line_row) -> bool:
