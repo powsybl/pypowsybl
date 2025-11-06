@@ -86,6 +86,15 @@ class PowerBalanceConstraints(Constraints):
                 buses_balance.p_gen[bus_num].append(variable_context.vsc_cs_p_vars[vsc_cs_index])
                 buses_balance.q_gen[bus_num].append(variable_context.vsc_cs_q_vars[vsc_cs_index])
 
+        # voltage source converters
+        for conv_num, row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
+            bus_id = row.bus_id
+            if bus_id:
+                conv_index = variable_context.conv_num_2_index[conv_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                buses_balance.p_load[bus_num]-= variable_context.conv_p_vars[conv_index]
+                buses_balance.q_load[bus_num]-= variable_context.conv_q_vars[conv_index]
+
         # boundary lines
         bl_buses_balance = self.BusesBalance(len(variable_context.bl_v_vars))
         PowerBalanceConstraints._add_bl_buses_expr(buses_balance, bl_buses_balance, network_cache, variable_context)

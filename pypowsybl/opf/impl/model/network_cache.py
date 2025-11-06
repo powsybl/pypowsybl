@@ -39,9 +39,9 @@ class NetworkCache:
         self._reactive_capability_curve_points = self._build_reactive_capability_curve_points(network, self._generators, self._vsc_converter_stations)
         self._slack_terminal = self._network.get_extensions('slackTerminal')
         self._dc_nodes = self._build_dc_nodes(network)
-        self._dc_lines = self._build_dc_lines(network, self.dc_nodes)
-        self._voltage_source_converters = self._build_voltage_source_converters(network, self.buses, self.dc_nodes)
-
+        self._dc_lines = self._build_dc_lines(network)
+        self._voltage_source_converters = self._build_voltage_source_converters(network)
+        self._dc_grounds = self._build_dc_grounds(network)
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
         if len(injections) == 0:
@@ -220,7 +220,7 @@ class NetworkCache:
         return points.set_index(['id', 'num'])
 
     @staticmethod
-    def _build_dc_lines(network: Network, dc_nodes: DataFrame):
+    def _build_dc_lines(network: Network):
         return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
 
     @staticmethod
@@ -228,11 +228,15 @@ class NetworkCache:
         return network.get_dc_nodes(attributes=['nominal_v'])
 
     @staticmethod
-    def _build_voltage_source_converters(network: Network, buses: DataFrame, dc_nodes: DataFrame):
+    def _build_voltage_source_converters(network: Network):
         return network.get_voltage_source_converters(attributes=['dc_node1_id', 'dc_node2_id', 'bus_id', 'voltage_regulator_on',
                                                                  'control_mode', 'target_p', 'target_q', 'target_v_dc', 'target_v_ac',
                                                                  'idle_loss', 'switching_loss', 'resistive_loss',
                                                                  'dc_connected1', 'dc_connected2'])
+
+    @staticmethod
+    def _build_dc_grounds(network: Network):
+        return network.get_dc_grounds(attributes=['dc_node_id', 'r'])
 
     @property
     def network(self) -> Network:
@@ -321,6 +325,10 @@ class NetworkCache:
     @property
     def voltage_source_converters(self) -> DataFrame:
         return self._voltage_source_converters
+
+    @property
+    def dc_grounds(self) -> DataFrame:
+        return self._dc_grounds
 
     @staticmethod
     def is_rectifier(vsc_cs_id: str, hvdc_line_row: HvdcRow) -> bool:
