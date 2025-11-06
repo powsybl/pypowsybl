@@ -168,4 +168,13 @@ class PowerBalanceConstraints(Constraints):
                     t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg3_index])
                     t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg3_index])
 
+        # voltage source converters
+        for conv_num, row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
+            bus_id = row.bus_id
+            if bus_id:
+                conv_index = variable_context.conv_num_2_index[conv_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                buses_balance.p_load[bus_num]+= variable_context.conv_p_vars[conv_index]
+                buses_balance.q_load[bus_num]+= variable_context.conv_q_vars[conv_index]
+
         return buses_balance.to_expr() + dl_buses_balance.to_expr() + t3_buses_balance.to_expr()

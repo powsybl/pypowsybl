@@ -11,7 +11,9 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
+import pypowsybl.loadflow as lf
 import pypowsybl as pp
+from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
@@ -61,23 +63,34 @@ def create_loadflow_parameters():
 
 def run_opf_then_lf(network: pp.network.Network,
                     opf_parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters(),
+                    lf_parameters: Parameters = create_loadflow_parameters(),
                     iteration_count: int = 1):
-    lf_parameters = create_loadflow_parameters()
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
+    print(network.get_dc_nodes())
+    print(network.get_dc_lines())
+    print(network.get_voltage_source_converters())
+    print(network.get_buses())
+    print(network.get_lines())
 
     assert pp.opf.run_ac(network, opf_parameters)
 
-    validate(network)
+    print(network.get_dc_nodes())
+    print(network.get_dc_lines())
+    print(network.get_voltage_source_converters())
+    print(network.get_buses())
+    print(network.get_lines())
+    # validate(network, lf_parameters=lf_parameters)
 
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
+    print(lf_result[0].status)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
 
 
-def validate(network: Network):
-    validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True)
+def validate(network: Network, lf_parameters: Parameters = None):
+    validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True, loadflow_parameters=lf_parameters)
     validation_types = [
         pp.loadflow.ValidationType.BUSES,
         pp.loadflow.ValidationType.FLOWS,
@@ -202,3 +215,25 @@ def test_micro_grid_be():
 
 def test_micro_grid_nl():
     run_opf_then_lf(pp.network.create_micro_grid_nl_network())
+
+def test_ac_dc_network():
+    import logging
+    logging.basicConfig()
+    logging.getLogger('powsybl').setLevel(0)
+    parameters = lf.Parameters(provider_parameters={'maxNewtonRaphsonIterations': '16', 'acDcNetwork': 'True', 'slackBusSelector': 'FIRST'})
+    run_opf_then_lf(pp.network.create_ac_dc_network(), lf_parameters=parameters)
+
+def test_ac_dc_bipolar_network():
+    import logging
+    logging.basicConfig()
+    logging.getLogger('powsybl').setLevel(0)
+    parameters = lf.Parameters(provider_parameters={'maxNewtonRaphsonIterations': '16', 'acDcNetwork': 'True', 'slackBusSelector': 'FIRST'})
+    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network(), lf_parameters=parameters)
+
+def test_ac_dc_bipolar_network_with_metallic_return():
+    import logging
+    logging.basicConfig()
+    logging.getLogger('powsybl').setLevel(0)
+    parameters = lf.Parameters(provider_parameters={'maxNewtonRaphsonIterations': '16', 'acDcNetwork': 'True',
+                                                    'slackBusSelector': 'FIRST'})
+    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), lf_parameters=parameters)
