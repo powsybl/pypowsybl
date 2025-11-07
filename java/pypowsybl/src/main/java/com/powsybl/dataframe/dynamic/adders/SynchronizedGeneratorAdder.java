@@ -8,6 +8,8 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.generators.SynchronizedGeneratorBuilder;
@@ -20,6 +22,15 @@ import java.util.Collection;
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class SynchronizedGeneratorAdder extends AbstractEquipmentAdder {
+
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "SynchronizedGenerator",
+            "Generator synchronized with the network frequency",
+            CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
+
+    protected SynchronizedGeneratorAdder() {
+        super(CATEGORY_INFORMATION);
+    }
 
     @Override
     public Collection<ModelInfo> getSupportedModels() {

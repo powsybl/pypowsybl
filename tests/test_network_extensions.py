@@ -541,6 +541,54 @@ def test_reference_priorities():
     assert network.get_extensions('referencePriorities').empty
 
 
+def test_voltage_per_reactive_power_control():
+    network = pn.create_four_substations_node_breaker_network()
+    assert network.get_extensions('voltagePerReactivePowerControl').empty
+
+    network.create_extensions('voltagePerReactivePowerControl', id="SVC", slope=0.5)
+    e = network.get_extensions('voltagePerReactivePowerControl')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['SVC']),
+        columns=['slope'],
+        data=[[0.5]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('voltagePerReactivePowerControl', id="SVC", slope=0.8)
+    e = network.get_extensions('voltagePerReactivePowerControl')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['SVC']),
+        columns=['slope'],
+        data=[[0.8]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('voltagePerReactivePowerControl', ids="SVC")
+    assert network.get_extensions('voltagePerReactivePowerControl').empty
+
+
+def test_batteries_voltage_regulation():
+    network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
+    assert network.get_extensions('voltageRegulation').empty
+
+    network.create_extensions('voltageRegulation', id='BAT', voltage_regulator_on=True, target_v=400.0)
+    e = network.get_extensions('voltageRegulation')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT']),
+        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
+        data=[[True, 400.0, 'BAT']])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('voltageRegulation', id=['BAT'], voltage_regulator_on=False, target_v=399.0)
+    e = network.get_extensions('voltageRegulation')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT']),
+        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
+        data=[[False, 399.0, 'BAT']])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('voltageRegulation', ['BAT'])
+    assert network.get_extensions('voltageRegulation').empty
+
+
 def test_batteries_voltage_regulation():
     network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
     assert network.get_extensions('voltageRegulation').empty
@@ -612,4 +660,7 @@ def test_get_extensions_information():
     assert extensions_information.loc['linePosition']['attributes'] == 'index : id (str), num (int), latitude (float), longitude (float)'
     assert extensions_information.loc['referencePriorities']['detail'] == 'Defines the angle reference generator, busbar section or load of a power flow calculation, i.e. which bus will be used with a zero-voltage angle.'
     assert extensions_information.loc['referencePriorities']['attributes'] == 'index : id (str), priority (int)'
-    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float)'
+    assert extensions_information.loc['voltagePerReactivePowerControl']['detail'] == 'Models the voltage control static var compensators'
+    assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
+    assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
+    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float), regulated_element_id (str)'

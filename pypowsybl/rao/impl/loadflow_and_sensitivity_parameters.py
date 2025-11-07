@@ -1,3 +1,9 @@
+# Copyright (c) 2025, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
 from typing import Optional
 
 from pypowsybl._pypowsybl import (
@@ -35,7 +41,11 @@ class LoadFlowAndSensitivityParameters:
         self.sensitivity_failure_overcost = c_parameters.sensitivity_failure_overcost
         sensitivity_provider_params = dict(zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
         self.sensitivity_parameters = SensitivityParameters(parameters_from_c(c_parameters.sensitivity_parameters.loadflow_parameters),
-                                                            sensitivity_provider_params)
+                                                            sensitivity_provider_params,
+                                                            c_parameters.sensitivity_parameters.flow_flow_sensitivity_value_threshold,
+                                                            c_parameters.sensitivity_parameters.voltage_voltage_sensitivity_value_threshold,
+                                                            c_parameters.sensitivity_parameters.flow_voltage_sensitivity_value_threshold,
+                                                            c_parameters.sensitivity_parameters.angle_flow_sensitivity_value_threshold)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \

@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -34,9 +36,13 @@ public class PhaseShifterBlockingIAdder extends AbstractSimpleDynamicModelAdder 
             SeriesMetadata.strings(MODEL_NAME),
             SeriesMetadata.strings(PHASE_SHIFTER_ID));
 
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "PhaseShifterBlockingI",
+            "Phase shifter blocking I",
+            CategoryAttributeUtils.createFromMetadata(METADATA));
+
+    public PhaseShifterBlockingIAdder() {
+        super(Collections.singletonList(METADATA), CATEGORY_INFORMATION);
     }
 
     @Override

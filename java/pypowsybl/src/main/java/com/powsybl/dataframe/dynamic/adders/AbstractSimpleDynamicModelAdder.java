@@ -7,6 +7,8 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 
@@ -16,6 +18,29 @@ import java.util.List;
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 abstract class AbstractSimpleDynamicModelAdder implements DynamicMappingAdder {
+
+    private final List<List<SeriesMetadata>> metadata;
+    private final CategoryInformation categoryInformation;
+
+    protected AbstractSimpleDynamicModelAdder(List<List<SeriesMetadata>> metadata, CategoryInformation categoryInformation) {
+        this.metadata = metadata;
+        this.categoryInformation = categoryInformation;
+    }
+
+    @Override
+    public List<List<SeriesMetadata>> getMetadata() {
+        return metadata;
+    }
+
+    @Override
+    public CategoryInformation getCategoryInformation() {
+        return categoryInformation;
+    }
+
+    @Override
+    public String getCategory() {
+        return categoryInformation.name();
+    }
 
     @Override
     public void addElements(PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframes) {

@@ -1625,16 +1625,19 @@ public final class NetworkDataframes {
     }
 
     private static NetworkDataframeMapper operationalLimits(boolean onlyActive) {
-        return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits)
+        return NetworkDataframeMapperBuilder.ofStream(onlyActive ? NetworkUtil::getSelectedLimits : NetworkUtil::getLimits,
+                        NetworkDataframes::getLimit)
                 .stringsIndex("element_id", TemporaryLimitData::getId)
                 .enums("element_type", IdentifiableType.class, TemporaryLimitData::getElementType)
-                .enums("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
+                .enumsIndex("side", TemporaryLimitData.Side.class, TemporaryLimitData::getSide)
                 .strings("name", TemporaryLimitData::getName)
-                .enums("type", LimitType.class, TemporaryLimitData::getType)
-                .doubles("value", (limit, context) -> perUnitLimitValue(context, limit))
-                .ints("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
+                .enumsIndex("type", LimitType.class, TemporaryLimitData::getType)
+                .doubles("value", (limit, context) -> perUnitLimitValue(context, limit),
+                        (limit, value, context) ->
+                                limit.changeLimitValue(unPerUnitLimitValue(context, limit, value)))
+                .intsIndex("acceptable_duration", TemporaryLimitData::getAcceptableDuration)
                 .booleans("fictitious", TemporaryLimitData::isFictitious, false)
-                .strings("group_name", TemporaryLimitData::getGroupId, false)
+                .stringsIndex("group_name", TemporaryLimitData::getGroupId)
                 .booleans("selected", TemporaryLimitData::isSelected, false)
                 .build();
     }
@@ -1650,6 +1653,106 @@ public final class NetworkDataframes {
             case VOLTAGE_ANGLE ->
                 perUnitAngle(context, limit.getValue());
         };
+    }
+
+    private static double unPerUnitLimitValue(NetworkDataframeContext context, TemporaryLimitData limit, double value) {
+        return switch (limit.getType()) {
+            case CURRENT -> unPerUnitI(context, value, limit.getPerUnitingNominalV());
+            case ACTIVE_POWER, APPARENT_POWER -> unPerUnitPQ(context, value);
+            case VOLTAGE -> unPerUnitV(context, value, limit.getPerUnitingNominalV());
+            case VOLTAGE_ANGLE -> unPerUnitAngle(context, value);
+        };
+    }
+
+    private static TemporaryLimitData getLimit(Network network, UpdatingDataframe dataframe, int index) {
+        String id = dataframe.getStringValue("element_id", index)
+                .orElseThrow(() -> new IllegalArgumentException("element_id column is missing"));
+        Identifiable<?> identifiable = network.getIdentifiable(id);
+        if (identifiable == null) {
+            throw new PowsyblException("element " + id + " not found");
+        }
+        String groupName = dataframe.getStringValue("group_name", index)
+                .orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID);
+        String sideStr = dataframe.getStringValue("side", index).orElse(null);
+        OperationalLimitsGroup group;
+        if (sideStr == null || sideStr.equals("NONE")) {
+            if (identifiable instanceof DanglingLine) {
+                group = ((DanglingLine) identifiable).getOperationalLimitsGroup(groupName)
+                        .orElseThrow(() -> new IllegalArgumentException("No limit group named " + groupName + " for element " + id));
+            } else {
+                throw new PowsyblException("side must be provided for this element : " + id);
+            }
+        } else {
+            TemporaryLimitData.Side side = TemporaryLimitData.Side.valueOf(sideStr);
+            group = getLimitGroup(identifiable, side, groupName)
+                    .orElseThrow(() -> new IllegalArgumentException("No limit group named " + groupName + " for element "
+                            + id + "and side " + side));
+        }
+
+        String typeStr = dataframe.getStringValue("type", index)
+                .orElseThrow(() -> new IllegalArgumentException("type column is missing"));
+        LimitType type = LimitType.valueOf(typeStr);
+        LoadingLimits limits = getLimitSet(group, type, id);
+
+        int acceptableDuration = dataframe.getIntValue("acceptable_duration", index)
+                .orElseThrow(() -> new IllegalArgumentException("acceptable_duration column is missing"));
+        if (!checkLimitExist(limits, acceptableDuration)) {
+            throw new PowsyblException("No limit found for the specified values.");
+        }
+        TemporaryLimitData.Side side = TemporaryLimitData.Side.valueOf(sideStr);
+        return new TemporaryLimitData(id, "", side, 0, type, IdentifiableType.LINE, acceptableDuration, false, groupName,
+                false, 100, limits);
+    }
+
+    private static Optional<OperationalLimitsGroup> getLimitGroup(Identifiable<?> identifiable, TemporaryLimitData.Side side, String groupName) {
+        if (identifiable instanceof Branch) {
+            switch (side) {
+                case ONE -> {
+                    return ((Branch) identifiable).getOperationalLimitsGroup1(groupName);
+                } case TWO -> {
+                    return ((Branch) identifiable).getOperationalLimitsGroup2(groupName);
+                } default ->
+                    throw new PowsyblException("side must be ONE or TWO for this element : " + identifiable.getId());
+            }
+        } else if (identifiable instanceof ThreeWindingsTransformer) {
+            switch (side) {
+                case ONE -> {
+                    return ((ThreeWindingsTransformer) identifiable).getLeg1().getOperationalLimitsGroup(groupName);
+                } case TWO -> {
+                    return ((ThreeWindingsTransformer) identifiable).getLeg2().getOperationalLimitsGroup(groupName);
+                } case THREE -> {
+                    return ((ThreeWindingsTransformer) identifiable).getLeg3().getOperationalLimitsGroup(groupName);
+                } default ->
+                    throw new PowsyblException("side must be ONE, TWO or THREE for this element : " + identifiable.getId());
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static LoadingLimits getLimitSet(OperationalLimitsGroup group, LimitType type, String id) {
+        switch (type) {
+            case CURRENT -> {
+                return group.getCurrentLimits()
+                        .orElseThrow(() -> new PowsyblException("No current limits found for element " + id));
+            }
+            case ACTIVE_POWER -> {
+                return group.getActivePowerLimits()
+                        .orElseThrow(() -> new PowsyblException("No active power limits found for element " + id));
+            }
+            case APPARENT_POWER -> {
+                return group.getApparentPowerLimits()
+                        .orElseThrow(() -> new PowsyblException("No apparent power limits found for element " + id));
+            }
+            default -> throw new PowsyblException("No limits of type " + type);
+        }
+    }
+
+    private static boolean checkLimitExist(LoadingLimits limits, int acceptableDuration) {
+        if (acceptableDuration == -1) {
+            return true;
+        }
+        LoadingLimits.TemporaryLimit tl = limits.getTemporaryLimit(acceptableDuration);
+        return tl != null;
     }
 
     private static Stream<Pair<String, ReactiveLimitsHolder>> streamReactiveLimitsHolder(Network network) {
