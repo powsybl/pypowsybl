@@ -181,7 +181,8 @@ class NetworkCache:
 
     @staticmethod
     def _build_current_limits(network: Network) -> tuple[DataFrame, DataFrame]:
-        limits = network.get_operational_limits(attributes=['side', 'type', 'name', 'value'])
+        limits = network.get_operational_limits(attributes=['name', 'value']).reset_index(
+            level=['side', 'type', 'acceptable_duration', 'group_name'])
         limits = limits[(limits['type'] == 'CURRENT') & (limits['name'] == 'permanent_limit')]
         return limits[limits['side'] == 'ONE'][['value']], limits[limits['side'] == 'TWO'][['value']]
 
