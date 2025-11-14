@@ -81,6 +81,11 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.powsybl</groupId>
+                <artifactId>powsybl-open-loadflow</artifactId>
+                <version>2.0.0-CUSTOM</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

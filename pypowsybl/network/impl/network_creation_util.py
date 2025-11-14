@@ -292,13 +292,13 @@ Returns:
     n.create_dc_lines(id='dlGn', dc_node1_id='dnGn', dc_node2_id='dnGr', r=1000000)
     n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
     n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
-    n.create_voltage_source_converter(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
-                                      bus_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
-                                      target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+    n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
+                                      target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
                                       dc_connected1=1, dc_connected2=1)
-    n.create_voltage_source_converter(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
-                                      bus_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
-                                      target_v_dc=400.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+    n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
+                                      bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                      target_v_dc=400.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
                                       dc_connected1=1, dc_connected2=1)
     return n
 
@@ -335,21 +335,21 @@ Returns:
     n.create_dc_lines(id='dlG4r', dc_node1_id='dnGr', dc_node2_id='dn4r', r=0.1)
     n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
     n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
-    n.create_voltage_source_converter(id='conv23p', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3r',
-                                      bus_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
-                                      target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+    n.create_voltage_source_converters(id='conv23p', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3r',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
+                                      target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
                                       dc_connected1=1, dc_connected2=1)
-    n.create_voltage_source_converter(id='conv23n', voltage_level_id='vl2', dc_node1_id='dn3n', dc_node2_id='dn3r',
-                                      bus_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
-                                      target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+    n.create_voltage_source_converters(id='conv23n', voltage_level_id='vl2', dc_node1_id='dn3n', dc_node2_id='dn3r',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
+                                      target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
                                       dc_connected1=1, dc_connected2=1)
-    n.create_voltage_source_converter(id='conv45p', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4r',
-                                      bus_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
-                                      target_v_dc=200.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+    n.create_voltage_source_converters(id='conv45p', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4r',
+                                      bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                      target_v_dc=200.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
                                       dc_connected1=1, dc_connected2=1)
-    n.create_voltage_source_converter(id='conv45n', voltage_level_id='vl5', dc_node1_id='dn4n', dc_node2_id='dn4r',
-                                      bus_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
-                                      target_v_dc=-200.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+    n.create_voltage_source_converters(id='conv45n', voltage_level_id='vl5', dc_node1_id='dn4n', dc_node2_id='dn4r',
+                                      bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
+                                      target_v_dc=-200.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
                                       dc_connected1=1, dc_connected2=1)
 
     return n

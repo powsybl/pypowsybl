@@ -81,18 +81,24 @@ def run_opf_then_lf(network: pp.network.Network,
     print(network.get_buses())
     print(network.get_lines())
 
-    # validate is not implemented for DC components yet
-    # validate(network, lf_parameters=lf_parameters)
+    if lf_parameters.provider_parameters.get("acDcNetwork") != 'True':
+        validate(network)
 
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
+
+    print(network.get_dc_nodes())
+    print(network.get_dc_lines())
+    print(network.get_voltage_source_converters())
+    print(network.get_buses())
+    print(network.get_lines())
 
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
 
 
-def validate(network: Network, lf_parameters: Parameters = None):
-    validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True, loadflow_parameters=lf_parameters)
+def validate(network: Network):
+    validation_parameters = pp.loadflow.ValidationParameters(threshold=1, check_main_component_only=True)
     validation_types = [
         pp.loadflow.ValidationType.BUSES,
         pp.loadflow.ValidationType.FLOWS,
@@ -218,14 +224,17 @@ def test_micro_grid_be():
 def test_micro_grid_nl():
     run_opf_then_lf(pp.network.create_micro_grid_nl_network())
 
-def test_ac_dc_network():
-    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST'})
-    run_opf_then_lf(pp.network.create_ac_dc_network(), lf_parameters=parameters, iteration_count=2)
+def test_vsc_symmetrical_monopole():
+    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST', 'acDcNetwork': 'True'})
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    run_opf_then_lf(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), lf_parameters=parameters, opf_parameters=opf_parameters, iteration_count=2)
 
 def test_ac_dc_bipolar_network():
-    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST'})
-    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network(), lf_parameters=parameters, iteration_count=3)
+    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST', 'acDcNetwork': 'True'})
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network(), lf_parameters=parameters, opf_parameters=opf_parameters)
 
-def test_ac_dc_bipolar_network_with_metallic_return():
-    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST'})
-    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), lf_parameters=parameters, iteration_count=3)
+def test_ac_dc_bipolar_metallic_return():
+    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST', 'acDcNetwork': 'True'})
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), lf_parameters=parameters, opf_parameters=opf_parameters)
