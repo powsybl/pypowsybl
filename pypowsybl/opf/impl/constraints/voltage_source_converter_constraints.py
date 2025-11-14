@@ -11,7 +11,7 @@ class VoltageSourceConverterConstraints(Constraints):
             model: ipopt.Model) -> None:
         for converter_num, converter_row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
             with nl.graph():
-                dc_node1_id, dc_node2_id, bus_id = converter_row.dc_node1_id, converter_row.dc_node2_id, converter_row.bus_id
+                dc_node1_id, dc_node2_id, bus1_id = converter_row.dc_node1_id, converter_row.dc_node2_id, converter_row.bus1_id
                 voltage_regulator_on, control_mode = converter_row.voltage_regulator_on, converter_row.control_mode
                 target_p, target_q, target_v_dc, target_v_ac = (converter_row.target_p, converter_row.target_q,
                                                                 converter_row.target_v_dc, converter_row.target_v_ac)
@@ -21,11 +21,11 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
                 dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
-                bus_num = network_cache.buses.index.get_loc(bus_id)
+                bus1_num = network_cache.buses.index.get_loc(bus1_id)
                 v1_var = variable_context.v_dc_vars[dc_node1_num]
                 v2_var = variable_context.v_dc_vars[dc_node2_num]
 
-                bus_v_var = variable_context.v_vars[bus_num]
+                bus1_v_var = variable_context.v_vars[bus1_num]
                 conv_q_var = variable_context.conv_q_vars[converter_num]
                 conv_p_var = variable_context.conv_p_vars[converter_num]
                 conv_i_var = variable_context.conv_i_vars[converter_num]
@@ -35,10 +35,13 @@ class VoltageSourceConverterConstraints(Constraints):
                     model.add_nl_constraint(p_ac_eq == 0.0)
 
                 # if control_mode == "V_DC", we let the opf determine the value of U
+                # if control_mode == "V_DC":
+                #     v_dc_eq = v1_var - v2_var - target_v_dc
+                #     model.add_nl_constraint(v_dc_eq == 0.0)
 
                 if voltage_regulator_on:
-                    bus_v_eq = bus_v_var - target_v_ac
-                    model.add_nl_constraint(bus_v_eq == 0.0)
+                    bus1_v_eq = bus1_v_var - target_v_ac
+                    model.add_nl_constraint(bus1_v_eq == 0.0)
                 else:
                     q_ac_eq = conv_q_var - target_q
                     model.add_nl_constraint(q_ac_eq == 0.0)

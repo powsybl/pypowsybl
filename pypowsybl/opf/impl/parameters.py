@@ -13,6 +13,7 @@ from pypowsybl.opf.impl.model.model_parameters import SolverType
 class OptimalPowerFlowMode(Enum):
     LOADFLOW = "LOADFLOW"
     REDISPATCHING = "REDISPATCHING"
+    ACDC = "ACDC"
 
 
 class OptimalPowerFlowParameters:

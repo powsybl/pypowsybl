@@ -82,7 +82,8 @@ class OptimalPowerFlow:
                            BoundaryLineVoltageBounds(),
                            Transformer3wMiddleVoltageBounds(),
                            VoltageSourceConverterPowerBounds(),
-                           DcNodeVoltageBounds()]
+                           DcNodeVoltageBounds(),
+                           DcLineCurrentBounds()]
         constraints: list[Constraints] = [BranchFlowConstraints(),
                                           ShuntFlowConstraints(),
                                           StaticVarCompensatorReactiveLimitsConstraints(),
@@ -97,6 +98,8 @@ class OptimalPowerFlow:
         if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
             constraints.append(CurrentLimitConstraints())
             cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
+        elif parameters.mode == OptimalPowerFlowMode.LOADFLOW:
+            cost_function = MinimizeAgainstReferenceCostFunction()
         else:
             cost_function = MinimizeDcLossesFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
@@ -106,14 +109,13 @@ class OptimalPowerFlow:
                                            parameters.solver_options)
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
-        #BATTERY don't have target_v attribute and VSC_CONVERTER no target_p
         network_stats = NetworkStatistics(network_cache)
         network_stats.add(ElementType.GENERATOR, 'target_v')
-        # network_stats.add(ElementType.BATTERY, 'target_v')
+        network_stats.add(ElementType.BATTERY, 'target_v')
         network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_v')
         network_stats.add(ElementType.GENERATOR, 'target_p')
         network_stats.add(ElementType.BATTERY, 'target_p')
-        # network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
+        network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
 
         logger.info(f"Starting optimization with {parameters.solver_type.name}...")
         start = time.perf_counter()

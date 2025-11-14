@@ -55,6 +55,6 @@ class DcCurrentBalanceConstraints(Constraints):
             if row.dc_connected2:
                 conv_index = variable_context.conv_num_2_index[conv_num]
                 dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
-                dc_nodes_balance.i_out[dc_node2_num] = variable_context.conv_i_vars[conv_index]
+                dc_nodes_balance.i_in[dc_node2_num].append(-variable_context.conv_i_vars[conv_index])
 
         return dc_nodes_balance.to_expr()

@@ -15,7 +15,7 @@ class DcLineCurrentBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: ipopt.Model):
         for dc_line_num, row in enumerate(network_cache.dc_lines.itertuples()):
-            i_bounds = Bounds(-100, 100)
+            i_bounds = Bounds(-10, 10)
             logger.log(TRACE_LEVEL, f"Add current bounds {i_bounds} to dc line '{row.Index}' (num={dc_line_num})'")
             dc_line_index = variable_context.dc_line_num_2_index[dc_line_num]
             model.set_variable_bounds(variable_context.closed_dc_line_i1_vars[dc_line_index],
