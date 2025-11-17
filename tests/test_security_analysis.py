@@ -444,3 +444,25 @@ def test_export_json_file_from_security_analysis():
     sa = pp.security.create_analysis()
     sa_result = sa.run_ac(n)
     sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))
+
+def test_security_analysis_with_limit_reduction():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    reductions = pd.DataFrame.from_records(index=['limit_type'],
+                                           columns=['limit_type', 'contingency_context', 'min_voltage', 'permanent', 'value'],
+                                           data=[
+                                               ['CURRENT', 'ALL', 200, True, 0.8],
+                                               ['CURRENT', 'ALL', 50, False, 0.5],
+                                           ])
+    sa.add_limit_reductions(reductions)
+    sa_result = sa.run_ac(n)
+    expected = pd.DataFrame.from_records(
+        index=['contingency_id', 'subject_id'],
+        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
+                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
+        data=[
+            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', 'permanent', 500, 2147483647, 0.8, 1047.825769, 'TWO'],
+            ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
+        ])
+    pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)

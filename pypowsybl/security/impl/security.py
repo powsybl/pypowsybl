@@ -6,6 +6,9 @@
 #
 import warnings
 from typing import Union, List, Optional
+from numpy.typing import ArrayLike
+from pandas import DataFrame
+
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
@@ -18,6 +21,8 @@ from .contingency_container import ContingencyContainer
 
 ComputationStatus.__name__ = 'ComputationStatus'
 ComputationStatus.__module__ = __name__
+
+from ...utils import _get_c_dataframes
 
 
 class SecurityAnalysis(ContingencyContainer):
@@ -278,3 +283,32 @@ class SecurityAnalysis(ContingencyContainer):
         """
 
         _pypowsybl.add_operator_strategy_from_json_file(self._handle, path_to_json_file)
+
+    def add_limit_reductions(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add limit reductions to the security analysis.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **limit_type**:
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                security_analysis.add_limit_reductions()
+
+        """
+        metadata = _pypowsybl.get_limit_reduction_dataframe_metadata()
+        c_dfs = _get_c_dataframes([df], [metadata], **kwargs)
+        _pypowsybl.add_limit_reductions(self._handle, c_dfs[0])

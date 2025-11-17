@@ -762,6 +762,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("add_operator_strategy_from_json_file", &pypowsybl::addOperatorStrategyFromJsonFile, "Add operator strategies from JSON file.",
           py::arg("analysis_context"), py::arg("path_to_json_file"));
 
+    m.def("get_limit_reduction_dataframe_metadata", &pypowsybl::getLimitReductionDataframeMetadata, "Get limit reduction dataframe metadata");
+    m.def("add_limit_reductions", &pypowsybl::addLimitReductions, "Add limit reductions to security analysis",
+          py::arg("analysis_context"), py::arg("dataframe"));
+
     py::enum_<pypowsybl::LimitType>(m, "LimitType")
             .value("ACTIVE_POWER", pypowsybl::LimitType::ACTIVE_POWER)
             .value("APPARENT_POWER", pypowsybl::LimitType::APPARENT_POWER)

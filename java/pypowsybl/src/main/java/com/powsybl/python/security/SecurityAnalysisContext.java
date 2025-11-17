@@ -15,6 +15,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
+import com.powsybl.security.limitreduction.LimitReduction;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.strategy.OperatorStrategy;
 import com.powsybl.security.strategy.OperatorStrategyList;
@@ -27,13 +28,15 @@ import java.util.List;
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class SecurityAnalysisContext extends ContingencyContainerImpl {
+public class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     private final List<Action> actions = new ArrayList<>();
 
     private final List<OperatorStrategy> operatorStrategies = new ArrayList<>();
 
     private final List<StateMonitor> monitors = new ArrayList<>();
+
+    private final List<LimitReduction> limitReductions = new ArrayList<>();
 
     SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, ReportNode reportNode) {
         ContingenciesProvider contingencies = this::createContingencies;
@@ -43,6 +46,7 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                 .setOperatorStrategies(operatorStrategies)
                 .setActions(actions)
                 .setMonitors(monitors)
+                .setLimitReductions(limitReductions)
                 .setReportNode(reportNode == null ? ReportNode.NO_OP : reportNode);
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(network, network.getVariantManager().getWorkingVariantId(), contingencies, runParameters);
@@ -79,5 +83,9 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     void addMonitor(StateMonitor monitor) {
         monitors.add(monitor);
+    }
+
+    public void addLimitReduction(LimitReduction limitReduction) {
+        limitReductions.add(limitReduction);
     }
 }
