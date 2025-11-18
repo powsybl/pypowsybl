@@ -23,6 +23,7 @@ import com.powsybl.security.strategy.OperatorStrategyList;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -87,5 +88,9 @@ public class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     public void addLimitReduction(LimitReduction limitReduction) {
         limitReductions.add(limitReduction);
+    }
+
+    public List<LimitReduction> getLimitReductions() {
+        return Collections.unmodifiableList(limitReductions);
     }
 }
