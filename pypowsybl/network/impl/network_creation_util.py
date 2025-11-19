@@ -8,7 +8,10 @@ import io
 import warnings
 from os import PathLike
 from typing import Union, Dict, List, Optional
+
 import pypowsybl._pypowsybl as _pp
+
+import pypowsybl as pp
 from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
@@ -102,7 +105,9 @@ def create_eurostag_tutorial_example1_network(allow_variant_multi_thread_access:
     """
     return _create_network('eurostag_tutorial_example1', '', allow_variant_multi_thread_access)
 
-def create_eurostag_tutorial_example1_with_more_generators_network(allow_variant_multi_thread_access: bool = False) -> Network:
+
+def create_eurostag_tutorial_example1_with_more_generators_network(
+        allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial, with a second generator
 
@@ -112,7 +117,8 @@ def create_eurostag_tutorial_example1_with_more_generators_network(allow_variant
     return _create_network('eurostag_tutorial_example1_with_more_generators', '', allow_variant_multi_thread_access)
 
 
-def create_eurostag_tutorial_example1_with_power_limits_network(allow_variant_multi_thread_access: bool = False) -> Network:
+def create_eurostag_tutorial_example1_with_power_limits_network(
+        allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with Power limits
 
@@ -122,7 +128,8 @@ def create_eurostag_tutorial_example1_with_power_limits_network(allow_variant_mu
     return _create_network('eurostag_tutorial_example1_with_power_limits', '', allow_variant_multi_thread_access)
 
 
-def create_eurostag_tutorial_example1_with_tie_lines_and_areas(allow_variant_multi_thread_access: bool = False) -> Network:
+def create_eurostag_tutorial_example1_with_tie_lines_and_areas(
+        allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of example 1 network of Eurostag tutorial with tie lines and areas
 
@@ -146,7 +153,8 @@ def create_four_substations_node_breaker_network(allow_variant_multi_thread_acce
     return _create_network('four_substations_node_breaker', '', allow_variant_multi_thread_access)
 
 
-def create_four_substations_node_breaker_network_with_extensions(allow_variant_multi_thread_access: bool = False) -> Network:
+def create_four_substations_node_breaker_network_with_extensions(
+        allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Create an instance of powsybl "4 substations" test case with ConnectablePosition and BusbarSectionPosition extensions.
 
@@ -185,6 +193,70 @@ def create_metrix_tutorial_six_buses_network(allow_variant_multi_thread_access: 
     return _create_network('metrix_tutorial_six_buses', '', allow_variant_multi_thread_access)
 
 
+def create_dc_detailed_lcc_bipole_ground_return_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create an instance of LCC bipole ground test case, with detailed DC components
+
+    Returns:
+        a new instance of AC DC network test case
+    """
+    return _create_network('dc_detailed_lcc_bipole_ground_return', '', allow_variant_multi_thread_access)
+
+
+def create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network(
+        allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create an instance of LCC bipole ground return negative pole outage test case, with detailed DC components
+
+    Returns:
+        a new instance of AC DC network test case
+    """
+    return _create_network('dc_detailed_lcc_bipole_ground_return_negative_pole_outage', '',
+                           allow_variant_multi_thread_access)
+
+
+def create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network(
+        allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create an instance of LCC bipole ground return with DC line segments, with detailed DC components
+
+    Returns:
+        a new instance of AC DC network test case
+    """
+    return _create_network('dc_detailed_lcc_bipole_ground_return_with_dc_line_segments', '',
+                           allow_variant_multi_thread_access)
+
+
+def create_dc_detailed_lcc_bipole_metallic_return_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create an instance of LCC bipole metallic return, with detailed DC components
+
+    Returns:
+        a new instance of AC DC network test case
+    """
+    return _create_network('dc_detailed_lcc_bipole_metallic_return', '', allow_variant_multi_thread_access)
+
+
+def create_dc_detailed_vsc_symmetrical_monopole_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create an instance of VSC symmetrical monopole test case, with detailed DC components
+
+    Returns:
+        a new instance of AC DC network test case
+    """
+    return _create_network('dc_detailed_vsc_symmetrical_monopole', '', allow_variant_multi_thread_access)
+
+
+def create_dc_detailed_vsc_asymmetrical_monopole_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create an instance of VSC asymmetrical monopole test case, with detailed DC components
+
+    Returns:
+        a new instance of AC DC network test case
+    """
+    return _create_network('dc_detailed_vsc_asymmetrical_monopole', '', allow_variant_multi_thread_access)
+
+
 def is_loadable(file: Union[str, PathLike]) -> bool:
     """
       Check if a file is a loadable network.
@@ -205,7 +277,8 @@ def is_loadable(file: Union[str, PathLike]) -> bool:
     return _pp.is_network_loadable(file)
 
 
-def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
+def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None,
+         post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
          report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a file. File should be in a supported format.
@@ -239,15 +312,17 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
     file = path_to_str(file)
-    return Network(_pp.load_network(file,
-                                    {} if parameters is None else parameters,
+    return Network(_pp.load_network(file, {} if parameters is None else parameters,
                                     [] if post_processors is None else post_processors,
-                                    None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                    None if report_node is None else report_node._report_node,
+                                    # pylint: disable=protected-access
                                     allow_variant_multi_thread_access))
 
 
-def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
-                            reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
+def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None,
+                            post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
+                            report_node: Optional[ReportNode] = None,
+                            allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a binary buffer.
 
@@ -265,16 +340,15 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, s
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-    return load_from_binary_buffers([buffer],
-                                    {} if parameters is None else parameters,
-                                    [] if post_processors is None else post_processors,
-                                    None,
-                                    report_node,
+    return load_from_binary_buffers([buffer], {} if parameters is None else parameters,
+                                    [] if post_processors is None else post_processors, None, report_node,
                                     allow_variant_multi_thread_access)
 
 
-def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
-                             reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
+def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None,
+                             post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
+                             report_node: Optional[ReportNode] = None,
+                             allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
 
@@ -295,15 +369,17 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
     buffer_list = []
     for buff in buffers:
         buffer_list.append(buff.getbuffer())
-    return Network(_pp.load_network_from_binary_buffers(buffer_list,
-                                                        {} if parameters is None else parameters,
+    return Network(_pp.load_network_from_binary_buffers(buffer_list, {} if parameters is None else parameters,
                                                         [] if post_processors is None else post_processors,
-                                                        None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                                        None if report_node is None else report_node._report_node,
+                                                        # pylint: disable=protected-access
                                                         allow_variant_multi_thread_access))
 
 
-def load_from_string(file_name: str, file_content: str, parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
-                     reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
+def load_from_string(file_name: str, file_content: str, parameters: Optional[Dict[str, str]] = None,
+                     post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
+                     report_node: Optional[ReportNode] = None,
+                     allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a string. File content should be in a supported format.
 
@@ -322,8 +398,8 @@ def load_from_string(file_name: str, file_content: str, parameters: Optional[Dic
     if reporter is not None:
         warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
         report_node = reporter
-    return Network(_pp.load_network_from_string(file_name, file_content,
-                                                {} if parameters is None else parameters,
+    return Network(_pp.load_network_from_string(file_name, file_content, {} if parameters is None else parameters,
                                                 [] if post_processors is None else post_processors,
-                                                None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                                None if report_node is None else report_node._report_node,
+                                                # pylint: disable=protected-access
                                                 allow_variant_multi_thread_access))
