@@ -1,6 +1,5 @@
 package com.powsybl.dataframe.security;
 
-import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.SeriesMetadata;
