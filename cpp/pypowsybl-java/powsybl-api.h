@@ -184,7 +184,12 @@ typedef enum {
     AREA_VOLTAGE_LEVELS,
     AREA_BOUNDARIES,
     INTERNAL_CONNECTION,
-    PROPERTIES
+    PROPERTIES,
+    DC_LINE,
+    DC_NODE,
+    VOLTAGE_SOURCE_CONVERTER,
+    DC_GROUND,
+    DC_BUS
 } element_type;
 
 typedef enum {
