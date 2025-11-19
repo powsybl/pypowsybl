@@ -18,6 +18,7 @@ import com.powsybl.dataframe.update.TestIntSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.iidm.criteria.IdentifiableCriterion;
 import com.powsybl.iidm.criteria.duration.LimitDurationCriterion;
+import com.powsybl.iidm.network.Country;
 import com.powsybl.iidm.network.LimitType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
@@ -100,7 +101,6 @@ class SecurityAnalysisTest {
         dataframe.addSeries("contingency_context", false, new TestStringSeries("ALL", "ALL"));
         dataframe.addSeries("permanent", false, new TestIntSeries(1, 0));
         dataframe.addSeries("temporary", false, new TestIntSeries(0, 1));
-        dataframe.addSeries("min_temporary_duration", false, new TestIntSeries(0, 10));
         dataframe.addSeries("country", false, new TestStringSeries("FR", "FR"));
         dataframe.addSeries("max_voltage", false, new TestDoubleSeries(400.0, 400.0));
         dataframe.addSeries("value", false, new TestDoubleSeries(0.8, 0.5));
@@ -116,5 +116,6 @@ class SecurityAnalysisTest {
         assertThat(limitReduction.getNetworkElementCriteria()).hasSize(1);
         IdentifiableCriterion networkElementCriterion = (IdentifiableCriterion) limitReduction.getNetworkElementCriteria().getFirst();
         assertEquals(400.0, networkElementCriterion.getNominalVoltageCriterion().getVoltageInterval().getNominalVoltageHighBound().get());
+        assertEquals(Country.FR, networkElementCriterion.getCountryCriterion().getCountries().getFirst());
     }
 }

@@ -13,6 +13,7 @@ import com.powsybl.iidm.criteria.AtLeastOneCountryCriterion;
 import com.powsybl.iidm.criteria.AtLeastOneNominalVoltageCriterion;
 import com.powsybl.iidm.criteria.IdentifiableCriterion;
 import com.powsybl.iidm.criteria.VoltageInterval;
+import com.powsybl.iidm.criteria.duration.AllTemporaryDurationCriterion;
 import com.powsybl.iidm.criteria.duration.IntervalTemporaryDurationCriterion;
 import com.powsybl.iidm.criteria.duration.LimitDurationCriterion;
 import com.powsybl.iidm.criteria.duration.PermanentDurationCriterion;
@@ -156,7 +157,7 @@ public class LimitReductionDataframeAdder {
                         series.getMinTemporaryDuration().get(row), true
                 ));
             } else {
-                throw new PowsyblException("If temporary set to True, at least min or max temporary duration should be set");
+                durationCriteria.add(new AllTemporaryDurationCriterion());
             }
         }
         reductionBuilder.withLimitDurationCriteria(durationCriteria);

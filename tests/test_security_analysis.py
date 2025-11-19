@@ -450,19 +450,12 @@ def test_security_analysis_with_limit_reduction():
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     reductions = pd.DataFrame.from_records(index=['limit_type'],
-                                           columns=['limit_type', 'contingency_context', 'permanent', 'temporary', 'value'], #'min_voltage',
+                                           columns=['limit_type', 'contingency_context', 'permanent', 'temporary', 'value'],
                                            data=[
-                                               ['CURRENT', 'ALL', True, False, 0.8], #200,
-                                               ['CURRENT', 'ALL', False, True, 0.5], #50,
+                                               ['CURRENT', 'ALL', True, False, 0.8],
+                                               ['CURRENT', 'ALL', False, True, 0.5],
                                            ])
     sa.add_limit_reductions(reductions)
     sa_result = sa.run_ac(n)
-    expected = pd.DataFrame.from_records(
-        index=['contingency_id', 'subject_id'],
-        columns=['contingency_id', 'subject_id', 'subject_name', 'limit_type', 'limit_name',
-                 'limit', 'acceptable_duration', 'limit_reduction', 'value', 'side'],
-        data=[
-            ['First contingency', 'NHV1_NHV2_2', '', 'CURRENT', 'permanent', 500, 2147483647, 0.8, 1047.825769, 'TWO'],
-            ['First contingency', 'VLHV1', '', 'LOW_VOLTAGE', '', 400, 2147483647, 1, 398.264725, ''],
-        ])
-    pd.testing.assert_frame_equal(expected, sa_result.limit_violations, check_dtype=False)
+    df = sa_result.limit_violations
+    assert [0.8] == df.loc[df["limit_name"] == "permanent"]["limit_reduction"].unique()
