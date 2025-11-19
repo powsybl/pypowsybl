@@ -23,7 +23,8 @@ from pypowsybl import (
     grid2op,
     rao,
     report,
-    voltage_initializer
+    voltage_initializer,
+    opf
 )
 from pypowsybl.network import per_unit_view
 
@@ -48,7 +49,8 @@ __all__ = [
     "grid2op",
     "dynamic",
     "rao",
-    "report"
+    "report",
+    "opf"
 ]
 
 
