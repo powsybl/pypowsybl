@@ -450,10 +450,10 @@ def test_security_analysis_with_limit_reduction():
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
     reductions = pd.DataFrame.from_records(index=['limit_type'],
-                                           columns=['limit_type', 'contingency_context', 'permanent', 'temporary', 'value'],
+                                           columns=['limit_type', 'permanent', 'temporary', 'value'],
                                            data=[
-                                               ['CURRENT', 'ALL', True, False, 0.8],
-                                               ['CURRENT', 'ALL', False, True, 0.5],
+                                               ['CURRENT', True, False, 0.8],
+                                               ['CURRENT', False, True, 0.5],
                                            ])
     sa.add_limit_reductions(reductions)
     sa_result = sa.run_ac(n)

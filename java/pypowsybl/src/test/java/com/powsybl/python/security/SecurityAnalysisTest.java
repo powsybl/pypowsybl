@@ -98,7 +98,6 @@ class SecurityAnalysisTest {
 
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
         dataframe.addSeries("limit_type", true, new TestStringSeries("CURRENT", "CURRENT"));
-        dataframe.addSeries("contingency_context", false, new TestStringSeries("ALL", "ALL"));
         dataframe.addSeries("permanent", false, new TestIntSeries(1, 0));
         dataframe.addSeries("temporary", false, new TestIntSeries(0, 1));
         dataframe.addSeries("country", false, new TestStringSeries("FR", "FR"));

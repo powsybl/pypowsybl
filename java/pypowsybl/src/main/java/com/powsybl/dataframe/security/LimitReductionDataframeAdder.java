@@ -60,7 +60,7 @@ public class LimitReductionDataframeAdder {
         LimitReductionSeries(UpdatingDataframe dataframe) {
             this.limitType = SeriesUtils.getRequiredStrings(dataframe, "limit_type");
             this.monitoring = dataframe.getInts("monitoring");
-            this.contingencyContext = SeriesUtils.getRequiredStrings(dataframe, "contingency_context");
+            this.contingencyContext = dataframe.getStrings("contingency_context");
             this.minVoltage = dataframe.getDoubles("min_voltage");
             this.maxVoltage = dataframe.getDoubles("max_voltage");
             this.country = dataframe.getStrings("country");
@@ -121,10 +121,13 @@ public class LimitReductionDataframeAdder {
             LimitReductionSeries series = new LimitReductionSeries(dataframe);
             for (int row = 0; row < dataframe.getRowCount(); row++) {
                 LimitType type = LimitType.valueOf(series.getLimitType().get(row));
-                ContingencyContextType contingencyContextType = ContingencyContextType.valueOf(series.getContingencyContext().get(row));
                 double value = series.getValue().get(row);
-                LimitReduction.Builder reductionBuilder = LimitReduction.builder(type, value)
-                        .withContingencyContext(ContingencyContext.create(null, contingencyContextType));
+                LimitReduction.Builder reductionBuilder = LimitReduction.builder(type, value);
+                SeriesUtils.applyIfPresent(series.getContingencyContext(), row,
+                        contingencyCxt -> reductionBuilder.
+                                withContingencyContext(ContingencyContext.create(null,
+                                        ContingencyContextType.valueOf(contingencyCxt)))
+                );
                 SeriesUtils.applyBooleanIfPresent(series.getMonitoring(), row, reductionBuilder::withMonitoringOnly);
 
                 addLimitDurationCriteria(series, row, reductionBuilder);
