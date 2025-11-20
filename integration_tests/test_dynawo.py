@@ -10,6 +10,7 @@ import pypowsybl.dynamic as dyn
 import pypowsybl.report as rp
 from pypowsybl._pypowsybl import DynamicSimulationStatus
 import pandas as pd
+from numpy import datetime64
 from pathlib import Path
 
 def test_simulation():
@@ -59,7 +60,7 @@ def test_simulation():
     assert DynamicSimulationStatus.SUCCESS == res.status()
     assert "" == res.status_text()
     curves_df = res.curves()
-    assert '1970-01-01T00:00:00Z' == curves_df.index.values[0]
+    assert datetime64('1970-01-01 00:00:00') == curves_df.index.values[0]
     assert 'B6-G_generator_PGen' in curves_df
     assert 'B6-G_generator_QGen' in curves_df
     assert 'B6-G_generator_UStatorPu' in curves_df
