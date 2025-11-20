@@ -11,9 +11,7 @@ import pandas as pd
 import pytest
 from pandas import DataFrame
 
-import pypowsybl.loadflow as lf
 import pypowsybl as pp
-from pypowsybl.loadflow import Parameters
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
@@ -63,36 +61,17 @@ def create_loadflow_parameters():
 
 def run_opf_then_lf(network: pp.network.Network,
                     opf_parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters(),
-                    lf_parameters: Parameters = create_loadflow_parameters(),
                     iteration_count: int = 1):
+    lf_parameters = create_loadflow_parameters()
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
-    print(network.get_dc_nodes())
-    print(network.get_dc_lines())
-    print(network.get_voltage_source_converters())
-    print(network.get_buses())
-    print(network.get_lines())
 
     assert pp.opf.run_ac(network, opf_parameters)
 
-    print(network.get_dc_nodes())
-    print(network.get_dc_lines())
-    print(network.get_voltage_source_converters())
-    print(network.get_buses())
-    print(network.get_lines())
-
-    if lf_parameters.provider_parameters.get("acDcNetwork") != 'True':
-        validate(network)
+    validate(network)
 
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
-
-    print(network.get_dc_nodes())
-    print(network.get_dc_lines())
-    print(network.get_voltage_source_converters())
-    print(network.get_buses())
-    print(network.get_lines())
-
     assert lf_result[0].status == pp.loadflow.ComponentStatus.CONVERGED
     assert lf_result[0].iteration_count == iteration_count
 
@@ -224,17 +203,14 @@ def test_micro_grid_be():
 def test_micro_grid_nl():
     run_opf_then_lf(pp.network.create_micro_grid_nl_network())
 
-def test_vsc_symmetrical_monopole():
-    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST', 'acDcNetwork': 'True'})
+def test_ac_dc_monopolar_network():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
-    run_opf_then_lf(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), lf_parameters=parameters, opf_parameters=opf_parameters, iteration_count=2)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_monopolar_network(), opf_parameters)
 
 def test_ac_dc_bipolar_network():
-    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST', 'acDcNetwork': 'True'})
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
-    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network(), lf_parameters=parameters, opf_parameters=opf_parameters)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network(), opf_parameters)
 
 def test_ac_dc_bipolar_metallic_return():
-    parameters = lf.Parameters(provider_parameters={'slackBusSelector': 'FIRST', 'acDcNetwork': 'True'})
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
-    run_opf_then_lf(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), lf_parameters=parameters, opf_parameters=opf_parameters)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), opf_parameters)

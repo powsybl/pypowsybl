@@ -73,9 +73,9 @@ class VariableContext:
     @staticmethod
     def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
         bus_count = len(network_cache.buses)
-        dc_node_count = len(network_cache.dc_nodes)
         v_vars = model.add_m_variables(bus_count, name="v")
         ph_vars = model.add_m_variables(bus_count, name="ph")
+        dc_node_count = len(network_cache.dc_nodes)
         v_dc_vars = model.add_m_variables(dc_node_count, name="v_dc")
 
         gen_count = len(network_cache.generators)

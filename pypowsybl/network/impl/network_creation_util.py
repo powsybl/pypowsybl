@@ -256,6 +256,43 @@ def create_dc_detailed_vsc_asymmetrical_monopole_network(allow_variant_multi_thr
     """
     return _create_network('dc_detailed_vsc_asymmetrical_monopole', '', allow_variant_multi_thread_access)
 
+def create_ac_dc_monopolar_network(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+Create an instance of an AC DC monopolar network case, for AC DC loadflow
+
+Returns:
+    a new instance of an AC DC monopolar network case
+"""
+    n = pp.network.create_empty()
+    n.create_dc_nodes(id='dn3p', nominal_v=400)
+    n.create_dc_nodes(id='dn3n', nominal_v=400)
+    n.create_dc_nodes(id='dn4p', nominal_v=400)
+    n.create_dc_nodes(id='dn4n', nominal_v=400)
+    n.create_dc_grounds(id='dg3', r=0.0, dc_node_id='dn3n')
+    n.create_dc_grounds(id='dg4', r=0.0, dc_node_id='dn4n')
+    n.create_voltage_levels(id='vl1', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b1', voltage_level_id='vl1')
+    n.create_generators(id='g1', voltage_level_id='vl1', bus_id='b1', target_p=102.56, min_p=0, max_p=500,
+                        target_v=390,
+                        voltage_regulator_on=True)
+    n.create_voltage_levels(id='vl2', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b2', voltage_level_id='vl2')
+    n.create_loads(id='ld2', voltage_level_id='vl2', bus_id='b2', p0=20, q0=10)
+    n.create_voltage_levels(id='vl5', topology_kind='BUS_BREAKER', nominal_v=400)
+    n.create_buses(id='b5', voltage_level_id='vl5')
+    n.create_loads(id='ld5', voltage_level_id='vl5', bus_id='b5', p0=50, q0=10)
+    n.create_dc_lines(id='dl34p', dc_node1_id='dn3p', dc_node2_id='dn4p', r=0.1)
+    n.create_lines(id='l12', voltage_level1_id='vl1', bus1_id='b1', voltage_level2_id='vl2', bus2_id='b2', r=1, x=3)
+    n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
+    n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
+                                      bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
+                                       target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
+                                       bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_v_dc=400.0,
+                                       target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
+    return n
 
 def create_ac_dc_bipolar_network(allow_variant_multi_thread_access: bool = False) -> Network:
     """
@@ -294,11 +331,11 @@ Returns:
     n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
     n.create_voltage_source_converters(id='conv23', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3n',
                                       bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-50.0,
-                                      target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
-                                      dc_connected1=1, dc_connected2=1)
+                                       target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
+                                       dc_connected1=1, dc_connected2=1)
     n.create_voltage_source_converters(id='conv45', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4n',
                                       bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
-                                      target_v_dc=400.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                                      target_v_dc=400.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
                                       dc_connected1=1, dc_connected2=1)
     return n
 
@@ -337,19 +374,19 @@ Returns:
     n.create_lines(id='l25', voltage_level1_id='vl2', bus1_id='b2', voltage_level2_id='vl5', bus2_id='b5', r=1, x=3)
     n.create_voltage_source_converters(id='conv23p', voltage_level_id='vl2', dc_node1_id='dn3p', dc_node2_id='dn3r',
                                       bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
-                                      target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                                      target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
                                       dc_connected1=1, dc_connected2=1)
     n.create_voltage_source_converters(id='conv23n', voltage_level_id='vl2', dc_node1_id='dn3n', dc_node2_id='dn3r',
                                       bus1_id='b2', voltage_regulator_on=0, control_mode='P_PCC', target_p=-25.0,
-                                      target_q=0.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                                      target_q=0.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
                                       dc_connected1=1, dc_connected2=1)
     n.create_voltage_source_converters(id='conv45p', voltage_level_id='vl5', dc_node1_id='dn4p', dc_node2_id='dn4r',
                                       bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
-                                      target_v_dc=200.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                                      target_v_dc=200.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
                                       dc_connected1=1, dc_connected2=1)
     n.create_voltage_source_converters(id='conv45n', voltage_level_id='vl5', dc_node1_id='dn4n', dc_node2_id='dn4r',
                                       bus1_id='b5', voltage_regulator_on=0, control_mode='V_DC', target_q=0.0,
-                                      target_v_dc=-200.0, idle_loss=0.0, switching_loss=0.0, resistive_loss=0.0,
+                                      target_v_dc=-200.0, idle_loss=0.5, switching_loss=1.0, resistive_loss=0.2,
                                       dc_connected1=1, dc_connected2=1)
 
     return n

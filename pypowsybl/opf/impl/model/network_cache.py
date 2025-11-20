@@ -26,7 +26,7 @@ class NetworkCache:
         self._branches = self._build_branches(network, self.buses)
         self._dangling_lines = self._build_dangling_lines(network, self.buses)
         self._batteries = self._build_batteries(network, self.buses)
-        # self._current_limits1, self._current_limits2 = self._build_current_limits(network)
+        self._current_limits1, self._current_limits2 = self._build_current_limits(network)
         self._slack_terminal = self._build_stack_terminal(network, self.buses)
         self._dc_buses = self._build_dc_buses(network)
         self._dc_nodes = self._build_dc_nodes(network, self.dc_buses)
@@ -39,8 +39,7 @@ class NetworkCache:
         if len(injections) == 0:
             return injections
         injections_and_buses = pd.merge(injections, buses, right_index=True, left_on='bus_id', how='left')
-        return injections_and_buses[
-            (injections_and_buses['connected_component'] == 0) & (injections_and_buses['synchronous_component'] == 0)]
+        return injections_and_buses[injections_and_buses['connected_component'] == 0]
 
     @staticmethod
     def _filter_branches(branches: DataFrame, buses: DataFrame) -> DataFrame:
@@ -49,10 +48,10 @@ class NetworkCache:
         branches_and_buses = pd.merge(branches, buses, left_on='bus1_id', right_index=True, how='left')
         branches_and_buses = pd.merge(branches_and_buses, buses, left_on='bus2_id', right_index=True,
                                       suffixes=('', '_2'), how='left')
+
         return branches_and_buses[
-            (branches_and_buses['connected_component'] == 0) & (branches_and_buses['synchronous_component'] == 0) | (
-                    branches_and_buses['connected_component_2'] == 0) & (
-                    branches_and_buses['synchronous_component_2'] == 0)]
+            (branches_and_buses['connected_component'] == 0) | (
+                    branches_and_buses['connected_component_2'] == 0)]
 
     @staticmethod
     def _filter_3w_transformers(transformers_3w: DataFrame, buses: DataFrame) -> DataFrame:
@@ -160,7 +159,6 @@ class NetworkCache:
     @staticmethod
     def _build_buses(network: Network, voltage_levels: DataFrame):
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
-        # buses = buses[(buses['synchronous_component'] == 0) & (buses['connected_component'] == 0)]
         buses = buses[buses['connected_component'] == 0]
         return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left')
 
@@ -204,16 +202,13 @@ class NetworkCache:
 
     @staticmethod
     def _build_dc_nodes(network: Network, dc_buses: DataFrame):
-        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v'])
-        return pd.merge(dc_nodes, dc_buses, left_on='bus_id', right_index=True, how='left')
+        # FIXME : when dc_nodes is empty, its type is float64 and not object
+        dc_nodes = network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v']).astype(object)
+        return pd.merge(dc_nodes, dc_buses, left_on='dc_bus_id', right_index=True, how='left')
 
     @staticmethod
     def _build_dc_lines(network: Network):
         return network.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id', 'r'])
-
-    @staticmethod
-    def _build_dc_nodes(network: Network, dc_buses: DataFrame):
-        return network.get_dc_nodes(attributes=['dc_bus_id', 'nominal_v'])
 
     @staticmethod
     def _build_voltage_source_converters(network: Network):
@@ -520,7 +515,7 @@ class NetworkCache:
                      dc_node_ids: list[str],
                      dc_node_v: list[float]):
         self._network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
-        self._dc_nodes = self._build_dc_nodes(self._network)
+        self._dc_nodes = self._build_dc_nodes(self._network, self.dc_buses)
 
     def update_dc_lines(self,
                         dc_line_ids: list[str],

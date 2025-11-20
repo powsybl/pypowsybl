@@ -1,3 +1,9 @@
+# Copyright (c) 2025, SuperGrid Institute (http://www.supergrid-institute.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
 import pyoptinterface as poi
 from pyoptinterface import ipopt
 
@@ -14,7 +20,6 @@ class DcCurrentBalanceConstraints(Constraints):
         for dc_node_expr in self.create_dc_node_expr_list(network_cache, variable_context):
             model.add_linear_constraint(dc_node_expr, poi.Eq, 0.0)
 
-
     class DcNodesBalance:
         def __init__(self, dc_node_count: int):
             self.i_in = [[] for _ in range(dc_node_count)]
@@ -27,7 +32,6 @@ class DcCurrentBalanceConstraints(Constraints):
 
         def to_expr(self) -> list[poi.ExprBuilder]:
             return self._to_expr(self.i_in, self.i_out)
-
 
     @classmethod
     def create_dc_node_expr_list(cls, network_cache, variable_context):
@@ -46,15 +50,13 @@ class DcCurrentBalanceConstraints(Constraints):
 
         # voltage source converters
         for conv_num, row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
-            dc_node1_id = row.dc_node1_id
-            dc_node2_id = row.dc_node2_id
-            if row.dc_connected1:
+            if row.dc_node1_id not in dc_node_grounded_ids:
                 conv_index = variable_context.conv_num_2_index[conv_num]
-                dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
+                dc_node1_num = network_cache.dc_nodes.index.get_loc(row.dc_node1_id)
                 dc_nodes_balance.i_in[dc_node1_num].append(variable_context.conv_i_vars[conv_index])
-            if row.dc_connected2:
+            if row.dc_node2_id not in dc_node_grounded_ids:
                 conv_index = variable_context.conv_num_2_index[conv_num]
-                dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
+                dc_node2_num = network_cache.dc_nodes.index.get_loc(row.dc_node2_id)
                 dc_nodes_balance.i_in[dc_node2_num].append(-variable_context.conv_i_vars[conv_index])
 
         return dc_nodes_balance.to_expr()
