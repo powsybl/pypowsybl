@@ -2085,19 +2085,27 @@ JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
 
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider) {
+void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk) {
+    pypowsybl::PowsyblCaller::get()->callJava(::setLoopFlowGlsk, raoContext, glsk);
+}
+
+void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk) {
+    pypowsybl::PowsyblCaller::get()->callJava(::setMonitoringGlsk, raoContext, glsk);
+}
+
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& cracHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider) {
     auto c_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get(), (char*) raoProvider.data());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, cracHandle, raoHandle, c_parameters.get(), (char*) raoProvider.data());
 }
 
-JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
+JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageMonitoring, networkHandle, resultHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
 }
 
-JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
+JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
 }
 
 
