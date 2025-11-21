@@ -112,48 +112,103 @@ public final class RaoCFunctions {
             public void run() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                raoContext.setCrac(createCrac(network, cracBuffer, cracBufferSize));
+            }
+        });
+    }
 
-                ByteBuffer bufferCrac = CTypeConversion.asByteBuffer(cracBuffer, cracBufferSize);
-                InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
+    @CEntryPoint(name = "loadCracBufferedSource")
+    public static ObjectHandle loadCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer, int cracBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return ObjectHandles.getGlobal().create(createCrac(network, cracBuffer, cracBufferSize));
+            }
+        });
+    }
+
+    public static Crac createCrac(Network network, CCharPointer cracBuffer, int cracBufferSize) {
+        ByteBuffer bufferCrac = CTypeConversion.asByteBuffer(cracBuffer, cracBufferSize);
+        InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
+        try {
+            Crac crac = Crac.read("crac.json", streamedCrac, network);
+            if (crac != null) {
+                return crac;
+            } else {
+                throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
+            }
+        } catch (IOException e) {
+            throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
+        }
+    }
+
+    @CEntryPoint(name = "setLoopFlowGlsk")
+    public static void setLoopFlowGlsk(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle glsk, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                raoContext.setLoopFlowGlsk(ObjectHandles.getGlobal().get(glsk));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setMonitoringGlsk")
+    public static void setMonitoringGlsk(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle glsk, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                raoContext.setMonitoringGlsk(ObjectHandles.getGlobal().get(glsk));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "loadGlskBufferedSource")
+    public static ObjectHandle loadGlskBufferedSource(IsolateThread thread, CCharPointer glsksBuffer, int glsksBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                return ObjectHandles.getGlobal().create(createGlskDocument(glsksBuffer, glsksBufferSize));
+            }
+        });
+    }
+
+    public static GlskDocument createGlskDocument(CCharPointer glsksBuffer, int glsksBufferSize) {
+        ByteBuffer bufferGlsks = CTypeConversion.asByteBuffer(glsksBuffer, glsksBufferSize);
+        InputStream glsksStream = new ByteArrayInputStream(binaryBufferToBytes(bufferGlsks));
+        return GlskDocumentImporters.importGlsk(glsksStream);
+    }
+
+    @CEntryPoint(name = "loadResultFromBufferedSource")
+    public static ObjectHandle loadResultFromBufferedSource(IsolateThread thread, ObjectHandle cracHandle, CCharPointer resultBuffer, int resultBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                ByteBuffer buffer = CTypeConversion.asByteBuffer(resultBuffer, resultBufferSize);
+
+                InputStream resultStream = new ByteArrayInputStream(binaryBufferToBytes(buffer));
                 try {
-                    Crac crac = Crac.read("crac.json", streamedCrac, network);
-                    if (crac != null) {
-                        raoContext.setCrac(crac);
-                    } else {
-                        throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
-                    }
+                    return ObjectHandles.getGlobal().create(RaoResult.read(resultStream, crac));
                 } catch (IOException e) {
-                    throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
+                    throw new PowsyblException("Cannot read rao result " + e.getMessage());
                 }
             }
         });
     }
 
-    @CEntryPoint(name = "setGlskBufferedSource")
-    public static void setGlskBufferedSource(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle, CCharPointer glsksBuffer, int glsksBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, new Runnable() {
-            @Override
-            public void run() {
-                Network network = ObjectHandles.getGlobal().get(networkHandle);
-                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-                ByteBuffer bufferGlsks = CTypeConversion.asByteBuffer(glsksBuffer, glsksBufferSize);
-
-                InputStream glsksStream = new ByteArrayInputStream(binaryBufferToBytes(bufferGlsks));
-                GlskDocument glsks = GlskDocumentImporters.importGlsk(glsksStream);
-                raoContext.setGlsks(glsks);
-            }
-        });
-    }
-
     @CEntryPoint(name = "runRao")
-    public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
-                              RaoParametersPointer parametersPointer, CCharPointer raoProviderPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle cracHandle, ObjectHandle raoContextHandle,
+                                      RaoParametersPointer parametersPointer, CCharPointer raoProviderPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
                 RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
+                raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String raoProvider = CTypeUtil.toString(raoProviderPtr);
                 return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters, raoProvider));
             }
@@ -161,7 +216,7 @@ public final class RaoCFunctions {
     }
 
     @CEntryPoint(name = "runVoltageMonitoring")
-    public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
+    public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle cracHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                      CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
@@ -170,6 +225,7 @@ public final class RaoCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
                 RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
+                raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String providerStr = CTypeUtil.toString(provider);
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
@@ -180,7 +236,7 @@ public final class RaoCFunctions {
     }
 
     @CEntryPoint(name = "runAngleMonitoring")
-    public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
+    public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle cracHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                      CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
@@ -189,6 +245,7 @@ public final class RaoCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
                 RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
+                raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String providerStr = CTypeUtil.toString(provider);
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);

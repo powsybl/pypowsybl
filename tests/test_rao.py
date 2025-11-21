@@ -23,7 +23,8 @@ from pypowsybl._pypowsybl import (
     Solver,
     ExecutionCondition,
     Unit)
-from pypowsybl.rao import Parameters as RaoParameters
+from pypowsybl.rao import Parameters as RaoParameters, RaoResult
+from pypowsybl.rao import Glsk as RaoGlsk
 from pypowsybl.rao import (
     ObjectiveFunctionParameters,
     RangeActionOptimizationParameters,
@@ -32,7 +33,8 @@ from pypowsybl.rao import (
     SecondPreventiveRaoParameters,
     NotOptimizedCnecsParameters,
     LoadFlowAndSensitivityParameters,
-    RaoLogFilter)
+    RaoLogFilter,
+    Crac)
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -156,28 +158,25 @@ def test_rao_parameters():
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_from_files(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json"))
-    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/rao_glsk.xml"))
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = rao_runner.run(network=network,
+                            parameters=RaoParameters.from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json")),
+                            rao_provider=rao_provider,
+                            crac=Crac.from_file_source(network, DATA_DIR.joinpath("rao/rao_crac.json")),
+                            loop_flow_glsk=RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/rao_glsk.xml")))
     assert RaoComputationStatus.DEFAULT == result.status()
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_from_buffers(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
-    crac = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_crac.json"), "rb").read())
-    glsks = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_glsk.xml"), "rb").read())
+    crac_buffer = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_crac.json"), "rb").read())
 
-    parameters = RaoParameters()
-    parameters.load_from_buffer_source(
-        io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters.json"), "rb").read()))
+    parameters = RaoParameters.from_buffer_source(io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters.json"), "rb").read()))
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_buffer_source(network, crac)
-    rao_runner.set_glsk_buffer_source(network, glsks)
+    rao_runner.set_crac_buffer_source(network, crac_buffer)
+    rao_runner.set_loop_flow_glsk(RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/rao_glsk.xml")))
     result = rao_runner.run(network, parameters, rao_provider=rao_provider)
     assert RaoComputationStatus.DEFAULT == result.status()
     json_result = result.to_json()
@@ -197,22 +196,47 @@ def test_rao_angle_monitoring_redispatching(rao_provider: str):
     """
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
     load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
 
-    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
-    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
-    angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
+    crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider, crac=crac)
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow",
+                                                                   crac=crac,
+                                                                   monitoring_glsk=RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml")))
+
+    check_rao_monitoring_result(result_with_angle_monitoring)
+
+@pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
+def test_rao_angle_monitoring_with_results_from_file(rao_provider: str):
+    """
+    Same test as rao angle monitoring but without a rao run and with a result loaded from file
+    """
+
+    network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
+    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+
+    rao_runner = pp.rao.create_rao()
+    crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
+
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network=network,
+                                                                   rao_result=RaoResult.from_file_source(crac, DATA_DIR.joinpath("rao/rao_result_for_monitoring.json")),
+                                                                   load_flow_parameters=parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters,
+                                                                   provider_str="OpenLoadFlow",
+                                                                   crac=crac,
+                                                                   monitoring_glsk=RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml")))
+
+    check_rao_monitoring_result(result_with_angle_monitoring)
+
+def check_rao_monitoring_result(result: RaoResult):
+    angle_cnec_results = result.get_angle_cnec_results()
 
     expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
                             data=[["acCur1", "curative", "coL1", -3.783208, 2.216792]])
 
-    assert RaoComputationStatus.DEFAULT == result_with_angle_monitoring.status()
+    assert RaoComputationStatus.DEFAULT == result.status()
     pd.testing.assert_frame_equal(expected.reset_index(drop=True), angle_cnec_results.reset_index(drop=True),
                                   check_dtype=False, check_index_type=False, check_like=True)
 
@@ -223,16 +247,15 @@ def test_rao_angle_monitoring_topological_action(rao_provider: str):
     """
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
     load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+    crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    rao_runner.set_monitoring_glsk(RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml")))
 
-    rao_runner.set_glsk_file_source(network, DATA_DIR.joinpath("rao/GlskB45test.xml"))
-    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider, crac=crac)
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow", crac=crac)
     angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
 
     expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
@@ -249,15 +272,14 @@ def test_rao_voltage_monitoring(rao_provider: str):
     """
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
+    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
     load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+    crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider, crac=crac)
+    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, load_flow_parameters, "OpenLoadFlow", crac=crac)
 
-    result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, result, load_flow_parameters, "OpenLoadFlow")
     voltage_cnec_results = result_with_voltage_monitoring.get_voltage_cnec_results()
 
     expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'side', 'min_voltage', 'max_voltage', 'margin'],
@@ -395,13 +417,11 @@ def test_rao_log_filter(rao_provider: str):
 
 def run_rao_12_node_with_curative(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/12_node_network.uct"))
-    parameters = RaoParameters()
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json"))
-
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json"))
-
-    return rao_runner.run(network, parameters, rao_provider=rao_provider)
+    return rao_runner.run(network,
+                          parameters=RaoParameters.from_file_source(DATA_DIR.joinpath("rao/rao_parameters_with_curative.json")),
+                          rao_provider=rao_provider,
+                          crac=Crac.from_file_source(network, DATA_DIR.joinpath("rao/N-1_case_crac_curative.json")))
 
 def parameters_round_trip():
     # Load from file
