@@ -74,6 +74,17 @@ You can define operator strategies and remedial actions with the following metho
     SecurityAnalysis.add_actions_from_json_file
     SecurityAnalysis.add_operator_strategies_from_json_file
 
+Define limit reductions
+-----------------------
+
+You can define limit reductions using :
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+    SecurityAnalysis.add_limit_reductions
+
 Results
 -------
 

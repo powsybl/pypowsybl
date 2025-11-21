@@ -11,6 +11,8 @@ import com.powsybl.action.*;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
+import com.powsybl.dataframe.security.LimitReductionDataframeAdder;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader.*;
@@ -18,6 +20,7 @@ import com.powsybl.python.contingency.ContingencyContainer;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
+import com.powsybl.python.network.NetworkCFunctions;
 import com.powsybl.security.*;
 import com.powsybl.security.LimitViolationType;
 import com.powsybl.security.condition.*;
@@ -664,5 +667,30 @@ public final class SecurityAnalysisCFunctions {
                 new AtLeastOneViolationCondition(subjectIdsStrList, violationTypesFilter);
             default -> throw new PowsyblException("Unsupported condition type " + conditionType);
         };
+    }
+
+    @CEntryPoint(name = "getLimitReductionDataframeMetadata")
+    public static DataframeMetadataPointer getLimitReductionDataframeMetadata(IsolateThread thread,
+                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframeMetadataPointer get() {
+                return CTypeUtil.createSeriesMetadata(new LimitReductionDataframeAdder().getMetadata());
+            }
+        });
+    }
+
+    @CEntryPoint(name = "addLimitReductions")
+    public static void addLimitReductions(IsolateThread thread, ObjectHandle contextHandle,
+                                 PyPowsyblApiHeader.DataframePointer cDataframe,
+                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                SecurityAnalysisContext context = ObjectHandles.getGlobal().get(contextHandle);
+                UpdatingDataframe limitReductionDataframe = NetworkCFunctions.createDataframe(cDataframe);
+                new LimitReductionDataframeAdder().addElements(context, limitReductionDataframe);
+            }
+        });
     }
 }
