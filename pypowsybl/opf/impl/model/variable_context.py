@@ -79,9 +79,9 @@ class VariableContext:
     @staticmethod
     def build(network_cache: NetworkCache, model: Model) -> 'VariableContext':
         bus_count = len(network_cache.buses)
+        dc_node_count = len(network_cache.dc_nodes)
         v_vars = model.add_m_variables(bus_count, name="v")
         ph_vars = model.add_m_variables(bus_count, name="ph")
-        dc_node_count = len(network_cache.dc_nodes)
         v_dc_vars = model.add_m_variables(dc_node_count, name="v_dc")
 
         gen_count = len(network_cache.generators)
@@ -162,7 +162,7 @@ class VariableContext:
         closed_branch_nums: list[int] = []
         open_side1_branch_nums: list[int] = []
         open_side2_branch_nums: list[int] = []
-        branch_count = len(network_cache.lines) + len(network_cache.transformers_2w)
+        branch_count = len(network_cache.branches)
         branch_num_2_index = [-1] * branch_count
         for branch_num, row in enumerate(network_cache.branches.itertuples(index=False)):
             if row.bus1_id and row.bus2_id:
@@ -260,7 +260,6 @@ class VariableContext:
             converter_nums.append(converter_num)
         conv_p_vars = model.add_m_variables(len(converter_nums), name="conv_p_vars")
         conv_q_vars = model.add_m_variables(len(converter_nums), name="conv_q_vars")
-        # for one converter, conv_i is the DC current flowing from dc_node1 to dc_node2
         conv_i_vars = model.add_m_variables(len(converter_nums), name="conv_i_vars")
 
         return VariableContext(v_vars, ph_vars,
@@ -650,7 +649,7 @@ class VariableContext:
 
         network_cache.update_buses(bus_ids, bus_v_mag, bus_v_angle)
 
-    def _update_boundary_lines(self, network_cache: NetworkCache, model: Model)-> None:
+    def _update_boundary_lines(self, network_cache: NetworkCache, model: Model) -> None:
         connected_bl_ids = []
         connected_bl_v = []
         connected_bl_angle = []
@@ -682,7 +681,7 @@ class VariableContext:
                                             connected_bl_q,
                                             disconnected_bl_ids)
 
-    def _update_dc_nodes(self, network_cache: NetworkCache, model: Model):
+    def _update_dc_nodes(self, network_cache: NetworkCache, model: Model) -> None:
         dc_node_ids = []
         dc_node_v = []
         for dc_node_num, (dc_node_id, row) in enumerate(network_cache.dc_nodes.iterrows()):
@@ -692,17 +691,9 @@ class VariableContext:
 
             logger.log(TRACE_LEVEL, f"Update dc_node '{dc_node_id}' (num={dc_node_num}): v={v}")
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         network_cache.update_dc_nodes(dc_node_ids, dc_node_v)
-=======
-        network_cache.network.update_dc_nodes(id=dc_node_ids, v=dc_node_v)
->>>>>>> 2f9806ea (Add DC losses function, fix network update)
-=======
-        network_cache.update_dc_nodes(dc_node_ids, dc_node_v)
->>>>>>> 9d7e3835 (Update DC opf with changes in DC dataframes)
 
-    def _update_dc_lines(self, network_cache: NetworkCache, model: Model):
+    def _update_dc_lines(self, network_cache: NetworkCache, model: Model) -> None:
         dc_line_ids = []
         dc_line_i1 = []
         dc_line_i2 = []
@@ -719,7 +710,7 @@ class VariableContext:
 
         network_cache.update_dc_lines(dc_line_ids, dc_line_i1, dc_line_i2)
 
-    def _update_voltage_source_converters(self, network_cache: NetworkCache, model: Model):
+    def _update_voltage_source_converters(self, network_cache: NetworkCache, model: Model) -> None:
         conv_ids = []
         conv_p = []
         conv_q = []
@@ -744,49 +735,18 @@ class VariableContext:
                 v2 = model.get_value(self.v_dc_vars[dc_node2_num])
             v_dc = v1 - v2
             conv_target_v_dc.append(v_dc)
-<<<<<<< HEAD
-<<<<<<< HEAD
             if bus1_id:
                 bus_num = network_cache.buses.index.get_loc(bus1_id)
-=======
-            if bus_id:
-                bus_num = network_cache.buses.index.get_loc(bus_id)
->>>>>>> 2f9806ea (Add DC losses function, fix network update)
-=======
-            if bus1_id:
-                bus_num = network_cache.buses.index.get_loc(bus1_id)
->>>>>>> 9d7e3835 (Update DC opf with changes in DC dataframes)
 
                 conv_ids.append(conv_id)
                 conv_index = self.conv_num_2_index[conv_num]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
                 p_ac = model.get_value(self.conv_p_vars[conv_index])
                 conv_p.append(p_ac)
                 conv_target_p.append(p_ac)
-
-                q_ac = model.get_value(self.conv_q_vars[conv_index])
-                conv_q.append(q_ac)
-                conv_target_q.append(q_ac)
-=======
-                p = model.get_value(self.conv_p_vars[conv_index])
-                conv_p.append(p)
-                conv_target_p.append(p)
 
                 q = model.get_value(self.conv_q_vars[conv_index])
                 conv_q.append(q)
-                conv_target_q.append(q)
->>>>>>> 2f9806ea (Add DC losses function, fix network update)
-=======
-                p_ac = model.get_value(self.conv_p_vars[conv_index])
-                conv_p.append(p_ac)
-                conv_target_p.append(p_ac)
-
-                q_ac = model.get_value(self.conv_q_vars[conv_index])
-                conv_q.append(q_ac)
-                conv_target_q.append(q_ac)
->>>>>>> 9d7e3835 (Update DC opf with changes in DC dataframes)
 
                 i = model.get_value(self.conv_i_vars[conv_index])
                 p_dc1 = i * v1
@@ -797,27 +757,9 @@ class VariableContext:
                 v_ac = model.get_value(self.v_vars[bus_num])
                 conv_target_v_ac.append(v_ac)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
                 logger.log(TRACE_LEVEL,
                            f"Update voltage source converter '{conv_id}' (num={conv_num}): p_ac={p_ac}, q_ac={q_ac}, "
                            f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p_ac}, target_q={q_ac}, target_v_dc={v_dc}, target_v_ac={v_ac}")
-=======
-                logger.log(TRACE_LEVEL, f"Update VSC converter station '{conv_id}' (num={conv_num}): p={p}, q={q}, "
-                                        f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p}, target_q={q}, target_v_dc={v_dc}, target_v_ac={v_ac}")
-
-        network_cache.network.update_voltage_source_converters(id=conv_ids, p=conv_p, q=conv_q, p_dc1=conv_p_dc1,
-                                                               p_dc2=conv_p_dc2, target_p=conv_target_p, target_q=conv_target_q,
-                                                               target_v_dc=conv_target_v_dc, target_v_ac=conv_target_v_ac)
->>>>>>> 2f9806ea (Add DC losses function, fix network update)
-=======
-                logger.log(TRACE_LEVEL,
-                           f"Update voltage source converter '{conv_id}' (num={conv_num}): p_ac={p_ac}, q_ac={q_ac}, "
-                           f"p_dc1={p_dc1}, p_dc2={p_dc2}, target_p={p_ac}, target_q={q_ac}, target_v_dc={v_dc}, target_v_ac={v_ac}")
-
-        network_cache.update_voltage_source_converters(conv_ids, conv_p, conv_q, conv_p_dc1, conv_p_dc2, conv_target_p,
-                                                       conv_target_q, conv_target_v_dc, conv_target_v_ac)
->>>>>>> 9d7e3835 (Update DC opf with changes in DC dataframes)
 
         network_cache.update_voltage_source_converters(conv_ids, conv_p, conv_q, conv_p_dc1, conv_p_dc2, conv_target_p,
                                                        conv_target_q, conv_target_v_dc, conv_target_v_ac)
