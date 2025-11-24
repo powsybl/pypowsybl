@@ -12,7 +12,8 @@ from os import PathLike
 
 from typing import (
     Union,
-    TypeVar
+    TypeVar,
+    Type
 )
 
 Self = TypeVar("Self", bound="Glsk")
@@ -26,9 +27,9 @@ class Glsk:
         self._handle = handle
 
     @classmethod
-    def from_file_source(cls, glsk_file: Union[str, PathLike]) -> Self :
+    def from_file_source(cls: Type[Self], glsk_file: Union[str, PathLike]) -> Self :
         return Glsk.from_buffer_source(io.BytesIO(open(path_to_str(glsk_file), "rb").read()))
 
     @classmethod
-    def from_buffer_source(cls, glsk_source: io.BytesIO) -> Self :
+    def from_buffer_source(cls: Type[Self], glsk_source: io.BytesIO) -> Self :
         return cls(_pypowsybl.load_glsk_source(glsk_source.getbuffer()))

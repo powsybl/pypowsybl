@@ -20,7 +20,8 @@ from typing import (
     Dict,
     Any,
     List,
-    TypeVar
+    TypeVar,
+    Type
 )
 
 Self = TypeVar("Self", bound="RaoResult")
@@ -37,11 +38,11 @@ class RaoResult:
         self._status = _pypowsybl.get_rao_result_status(self._handle_result)
 
     @classmethod
-    def from_file_source(cls, crac: Crac, result_file: Union[str, PathLike]) -> Self :
+    def from_file_source(cls: Type[Self], crac: Crac, result_file: Union[str, PathLike]) -> Self :
         return RaoResult.from_buffer_source(crac, io.BytesIO(open(path_to_str(result_file), "rb").read()))
 
     @classmethod
-    def from_buffer_source(cls, crac: Crac, result_source: io.BytesIO) -> Self :
+    def from_buffer_source(cls: Type[Self], crac: Crac, result_source: io.BytesIO) -> Self :
         return cls(_pypowsybl.load_result_source(crac._handle, result_source.getbuffer()), crac._handle)
 
     def status(self) -> RaoComputationStatus:
