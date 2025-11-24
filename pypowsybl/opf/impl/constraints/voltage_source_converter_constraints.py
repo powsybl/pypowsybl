@@ -53,7 +53,7 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 # P_dc = -P_ac - P_loss because we consider that the power P_dc injected in DC is positive,
                 # and the power P_ac flowing out of AC is negative
-                # FIXME : I needed to add 0.01 because at the initialization v1_var = v2_var and the opf never converge
-                conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs(v1_var - v2_var + 0.01)
+                # FIXME : I needed to add 0.0000001 because at the initialization v1_var = v2_var and the opf never converge
+                conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs(v1_var - v2_var + 0.0000001)
 
                 model.add_nl_constraint(conv_p_dc_eq == 0.0)
