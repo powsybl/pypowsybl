@@ -20,8 +20,10 @@ from typing import (
     Dict,
     Any,
     List,
-    Self
+    TypeVar
 )
+
+Self = TypeVar("Self", bound="RaoResult")
 
 
 class RaoResult:
