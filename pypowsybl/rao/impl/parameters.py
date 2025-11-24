@@ -19,8 +19,10 @@ from .second_preventive_rao_parameters import SecondPreventiveRaoParameters
 from .not_optimized_cnecs_parameters import NotOptimizedCnecsParameters
 from .loadflow_and_sensitivity_parameters import LoadFlowAndSensitivityParameters
 from pypowsybl.utils import path_to_str
-from typing import Union, Dict, Any, Optional, Self
+from typing import Union, Dict, Any, Optional, TypeVar
 from os import PathLike
+
+Self = TypeVar("Self", bound="Parameters")
 
 class Parameters:
     def __init__(self, objective_function_parameters: Optional[ObjectiveFunctionParameters] = None,
