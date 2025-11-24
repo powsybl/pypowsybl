@@ -19,10 +19,8 @@ from .second_preventive_rao_parameters import SecondPreventiveRaoParameters
 from .not_optimized_cnecs_parameters import NotOptimizedCnecsParameters
 from .loadflow_and_sensitivity_parameters import LoadFlowAndSensitivityParameters
 from pypowsybl.utils import path_to_str
-from typing import Union, Dict, Any, Optional, TypeVar, Type
+from typing import Union, Dict, Any, Optional
 from os import PathLike
-
-Self = TypeVar("Self", bound="Parameters")
 
 class Parameters:
     def __init__(self, objective_function_parameters: Optional[ObjectiveFunctionParameters] = None,
@@ -110,13 +108,13 @@ class Parameters:
         self._init_from_c(RaoParameters())
 
     @classmethod
-    def from_file_source(cls: Type[Self], parameters_file: Union[str, PathLike]) -> Self :
+    def from_file_source(cls, parameters_file: Union[str, PathLike]) -> Any :
         p = cls()
         p.load_from_file_source(parameters_file)
         return p
 
     @classmethod
-    def from_buffer_source(cls: Type[Self], parameters_source: Union[str, PathLike]) -> Self :
+    def from_buffer_source(cls, parameters_source: Union[str, PathLike]) -> Any :
         p = cls()
         p.load_from_buffer_source(parameters_source)
         return p
