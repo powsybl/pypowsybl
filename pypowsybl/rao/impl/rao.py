@@ -26,16 +26,22 @@ class Rao:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def set_crac_file_source(self, network: Network, crac_file: Union[str, PathLike]) -> None:
-        self._crac = Crac.from_file_source(network, crac_file)
-
-    def set_crac_buffer_source(self, network: Network, crac_source: io.BytesIO) -> None:
-        self._crac = Crac.from_buffer_source(network, crac_source)
+    def set_crac(self, crac: Crac) -> None:
+        """
+        Set crac to be used for the rao run
+        """
+        self._crac = crac
 
     def set_loop_flow_glsk(self, glsk: Glsk) -> None:
+        """
+        Set loop flow glsk to be used for the rao run
+        """
         _pypowsybl.set_loopflow_glsk(self._handle, glsk._handle)
 
     def set_monitoring_glsk(self, glsk: Glsk) -> None:
+        """
+        Set the glsk to be used for the rao monitoring
+        """
         _pypowsybl.set_monitoring_glsk(self._handle, glsk._handle)
 
     def run(self, network: Network, parameters: Optional[RaoParameters] = None, rao_provider: str = "SearchTreeRao", crac: Optional[Crac] = None, loop_flow_glsk: Optional[Glsk] = None) -> RaoResult:
