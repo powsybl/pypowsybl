@@ -170,7 +170,7 @@ def test_rao_from_files(rao_provider: str):
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_from_buffers(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
-    crac = Crac.from_buffer_source(io.BytesIO(open(DATA_DIR.joinpath("rao/rao_crac.json"), "rb").read()))
+    crac = Crac.from_buffer_source(network, io.BytesIO(open(DATA_DIR.joinpath("rao/rao_crac.json"), "rb").read()))
 
     parameters = RaoParameters.from_buffer_source(io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters.json"), "rb").read()))
 
@@ -178,6 +178,7 @@ def test_rao_from_buffers(rao_provider: str):
     rao_runner.set_crac(crac)
     rao_runner.set_loop_flow_glsk(RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/rao_glsk.xml")))
     result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+
     assert RaoComputationStatus.DEFAULT == result.status()
     json_result = result.to_json()
 
