@@ -1,4 +1,4 @@
-from pypowsybl.rao import RaoResultRunning a RAO
+Running a RAO
 ===========================
 
 The RAO is currently in **beta** version.
