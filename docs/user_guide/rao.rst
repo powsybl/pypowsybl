@@ -30,7 +30,7 @@ Here is a code example of how to configure and run the RAO:
     >>> from pypowsybl.rao import RaoResult
     >>>
     >>> network =  pp.network.load(str(DATA_DIR.joinpath("rao/rao_network.uct")))
-    >>> parameters = RaoParameters.from_file_source(str(DATA_DIR.joinpath("rao/rao_parameters.json"))
+    >>> parameters = RaoParameters.from_file_source(str(DATA_DIR.joinpath("rao/rao_parameters.json")))
     >>> rao_runner = pp.rao.create_rao()
     >>> crac = Crac.from_file_source(network, str(DATA_DIR.joinpath("rao/rao_crac.json")))
     >>> glsk = RaoGlsk.from_file_source(str(DATA_DIR.joinpath("rao/rao_glsk.xml")))
