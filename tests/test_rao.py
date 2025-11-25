@@ -50,7 +50,7 @@ def test_rao_parameters():
     assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
 
     # From file
-    parameters.load_from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
+    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
     assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
     assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN
 
@@ -425,9 +425,8 @@ def run_rao_12_node_with_curative(rao_provider: str):
 
 def parameters_round_trip():
     # Load from file
-    params = RaoParameters()
     initial_buffer = io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters_non_default.json"), "rb").read())
-    params.load_from_buffer_source(initial_buffer)
+    params = RaoParameters.from_buffer_source(initial_buffer)
 
     # Serialize
     serialized_params = params.serialize_to_binary_buffer()

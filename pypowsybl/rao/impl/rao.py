@@ -38,7 +38,7 @@ class Rao:
     def set_monitoring_glsk(self, glsk: Glsk) -> None:
         _pypowsybl.set_monitoring_glsk(self._handle, glsk._handle)
 
-    def run(self, network: Network, parameters: Optional[RaoParameters] = None, rao_provider: str = "SearchTreeRao", crac: Crac = None, loop_flow_glsk: Glsk = None) -> RaoResult:
+    def run(self, network: Network, parameters: Optional[RaoParameters] = None, rao_provider: str = "SearchTreeRao", crac: Optional[Crac] = None, loop_flow_glsk: Optional[Glsk] = None) -> RaoResult:
         """
         Run a rao from a set of input buffers
         """
@@ -53,7 +53,7 @@ class Rao:
         rao_result = _pypowsybl.run_rao(network=network._handle, crac=self._crac._handle, rao_context=self._handle, parameters=parameters._to_c_parameters(), rao_provider=rao_provider)
         return RaoResult(rao_result, self._crac._handle)
 
-    def run_voltage_monitoring(self, network: Network, rao_result: RaoResult, load_flow_parameters: Optional[LfParameters] = None, provider_str: str = '', crac: Crac = None, monitoring_glsk: Glsk = None) -> RaoResult:
+    def run_voltage_monitoring(self, network: Network, rao_result: RaoResult, load_flow_parameters: Optional[LfParameters] = None, provider_str: str = '', crac: Optional[Crac] = None, monitoring_glsk: Optional[Glsk] = None) -> RaoResult:
         """
         """
         p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
@@ -66,7 +66,7 @@ class Rao:
         result_handle = _pypowsybl.run_voltage_monitoring(network._handle, rao_result._handle_result, self._crac._handle, self._handle, p, provider_str)
         return RaoResult(result_handle, self._crac._handle)
 
-    def run_angle_monitoring(self, network: Network,  rao_result: RaoResult, load_flow_parameters: Optional[LfParameters] = None, provider_str: str = '', crac: Crac = None, monitoring_glsk: Glsk = None) -> RaoResult:
+    def run_angle_monitoring(self, network: Network,  rao_result: RaoResult, load_flow_parameters: Optional[LfParameters] = None, provider_str: str = '', crac: Optional[Crac] = None, monitoring_glsk: Optional[Glsk] = None) -> RaoResult:
         """
         """
         p = load_flow_parameters._to_c_parameters() if load_flow_parameters is not None else _pypowsybl.LoadFlowParameters()
