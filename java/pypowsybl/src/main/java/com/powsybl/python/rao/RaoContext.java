@@ -68,7 +68,12 @@ public class RaoContext {
 
     public RaoResultWithAngleMonitoring runAngleMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
         Monitoring raoMonitoring = new Monitoring(provider, parameters);
-        MonitoringInput inputs = MonitoringInput.buildWithAngle(network, crac, resultIn, monitoringGlsk.getZonalScalable(network)).build();
+        MonitoringInput inputs;
+        if (monitoringGlsk != null) {
+            inputs = MonitoringInput.buildWithAngle(network, crac, resultIn, monitoringGlsk.getZonalScalable(network)).build();
+        } else {
+            throw new PowsyblException("Providing glsk for angle monitoring is mandatory.");
+        }
         MonitoringResult monitoringResult = raoMonitoring.runMonitoring(inputs, 1);
         return new RaoResultWithAngleMonitoring(resultIn, monitoringResult);
     }
