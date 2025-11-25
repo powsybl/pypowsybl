@@ -34,7 +34,7 @@ Here is a code example of how to configure and run the RAO:
     >>> rao_runner = pp.rao.create_rao()
     >>> crac = Crac.from_file_source(network, str(DATA_DIR.joinpath("rao/rao_crac.json")))
     >>> glsk = RaoGlsk.from_file_source(str(DATA_DIR.joinpath("rao/rao_glsk.xml")))
-    >>> rao_result = rao_runner.run(network=network, parameters=parameters, crac=crac, glsk=glsk)
+    >>> rao_result = rao_runner.run(network=network, parameters=parameters, crac=crac, loop_flow_glsk=glsk)
     >>> rao_result.status()
     <RaoComputationStatus.DEFAULT: 0>
 
