@@ -43,8 +43,8 @@ Monitoring API
 
 Rao monitoring can run through the following API using a rao result already produced by a run, or loaded from file :
 
-    >>> result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, rao_result)
-    >>> result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, rao_result)
+    >>> result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, rao_result, crac=crac)
+    >>> result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, rao_result, crac=crac)
 
 The returned rao result object are the original result enhanced with voltage or angle monitoring data.
 

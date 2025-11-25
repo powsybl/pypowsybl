@@ -4,9 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-import io
-from os import PathLike
-from typing import Union, Optional
+from typing import Optional
 
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
@@ -14,7 +12,6 @@ from .rao_result import RaoResult
 from .crac import Crac
 from .glsk import Glsk
 from .parameters import Parameters as RaoParameters
-from pypowsybl.utils import path_to_str
 from pypowsybl.loadflow import Parameters as LfParameters
 
 
@@ -53,6 +50,8 @@ class Rao:
 
         if crac is not None:
             self._crac = crac
+        if self._crac is None:
+            raise _pypowsybl.PyPowsyblError("Providing a CRAC is mandatory to run a rao monitoring")
         if loop_flow_glsk is not None:
             self.set_loop_flow_glsk(loop_flow_glsk)
 
@@ -66,6 +65,8 @@ class Rao:
 
         if crac is not None:
             self._crac = crac
+        if self._crac is None:
+            raise _pypowsybl.PyPowsyblError("Providing a CRAC is mandatory to run a RAO")
         if monitoring_glsk is not None:
             self.set_monitoring_glsk(monitoring_glsk)
 
@@ -79,6 +80,8 @@ class Rao:
 
         if crac is not None:
             self._crac = crac
+        if self._crac is None:
+            raise _pypowsybl.PyPowsyblError("Providing a CRAC is mandatory to run a rao monitoring")
         if monitoring_glsk is not None:
             self.set_monitoring_glsk(monitoring_glsk)
 
