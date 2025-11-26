@@ -6,6 +6,9 @@
 #
 import warnings
 from typing import Union, List, Optional
+from numpy.typing import ArrayLike
+from pandas import DataFrame
+
 import pypowsybl.loadflow
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, ConditionType, ViolationType, Side
@@ -18,6 +21,8 @@ from .contingency_container import ContingencyContainer
 
 ComputationStatus.__name__ = 'ComputationStatus'
 ComputationStatus.__module__ = __name__
+
+from ...utils import _get_c_dataframes
 
 
 class SecurityAnalysis(ContingencyContainer):
@@ -278,3 +283,48 @@ class SecurityAnalysis(ContingencyContainer):
         """
 
         _pypowsybl.add_operator_strategy_from_json_file(self._handle, path_to_json_file)
+
+    def add_limit_reductions(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add limit reductions to the security analysis.
+        If two reductions can be applied to the same limit, the last one in addition order is the one applied.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **limit_type**: the type of limits to be reduced (only CURRENT is currently supported in OpenLoadFlow).
+            - **permanent**: whether the limit reduction should be applied on permanent limits or not.
+            - **temporary**: whether the limit reduction should be applied on temporary limits or not.
+            - **value**: the value of the limit reduction (must be in [0, 1]).
+            - **contingency_context** (optional, only ALL implemented in OpenLoadFlow): defines if the reduction should be applied on all state, only N situation or only specific contingencies.
+            - **min_temporary_duration** (optional): if temporary is True, the minimum acceptable duration of the temporary limits affected by this reduction (in seconds).
+            - **max_temporary_duration** (optional): if temporary is True, the maximum acceptable duration of the temporary limits affected by this reduction (in seconds).
+            - **country** (optional): the country on which the limit reduction should be applied.
+            - **min_voltage** (optional): the minimum voltage level on which the limit reduction should be applied.
+            - **max_voltage** (optional): the maximum voltage level on which the limit reduction should be applied.
+
+        Examples:
+            Adding a limit reduction of 0.8 on all current limits:
+
+            .. code-block:: python
+
+                security_analysis.add_limit_reductions(limit_type='CURRENT', permanent=True, temporary=True, value=0.8)
+
+            Adding a limit reduction of 0.9 on all temporary current limits with minimal acceptable duration of 300s, on all network elements in France with nominal voltage between 90 and 225kV :
+
+            .. code-block:: python
+            
+                security_analysis.add_limit_reductions(limit_type='CURRENT', permanent=False, temporary=True, value=0.9, min_temporary_duration=300, country='FR', min_voltage=90, max_voltage=225)
+
+        """
+        metadata = _pypowsybl.get_limit_reduction_dataframe_metadata()
+        c_dfs = _get_c_dataframes([df], [metadata], **kwargs)
+        _pypowsybl.add_limit_reductions(self._handle, c_dfs[0])
