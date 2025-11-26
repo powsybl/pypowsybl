@@ -4,6 +4,7 @@ from enum import Enum
 class OptimalPowerFlowMode(Enum):
     LOADFLOW = "LOADFLOW"
     REDISPATCHING = "REDISPATCHING"
+    ACDC = "ACDC"
 
 
 class OptimalPowerFlowParameters:

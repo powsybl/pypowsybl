@@ -202,3 +202,23 @@ def test_micro_grid_be():
 
 def test_micro_grid_nl():
     run_opf_then_lf(pp.network.create_micro_grid_nl_network())
+
+def test_vsc_symmetrical_monopole():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), opf_parameters)
+
+def test_vsc_asymmetrical_monopole():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network(), opf_parameters)
+
+def test_ac_dc_monopolar_network():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_monopolar_network(), opf_parameters)
+
+def test_ac_dc_bipolar_network():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network(), opf_parameters)
+
+def test_ac_dc_bipolar_metallic_return():
+    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
+    assert pp.opf.run_ac(pp.network.create_ac_dc_bipolar_network_with_metallic_return(), opf_parameters)

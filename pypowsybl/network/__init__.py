@@ -47,7 +47,10 @@ from .impl.network_creation_util import (
     create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network,
     create_dc_detailed_lcc_bipole_metallic_return_network,
     create_dc_detailed_vsc_symmetrical_monopole_network,
-    create_dc_detailed_vsc_asymmetrical_monopole_network
+    create_dc_detailed_vsc_asymmetrical_monopole_network,
+    create_ac_dc_monopolar_network,
+    create_ac_dc_bipolar_network,
+    create_ac_dc_bipolar_network_with_metallic_return
 )
 from .impl.util import (
     get_extensions_names,
