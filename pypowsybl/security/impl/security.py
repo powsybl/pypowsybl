@@ -315,11 +315,13 @@ class SecurityAnalysis(ContingencyContainer):
             Adding a limit reduction of 0.8 on all current limits:
 
             .. code-block:: python
+
                 security_analysis.add_limit_reductions(limit_type='CURRENT', permanent=True, temporary=True, value=0.8)
 
             Adding a limit reduction of 0.9 on all temporary current limits with minimal acceptable duration of 300s, on all network elements in France with nominal voltage between 90 and 225kV :
 
             .. code-block:: python
+            
                 security_analysis.add_limit_reductions(limit_type='CURRENT', permanent=False, temporary=True, value=0.9, min_temporary_duration=300, country='FR', min_voltage=90, max_voltage=225)
 
         """
