@@ -36,16 +36,18 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 if control_mode == "P_PCC":
                     p_ac_eq = conv_p_var - target_p
-                    model.add_nl_constraint(p_ac_eq == 0.0)
+                    model.add_linear_constraint(p_ac_eq == 0.0)
 
-                # if control_mode == "V_DC", we let the opf determine the value of U
+                # if control_mode == "V_DC":
+                #     v_dc_eq = v1_var - v2_var - target_v_dc
+                #     model.add_linear_constraint(v_dc_eq == 0.0)
 
                 if voltage_regulator_on:
                     bus1_v_eq = bus1_v_var - target_v_ac
-                    model.add_nl_constraint(bus1_v_eq == 0.0)
+                    model.add_linear_constraint(bus1_v_eq == 0.0)
                 else:
                     q_ac_eq = conv_q_var - target_q
-                    model.add_nl_constraint(q_ac_eq == 0.0)
+                    model.add_linear_constraint(q_ac_eq == 0.0)
 
                 # P_loss = loss_1 + loss_2*I_ac + loss_3*I_ac**2 with the 3 loss coefficients
                 i_ac_var = nl.sqrt(nl.pow(conv_p_var,2) + nl.pow(conv_q_var,2))/1000.0
@@ -53,7 +55,7 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 # P_dc = -P_ac - P_loss because we consider that the power P_dc injected in DC is positive,
                 # and the power P_ac flowing out of AC is negative
-                # FIXME : I needed to add 0.0000001 because at the initialization v1_var = v2_var and the opf never converge
-                conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs(v1_var - v2_var + 0.0000001)
+                # FIXME : I needed to add 1e-10 because at the initialization v1_var = v2_var and the opf never converge
+                conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs(v1_var - v2_var + 1e-10)
 
                 model.add_nl_constraint(conv_p_dc_eq == 0.0)
