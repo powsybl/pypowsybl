@@ -23,24 +23,6 @@ class Rao:
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
 
-    def set_crac(self, crac: Crac) -> None:
-        """
-        Set crac to be used for the rao run
-        """
-        self._crac = crac
-
-    def set_loop_flow_glsk(self, glsk: Glsk) -> None:
-        """
-        Set loop flow glsk to be used for the rao run
-        """
-        _pypowsybl.set_loopflow_glsk(self._handle, glsk._handle)
-
-    def set_monitoring_glsk(self, glsk: Glsk) -> None:
-        """
-        Set the glsk to be used for the rao monitoring
-        """
-        _pypowsybl.set_monitoring_glsk(self._handle, glsk._handle)
-
     def run(self, network: Network, parameters: Optional[RaoParameters] = None, rao_provider: str = "SearchTreeRao", crac: Optional[Crac] = None, loop_flow_glsk: Optional[Glsk] = None) -> RaoResult:
         """
         Run a rao from a set of input buffers
@@ -53,7 +35,7 @@ class Rao:
         if self._crac is None:
             raise _pypowsybl.PyPowsyblError("Providing a CRAC is mandatory to run a rao monitoring")
         if loop_flow_glsk is not None:
-            self.set_loop_flow_glsk(loop_flow_glsk)
+            _pypowsybl.set_loopflow_glsk(self._handle, loop_flow_glsk._handle)
 
         rao_result = _pypowsybl.run_rao(network=network._handle, crac=self._crac._handle, rao_context=self._handle, parameters=parameters._to_c_parameters(), rao_provider=rao_provider)
         return RaoResult(rao_result, self._crac._handle)
@@ -68,7 +50,7 @@ class Rao:
         if self._crac is None:
             raise _pypowsybl.PyPowsyblError("Providing a CRAC is mandatory to run a RAO")
         if monitoring_glsk is not None:
-            self.set_monitoring_glsk(monitoring_glsk)
+            _pypowsybl.set_monitoring_glsk(self._handle, monitoring_glsk._handle)
 
         result_handle = _pypowsybl.run_voltage_monitoring(network._handle, rao_result._handle_result, self._crac._handle, self._handle, p, provider_str)
         return RaoResult(result_handle, self._crac._handle)
@@ -83,7 +65,7 @@ class Rao:
         if self._crac is None:
             raise _pypowsybl.PyPowsyblError("Providing a CRAC is mandatory to run a rao monitoring")
         if monitoring_glsk is not None:
-            self.set_monitoring_glsk(monitoring_glsk)
+            _pypowsybl.set_monitoring_glsk(self._handle, monitoring_glsk._handle)
 
         result_handle = _pypowsybl.run_angle_monitoring(network._handle, rao_result._handle_result, self._crac._handle, self._handle, p, provider_str)
         return RaoResult(result_handle, self._crac._handle)

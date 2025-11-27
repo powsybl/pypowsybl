@@ -171,13 +171,11 @@ def test_rao_from_files(rao_provider: str):
 def test_rao_from_buffers(rao_provider: str):
     network =  pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
     crac = Crac.from_buffer_source(network, io.BytesIO(open(DATA_DIR.joinpath("rao/rao_crac.json"), "rb").read()))
-
+    glsk = RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/rao_glsk.xml"))
     parameters = RaoParameters.from_buffer_source(io.BytesIO(open(DATA_DIR.joinpath("rao/rao_parameters.json"), "rb").read()))
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_crac(crac)
-    rao_runner.set_loop_flow_glsk(RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/rao_glsk.xml")))
-    result = rao_runner.run(network, parameters, rao_provider=rao_provider)
+    result = rao_runner.run(network, parameters, rao_provider=rao_provider, crac=crac, loop_flow_glsk=glsk)
 
     assert RaoComputationStatus.DEFAULT == result.status()
     json_result = result.to_json()
@@ -199,14 +197,14 @@ def test_rao_angle_monitoring_redispatching(rao_provider: str):
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
     load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+    crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
+    monitoring_glsk = RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml"))
 
     rao_runner = pp.rao.create_rao()
-
-    crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
     result = rao_runner.run(network, parameters, rao_provider=rao_provider, crac=crac)
     result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow",
                                                                    crac=crac,
-                                                                   monitoring_glsk=RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml")))
+                                                                   monitoring_glsk=monitoring_glsk)
 
     check_rao_monitoring_result(result_with_angle_monitoring)
 
@@ -218,10 +216,9 @@ def test_rao_angle_monitoring_with_results_from_file(rao_provider: str):
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
-
-    rao_runner = pp.rao.create_rao()
     crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
 
+    rao_runner = pp.rao.create_rao()
     result_with_angle_monitoring = rao_runner.run_angle_monitoring(network=network,
                                                                    rao_result=RaoResult.from_file_source(crac, DATA_DIR.joinpath("rao/rao_result_for_monitoring.json")),
                                                                    load_flow_parameters=parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters,
@@ -253,10 +250,10 @@ def test_rao_angle_monitoring_topological_action(rao_provider: str):
     crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
 
     rao_runner = pp.rao.create_rao()
-    rao_runner.set_monitoring_glsk(RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml")))
+    monitoring_glsk = RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml"))
 
     result = rao_runner.run(network, parameters, rao_provider=rao_provider, crac=crac)
-    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow", crac=crac)
+    result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, result, load_flow_parameters, "OpenLoadFlow", crac=crac, monitoring_glsk=monitoring_glsk)
     angle_cnec_results = result_with_angle_monitoring.get_angle_cnec_results()
 
     expected = pd.DataFrame(columns=['cnec_id', 'optimized_instant', 'contingency', 'angle', 'margin'],
