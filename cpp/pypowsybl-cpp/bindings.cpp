@@ -26,7 +26,6 @@ pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer>
 
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
 
-void setCracSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& crac);
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac);
 pypowsybl::JavaHandle loadGlskSource(const py::buffer& glsk);
 pypowsybl::JavaHandle loadResultSource(const pypowsybl::JavaHandle& cracHandle, const py::buffer& result);
@@ -1275,8 +1274,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_rao", &pypowsybl::createRao, "Create rao context");
     m.def("run_rao", &pypowsybl::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
         py::arg("network"), py::arg("crac"), py::arg("rao_context"), py::arg("parameters"), py::arg("rao_provider"));
-    m.def("set_crac_source", ::setCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
-            py::arg("network"), py::arg("rao_context"), py::arg("crac_source"));
     m.def("load_crac_source", ::loadCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
             py::arg("network"), py::arg("crac_source"));
     m.def("load_glsk_source", ::loadGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source", py::arg("glsk_source"));
@@ -1466,12 +1463,6 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
     pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
     return bytes;
-}
-
-void setCracSource(const pypowsybl::JavaHandle& networkHandle, const pypowsybl::JavaHandle& raoHandle, const py::buffer& crac) {
-    py::buffer_info cracInfo = crac.request();
-    pypowsybl::PowsyblCaller::get()->callJava<>(::setCracBufferedSource,
-     networkHandle, raoHandle, static_cast<char*>(cracInfo.ptr), cracInfo.size);
 }
 
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac) {

@@ -105,18 +105,6 @@ public final class RaoCFunctions {
         });
     }
 
-    @CEntryPoint(name = "setCracBufferedSource")
-    public static void setCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle, CCharPointer cracBuffer, int cracBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, new Runnable() {
-            @Override
-            public void run() {
-                Network network = ObjectHandles.getGlobal().get(networkHandle);
-                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-                raoContext.setCrac(createCrac(network, cracBuffer, cracBufferSize));
-            }
-        });
-    }
-
     @CEntryPoint(name = "loadCracBufferedSource")
     public static ObjectHandle loadCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer, int cracBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
