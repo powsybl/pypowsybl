@@ -127,7 +127,7 @@ class Network:  # pylint: disable=too-many-public-methods
     @property
     def per_unit(self) -> bool:
         """
-        The nominal power to per unit the network (kVA)
+        Defines if the network data should be used in per-unit.
         """
         return self._per_unit
 
