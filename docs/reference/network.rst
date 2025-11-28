@@ -281,6 +281,9 @@ Miscellaneous network functions
    :nosignatures:
 
    Network.reduce
+   Network.reduce_by_ids
+   Network.reduce_by_voltage_range
+   Network.reduce_by_ids_and_depths
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
