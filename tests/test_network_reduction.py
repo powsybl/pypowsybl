@@ -5,6 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import pytest
+import re
 
 import pypowsybl as pp
 import pathlib
@@ -41,4 +42,9 @@ def test_reduce_by_subnetwork():
     assert 4 == len(n.get_buses())
 
 def test_deprecated_reduce():
-    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 4 == len(n.get_buses())
+    with pytest.warns(DeprecationWarning, match=re.escape("reduce is deprecated, use `reduce_by_voltage_range`")):
+        n.reduce(v_min=240, v_max=400)
+    assert 2 == len(n.get_buses())
