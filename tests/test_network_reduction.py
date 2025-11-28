@@ -21,7 +21,7 @@ def test_reduce_by_voltage():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     assert 4 == len(n.get_buses())
-    n.reduce(v_min=240, v_max=400)
+    n.reduce_by_voltage_range(v_min=240, v_max=400)
     assert 2 == len(n.get_buses())
 
 
@@ -29,7 +29,7 @@ def test_reduce_by_ids():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     assert 4 == len(n.get_buses())
-    n.reduce(ids=['P2'])
+    n.reduce_by_ids(ids=['P2'])
     assert 2 == len(n.get_buses())
 
 
@@ -37,5 +37,8 @@ def test_reduce_by_subnetwork():
     n = pp.network.create_eurostag_tutorial_example1_network()
     pp.loadflow.run_ac(n)
     assert 4 == len(n.get_buses())
-    n.reduce(vl_depths=(('VLGEN', 1), ('VLLOAD', 1)))
+    n.reduce_by_ids_and_depths(vl_depths=[('VLGEN', 1), ('VLLOAD', 1)])
     assert 4 == len(n.get_buses())
+
+def test_deprecated_reduce():
+    with pytest.warns(DeprecationWarning, match=re.escape("operation limits is_fictitious attribute has been renamed fictitious")):

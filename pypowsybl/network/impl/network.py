@@ -290,8 +290,10 @@ class Network:  # pylint: disable=too-many-public-methods
                                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: Optional[List[str]] = None,
-               vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+               vl_depths: Optional[List[tuple]] = None, with_dangling_lines: bool = False) -> None:
         """
+        .. deprecated:: 1.14.0
+          Use :meth:`reduce_by_voltage_range`, :meth:`reduce_by_ids` or :meth:`reduce_by_ids_and_depths` instead depending on your use case.
         Reduce to a smaller network according to the following parameters
 
         :param v_min: minimum voltage of the voltage levels kept after reducing
@@ -300,14 +302,75 @@ class Network:  # pylint: disable=too-many-public-methods
         :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
         :param with_dangling_lines: keeping the dangling lines
         """
+        warnings.warn("reduce is deprecated, use `reduce_by_voltage_range`, `reduce_by_ids` or `reduce_by_ids_and_depths` instead depending on your use case", DeprecationWarning)
         if ids is None:
             ids = []
+        vls = []
+        depths = []
+        if vl_depths is None:
+            vl_depths = []
+        for v in vl_depths:
+            vls.append(v[0])
+            depths.append(v[1])
+        _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
+
+    def reduce_by_voltage_range(self, v_min: float = 0, v_max: float = sys.float_info.max, with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network (only keeping all elements whose nominal voltage is in the specified voltage range)
+
+        :param v_min: minimum voltage of the voltage levels kept after reducing
+        :param v_max: voltage maximum of the voltage levels kept after reducing
+        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+
+        Example:
+
+            .. code-block:: python
+
+                network.reduce_by_voltage_range(v_min=90, v_max=250, with_dangling_lines=True)
+
+            will only keep elements of voltage level between 90 and 250kV, replacing the lines cut at the boundary by dangling lines.
+        """
+        _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+
+    def reduce_by_ids(self, ids: List[str], with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network (only keeping voltage levels whose id is in the specified list)
+
+        :param ids: list of the voltage level ids that should be kept in the reduced network
+        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+
+        Example:
+
+            .. code-block:: python
+
+                network.reduce_by_ids(ids=["VL1", "VL2"])
+
+            will only keep voltage levels VL1 and VL2 and all network elements between them.
+        """
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+
+    def reduce_by_ids_and_depths(self, vl_depths: List[tuple[str, int]], with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network (keeping the specified voltage levels with all respective neighbours at most at the specified depth).
+
+        :param vl_depths: list of the voltage level ids that should be kept in the reduced network
+        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+
+        Example:
+
+            .. code-block:: python
+
+                network.reduce_by_ids_and_depths(vl_depths=[("VL1", 1), ("VL25", 3)])
+
+            will only keep voltage levels VL1 and its neighbours, and VL25 with all elements around it with at most 3 connections between them.
+        """
         vls = []
         depths = []
         for v in vl_depths:
             vls.append(v[0])
             depths.append(v[1])
-        _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=[], vls=vls, depths=depths, with_dangling_lines=with_dangling_lines)
+
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: Optional[PathOrStr] = None,
                                       parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> None:

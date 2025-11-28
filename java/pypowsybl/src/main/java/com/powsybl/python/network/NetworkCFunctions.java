@@ -458,9 +458,9 @@ public final class NetworkCFunctions {
                 }
                 if (depthsCount != 0) {
                     final List<Integer> depths = CTypeUtil.toIntegerList(depthsPtr, depthsCount);
-                    final List<String> voltageLeveles = toStringList(vlsPtrPtr, vlsCount);
+                    final List<String> voltageLevels = toStringList(vlsPtrPtr, vlsCount);
                     for (int i = 0; i < depths.size(); i++) {
-                        predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLeveles.get(i)), depths.get(i)));
+                        predicates.add(new SubNetworkPredicate(network.getVoltageLevel(voltageLevels.get(i)), depths.get(i)));
                     }
                 }
                 final OrNetworkPredicate orNetworkPredicate = new OrNetworkPredicate(predicates);
