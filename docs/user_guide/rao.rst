@@ -34,7 +34,7 @@ Here is a code example of how to configure and run the RAO:
     >>> rao_runner = pp.rao.create_rao()
     >>> crac = Crac.from_file_source(network, str(DATA_DIR.joinpath("rao/rao_crac.json")))
     >>> glsk = RaoGlsk.from_file_source(str(DATA_DIR.joinpath("rao/rao_glsk.xml")))
-    >>> rao_result = rao_runner.run(network=network, parameters=parameters, crac=crac, loop_flow_glsk=glsk)
+    >>> rao_result = rao_runner.run(crac=crac, network=network, parameters=parameters, loop_flow_glsk=glsk)
     >>> rao_result.status()
     <RaoComputationStatus.DEFAULT: 0>
 
@@ -43,9 +43,9 @@ Monitoring API
 
 Rao monitoring can run through the following API using a rao result already produced by a run, or loaded from file :
 
-    >>> result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(network, rao_result, crac=crac)
+    >>> result_with_voltage_monitoring = rao_runner.run_voltage_monitoring(crac, network, rao_result)
     >>> monitoring_glsk = RaoGlsk.from_file_source(str(DATA_DIR.joinpath("rao/GlskB45test.xml")))
-    >>> result_with_angle_monitoring = rao_runner.run_angle_monitoring(network, rao_result, crac=crac, monitoring_glsk=monitoring_glsk)
+    >>> result_with_angle_monitoring = rao_runner.run_angle_monitoring(crac, network, rao_result, monitoring_glsk=monitoring_glsk)
 
 The returned rao result object are the original result enhanced with voltage or angle monitoring data.
 
@@ -185,4 +185,4 @@ open rao, a RaoLogFilter is available :
     >>> logger = logging.getLogger('powsybl')
     >>> logger.setLevel(logging.ERROR)
     >>> logger.addFilter(RaoLogFilter())
-    >>> rao_result = rao_runner.run(network, parameters, crac=crac, loop_flow_glsk=glsk)
+    >>> rao_result = rao_runner.run(crac, network, parameters, loop_flow_glsk=glsk)
