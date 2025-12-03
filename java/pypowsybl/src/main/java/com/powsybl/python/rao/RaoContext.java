@@ -32,14 +32,20 @@ public class RaoContext {
 
     private Crac crac;
 
-    private GlskDocument glsks;
+    private GlskDocument loopFlowGlsk;
+
+    private GlskDocument monitoringGlsk;
 
     public void setCrac(Crac crac) {
         this.crac = crac;
     }
 
-    public void setGlsks(GlskDocument glskDocument) {
-        this.glsks = glskDocument;
+    public void setLoopFlowGlsk(GlskDocument glskDocument) {
+        this.loopFlowGlsk = glskDocument;
+    }
+
+    public void setMonitoringGlsk(GlskDocument glskDocument) {
+        this.monitoringGlsk = glskDocument;
     }
 
     public RaoResult run(Network network, RaoParameters parameters, String raoProvider) {
@@ -47,8 +53,8 @@ public class RaoContext {
             throw new PowsyblException("Providing a crac source is mandatory to run a Rao.");
         }
         RaoInput.RaoInputBuilder inputBuilder = RaoInput.build(network, crac);
-        if (glsks != null) {
-            inputBuilder.withGlskProvider(glsks.getZonalGlsks(network));
+        if (loopFlowGlsk != null) {
+            inputBuilder.withGlskProvider(loopFlowGlsk.getZonalGlsks(network));
         }
         return Rao.find(raoProvider).run(inputBuilder.build(), parameters);
     }
@@ -62,16 +68,17 @@ public class RaoContext {
 
     public RaoResultWithAngleMonitoring runAngleMonitoring(Network network, RaoResult resultIn, String provider, LoadFlowParameters parameters) {
         Monitoring raoMonitoring = new Monitoring(provider, parameters);
-        MonitoringInput inputs = MonitoringInput.buildWithAngle(network, crac, resultIn, glsks.getZonalScalable(network)).build();
+        MonitoringInput inputs;
+        if (monitoringGlsk != null) {
+            inputs = MonitoringInput.buildWithAngle(network, crac, resultIn, monitoringGlsk.getZonalScalable(network)).build();
+        } else {
+            throw new PowsyblException("Providing glsk for angle monitoring is mandatory.");
+        }
         MonitoringResult monitoringResult = raoMonitoring.runMonitoring(inputs, 1);
         return new RaoResultWithAngleMonitoring(resultIn, monitoringResult);
     }
 
     public Crac getCrac() {
         return crac;
-    }
-
-    public GlskDocument getGlsks() {
-        return glsks;
     }
 }
