@@ -173,9 +173,9 @@ The following example reduces by a factor of 0.8 all limits on the network for t
     [0.8]
 
 Limit reductions can also be more selective. They can only be applied to certain network elements using the `country`, `min_voltage` and `max_voltage`
-parameters, or to certain temporary limits using the `min_temporary_duration` and `max_temporary_duration` parameters (if `temporary=True'). For example,
-the following method adds a limit reduction of 0.9 on all temporary current limits with minimal acceptable duration of 300s, on all network elements in France
-with nominal voltage between 90 and 225kV :
+parameters, or to certain temporary limits using the `min_temporary_duration` and `max_temporary_duration` parameters (if `temporary=True`).
+For example, the following method adds a limit reduction of 0.9 on all temporary current limits with minimal acceptable duration of 300s,
+on all network elements in France with nominal voltage between 90 and 225kV :
 
 .. code-block:: python
 
