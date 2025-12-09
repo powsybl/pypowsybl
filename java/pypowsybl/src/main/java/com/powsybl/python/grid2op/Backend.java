@@ -9,6 +9,7 @@ package com.powsybl.python.grid2op;
 
 import com.powsybl.iidm.modification.SetGeneratorToLocalRegulation;
 import com.powsybl.iidm.network.*;
+import com.powsybl.iidm.network.util.Identifiables;
 import com.powsybl.loadflow.LoadFlow;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
@@ -121,10 +122,13 @@ public class Backend implements Closeable {
 
         prepareNetwork(network, busesPerVoltageLevel);
 
+        // !!! general remark: we need to sort elements because for of conversion from node/breaker to bus/breaker
+        // ca can have a different order at first network copy
+
         // voltage levels
-        voltageLevels = network.getVoltageLevelStream().toList();
+        voltageLevels = new ArrayList<>(Identifiables.sort(network.getVoltageLevels()));
         voltageLevelName = Util.createCharPtrArray(voltageLevels.stream().map(Identifiable::getId).toList());
-        Map<String, Integer> voltageLevelIdToNum = new HashMap<>(voltageLevels.size());
+        Map<String, Integer> voltageLevelIdToNum = HashMap.newHashMap(voltageLevels.size());
         for (int i = 0; i < voltageLevels.size(); i++) {
             VoltageLevel voltageLevel = voltageLevels.get(i);
             voltageLevelIdToNum.put(voltageLevel.getId(), i);
@@ -135,11 +139,11 @@ public class Backend implements Closeable {
         buses = new Bus[busCount];
         busV = new double[busCount];
         busAngle = new double[busCount];
-        busIdToGlobalNum = new HashMap<>(busCount);
+        busIdToGlobalNum = HashMap.newHashMap(busCount);
         for (int voltageLevelNum = 0; voltageLevelNum < voltageLevels.size(); voltageLevelNum++) {
             VoltageLevel voltageLevel = voltageLevels.get(voltageLevelNum);
             // process all buses including ones not in main CC becuase an element might be reconnected afterward
-            List<Bus> localBuses = voltageLevel.getBusBreakerView().getBusStream().toList();
+            List<Bus> localBuses = new ArrayList<>(Identifiables.sort(voltageLevel.getBusBreakerView().getBuses()));
             for (int i = 0; i < localBuses.size(); i++) {
                 Bus localBus = localBuses.get(i);
                 int localNum = i + 1;
@@ -150,7 +154,7 @@ public class Backend implements Closeable {
         }
 
         // loads
-        loads = network.getLoadStream().toList();
+        loads = new ArrayList<>(Identifiables.sort(network.getLoads()));
         loadName = Util.createCharPtrArray(loads.stream().map(Identifiable::getId).toList());
         loadToVoltageLevelNum = createIntArrayPointer(loads.size());
         loadP = createDoubleArrayPointer(loads.size());
@@ -166,7 +170,7 @@ public class Backend implements Closeable {
         }
 
         // generators
-        generators = network.getGeneratorStream().toList();
+        generators = new ArrayList<>(Identifiables.sort(network.getGenerators()));
         generatorName = Util.createCharPtrArray(generators.stream().map(Identifiable::getId).toList());
         generatorToVoltageLevelNum = createIntArrayPointer(generators.size());
         generatorP = createDoubleArrayPointer(generators.size());
@@ -182,7 +186,7 @@ public class Backend implements Closeable {
         }
 
         // shunts
-        shunts = network.getShuntCompensatorStream().toList();
+        shunts = new ArrayList<>(Identifiables.sort(network.getShuntCompensators()));
         shuntName = Util.createCharPtrArray(shunts.stream().map(Identifiable::getId).toList());
         shuntToVoltageLevelNum = createIntArrayPointer(shunts.size());
         shuntP = createDoubleArrayPointer(shunts.size());
@@ -200,7 +204,7 @@ public class Backend implements Closeable {
         }
 
         // branches
-        branches = network.getBranchStream().toList();
+        branches = new ArrayList<>(Identifiables.sort(network.getBranches()));
         branchName = Util.createCharPtrArray(branches.stream().map(Identifiable::getId).toList());
         branchToVoltageLevelNum1 = createIntArrayPointer(branches.size());
         branchToVoltageLevelNum2 = createIntArrayPointer(branches.size());
