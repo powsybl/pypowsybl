@@ -107,12 +107,16 @@ class Parameters:
     def _init_with_default_values(self) -> None:
         self._init_from_c(RaoParameters())
 
-    def load_from_file_source(self, parameters_file: Union[str, PathLike]) -> None:
+    @classmethod
+    def from_file_source(cls, parameters_file: Union[str, PathLike]) -> Any :
         parameters = io.BytesIO(open(path_to_str(parameters_file), "rb").read())
-        self.load_from_buffer_source(parameters)
+        return cls.from_buffer_source(parameters)
 
-    def load_from_buffer_source(self, parameters_source: io.BytesIO) -> None:
-        self._init_from_c(_pypowsybl.load_rao_parameters(parameters_source.getbuffer()))
+    @classmethod
+    def from_buffer_source(cls, parameters_source: io.BytesIO) -> Any :
+        p = cls()
+        p._init_from_c(_pypowsybl.load_rao_parameters(parameters_source.getbuffer()))
+        return p
 
     def serialize(self, output_file: str) -> None:
         with open(output_file, "wb") as f:

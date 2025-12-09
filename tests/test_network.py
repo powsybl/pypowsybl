@@ -2554,6 +2554,97 @@ def test_terminals():
     assert "No enum constant" in str(e)
 
 
+def test_dc_nodes():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_nodes(pd.DataFrame(data={'nominal_v': 500}, index=['dcNodeFrPos']))
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
+        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
+        data=[['', 'dcNodeGbNeg_dcBus', 250, nan], ['', 'dcNodeGbPos_dcBus', 250, nan],
+              ['', 'dcNodeFrNeg_dcBus', 250, nan], ['', 'dcNodeFrPos_dcBus', 500, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
+
+    dc_nodes = n.get_dc_nodes(attributes=['nominal_v'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
+        columns=['nominal_v'], data=[[250], [250], [250], [500]])
+    pd.testing.assert_frame_equal(expected, dc_nodes, check_dtype=False, atol=1e-2)
+
+
+def test_dc_lines():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_lines(pd.DataFrame(data={'r': 1.0, 'i1': 10.0, 'i2': 10.0}, index=['dcLineNeg']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
+                            columns=['name', 'dc_node1_id', 'dc_node2_id', 'r', 'i1', 'p1', 'i2', 'p2'],
+                            data=[['', 'dcNodeFrNeg', 'dcNodeGbNeg', 1.0, 10.0, nan, 10.0, nan],
+                                  ['', 'dcNodeFrPos', 'dcNodeGbPos', 5.0, nan, nan, nan, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_lines(), check_dtype=False)
+
+    dc_lines = n.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
+                            columns=['dc_node1_id', 'dc_node2_id'],
+                            data=[['dcNodeFrNeg', 'dcNodeGbNeg'], ['dcNodeFrPos', 'dcNodeGbPos']])
+    pd.testing.assert_frame_equal(expected, dc_lines, check_dtype=False, atol=1e-2)
+
+
+def test_voltage_source_converters():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_voltage_source_converters(pd.DataFrame(
+        data={'dc_connected1': True, 'dc_connected2': True, 'voltage_regulator_on': False, 'control_mode': 'V_DC',
+              'pcc_terminal_id': 'VscFr', 'target_v_dc': 400.0, 'target_v_ac': 400.0, 'target_p': -50.0,
+              'target_q': 0.0, 'idle_loss': 0.5, 'switching_loss': 1.0, 'resistive_loss': 0.2, 'p_ac': 10.0,
+              'q_ac': 10.0, 'p_dc1': 10.0, 'p_dc2': 10.0}, index=['VscFr']))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']),
+                            columns=['name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
+                                     'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
+                                     'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
+                                     'switching_loss', 'resistive_loss', 'p_ac', 'q_ac', 'p_dc1', 'p_dc2'], data=[
+            ['', 'VLDC-FR-xNodeDc1fr-150', 'VLDC-FR-xNodeDc1fr-150_0', '', 'dcNodeFrNeg', 'dcNodeFrPos', True, True,
+             'VscFr', False, 'V_DC', 400.0, 400.0, -50.0, 0.0, 0.5, 1.0, 0.2, 10.0, 10.0, 10.0, 10.0],
+            ['', 'VLDC-GB-xNodeDc1gb-150', 'VLDC-GB-xNodeDc1gb-150_0', '', 'dcNodeGbNeg', 'dcNodeGbPos', True, True,
+             'TRDC-GB-xNodeDc1gb', False, 'P_PCC', 500.0, 400.0, -200.0, 0.0, 0.0, 0.0, 0.0, nan, nan, nan, nan]])
+
+    pd.testing.assert_frame_equal(expected, n.get_voltage_source_converters(), check_dtype=False)
+
+    voltage_source_converters = n.get_voltage_source_converters(attributes=['voltage_level_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']), columns=['voltage_level_id'],
+                            data=[['VLDC-FR-xNodeDc1fr-150'], ['VLDC-GB-xNodeDc1gb-150']])
+    pd.testing.assert_frame_equal(expected, voltage_source_converters, check_dtype=False, atol=1e-2)
+
+
+def test_dc_grounds():
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
+    n.update_dc_grounds(pd.DataFrame(data={'r': 1.0}, index=['dcGroundGb']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']),
+                            columns=['name', 'dc_node_id', 'r'],
+                            data=[['', 'dcNodeGbMid', 1.0], ['', 'dcNodeFrMid', 0.0]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
+
+    dc_grounds = n.get_dc_grounds(attributes=['dc_node_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']), columns=['dc_node_id'],
+                            data=[['dcNodeGbMid'], ['dcNodeFrMid']])
+    pd.testing.assert_frame_equal(expected, dc_grounds, check_dtype=False, atol=1e-2)
+
+
+def test_dc_buses():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_buses(pd.DataFrame(data={'v': 100}, index=['dcNodeFrPos_dcBus']))
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
+                                                  'dcNodeGbNeg_dcBus']),
+                            columns=['name', 'connected_component', 'dc_component', 'v'],
+                            data=[['', 0, 0, 100], ['', 0, 0, nan], ['', 0, 0, nan], ['', 0, 0, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_buses(), check_dtype=False)
+
+    dc_buses = n.get_dc_buses(attributes=['v'])
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
+                                                  'dcNodeGbNeg_dcBus']), columns=['v'],
+                            data=[[100], [nan], [nan], [nan]])
+    pd.testing.assert_frame_equal(expected, dc_buses, check_dtype=False, atol=1e-2)
+
+
 def test_nad_parameters():
     nad_parameters = NadParameters()
     assert not nad_parameters.edge_name_displayed
@@ -2821,6 +2912,20 @@ def test_apply_solved_values():
     assert 607.0 == n.get_generators().loc["GEN", "target_p"]
     n.apply_solved_values()
     assert pytest.approx(302.78, abs=1e-2) == n.get_generators().loc["GEN", "target_p"]
+
+def test_create_dc_detailed_network():
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
+    assert 'LccBipoleGroundReturn+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network()
+    assert 'LccBipoleGroundReturnNegativePoleOutage+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network()
+    assert 'LccBipoleGroundReturnWithDcLineSegments+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_lcc_bipole_metallic_return_network()
+    assert 'LccMonopoleMetallicReturn+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    assert 'VscSymmetricalMonopole+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
+    assert 'VscAsymmetricalMonopole+FR+GB' == n.id
 
 if __name__ == '__main__':
     unittest.main()

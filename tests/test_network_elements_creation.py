@@ -1147,3 +1147,71 @@ def test_internal_connections_errors():
     with pytest.raises(PyPowsyblError) as exc:
         network.remove_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
     assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)
+
+
+def test_dc_node_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    print(n.get_dc_nodes().to_string())
+    n.create_dc_nodes(pd.DataFrame(index=['DC_NODE_TEST'], columns=['nominal_v'], data=[[500.0]]))
+
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos', 'DC_NODE_TEST']),
+        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
+        data=[['', 'dcNodeGbNeg_dcBus', 250.0, nan], ['', 'dcNodeGbPos_dcBus', 250.0, nan],
+              ['', 'dcNodeFrNeg_dcBus', 250.0, nan], ['', 'dcNodeFrPos_dcBus', 250.0, nan], ['', '', 500.0, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
+
+
+def test_dc_lines_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network().get_sub_network(
+        'VscSymmetricalMonopole')
+
+    n.create_dc_lines(
+        pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']), columns=['r', 'dc_node1_id', 'dc_node2_id'],
+                     data=[[2, 'dcNodeGbNeg', 'dcNodeGbPos']]))
+    dc_line = n.get_dc_lines().loc['DC_LINE_TEST']
+
+    assert dc_line.r == 2
+    assert dc_line.dc_node1_id == 'dcNodeGbNeg'
+    assert dc_line.dc_node2_id == 'dcNodeGbPos'
+
+
+def test_voltage_source_converter_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
+    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
+                                                    columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id',
+                                                             'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
+                                                             'voltage_regulator_on', 'idle_loss', 'switching_loss',
+                                                             'resistive_loss', 'target_v_ac', 'dc_connected1',
+                                                             'dc_connected2', 'pcc_terminal_id'], data=[
+            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
+             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb']]))
+    conv = n.get_voltage_source_converters().loc['CONV_TEST']
+
+    assert conv.voltage_level_id == 'VLDC-GB-xNodeDc1gb-150'
+    assert conv.bus1_id == 'VLDC-GB-xNodeDc1gb-150_0'
+    assert conv.bus2_id == 'VLDC-GB-xNodeDc1gb-150_1'
+    assert conv.dc_node1_id == 'dcNodeGbNeg'
+    assert conv.dc_node2_id == 'dcNodeGbPos'
+    assert conv.control_mode == 'P_PCC'
+    assert conv.target_p == 300
+    assert conv.voltage_regulator_on == True
+    assert conv.idle_loss == 1.0
+    assert conv.switching_loss == 1.0
+    assert conv.resistive_loss == 1.0
+    assert conv.target_v_ac == 400
+    assert conv.dc_connected1 == True
+    assert conv.dc_connected2 == False
+    assert conv.pcc_terminal_id == 'TRDC-GB-xNodeDc1gb'
+
+
+def test_dc_ground_creation():
+    n = pypowsybl.network.create_dc_detailed_lcc_bipole_ground_return_network().get_sub_network('LccBipoleGroundReturn')
+    n.create_dc_grounds(
+        pd.DataFrame(index=['DC_GROUND_TEST'], columns=['dc_node_id', 'r'], data=[['dcNodeGbMid', 0.1]]))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr', 'DC_GROUND_TEST']),
+                            columns=['name', 'dc_node_id', 'r'],
+                            data=[['', 'dcNodeGbMid', 0.0], ['', 'dcNodeFrMid', 0.0], ['', 'dcNodeGbMid', 0.1]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)

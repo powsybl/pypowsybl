@@ -255,6 +255,11 @@ public final class Util {
             case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_BOUNDARIES;
             case INTERNAL_CONNECTION -> PyPowsyblApiHeader.ElementType.INTERNAL_CONNECTION;
             case PROPERTIES -> PyPowsyblApiHeader.ElementType.PROPERTIES;
+            case DC_LINE -> PyPowsyblApiHeader.ElementType.DC_LINE;
+            case DC_NODE -> PyPowsyblApiHeader.ElementType.DC_NODE;
+            case VOLTAGE_SOURCE_CONVERTER -> PyPowsyblApiHeader.ElementType.VOLTAGE_SOURCE_CONVERTER;
+            case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
+            case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
         };
     }
 
@@ -302,6 +307,11 @@ public final class Util {
             case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
             case INTERNAL_CONNECTION -> DataframeElementType.INTERNAL_CONNECTION;
             case PROPERTIES -> DataframeElementType.PROPERTIES;
+            case DC_LINE -> DataframeElementType.DC_LINE;
+            case DC_NODE -> DataframeElementType.DC_NODE;
+            case VOLTAGE_SOURCE_CONVERTER -> DataframeElementType.VOLTAGE_SOURCE_CONVERTER;
+            case DC_GROUND -> DataframeElementType.DC_GROUND;
+            case DC_BUS -> DataframeElementType.DC_BUS;
         };
     }
 
