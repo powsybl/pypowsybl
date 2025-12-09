@@ -161,7 +161,8 @@ Limit reductions can be added to a security analysis in order to detect limit vi
 
 The following example reduces by a factor of 0.8 all limits on the network for the security analysis:
 
-.. code-block:: python
+.. doctest::
+    :options: +NORMALIZE_WHITESPACE
 
     >>> n = pp.network.create_eurostag_tutorial_example1_network()
     >>> sa = pp.security.create_analysis()
@@ -169,7 +170,7 @@ The following example reduces by a factor of 0.8 all limits on the network for t
     >>> sa.add_limit_reductions(limit_type='CURRENT', permanent=True, temporary=True, value=0.8)
     >>> sa_result = sa.run_ac(n)
     >>> sa_result.limit_violations["limit_reduction"].unique().item()
-    [0.8]
+    0.8
 
 Limit reductions can also be more selective. They can only be applied to certain network elements using the `country`, `min_voltage` and `max_voltage`
 parameters, or to certain temporary limits using the `min_temporary_duration` and `max_temporary_duration` parameters (if `temporary=True`).
