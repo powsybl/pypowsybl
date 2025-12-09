@@ -611,7 +611,7 @@ def test_get_extensions_information():
                'attributes'] == 'index : id (str), observable (bool), p_standard_deviation (float), p_redundant (bool), q_standard_deviation (float), q_redundant (bool), v_standard_deviation (float), v_redundant (bool)'
     assert extensions_information.loc['detail']['detail'] == 'Provides active power setpoint and reactive power setpoint for a load'
     assert extensions_information.loc['detail'][
-               'attributes'] == 'index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)'
+               'attributes'] == 'index : id (str), fixed_p0 (float), variable_p0 (float), fixed_q0 (float), variable_q0 (float)'
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['detail'] == ''
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['attributes'] == 'index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)'
     assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators to balancing'
