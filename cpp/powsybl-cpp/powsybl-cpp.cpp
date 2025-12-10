@@ -1140,13 +1140,16 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
 }
 
 void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
-      PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+    PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
 void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
-      PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+    PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
+void addLimitReductions(const JavaHandle& analysisContext, dataframe* dataframe) {
+    PowsyblCaller::get()->callJava<>(::addLimitReductions, analysisContext, dataframe);
+}
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
@@ -1338,6 +1341,13 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
         const series_metadata& series = dataframeMetadata->attributes_metadata[i];
         res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
     }
+    return res;
+}
+
+std::vector<SeriesMetadata> getLimitReductionDataframeMetadata() {
+    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getLimitReductionDataframeMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 
