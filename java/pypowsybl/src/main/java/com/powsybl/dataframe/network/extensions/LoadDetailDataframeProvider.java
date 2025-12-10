@@ -40,7 +40,7 @@ public class LoadDetailDataframeProvider extends AbstractSingleDataframeNetworkE
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(LoadDetail.NAME, "Provides active power setpoint and reactive power setpoint for a load",
-                "index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)");
+                "index : id (str), fixed_p0 (float), variable_p0 (float), fixed_q0 (float), variable_q0 (float)");
     }
 
     private Stream<LoadDetail> itemsStream(Network network) {
