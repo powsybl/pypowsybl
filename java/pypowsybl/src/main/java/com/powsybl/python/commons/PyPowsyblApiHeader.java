@@ -437,6 +437,30 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
+        @CField("flow_flow_sensitivity_value_threshold")
+        double getFlowFlowSensitivityValueThreshold();
+
+        @CField("flow_flow_sensitivity_value_threshold")
+        void setFlowFlowSensitivityValueThreshold(double threshold);
+
+        @CField("voltage_voltage_sensitivity_value_threshold")
+        double getVoltageVoltageSensitivityValueThreshold();
+
+        @CField("voltage_voltage_sensitivity_value_threshold")
+        void setVoltageVoltageSensitivityValueThreshold(double threshold);
+
+        @CField("flow_voltage_sensitivity_value_threshold")
+        double getFlowVoltageSensitivityValueThreshold();
+
+        @CField("flow_voltage_sensitivity_value_threshold")
+        void setFlowVoltageSensitivityValueThreshold(double threshold);
+
+        @CField("angle_flow_sensitivity_value_threshold")
+        double getAngleFlowSensitivityValueThreshold();
+
+        @CField("angle_flow_sensitivity_value_threshold")
+        void setAngleFlowSensitivityValueThreshold(double threshold);
+
         @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
@@ -602,7 +626,12 @@ public final class PyPowsyblApiHeader {
         AREA_VOLTAGE_LEVELS,
         AREA_BOUNDARIES,
         INTERNAL_CONNECTION,
-        PROPERTIES;
+        PROPERTIES,
+        DC_LINE,
+        DC_NODE,
+        VOLTAGE_SOURCE_CONVERTER,
+        DC_GROUND,
+        DC_BUS;
 
         @CEnumValue
         public native int getCValue();
@@ -1204,42 +1233,6 @@ public final class PyPowsyblApiHeader {
         void setStopTime(double stopTime);
     }
 
-    @CEnum("DynamicMappingType")
-    public enum DynamicMappingType {
-        BASE_LOAD,
-        LOAD_ONE_TRANSFORMER,
-        LOAD_ONE_TRANSFORMER_TAP_CHANGER,
-        LOAD_TWO_TRANSFORMERS,
-        LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
-        BASE_GENERATOR,
-        SYNCHRONIZED_GENERATOR,
-        SYNCHRONOUS_GENERATOR,
-        WECC,
-        GRID_FORMING_CONVERTER,
-        SIGNAL_N_GENERATOR,
-        HVDC_P,
-        HVDC_VSC,
-        BASE_TRANSFORMER,
-        BASE_STATIC_VAR_COMPENSATOR,
-        BASE_LINE,
-        BASE_BUS,
-        INFINITE_BUS,
-        OVERLOAD_MANAGEMENT_SYSTEM,
-        TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
-        UNDER_VOLTAGE,
-        PHASE_SHIFTER_I,
-        PHASE_SHIFTER_P,
-        PHASE_SHIFTER_BLOCKING_I,
-        TAP_CHANGER,
-        TAP_CHANGER_BLOCKING;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native DynamicMappingType fromCValue(int value);
-    }
-
     @CEnum("EventMappingType")
     public enum EventMappingType {
         DISCONNECT,
@@ -1590,12 +1583,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("execution_condition")
         void setExecutionCondition(int executionCondition);
-
-        @CField("re_optimize_curative_range_actions")
-        boolean getReOptimizeCurativeRangeActions();
-
-        @CField("re_optimize_curative_range_actions")
-        void setReOptimizeCurativeRangeActions(boolean reOptimizeCurativeRangeActions);
 
         @CField("hint_from_first_preventive_rao")
         boolean getHintFromFirstPreventiveRao();

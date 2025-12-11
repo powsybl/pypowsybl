@@ -6,6 +6,8 @@
 #
 from pypowsybl import _pypowsybl
 from .rao import Rao
+from logging import LogRecord
+import re
 
 def create_rao() -> Rao:
     """ Creates a rao objet, which can be used to run a remedial action optimisation on a network
@@ -13,3 +15,11 @@ def create_rao() -> Rao:
         A rao object
     """
     return Rao(_pypowsybl.create_rao())
+
+class RaoLogFilter:
+    def filter(self, record: LogRecord) -> bool:
+        # Filter and keep only logs from open rao package
+        if re.search("com\\.powsybl\\.openrao.*", getattr(record, 'java_logger_name')):
+            return True
+        else:
+            return False

@@ -14,6 +14,9 @@ from .impl.parameters import MultithreadingParameters
 from .impl.parameters import SecondPreventiveRaoParameters
 from .impl.parameters import NotOptimizedCnecsParameters
 from .impl.parameters import LoadFlowAndSensitivityParameters
+from .impl.crac import Crac
+from .impl.glsk import Glsk
 from .impl.util import (
-  create_rao
+  create_rao,
+  RaoLogFilter
 )

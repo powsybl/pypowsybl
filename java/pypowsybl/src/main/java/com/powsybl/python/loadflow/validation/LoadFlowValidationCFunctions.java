@@ -14,9 +14,8 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.validation.ValidationConfig;
 import com.powsybl.loadflow.validation.ValidationType;
-import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.PyPowsyblConfiguration;
+import com.powsybl.python.commons.*;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.network.Dataframes;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
@@ -25,7 +24,6 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
-import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.loadflow.LoadFlowCFunctions;
 
@@ -39,6 +37,7 @@ import static com.powsybl.python.commons.Util.doCatch;
  *
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
  */
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
 @CContext(Directives.class)
 public final class LoadFlowValidationCFunctions {
 
@@ -50,9 +49,12 @@ public final class LoadFlowValidationCFunctions {
                                                                                   PyPowsyblApiHeader.ValidationType validationType,
                                                                                   PyPowsyblApiHeader.LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return createLoadFlowValidationSeriesArray(network, validationType, loadFlowValidationParametersPtr);
+            }
         });
     }
 
@@ -95,24 +97,24 @@ public final class LoadFlowValidationCFunctions {
 
     private static ArrayPointer<SeriesPointer> createCDataFrame(InMemoryValidationWriter validationWriter, PyPowsyblApiHeader.ValidationType validationType) {
         return switch (validationType) {
-            case FLOWS ->
-                    Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
-            case BUSES ->
-                    Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
-            case GENERATORS ->
-                    Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
+            case FLOWS -> Dataframes.createCDataframe(Validations.branchValidationsMapper(), validationWriter.getBranchData());
+            case BUSES -> Dataframes.createCDataframe(Validations.busValidationsMapper(), validationWriter.getBusData());
+            case GENERATORS -> Dataframes.createCDataframe(Validations.generatorValidationsMapper(), validationWriter.getGeneratorData());
             case SVCS -> Dataframes.createCDataframe(Validations.svcsValidationMapper(), validationWriter.getSvcData());
-            case SHUNTS ->
-                    Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
+            case SHUNTS -> Dataframes.createCDataframe(Validations.shuntsValidationMapper(), validationWriter.getShuntData());
             case TWTS -> Dataframes.createCDataframe(Validations.twtsValidationMapper(), validationWriter.getTwtData());
-            case TWTS3W ->
-                    Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
+            case TWTS3W -> Dataframes.createCDataframe(Validations.twt3wsValidationMapper(), validationWriter.getT3wtData());
         };
     }
 
     @CEntryPoint(name = "createValidationConfig")
     public static LoadFlowValidationParametersPointer createValidationConfig(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> convertToLoadFlowValidationParametersPointer(createValidationConfig()));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public LoadFlowValidationParametersPointer get() {
+                return convertToLoadFlowValidationParametersPointer(createValidationConfig());
+            }
+        });
     }
 
     public static void copyToCLoadFlowValidationParameters(ValidationConfig parameters, LoadFlowValidationParametersPointer cParameters) {
@@ -126,7 +128,7 @@ public final class LoadFlowValidationCFunctions {
         }
         cParameters.setEpsilonX(parameters.getEpsilonX());
         cParameters.setApplyReactanceCorrection(parameters.applyReactanceCorrection());
-        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), cParameters.getLoadFlowParameters());
+        LoadFlowCFunctions.copyToCLoadFlowParameters(parameters.getLoadFlowParameters(), cParameters.getLoadFlowParameters(), null);
         cParameters.setOkMissingValues(parameters.areOkMissingValues());
         cParameters.setNoRequirementIfReactiveBoundInversion(parameters.isNoRequirementIfReactiveBoundInversion());
         cParameters.setCompareResults(parameters.isCompareResults());
@@ -143,7 +145,12 @@ public final class LoadFlowValidationCFunctions {
     @CEntryPoint(name = "freeValidationConfig")
     public static void freeValidationConfig(IsolateThread thread, LoadFlowValidationParametersPointer loadFlowValidationParametersPtr,
                                             ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr));
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeLoadFlowValidationParametersPointer(loadFlowValidationParametersPtr);
+            }
+        });
     }
 
     public static void freeLoadFlowValidationParametersPointer(LoadFlowValidationParametersPointer loadFlowValidationParametersPtr) {

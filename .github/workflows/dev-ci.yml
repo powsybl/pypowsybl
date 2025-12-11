@@ -30,7 +30,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17.0.12'
+          java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -107,16 +107,10 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-13,
+            os: macos-15-intel,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
             bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
           }
-#          - {
-#            name: darwin-arm64,
-#            os: macos-15,
-#            macosx_deployment_target: "11", # first arm64 version of macosx
-#            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-#          }
           - {
             name: windows,
             os: windows-2022,
@@ -131,7 +125,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17.0.12'
+          java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -181,7 +175,7 @@ jobs:
           unzip binaries.zip && mkdir build && cd build
           cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
           cmake --build . --config Release
-          
+
   build:
     name: Run SonarCloud analysis for Java code
     runs-on: ubuntu-latest
@@ -190,11 +184,11 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Build with Maven (Ubuntu)
         working-directory: ./java
@@ -210,4 +204,3 @@ jobs:
           -Dsonar.projectKey=powsybl_pypowsybl-java
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-

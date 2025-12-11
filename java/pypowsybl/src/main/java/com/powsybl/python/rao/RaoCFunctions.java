@@ -24,6 +24,7 @@ import com.powsybl.openrao.raoapi.parameters.extensions.*;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
@@ -41,6 +42,7 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.function.Supplier;
 
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
@@ -60,250 +62,397 @@ public final class RaoCFunctions {
     }
 
     @CEntryPoint(name = "createRao")
-    public static ObjectHandle createRao(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new RaoContext()));
+    public static ObjectHandle createRao(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                return ObjectHandles.getGlobal().create(new RaoContext());
+            }
+        });
     }
 
     @CEntryPoint(name = "createDefaultRaoParameters")
-    public static ObjectHandle createDefaultRaoParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static ObjectHandle createDefaultRaoParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> ObjectHandles.getGlobal().create(new RaoParameters()));
     }
 
     @CEntryPoint(name = "loadRaoParameters")
-    public static PyPowsyblApiHeader.RaoParametersPointer loadRaoParameters(IsolateThread thread, CCharPointer parametersBuffer, int paramersBufferSize, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            ByteBuffer bufferParameters = CTypeConversion.asByteBuffer(parametersBuffer, paramersBufferSize);
-            InputStream streamedParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferParameters));
-            return convertToRaoParametersPointer(JsonRaoParameters.read(streamedParameters));
+    public static RaoParametersPointer loadRaoParameters(IsolateThread thread, CCharPointer parametersBuffer, int paramersBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public RaoParametersPointer get() throws IOException {
+                ByteBuffer bufferParameters = CTypeConversion.asByteBuffer(parametersBuffer, paramersBufferSize);
+                InputStream streamedParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferParameters));
+                return convertToRaoParametersPointer(JsonRaoParameters.read(streamedParameters));
+            }
         });
     }
 
     @CEntryPoint(name = "serializeRaoParameters")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointer> serializeRaoParameters(IsolateThread thread, PyPowsyblApiHeader.RaoParametersPointer raoParameters,
-                                                                                       PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            RaoParameters parameters = convertToRaoParameters(raoParameters);
-            try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                JsonRaoParameters.write(parameters, output);
-                return Util.createByteArray(output.toByteArray());
-            } catch (IOException e) {
-                throw new PowsyblException("Could not serialize rao parameters : " + e.getMessage());
-            }
-        });
-    }
-
-    @CEntryPoint(name = "setCracBufferedSource")
-    public static void setCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle, CCharPointer cracBuffer, int cracBufferSize, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-
-            ByteBuffer bufferCrac = CTypeConversion.asByteBuffer(cracBuffer, cracBufferSize);
-            InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
-            try {
-                Crac crac = Crac.read("crac.json", streamedCrac, network);
-                if (crac != null) {
-                    raoContext.setCrac(crac);
-                } else {
-                    throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
+    public static ArrayPointer<CCharPointer> serializeRaoParameters(IsolateThread thread, RaoParametersPointer raoParameters,
+                                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointer> get() throws IOException {
+                RaoParameters parameters = convertToRaoParameters(raoParameters);
+                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                    JsonRaoParameters.write(parameters, output);
+                    return Util.createByteArray(output.toByteArray());
+                } catch (IOException e) {
+                    throw new PowsyblException("Could not serialize rao parameters : " + e.getMessage());
                 }
-            } catch (IOException e) {
-                throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
             }
         });
     }
 
-    @CEntryPoint(name = "setGlskBufferedSource")
-    public static void setGlskBufferedSource(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle, CCharPointer glsksBuffer, int glsksBufferSize, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-            ByteBuffer bufferGlsks = CTypeConversion.asByteBuffer(glsksBuffer, glsksBufferSize);
+    @CEntryPoint(name = "loadCracBufferedSource")
+    public static ObjectHandle loadCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer, int cracBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                return ObjectHandles.getGlobal().create(createCrac(network, cracBuffer, cracBufferSize));
+            }
+        });
+    }
 
-            InputStream glsksStream = new ByteArrayInputStream(binaryBufferToBytes(bufferGlsks));
-            GlskDocument glsks = GlskDocumentImporters.importGlsk(glsksStream);
-            raoContext.setGlsks(glsks);
+    public static Crac createCrac(Network network, CCharPointer cracBuffer, int cracBufferSize) {
+        ByteBuffer bufferCrac = CTypeConversion.asByteBuffer(cracBuffer, cracBufferSize);
+        InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
+        try {
+            Crac crac = Crac.read("crac.json", streamedCrac, network);
+            if (crac != null) {
+                return crac;
+            } else {
+                throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
+            }
+        } catch (IOException e) {
+            throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
+        }
+    }
+
+    @CEntryPoint(name = "setLoopFlowGlsk")
+    public static void setLoopFlowGlsk(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle glsk, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                raoContext.setLoopFlowGlsk(ObjectHandles.getGlobal().get(glsk));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setMonitoringGlsk")
+    public static void setMonitoringGlsk(IsolateThread thread, ObjectHandle raoContextHandle, ObjectHandle glsk, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                raoContext.setMonitoringGlsk(ObjectHandles.getGlobal().get(glsk));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "loadGlskBufferedSource")
+    public static ObjectHandle loadGlskBufferedSource(IsolateThread thread, CCharPointer glsksBuffer, int glsksBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                return ObjectHandles.getGlobal().create(createGlskDocument(glsksBuffer, glsksBufferSize));
+            }
+        });
+    }
+
+    public static GlskDocument createGlskDocument(CCharPointer glsksBuffer, int glsksBufferSize) {
+        ByteBuffer bufferGlsks = CTypeConversion.asByteBuffer(glsksBuffer, glsksBufferSize);
+        InputStream glsksStream = new ByteArrayInputStream(binaryBufferToBytes(bufferGlsks));
+        return GlskDocumentImporters.importGlsk(glsksStream);
+    }
+
+    @CEntryPoint(name = "loadResultFromBufferedSource")
+    public static ObjectHandle loadResultFromBufferedSource(IsolateThread thread, ObjectHandle cracHandle, CCharPointer resultBuffer, int resultBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                ByteBuffer buffer = CTypeConversion.asByteBuffer(resultBuffer, resultBufferSize);
+
+                InputStream resultStream = new ByteArrayInputStream(binaryBufferToBytes(buffer));
+                try {
+                    return ObjectHandles.getGlobal().create(RaoResult.read(resultStream, crac));
+                } catch (IOException e) {
+                    throw new PowsyblException("Cannot read rao result " + e.getMessage());
+                }
+            }
         });
     }
 
     @CEntryPoint(name = "runRao")
-    public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle raoContextHandle,
-                              PyPowsyblApiHeader.RaoParametersPointer parametersPointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-            RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
-            return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters));
+    public static ObjectHandle runRao(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle cracHandle, ObjectHandle raoContextHandle,
+                                      RaoParametersPointer parametersPointer, CCharPointer raoProviderPtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
+                raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
+                String raoProvider = CTypeUtil.toString(raoProviderPtr);
+                return ObjectHandles.getGlobal().create(raoContext.run(network, raoParameters, raoProvider));
+            }
         });
     }
 
     @CEntryPoint(name = "runVoltageMonitoring")
-    public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
+    public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle cracHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                     CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
-            String providerStr = CTypeUtil.toString(provider);
-            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-            LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
-            return ObjectHandles.getGlobal().create(raoContext.runVoltageMonitoring(network, result, providerStr, lfParameters));
+                                     CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
+                RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
+                raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
+                String providerStr = CTypeUtil.toString(provider);
+                LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+                LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
+                return ObjectHandles.getGlobal().create(raoContext.runVoltageMonitoring(network, result, providerStr, lfParameters));
+
+            }
         });
     }
 
     @CEntryPoint(name = "runAngleMonitoring")
-    public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle contextHandle,
+    public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle cracHandle, ObjectHandle contextHandle,
                                      PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                     CCharPointer provider, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Network network = ObjectHandles.getGlobal().get(networkHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
-            RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
-            String providerStr = CTypeUtil.toString(provider);
-            LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-            LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
-            return ObjectHandles.getGlobal().create(raoContext.runAngleMonitoring(network, result, providerStr, lfParameters));
+                                     CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(resultHandle);
+                RaoContext raoContext = ObjectHandles.getGlobal().get(contextHandle);
+                raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
+                String providerStr = CTypeUtil.toString(provider);
+                LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
+                LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
+                return ObjectHandles.getGlobal().create(raoContext.runAngleMonitoring(network, result, providerStr, lfParameters));
+            }
         });
     }
 
     @CEntryPoint(name = "serializeRaoResultsToBuffer")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointer> serializeRaoResultsToBuffer(IsolateThread thread, ObjectHandle raoResultHandle,
-        ObjectHandle cracHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            RaoResult raoResult = ObjectHandles.getGlobal().get(raoResultHandle);
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
-                Properties properties = new Properties();
-                properties.setProperty("rao-result.export.json.flows-in-amperes", "true");
-                properties.setProperty("rao-result.export.json.flows-in-megawatts", "true");
-                raoResult.write("JSON", crac, properties, output);
-                return Util.createByteArray(output.toByteArray());
-            } catch (IOException e) {
-                throw new PowsyblException("Could not serialize rao results : " + e.getMessage());
+    public static ArrayPointer<CCharPointer> serializeRaoResultsToBuffer(IsolateThread thread, ObjectHandle raoResultHandle,
+        ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointer> get() throws IOException {
+                RaoResult raoResult = ObjectHandles.getGlobal().get(raoResultHandle);
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+                    Properties properties = new Properties();
+                    properties.setProperty("rao-result.export.json.flows-in-amperes", "true");
+                    properties.setProperty("rao-result.export.json.flows-in-megawatts", "true");
+                    raoResult.write("JSON", crac, properties, output);
+                    return Util.createByteArray(output.toByteArray());
+                } catch (IOException e) {
+                    throw new PowsyblException("Could not serialize rao results : " + e.getMessage());
+                }
             }
         });
     }
 
     @CEntryPoint(name = "getRaoResultStatus")
-    public static PyPowsyblApiHeader.RaoComputationStatus getRaoResultStatus(IsolateThread thread, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            switch (result.getComputationStatus()) {
-                case DEFAULT -> {
-                    return PyPowsyblApiHeader.RaoComputationStatus.DEFAULT;
+    public static RaoComputationStatus getRaoResultStatus(IsolateThread thread, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new Supplier<>() {
+            @Override
+            public RaoComputationStatus get() {
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                switch (result.getComputationStatus()) {
+                    case DEFAULT -> {
+                        return RaoComputationStatus.DEFAULT;
+                    }
+                    case FAILURE -> {
+                        return RaoComputationStatus.FAILURE;
+                    }
+                    case PARTIAL_FAILURE -> {
+                        return RaoComputationStatus.PARTIAL_FAILURE;
+                    }
+                    default -> throw new PowsyblException("Unexpected computation status : " + result.getComputationStatus());
                 }
-                case FAILURE -> {
-                    return PyPowsyblApiHeader.RaoComputationStatus.FAILURE;
-                }
-                case PARTIAL_FAILURE -> {
-                    return PyPowsyblApiHeader.RaoComputationStatus.PARTIAL_FAILURE;
-                }
-                default -> throw new PowsyblException("Unexpected computation status : " + result.getComputationStatus());
             }
         });
     }
 
     @CEntryPoint(name = "getCrac")
-    public static ObjectHandle getCrac(IsolateThread thread, ObjectHandle raoContextHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
-            return ObjectHandles.getGlobal().create(raoContext.getCrac());
+    public static ObjectHandle getCrac(IsolateThread thread, ObjectHandle raoContextHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                RaoContext raoContext = ObjectHandles.getGlobal().get(raoContextHandle);
+                return ObjectHandles.getGlobal().create(raoContext.getCrac());
+            }
         });
     }
 
     @CEntryPoint(name = "createRaoParameters")
-    public static PyPowsyblApiHeader.RaoParametersPointer createRaoParameters(IsolateThread thread, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static RaoParametersPointer createRaoParameters(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, () -> convertToRaoParametersPointer(new RaoParameters()));
     }
 
     @CEntryPoint(name = "getFlowCnecResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getFlowCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(RaoDataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
+    public static ArrayPointer<SeriesPointer> getFlowCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.flowCnecMapper(), crac, new DataframeFilter(), result);
+            }
         });
     }
 
     @CEntryPoint(name = "getAngleCnecResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getAngleCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(RaoDataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
+    public static ArrayPointer<SeriesPointer> getAngleCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.angleCnecMapper(), crac, new DataframeFilter(), result);
+            }
         });
     }
 
     @CEntryPoint(name = "getVoltageCnecResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVoltageCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(RaoDataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
+    public static ArrayPointer<SeriesPointer> getVoltageCnecResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.voltageCnecMapper(), crac, new DataframeFilter(), result);
+            }
         });
     }
 
-    @CEntryPoint(name = "getRaResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getRAResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(RaoDataframes.raResultMapper(), crac, new DataframeFilter(), result);
+    @CEntryPoint(name = "getRemedialActionResults")
+    public static ArrayPointer<SeriesPointer> getRemedialActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.remedialActionResultMapper(), crac, new DataframeFilter(), result);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkActionResults")
+    public static ArrayPointer<SeriesPointer> getNetworkActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.networkActionResultMapper(), crac, new DataframeFilter(), result);
+
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getPstRangeActionResults")
+    public static ArrayPointer<SeriesPointer> getPstRangeActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.pstRangeActionResultMapper(), crac, new DataframeFilter(), result);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getRangeActionResults")
+    public static ArrayPointer<SeriesPointer> getRangeActionResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.rangeActionResultMapper(), crac, new DataframeFilter(), result);
+            }
         });
     }
 
     @CEntryPoint(name = "getCostResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Dataframes.createCDataframe(RaoDataframes.costResultMapper(), crac, new DataframeFilter(), result);
+    public static ArrayPointer<SeriesPointer> getCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Dataframes.createCDataframe(RaoDataframes.costResultMapper(), crac, new DataframeFilter(), result);
+
+            }
         });
     }
 
     @CEntryPoint(name = "getVirtualCostNames")
-    public static PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> getVirtualCostNames(IsolateThread thread, ObjectHandle raoResultHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            return Util.createCharPtrArray(result.getVirtualCostNames().stream().toList());
+    public static ArrayPointer<CCharPointerPointer> getVirtualCostNames(IsolateThread thread, ObjectHandle raoResultHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<CCharPointerPointer> get() throws IOException {
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                return Util.createCharPtrArray(result.getVirtualCostNames().stream().toList());
+            }
         });
     }
 
     @CEntryPoint(name = "getVirtualCostResults")
-    public static PyPowsyblApiHeader.ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getVirtualCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer virtualCostNamePtr, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> {
-            Crac crac = ObjectHandles.getGlobal().get(cracHandle);
-            RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
-            String virtualCostName = CTypeUtil.toString(virtualCostNamePtr);
-            DataframeMapper<Crac, RaoResult> virtualCostResultMapper = createVirtualCostResultMapper(virtualCostName);
-            return Dataframes.createCDataframe(virtualCostResultMapper, crac, new DataframeFilter(), result);
+    public static ArrayPointer<SeriesPointer> getVirtualCostResults(IsolateThread thread, ObjectHandle cracHandle, ObjectHandle raoResultHandle, CCharPointer virtualCostNamePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                RaoResult result = ObjectHandles.getGlobal().get(raoResultHandle);
+                String virtualCostName = CTypeUtil.toString(virtualCostNamePtr);
+                DataframeMapper<Crac, RaoResult> virtualCostResultMapper = createVirtualCostResultMapper(virtualCostName);
+                return Dataframes.createCDataframe(virtualCostResultMapper, crac, new DataframeFilter(), result);
+
+            }
         });
     }
 
     @CEntryPoint(name = "freeRaoParameters")
-    public static void freeRaoParameters(IsolateThread thread, PyPowsyblApiHeader.RaoParametersPointer parametersPointer,
-                                              PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+    public static void freeRaoParameters(IsolateThread thread, RaoParametersPointer parametersPointer,
+                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                // Top level string parameters are freed by toString call on c side
+                // Free predefined combinations
+                freeNestedArrayPointer(parametersPointer.getPredefinedCombinations());
 
-        // Top level string parameters are freed by toString call on c side
-        // Free predefined combinations
-        freeNestedArrayPointer(parametersPointer.getPredefinedCombinations());
+                // Free sensitivity parameters
+                LoadFlowCUtils.freeLoadFlowParametersContent(parametersPointer.getSensitivityParameters().getLoadFlowParameters());
+                UnmanagedMemory.free(parametersPointer.getSensitivityParameters());
 
-        // Free sensitivity parameters
-        LoadFlowCUtils.freeLoadFlowParametersContent(parametersPointer.getSensitivityParameters().getLoadFlowParameters());
-        UnmanagedMemory.free(parametersPointer.getSensitivityParameters());
+                // Free extensions
+                freeProviderParameters(parametersPointer.getProviderParameters());
 
-        // Free extensions
-        freeProviderParameters(parametersPointer.getProviderParameters());
-
-        // Free main pointer
-        doCatch(exceptionHandlerPtr, () -> UnmanagedMemory.free(parametersPointer));
+                // Free main pointer
+                UnmanagedMemory.free(parametersPointer);
+            }
+        });
     }
 
-    private static RaoParameters convertToRaoParameters(PyPowsyblApiHeader.RaoParametersPointer paramPointer) {
+    private static RaoParameters convertToRaoParameters(RaoParametersPointer paramPointer) {
         RaoParameters raoParameters = new RaoParameters();
 
-        OpenRaoSearchTreeParameters searchTreeParameters = new OpenRaoSearchTreeParameters();
+        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters());
+        OpenRaoSearchTreeParameters searchTreeParameters = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
         searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
@@ -343,10 +492,9 @@ public final class RaoCFunctions {
 
         // Second preventive parameters
         searchTreeParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
-        searchTreeParameters.getSecondPreventiveRaoParameters().setReOptimizeCurativeRangeActions(paramPointer.getReOptimizeCurativeRangeActions());
         searchTreeParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
 
-        // Not opitmized cnec parameters
+        // Not optimized cnec parameters
         raoParameters.getNotOptimizedCnecsParameters().setDoNotOptimizeCurativeCnecsForTsosWithoutCras(paramPointer.getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
         // Load flow and sensitivity providers
@@ -382,11 +530,15 @@ public final class RaoCFunctions {
             SearchTreeRaoLoopFlowParameters searchTreeLoopFlowExt = RaoUtils.buildLoopFlowSearchTreeParametersExtension(extensionData);
             searchTreeParameters.setLoopFlowParameters(searchTreeLoopFlowExt);
         }
+        if (hasExtensionData(extensionData, RaoUtils.COSTLY_MIN_MARGIN_ST_EXT_PREFIX)) {
+            SearchTreeRaoCostlyMinMarginParameters searchTreeCostlyMinMarginExt = RaoUtils.buildCostlyMinMarginSearchTreeParametersExtension(extensionData);
+            searchTreeParameters.setMinMarginsParameters(searchTreeCostlyMinMarginExt);
+        }
         return raoParameters;
     }
 
-    private static PyPowsyblApiHeader.RaoParametersPointer convertToRaoParametersPointer(RaoParameters parameters) {
-        PyPowsyblApiHeader.RaoParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(PyPowsyblApiHeader.RaoParametersPointer.class));
+    private static RaoParametersPointer convertToRaoParametersPointer(RaoParameters parameters) {
+        RaoParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(RaoParametersPointer.class));
         OpenRaoSearchTreeParameters searchTreeParameters = parameters.getExtension(OpenRaoSearchTreeParameters.class);
         if (searchTreeParameters == null) {
             searchTreeParameters = new OpenRaoSearchTreeParameters();
@@ -395,6 +547,7 @@ public final class RaoCFunctions {
         // Objective function parameters
         paramsPtr.setObjectiveFunctionType(parameters.getObjectiveFunctionParameters().getType().ordinal());
         paramsPtr.setUnit(parameters.getObjectiveFunctionParameters().getUnit().ordinal());
+        paramsPtr.setEnforceCurativeSecurity(parameters.getObjectiveFunctionParameters().getEnforceCurativeSecurity());
         paramsPtr.setCurativeMinObjImprovement(searchTreeParameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
 
         // Range action optimization solver
@@ -429,10 +582,9 @@ public final class RaoCFunctions {
 
         // Second preventive parameters
         paramsPtr.setExecutionCondition(searchTreeParameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
-        paramsPtr.setReOptimizeCurativeRangeActions(searchTreeParameters.getSecondPreventiveRaoParameters().getReOptimizeCurativeRangeActions());
         paramsPtr.setHintFromFirstPreventiveRao(searchTreeParameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
 
-        // Not opitmized cnec parameters
+        // Not optimized cnec parameters
         paramsPtr.setDoNotOptimizeCurativeCnecsForTsosWithoutCras(parameters.getNotOptimizedCnecsParameters().getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
         // Load flow and sensitivity providers
@@ -440,14 +592,15 @@ public final class RaoCFunctions {
         paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
         paramsPtr.setSensitivityParameters(
             convertToSensitivityAnalysisParametersPointer(
-                searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters()));
+                searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters(),
+                searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
         paramsPtr.setSensitivityFailureOvercost(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
 
         convertExtensionData(parameters, paramsPtr);
         return paramsPtr;
     }
 
-    private static Map<String, String> getExtensionData(PyPowsyblApiHeader.RaoParametersPointer parameterPointer) {
+    private static Map<String, String> getExtensionData(RaoParametersPointer parameterPointer) {
         return CTypeUtil.toStringMap(parameterPointer.getProviderParameters().getProviderParametersKeys(),
             parameterPointer.getProviderParameters().getProviderParametersKeysCount(),
             parameterPointer.getProviderParameters().getProviderParametersValues(),
@@ -463,7 +616,7 @@ public final class RaoCFunctions {
         return false;
     }
 
-    private static void convertExtensionData(RaoParameters parameters, PyPowsyblApiHeader.RaoParametersPointer parameterPointer) {
+    private static void convertExtensionData(RaoParameters parameters, RaoParametersPointer parameterPointer) {
         Map<String, String> extensionData = new HashMap<>();
 
         parameters.getMnecParameters().ifPresent(
@@ -481,6 +634,8 @@ public final class RaoCFunctions {
                 relativeMarginsParameters -> extensionData.putAll(RaoUtils.relativeMarginsParametersExtensionToMap(relativeMarginsParameters)));
             searchTreeParameters.getLoopFlowParameters().ifPresent(
                 loopFlowParameters -> extensionData.putAll(RaoUtils.loopFlowParametersExtensionToMap(loopFlowParameters)));
+            searchTreeParameters.getMinMarginsParameters().ifPresent(
+                costlyMinMarginParameters -> extensionData.putAll(RaoUtils.costlyMinMarginParametersExtensionToMap(costlyMinMarginParameters)));
         }
 
         List<String> keys = new ArrayList<>();

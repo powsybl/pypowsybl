@@ -239,7 +239,7 @@ public final class Util {
             case PHASE_TAP_CHANGER -> PyPowsyblApiHeader.ElementType.PHASE_TAP_CHANGER;
             case REACTIVE_CAPABILITY_CURVE_POINT -> PyPowsyblApiHeader.ElementType.REACTIVE_CAPABILITY_CURVE_POINT;
             case NON_LINEAR_SHUNT_COMPENSATOR_SECTION ->
-                    PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
+                PyPowsyblApiHeader.ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION;
             case LINEAR_SHUNT_COMPENSATOR_SECTION -> PyPowsyblApiHeader.ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION;
             case OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.OPERATIONAL_LIMITS;
             case SELECTED_OPERATIONAL_LIMITS -> PyPowsyblApiHeader.ElementType.SELECTED_OPERATIONAL_LIMITS;
@@ -255,6 +255,11 @@ public final class Util {
             case AREA_BOUNDARIES -> PyPowsyblApiHeader.ElementType.AREA_BOUNDARIES;
             case INTERNAL_CONNECTION -> PyPowsyblApiHeader.ElementType.INTERNAL_CONNECTION;
             case PROPERTIES -> PyPowsyblApiHeader.ElementType.PROPERTIES;
+            case DC_LINE -> PyPowsyblApiHeader.ElementType.DC_LINE;
+            case DC_NODE -> PyPowsyblApiHeader.ElementType.DC_NODE;
+            case VOLTAGE_SOURCE_CONVERTER -> PyPowsyblApiHeader.ElementType.VOLTAGE_SOURCE_CONVERTER;
+            case DC_GROUND -> PyPowsyblApiHeader.ElementType.DC_GROUND;
+            case DC_BUS -> PyPowsyblApiHeader.ElementType.DC_BUS;
         };
     }
 
@@ -302,6 +307,11 @@ public final class Util {
             case AREA_BOUNDARIES -> DataframeElementType.AREA_BOUNDARIES;
             case INTERNAL_CONNECTION -> DataframeElementType.INTERNAL_CONNECTION;
             case PROPERTIES -> DataframeElementType.PROPERTIES;
+            case DC_LINE -> DataframeElementType.DC_LINE;
+            case DC_NODE -> DataframeElementType.DC_NODE;
+            case VOLTAGE_SOURCE_CONVERTER -> DataframeElementType.VOLTAGE_SOURCE_CONVERTER;
+            case DC_GROUND -> DataframeElementType.DC_GROUND;
+            case DC_BUS -> DataframeElementType.DC_BUS;
         };
     }
 
@@ -365,14 +375,14 @@ public final class Util {
             case CREATE_FEEDER_BAY -> DataframeNetworkModificationType.CREATE_FEEDER_BAY;
             case CREATE_LINE_FEEDER -> DataframeNetworkModificationType.CREATE_LINE_FEEDER;
             case CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER ->
-                    DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
+                DataframeNetworkModificationType.CREATE_TWO_WINDINGS_TRANSFORMER_FEEDER;
             case CREATE_LINE_ON_LINE -> DataframeNetworkModificationType.CREATE_LINE_ON_LINE;
             case REVERT_CREATE_LINE_ON_LINE -> DataframeNetworkModificationType.REVERT_CREATE_LINE_ON_LINE;
             case CONNECT_VOLTAGE_LEVEL_ON_LINE -> DataframeNetworkModificationType.CONNECT_VOLTAGE_LEVEL_ON_LINE;
             case REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE ->
-                    DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
+                DataframeNetworkModificationType.REVERT_CONNECT_VOLTAGE_LEVEL_ON_LINE;
             case REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE ->
-                    DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
+                DataframeNetworkModificationType.REPLACE_TEE_POINT_BY_VOLTAGE_LEVEL_ON_LINE;
         };
     }
 

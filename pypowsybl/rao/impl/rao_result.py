@@ -10,14 +10,17 @@ import json
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import RaoComputationStatus
 from pypowsybl.utils import create_data_frame_from_series_array
+from .crac import Crac
 from pandas import DataFrame
+from pypowsybl.utils import path_to_str
+from os import PathLike
 
 from typing import (
+    Union,
     Dict,
     Any,
     List
 )
-
 
 class RaoResult:
     """
@@ -28,6 +31,14 @@ class RaoResult:
         self._handle_result = handle_result
         self._handle_crac = handle_crac
         self._status = _pypowsybl.get_rao_result_status(self._handle_result)
+
+    @classmethod
+    def from_file_source(cls, crac: Crac, result_file: Union[str, PathLike]) -> Any :
+        return RaoResult.from_buffer_source(crac, io.BytesIO(open(path_to_str(result_file), "rb").read()))
+
+    @classmethod
+    def from_buffer_source(cls, crac: Crac, result_source: io.BytesIO) -> Any :
+        return cls(_pypowsybl.load_result_source(crac._handle, result_source.getbuffer()), crac._handle)
 
     def status(self) -> RaoComputationStatus:
         return self._status
@@ -44,8 +55,20 @@ class RaoResult:
         serie_flow = _pypowsybl.get_voltage_cnec_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
-    def get_ra_results(self) -> DataFrame:
-        serie_flow = _pypowsybl.get_ra_results(self._handle_crac, self._handle_result)
+    def get_remedial_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_remedial_action_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_network_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_network_action_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_pst_range_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_pst_range_action_results(self._handle_crac, self._handle_result)
+        return create_data_frame_from_series_array(serie_flow)
+
+    def get_range_action_results(self) -> DataFrame:
+        serie_flow = _pypowsybl.get_range_action_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
     def get_cost_results(self) -> DataFrame:

@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -36,9 +38,13 @@ public class TapChangerAutomationSystemAdder extends AbstractSimpleDynamicModelA
             SeriesMetadata.strings(STATIC_ID),
             SeriesMetadata.strings(SIDE));
 
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "TapChanger",
+            "Tap changer",
+            CategoryAttributeUtils.createFromMetadata(METADATA));
+
+    protected TapChangerAutomationSystemAdder() {
+        super(Collections.singletonList(METADATA), CATEGORY_INFORMATION);
     }
 
     @Override

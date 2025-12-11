@@ -203,11 +203,11 @@ public final class NetworkUtil {
                                  double perUnitingNominalV) {
         if (limits != null) {
             temporaryLimitContexts.add(new TemporaryLimitData(identifiable.getId(), "permanent_limit", side, limits.getPermanentLimit(),
-                    limits.getLimitType(), identifiable.getType(), groupId, isSelected, perUnitingNominalV));
+                    limits.getLimitType(), identifiable.getType(), groupId, isSelected, perUnitingNominalV, limits));
             limits.getTemporaryLimits().stream()
                     .map(temporaryLimit -> new TemporaryLimitData(identifiable.getId(), temporaryLimit.getName(), side, temporaryLimit.getValue(),
                             limits.getLimitType(), identifiable.getType(), temporaryLimit.getAcceptableDuration(), temporaryLimit.isFictitious(),
-                            groupId, isSelected, perUnitingNominalV))
+                            groupId, isSelected, perUnitingNominalV, limits))
                     .forEach(temporaryLimitContexts::add);
         }
     }
@@ -246,6 +246,12 @@ public final class NetworkUtil {
             throw new UnsupportedOperationException("Cannot set regulated element to " + elementId +
                     ": the regulated element may only be a busbar section or an injection.");
         }
+    }
+
+    public static void setPccTerminal(Consumer<Terminal> adder, Network network, String elementId) {
+        //It may be necessary to precise which type of Connectable and which Terminal is needed
+        Connectable<?> connectable = network.getConnectable(elementId);
+        adder.accept(connectable.getTerminals().getFirst());
     }
 
     public static String getRegulatedElementId(Supplier<Terminal> regulatingTerminalGetter) {

@@ -1,0 +1,6 @@
+{
+  "resources":{
+    "includes":[
+      {"pattern":"\\Qcom/powsybl/pypowsybl/reports.properties\\E"}
+    ]}
+}

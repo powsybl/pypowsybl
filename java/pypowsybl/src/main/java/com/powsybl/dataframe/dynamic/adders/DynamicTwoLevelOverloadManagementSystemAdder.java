@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -39,9 +41,13 @@ public class DynamicTwoLevelOverloadManagementSystemAdder extends AbstractSimple
             SeriesMetadata.strings(I_MEASUREMENT_2),
             SeriesMetadata.strings(I_MEASUREMENT_2_SIDE));
 
-    @Override
-    public List<List<SeriesMetadata>> getMetadata() {
-        return Collections.singletonList(METADATA);
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "TwoLevelOverloadManagementSystem",
+            "Overload management system with two monitored lines",
+            CategoryAttributeUtils.createFromMetadata(METADATA));
+
+    protected DynamicTwoLevelOverloadManagementSystemAdder() {
+        super(Collections.singletonList(METADATA), CATEGORY_INFORMATION);
     }
 
     @Override

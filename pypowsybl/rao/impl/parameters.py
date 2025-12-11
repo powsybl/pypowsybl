@@ -91,7 +91,6 @@ class Parameters:
         c_parameters.available_cpus = self.multithreading_parameters.available_cpus
 
         c_parameters.execution_condition = self.second_preventive_rao_parameters.execution_condition
-        c_parameters.re_optimize_curative_range_actions = self.second_preventive_rao_parameters.re_optimize_curative_range_actions
         c_parameters.hint_from_first_preventive_rao = self.second_preventive_rao_parameters.hint_from_first_preventive_rao
 
         c_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras = self.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras
@@ -108,12 +107,16 @@ class Parameters:
     def _init_with_default_values(self) -> None:
         self._init_from_c(RaoParameters())
 
-    def load_from_file_source(self, parameters_file: Union[str, PathLike]) -> None:
+    @classmethod
+    def from_file_source(cls, parameters_file: Union[str, PathLike]) -> Any :
         parameters = io.BytesIO(open(path_to_str(parameters_file), "rb").read())
-        self.load_from_buffer_source(parameters)
+        return cls.from_buffer_source(parameters)
 
-    def load_from_buffer_source(self, parameters_source: io.BytesIO) -> None:
-        self._init_from_c(_pypowsybl.load_rao_parameters(parameters_source.getbuffer()))
+    @classmethod
+    def from_buffer_source(cls, parameters_source: io.BytesIO) -> Any :
+        p = cls()
+        p._init_from_c(_pypowsybl.load_rao_parameters(parameters_source.getbuffer()))
+        return p
 
     def serialize(self, output_file: str) -> None:
         with open(output_file, "wb") as f:

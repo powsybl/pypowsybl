@@ -13,6 +13,7 @@ import sys
 import datetime
 from datetime import timezone
 import warnings
+from os import PathLike
 from typing import (
     Sequence,
     List,
@@ -44,6 +45,7 @@ from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
 from .nad_parameters import NadParameters
 from .nad_profile import NadProfile
+from .sld_profile import SldProfile
 from .svg import Svg
 from .util import create_data_frame_from_series_array, ParamsDict
 
@@ -159,6 +161,24 @@ class Network:  # pylint: disable=too-many-public-methods
         self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
         self._case_date = datetime.datetime.fromtimestamp(att.case_date, timezone.utc)
 
+    def update_from_file(self, file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None, post_processors: Optional[List[str]] = None,
+             report_node: Optional[ReportNode] = None) -> None:
+        """
+        Updates a network by loading information from a file. File should be in a supported format.
+
+        Args:
+           file:       path to the network file
+           parameters: a dictionary of import parameters (optional)
+           post_processors: a list of import post processors (optional, will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        file = path_to_str(file)
+        _pp.update_network(self._handle, file,
+                           {} if parameters is None else parameters,
+                           [] if post_processors is None else post_processors,
+                           None if report_node is None else report_node._report_node)
+
+
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
 
@@ -270,8 +290,11 @@ class Network:  # pylint: disable=too-many-public-methods
                                                             None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def reduce(self, v_min: float = 0, v_max: float = sys.float_info.max, ids: Optional[List[str]] = None,
-               vl_depths: tuple = (), with_dangling_lines: bool = False) -> None:
+               vl_depths: Optional[List[tuple]] = None, with_dangling_lines: bool = False) -> None:
         """
+        .. deprecated:: 1.14.0
+          Use :meth:`reduce_by_voltage_range`, :meth:`reduce_by_ids` or :meth:`reduce_by_ids_and_depths` instead depending on your use case.
+        
         Reduce to a smaller network according to the following parameters
 
         :param v_min: minimum voltage of the voltage levels kept after reducing
@@ -280,17 +303,78 @@ class Network:  # pylint: disable=too-many-public-methods
         :param vl_depths: depth around voltage levels which are indicated by their id, that will be kept
         :param with_dangling_lines: keeping the dangling lines
         """
+        warnings.warn("reduce is deprecated, use `reduce_by_voltage_range`, `reduce_by_ids` or `reduce_by_ids_and_depths` instead depending on your use case", DeprecationWarning)
         if ids is None:
             ids = []
         vls = []
         depths = []
+        if vl_depths is None:
+            vl_depths = []
         for v in vl_depths:
             vls.append(v[0])
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
+    def reduce_by_voltage_range(self, v_min: float = 0, v_max: float = sys.float_info.max, with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network (only keeping all elements whose nominal voltage is in the specified voltage range)
+
+        :param v_min: minimum voltage of the voltage levels kept after reducing
+        :param v_max: voltage maximum of the voltage levels kept after reducing
+        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+
+        Example:
+
+            .. code-block:: python
+
+                network.reduce_by_voltage_range(v_min=90, v_max=250, with_dangling_lines=True)
+
+            will only keep elements of voltage level between 90 and 250kV, replacing the lines cut at the boundary by dangling lines.
+        """
+        _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+
+    def reduce_by_ids(self, ids: List[str], with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network (only keeping voltage levels whose id is in the specified list)
+
+        :param ids: list of the voltage level ids that should be kept in the reduced network
+        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+
+        Example:
+
+            .. code-block:: python
+
+                network.reduce_by_ids(ids=["VL1", "VL2"])
+
+            will only keep voltage levels VL1 and VL2 and all network elements between them.
+        """
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+
+    def reduce_by_ids_and_depths(self, vl_depths: List[tuple[str, int]], with_dangling_lines: bool = False) -> None:
+        """
+        Reduce to a smaller network (keeping the specified voltage levels with all respective neighbours at most at the specified depth).
+
+        :param vl_depths: list of the voltage level ids that should be kept in the reduced network
+        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+
+        Example:
+
+            .. code-block:: python
+
+                network.reduce_by_ids_and_depths(vl_depths=[("VL1", 1), ("VL25", 3)])
+
+            will only keep voltage levels VL1 and its neighbours, and VL25 with all elements around it with at most 3 connections between them.
+        """
+        vls = []
+        depths = []
+        for v in vl_depths:
+            vls.append(v[0])
+            depths.append(v[1])
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=[], vls=vls, depths=depths, with_dangling_lines=with_dangling_lines)
+
+
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: Optional[PathOrStr] = None,
-                                      parameters: Optional[SldParameters] = None) -> None:
+                                      parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -299,6 +383,7 @@ class Network:  # pylint: disable=too-many-public-methods
             svg_file: a svg file path
             metadata_file: a json metadata file path
             parameters: single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
         """
 
         svg_file = path_to_str(svg_file)
@@ -306,11 +391,16 @@ class Network:  # pylint: disable=too-many-public-methods
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
         _pp.write_single_line_diagram_svg(self._handle, container_id, svg_file,
-                                          '' if metadata_file is None else path_to_str(metadata_file), p)
+                                          '' if metadata_file is None else path_to_str(metadata_file), p,
+                                          None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                          None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                          None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
+                                          )
 
     def write_matrix_multi_substation_single_line_diagram_svg(self, matrix_ids: List[List[str]], svg_file: PathOrStr,
                                                               metadata_file: Optional[PathOrStr] = None,
-                                                              parameters: Optional[SldParameters] = None) -> None:
+                                                              parameters: Optional[SldParameters] = None,
+                                                              sld_profile: Optional[SldProfile] = None) -> None:
         """
         Create a single line diagram in SVG format from a voltage level or a substation and write to a file.
 
@@ -319,6 +409,7 @@ class Network:  # pylint: disable=too-many-public-methods
             svg_file: a svg file path
             metadata_file: a json metadata file path
             parameters: single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
         """
 
         svg_file = path_to_str(svg_file)
@@ -326,15 +417,20 @@ class Network:  # pylint: disable=too-many-public-methods
         _pp.write_matrix_multi_substation_single_line_diagram_svg(self._handle, matrix_ids, svg_file,
                                                                   '' if metadata_file is None else path_to_str(
                                                                       metadata_file),
-                                                                  p)
+                                                                  p,
+                                                                  None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                                                  None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                                                  None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
+                                                                  )
 
-    def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None) -> Svg:
+    def get_single_line_diagram(self, container_id: str, parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
         """
         Create a single line diagram from a voltage level or a substation.
 
         Args:
             container_id: a voltage level id or a substation id
             parameters: single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
 
         Returns:
             the single line diagram
@@ -342,16 +438,21 @@ class Network:  # pylint: disable=too-many-public-methods
 
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
-        svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p)
+        svg_and_metadata: List[str] = _pp.get_single_line_diagram_svg_and_metadata(self._handle, container_id, p,
+                                                                                   None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                                                                   None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                                                                   None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
+                                                                                   )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
-    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: Optional[SldParameters] = None) -> Svg:
+    def get_matrix_multi_substation_single_line_diagram(self, matrix_ids: List[List[str]], parameters: Optional[SldParameters] = None, sld_profile: Optional[SldProfile] = None) -> Svg:
         """
         Create a single line diagram from multiple substations
 
         Args:
             matrix_ids: a two-dimensional list of substation id
             parameters:single-line diagram parameters to adjust the rendering of the diagram
+            sld_profile: profile parameter to customize the single line diagram
 
         Returns:
             the single line diagram
@@ -359,7 +460,11 @@ class Network:  # pylint: disable=too-many-public-methods
 
         p = parameters._to_c_parameters() if parameters is not None else _pp.SldParameters()  # pylint: disable=protected-access
 
-        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p)
+        svg_and_metadata: List[str] = _pp.get_matrix_multi_substation_single_line_diagram_svg_and_metadata(self._handle, matrix_ids, p,
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_labels_c_dataframe(), # pylint: disable=protected-access
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_feeders_info_c_dataframe(), # pylint: disable=protected-access
+                                                                                                           None if sld_profile is None else sld_profile._create_sld_styles_c_dataframe() # pylint: disable=protected-access
+                                                                                                           )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
     def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Optional[Union[str, List[str]]] = None,
@@ -2880,6 +2985,151 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.AREA_BOUNDARIES, all_attributes, attributes, **kwargs)
 
+    def get_dc_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of DC lines
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+
+        Returns:
+            A dataframe of DC lines.
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dc_node1_id**: dc node where this dc line is connected, on side 1
+              - **dc_node2_id**: dc node where this dc line is connected, on side 2
+              - **p1**: the active flow on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **i1**: the current on the dc line at its "1" side, ``NaN`` if no loadflow has been computed (in A)
+              - **p2**: the active flow on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in MW)
+              - **i2**: the current on the dc line at its "2" side, ``NaN`` if no loadflow has been computed (in A)
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+
+            This dataframe is indexed on the dc line ID.
+        """
+        return self.get_elements(ElementType.DC_LINE, all_attributes, attributes, **kwargs)
+
+    def get_dc_nodes(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dc nodes.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the dc nodes dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **nominal_v**: dc node nominal voltage
+              - **dc_bus_id**: at which dc bus the dc node belongs
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+
+            This dataframe is indexed on the dc node ID.
+        """
+        return self.get_elements(ElementType.DC_NODE, all_attributes, attributes, **kwargs)
+
+    def get_voltage_source_converters(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of voltage source converters.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the voltage source converters dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **voltage_level_id**: at which substation the converter is connected
+              - **bus1_id**: bus where this converter is connected, on side 1
+              - **bus2_id** (optional): bus where this converter is connected, on side 2
+              - **dc_node1_id**: dc node where this converter is connected, on side 1
+              - **dc_node2_id**: dc node where this converter is connected, on side 2
+              - **regulated_element_id** (optional): which element of the network is regulating PCC, needed if bus2_id is set
+              - **dc_connected1**: ``True`` if the converter is connected to a dc node, side 1
+              - **dc_connected2**: ``True`` if the converter is connected to a dc node, side 2
+              - **voltage_regulator_on**: the voltage regulator status
+              - **control_mode**: the control mode of the converter
+              - **target_p**: the active power setpoint
+              - **target_q**: the reactive power setpoint
+              - **target_v_dc**: the DC voltage setpoint
+              - **target_v_ac**: the AC voltage setpoint
+              - **idle_loss**: the idle loss coefficient
+              - **switching_loss**: the switching loss coefficient
+              - **resistive_loss**: the resistive loss coefficient
+              - **p_ac**: the AC active flow on the converter, ``NaN`` if no loadflow has been computed (in MW)
+              - **q_ac**: the AC reactive flow on the converter, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **p_dc1**: the DC flow on the converter, side 1 ``NaN`` if no loadflow has been computed (in MW)
+              - **p_dc2**: the DC flow on the converter, side 2 ``NaN`` if no loadflow has been computed (in MW)
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+            This dataframe is indexed on the converter ID.
+        """
+        return self.get_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, all_attributes, attributes, **kwargs)
+
+    def get_dc_grounds(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dc grounds.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the dc grounds dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **dc_node_id**: dc node identifier
+              - **r**: dc ground resistance
+
+            This dataframe is indexed on the dc ground ID.
+        """
+        return self.get_elements(ElementType.DC_GROUND, all_attributes, attributes, **kwargs)
+
+    def get_dc_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of dc buses.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the dc buses dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **connected_component**: The connected component to which the dc bus belongs
+              - **dc_component**: The dc component to which the dc bus belongs
+              - **v**: dc bus voltage
+              - **fictitious** (optional): ``True`` if the area is part of the model and not of the actual network
+
+
+            This dataframe is indexed on the dc bus ID.
+        """
+        return self.get_elements(ElementType.DC_BUS, all_attributes, attributes, **kwargs)
+
     def _update_elements(self, element_type: ElementType, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Update network elements with data provided as a :class:`~pandas.DataFrame` or as named arguments.for a specified element type.
@@ -3673,7 +3923,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return self._update_elements(ElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, df, **kwargs)
 
     def update_busbar_sections(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
-        """Update phase tap changers with a ``Pandas`` dataframe.
+        """Update bus bar sections with a ``Pandas`` dataframe.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -3908,6 +4158,157 @@ class Network:  # pylint: disable=too-many-public-methods
         c_df = _create_c_dataframe(df, metadata)
         _pp.update_extensions(self._handle, extension_name, table_name, c_df)
 
+    def update_dc_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc lines data with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `i1`
+            - `i2`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_lines`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_lines(id='L-1', i1 = 1.2)
+                network.update_dc_lines(id=['L-1', 'L-2'], r=[0.5, 2.0])
+        """
+        return self._update_elements(ElementType.DC_LINE, df, **kwargs)
+
+    def update_dc_nodes(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc nodes with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
+
+            - `v`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_nodes`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_nodes(id='DN1', v=400.0)
+                network.update_dc_nodes(id=['DN1', 'DN2'], v=[400.0, 63.5])
+        """
+        return self._update_elements(ElementType.DC_NODE, df, **kwargs)
+
+    def update_voltage_source_converters(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update voltage source converters with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `target_v_dc`
+            - `target_v_ac`
+            - `target_p`
+            - `target_q`
+            - `p_ac`
+            - `q_ac`
+            - `p_dc1`
+            - `p_dc2`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_voltage_source_converters`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_voltage_source_converters(id='CONV-1', p=40)
+                network.update_voltage_source_converters(id=['CONV-1', 'CONV-2'], target_p=[40, 40])
+        """
+        return self._update_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, df, **kwargs)
+
+    def update_dc_grounds(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc grounds with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
+
+            - `r`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_grounds`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_grounds(id='DG1', r=1.0)
+                network.update_dc_grounds(id=['DG1', 'DG2'], r=[2.0, 0.0])
+        """
+        return self._update_elements(ElementType.DC_GROUND, df, **kwargs)
+
+    def update_dc_buses(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update dc buses with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+        Notes:
+            Attributes that can be updated are:
+
+            - `v`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_buses`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_buses(id='DB1', v=400.0)
+                network.update_dc_buses(id=['DB1', 'DB2'], v=[400.0, 63.5])
+        """
+        return self._update_elements(ElementType.DC_BUS, df, **kwargs)
+
     def create_extensions(self, extension_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None,
                           **kwargs: ArrayLike) -> None:
         """
@@ -3979,31 +4380,6 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return _pp.get_variant_ids(self._handle)
 
-    def get_current_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
-        """
-        .. deprecated::
-          Use :meth:`get_operational_limits` instead.
-
-        Get the list of all current limits on the network paired with their branch id.
-
-        Args:
-            all_attributes (bool, optional): flag for including all attributes in the dataframe, default is false
-            attributes (List[str], optional): attributes to include in the dataframe. The 2 parameters are mutually exclusive. If no parameter is specified, the dataframe will include the default attributes.
-
-        Returns:
-            all current limits on the network
-        """
-        warnings.warn("get_current_limits is deprecated, use get_operational_limits instead", DeprecationWarning)
-        limits = self.get_operational_limits(all_attributes, attributes)
-        current_limits = limits[
-            limits['element_type'].isin(['LINE', 'TWO_WINDINGS_TRANSFORMER']) & (limits['type'] == 'CURRENT')]
-        current_limits.index.rename('branch_id', inplace=True)
-        current_limits.set_index('name', append=True, inplace=True)
-        columns = ['side', 'value', 'acceptable_duration']
-        if 'fictitious' in current_limits.columns:
-            columns.append('fictitious')
-        return current_limits[columns]
-
     def get_operational_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, show_inactive_sets: bool = False) -> DataFrame:
         """
         Get the list of operational limits.
@@ -4036,6 +4412,38 @@ class Network:  # pylint: disable=too-many-public-methods
         if show_inactive_sets:
             return self.get_elements(ElementType.OPERATIONAL_LIMITS, all_attributes, attributes)
         return self.get_elements(ElementType.SELECTED_OPERATIONAL_LIMITS, all_attributes, attributes)
+
+    def update_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update operational limits values with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Only the value of operational limits can be updated.
+            To define which limit must be modified, the following fields must be present :
+
+            - `element_id`
+            - `side`
+            - `type`
+            - `acceptable_duration`
+            - `group_name` (if not specified, will try to update the corresponding limit in the selected set of the element)
+
+        See Also:
+            :meth:`get_operational_limits`
+
+        Examples:
+            An example using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_operational_limits(id='LINE', side='ONE', type='CURRENT', acceptable_duration=600, value=500)
+        """
+        return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
 
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
@@ -5058,6 +5466,149 @@ class Network:  # pylint: disable=too-many-public-methods
                                           max_p=1000, target_p=800)
         """
         return self._create_elements(ElementType.HVDC_LINE, [df], **kwargs)
+
+    def create_dc_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC lines.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC line
+            - **name**: an optional human-readable name
+            - **dc_node1_id**: the DC node where the new DC line will be connected on side 1.
+              It must already exist.
+            - **dc_node2_id**: the DC node where the new DC line will be connected on side 2.
+              It must already exist.
+            - **r**: the resistance of the DC line, in Ohm
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_lines(id='DL1', dc_node1_id='DN1', dc_node2_id='DN2', r=1.0)
+        """
+        return self._create_elements(ElementType.DC_LINE, [df], **kwargs)
+
+    def create_dc_nodes(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC nodes.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC node
+            - **name**: an optional human-readable name
+            - **nominal_v**: the nominal voltage of the DC node
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_nodes(id='DN1', nominal_v=400.0)
+        """
+        return self._create_elements(ElementType.DC_NODE, [df], **kwargs)
+
+    def create_voltage_source_converters(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates voltage source converter.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new voltage source converter
+            - **name**: an optional human-readable name
+            - **voltage_level_id**: the voltage level where the new converter will be connected.
+              The voltage level must already exist.
+            - **bus_id1** the bus where the new converter will be connected on side 1.
+                It must already exist.
+            - **bus_id2** the bus where the new converter will be connected on side 2.
+                It must already exist.
+            - **dc_node1_id**: the DC node where the new converter will be connected on DC side 1.
+              It must already exist.
+            - **dc_node2_id**: the DC node where the new converter will be connected on DC side 2.
+              It must already exist.
+            - **dc_connected1**: defines if the converter is connected at the dc node 1 (boolean)
+            - **dc_connected2**: defines if the converter is connected at the dc node 2 (boolean)
+            - **regulating_element_id**: the network PCC element
+                It must already exist.
+            - **voltage_regulator_on**: defines if the converter regulates AC voltage (boolean)
+            - **control_mode** the control mode of the converter (V_DC or P_PCC)
+            - **target_p** the AC active power setpoint
+            - **target_q** the AC reactive power setpoint
+            - **target_v_ac** the AC voltage setpoint
+            - **target_v_dc** the DC voltage setpoint
+            - **idle_loss** the idle loss coefficient
+            - **switching_loss** the switching loss coefficient
+            - **resistive_loss** the resistive loss coefficient
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_voltage_source_converter(id='VSC-1', voltage_level_id='VL1',dc_node1_id='DN1',
+                dc_node2_id='DN2', bus1_id='B1', voltage_regulator_on=0, control_mode='P_PCC', target_p=50.0,
+                target_q=50.0, target_v_ac=300.0, target_v_dc=400.0, idle_loss=1.0, switching_loss=2.0,
+                resistive_loss=3.0)
+
+        """
+        return self._create_elements(ElementType.VOLTAGE_SOURCE_CONVERTER, [df], **kwargs)
+
+    def create_dc_grounds(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC grounds.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC ground
+            - **name**: an optional human-readable name
+            - **dc_node_id** the id of the DC Node connected to the DC ground
+            - **r**: the resistance of the DC ground
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_grounds(id='DG1', dc_node_id="DN1", r=1.0)
+        """
+        return self._create_elements(ElementType.DC_GROUND, [df], **kwargs)
 
     def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

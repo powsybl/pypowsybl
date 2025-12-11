@@ -99,6 +99,10 @@ typedef struct security_analysis_parameters_struct {
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
+    double flow_flow_sensitivity_value_threshold;
+    double voltage_voltage_sensitivity_value_threshold;
+    double flow_voltage_sensitivity_value_threshold;
+    double angle_flow_sensitivity_value_threshold;
     struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
 } sensitivity_analysis_parameters;
@@ -180,7 +184,12 @@ typedef enum {
     AREA_VOLTAGE_LEVELS,
     AREA_BOUNDARIES,
     INTERNAL_CONNECTION,
-    PROPERTIES
+    PROPERTIES,
+    DC_LINE,
+    DC_NODE,
+    VOLTAGE_SOURCE_CONVERTER,
+    DC_GROUND,
+    DC_BUS
 } element_type;
 
 typedef enum {
@@ -382,35 +391,6 @@ typedef struct nad_parameters_struct {
 } nad_parameters;
 
 typedef enum {
-    BASE_LOAD = 0,
-    LOAD_ONE_TRANSFORMER,
-    LOAD_ONE_TRANSFORMER_TAP_CHANGER,
-    LOAD_TWO_TRANSFORMERS,
-    LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
-    BASE_GENERATOR,
-    SYNCHRONIZED_GENERATOR,
-    SYNCHRONOUS_GENERATOR,
-    WECC,
-    GRID_FORMING_CONVERTER,
-    SIGNAL_N_GENERATOR,
-    HVDC_P,
-    HVDC_VSC,
-    BASE_TRANSFORMER,
-    BASE_STATIC_VAR_COMPENSATOR,
-    BASE_LINE,
-    BASE_BUS,
-    INFINITE_BUS,
-    OVERLOAD_MANAGEMENT_SYSTEM,
-    TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
-    UNDER_VOLTAGE,
-    PHASE_SHIFTER_I,
-    PHASE_SHIFTER_P,
-    PHASE_SHIFTER_BLOCKING_I,
-    TAP_CHANGER,
-    TAP_CHANGER_BLOCKING,
-} DynamicMappingType;
-
-typedef enum {
     DISCONNECT = 0,
     NODE_FAULT,
     ACTIVE_POWER_VARIATION,
@@ -573,7 +553,6 @@ typedef struct rao_parameters_struct {
   int available_cpus; // Multithreading parameters
 
   int execution_condition;  // Second preventive rao parameters
-  unsigned char re_optimize_curative_range_actions;
   unsigned char hint_from_first_preventive_rao;
 
   unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters
