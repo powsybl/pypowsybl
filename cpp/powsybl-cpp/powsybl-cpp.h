@@ -455,6 +455,8 @@ public:
     EdgeInfoType edge_info_displayed;
     bool voltage_level_details;
     bool injections_added;
+    int max_steps;
+    double timeout_seconds;
 };
 
 //=======short-circuit analysis==========

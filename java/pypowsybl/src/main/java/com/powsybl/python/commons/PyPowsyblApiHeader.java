@@ -1200,6 +1200,18 @@ public final class PyPowsyblApiHeader {
 
         @CField("injections_added")
         boolean isInjectionsAdded();
+
+        @CField("max_steps")
+        void setMaxSteps(int maxSteps);
+
+        @CField("max_steps")
+        int getMaxSteps();
+
+        @CField("timeout_seconds")
+        void setTimeoutSeconds(double timeoutSeconds);
+
+        @CField("timeout_seconds")
+        int getTimeoutSeconds();
     }
 
     @CStruct("dynamic_simulation_parameters")
