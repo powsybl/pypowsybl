@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.extensions;
+package com.powsybl.dataframe.dynamic.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
@@ -13,10 +13,12 @@ import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
+import com.powsybl.dataframe.network.extensions.AbstractSingleDataframeNetworkExtension;
+import com.powsybl.dataframe.network.extensions.NetworkExtensionDataframeProvider;
+import com.powsybl.dynawo.extensions.api.generator.RpclType;
+import com.powsybl.dynawo.extensions.api.generator.SynchronousGeneratorProperties;
 import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.SynchronousGeneratorProperties;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +26,7 @@ import java.util.stream.Stream;
 
 /**
  * @author Gautier Bureau {@literal <gautier.bureau at rte-france.com>}
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class SynchronousGeneratorPropertiesDataframeProvider extends AbstractSingleDataframeNetworkExtension {
@@ -38,16 +41,15 @@ public class SynchronousGeneratorPropertiesDataframeProvider extends AbstractSin
         return new ExtensionInformation(SynchronousGeneratorProperties.NAME,
                 "Provides information about the characteristics of a synchronous generator",
                 "index : id (str), " +
-                        "numberOfWindings (int), " +
+                        "numberOfWindings (str), " +
                         "governor (str), " +
                         "voltageRegulator (str), " +
                         "pss (str), " +
                         "auxiliaries (bool), " +
                         "internalTransformer (bool), " +
-                        "rpcl (bool), " +
-                        "rpcl2 (bool), " +
+                        "rpcl (str), " +
                         "uva (str), " +
-                        "fictitious (bool), " +
+                        "aggregated (bool), " +
                         "qlim (bool)");
     }
 
@@ -72,18 +74,17 @@ public class SynchronousGeneratorPropertiesDataframeProvider extends AbstractSin
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", ext -> ((Identifiable<?>) ext.getExtendable()).getId())
-                .ints("numberOfWindings", SynchronousGeneratorProperties::getNumberOfWindings, SynchronousGeneratorProperties::setNumberOfWindings)
-                .strings("governor", sgp -> String.valueOf(sgp.getGovernor()), (sgp, governor) -> sgp.setGovernor(governor))
-                .strings("voltageRegulator", sgp -> String.valueOf(sgp.getVoltageRegulator()), (sgp, voltageRegulator) -> sgp.setVoltageRegulator(voltageRegulator))
-                .strings("pss", sgp -> String.valueOf(sgp.getPss()), (sgp, pss) -> sgp.setPss(pss))
-                .booleans("auxiliaries", SynchronousGeneratorProperties::getAuxiliaries, SynchronousGeneratorProperties::setAuxiliaries)
-                .booleans("internalTransformer", SynchronousGeneratorProperties::getInternalTransformer, SynchronousGeneratorProperties::setInternalTransformer)
-                .booleans("rpcl", SynchronousGeneratorProperties::getRpcl, SynchronousGeneratorProperties::setRpcl)
-                .booleans("rpcl2", SynchronousGeneratorProperties::getRpcl2, SynchronousGeneratorProperties::setRpcl2)
-                .strings("uva", sgp -> String.valueOf(sgp.getUva()), (sgp, uva) -> sgp.setUva(uva))
-                .booleans("fictitious", SynchronousGeneratorProperties::getFictitious, SynchronousGeneratorProperties::setFictitious)
-                .booleans("qlim", SynchronousGeneratorProperties::getQlim, SynchronousGeneratorProperties::setQlim)
+                .stringsIndex("id", ext -> ext.getExtendable().getId())
+                .enums("numberOfWindings", SynchronousGeneratorProperties.Windings.class, SynchronousGeneratorProperties::getNumberOfWindings, SynchronousGeneratorProperties::setNumberOfWindings)
+                .strings("governor", sgp -> String.valueOf(sgp.getGovernor()), SynchronousGeneratorProperties::setGovernor)
+                .strings("voltageRegulator", sgp -> String.valueOf(sgp.getVoltageRegulator()), SynchronousGeneratorProperties::setVoltageRegulator)
+                .strings("pss", sgp -> String.valueOf(sgp.getPss()), SynchronousGeneratorProperties::setPss)
+                .booleans("auxiliaries", SynchronousGeneratorProperties::isAuxiliaries, SynchronousGeneratorProperties::setAuxiliaries)
+                .booleans("internalTransformer", SynchronousGeneratorProperties::isInternalTransformer, SynchronousGeneratorProperties::setInternalTransformer)
+                .enums("rpcl", RpclType.class, SynchronousGeneratorProperties::getRpcl, SynchronousGeneratorProperties::setRpcl)
+                .enums("uva", SynchronousGeneratorProperties.Uva.class, SynchronousGeneratorProperties::getUva, SynchronousGeneratorProperties::setUva)
+                .booleans("aggregated", SynchronousGeneratorProperties::isAggregated, SynchronousGeneratorProperties::setAggregated)
+                .booleans("qlim", SynchronousGeneratorProperties::isQlim, SynchronousGeneratorProperties::setQlim)
                 .build();
     }
 

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.extensions;
+package com.powsybl.dataframe.dynamic.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
@@ -13,11 +13,11 @@ import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
+import com.powsybl.dataframe.network.extensions.AbstractSingleDataframeNetworkExtension;
+import com.powsybl.dataframe.network.extensions.NetworkExtensionDataframeProvider;
+import com.powsybl.dynawo.extensions.api.generator.connection.GeneratorConnectionLevel;
 import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.GeneratorConnectionLevel;
-import com.powsybl.iidm.network.extensions.GeneratorConnectionLevelType;
 
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 
 /**
  * @author Gautier Bureau {@literal <gautier.bureau at rte-france.com>}
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class GeneratorConnectionLevelDataframeProvider extends AbstractSingleDataframeNetworkExtension {
@@ -63,8 +64,8 @@ public class GeneratorConnectionLevelDataframeProvider extends AbstractSingleDat
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", ext -> ((Identifiable<?>) ext.getExtendable()).getId())
-                .enums("level", GeneratorConnectionLevelType.class, GeneratorConnectionLevel::getLevel, GeneratorConnectionLevel::setLevel)
+                .stringsIndex("id", ext -> ext.getExtendable().getId())
+                .enums("level", GeneratorConnectionLevel.GeneratorConnectionLevelType.class, GeneratorConnectionLevel::getLevel, GeneratorConnectionLevel::setLevel)
                 .build();
     }
 

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.extensions;
+package com.powsybl.dataframe.dynamic.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
@@ -14,15 +14,16 @@ import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.extensions.api.generator.SynchronizedGeneratorPropertiesAdder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.SynchronizedGeneratorPropertiesAdder;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Gautier Bureau {@literal <gautier.bureau at rte-france.com>}
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class SynchronizedGeneratorPropertiesDataframeAdder extends AbstractSimpleAdder {
 

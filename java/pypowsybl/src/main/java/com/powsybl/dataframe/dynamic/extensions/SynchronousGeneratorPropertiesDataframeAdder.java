@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.extensions;
+package com.powsybl.dataframe.dynamic.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
@@ -14,30 +14,32 @@ import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.IntSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.extensions.api.generator.RpclType;
+import com.powsybl.dynawo.extensions.api.generator.SynchronousGeneratorProperties;
+import com.powsybl.dynawo.extensions.api.generator.SynchronousGeneratorPropertiesAdder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.SynchronousGeneratorPropertiesAdder;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Gautier Bureau {@literal <gautier.bureau at rte-france.com>}
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class SynchronousGeneratorPropertiesDataframeAdder extends AbstractSimpleAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
-            SeriesMetadata.ints("numberOfWindings"),
+            SeriesMetadata.strings("numberOfWindings"),
             SeriesMetadata.strings("governor"),
             SeriesMetadata.strings("voltageRegulator"),
             SeriesMetadata.strings("pss"),
             SeriesMetadata.booleans("auxiliaries"),
             SeriesMetadata.booleans("internalTransformer"),
-            SeriesMetadata.booleans("rpcl"),
-            SeriesMetadata.booleans("rpcl2"),
+            SeriesMetadata.strings("rpcl"),
             SeriesMetadata.strings("uva"),
-            SeriesMetadata.booleans("fictitious"),
+            SeriesMetadata.booleans("aggregated"),
             SeriesMetadata.booleans("qlim")
             );
 
@@ -49,30 +51,28 @@ public class SynchronousGeneratorPropertiesDataframeAdder extends AbstractSimple
     private static class SynchronousGeneratorPropertiesSeries {
 
         private final StringSeries id;
-        private final IntSeries numberOfWindings;
+        private final StringSeries numberOfWindings;
         private final StringSeries governor;
         private final StringSeries voltageRegulator;
         private final StringSeries pss;
         private final IntSeries auxiliaries;
         private final IntSeries internalTransformer;
-        private final IntSeries rpcl;
-        private final IntSeries rpcl2;
+        private final StringSeries rpcl;
         private final StringSeries uva;
-        private final IntSeries fictitious;
+        private final IntSeries aggregated;
         private final IntSeries qlim;
 
         SynchronousGeneratorPropertiesSeries(UpdatingDataframe dataframe) {
             this.id = dataframe.getStrings("id");
-            this.numberOfWindings = dataframe.getInts("numberOfWindings");
+            this.numberOfWindings = dataframe.getStrings("numberOfWindings");
             this.governor = dataframe.getStrings("governor");
             this.voltageRegulator = dataframe.getStrings("voltageRegulator");
             this.pss = dataframe.getStrings("pss");
             this.auxiliaries = dataframe.getInts("auxiliaries");
             this.internalTransformer = dataframe.getInts("internalTransformer");
-            this.rpcl = dataframe.getInts("rpcl");
-            this.rpcl2 = dataframe.getInts("rpcl2");
+            this.rpcl = dataframe.getStrings("rpcl");
             this.uva = dataframe.getStrings("uva");
-            this.fictitious = dataframe.getInts("fictitious");
+            this.aggregated = dataframe.getInts("aggregated");
             this.qlim = dataframe.getInts("qlim");
         }
 
@@ -83,16 +83,15 @@ public class SynchronousGeneratorPropertiesDataframeAdder extends AbstractSimple
                 throw new PowsyblException("Invalid generator id : could not find " + generatorId);
             }
             var adder = g.newExtension(SynchronousGeneratorPropertiesAdder.class);
-            SeriesUtils.applyIfPresent(numberOfWindings, row, adder::withNumberOfWindings);
+            SeriesUtils.applyIfPresent(numberOfWindings, row, w -> adder.withNumberOfWindings(SynchronousGeneratorProperties.Windings.valueOf(w)));
             SeriesUtils.applyIfPresent(governor, row, adder::withGovernor);
             SeriesUtils.applyIfPresent(voltageRegulator, row, adder::withVoltageRegulator);
             SeriesUtils.applyIfPresent(pss, row, adder::withPss);
             SeriesUtils.applyBooleanIfPresent(auxiliaries, row, adder::withAuxiliaries);
             SeriesUtils.applyBooleanIfPresent(internalTransformer, row, adder::withInternalTransformer);
-            SeriesUtils.applyBooleanIfPresent(rpcl, row, adder::withRpcl);
-            SeriesUtils.applyBooleanIfPresent(rpcl2, row, adder::withRpcl2);
-            SeriesUtils.applyIfPresent(uva, row, adder::withUva);
-            SeriesUtils.applyBooleanIfPresent(fictitious, row, adder::withFictitious);
+            SeriesUtils.applyIfPresent(rpcl, row, r -> adder.withRpcl(RpclType.valueOf(r)));
+            SeriesUtils.applyIfPresent(uva, row, u -> adder.withUva(SynchronousGeneratorProperties.Uva.valueOf(u)));
+            SeriesUtils.applyBooleanIfPresent(aggregated, row, adder::withAggregated);
             SeriesUtils.applyBooleanIfPresent(qlim, row, adder::withQlim);
             adder.add();
         }

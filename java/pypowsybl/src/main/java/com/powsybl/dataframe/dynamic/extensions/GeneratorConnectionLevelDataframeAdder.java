@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.extensions;
+package com.powsybl.dataframe.dynamic.extensions;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
@@ -13,16 +13,17 @@ import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;
 import com.powsybl.dataframe.network.adders.SeriesUtils;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.extensions.api.generator.connection.GeneratorConnectionLevel;
+import com.powsybl.dynawo.extensions.api.generator.connection.GeneratorConnectionLevelAdder;
 import com.powsybl.iidm.network.Generator;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.GeneratorConnectionLevelAdder;
-import com.powsybl.iidm.network.extensions.GeneratorConnectionLevelType;
 
 import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Gautier Bureau {@literal <gautier.bureau at rte-france.com>}
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class GeneratorConnectionLevelDataframeAdder extends AbstractSimpleAdder {
 
@@ -53,7 +54,7 @@ public class GeneratorConnectionLevelDataframeAdder extends AbstractSimpleAdder 
                 throw new PowsyblException("Invalid generator id : could not find " + generatorId);
             }
             var adder = g.newExtension(GeneratorConnectionLevelAdder.class);
-            SeriesUtils.applyIfPresent(level, row, l -> adder.withLevel(GeneratorConnectionLevelType.valueOf(l)));
+            SeriesUtils.applyIfPresent(level, row, l -> adder.withLevel(GeneratorConnectionLevel.GeneratorConnectionLevelType.valueOf(l)));
             adder.add();
         }
     }

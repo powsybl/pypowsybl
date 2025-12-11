@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  * SPDX-License-Identifier: MPL-2.0
  */
-package com.powsybl.dataframe.network.extensions;
+package com.powsybl.dataframe.dynamic.extensions;
 
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
@@ -13,10 +13,12 @@ import com.powsybl.dataframe.network.ExtensionInformation;
 import com.powsybl.dataframe.network.NetworkDataframeMapper;
 import com.powsybl.dataframe.network.NetworkDataframeMapperBuilder;
 import com.powsybl.dataframe.network.adders.NetworkElementAdder;
+import com.powsybl.dataframe.network.extensions.AbstractSingleDataframeNetworkExtension;
+import com.powsybl.dataframe.network.extensions.NetworkExtensionDataframeProvider;
+import com.powsybl.dynawo.extensions.api.generator.RpclType;
+import com.powsybl.dynawo.extensions.api.generator.SynchronizedGeneratorProperties;
 import com.powsybl.iidm.network.Generator;
-import com.powsybl.iidm.network.Identifiable;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.extensions.SynchronizedGeneratorProperties;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +26,7 @@ import java.util.stream.Stream;
 
 /**
  * @author Gautier Bureau {@literal <gautier.bureau at rte-france.com>}
+ * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 @AutoService(NetworkExtensionDataframeProvider.class)
 public class SynchronizedGeneratorPropertiesDataframeProvider extends AbstractSingleDataframeNetworkExtension {
@@ -63,9 +66,9 @@ public class SynchronizedGeneratorPropertiesDataframeProvider extends AbstractSi
     @Override
     public NetworkDataframeMapper createMapper() {
         return NetworkDataframeMapperBuilder.ofStream(this::itemsStream, this::getOrThrow)
-                .stringsIndex("id", ext -> ((Identifiable<?>) ext.getExtendable()).getId())
-                .strings("type", sgp -> String.valueOf(sgp.getType()), (sgp, type) -> sgp.setType(type))
-                .booleans("rpcl2", SynchronizedGeneratorProperties::getRpcl2, SynchronizedGeneratorProperties::setRpcl2)
+                .stringsIndex("id", ext -> ext.getExtendable().getId())
+                .strings("type", sgp -> String.valueOf(sgp.getType()), SynchronizedGeneratorProperties::setType)
+                .booleans("rpcl2", SynchronizedGeneratorProperties::isRpcl2, (sgp, b) -> sgp.setRpcl(b ? RpclType.RPCL2 : RpclType.NONE))
                 .build();
     }
 
