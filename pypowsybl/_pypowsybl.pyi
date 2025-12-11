@@ -412,6 +412,7 @@ class NadParameters:
     voltage_level_details: bool
     injections_added: bool
     max_steps: int
+    timeout_seconds: float
     def __init__(self) -> None: ...
 
 class SlackBusResult:

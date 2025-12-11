@@ -1584,6 +1584,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     voltage_level_details = (bool) src->voltage_level_details;
     injections_added = (bool) src->injections_added;
     max_steps = src->max_steps;
+    timeout_seconds = src->timeout_seconds;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1617,6 +1618,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.voltage_level_details = (unsigned char) voltage_level_details;
     res.injections_added = (unsigned char) injections_added;
     res.max_steps = max_steps;
+    res.timeout_seconds = timeout_seconds;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

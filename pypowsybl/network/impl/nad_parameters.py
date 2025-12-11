@@ -18,7 +18,7 @@ class NadParameters:
                  substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
                  scaling_factor: int = 150000, radius_factor: float = 150.0,
                  edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER, voltage_level_details: bool = True,
-                 injections_added: bool = False, max_steps: int = 750):
+                 injections_added: bool = False, max_steps: int = 750, timeout_seconds: double = 10.0):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -35,6 +35,7 @@ class NadParameters:
         self._voltage_level_details = voltage_level_details
         self._injections_added = injections_added
         self._max_steps = max_steps
+        self._timeout_seconds = timeout_seconds
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -116,6 +117,11 @@ class NadParameters:
         """max_steps"""
         return self._max_steps
 
+    @property
+    def timeout_seconds(self) -> int:
+        """max_steps"""
+        return self._timeout_seconds
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_name_displayed = self._edge_name_displayed
@@ -134,6 +140,7 @@ class NadParameters:
         c_parameters.voltage_level_details = self._voltage_level_details
         c_parameters.injections_added = self._injections_added
         c_parameters.max_steps = self._max_steps
+        c_parameters.timeout_seconds = self._timeout_seconds
         return c_parameters
 
     def __repr__(self) -> str:
@@ -154,4 +161,5 @@ class NadParameters:
                f", voltage_level_details={self._voltage_level_details}" \
                f", injections_added={self._injections_added}" \
                f", max_steps={self._max_steps}" \
+               f", timeout_seconds={self._timeout_seconds}" \
                f")"

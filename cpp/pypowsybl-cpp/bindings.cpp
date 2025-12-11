@@ -691,7 +691,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
         .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details)
         .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added)
-        .def_readwrite("max_steps", &pypowsybl::NadParameters::max_steps);
+        .def_readwrite("max_steps", &pypowsybl::NadParameters::max_steps)
+        .def_readwrite("timeout_seconds", &pypowsybl::NadParameters::timeout_seconds);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"));

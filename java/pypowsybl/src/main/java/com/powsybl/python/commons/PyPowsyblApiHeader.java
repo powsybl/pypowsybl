@@ -1177,6 +1177,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("max_steps")
         int getMaxSteps();
+
+        @CField("timeout_seconds")
+        void setTimeoutSeconds(double timeoutSeconds);
+
+        @CField("timeout_seconds")
+        int getTimeoutSeconds();
     }
 
     @CStruct("dynamic_simulation_parameters")

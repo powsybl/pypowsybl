@@ -1000,6 +1000,7 @@ public final class NetworkCFunctions {
         cParameters.setVoltageLevelDetails(parameters.getSvgParameters().isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
         cParameters.setMaxSteps(parameters.getLayoutParameters().getMaxSteps());
+        cParameters.setTimeoutSeconds(parameters.getLayoutParameters().getTimeoutSeconds());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1072,7 +1073,8 @@ public final class NetworkCFunctions {
                 .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
                 .setEdgeInfoDisplayed(edgeInfo);
         nadParameters.getLayoutParameters()
-                .setMaxSteps(nadParametersPointer.getMaxSteps());
+                .setMaxSteps(nadParametersPointer.getMaxSteps())
+                .setTimeoutSeconds(nadParametersPointer.getTimeoutSeconds());
         return nadParameters;
     }
 
