@@ -144,7 +144,7 @@ public final class NetworkAreaDiagramUtil {
                     String side1Label = "";
                     EdgeInfo.Direction dir1 = null;
                     if (e1 != null) {
-                        side1Label = e1.getExternalLabel().orElse("");
+                        side1Label = e1.getLabelB().orElse("");
                         dir1 = e1.getDirection().orElse(null);
 
                     }
@@ -153,13 +153,18 @@ public final class NetworkAreaDiagramUtil {
                     String side2Label = "";
                     EdgeInfo.Direction dir2 = null;
                     if (e2 != null) {
-                        side2Label = e2.getExternalLabel().orElse("");
+                        side2Label = e2.getLabelB().orElse("");
                         dir2 = e2.getDirection().orElse(null);
                     }
 
-                    String edgeLabel = labelProvider.getBranchLabel(branchId);
+                    EdgeInfo eMiddle = labelProvider.getBranchEdgeInfo(branchId, type).orElse(null);
+                    String edgeLabel = "";
+                    if (eMiddle != null) {
+                        edgeLabel = eMiddle.getLabelB().orElse("");
+                    }
 
-                    return new CustomLabelProvider.BranchLabels(side1Label, edgeLabel, side2Label, dir1, dir2);
+                    return new CustomLabelProvider.BranchLabels(side1Label, null, edgeLabel, null,
+                            side2Label, null, dir1, null, dir2);
                 }));
     }
 
@@ -182,7 +187,7 @@ public final class NetworkAreaDiagramUtil {
             Optional<EdgeInfo> edgeInfo = labelProvider.getThreeWindingTransformerEdgeInfo(edge.getEquipmentId(), side);
             if (edgeInfo.isPresent()) {
                 EdgeInfo.Direction dir = edgeInfo.get().getDirection().orElse(null);
-                String label = edgeInfo.get().getExternalLabel().orElse("");
+                String label = edgeInfo.get().getLabelB().orElse("");
 
                 switch (side) {
                     case ONE -> {
@@ -200,7 +205,8 @@ public final class NetworkAreaDiagramUtil {
                 }
             }
         }
-        return new CustomLabelProvider.ThreeWtLabels(side1, side2, side3, direction1, direction2, direction3);
+        return new CustomLabelProvider.ThreeWtLabels(side1, null, side2, null, side3, null,
+                direction1, direction2, direction3);
     }
 
     public static Map<String, CustomLabelProvider.ThreeWtLabels> getThreeWtBranchLabelsMap(Graph graph, LabelProvider labelProvider) {
@@ -295,9 +301,9 @@ public final class NetworkAreaDiagramUtil {
                     .map(x -> Map.entry(x.getKey(), x.getValue()))
                     .toList())
             .stringsIndex("id", Map.Entry::getKey)
-            .strings("side1", ble -> ble.getValue().side1())
-            .strings("middle", ble -> ble.getValue().middle())
-            .strings("side2", ble -> ble.getValue().side2())
+            .strings("side1", ble -> ble.getValue().side1Internal())
+            .strings("middle", ble -> ble.getValue().middle1())
+            .strings("side2", ble -> ble.getValue().side2Internal())
             .strings("arrow1", ble -> getBranchArrowAsString(ble.getValue(), BranchEdge.Side.ONE))
             .strings("arrow2", ble -> getBranchArrowAsString(ble.getValue(), BranchEdge.Side.TWO))
             .build();
@@ -309,9 +315,9 @@ public final class NetworkAreaDiagramUtil {
                     .map(x -> Map.entry(x.getKey(), x.getValue()))
                     .toList())
             .stringsIndex("id", Map.Entry::getKey)
-            .strings("side1", ble -> ble.getValue().side1())
-            .strings("side2", ble -> ble.getValue().side2())
-            .strings("side3", ble -> ble.getValue().side3())
+            .strings("side1", ble -> ble.getValue().side1Internal())
+            .strings("side2", ble -> ble.getValue().side2Internal())
+            .strings("side3", ble -> ble.getValue().side3Internal())
             .strings("arrow1", ble -> getTwtLegArrowAsString(ble.getValue(), ThreeWtEdge.Side.ONE))
             .strings("arrow2", ble -> getTwtLegArrowAsString(ble.getValue(), ThreeWtEdge.Side.TWO))
             .strings("arrow3", ble -> getTwtLegArrowAsString(ble.getValue(), ThreeWtEdge.Side.THREE))

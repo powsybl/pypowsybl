@@ -37,6 +37,7 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
+import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -81,7 +82,7 @@ import java.util.zip.ZipOutputStream;
 
 import static com.powsybl.iidm.network.util.Networks.applySolvedTapPositionAndSolvedSectionCount;
 import static com.powsybl.iidm.network.util.Networks.applySolvedValues;
-import static com.powsybl.nad.svg.SvgParameters.EdgeInfoEnum.*;
+import static com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -1245,7 +1246,7 @@ public final class NetworkCFunctions {
             case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
         };
-        SvgParameters.EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
+        DefaultLabelProvider.EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
             case 0 -> ACTIVE_POWER;
             case 1 -> REACTIVE_POWER;
             case 2 -> CURRENT;
@@ -1595,9 +1596,13 @@ public final class NetworkCFunctions {
             String id = idSeries.get(i);
             CustomLabelProvider.BranchLabels labels = new CustomLabelProvider.BranchLabels(
                     getValueFromSeriesOrNull(side1Label, i),
+                    null,
                     getValueFromSeriesOrNull(middleLabel, i),
+                    null,
                     getValueFromSeriesOrNull(side2Label, i),
+                    null,
                     getDirectionFromSeriesOrNull(arrow1, i),
+                    null,
                     getDirectionFromSeriesOrNull(arrow2, i)
             );
             nadCustomBranchLabels.put(id, labels);
@@ -1620,8 +1625,11 @@ public final class NetworkCFunctions {
             String id = idS.get(i);
             CustomLabelProvider.ThreeWtLabels labels = new CustomLabelProvider.ThreeWtLabels(
                     getValueFromSeriesOrNull(side1S, i),
+                    null,
                     getValueFromSeriesOrNull(side2S, i),
+                    null,
                     getValueFromSeriesOrNull(side3S, i),
+                    null,
                     getDirectionFromSeriesOrNull(arrow1S, i),
                     getDirectionFromSeriesOrNull(arrow2S, i),
                     getDirectionFromSeriesOrNull(arrow3S, i)
@@ -1642,6 +1650,7 @@ public final class NetworkCFunctions {
             String id = idS.get(i);
             CustomLabelProvider.InjectionLabels labels = new CustomLabelProvider.InjectionLabels(
                     getValueFromSeriesOrNull(labelS, i),
+                    null,
                     getDirectionFromSeriesOrNull(arrowS, i)
             );
             nadCustomInjectionsLabels.put(id, labels);
