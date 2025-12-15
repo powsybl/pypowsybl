@@ -4,8 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import warnings
 from typing import Sequence, Dict, Optional, Any
+
+from pandapower.topology import connected_component
 from pypowsybl._pypowsybl import (
+    ComponentMode,
     ConnectedComponentMode,
     BalanceType,
     VoltageInitMode,
@@ -18,8 +22,10 @@ from pypowsybl._pypowsybl import (
 VoltageInitMode.__module__ = __name__
 BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
+ComponentMode.__module__ = __name__
 
 import pypowsybl._pypowsybl
+from pypowsybl.loadflow.impl.util import _convert_to_component_mode, _convert_to_connected_component_mode
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -55,16 +61,19 @@ class Parameters:  # pylint: disable=too-few-public-methods
             Will tag the slack bus selected by your loadflow provider with an extension.
         distributed_slack: Distribute active power slack on the network.
             ``True`` means that the active power slack is distributed, on loads or on generators according to ``balance_type``.
-        balance_type: How to distributed active power slack.
+        balance_type: How to distribute active power slack.
             Use ``PROPORTIONAL_TO_LOAD`` to distribute slack on loads,
             ``PROPORTIONAL_TO_GENERATION_P_MAX`` or ``PROPORTIONAL_TO_GENERATION_P`` to distribute on generators.
         dc_use_transformer_ratio: In DC mode, take into account transformer ratio.
             Used only for DC load flows, to include ratios in the equation system.
         countries_to_balance: List of countries participating to slack distribution.
             Used only if distributed_slack is ``True``.
-        connected_component_mode: Define which connected components should be computed.
-            Use ``MAIN`` to computes flows only on the main connected component,
-            or prefer ``ALL`` for a run on all connected component.
+        component_mode: Defines which network components should be computed.
+            Use ``MAIN_SYNCHRONOUS`` to computes flows only on the main synchronous component,
+            ``MAIN_CONNECTED`` to computes flows only on the main connected component,
+            or prefer ``ALL_CONNECTED`` for a run on all connected components.
+        connected_component_mode: Deprecated, use parameter ``component_mode`` (``MAIN`` corresponds to component_mode = ``MAIN_CONNECTED``,
+            ``ALL`` to component_mode = ``ALL_CONNECTED``).
         hvdc_ac_emulation: Enable AC emulation of HVDC links.
         dc_power_factor: Power factor used to convert current limits into active power limits in DC calculations.
         provider_parameters: Define parameters linked to the loadflow provider
@@ -83,6 +92,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  balance_type: Optional[BalanceType] = None,
                  dc_use_transformer_ratio: Optional[bool] = None,
                  countries_to_balance: Optional[Sequence[str]] = None,
+                 component_mode: Optional[ComponentMode] = None,
                  connected_component_mode: Optional[ConnectedComponentMode] = None,
                  dc_power_factor: Optional[float] = None,
                  hvdc_ac_emulation: Optional[bool] = None,
@@ -112,8 +122,11 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.dc_use_transformer_ratio = dc_use_transformer_ratio
         if countries_to_balance is not None:
             self.countries_to_balance = countries_to_balance
+        if component_mode is not None:
+            self.component_mode = component_mode
         if connected_component_mode is not None:
-            self.connected_component_mode = connected_component_mode
+            warnings.deprecated("connected_component_mode is deprecated, use component_mode parameter instead")
+            self.component_mode = _convert_to_component_mode(connected_component_mode)
         if hvdc_ac_emulation is not None:
             self.hvdc_ac_emulation = hvdc_ac_emulation
         if dc_power_factor is not None:
@@ -134,7 +147,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.balance_type = c_parameters.balance_type
         self.dc_use_transformer_ratio = c_parameters.dc_use_transformer_ratio
         self.countries_to_balance = c_parameters.countries_to_balance
-        self.connected_component_mode = c_parameters.connected_component_mode
+        self.component_mode = c_parameters.component_mode
         self.hvdc_ac_emulation = c_parameters.hvdc_ac_emulation
         self.dc_power_factor = c_parameters.dc_power_factor
         self.provider_parameters = dict(
@@ -157,12 +170,22 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.balance_type = self.balance_type
         c_parameters.dc_use_transformer_ratio = self.dc_use_transformer_ratio
         c_parameters.countries_to_balance = self.countries_to_balance
-        c_parameters.connected_component_mode = self.connected_component_mode
+        c_parameters.component_mode = self.component_mode
         c_parameters.hvdc_ac_emulation = self.hvdc_ac_emulation
         c_parameters.dc_power_factor = self.dc_power_factor
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
+
+    @property
+    def connected_component_mode(self) -> Optional[ConnectedComponentMode]:
+        warnings.deprecated("connected_component_mode is deprecated, use component_mode parameter instead")
+        return _convert_to_connected_component_mode(self.component_mode)
+
+    @connected_component_mode.setter
+    def connected_component_mode(self, connected_component_mode: ConnectedComponentMode) -> None:
+        warnings.deprecated("connected_component_mode is deprecated, use component_mode parameter instead")
+        self.component_mode = _convert_to_component_mode(connected_component_mode)
 
     @staticmethod
     def from_json(json_str: str) -> "Parameters":
@@ -193,7 +216,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", balance_type={self.balance_type.name}" \
                f", dc_use_transformer_ratio={self.dc_use_transformer_ratio!r}" \
                f", countries_to_balance={self.countries_to_balance}" \
-               f", connected_component_mode={self.connected_component_mode!r}" \
+               f", component_mode={self.component_mode!r}" \
                f", hvdc_ac_emulation={self.hvdc_ac_emulation!r}" \
                f", dc_power_factor={self.dc_power_factor!r}" \
                f", provider_parameters={self.provider_parameters!r}" \

@@ -330,7 +330,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     distributed_slack = (bool) src->distributed_slack;
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
-    connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
+    component_mode = static_cast<ComponentMode>(src->component_mode);
     hvdc_ac_emulation = (bool) src->hvdc_ac_emulation;
     dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
@@ -351,7 +351,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.dc_use_transformer_ratio = (unsigned char) dc_use_transformer_ratio;
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
-    res.connected_component_mode = connected_component_mode;
+    res.component_mode = component_mode;
     res.hvdc_ac_emulation = (unsigned char) hvdc_ac_emulation;
     res.dc_power_factor = dc_power_factor;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
