@@ -38,6 +38,8 @@ import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
 import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
+import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum;
+import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -1141,7 +1143,7 @@ public final class NetworkCFunctions {
         cParameters.setBusesLegendAdded(parameters.getSvgParameters().isBusesLegendAdded());
         cParameters.setTooltipEnabled(parameters.getSvgParameters().isTooltipEnabled());
         cParameters.setComponentLibrary(CTypeUtil.toCharPtr(parameters.getComponentLibrary().getName()));
-        cParameters.setDisplayCurrentFeederInfo(parameters.getSvgParameters().isDisplayCurrentFeederInfo());
+        cParameters.setDisplayCurrentFeederInfo(false); // Default value for parameter in sld DefaultLabelProvider
         cParameters.setActivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getActivePowerUnit()));
         cParameters.setReactivePowerUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getReactivePowerUnit()));
         cParameters.setCurrentUnit(CTypeUtil.toCharPtr(parameters.getSvgParameters().getCurrentUnit()));
@@ -1167,23 +1169,27 @@ public final class NetworkCFunctions {
     }
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
-        int edgeInfo = switch (parameters.getSvgParameters().getEdgeInfoDisplayed()) {
+        // To remove when all default parameters of DefaultLabelProvider can be obtained
+        LabelProviderParameters defaultLabelProviderParameters = new LabelProviderParameters();
+        EdgeInfoParameters defaultEdgeInfoParameters = new EdgeInfoParameters(ACTIVE_POWER, EMPTY, EMPTY, EMPTY);
+
+        int edgeInfo = switch (defaultEdgeInfoParameters.infoSideExternal()) {
             case ACTIVE_POWER -> 0;
             case REACTIVE_POWER -> 1;
             case CURRENT -> 2;
             default -> throw new PowsyblException("Type of information not taken into account");
         };
-        cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
+        cParameters.setEdgeNameDisplayed(defaultEdgeInfoParameters.infoMiddleSide1().equals(NAME));
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
-        cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
+        cParameters.setIdDisplayed(defaultLabelProviderParameters.isIdDisplayed());
         cParameters.setPowerValuePrecision(parameters.getSvgParameters().getPowerValuePrecision());
         cParameters.setCurrentValuePrecision(parameters.getSvgParameters().getCurrentValuePrecision());
         cParameters.setAngleValuePrecision(parameters.getSvgParameters().getAngleValuePrecision());
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
-        cParameters.setBusLegend(parameters.getSvgParameters().isBusLegend());
-        cParameters.setSubstationDescriptionDisplayed(parameters.getSvgParameters().isSubstationDescriptionDisplayed());
+        cParameters.setBusLegend(defaultLabelProviderParameters.isBusLegend());
+        cParameters.setSubstationDescriptionDisplayed(defaultLabelProviderParameters.isSubstationDescriptionDisplayed());
         cParameters.setEdgeInfoDisplayed(edgeInfo);
-        cParameters.setVoltageLevelDetails(parameters.getSvgParameters().isVoltageLevelDetails());
+        cParameters.setVoltageLevelDetails(defaultLabelProviderParameters.isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
     }
 
@@ -1232,11 +1238,16 @@ public final class NetworkCFunctions {
                 .setLabelDiagonal(sldParametersPtr.isDiagonalLabel())
                 .setBusesLegendAdded(sldParametersPtr.isBusesLegendAdded())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
-                .setDisplayCurrentFeederInfo(sldParametersPtr.isDisplayCurrentFeederInfo())
                 .setTooltipEnabled(sldParametersPtr.getTooltipEnabled())
                 .setActivePowerUnit(CTypeUtil.toString(sldParametersPtr.getActivePowerUnit()))
                 .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()))
                 .setCurrentUnit(CTypeUtil.toString(sldParametersPtr.getCurrentUnit()));
+        sldParameters.setLabelProviderFactory((n, s, layoutParameters, svgParameters) -> {
+            com.powsybl.sld.svg.DefaultLabelProvider provider = new com.powsybl.sld.svg.DefaultLabelProvider(n, s, layoutParameters, svgParameters);
+            provider.setDisplayCurrent(sldParametersPtr.isDisplayCurrentFeederInfo());
+            return provider;
+        });
+
         return sldParameters;
     }
 
@@ -1246,7 +1257,7 @@ public final class NetworkCFunctions {
             case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
         };
-        DefaultLabelProvider.EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
+        EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
             case 0 -> ACTIVE_POWER;
             case 1 -> REACTIVE_POWER;
             case 2 -> CURRENT;
@@ -1254,16 +1265,18 @@ public final class NetworkCFunctions {
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
-                .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
                 .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
                 .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
-                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
-                .setIdDisplayed(nadParametersPointer.isIdDisplayed())
-                .setBusLegend(nadParametersPointer.isBusLegend())
-                .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())
-                .setEdgeInfoDisplayed(edgeInfo);
+                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision());
+        nadParameters.setLabelProviderFactory((n, s) -> new DefaultLabelProvider(n,
+                new EdgeInfoParameters(edgeInfo, nadParametersPointer.isEdgeNameDisplayed() ? NAME : EMPTY, EMPTY, EMPTY),
+                s.createValueFormatter(),
+                new LabelProviderParameters()
+                        .setIdDisplayed(nadParametersPointer.isIdDisplayed())
+                        .setBusLegend(nadParametersPointer.isBusLegend())
+                        .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())));
         nadParameters.getLayoutParameters()
                 .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;
@@ -1702,8 +1715,6 @@ public final class NetworkCFunctions {
         if (customLabelsDataframe != null || threeWtLabelsDataframe != null || injectionLabelsDataframe != null || busDescriptionsDataframe != null || customVlDescriptionsDataframe != null) {
             final Map<String, CustomLabelProvider.BranchLabels> branchLabels;
             if (customLabelsDataframe != null) {
-                //when the custom dataframe is defined, the displaying of the edge name is forced
-                nadParameters.getSvgParameters().setEdgeNameDisplayed(true);
                 branchLabels = getNadCustomBranchLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
                         customLabelsDataframe.getStrings("side1"),
                         customLabelsDataframe.getStrings("middle"), customLabelsDataframe.getStrings("side2"),
@@ -1725,8 +1736,6 @@ public final class NetworkCFunctions {
 
             final Map<String, VoltageLevelLegend> customVlLegends;
             if (customVlDescriptionsDataframe != null) {
-                //when the custom dataframe is defined, the displaying of the vl details section is forced
-                nadParameters.getSvgParameters().setVoltageLevelDetails(true);
                 customVlLegends = getNadCustomVlInfos(customVlDescriptionsDataframe.getRowCount(),
                         customVlDescriptionsDataframe.getStrings("id"),
                         customVlDescriptionsDataframe.getStrings("type"),
@@ -1736,8 +1745,6 @@ public final class NetworkCFunctions {
             }
 
             if (busDescriptionsDataframe != null) {
-                //when the custom dataframe is defined, the displaying of the bus legend section is forced
-                nadParameters.getSvgParameters().setBusLegend(true);
                 fillNadCustomBusDescriptions(network,
                         customVlLegends,
                         busDescriptionsDataframe.getRowCount(),
@@ -1891,11 +1898,7 @@ public final class NetworkCFunctions {
     }
 
     private static SvgParameters getNadSvgParsForDefaultLabels() {
-        return new SvgParameters()
-                .setSvgWidthAndHeightAdded(true)
-                .setEdgeNameDisplayed(true)
-                .setVoltageLevelDetails(true)
-                .setBusLegend(true);
+        return new SvgParameters().setSvgWidthAndHeightAdded(true);
     }
 
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultBranchLabels")
