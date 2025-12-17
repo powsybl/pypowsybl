@@ -1758,7 +1758,7 @@ public final class NetworkCFunctions {
             }
 
             nadParameters.setLabelProviderFactory((n, svgParameters) ->
-                    new CustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customVlLegends));
+                    new TmpFixCustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customVlLegends));
         }
     }
 
