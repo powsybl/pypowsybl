@@ -186,13 +186,12 @@ class Parameters:  # pylint: disable=too-few-public-methods
         warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
         self._convert_to_component_mode(connected_component_mode)
 
-    def _convert_to_component_mode(self, connected_component_mode: ConnectedComponentMode) -> ComponentMode:
+    def _convert_to_component_mode(self, connected_component_mode: ConnectedComponentMode) -> None:
         if connected_component_mode == ConnectedComponentMode.MAIN:
             self.component_mode = ComponentMode.MAIN_CONNECTED
         else:
             self.component_mode = ComponentMode.ALL_CONNECTED
 
-    @staticmethod
     def _convert_to_connected_component_mode(self) -> Optional[ConnectedComponentMode]:
         if self.component_mode == ComponentMode.MAIN_CONNECTED:
             return ConnectedComponentMode.MAIN
