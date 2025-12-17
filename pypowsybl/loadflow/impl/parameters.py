@@ -25,7 +25,6 @@ ConnectedComponentMode.__module__ = __name__
 ComponentMode.__module__ = __name__
 
 import pypowsybl._pypowsybl
-from pypowsybl.loadflow.impl.util import _convert_to_component_mode, _convert_to_connected_component_mode
 
 
 class Parameters:  # pylint: disable=too-few-public-methods
@@ -125,8 +124,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if component_mode is not None:
             self.component_mode = component_mode
         if connected_component_mode is not None:
-            warnings.deprecated("connected_component_mode is deprecated, use component_mode parameter instead")
-            self.component_mode = _convert_to_component_mode(connected_component_mode)
+            warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
+            self._convert_to_component_mode(connected_component_mode)
         if hvdc_ac_emulation is not None:
             self.hvdc_ac_emulation = hvdc_ac_emulation
         if dc_power_factor is not None:
@@ -179,13 +178,28 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     @property
     def connected_component_mode(self) -> Optional[ConnectedComponentMode]:
-        warnings.deprecated("connected_component_mode is deprecated, use component_mode parameter instead")
-        return _convert_to_connected_component_mode(self.component_mode)
+        warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
+        return self._convert_to_connected_component_mode()
 
     @connected_component_mode.setter
     def connected_component_mode(self, connected_component_mode: ConnectedComponentMode) -> None:
-        warnings.deprecated("connected_component_mode is deprecated, use component_mode parameter instead")
-        self.component_mode = _convert_to_component_mode(connected_component_mode)
+        warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
+        self._convert_to_component_mode(connected_component_mode)
+
+    def _convert_to_component_mode(self, connected_component_mode: ConnectedComponentMode) -> ComponentMode:
+        if connected_component_mode == ConnectedComponentMode.MAIN:
+            self.component_mode = ComponentMode.MAIN_CONNECTED
+        else:
+            self.component_mode = ComponentMode.ALL_CONNECTED
+
+    @staticmethod
+    def _convert_to_connected_component_mode(self) -> Optional[ConnectedComponentMode]:
+        if self.component_mode == ComponentMode.MAIN_CONNECTED:
+            return ConnectedComponentMode.MAIN
+        elif self.component_mode == ComponentMode.ALL_CONNECTED:
+            return ConnectedComponentMode.ALL
+        else:
+            return None
 
     @staticmethod
     def from_json(json_str: str) -> "Parameters":

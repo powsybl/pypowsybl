@@ -253,6 +253,12 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ComponentMode {
+    MAIN_CONNECTED = 0,
+    ALL_CONNECTED,
+    MAIN_SYNCHRONOUS,
+};
+
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,

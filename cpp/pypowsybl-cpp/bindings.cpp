@@ -554,6 +554,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
+    py::enum_<pypowsybl::ComponentMode>(m, "ComponentMode", "Define which network components to run on.")
+                .value("ALL_CONNECTED", pypowsybl::ComponentMode::ALL_CONNECTED, "Run on all connected components")
+                .value("MAIN_CONNECTED", pypowsybl::ComponentMode::MAIN_CONNECTED, "Run only on the main connected component")
+                .value("MAIN_SYNCHRONOUS", pypowsybl::ComponentMode::MAIN_SYNCHRONOUS, "Run only on the main synchronous component");
+
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 

@@ -1242,9 +1242,10 @@ public final class NetworkCFunctions {
                 .setActivePowerUnit(CTypeUtil.toString(sldParametersPtr.getActivePowerUnit()))
                 .setReactivePowerUnit(CTypeUtil.toString(sldParametersPtr.getReactivePowerUnit()))
                 .setCurrentUnit(CTypeUtil.toString(sldParametersPtr.getCurrentUnit()));
+        boolean displayCurrentInfo = sldParametersPtr.isDisplayCurrentFeederInfo();
         sldParameters.setLabelProviderFactory((n, s, layoutParameters, svgParameters) -> {
             com.powsybl.sld.svg.DefaultLabelProvider provider = new com.powsybl.sld.svg.DefaultLabelProvider(n, s, layoutParameters, svgParameters);
-            provider.setDisplayCurrent(sldParametersPtr.isDisplayCurrentFeederInfo());
+            provider.setDisplayCurrent(displayCurrentInfo);
             return provider;
         });
 
@@ -1270,13 +1271,17 @@ public final class NetworkCFunctions {
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
                 .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
                 .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision());
+        EdgeInfoEnum middleInfo = nadParametersPointer.isEdgeNameDisplayed() ? NAME : EMPTY;
+        boolean idDisplayed = nadParametersPointer.isIdDisplayed();
+        boolean busLegend = nadParametersPointer.isBusLegend();
+        boolean substationDescription = nadParametersPointer.isSubstationDescriptionDisplayed();
         nadParameters.setLabelProviderFactory((n, s) -> new DefaultLabelProvider(n,
-                new EdgeInfoParameters(edgeInfo, nadParametersPointer.isEdgeNameDisplayed() ? NAME : EMPTY, EMPTY, EMPTY),
+                new EdgeInfoParameters(edgeInfo, middleInfo, EMPTY, EMPTY),
                 s.createValueFormatter(),
                 new LabelProviderParameters()
-                        .setIdDisplayed(nadParametersPointer.isIdDisplayed())
-                        .setBusLegend(nadParametersPointer.isBusLegend())
-                        .setSubstationDescriptionDisplayed(nadParametersPointer.isSubstationDescriptionDisplayed())));
+                        .setIdDisplayed(idDisplayed)
+                        .setBusLegend(busLegend)
+                        .setSubstationDescriptionDisplayed(substationDescription)));
         nadParameters.getLayoutParameters()
                 .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;

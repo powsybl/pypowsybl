@@ -96,7 +96,7 @@ def test_lf_parameters():
         'balance_type': [lf.BalanceType.PROPORTIONAL_TO_CONFORM_LOAD, lf.BalanceType.PROPORTIONAL_TO_GENERATION_P],
         'dc_use_transformer_ratio': [True, False],
         'countries_to_balance': [['FR'], ['BE']],
-        'component_mode': [lf.ComponentMode.MAIN_CONNECTED, lf.ComponentMode.ALL_CONNECTED, lf.ComponentMode.MAIN_SYCNHRONOUS],
+        'component_mode': [lf.ComponentMode.MAIN_CONNECTED, lf.ComponentMode.ALL_CONNECTED, lf.ComponentMode.MAIN_SYNCHRONOUS],
         'dc_power_factor': [1.0, 0.95]
     }
 
