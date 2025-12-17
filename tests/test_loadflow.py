@@ -116,6 +116,8 @@ def test_deprecated_connected_component_mode_parameter():
 
     parameters2 = lf.Parameters()
     with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        assert parameters2.connected_component_mode == lf.ConnectedComponentMode.MAIN
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
         parameters2.connected_component_mode = lf.ConnectedComponentMode.ALL
     assert parameters.component_mode == lf.ComponentMode.ALL_CONNECTED
 
