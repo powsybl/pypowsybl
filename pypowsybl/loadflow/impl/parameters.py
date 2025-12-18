@@ -7,7 +7,7 @@
 import warnings
 from typing import Sequence, Dict, Optional, Any
 
-from pandapower.topology import connected_component
+from pypowsybl import PyPowsyblError
 from pypowsybl._pypowsybl import (
     ComponentMode,
     ConnectedComponentMode,
@@ -121,6 +121,9 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.dc_use_transformer_ratio = dc_use_transformer_ratio
         if countries_to_balance is not None:
             self.countries_to_balance = countries_to_balance
+        if component_mode is not None and connected_component_mode is not None:
+            raise PyPowsyblError("connected_component_mode and component_mode cannot be set at the same time, " +
+                                 "use only component_mode as the other one is depreciated")
         if component_mode is not None:
             self.component_mode = component_mode
         if connected_component_mode is not None:
