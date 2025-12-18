@@ -818,6 +818,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **rated_s**: The rated nominal power (MVA)
               - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
+              - **equivalent_local_target_v** (optional): a local target voltage value expected to be consistent with the remote target voltage (in kV)
+                        (to be used by simulators that deactivate the remote voltage algorithms, or by dynamic simulators that use this voltage as a starting value)
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
@@ -4210,6 +4212,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_q**: target reactive power in MVar, when the generator does not regulate voltage
             - **rated_s**: nominal power in MVA
             - **target_v**: target voltage in kV, when the generator regulates voltage
+            - **equivalent_local_target_v**: local target voltage in kV, equivalent to the potential remote **target_v** (that must be set to use this)
             - **voltage_regulator_on**: true if the generator regulates voltage
 
         Examples:

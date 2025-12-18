@@ -179,8 +179,9 @@ class NetworkDataframesTest {
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "energy_source", "target_p", "min_p", "max_p", "min_q", "max_q",
                         "min_q_at_target_p", "max_q_at_target_p", "min_q_at_p", "max_q_at_p", "rated_s", "reactive_limits_kind",
-                        "target_v", "target_q", "voltage_regulator_on", "regulated_element_id", "regulated_bus_id", "regulated_bus_breaker_bus_id",
-                        "p", "q", "i", "voltage_level_id", "bus_id", "bus_breaker_bus_id", "node", "condenser", "connected", "fictitious");
+                        "target_v", "equivalent_local_target_v", "target_q", "voltage_regulator_on", "regulated_element_id",
+                        "regulated_bus_id", "regulated_bus_breaker_bus_id", "p", "q", "i", "voltage_level_id", "bus_id",
+                        "bus_breaker_bus_id", "node", "condenser", "connected", "fictitious");
     }
 
     @Test
