@@ -49,6 +49,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             SeriesMetadata.doubles("target_q"),
             SeriesMetadata.doubles("rated_s"),
             SeriesMetadata.doubles("target_v"),
+            SeriesMetadata.doubles("equivalent_local_target_v"),
             SeriesMetadata.booleans("voltage_regulator_on"),
             SeriesMetadata.strings("regulating_element_id")
     );
@@ -66,6 +67,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
         private final DoubleSeries targetP;
         private final DoubleSeries targetQ;
         private final DoubleSeries targetV;
+        private final DoubleSeries equivalentLocalTargetV;
         private final DoubleSeries ratedS;
         private final IntSeries voltageRegulatorOn;
         private final StringSeries energySource;
@@ -81,6 +83,7 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
             this.targetP = dataframe.getDoubles("target_p");
             this.targetQ = dataframe.getDoubles("target_q");
             this.targetV = dataframe.getDoubles("target_v");
+            this.equivalentLocalTargetV = dataframe.getDoubles("equivalent_local_target_v");
             this.ratedS = dataframe.getDoubles("rated_s");
             this.voltageRegulatorOn = dataframe.getInts("voltage_regulator_on");
             this.energySource = dataframe.getStrings("energy_source");
@@ -98,7 +101,12 @@ public class GeneratorDataframeAdder extends AbstractSimpleAdder {
                 applyIfPresent(minP, row, adder::setMinP);
                 applyIfPresent(targetP, row, adder::setTargetP);
                 applyIfPresent(targetQ, row, adder::setTargetQ);
-                applyIfPresent(targetV, row, adder::setTargetV);
+                if (equivalentLocalTargetV != null) {
+                    double equivalentLocalTargetVValue = equivalentLocalTargetV.get(row);
+                    applyIfPresent(targetV, row, v -> adder.setTargetV(v, equivalentLocalTargetVValue));
+                } else {
+                    applyIfPresent(targetV, row, adder::setTargetV);
+                }
                 applyIfPresent(ratedS, row, adder::setRatedS);
                 applyBooleanIfPresent(voltageRegulatorOn, row, adder::setVoltageRegulatorOn);
                 applyIfPresent(energySource, row, EnergySource.class, adder::setEnergySource);

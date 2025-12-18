@@ -304,8 +304,8 @@ def test_sensitivity_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir', 'startWithFrozenACEmulation']
-    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir', 'startWithFrozenACEmulation']
+    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir', 'startWithFrozenACEmulation', 'threadCount']
+    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir', 'startWithFrozenACEmulation', 'threadCount']
     with pytest.raises(pp.PyPowsyblError, match='No sensitivity analysis provider for name \'unknown\''):
         pp.sensitivity.get_provider_parameters_names('unknown')
 

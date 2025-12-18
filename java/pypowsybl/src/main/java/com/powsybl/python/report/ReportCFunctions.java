@@ -46,7 +46,8 @@ public final class ReportCFunctions {
                 String defaultName = CTypeUtil.toString(defaultNamePtr);
                 ReportNode reportNode = ReportNode.newRootReportNode()
                         .withAllResourceBundlesFromClasspath()
-                        .withMessageTemplate(taskKey, defaultName)
+                        .withStrictMode(false)
+                        .withMessageTemplate(defaultName) //TODO : choose what to keep on python side
                         .build();
                 return ObjectHandles.getGlobal().create(reportNode);
             }

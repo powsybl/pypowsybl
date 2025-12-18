@@ -47,6 +47,7 @@ Some enum classes are used in parameters:
    :template: autosummary/class_without_members.rst
 
     VoltageInitMode
+    ComponentMode
     ConnectedComponentMode
     BalanceType
 

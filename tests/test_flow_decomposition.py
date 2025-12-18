@@ -27,7 +27,7 @@ def define_test_load_flow_parameters():
         balance_type=pp.loadflow.BalanceType.PROPORTIONAL_TO_GENERATION_P_MAX,
         dc_use_transformer_ratio=True,
         countries_to_balance=[],
-        connected_component_mode=pp.loadflow.ConnectedComponentMode.MAIN,
+        component_mode=pp.loadflow.ComponentMode.MAIN_CONNECTED,
         provider_parameters={}
         )
 

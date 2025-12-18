@@ -560,6 +560,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("ALL", pypowsybl::ConnectedComponentMode::ALL, "Run on all connected components")
             .value("MAIN", pypowsybl::ConnectedComponentMode::MAIN, "Run only on the main connected component");
 
+    py::enum_<pypowsybl::ComponentMode>(m, "ComponentMode", "Define which network components to run on.")
+                .value("ALL_CONNECTED", pypowsybl::ComponentMode::ALL_CONNECTED, "Run on all connected components")
+                .value("MAIN_CONNECTED", pypowsybl::ComponentMode::MAIN_CONNECTED, "Run only on the main connected component")
+                .value("MAIN_SYNCHRONOUS", pypowsybl::ComponentMode::MAIN_SYNCHRONOUS, "Run only on the main synchronous component");
+
     py::class_<array_struct, std::shared_ptr<array_struct>>(m, "ArrayStruct")
             .def(py::init());
 
@@ -579,7 +584,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("balance_type", &pypowsybl::LoadFlowParameters::balance_type)
             .def_readwrite("dc_use_transformer_ratio", &pypowsybl::LoadFlowParameters::dc_use_transformer_ratio)
             .def_readwrite("countries_to_balance", &pypowsybl::LoadFlowParameters::countries_to_balance)
-            .def_readwrite("connected_component_mode", &pypowsybl::LoadFlowParameters::connected_component_mode)
+            .def_readwrite("component_mode", &pypowsybl::LoadFlowParameters::component_mode)
             .def_readwrite("hvdc_ac_emulation", &pypowsybl::LoadFlowParameters::hvdc_ac_emulation)
             .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
