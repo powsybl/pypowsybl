@@ -1172,6 +1172,7 @@ public final class NetworkCFunctions {
             case CURRENT -> 2;
             default -> throw new PowsyblException("Type of information not taken into account");
         };
+        cParameters.setTextIncluded(parameters.getSvgParameters().isEdgeInfosIncluded() || parameters.getSvgParameters().isVoltageLevelLegendsIncluded());
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
@@ -1255,6 +1256,8 @@ public final class NetworkCFunctions {
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
+                .setVoltageLevelLegendsIncluded(nadParametersPointer.isTextIncluded())
+                .setEdgeInfosIncluded(nadParametersPointer.isTextIncluded())
                 .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
                 .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())

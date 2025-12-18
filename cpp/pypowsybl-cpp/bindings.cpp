@@ -662,6 +662,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
+        .def_readwrite("text_included", &pypowsybl::NadParameters::text_included)
         .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
         .def_readwrite("edge_info_along_edge", &pypowsybl::NadParameters::edge_info_along_edge)
         .def_readwrite("power_value_precision", &pypowsybl::NadParameters::power_value_precision)

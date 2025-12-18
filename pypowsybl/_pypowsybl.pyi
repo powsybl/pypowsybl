@@ -401,6 +401,7 @@ class NadLayoutType:
     def name(self) -> str: ...
 
 class NadParameters:
+    text_included: bool
     edge_name_displayed: bool
     edge_info_along_edge: bool
     id_displayed: bool

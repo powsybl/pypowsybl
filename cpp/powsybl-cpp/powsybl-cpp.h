@@ -440,6 +440,7 @@ public:
     std::shared_ptr<nad_parameters> to_c_struct() const;
     void nad_to_c_struct(nad_parameters& params) const;
 
+    bool text_included;
     bool edge_name_displayed;
     bool edge_info_along_edge;
     bool id_displayed;

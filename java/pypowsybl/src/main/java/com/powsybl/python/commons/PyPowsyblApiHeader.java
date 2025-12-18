@@ -1111,6 +1111,12 @@ public final class PyPowsyblApiHeader {
 
     @CStruct("nad_parameters")
     public interface NadParametersPointer extends PointerBase {
+        @CField("text_included")
+        void setTextIncluded(boolean edgeNameDisplayed);
+
+        @CField("text_included")
+        boolean isTextIncluded();
+
         @CField("edge_name_displayed")
         void setEdgeNameDisplayed(boolean edgeNameDisplayed);
 
