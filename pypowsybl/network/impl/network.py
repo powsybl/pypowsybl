@@ -4337,7 +4337,7 @@ class Network:  # pylint: disable=too-many-public-methods
           - **group_name** (optional): The name of the operational limit group this limit is in
           - **selected** (optional): `True` if this limit's operational group is the selected one
 
-        The index of the dataframe is composed of the columns **element_id**, **side**, **type**, **accpetable_duration** and **group_name**.
+        The index of the dataframe is composed of the columns **element_id**, **side**, **type**, **acceptable_duration** and **group_name**.
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
