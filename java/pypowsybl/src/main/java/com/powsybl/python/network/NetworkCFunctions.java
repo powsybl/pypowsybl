@@ -1172,6 +1172,7 @@ public final class NetworkCFunctions {
             case CURRENT -> 2;
             default -> throw new PowsyblException("Type of information not taken into account");
         };
+        cParameters.setTextIncluded(parameters.getSvgParameters().isEdgeInfosIncluded() || parameters.getSvgParameters().isVoltageLevelLegendsIncluded());
         cParameters.setEdgeNameDisplayed(parameters.getSvgParameters().isEdgeNameDisplayed());
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(parameters.getSvgParameters().isIdDisplayed());
@@ -1184,6 +1185,8 @@ public final class NetworkCFunctions {
         cParameters.setEdgeInfoDisplayed(edgeInfo);
         cParameters.setVoltageLevelDetails(parameters.getSvgParameters().isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
+        cParameters.setMaxSteps(parameters.getLayoutParameters().getMaxSteps());
+        cParameters.setTimeoutSeconds(parameters.getLayoutParameters().getTimeoutSeconds());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1253,6 +1256,8 @@ public final class NetworkCFunctions {
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
+                .setVoltageLevelLegendsIncluded(nadParametersPointer.isTextIncluded())
+                .setEdgeInfosIncluded(nadParametersPointer.isTextIncluded())
                 .setEdgeNameDisplayed(nadParametersPointer.isEdgeNameDisplayed())
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
                 .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
@@ -1265,6 +1270,8 @@ public final class NetworkCFunctions {
                 .setEdgeInfoDisplayed(edgeInfo);
         nadParameters.getLayoutParameters()
                 .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
+                .setMaxSteps(nadParametersPointer.getMaxSteps())
+                .setTimeoutSeconds(nadParametersPointer.getTimeoutSeconds());
         return nadParameters;
     }
 
