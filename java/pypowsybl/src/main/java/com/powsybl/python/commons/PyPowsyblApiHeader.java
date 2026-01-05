@@ -308,11 +308,11 @@ public final class PyPowsyblApiHeader {
         @CField("countries_to_balance_count")
         void setCountriesToBalanceCount(int countriesToBalanceCount);
 
-        @CField("connected_component_mode")
-        int getConnectedComponentMode();
+        @CField("component_mode")
+        int getComponentMode();
 
-        @CField("connected_component_mode")
-        void setConnectedComponentMode(int connectedComponentMode);
+        @CField("component_mode")
+        void setComponentMode(int componentMode);
 
         @CField("hvdc_ac_emulation")
         boolean isHvdcAcEmulation();

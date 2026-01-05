@@ -68,8 +68,8 @@
 
     <properties>
         <java.version>21</java.version>
-        <powsybl-dependencies.version>2025.2.0</powsybl-dependencies.version>
-        <powsybl-open-reac.version>0.14.0</powsybl-open-reac.version>
+        <powsybl-dependencies.version>2025.3.0</powsybl-dependencies.version>
+        <powsybl-open-reac.version>0.16.0</powsybl-open-reac.version>
     </properties>
 
     <dependencyManagement>
