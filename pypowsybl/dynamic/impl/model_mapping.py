@@ -389,6 +389,37 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('SignalNGenerator', [df], **kwargs)
 
+    def add_inertial_grid(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add an inertial grid mapping
+
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_inertial_grid(static_id='GEN',
+                                                 parameter_set_id='gen',
+                                                 model_name='InertialGrid')
+        """
+        self._add_all_dynamic_mappings('InertialGrid', [df], **kwargs)
+
     def add_hvdc_p(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Add an HVDC P mapping

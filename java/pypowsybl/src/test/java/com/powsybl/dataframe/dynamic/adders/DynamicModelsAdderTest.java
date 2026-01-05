@@ -152,7 +152,8 @@ class DynamicModelsAdderTest {
                 Arguments.of("Bus", EurostagTutorialExample1Factory.create(), "NHV1"),
                 Arguments.of("InfiniteBus", EurostagTutorialExample1Factory.create(), "NHV1"),
                 Arguments.of("HvdcP", HvdcTestNetwork.createVsc(), "L"),
-                Arguments.of("HvdcVsc", HvdcTestNetwork.createVsc(), "L")
+                Arguments.of("HvdcVsc", HvdcTestNetwork.createVsc(), "L"),
+                Arguments.of("InertialGrid", EurostagTutorialExample1Factory.create(), "GEN")
                 );
     }
 

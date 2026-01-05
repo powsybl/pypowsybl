@@ -45,6 +45,7 @@ def test_add_mapping():
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
+    model_mapping.add_inertial_grid(static_id='GEN', parameter_set_id='in_grid', model_name='InertialGrid')
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_model_id='DM_OV', parameter_set_id='ov', controlled_branch='LINE1',
                                                  i_measurement='LINE2', i_measurement_side='TWO', model_name='OverloadManagementSystem')

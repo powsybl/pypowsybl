@@ -26,6 +26,7 @@ ModelMapping
     ModelMapping.add_synchronous_generator
     ModelMapping.add_wecc
     ModelMapping.add_grid_forming_converter
+    ModelMapping.add_inertial_grid
     ModelMapping.add_hvdc_p
     ModelMapping.add_hvdc_vsc
     ModelMapping.add_base_transformer
