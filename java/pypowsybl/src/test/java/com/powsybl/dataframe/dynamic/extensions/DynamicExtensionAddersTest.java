@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-public class DynamicExtensionAddersTest {
+class DynamicExtensionAddersTest {
 
     @Test
     void synchronousGeneratorPropertiesExtension() {
@@ -108,10 +108,6 @@ public class DynamicExtensionAddersTest {
 
     private void addStringColumn(DefaultUpdatingDataframe dataframe, String column, String... value) {
         dataframe.addSeries(column, false, new TestStringSeries(value));
-    }
-
-    private void addDoubleColumn(DefaultUpdatingDataframe dataframe, String column, double... value) {
-        dataframe.addSeries(column, false, new TestDoubleSeries(value));
     }
 
     private void addIntColumn(DefaultUpdatingDataframe dataframe, String column, int... value) {
