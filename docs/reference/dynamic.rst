@@ -53,6 +53,7 @@ EventMapping
     EventMapping.add_disconnection
     EventMapping.add_active_power_variation
     EventMapping.add_reactive_power_variation
+    EventMapping.add_reference_voltage_variation
     EventMapping.add_node_fault
 
 OutputVariableMapping

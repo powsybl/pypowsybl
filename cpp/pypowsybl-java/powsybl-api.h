@@ -393,6 +393,7 @@ typedef enum {
     NODE_FAULT,
     ACTIVE_POWER_VARIATION,
     REACTIVE_POWER_VARIATION,
+    REFERENCE_VOLTAGE_VARIATION,
 } EventMappingType;
 
 typedef enum {

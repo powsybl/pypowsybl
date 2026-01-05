@@ -1226,7 +1226,8 @@ public final class PyPowsyblApiHeader {
         DISCONNECT,
         NODE_FAULT,
         ACTIVE_POWER_VARIATION,
-        REACTIVE_POWER_VARIATION;
+        REACTIVE_POWER_VARIATION,
+        REFERENCE_VOLTAGE_VARIATION;
 
         @CEnumValue
         public native int getCValue();

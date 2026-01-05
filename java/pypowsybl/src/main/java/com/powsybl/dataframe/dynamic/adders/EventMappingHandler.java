@@ -24,7 +24,8 @@ public final class EventMappingHandler {
             Map.entry(EventMappingType.DISCONNECT, new DisconnectAdder()),
             Map.entry(EventMappingType.NODE_FAULT, new NodeFaultAdder()),
             Map.entry(EventMappingType.ACTIVE_POWER_VARIATION, new ActivePowerVariationAdder()),
-            Map.entry(EventMappingType.REACTIVE_POWER_VARIATION, new ReactivePowerVariationAdder())
+            Map.entry(EventMappingType.REACTIVE_POWER_VARIATION, new ReactivePowerVariationAdder()),
+            Map.entry(EventMappingType.REFERENCE_VOLTAGE_VARIATION, new ReferenceVoltageVariationAdder())
     );
 
     public static void addElements(EventMappingType type, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {

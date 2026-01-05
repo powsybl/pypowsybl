@@ -102,6 +102,33 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.REACTIVE_POWER_VARIATION, df, **kwargs)
 
+    def add_reference_voltage_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """ Creates a reference voltage variation event on synchronized and synchronous generator
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the generator affected by the event
+            - **start_time**: timestep at which the event happens
+            - **delta_u**: reference voltage variation
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=14, delta_u=2)
+        """
+        self._add_all_event_mappings(EventMappingType.REFERENCE_VOLTAGE_VARIATION, df, **kwargs)
+
     def add_node_fault(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates a bus node fault event
 

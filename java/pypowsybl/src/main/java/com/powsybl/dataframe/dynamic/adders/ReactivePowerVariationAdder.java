@@ -37,7 +37,6 @@ public class ReactivePowerVariationAdder extends AbstractEventModelAdder {
 
     private static class ReactivePowerVariationSeries extends AbstractEventModelSeries<EventReactivePowerVariationBuilder> {
 
-
         private final DoubleSeries deltaQs;
 
         ReactivePowerVariationSeries(UpdatingDataframe dataframe) {
