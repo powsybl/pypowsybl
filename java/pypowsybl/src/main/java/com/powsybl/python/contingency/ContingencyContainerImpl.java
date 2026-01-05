@@ -9,7 +9,7 @@ package com.powsybl.python.contingency;
 
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.contingency.*;
-import com.powsybl.contingency.contingency.list.ContingencyList;
+import com.powsybl.contingency.list.ContingencyList;
 import com.powsybl.iidm.network.*;
 
 import java.nio.file.Files;
