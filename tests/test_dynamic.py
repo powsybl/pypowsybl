@@ -122,6 +122,7 @@ def test_add_event():
     event_mapping.add_disconnection(static_id='GEN', start_time=5)
     event_mapping.add_disconnection(static_id='LINE', start_time=3.3, disconnect_only='TWO')
     event_mapping.add_active_power_variation(static_id='LOAD', start_time=14, delta_p=2)
+    event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
 
 

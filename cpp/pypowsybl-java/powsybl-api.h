@@ -392,6 +392,7 @@ typedef enum {
     DISCONNECT = 0,
     NODE_FAULT,
     ACTIVE_POWER_VARIATION,
+    REACTIVE_POWER_VARIATION,
 } EventMappingType;
 
 typedef enum {

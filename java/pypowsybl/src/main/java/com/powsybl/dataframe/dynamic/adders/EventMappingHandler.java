@@ -23,7 +23,8 @@ public final class EventMappingHandler {
     private static final Map<EventMappingType, EventMappingAdder> ADDERS = Map.ofEntries(
             Map.entry(EventMappingType.DISCONNECT, new DisconnectAdder()),
             Map.entry(EventMappingType.NODE_FAULT, new NodeFaultAdder()),
-            Map.entry(EventMappingType.ACTIVE_POWER_VARIATION, new ActivePowerVariationAdder())
+            Map.entry(EventMappingType.ACTIVE_POWER_VARIATION, new ActivePowerVariationAdder()),
+            Map.entry(EventMappingType.REACTIVE_POWER_VARIATION, new ReactivePowerVariationAdder())
     );
 
     public static void addElements(EventMappingType type, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {

@@ -68,6 +68,11 @@ class EventModelsAdderTest {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
                             df.addSeries(DELTA_P, false, new TestDoubleSeries(1.3));
                         }),
+                Arguments.of(REACTIVE_POWER_VARIATION,
+                        (Consumer<DefaultUpdatingDataframe>) df -> {
+                            df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
+                            df.addSeries(DELTA_Q, false, new TestDoubleSeries(1.4));
+                        }),
                 Arguments.of(NODE_FAULT,
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("NLOAD"));
