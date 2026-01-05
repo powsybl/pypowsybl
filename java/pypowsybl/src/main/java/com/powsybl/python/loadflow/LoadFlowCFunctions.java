@@ -303,7 +303,7 @@ public final class LoadFlowCFunctions {
         }
         cParameters.setCountriesToBalance(calloc);
         cParameters.setCountriesToBalanceCount(countries.size());
-        cParameters.setConnectedComponentMode(parameters.getConnectedComponentMode().ordinal());
+        cParameters.setComponentMode(parameters.getComponentMode().ordinal());
         cParameters.setHvdcAcEmulation(parameters.isHvdcAcEmulation());
         cParameters.setDcPowerFactor(parameters.getDcPowerFactor());
         if (loadFlowProvider != null) {

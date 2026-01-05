@@ -253,6 +253,12 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ComponentMode {
+    MAIN_CONNECTED = 0,
+    ALL_CONNECTED,
+    MAIN_SYNCHRONOUS,
+};
+
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,
@@ -317,7 +323,7 @@ public:
     BalanceType balance_type;
     bool dc_use_transformer_ratio;
     std::vector<std::string> countries_to_balance;
-    ConnectedComponentMode connected_component_mode;
+    ComponentMode component_mode;
     bool hvdc_ac_emulation;
     double dc_power_factor;
     std::vector<std::string> provider_parameters_keys;
@@ -774,6 +780,10 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
 void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
 void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
+
+std::vector<SeriesMetadata> getLimitReductionDataframeMetadata();
+
+void addLimitReductions(const JavaHandle& analysisContext, dataframe* dataframe);
 
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 

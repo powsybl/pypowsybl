@@ -12,6 +12,7 @@ from pandas import DataFrame
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
+    ComponentMode,
     BalanceType,
     VoltageInitMode,
     LoadFlowValidationParameters,
@@ -32,6 +33,7 @@ from .validation_parameters import ValidationParameters, ValidationType
 VoltageInitMode.__module__ = __name__
 BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
+ComponentMode.__module__ = __name__
 
 
 def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
