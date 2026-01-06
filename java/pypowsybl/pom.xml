@@ -295,17 +295,14 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-extensions-api</artifactId>
-            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-extensions-impl</artifactId>
-            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-extensions-serde</artifactId>
-            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
