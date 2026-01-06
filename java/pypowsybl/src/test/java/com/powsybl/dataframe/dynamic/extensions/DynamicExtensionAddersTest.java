@@ -9,7 +9,6 @@ package com.powsybl.dataframe.dynamic.extensions;
 
 import com.powsybl.dataframe.network.adders.NetworkElementAdders;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
-import com.powsybl.dataframe.update.TestDoubleSeries;
 import com.powsybl.dataframe.update.TestIntSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
 import com.powsybl.dynawo.extensions.api.generator.RpclType;
