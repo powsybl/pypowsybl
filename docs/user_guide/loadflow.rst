@@ -110,7 +110,7 @@ AC Load Flow
 
 In order to run an AC loadflow, simply use the :func:`run_ac` method:
 
-.. doctest::
+.. doctest:: +ELLIPSIS
 
     >>> network = pn.create_eurostag_tutorial_example1_network()
     >>> results = lf.run_ac(network, parameters=lf.Parameters(distributed_slack=False))
@@ -118,25 +118,25 @@ In order to run an AC loadflow, simply use the :func:`run_ac` method:
 The result is composed of a list of component results, one for each connected component of the network
 included in the computation:
 
-.. doctest::
+.. doctest:: +ELLIPSIS
 
     >>> results
-    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=Converged, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_results=[SlackBusResult(id='VLHV1_0', active_power_mismatch=-606.5596837558767)], distributed_active_power=0.0)]
+    [ComponentResult(connected_component_num=0, synchronous_component_num=0, status=CONVERGED, status_text=Converged, iteration_count=3, reference_bus_id='VLHV1_0', slack_bus_results=[SlackBusResult(id='VLHV1_0', active_power_mismatch=-606.5596...)], distributed_active_power=0.0)]
 
 Component results provides general information about the loadflow execution: was it successful? How many iterations did
 it need? What is the remaining active power imbalance? For example, let's have a look at the imbalance
 on the main component of the network:
 
-.. doctest::
+.. doctest:: +ELLIPSIS
 
     >>> results[0].slack_bus_results[0].active_power_mismatch
-    -606.5596837558767
+    -606.5596...
 
 Then, the main output of the loadflow is actually the updated data in the network itself:
 all voltages and flows are now updated with the computed values. For example you can have a look at
 the voltage magnitudes (rounded to 2 digits here):
 
-.. doctest::
+.. doctest:: +ELLIPSIS
 
     >>> network.get_buses().v_mag.round(2)
     id

@@ -127,7 +127,7 @@ class Network:  # pylint: disable=too-many-public-methods
     @property
     def per_unit(self) -> bool:
         """
-        The nominal power to per unit the network (kVA)
+        Defines if the network data should be used in per-unit.
         """
         return self._per_unit
 
@@ -1717,7 +1717,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **dangling_line1_id**: The ID of the first dangling line
               - **dangling_line2_id**: The ID of the second dangling line
-              - **ucte_xnode_code**: The UCTE xnode code of the tie line, obtained from the dangling lines.
+              - **pairing_key**: the pairing key of the tie line, obtained from the dangling lines.
+              - **ucte_xnode_code**: deprecated for **pairing_key**.
               - **fictitious** (optional): ``True`` if the tie line is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the dangling lines
@@ -4389,7 +4390,7 @@ class Network:  # pylint: disable=too-many-public-methods
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
           - **element_id**: Identifier of the network element on which this limit applies (could be for example
-            a line or a transformer). This is the index column.
+            a line or a transformer)
           - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
             THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
           - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
@@ -4401,6 +4402,8 @@ class Network:  # pylint: disable=too-many-public-methods
           - **fictitious** (optional): `True` if this limit is fictitious
           - **group_name** (optional): The name of the operational limit group this limit is in
           - **selected** (optional): `True` if this limit's operational group is the selected one
+
+        The index of the dataframe is composed of the columns **element_id**, **side**, **type**, **acceptable_duration** and **group_name**.
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
