@@ -39,7 +39,7 @@ public class SynchronousGeneratorPropertiesDataframeProvider extends AbstractSin
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(SynchronousGeneratorProperties.NAME,
-                "Provides information about the characteristics of a synchronous generator",
+                "Provides information, for dynamic simulation only, about the characteristics of a synchronous generator",
                 "index : id (str), " +
                         "numberOfWindings (str), " +
                         "governor (str), " +

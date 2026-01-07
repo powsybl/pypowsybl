@@ -38,7 +38,7 @@ public class GeneratorConnectionLevelDataframeProvider extends AbstractSingleDat
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(GeneratorConnectionLevel.NAME,
-                "Provides information about the characteristics of a Synchronized generator",
+                "Provides information, for dynamic simulation only, about the characteristics of a Synchronized generator",
                 "index : id (str), " +
                         "level (str)");
     }

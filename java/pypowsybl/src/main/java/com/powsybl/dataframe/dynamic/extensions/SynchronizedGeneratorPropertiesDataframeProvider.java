@@ -39,7 +39,7 @@ public class SynchronizedGeneratorPropertiesDataframeProvider extends AbstractSi
     @Override
     public ExtensionInformation getExtensionInformation() {
         return new ExtensionInformation(SynchronizedGeneratorProperties.NAME,
-                "Provides information about the characteristics of a Synchronized generator",
+                "Provides information, for dynamic simulation only, about the characteristics of a Synchronized generator",
                 "index : id (str), " +
                         "type (str), " +
                         "rpcl2 (bool)");
