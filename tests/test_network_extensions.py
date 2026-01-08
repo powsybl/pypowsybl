@@ -588,7 +588,6 @@ def test_batteries_voltage_regulation():
     network.remove_extensions('voltageRegulation', ['BAT'])
     assert network.get_extensions('voltageRegulation').empty
 
-
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
@@ -640,3 +639,6 @@ def test_get_extensions_information():
     assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
     assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
     assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float), regulated_element_id (str)'
+    assert extensions_information.loc['synchronousGeneratorProperties']['attributes'] == 'index : id (str), numberOfWindings (str), governor (str), voltageRegulator (str), pss (str), auxiliaries (bool), internalTransformer (bool), rpcl (str), uva (str), aggregated (bool), qlim (bool)'
+    assert extensions_information.loc['synchronizedGeneratorProperties']['attributes'] == 'index : id (str), type (str), rpcl2 (bool)'
+    assert extensions_information.loc['generatorConnectionLevel']['attributes'] == 'index : id (str), level (str)'
