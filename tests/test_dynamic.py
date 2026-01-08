@@ -46,6 +46,7 @@ def test_add_mapping():
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
+    model_mapping.add_inertial_grid(static_id='GEN', parameter_set_id='in_grid', model_name='InertialGrid')
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_model_id='DM_OV', parameter_set_id='ov', controlled_branch='LINE1',
                                                  i_measurement='LINE2', i_measurement_side='TWO', model_name='OverloadManagementSystem')
@@ -122,6 +123,8 @@ def test_add_event():
     event_mapping.add_disconnection(static_id='GEN', start_time=5)
     event_mapping.add_disconnection(static_id='LINE', start_time=3.3, disconnect_only='TWO')
     event_mapping.add_active_power_variation(static_id='LOAD', start_time=14, delta_p=2)
+    event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
+    event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
 
 

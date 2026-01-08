@@ -192,7 +192,9 @@ void dynamicSimulationBindings(py::module_& m) {
     py::enum_<EventMappingType>(m, "EventMappingType")
             .value("DISCONNECT", EventMappingType::DISCONNECT)
             .value("NODE_FAULT", EventMappingType::NODE_FAULT)
-            .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION);
+            .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION)
+            .value("REACTIVE_POWER_VARIATION", EventMappingType::REACTIVE_POWER_VARIATION)
+            .value("REFERENCE_VOLTAGE_VARIATION", EventMappingType::REFERENCE_VOLTAGE_VARIATION);
 
     py::enum_<OutputVariableType>(m, "OutputVariableType")
              .value("CURVE", OutputVariableType::CURVE)

@@ -24,8 +24,10 @@ ModelMapping
     ModelMapping.add_base_generator
     ModelMapping.add_synchronized_generator
     ModelMapping.add_synchronous_generator
+    ModelMapping.add_signal_n_generator
     ModelMapping.add_wecc
     ModelMapping.add_grid_forming_converter
+    ModelMapping.add_inertial_grid
     ModelMapping.add_hvdc_p
     ModelMapping.add_hvdc_vsc
     ModelMapping.add_base_transformer
@@ -38,6 +40,7 @@ ModelMapping
     ModelMapping.add_under_voltage_automation_system
     ModelMapping.add_phase_shifter_i_automation_system
     ModelMapping.add_phase_shifter_p_automation_system
+    ModelMapping.add_phase_shifter_blocking_i_automation_system
     ModelMapping.add_tap_changer_automation_system
     ModelMapping.add_tap_changer_blocking_automation_system
 
@@ -49,6 +52,8 @@ EventMapping
     EventMapping
     EventMapping.add_disconnection
     EventMapping.add_active_power_variation
+    EventMapping.add_reactive_power_variation
+    EventMapping.add_reference_voltage_variation
     EventMapping.add_node_fault
 
 OutputVariableMapping
