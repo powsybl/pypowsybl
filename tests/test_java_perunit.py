@@ -12,6 +12,8 @@ import pandas as pd
 from numpy import nan
 
 import util
+from pypowsybl._pypowsybl import ComponentMode
+from pypowsybl.loadflow import Parameters
 
 
 def test_per_unit_line():
@@ -160,7 +162,7 @@ def test_dangling_lines_per_unit():
 
 def test_lcc_converter_stations_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n)
+    pp.loadflow.run_ac(n, parameters=Parameters(component_mode=ComponentMode.MAIN_CONNECTED))
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
                             columns=['name', 'power_factor', 'loss_factor', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
@@ -415,7 +417,7 @@ def test_loads_per_unit():
 
 def test_busbar_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n)
+    pp.loadflow.run_ac(n, parameters=Parameters(component_mode=ComponentMode.MAIN_CONNECTED))
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
