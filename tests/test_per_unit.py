@@ -94,7 +94,6 @@ def test_loads_per_unit():
 
 def test_busbar_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n)
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id',
