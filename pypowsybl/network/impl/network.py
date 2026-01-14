@@ -5045,10 +5045,10 @@ class Network:  # pylint: disable=too-many-public-methods
             - **rated_u1**: nominal voltage of the side 1 of the transformer
             - **rated_u2**: nominal voltage of the side 2 of the transformer
             - **rated_s**: nominal power of the transformer
-            - **b**: the shunt susceptance, in S
-            - **g**: the shunt conductance, in S
-            - **r**: the resistance, in Ohm
-            - **x**: the reactance, in Ohm
+            - **b**: the shunt susceptance, in S, on side 2
+            - **g**: the shunt conductance, in S, on side 2
+            - **r**: the resistance, in Ohm, on side 2
+            - **x**: the reactance, in Ohm, on side 2
 
         Examples:
             Using keyword arguments:
