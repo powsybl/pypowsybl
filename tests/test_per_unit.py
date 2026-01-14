@@ -13,10 +13,6 @@ import re
 import util
 import pytest
 
-from pypowsybl._pypowsybl import ComponentMode
-
-from pypowsybl.loadflow import Parameters
-
 
 def test_bus_per_unit():
     n = pp.network.create_eurostag_tutorial_example1_network()
@@ -98,7 +94,6 @@ def test_loads_per_unit():
 
 def test_busbar_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n, parameters=Parameters(component_mode=ComponentMode.MAIN_CONNECTED))
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id',
@@ -230,7 +225,7 @@ def test_dangling_lines_per_unit():
 
 def test_lcc_converter_stations_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n, parameters=Parameters(component_mode=ComponentMode.MAIN_CONNECTED))
+    pp.loadflow.run_ac(n)
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['LCC1', 'LCC2']),
