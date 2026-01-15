@@ -11,7 +11,6 @@ from typing import Union, Dict, List, Optional
 
 import pypowsybl._pypowsybl as _pp
 
-import pypowsybl as pp
 from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
