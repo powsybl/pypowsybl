@@ -48,7 +48,8 @@ __all__ = [
     "grid2op",
     "dynamic",
     "rao",
-    "report"
+    "report",
+    "PyPowsyblError"
 ]
 
 

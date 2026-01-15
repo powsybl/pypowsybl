@@ -45,7 +45,7 @@ class SldProfile:
     def feeders_info(self) -> Optional[DataFrame]:
         """feeders_info"""
         return self._feeders_info
-    
+
     @property
     def styles(self) -> Optional[DataFrame]:
         """styles"""

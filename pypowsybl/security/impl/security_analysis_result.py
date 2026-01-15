@@ -138,4 +138,3 @@ class SecurityAnalysisResult:
         Results (P, Q, I) for monitored three winding transformers.
         """
         return create_data_frame_from_series_array(_pypowsybl.get_three_windings_transformer_results(self._handle))
-
