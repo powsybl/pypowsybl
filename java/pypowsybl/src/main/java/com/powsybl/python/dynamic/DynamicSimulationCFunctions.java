@@ -220,7 +220,11 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() throws IOException {
-                return Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr))));
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
+                return Util.createCharPtrArray(List.copyOf(
+                        categoryName.isEmpty() ? DynamicMappingHandler.getAllSupportedModels()
+                        : DynamicMappingHandler.getSupportedModels(categoryName)
+                ));
             }
         });
     }

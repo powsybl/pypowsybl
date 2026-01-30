@@ -53,6 +53,14 @@ public final class DynamicMappingHandler {
         return ADDERS.get(category).getSupportedModels().stream().map(ModelInfo::name).toList();
     }
 
+    public static Collection<String> getAllSupportedModels() {
+        return ADDERS.values().stream()
+                .flatMap(m -> m.getSupportedModels().stream())
+                .map(ModelInfo::name)
+                .sorted(String::compareToIgnoreCase)
+                .toList();
+    }
+
     private DynamicMappingHandler() {
     }
 }

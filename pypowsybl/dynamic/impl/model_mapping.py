@@ -37,9 +37,9 @@ class ModelMapping:
         """
         return create_data_frame_from_series_array(_pp.get_categories_information())
 
-    def get_supported_models(self, category_name: str) -> List[str]:
+    def get_supported_models(self, category_name: str = '') -> List[str]:
         """
-        Get the supported dynamic models for a given category
+        Get the supported dynamic models for a given category or for all categories if no category_name is given
 
         Args:
             category_name: dynamic model category name
