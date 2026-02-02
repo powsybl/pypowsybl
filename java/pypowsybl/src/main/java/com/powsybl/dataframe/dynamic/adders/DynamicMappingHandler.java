@@ -7,13 +7,11 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
@@ -34,11 +32,19 @@ public final class DynamicMappingHandler {
     }
 
     public static void addElements(String category, PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframes) {
-        ADDERS.get(category).addElements(modelMapping, dataframes);
+        DynamicMappingAdder adder = ADDERS.get(category);
+        if (adder == null) {
+            throw new PowsyblException("No category named " + category);
+        }
+        adder.addElements(modelMapping, dataframes);
     }
 
     public static List<List<SeriesMetadata>> getMetadata(String category) {
-        return ADDERS.get(category).getMetadata();
+        DynamicMappingAdder adder = ADDERS.get(category);
+        if (adder == null) {
+            throw new PowsyblException("No category named " + category);
+        }
+        return adder.getMetadata();
     }
 
     public static Collection<String> getCategories() {
@@ -50,7 +56,11 @@ public final class DynamicMappingHandler {
     }
 
     public static Collection<String> getSupportedModels(String category) {
-        return ADDERS.get(category).getSupportedModels().stream().map(ModelInfo::name).toList();
+        DynamicMappingAdder adder = ADDERS.get(category);
+        if (adder == null) {
+            return Collections.emptyList();
+        }
+        return adder.getSupportedModels().stream().map(ModelInfo::name).toList();
     }
 
     public static Collection<String> getAllSupportedModels() {
@@ -62,7 +72,11 @@ public final class DynamicMappingHandler {
     }
 
     public static Collection<ModelInfo> getSupportedModelsInformation(String category) {
-        return ADDERS.get(category).getSupportedModels();
+        DynamicMappingAdder adder = ADDERS.get(category);
+        if (adder == null) {
+            return Collections.emptyList();
+        }
+        return adder.getSupportedModels();
     }
 
     private DynamicMappingHandler() {
