@@ -61,6 +61,10 @@ public final class DynamicMappingHandler {
                 .toList();
     }
 
+    public static Collection<ModelInfo> getSupportedModelsInformation(String category) {
+        return ADDERS.get(category).getSupportedModels();
+    }
+
     private DynamicMappingHandler() {
     }
 }

@@ -28,6 +28,9 @@ def test_categories_information():
 def test_supported_models_information():
     model_mapping = dyn.ModelMapping()
     assert model_mapping.get_supported_models()
+    info_df = model_mapping.get_supported_models_information('Load')
+    assert info_df.loc['LoadAlphaBeta']['description'] == 'Voltage-dependent load'
+    assert info_df.loc['LoadPQ']['description'] == 'PQ load'
 
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()

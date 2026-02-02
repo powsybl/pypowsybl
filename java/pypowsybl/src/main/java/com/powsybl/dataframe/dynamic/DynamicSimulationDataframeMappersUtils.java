@@ -11,6 +11,7 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
+import com.powsybl.dynawo.builders.ModelInfo;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -54,6 +55,14 @@ public final class DynamicSimulationDataframeMappersUtils {
                 .stringsIndex("name", CategoryInformation::name)
                 .strings("description", CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<ModelInfo>, Void> supportedModelsDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<ModelInfo>, ModelInfo, Void>()
+                .itemsStreamProvider(Collection::stream)
+                .stringsIndex("name", ModelInfo::name)
+                .strings("description", mi -> mi.doc() != null ? mi.doc() : "")
                 .build();
     }
 }

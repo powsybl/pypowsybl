@@ -229,6 +229,15 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getSupportedModelsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getSupportedModelsInformation(IsolateThread thread,
+                                                                                               CCharPointer categoryNamePtr,
+                                                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        String categoryName = CTypeUtil.toString(categoryNamePtr);
+        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(),
+                DynamicMappingHandler.getSupportedModelsInformation(categoryName));
+    }
+
     @CEntryPoint(name = "addEventMappings")
     public static void addEventMappings(IsolateThread thread, ObjectHandle eventMappingHandle,
                                         EventMappingType mappingType,
