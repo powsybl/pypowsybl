@@ -28,7 +28,7 @@ public class BaseLoadAdder extends AbstractEquipmentAdder {
             "Standard load",
             CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
 
-    public BaseLoadAdder() {
+    protected BaseLoadAdder() {
         super(CATEGORY_INFORMATION);
     }
 

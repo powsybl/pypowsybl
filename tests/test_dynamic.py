@@ -31,6 +31,11 @@ def test_supported_models_information():
     info_df = model_mapping.get_supported_models_information('Load')
     assert info_df.loc['LoadAlphaBeta']['description'] == 'Voltage-dependent load'
     assert info_df.loc['LoadPQ']['description'] == 'PQ load'
+    all_info_df = model_mapping.get_supported_models_information()
+    assert all_info_df.loc['Line']['description'] == 'Standard line'
+    assert all_info_df.loc['Line']['category'] == 'Line'
+    assert all_info_df.loc['LoadPQ']['description'] == 'PQ load'
+    assert all_info_df.loc['LoadPQ']['category'] == 'Load'
 
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()

@@ -57,6 +57,9 @@ public class TapChangerBlockingAutomationSystemAdder implements DynamicMappingAd
 
     private static final int MAX_MEASUREMENTS = 5;
 
+    protected TapChangerBlockingAutomationSystemAdder() {
+    }
+
     @Override
     public List<List<SeriesMetadata>> getMetadata() {
         return METADATA_LIST;

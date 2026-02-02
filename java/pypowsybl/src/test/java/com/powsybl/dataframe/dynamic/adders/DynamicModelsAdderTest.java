@@ -33,7 +33,6 @@ import java.util.stream.Stream;
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**

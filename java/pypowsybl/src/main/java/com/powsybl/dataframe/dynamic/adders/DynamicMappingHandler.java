@@ -23,12 +23,15 @@ import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
  */
 public final class DynamicMappingHandler {
 
-    private static final Map<String, DynamicMappingAdder> ADDERS = loadModelAdders();
+    private static final SortedMap<String, DynamicMappingAdder> ADDERS = loadModelAdders();
 
-    private static Map<String, DynamicMappingAdder> loadModelAdders() {
+    private static SortedMap<String, DynamicMappingAdder> loadModelAdders() {
         return ServiceLoader.load(ModelAdderLoader.class).stream()
                 .flatMap(ma -> ma.get().getModelAdders().stream())
-                .collect(Collectors.toMap(DynamicMappingAdder::getCategory, Function.identity()));
+                .collect(Collectors.toMap(DynamicMappingAdder::getCategory,
+                        Function.identity(),
+                        (existing, replacement) -> existing,
+                        TreeMap::new));
     }
 
     public static void addElements(String category, PythonDynamicModelsSupplier modelMapping, List<UpdatingDataframe> dataframes) {
@@ -48,7 +51,7 @@ public final class DynamicMappingHandler {
     }
 
     public static Collection<String> getCategories() {
-        return ADDERS.keySet().stream().sorted().toList();
+        return ADDERS.keySet();
     }
 
     public static Collection<DynamicMappingAdder> getDynamicMappingAdders() {

@@ -234,8 +234,11 @@ public final class DynamicSimulationCFunctions {
                                                                                                CCharPointer categoryNamePtr,
                                                                                                ExceptionHandlerPointer exceptionHandlerPtr) {
         String categoryName = CTypeUtil.toString(categoryNamePtr);
-        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(),
-                DynamicMappingHandler.getSupportedModelsInformation(categoryName));
+        return categoryName.isEmpty()
+                ? Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.allSupportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getDynamicMappingAdders())
+                : Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getSupportedModelsInformation(categoryName));
     }
 
     @CEntryPoint(name = "addEventMappings")
