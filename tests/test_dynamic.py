@@ -43,6 +43,7 @@ def test_add_mapping():
     model_mapping.add_hvdc_vsc(static_id='HVDC_LINE', parameter_set_id='hvdc_vsc', model_name='HvdcVSCDanglingP')
     model_mapping.add_base_transformer(static_id='TFO', parameter_set_id='tfo', model_name='TransformerFixedRatio')
     model_mapping.add_base_static_var_compensator(static_id='SVARC', parameter_set_id='svarc', model_name='StaticVarCompensatorPV')
+    model_mapping.add_shunt(static_id='SHUNT', parameter_set_id='sh', model_name='ShuntB')
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
