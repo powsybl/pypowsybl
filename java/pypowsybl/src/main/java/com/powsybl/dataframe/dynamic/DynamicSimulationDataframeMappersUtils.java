@@ -25,6 +25,8 @@ import java.util.function.Function;
  */
 public final class DynamicSimulationDataframeMappersUtils {
 
+    private static final String DESCRIPTION_NAME = "description";
+
     private DynamicSimulationDataframeMappersUtils() {
     }
 
@@ -52,7 +54,7 @@ public final class DynamicSimulationDataframeMappersUtils {
                 .itemsStreamProvider(a -> a.stream()
                         .map(DynamicMappingAdder::getCategoryInformation))
                 .stringsIndex("name", CategoryInformation::name)
-                .strings("description", CategoryInformation::description)
+                .strings(DESCRIPTION_NAME, CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
                 .build();
     }
@@ -61,7 +63,7 @@ public final class DynamicSimulationDataframeMappersUtils {
         return new DataframeMapperBuilder<Collection<ModelInfo>, ModelInfo, Void>()
                 .itemsStreamProvider(Collection::stream)
                 .stringsIndex("name", ModelInfo::name)
-                .strings("description", mi -> mi.doc() != null ? mi.doc() : "")
+                .strings(DESCRIPTION_NAME, mi -> mi.doc() != null ? mi.doc() : "")
                 .build();
     }
 
@@ -73,7 +75,7 @@ public final class DynamicSimulationDataframeMappersUtils {
                             return adder.getSupportedModels().stream().map(m -> Pair.of(cat, m));
                         }))
                 .stringsIndex("name", p -> p.getValue().name())
-                .strings("description", p -> {
+                .strings(DESCRIPTION_NAME, p -> {
                     String doc = p.getValue().doc();
                     return doc != null ? doc : "";
                 })

@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.models.AbstractPureDynamicBlackBoxModel;
 import com.powsybl.dynawo.models.TransformerSide;
 import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystem;
@@ -145,7 +146,8 @@ class DynamicModelsAdderTest {
         assertThatThrownBy(() -> DynamicMappingHandler.getMetadata(category))
                 .isInstanceOf(PowsyblException.class)
                 .hasMessage("No category named WRONG_CATEGORY");
-        assertThatThrownBy(() -> DynamicMappingHandler.addElements(category, null, List.of()))
+        List<UpdatingDataframe> dataframes = List.of();
+        assertThatThrownBy(() -> DynamicMappingHandler.addElements(category, null, dataframes))
                 .isInstanceOf(PowsyblException.class)
                 .hasMessage("No category named WRONG_CATEGORY");
     }
