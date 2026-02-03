@@ -65,7 +65,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -95,8 +95,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -126,8 +125,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -157,8 +155,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -188,8 +185,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -219,8 +215,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -250,8 +245,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -281,8 +275,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -312,8 +305,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -343,8 +335,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -374,8 +365,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -405,8 +395,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -436,8 +425,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -467,8 +455,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -498,8 +485,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -529,8 +515,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -560,8 +545,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -591,8 +575,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -622,8 +605,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
@@ -653,8 +635,7 @@ class ModelMapping:
             Valid attributes are:
 
             - **static_id**: id of the network element to map
-            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
-
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration (if none the static id will be used)
             - **model_name**: name of the model used for the mapping (if none the default model will be used)
 
         Examples:
