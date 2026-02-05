@@ -9,31 +9,33 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.python.commons.PyPowsyblApiHeader.EventMappingType;
 import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public final class EventMappingHandler {
 
-    private static final Map<EventMappingType, EventMappingAdder> ADDERS = Map.ofEntries(
-            Map.entry(EventMappingType.DISCONNECT, new DisconnectAdder()),
-            Map.entry(EventMappingType.NODE_FAULT, new NodeFaultAdder()),
-            Map.entry(EventMappingType.ACTIVE_POWER_VARIATION, new ActivePowerVariationAdder()),
-            Map.entry(EventMappingType.REACTIVE_POWER_VARIATION, new ReactivePowerVariationAdder()),
-            Map.entry(EventMappingType.REFERENCE_VOLTAGE_VARIATION, new ReferenceVoltageVariationAdder())
-    );
+    private static final Map<String, EventMappingAdder> ADDERS = loadModelAdders();
 
-    public static void addElements(EventMappingType type, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {
-        ADDERS.get(type).addElements(modelMapping, dataframe);
+    private static Map<String, EventMappingAdder> loadModelAdders() {
+        return ServiceLoader.load(EventModelAdderLoader.class).stream()
+                .flatMap(ma -> ma.get().getEventModelAdders().stream())
+                .collect(Collectors.toMap(a -> a.getEventInformation().name(), Function.identity()));
     }
 
-    public static List<SeriesMetadata> getMetadata(EventMappingType type) {
-        return ADDERS.get(type).getMetadata();
+    public static void addElements(String name, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {
+        ADDERS.get(name).addElements(modelMapping, dataframe);
+    }
+
+    public static List<SeriesMetadata> getMetadata(String name) {
+        return ADDERS.get(name).getMetadata();
     }
 
     private EventMappingHandler() {

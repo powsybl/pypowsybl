@@ -12,6 +12,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.events.EventActivePowerVariationBuilder;
 import com.powsybl.iidm.network.Network;
 
@@ -33,6 +34,11 @@ public class ActivePowerVariationAdder extends AbstractEventModelAdder {
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public ModelInfo getEventInformation() {
+        return EventActivePowerVariationBuilder.getModelInfo();
     }
 
     private static class ActivePowerVariationSeries extends AbstractEventModelSeries<EventActivePowerVariationBuilder> {

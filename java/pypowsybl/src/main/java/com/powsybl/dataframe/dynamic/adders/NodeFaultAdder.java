@@ -12,6 +12,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.events.NodeFaultEventBuilder;
 import com.powsybl.iidm.network.Network;
 
@@ -35,6 +36,11 @@ public class NodeFaultAdder extends AbstractEventModelAdder {
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public ModelInfo getEventInformation() {
+        return NodeFaultEventBuilder.getModelInfo();
     }
 
     private static class NodeFaultSeries extends AbstractEventModelSeries<NodeFaultEventBuilder> {

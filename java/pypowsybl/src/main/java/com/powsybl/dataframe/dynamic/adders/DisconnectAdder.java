@@ -12,6 +12,7 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.events.EventDisconnectionBuilder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
@@ -34,6 +35,11 @@ public class DisconnectAdder extends AbstractEventModelAdder {
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public ModelInfo getEventInformation() {
+        return EventDisconnectionBuilder.getModelInfo();
     }
 
     private static class DisconnectSeries extends AbstractEventModelSeries<EventDisconnectionBuilder> {
