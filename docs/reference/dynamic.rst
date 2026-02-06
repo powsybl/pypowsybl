@@ -55,6 +55,7 @@ EventMapping
     EventMapping.add_reactive_power_variation
     EventMapping.add_reference_voltage_variation
     EventMapping.add_node_fault
+    EventMapping.add_event_model
 
 OutputVariableMapping
 ---------------------

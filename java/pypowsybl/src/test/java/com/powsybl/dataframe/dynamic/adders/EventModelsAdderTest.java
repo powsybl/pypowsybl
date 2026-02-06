@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestDoubleSeries;
 import com.powsybl.dataframe.update.TestStringSeries;
@@ -16,6 +17,7 @@ import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -25,6 +27,7 @@ import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
@@ -50,6 +53,17 @@ class EventModelsAdderTest {
 
         assertThat(eventModelsSupplier.get(network)).satisfiesExactly(
                 model1 -> assertThat(model1).isInstanceOf(AbstractEvent.class));
+    }
+
+    @Test
+    void testUnknownEventName() {
+        String eventName = "WRONG_NAME";
+        assertThatThrownBy(() -> EventMappingHandler.getMetadata(eventName))
+                .isInstanceOf(PowsyblException.class)
+                .hasMessage("No event named WRONG_NAME");
+        assertThatThrownBy(() -> EventMappingHandler.addElements(eventName, null, null))
+                .isInstanceOf(PowsyblException.class)
+                .hasMessage("No event named WRONG_NAME");
     }
 
     static Stream<Arguments> eventProvider() {

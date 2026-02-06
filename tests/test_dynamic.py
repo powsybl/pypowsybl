@@ -126,6 +126,8 @@ def test_add_event():
     event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
     event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
+    # Event model from event name
+    event_mapping.add_event_model(event_name='ActivePowerVariation', static_id='GEN', start_time=1.5, delta_u=5)
 
 
 def test_add_event_dataframe():

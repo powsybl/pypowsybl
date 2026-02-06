@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonEventModelsSupplier;
@@ -31,11 +32,19 @@ public final class EventMappingHandler {
     }
 
     public static void addElements(String name, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {
-        ADDERS.get(name).addElements(modelMapping, dataframe);
+        EventMappingAdder adder = ADDERS.get(name);
+        if (adder == null) {
+            throw new PowsyblException("No event named " + name);
+        }
+        adder.addElements(modelMapping, dataframe);
     }
 
     public static List<SeriesMetadata> getMetadata(String name) {
-        return ADDERS.get(name).getMetadata();
+        EventMappingAdder adder = ADDERS.get(name);
+        if (adder == null) {
+            throw new PowsyblException("No event named " + name);
+        }
+        return adder.getMetadata();
     }
 
     private EventMappingHandler() {

@@ -157,6 +157,38 @@ class EventMapping:
         """
         self._add_all_event_mappings("NodeFault", df, **kwargs)
 
+    def add_event_model(self, event_name: str, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add an event model with event_name
+
+        :Args:
+            event_name: event model name
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_event_model(event_name='Disconnect',
+                                            static_id='GEN',
+                                            start_time=3.3)
+
+            Using dataframe:
+
+                .. code-block:: python
+
+                    df = pd.DataFrame.from_records(
+                                        index='static_id',
+                                        columns=['static_id', 'start_time'],
+                                        data=[('GEN', 3.3), ('LOAD', 5.2)])
+                    model_mapping.add_event_model(event_name='Disconnect', df)
+        """
+        if not isinstance(df, List):
+            df = [df]
+        self._add_all_event_mappings(category_name, df, **kwargs)
+
     def _add_all_event_mappings(self, event_name: str, mapping_df: Optional[DataFrame], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_event_mappings_meta_data(event_name)
         if kwargs:

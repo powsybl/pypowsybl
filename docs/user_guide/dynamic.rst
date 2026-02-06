@@ -90,7 +90,8 @@ To run a Dynawo simulation:
     # events mapping
     event_mapping = dyn.EventMapping()
     event_mapping.add_disconnection(static_id='GEN', start_time=10)
-    event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
+    # can also be created with the proper event name
+    event_mapping.add_event_model(event_name='Disconnect', static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
     variables_mapping = dyn.OutputVariableMapping()
