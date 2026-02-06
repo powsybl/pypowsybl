@@ -945,8 +945,8 @@ JavaHandle runDynamicSimulation(JavaHandle dynamicModelContext, JavaHandle netwo
 void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType);
 
 // events mapping
-void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf);
-std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType);
+void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, dataframe* mappingDf);
+std::vector<SeriesMetadata> getEventMappingsMetaData(std::string eventName);
 
 // dynamic model mapping
 void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryName, dataframe_array* dataframes);

@@ -1721,8 +1721,8 @@ void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryNam
     PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, (char*) categoryName.c_str(), dataframes);
 }
 
-void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
-    PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, mappingType, mappingDf);
+void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, dataframe* mappingDf) {
+    PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, (char*) eventName.c_str(), mappingDf);
 }
 
 void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType) {
@@ -1774,8 +1774,8 @@ std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string 
         return res;
 }
 
-std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType) {
-    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getEventMappingsMetaData, mappingType);
+std::vector<SeriesMetadata> getEventMappingsMetaData(std::string eventName) {
+    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getEventMappingsMetaData, (char*) eventName.c_str());
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
     return res;

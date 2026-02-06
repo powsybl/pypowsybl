@@ -189,13 +189,6 @@ void pyUpdateGrid2opIntegerValue(const pypowsybl::JavaHandle& backendHandle, Gri
 
 void dynamicSimulationBindings(py::module_& m) {
 
-    py::enum_<EventMappingType>(m, "EventMappingType")
-            .value("DISCONNECT", EventMappingType::DISCONNECT)
-            .value("NODE_FAULT", EventMappingType::NODE_FAULT)
-            .value("ACTIVE_POWER_VARIATION", EventMappingType::ACTIVE_POWER_VARIATION)
-            .value("REACTIVE_POWER_VARIATION", EventMappingType::REACTIVE_POWER_VARIATION)
-            .value("REFERENCE_VOLTAGE_VARIATION", EventMappingType::REFERENCE_VOLTAGE_VARIATION);
-
     py::enum_<OutputVariableType>(m, "OutputVariableType")
              .value("CURVE", OutputVariableType::CURVE)
              .value("FINAL_STATE", OutputVariableType::FINAL_STATE);
@@ -225,8 +218,8 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("is_dynamic"), py::arg("output_variable_type"));
 
     // events mapping
-    m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("mapping_type"), py::arg("mapping_df"));
-    m.def("get_event_mappings_meta_data", &pypowsybl::getEventMappingsMetaData, py::arg("mapping_type"));
+    m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("event_name"), py::arg("mapping_df"));
+    m.def("get_event_mappings_meta_data", &pypowsybl::getEventMappingsMetaData, py::arg("event_name"));
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
