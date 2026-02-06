@@ -50,6 +50,7 @@ EventMapping
    :toctree: api/
 
     EventMapping
+    EventMapping.get_events_information
     EventMapping.add_disconnection
     EventMapping.add_active_power_variation
     EventMapping.add_reactive_power_variation

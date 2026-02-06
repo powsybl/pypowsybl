@@ -253,6 +253,13 @@ public final class DynamicSimulationCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getEventsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getEventsInformation(IsolateThread thread,
+                                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.eventInformationDataFrameMapper(),
+                EventMappingHandler.getEventMappingAdders());
+    }
+
     @CEntryPoint(name = "addOutputVariables")
     public static void addOutputVariables(IsolateThread thread,
                                           ObjectHandle outputVariablesHandle,

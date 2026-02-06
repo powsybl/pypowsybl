@@ -12,9 +12,11 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -23,12 +25,15 @@ import java.util.stream.Collectors;
  */
 public final class EventMappingHandler {
 
-    private static final Map<String, EventMappingAdder> ADDERS = loadModelAdders();
+    private static final SortedMap<String, EventMappingAdder> ADDERS = loadModelAdders();
 
-    private static Map<String, EventMappingAdder> loadModelAdders() {
+    private static SortedMap<String, EventMappingAdder> loadModelAdders() {
         return ServiceLoader.load(EventModelAdderLoader.class).stream()
                 .flatMap(ma -> ma.get().getEventModelAdders().stream())
-                .collect(Collectors.toMap(a -> a.getEventInformation().name(), Function.identity()));
+                .collect(Collectors.toMap(a -> a.getEventInformation().name(),
+                        Function.identity(),
+                        (existing, replacement) -> existing,
+                        TreeMap::new));
     }
 
     public static void addElements(String name, PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {
@@ -45,6 +50,10 @@ public final class EventMappingHandler {
             throw new PowsyblException("No event named " + name);
         }
         return adder.getMetadata();
+    }
+
+    public static Collection<EventMappingAdder> getEventMappingAdders() {
+        return ADDERS.values();
     }
 
     private EventMappingHandler() {

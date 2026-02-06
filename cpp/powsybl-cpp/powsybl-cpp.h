@@ -947,6 +947,7 @@ void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId,
 // events mapping
 void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, dataframe* mappingDf);
 std::vector<SeriesMetadata> getEventMappingsMetaData(std::string eventName);
+SeriesArray* getEventsInformation();
 
 // dynamic model mapping
 void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryName, dataframe_array* dataframes);

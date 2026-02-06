@@ -9,7 +9,7 @@ from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl.utils import _add_index_to_kwargs, \
-    _adapt_df_or_kwargs, _create_c_dataframe  # pylint: disable=protected-access
+    _adapt_df_or_kwargs, _create_c_dataframe, create_data_frame_from_series_array  # pylint: disable=protected-access
 
 
 class EventMapping:
@@ -19,6 +19,15 @@ class EventMapping:
 
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
+
+    def get_events_information(self) -> DataFrame:
+        """
+        Get more informations about events
+
+        Returns:
+            a dataframe with information about events
+        """
+        return create_data_frame_from_series_array(_pp.get_events_information())
 
     def add_disconnection(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates an equipment disconnection event
@@ -185,9 +194,7 @@ class EventMapping:
                                         data=[('GEN', 3.3), ('LOAD', 5.2)])
                     model_mapping.add_event_model(event_name='Disconnect', df)
         """
-        if not isinstance(df, List):
-            df = [df]
-        self._add_all_event_mappings(category_name, df, **kwargs)
+        self._add_all_event_mappings(event_name, df, **kwargs)
 
     def _add_all_event_mappings(self, event_name: str, mapping_df: Optional[DataFrame], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_event_mappings_meta_data(event_name)

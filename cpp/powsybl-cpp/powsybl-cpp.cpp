@@ -1781,6 +1781,10 @@ std::vector<SeriesMetadata> getEventMappingsMetaData(std::string eventName) {
     return res;
 }
 
+SeriesArray* getEventsInformation() {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getEventsInformation));
+}
+
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
     dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getModificationMetadata, networkModificationType);
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);

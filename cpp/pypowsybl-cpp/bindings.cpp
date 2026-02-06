@@ -220,6 +220,7 @@ void dynamicSimulationBindings(py::module_& m) {
     // events mapping
     m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("event_name"), py::arg("mapping_df"));
     m.def("get_event_mappings_meta_data", &pypowsybl::getEventMappingsMetaData, py::arg("event_name"));
+    m.def("get_events_information", &pypowsybl::getEventsInformation);
 
     // Simulation results
     m.def("get_dynamic_simulation_results_status", &pypowsybl::getDynamicSimulationResultsStatus, py::arg("result_handle"));
