@@ -9,10 +9,11 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.EventInformation;
 import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
-import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.events.EventReactivePowerVariationBuilder;
 import com.powsybl.iidm.network.Network;
 
@@ -31,14 +32,19 @@ public class ReactivePowerVariationAdder extends AbstractEventModelAdder {
             SeriesMetadata.doubles(START_TIME),
             SeriesMetadata.doubles(DELTA_Q));
 
+    protected static final EventInformation INFORMATION = new EventInformation(
+            EventReactivePowerVariationBuilder.getModelInfo(),
+            CategoryAttributeUtils.createFromMetadata(METADATA)
+    );
+
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
     }
 
     @Override
-    public ModelInfo getEventInformation() {
-        return EventReactivePowerVariationBuilder.getModelInfo();
+    public EventInformation getEventInformation() {
+        return INFORMATION;
     }
 
     private static class ReactivePowerVariationSeries extends AbstractEventModelSeries<EventReactivePowerVariationBuilder> {

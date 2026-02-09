@@ -107,6 +107,9 @@ class DynamicSimulationDataframeMappersTest {
         List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.eventInformationDataFrameMapper(), adders);
         assertThat(series).satisfiesExactly(
                 names -> assertThat(names.getStrings()).containsExactly("ActivePowerVariation", "Disconnect"),
-                desc -> assertThat(desc.getStrings()).containsExactly("Active power variation on generator or load", "Disconnects a bus, a branch, an injection or an HVDC line"));
+                desc -> assertThat(desc.getStrings()).containsExactly("Active power variation on generator or load", "Disconnects a bus, a branch, an injection or an HVDC line"),
+                attr -> assertThat(attr.getStrings()).containsExactly(
+                        "index : static_id (str), start_time (double), delta_p (double)",
+                        "index : static_id (str), start_time (double), disconnect_only (str)"));
     }
 }

@@ -121,7 +121,9 @@ def test_events_information():
     event_mapping = dyn.EventMapping()
     info_df = event_mapping.get_events_information()
     assert info_df.loc['ActivePowerVariation']['description'] == 'Active power variation on generator or load'
+    assert info_df.loc['ActivePowerVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_p (double)'
     assert info_df.loc['ReferenceVoltageVariation']['description'] == 'Reference voltage variation on synchronous/synchronized generator'
+    assert info_df.loc['ReferenceVoltageVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_u (double)'
 
 
 def test_add_event():

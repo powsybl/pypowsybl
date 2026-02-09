@@ -12,7 +12,6 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dataframe.dynamic.adders.EventMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
-import com.powsybl.dynawo.builders.ModelInfo;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -60,12 +59,12 @@ public final class DynamicSimulationDataframeMappersUtils {
     }
 
     public static DataframeMapper<Collection<EventMappingAdder>, Void> eventInformationDataFrameMapper() {
-        return new DataframeMapperBuilder<Collection<EventMappingAdder>, ModelInfo, Void>()
+        return new DataframeMapperBuilder<Collection<EventMappingAdder>, EventInformation, Void>()
                 .itemsStreamProvider(a -> a.stream()
                         .map(EventMappingAdder::getEventInformation))
-                .stringsIndex("name", ModelInfo::name)
-                .strings("description", ModelInfo::doc)
-                //TODO return attribute
+                .stringsIndex("name", EventInformation::name)
+                .strings("description", EventInformation::description)
+                .strings("attribute", EventInformation::attribute)
                 .build();
     }
 }
