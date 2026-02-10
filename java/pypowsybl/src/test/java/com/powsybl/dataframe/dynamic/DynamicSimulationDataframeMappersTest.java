@@ -67,6 +67,15 @@ class DynamicSimulationDataframeMappersTest {
     }
 
     @Test
+    void testEmptyCurveDataframesMapper() {
+        List<Series> series = TimeSeriesConverter.createSeries(List.of());
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("timestamp");
+        assertThat(series).satisfiesExactly(index -> assertThat(index.getStrings()).isEmpty());
+    }
+
+    @Test
     void testTimelineDataframesMapper() {
         List<TimelineEvent> timelineEvents = List.of(
                 new TimelineEvent(0.0, "BBM_GEN6", "PMIN : activation"),
