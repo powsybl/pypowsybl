@@ -18,7 +18,7 @@ furo==2024.1.29
 
 # CI dependencies
 setuptools==78.1.1
-wheel==0.44.0
+wheel==0.46.2
 coverage==7.3.2
 pytest>=8.3.3
 pytest-asyncio==0.24.0

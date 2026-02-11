@@ -330,7 +330,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     distributed_slack = (bool) src->distributed_slack;
     balance_type = static_cast<BalanceType>(src->balance_type);
     dc_use_transformer_ratio = (bool) src->dc_use_transformer_ratio;
-    connected_component_mode = static_cast<ConnectedComponentMode>(src->connected_component_mode);
+    component_mode = static_cast<ComponentMode>(src->component_mode);
     hvdc_ac_emulation = (bool) src->hvdc_ac_emulation;
     dc_power_factor = (double) src->dc_power_factor;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
@@ -351,7 +351,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.dc_use_transformer_ratio = (unsigned char) dc_use_transformer_ratio;
     res.countries_to_balance = pypowsybl::copyVectorStringToCharPtrPtr(countries_to_balance);
     res.countries_to_balance_count = countries_to_balance.size();
-    res.connected_component_mode = connected_component_mode;
+    res.component_mode = component_mode;
     res.hvdc_ac_emulation = (unsigned char) hvdc_ac_emulation;
     res.dc_power_factor = dc_power_factor;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
@@ -1140,13 +1140,16 @@ void addOperatorStrategy(const JavaHandle& analysisContext, std::string operator
 }
 
 void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
-      PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+    PowsyblCaller::get()->callJava(::addActionFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
 void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath) {
-      PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
+    PowsyblCaller::get()->callJava(::addOperatorStrategyFromJsonFile, analysisContext, (char*) jsonFilePath.data());
 }
 
+void addLimitReductions(const JavaHandle& analysisContext, dataframe* dataframe) {
+    PowsyblCaller::get()->callJava<>(::addLimitReductions, analysisContext, dataframe);
+}
 
 ::zone* createZone(const std::string& id, const std::vector<std::string>& injectionsIds, const std::vector<double>& injectionsShiftKeys) {
     auto z = new ::zone;
@@ -1338,6 +1341,13 @@ std::vector<SeriesMetadata> convertDataframeMetadata(dataframe_metadata* datafra
         const series_metadata& series = dataframeMetadata->attributes_metadata[i];
         res.push_back(SeriesMetadata(series.name, series.type, series.is_index, series.is_modifiable, series.is_default));
     }
+    return res;
+}
+
+std::vector<SeriesMetadata> getLimitReductionDataframeMetadata() {
+    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getLimitReductionDataframeMetadata);
+    std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
+    PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
     return res;
 }
 
@@ -2085,19 +2095,27 @@ JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
 
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider) {
+void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk) {
+    pypowsybl::PowsyblCaller::get()->callJava(::setLoopFlowGlsk, raoContext, glsk);
+}
+
+void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk) {
+    pypowsybl::PowsyblCaller::get()->callJava(::setMonitoringGlsk, raoContext, glsk);
+}
+
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& cracHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider) {
     auto c_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, raoHandle, c_parameters.get(), (char*) raoProvider.data());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runRao, networkHandle, cracHandle, raoHandle, c_parameters.get(), (char*) raoProvider.data());
 }
 
-JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
+JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageMonitoring, networkHandle, resultHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runVoltageMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
 }
 
-JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
+JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
 }
 
 

@@ -67,11 +67,7 @@ class NetworkAreaDiagramUtilTest {
         assertNotNull(network);
 
         SvgParameters pars = new SvgParameters()
-                .setSvgWidthAndHeightAdded(true)
-                .setEdgeNameDisplayed(true)
-                .setVoltageLevelDetails(true)
-                .setBusLegend(true)
-                .setSubstationDescriptionDisplayed(true);
+                .setSvgWidthAndHeightAdded(true);
 
         List<com.powsybl.dataframe.impl.Series> series = new ArrayList<>();
         Map<String, CustomLabelProvider.BranchLabels> labelMap = NetworkAreaDiagramUtil.getBranchLabelsMap(network, pars);

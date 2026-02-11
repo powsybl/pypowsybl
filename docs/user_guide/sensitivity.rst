@@ -1,6 +1,8 @@
 Sensitivity analysis
 ====================
 
+For detailed documentation of the Powsybl sensitivity analysis please refer to the `PowSyBl OpenLoadFlow documentation <https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/sensitivity/sensitivity.html>`_.
+
 You can use the module :mod:`pypowsybl.sensitivity` in order to perform sensitivity analysis on a network.
 
 DC sensitivity analysis

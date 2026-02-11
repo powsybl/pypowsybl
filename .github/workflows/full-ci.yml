@@ -34,9 +34,9 @@ jobs:
 
       - name: Install Maven
         run: |
-          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz -P /tmp
+          wget -q https://dlcdn.apache.org/maven/maven-3/3.9.12/binaries/apache-maven-3.9.12-bin.tar.gz -P /tmp
           tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.11/bin >> $GITHUB_PATH
+          echo /opt/apache-maven-3.9.12/bin >> $GITHUB_PATH
 
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
@@ -217,7 +217,7 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-13,
+            os: macos-15-intel,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
             bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
           }
@@ -318,7 +318,7 @@ jobs:
         config:
           - {
             name: darwin,
-            os: macos-13,
+            os: macos-15-intel,
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
             bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
           }

@@ -10,9 +10,7 @@ package com.powsybl.dataframe.dynamic.adders;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
-import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
-import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.models.events.NodeFaultEventBuilder;
 import com.powsybl.iidm.network.Network;
@@ -41,15 +39,12 @@ public class NodeFaultAdder extends AbstractEventModelAdder {
 
     private static class NodeFaultSeries extends AbstractEventModelSeries<NodeFaultEventBuilder> {
 
-        private final StringSeries staticIds;
-        private final DoubleSeries startTimes;
         private final DoubleSeries faultTimes;
         private final DoubleSeries rPu;
         private final DoubleSeries xPu;
 
         NodeFaultSeries(UpdatingDataframe dataframe) {
-            this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
-            this.startTimes = PersistentDoubleSeries.copyOf(dataframe, START_TIME);
+            super(dataframe);
             this.faultTimes = PersistentDoubleSeries.copyOf(dataframe, FAULT_TIME);
             this.rPu = PersistentDoubleSeries.copyOf(dataframe, R_PU);
             this.xPu = PersistentDoubleSeries.copyOf(dataframe, X_PU);

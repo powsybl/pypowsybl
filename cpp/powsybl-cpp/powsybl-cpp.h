@@ -253,6 +253,12 @@ enum BalanceType {
     PROPORTIONAL_TO_CONFORM_LOAD,
 };
 
+enum ComponentMode {
+    MAIN_CONNECTED = 0,
+    ALL_CONNECTED,
+    MAIN_SYNCHRONOUS,
+};
+
 enum ConnectedComponentMode {
     MAIN = 0,
     ALL,
@@ -317,7 +323,7 @@ public:
     BalanceType balance_type;
     bool dc_use_transformer_ratio;
     std::vector<std::string> countries_to_balance;
-    ConnectedComponentMode connected_component_mode;
+    ComponentMode component_mode;
     bool hvdc_ac_emulation;
     double dc_power_factor;
     std::vector<std::string> provider_parameters_keys;
@@ -775,6 +781,10 @@ void addActionFromJsonFile(const JavaHandle& analysisContext, const std::string&
 
 void addOperatorStrategyFromJsonFile(const JavaHandle& analysisContext, const std::string& jsonFilePath);
 
+std::vector<SeriesMetadata> getLimitReductionDataframeMetadata();
+
+void addLimitReductions(const JavaHandle& analysisContext, dataframe* dataframe);
+
 void setZones(const JavaHandle& sensitivityAnalysisContext, const std::vector<::zone*>& zones);
 
 void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string matrixId, const std::vector<std::string>& branchesIds,
@@ -1029,10 +1039,13 @@ SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resu
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
 
+void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
+void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
+
 JavaHandle createDefaultRaoParameters();
-JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider);
-JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
-JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
+JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& cracHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider);
+JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
+JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 
 JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, bool checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);

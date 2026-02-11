@@ -308,11 +308,11 @@ public final class PyPowsyblApiHeader {
         @CField("countries_to_balance_count")
         void setCountriesToBalanceCount(int countriesToBalanceCount);
 
-        @CField("connected_component_mode")
-        int getConnectedComponentMode();
+        @CField("component_mode")
+        int getComponentMode();
 
-        @CField("connected_component_mode")
-        void setConnectedComponentMode(int connectedComponentMode);
+        @CField("component_mode")
+        void setComponentMode(int componentMode);
 
         @CField("hvdc_ac_emulation")
         boolean isHvdcAcEmulation();
@@ -1225,7 +1225,9 @@ public final class PyPowsyblApiHeader {
     public enum EventMappingType {
         DISCONNECT,
         NODE_FAULT,
-        ACTIVE_POWER_VARIATION;
+        ACTIVE_POWER_VARIATION,
+        REACTIVE_POWER_VARIATION,
+        REFERENCE_VOLTAGE_VARIATION;
 
         @CEnumValue
         public native int getCValue();

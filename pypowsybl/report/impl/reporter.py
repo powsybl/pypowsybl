@@ -9,7 +9,7 @@ import warnings
 
 import pypowsybl._pypowsybl as _pp  # pylint: disable=protected-access
 
-from pypowsybl.report import ReportNode
+from .report_node import ReportNode
 
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 

@@ -9,9 +9,7 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
-import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.models.events.EventDisconnectionBuilder;
@@ -40,13 +38,10 @@ public class DisconnectAdder extends AbstractEventModelAdder {
 
     private static class DisconnectSeries extends AbstractEventModelSeries<EventDisconnectionBuilder> {
 
-        private final StringSeries staticIds;
-        private final DoubleSeries startTimes;
         private final StringSeries disconnectOnly;
 
         DisconnectSeries(UpdatingDataframe dataframe) {
-            this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
-            this.startTimes = PersistentDoubleSeries.copyOf(dataframe, START_TIME);
+            super(dataframe);
             this.disconnectOnly = PersistentStringSeries.copyOf(dataframe, DISCONNECT_ONLY);
         }
 
