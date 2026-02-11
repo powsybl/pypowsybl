@@ -61,7 +61,12 @@ def create_loadflow_parameters():
 
 
 def create_opf_parameters():
-    return OptimalPowerFlowParameters(solver_type=SolverType.KNITRO)
+    return OptimalPowerFlowParameters(solver_type=SolverType.IPOPT)
+    # return (OptimalPowerFlowParameters(solver_type=SolverType.KNITRO)
+    #         .with_solver_options({
+    #             'opttol': 1e-3,
+    #             'feastol': 1e-3,
+    #         }))
 
 
 def run_opf_then_lf(network: pp.network.Network,

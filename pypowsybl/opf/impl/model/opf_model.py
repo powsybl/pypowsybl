@@ -37,7 +37,7 @@ class OpfModel:
         logger.info("Building model...")
         start = time.perf_counter()
 
-        model = create_model(parameters.solver_type)
+        model = create_model(parameters.solver_type, parameters.solver_options)
 
         # create variables
         variable_context = VariableContext.build(network_cache, model)

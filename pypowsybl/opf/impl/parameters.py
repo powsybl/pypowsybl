@@ -20,6 +20,7 @@ class OptimalPowerFlowParameters:
         self._mode = mode
         self._default_voltage_bounds = default_voltage_bounds
         self._solver_type = solver_type
+        self._solver_options: dict[str, object] = {}
 
     @property
     def reactive_bounds_reduction(self) -> float:
@@ -47,4 +48,16 @@ class OptimalPowerFlowParameters:
 
     def with_solver_type(self, solver_type: SolverType) -> "OptimalPowerFlowParameters":
         self._solver_type = solver_type
+        return self
+
+    @property
+    def solver_options(self) -> dict[str, object]:
+        return self._solver_options
+
+    def with_solver_option(self, name: str, value: object) -> "OptimalPowerFlowParameters":
+        self._solver_options[name] = value
+        return self
+
+    def with_solver_options(self, options: dict[str, object]) -> "OptimalPowerFlowParameters":
+        self._solver_options.update(options)
         return self

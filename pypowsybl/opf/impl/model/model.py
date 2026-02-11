@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import logging
 from typing import Protocol, Any
 
 import pyoptinterface as poi
 
-from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
+from pypowsybl.opf.impl.model.model_parameters import SolverType
+
+logger = logging.getLogger(__name__)
 
 
 class Model(Protocol):
@@ -120,10 +123,19 @@ class KnitroModel(Model):
         self._model.optimize()
 
 
-def create_model(solver_type: SolverType) -> Model:
+def create_model(solver_type: SolverType, solver_options: dict[str, object]) -> Model:
     if solver_type == SolverType.IPOPT:
-        return IpoptModel()
+        model = IpoptModel()
     elif solver_type == SolverType.KNITRO:
-        return KnitroModel()
+        model = KnitroModel()
     else:
         raise ValueError(f"Unsupported solver type: {solver_type}")
+
+    # apply solver-specific raw parameters if provided
+    for name, value in solver_options.items():
+        try:
+            model.set_raw_parameter(str(name), value)
+        except Exception as e:
+            logger.warning(f"Failed to set solver parameter '{name}' to '{value}': {e}")
+
+    return model
