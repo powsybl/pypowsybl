@@ -14,6 +14,7 @@ from pandas import DataFrame
 import pypowsybl as pp
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.model.bounds import Bounds
+from pypowsybl.opf.impl.model.model_parameters import SolverType
 from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowMode
 
@@ -59,8 +60,12 @@ def create_loadflow_parameters():
                                                        'svcVoltageMonitoring': 'false'})
 
 
+def create_opf_parameters():
+    return OptimalPowerFlowParameters(solver_type=SolverType.KNITRO)
+
+
 def run_opf_then_lf(network: pp.network.Network,
-                    opf_parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters(),
+                    opf_parameters: OptimalPowerFlowParameters = create_opf_parameters(),
                     iteration_count: int = 1):
     lf_parameters = create_loadflow_parameters()
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
@@ -142,7 +147,7 @@ def test_ieee14_redispatching():
     assert network.get_lines(attributes=['i1']).loc['L7-9-1'].i1 == pytest.approx(1113.514, rel=1e-3, abs=1e-3)
     assert len(calculate_overloading(network)) == 1
 
-    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.REDISPATCHING)
+    opf_parameters = create_opf_parameters().with_mode(OptimalPowerFlowMode.REDISPATCHING)
     assert pp.opf.run_ac(network, opf_parameters)
 
     lf_parameters.voltage_init_mode = pp.loadflow.VoltageInitMode.PREVIOUS_VALUES

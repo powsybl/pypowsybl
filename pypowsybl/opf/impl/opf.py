@@ -80,7 +80,7 @@ class OptimalPowerFlow:
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,
                                            parameters.twt_split_shunt_admittance,
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
-                                           SolverType.IPOPT)
+                                           parameters.solver_type)
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
         network_stats = NetworkStatistics(network_cache)
