@@ -1,7 +1,6 @@
 from math import hypot, atan2
 
-from pyoptinterface import ipopt
-
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import R2, A2, BranchFlowConstraints
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -11,7 +10,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 class DanglingLineFlowConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: Model) -> None:
         for dl_num, row in enumerate(network_cache.dangling_lines.itertuples(index=False)):
             r, x, g, b, bus_id = row.r, row.x, row.g, row.b, row.bus_id
             if bus_id:

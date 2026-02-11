@@ -1,7 +1,6 @@
 import logging
 
-from pyoptinterface import ipopt
-
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -14,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class BusVoltageBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model):
+            variable_context: VariableContext, model: Model):
         for bus_num, row in enumerate(network_cache.buses.itertuples()):
             v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit, parameters.default_voltage_bounds)
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to bus '{row.Index}' (num={bus_num})'")

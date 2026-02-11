@@ -1,7 +1,6 @@
 import logging
 
-from pyoptinterface import ipopt
-
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -13,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class VscCsPowerBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model):
+            variable_context: VariableContext, model: Model):
         # VSC converter station active and reactive power bounds
         for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
             if row.bus_id:

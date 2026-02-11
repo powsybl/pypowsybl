@@ -1,5 +1,4 @@
-from pyoptinterface import ipopt
-
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -16,7 +15,7 @@ def add_converter_losses(p, loss_factor):
 
 class HvdcLineConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: Model) -> None:
         for hvdc_line_row in network_cache.hvdc_lines.itertuples(index=False):
             cs1_id, cs2_id, r, nominal_v = hvdc_line_row.converter_station1_id, hvdc_line_row.converter_station2_id, hvdc_line_row.r, hvdc_line_row.nominal_v
             cs1_num = network_cache.vsc_converter_stations.index.get_loc(cs1_id)

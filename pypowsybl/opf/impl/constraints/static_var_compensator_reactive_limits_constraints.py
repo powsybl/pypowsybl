@@ -1,6 +1,6 @@
 import pyoptinterface as poi
-from pyoptinterface import ipopt
 
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -9,7 +9,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 class StaticVarCompensatorReactiveLimitsConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: Model) -> None:
         for svc_num, row in enumerate(network_cache.static_var_compensators.itertuples(index=False)):
             b_min, b_max, bus_id = row.b_min, row.b_max, row.bus_id
             if bus_id:

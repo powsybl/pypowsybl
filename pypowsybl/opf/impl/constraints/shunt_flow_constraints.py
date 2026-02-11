@@ -1,5 +1,4 @@
-from pyoptinterface import ipopt
-
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
@@ -8,7 +7,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 
 class ShuntFlowConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: Model) -> None:
         for shunt_num, row in enumerate(network_cache.shunts.itertuples(index=False)):
             g, b, bus_id = row.g, row.b, row.bus_id
             if bus_id:

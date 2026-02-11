@@ -3,8 +3,7 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
-from pyoptinterface import ipopt
-
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.util import TRACE_LEVEL
@@ -62,7 +61,7 @@ class VariableContext:
     t3_leg3_num_2_index: list[int]
 
     @staticmethod
-    def build(network_cache: NetworkCache, model: ipopt.Model) -> 'VariableContext':
+    def build(network_cache: NetworkCache, model: Model) -> 'VariableContext':
         bus_count = len(network_cache.buses)
         v_vars = model.add_m_variables(bus_count, name="v")
         ph_vars = model.add_m_variables(bus_count, name="ph")
@@ -250,7 +249,7 @@ class VariableContext:
                                dl_num_2_index,
                                t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index)
 
-    def _update_generators(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_generators(self, network_cache: NetworkCache, model: Model):
         connected_gen_ids = []
         connected_gen_target_p = []
         connected_gen_target_q = []
@@ -307,7 +306,7 @@ class VariableContext:
                                         connected_gen_q,
                                         disconnected_gen_ids)
 
-    def _update_batteries(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_batteries(self, network_cache: NetworkCache, model: Model):
         connected_bat_ids = []
         connected_bat_target_p = []
         connected_bat_target_q = []
@@ -364,7 +363,7 @@ class VariableContext:
                                        connected_bat_q,
                                        disconnected_bat_ids)
 
-    def _update_vsc_converter_stations(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_vsc_converter_stations(self, network_cache: NetworkCache, model: Model):
         connected_vsc_cs_ids = []
         connected_vsc_cs_target_q = []
         connected_vsc_cs_target_v = []
@@ -408,7 +407,7 @@ class VariableContext:
                                                     connected_vsc_cs_q,
                                                     disconnected_vsc_cs_ids)
 
-    def _update_hvdc_lines(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_hvdc_lines(self, network_cache: NetworkCache, model: Model):
         hvdc_line_ids = []
         hvdc_line_target_p = []
         for hvdc_line_num, (hvdc_line_id, hvdc_line_row) in enumerate(network_cache.hvdc_lines.iterrows()):
@@ -424,7 +423,7 @@ class VariableContext:
 
         network_cache.update_hvdc_lines(hvdc_line_ids, hvdc_line_target_p)
 
-    def _update_static_var_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_static_var_compensators(self, network_cache: NetworkCache, model: Model):
         connected_svc_ids = []
         connected_svc_target_q = []
         connected_svc_target_v = []
@@ -467,7 +466,7 @@ class VariableContext:
                                                      connected_svc_q,
                                                      disconnected_svc_ids)
 
-    def _update_shunt_compensators(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_shunt_compensators(self, network_cache: NetworkCache, model: Model):
         connected_shunt_ids = []
         connected_shunt_p = []
         connected_shunt_q = []
@@ -489,7 +488,7 @@ class VariableContext:
 
         network_cache.update_shunt_compensators(connected_shunt_ids, connected_shunt_p, connected_shunt_q, disconnected_shunt_ids)
 
-    def _update_branches(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_branches(self, network_cache: NetworkCache, model: Model):
         branch_ids = []
         branch_p1 = []
         branch_p2 = []
@@ -528,7 +527,7 @@ class VariableContext:
 
         network_cache.update_branches(branch_ids, branch_p1, branch_p2, branch_q1, branch_q2)
 
-    def _update_transformers_3w(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_transformers_3w(self, network_cache: NetworkCache, model: Model):
         t3_ids = []
         t3_p1 = []
         t3_p2 = []
@@ -592,7 +591,7 @@ class VariableContext:
 
         network_cache.update_transformers_3w(t3_ids, t3_p1, t3_p2, t3_p3, t3_q1, t3_q2, t3_q3, t3_v, t3_angle)
 
-    def _update_buses(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_buses(self, network_cache: NetworkCache, model: Model):
         bus_ids = []
         bus_v_mag = []
         bus_v_angle = []
@@ -607,7 +606,7 @@ class VariableContext:
 
         network_cache.update_buses(bus_ids, bus_v_mag, bus_v_angle)
 
-    def _update_dangling_lines(self, network_cache: NetworkCache, model: ipopt.Model):
+    def _update_dangling_lines(self, network_cache: NetworkCache, model: Model):
         connected_dl_ids = []
         connected_dl_v = []
         connected_dl_angle = []
@@ -639,7 +638,7 @@ class VariableContext:
                                             connected_dl_q,
                                             disconnected_dl_ids)
 
-    def update_network(self, network_cache: NetworkCache, model: ipopt.Model) -> None:
+    def update_network(self, network_cache: NetworkCache, model: Model) -> None:
         self._update_generators(network_cache, model)
         self._update_batteries(network_cache, model)
         self._update_vsc_converter_stations(network_cache, model)

@@ -2,8 +2,8 @@ import logging
 from typing import Any
 
 import pyoptinterface as poi
-from pyoptinterface import ipopt
 
+from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -26,7 +26,7 @@ class CurrentLimitConstraints(Constraints):
                            f"Add side {side} current limit constraint (value={limit_row.value}) to branch '{branch_row.Index}'")
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: Model) -> None:
         current_limits1 = network_cache.current_limits1
         current_limits2 = network_cache.current_limits2
         for branch_num, branch_row in enumerate(network_cache.lines.itertuples()):

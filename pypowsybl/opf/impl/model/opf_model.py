@@ -1,20 +1,19 @@
 import logging
 import time
 
-from pyoptinterface import ipopt
-
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
-from pypowsybl.opf.impl.model.model_parameters import ModelParameters
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.model import Model, IpoptModel, KnitroModel, create_model
 
 logger = logging.getLogger(__name__)
 
 class OpfModel:
-    def __init__(self, network_cache: NetworkCache, model: ipopt.Model, variable_context: VariableContext):
+    def __init__(self, network_cache: NetworkCache, model: Model, variable_context: VariableContext):
         self._network_cache = network_cache
         self._model = model
         self._variable_context = variable_context
@@ -24,7 +23,7 @@ class OpfModel:
         return self._network_cache
 
     @property
-    def model(self) -> ipopt.Model:
+    def model(self) -> Model:
         return self._model
 
     @property
@@ -38,9 +37,7 @@ class OpfModel:
         logger.info("Building model...")
         start = time.perf_counter()
 
-        model = ipopt.Model()
-        model.set_raw_parameter("print_user_options", "yes")
-        model.set_raw_parameter("print_advanced_options", "yes")
+        model = create_model(parameters.solver_type)
 
         # create variables
         variable_context = VariableContext.build(network_cache, model)

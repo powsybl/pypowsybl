@@ -1,11 +1,12 @@
 from math import hypot, atan2
 
-from pyoptinterface import ipopt, nl
+from pyoptinterface import nl
 
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.model import Model
 
 R2 = 1.0
 A2 = 0.0
@@ -105,7 +106,7 @@ class BranchFlowConstraints(Constraints):
                                                                    v1_var, y)
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: ipopt.Model) -> None:
+            variable_context: VariableContext, model: Model) -> None:
         for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
             r1 = 1.0
