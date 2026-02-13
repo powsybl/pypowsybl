@@ -28,6 +28,7 @@ class NetworkCache:
         self._batteries = self._build_batteries(network, self.buses)
         self._current_limits1, self._current_limits2 = self._build_current_limits(network)
         self._slack_terminal = self._build_stack_terminal(network, self.buses)
+        self._reactive_capability_curve_points = self._build_reactive_capability_curve_points(network, self._generators, self._vsc_converter_stations)
 
     @staticmethod
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
@@ -187,9 +188,21 @@ class NetworkCache:
         return limits[limits['side'] == 'ONE'][['value']], limits[limits['side'] == 'TWO'][['value']]
 
     @staticmethod
-    def _build_stack_terminal(network, buses: DataFrame):
+    def _build_stack_terminal(network: Network, buses: DataFrame):
         slack_terminal = network.get_extensions('slackTerminal')
         return NetworkCache._filter_injections(slack_terminal, buses)
+
+    @staticmethod
+    def _build_reactive_capability_curve_points(network: Network, generators: DataFrame, vsc_converter_stations: DataFrame):
+        points = network.get_reactive_capability_curve_points()
+        if len(points) == 0:
+            return points
+        points = points.reset_index()
+        points['element_type'] = None
+        points.loc[points['id'].isin(generators.index), 'element_type'] = 'GENERATOR'
+        points.loc[points['id'].isin(vsc_converter_stations.index), 'element_type'] = 'VSC'
+        points = points[points['element_type'].notna()]
+        return points.set_index(['id', 'num'])
 
     @property
     def network(self) -> Network:
@@ -262,6 +275,10 @@ class NetworkCache:
     @property
     def slack_terminal(self) -> DataFrame:
         return self._slack_terminal
+
+    @property
+    def reactive_capability_curve_points(self) -> DataFrame:
+        return self._reactive_capability_curve_points
 
     @staticmethod
     def is_rectifier(vsc_cs_id: str, hvdc_line_row) -> bool:
