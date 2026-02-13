@@ -9,6 +9,7 @@ from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
+from pypowsybl.opf.impl.model.bounds import Bounds
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class ReactiveCapabilityCurveConstraints(Constraints):
                 gen_num = network_cache.generators.index.get_loc(element_id)
                 gen_p_index = variable_context.gen_p_num_2_index[gen_num]
                 gen_q_index = variable_context.gen_q_num_2_index[gen_num]
-                if gen_p_index == -1 or gen_q_index == -1:
+                if gen_q_index == -1:
                     continue
                 p = variable_context.gen_p_vars[gen_p_index]
                 q = variable_context.gen_q_vars[gen_q_index]
@@ -35,7 +36,7 @@ class ReactiveCapabilityCurveConstraints(Constraints):
                 vsc_num = network_cache.vsc_converter_stations.index.get_loc(element_id)
                 vsc_p_index = variable_context.vsc_cs_num_2_index[vsc_num]
                 vsc_q_index = variable_context.vsc_cs_num_2_index[vsc_num]
-                if vsc_p_index == -1 or vsc_q_index == -1:
+                if vsc_q_index == -1:
                     continue
                 p = variable_context.vsc_cs_p_vars[vsc_p_index]
                 q = variable_context.vsc_cs_q_vars[vsc_q_index]
@@ -43,11 +44,15 @@ class ReactiveCapabilityCurveConstraints(Constraints):
                 raise ValueError(f"Unknown element type: {element_type}")
 
             # extract points (p, min_q) and (p, max_q) to form the boundary
-            points_min = points_df[['p', 'min_q']].values
-            points_max = points_df[['p', 'max_q']].values
+            all_points_list = []
+            for _, point_row in points_df.iterrows():
+                q_bounds = Bounds(point_row['min_q'], point_row['max_q']).reduce(parameters.reactive_bounds_reduction).mirror()
+                fixed_q_bounds = Bounds.fix(str(element_id), q_bounds.min_value, q_bounds.max_value)
+                all_points_list.append([point_row['p'], fixed_q_bounds[0]])
+                all_points_list.append([point_row['p'], fixed_q_bounds[1]])
 
             # combine them to form the set of points for the hull
-            all_points = np.vstack([points_min, points_max])
+            all_points = np.array(all_points_list)
 
             # remove duplicates
             all_points = np.unique(all_points, axis=0)

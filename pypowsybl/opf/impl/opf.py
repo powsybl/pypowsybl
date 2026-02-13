@@ -74,7 +74,7 @@ class OptimalPowerFlow:
                                           PowerBalanceConstraints(),
                                           DanglingLineFlowConstraints(),
                                           Transformer3wFlowConstraints()]
-        if parameters.full_reactive_capability_curve():
+        if parameters.full_reactive_capability_curve:
             constraints.append(ReactiveCapabilityCurveConstraints())
         if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
             constraints.append(CurrentLimitConstraints())
@@ -85,7 +85,8 @@ class OptimalPowerFlow:
                                            parameters.twt_split_shunt_admittance,
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
                                            parameters.solver_type,
-                                           parameters.solver_options)
+                                           parameters.solver_options,
+                                           parameters.full_reactive_capability_curve)
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
         network_stats = NetworkStatistics(network_cache)

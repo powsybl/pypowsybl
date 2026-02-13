@@ -76,6 +76,7 @@ class OptimalPowerFlowParameters:
         self._solver_options.update(options)
         return self
 
+    @property
     def full_reactive_capability_curve(self) -> bool:
         return self._full_reactive_capability_curve
 

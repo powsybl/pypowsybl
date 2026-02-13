@@ -22,12 +22,13 @@ class VscCsPowerBounds(VariableBounds):
                 model.set_variable_bounds(variable_context.vsc_cs_p_vars[vsc_cs_num],
                                           *Bounds.fix(row.Index, p_bounds.min_value, p_bounds.max_value))
 
-                q_bounds = Bounds.get_reactive_power_bounds(row).reduce(
-                    parameters.reactive_bounds_reduction).mirror()
-                logger.log(TRACE_LEVEL,
-                           f"Add reactive power bounds {q_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
-                if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
-                    logger.error(
-                        f"Too small reactive power bounds {q_bounds} for VSC converter station '{row.Index}' (num={vsc_cs_num})")
-                model.set_variable_bounds(variable_context.vsc_cs_q_vars[vsc_cs_num],
-                                          *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
+                if not parameters.full_reactive_capability_curve:
+                    q_bounds = Bounds.get_reactive_power_bounds(row).reduce(
+                        parameters.reactive_bounds_reduction).mirror()
+                    logger.log(TRACE_LEVEL,
+                               f"Add reactive power bounds {q_bounds} to VSC converter station '{row.Index}' (num={vsc_cs_num})")
+                    if abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / network_cache.network.nominal_apparent_power:
+                        logger.error(
+                            f"Too small reactive power bounds {q_bounds} for VSC converter station '{row.Index}' (num={vsc_cs_num})")
+                    model.set_variable_bounds(variable_context.vsc_cs_q_vars[vsc_cs_num],
+                                              *Bounds.fix(row.Index, q_bounds.min_value, q_bounds.max_value))
