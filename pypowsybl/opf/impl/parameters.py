@@ -26,9 +26,17 @@ class OptimalPowerFlowParameters:
     def reactive_bounds_reduction(self) -> float:
         return self._reactive_bounds_reduction
 
+    def with_reactive_bounds_reduction(self, reactive_bounds_reduction: float) -> "OptimalPowerFlowParameters":
+        self._reactive_bounds_reduction = reactive_bounds_reduction
+        return self
+
     @property
     def twt_split_shunt_admittance(self) -> bool:
         return self._twt_split_shunt_admittance
+
+    def with_twt_split_shunt_admittance(self, twt_split_shunt_admittance: bool) -> "OptimalPowerFlowParameters":
+        self._twt_split_shunt_admittance = twt_split_shunt_admittance
+        return self
 
     @property
     def mode(self) -> OptimalPowerFlowMode:
@@ -41,6 +49,10 @@ class OptimalPowerFlowParameters:
     @property
     def default_voltage_bounds(self) -> tuple[float, float]:
         return self._default_voltage_bounds
+
+    def with_default_voltage_bounds(self, bounds: tuple[float, float]) -> "OptimalPowerFlowParameters":
+        self._default_voltage_bounds = bounds
+        return self
 
     @property
     def solver_type(self) -> SolverType:

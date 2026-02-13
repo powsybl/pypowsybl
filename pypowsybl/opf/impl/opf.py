@@ -92,14 +92,14 @@ class OptimalPowerFlow:
         network_stats.add(ElementType.BATTERY, 'target_p')
         network_stats.add(ElementType.VSC_CONVERTER_STATION, 'target_p')
 
-        logger.info("Starting optimization...")
+        logger.info(f"Starting optimization with {parameters.solver_type.name}...")
         start = time.perf_counter()
 
         opf_model.model.set_model_attribute(poi.ModelAttribute.Silent, False)
         opf_model.model.optimize()
         status = opf_model.model.get_model_attribute(poi.ModelAttribute.TerminationStatus)
 
-        logger.info(f"Optimization ends with status {status} in {time.perf_counter() - start:.3f} seconds.")
+        logger.info(f"Optimization ends with status {status.name} in {time.perf_counter() - start:.3f} seconds.")
 
         # for debugging
         opf_model.analyze_violations(model_parameters)
