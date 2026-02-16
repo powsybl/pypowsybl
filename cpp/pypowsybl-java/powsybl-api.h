@@ -69,7 +69,8 @@ typedef struct loadflow_parameters_struct {
     unsigned char dc_use_transformer_ratio;
     char** countries_to_balance;
     int countries_to_balance_count;
-    int connected_component_mode;
+    int component_mode;
+    unsigned char hvdc_ac_emulation;
     double dc_power_factor;
 } loadflow_parameters;
 
@@ -109,9 +110,19 @@ typedef struct security_analysis_parameters_struct {
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
+    double flow_flow_sensitivity_value_threshold;
+    double voltage_voltage_sensitivity_value_threshold;
+    double flow_voltage_sensitivity_value_threshold;
+    double angle_flow_sensitivity_value_threshold;
     struct provider_parameters_struct provider_parameters;
     struct loadflow_parameters_struct loadflow_parameters;
 } sensitivity_analysis_parameters;
+
+typedef struct dynamic_simulation_parameters_struct {
+    struct provider_parameters_struct provider_parameters;
+    double start_time;
+    double stop_time;
+} dynamic_simulation_parameters;
 
 typedef struct limit_violation_struct {
     char* subject_id;
@@ -184,7 +195,12 @@ typedef enum {
     AREA_VOLTAGE_LEVELS,
     AREA_BOUNDARIES,
     INTERNAL_CONNECTION,
-    PROPERTIES
+    PROPERTIES,
+    DC_LINE,
+    DC_NODE,
+    VOLTAGE_SOURCE_CONVERTER,
+    DC_GROUND,
+    DC_BUS
 } element_type;
 
 typedef enum {
@@ -308,6 +324,7 @@ typedef struct series_struct {
     unsigned char index;
     int type;
     array data;
+    int* mask;
 } series;
 
 /**
@@ -404,41 +421,15 @@ typedef struct nad_parameters_struct {
     double radius_factor;
     int edge_info_displayed;
     unsigned char voltage_level_details;
+    unsigned char injections_added;
 } nad_parameters;
-
-typedef enum {
-    BASE_LOAD = 0,
-    LOAD_ONE_TRANSFORMER,
-    LOAD_ONE_TRANSFORMER_TAP_CHANGER,
-    LOAD_TWO_TRANSFORMERS,
-    LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
-    BASE_GENERATOR,
-    SYNCHRONIZED_GENERATOR,
-    SYNCHRONOUS_GENERATOR,
-    WECC,
-    GRID_FORMING_CONVERTER,
-    SIGNAL_N_GENERATOR,
-    HVDC_P,
-    HVDC_VSC,
-    BASE_TRANSFORMER,
-    BASE_STATIC_VAR_COMPENSATOR,
-    BASE_LINE,
-    BASE_BUS,
-    INFINITE_BUS,
-    OVERLOAD_MANAGEMENT_SYSTEM,
-    TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
-    UNDER_VOLTAGE,
-    PHASE_SHIFTER_I,
-    PHASE_SHIFTER_P,
-    PHASE_SHIFTER_BLOCKING_I,
-    TAP_CHANGER,
-    TAP_CHANGER_BLOCKING,
-} DynamicMappingType;
 
 typedef enum {
     DISCONNECT = 0,
     NODE_FAULT,
     ACTIVE_POWER_VARIATION,
+    REACTIVE_POWER_VARIATION,
+    REFERENCE_VOLTAGE_VARIATION,
 } EventMappingType;
 
 typedef enum {
@@ -502,6 +493,7 @@ typedef enum {
 typedef enum {
     DEFAULT = 0,
     FAILURE,
+    PARTIAL_FAILURE,
 } RaoComputationStatus;
 
 typedef enum {
@@ -587,7 +579,6 @@ typedef struct rao_parameters_struct {
   int ra_range_shrinking;
 
   int max_preventive_search_tree_depth; // topo optimization parameters
-  int max_auto_search_tree_depth;
   int max_curative_search_tree_depth;
   double relative_min_impact_threshold;
   double absolute_min_impact_threshold;
@@ -598,7 +589,6 @@ typedef struct rao_parameters_struct {
   int available_cpus; // Multithreading parameters
 
   int execution_condition;  // Second preventive rao parameters
-  unsigned char re_optimize_curative_range_actions;
   unsigned char hint_from_first_preventive_rao;
 
   unsigned char do_not_optimize_curative_cnecs_for_tsos_without_cras; // Not optimized cnec parameters

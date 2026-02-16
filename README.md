@@ -3,7 +3,7 @@
 [![PyPI Latest Release](https://img.shields.io/pypi/v/pypowsybl.svg)](https://pypi.org/project/pypowsybl/)
 [![Documentation Status](https://readthedocs.org/projects/pypowsybl/badge/?version=latest)](https://pypowsybl.readthedocs.io/en/latest/?badge=latest)
 [![MPL-2.0 License](https://img.shields.io/badge/license-MPL_2.0-blue.svg)](https://www.mozilla.org/en-US/MPL/2.0/)
-[![Slack](https://img.shields.io/badge/slack-powsybl-blueviolet.svg?logo=slack)](https://join.slack.com/t/powsybl/shared_invite/zt-rzvbuzjk-nxi0boim1RKPS5PjieI0rA)
+[![Slack](https://img.shields.io/badge/slack-powsybl-blueviolet.svg?logo=slack)](https://join.slack.com/t/powsybl/shared_invite/zt-36jvd725u-cnquPgZb6kpjH8SKh~FWHQ)
 [![Actions Status](https://github.com/powsybl/pypowsybl/workflows/Full%20CI/badge.svg)](https://github.com/powsybl/pypowsybl/actions)
 
 Python code quality :
@@ -28,7 +28,7 @@ Notebooks demonstrating PyPowSyBl features can be found in this [repository](htt
 
 ## Installation
 
-PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.8 to 3.12, on Linux, Windows and MacOS.
+PyPowSyBl is released on [PyPi](https://pypi.org/project/pypowsybl/) for Python 3.9 to 3.13, on Linux, Windows and MacOS.
 
 First, make sure you have an up-to-date version of pip and setuptools:
 ```bash
@@ -96,13 +96,14 @@ Requirements:
 - Maven >= 3.1
 - Cmake >= 3.20
 - C++11 compiler
-- Python >= 3.8 for Linux, Windows and MacOS (amd64 and arm64)
-- [Oracle GraalVM Java 17](https://www.graalvm.org/downloads/)
+- Python >= 3.9 for Linux, Windows and MacOS (amd64 and arm64)
+- [Oracle GraalVM Java 21](https://www.graalvm.org/downloads/)
 
 To build from sources and install PyPowSyBl package:
 
 ```bash
 git clone https://github.com/powsybl/pypowsybl.git
+cd pypowsybl
 export JAVA_HOME=<path to GraalVM>
 pip install --upgrade setuptools pip
 pip install -r requirements.txt

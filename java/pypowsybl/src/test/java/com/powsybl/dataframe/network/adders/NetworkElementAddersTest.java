@@ -296,7 +296,7 @@ class NetworkElementAddersTest {
     @Test
     void svc() {
         var network = SvcTestCaseFactory.create();
-        var mode = StaticVarCompensator.RegulationMode.OFF;
+        var mode = StaticVarCompensator.RegulationMode.VOLTAGE;
         var dataframe = new DefaultUpdatingDataframe(1);
         addDoubleColumn(dataframe, "b_min", 0.0003);
         addDoubleColumn(dataframe, "b_max", 0.0009);
@@ -306,6 +306,7 @@ class NetworkElementAddersTest {
         addStringColumn(dataframe, "voltage_level_id", "VL2");
         addStringColumn(dataframe, "connectable_bus_id", "B2");
         addStringColumn(dataframe, "regulation_mode", mode.name());
+        addIntColumn(dataframe, "regulating", 1);
         addStringColumn(dataframe, "bus_id", "B2");
         addIntColumn(dataframe, "section_count", 4);
         NetworkElementAdders.addElements(DataframeElementType.STATIC_VAR_COMPENSATOR, network, singletonList(dataframe));
@@ -682,5 +683,67 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addElements(DataframeElementType.AREA_BOUNDARIES, network, singletonList(dataframe));
         assertEquals(1, area1.getAreaBoundaryStream().count());
         assertEquals(2, area2.getAreaBoundaryStream().count()); // unchanged because area2 is not in updating df
+    }
+
+    @Test
+    void dcLine() {
+        var network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "DL3");
+        addStringColumn(dataframe, "name", "dl3");
+        addStringColumn(dataframe, "dc_node1_id", "dcNodeFrPos");
+        addStringColumn(dataframe, "dc_node2_id", "dcNodeFrNeg");
+        addDoubleColumn(dataframe, "r", 4.0);
+        NetworkElementAdders.addElements(DataframeElementType.DC_LINE, network.getSubnetwork("VscSymmetricalMonopole"), singletonList(dataframe));
+        assertEquals(3, network.getDcLineCount());
+    }
+
+    @Test
+    void dcNode() {
+        var network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "DC_NODE");
+        addStringColumn(dataframe, "name", "dcNode");
+        addDoubleColumn(dataframe, "nominal_v", 400.0);
+        NetworkElementAdders.addElements(DataframeElementType.DC_NODE, network.getSubnetwork("VscSymmetricalMonopole"), singletonList(dataframe));
+        assertEquals(5, network.getDcNodeCount());
+    }
+
+    @Test
+    void voltageSourceConverter() {
+        var network = DcDetailedNetworkFactory.createVscSymmetricalMonopole();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "VSC");
+        addStringColumn(dataframe, "name", "converter");
+        addStringColumn(dataframe, "voltage_level_id", "VLDC-GB-xNodeDc1gb-150");
+        addStringColumn(dataframe, "bus1_id", "BUSDC-GB-xNodeDc1gb-150");
+        addStringColumn(dataframe, "bus2_id", "BUSDC-GB-xNodeDc1gb-150");
+        addStringColumn(dataframe, "dc_node1_id", "dcNodeFrPos");
+        addStringColumn(dataframe, "dc_node2_id", "dcNodeFrNeg");
+        addStringColumn(dataframe, "pcc_terminal_id", "TRDC-FR-xNodeDc1fr");
+        addIntColumn(dataframe, "voltage_regulator_on", 0);
+        addStringColumn(dataframe, "control_mode", "P_PCC");
+        addDoubleColumn(dataframe, "target_q", 0);
+        addDoubleColumn(dataframe, "target_p", 50);
+        addDoubleColumn(dataframe, "target_v_dc", 400);
+        addDoubleColumn(dataframe, "target_v_ac", 400);
+        addDoubleColumn(dataframe, "idle_loss", 1);
+        addDoubleColumn(dataframe, "switching_loss", 1);
+        addDoubleColumn(dataframe, "resistive_loss", 1);
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_SOURCE_CONVERTER, network.getSubnetwork("VscSymmetricalMonopole"), singletonList(dataframe));
+        assertEquals(3, network.getVoltageSourceConverterCount());
+        System.out.println(network.getVoltageSourceConverter("VSC").getTerminal1());
+    }
+
+    @Test
+    void dcGround() {
+        var network = DcDetailedNetworkFactory.createVscAsymmetricalMonopole();
+        var dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "DC_GROUND");
+        addStringColumn(dataframe, "name", "dcGround");
+        addStringColumn(dataframe, "dc_node_id", "dcNodeFrPos");
+        addDoubleColumn(dataframe, "r", 1.0);
+        NetworkElementAdders.addElements(DataframeElementType.DC_GROUND, network.getSubnetwork("VscAsymmetricalMonopole"), singletonList(dataframe));
+        assertEquals(3, network.getDcGroundCount());
     }
 }

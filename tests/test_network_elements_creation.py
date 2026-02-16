@@ -98,13 +98,15 @@ def test_generators_creation():
 def test_generators_kwargs():
     n = pn.create_eurostag_tutorial_example1_network()
     n.create_generators(id='GEN3', max_p=200, min_p=50, voltage_level_id='VLHV1', bus_id='NHV1',
-                        voltage_regulator_on=True, target_p=100, target_q=0, target_v=400)
-    gen3 = n.get_generators().loc['GEN3']
+                        voltage_regulator_on=True, target_p=100, target_q=0, target_v=400,
+                        equivalent_local_target_v=400)
+    gen3 = n.get_generators(all_attributes=True).loc['GEN3']
     assert gen3.max_p == 200.0
     assert gen3.min_p == 50.0
     assert gen3.target_p == 100.0
     assert gen3.target_q == 0
     assert gen3.target_v == 400
+    assert gen3.equivalent_local_target_v == 400
     assert gen3.voltage_regulator_on
     assert gen3.voltage_level_id == 'VLHV1'
     assert gen3.bus_id == 'VLHV1_0'
@@ -203,6 +205,7 @@ def test_svc_creation():
                'node': 1,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
@@ -283,8 +286,8 @@ def test_voltage_levels_creation():
 def test_ratio_tap_changers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     rtc_df = dataframe_from_string("""
-id         target_deadband  target_v  on_load  low_tap  tap  regulating  regulated_side
-NGEN_NHV1                2       200    False        0    1        True             ONE
+id         target_deadband  target_v  oltc  low_tap  tap  regulating  regulated_side
+NGEN_NHV1                2       200  True        0    1        True             ONE
 """)
 
     steps_df = dataframe_from_string("""
@@ -298,7 +301,7 @@ NGEN_NHV1  2  2  1  1  0.5
     rtc = n.get_ratio_tap_changers(all_attributes=True).loc['NGEN_NHV1']
     assert rtc.target_deadband == 2
     assert rtc.target_v == 200
-    assert not rtc.on_load
+    assert rtc.oltc
     assert rtc.low_tap == 0
     assert rtc.tap == 1
     assert rtc.regulating
@@ -471,14 +474,15 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS', 'S_TEST']),
-                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected', 'fictitious'],
-                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True, False],
-                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
-                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
-                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False],
-                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', True, False]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'bus_breaker_bus_id', 'node',
+                                     'connected', 'fictitious'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 0, True, False],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_0', 0, True, False],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_1', 1, True, False],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', 'S2VL1_0', 0, True, False],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', 'S3VL1_0', 0, True, False],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', 'S4VL1_0', 0, True, False],
+                                  ['S_TEST', nan, nan, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 1, True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
@@ -629,7 +633,7 @@ def test_create_node_breaker_network_and_run_loadflow():
 
 def test_create_limits():
     net = pn.create_eurostag_tutorial_example1_network()
-    net.create_operational_limits(pd.DataFrame.from_records(index='element_id', data=[
+    net.create_operational_limits(pd.DataFrame.from_records(index=['element_id'], data=[
         {'element_id': 'NHV1_NHV2_1', 'name': 'permanent_limit', 'side': 'ONE',
          'type': 'APPARENT_POWER', 'value': 600,
          'acceptable_duration': np.inf, 'fictitious': False},
@@ -644,24 +648,24 @@ def test_create_limits():
          'acceptable_duration': 60, 'fictitious': False}
     ]))
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
-        data=[['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False, 'DEFAULT', True],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False, 'DEFAULT', True],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False, 'DEFAULT', True],
-              ['NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False, 'DEFAULT', True]])
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
+        data=[['LINE', 'ONE', 'permanent_limit', 'CURRENT', 500, -1, False, 'DEFAULT', True],
+              ['LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 400, -1, False, 'DEFAULT', True],
+              ['LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 600, -1, False, 'DEFAULT', True],
+              ['LINE', 'TWO', 'permanent_limit', 'CURRENT', 1100, -1, False, 'DEFAULT', True]])
     limits = net.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     permanent_limits = limits[limits['name'] == 'permanent_limit']
-    pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, permanent_limits, check_dtype=False, check_index_type=False)
 
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
-        data=[['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False, 'DEFAULT', True],
-              ['NHV1_NHV2_1', 'LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False, 'DEFAULT', True],
-              ['NHV1_NHV2_1', 'LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False, 'DEFAULT', True]])
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration', 'fictitious', 'group_name', 'selected'],
+        data=[['LINE', 'ONE', '1\'', 'ACTIVE_POWER', 700, 60, False, 'DEFAULT', True],
+              ['LINE', 'ONE', '1\'', 'APPARENT_POWER', 1000, 60, False, 'DEFAULT', True],
+              ['LINE', 'TWO', '1\'', 'CURRENT', 1500, 60, False, 'DEFAULT', True]])
     one_minute_limits = limits[limits['name'] == '1\'']
-    pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, one_minute_limits, check_dtype=False, check_index_type=False)
 
 
 def test_create_minmax_reactive_limits():
@@ -998,7 +1002,7 @@ def test_3_windings_transformers_creation():
     #Add ratio tap changer
     rtc_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap', 'side'],
         data=[('TWT_TEST', 2, 200, False, 0, 1, 'ONE')])
     steps_df = pd.DataFrame.from_records(
         index='id',
@@ -1145,3 +1149,71 @@ def test_internal_connections_errors():
     with pytest.raises(PyPowsyblError) as exc:
         network.remove_internal_connections(voltage_level_id='VLGEN', node1=0, node2=1)
     assert "Voltage level \'VLGEN\' is not of Node/Breaker topology kind." in str(exc)
+
+
+def test_dc_node_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    print(n.get_dc_nodes().to_string())
+    n.create_dc_nodes(pd.DataFrame(index=['DC_NODE_TEST'], columns=['nominal_v'], data=[[500.0]]))
+
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos', 'DC_NODE_TEST']),
+        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
+        data=[['', 'dcNodeGbNeg_dcBus', 250.0, nan], ['', 'dcNodeGbPos_dcBus', 250.0, nan],
+              ['', 'dcNodeFrNeg_dcBus', 250.0, nan], ['', 'dcNodeFrPos_dcBus', 250.0, nan], ['', '', 500.0, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
+
+
+def test_dc_lines_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network().get_sub_network(
+        'VscSymmetricalMonopole')
+
+    n.create_dc_lines(
+        pd.DataFrame(index=pd.Series(name='id', data=['DC_LINE_TEST']), columns=['r', 'dc_node1_id', 'dc_node2_id'],
+                     data=[[2, 'dcNodeGbNeg', 'dcNodeGbPos']]))
+    dc_line = n.get_dc_lines().loc['DC_LINE_TEST']
+
+    assert dc_line.r == 2
+    assert dc_line.dc_node1_id == 'dcNodeGbNeg'
+    assert dc_line.dc_node2_id == 'dcNodeGbPos'
+
+
+def test_voltage_source_converter_creation():
+    n = pypowsybl.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.create_buses(id='BUS_TEST', voltage_level_id='VLDC-GB-xNodeDc1gb-150')
+    n.create_voltage_source_converters(pd.DataFrame(index=pd.Series(name='id', data=['CONV_TEST']),
+                                                    columns=['id', 'name', 'voltage_level_id', 'bus1_id', 'bus2_id',
+                                                             'dc_node1_id', 'dc_node2_id', 'control_mode', 'target_p',
+                                                             'voltage_regulator_on', 'idle_loss', 'switching_loss',
+                                                             'resistive_loss', 'target_v_ac', 'dc_connected1',
+                                                             'dc_connected2', 'pcc_terminal_id'], data=[
+            ['CONV_TEST', '', 'VLDC-GB-xNodeDc1gb-150', 'BUSDC-GB-xNodeDc1gb-150', 'BUS_TEST', 'dcNodeGbNeg',
+             'dcNodeGbPos', 'P_PCC', 300, True, 1.0, 1.0, 1.0, 400, True, False, 'TRDC-GB-xNodeDc1gb']]))
+    conv = n.get_voltage_source_converters().loc['CONV_TEST']
+
+    assert conv.voltage_level_id == 'VLDC-GB-xNodeDc1gb-150'
+    assert conv.bus1_id == 'VLDC-GB-xNodeDc1gb-150_0'
+    assert conv.bus2_id == 'VLDC-GB-xNodeDc1gb-150_1'
+    assert conv.dc_node1_id == 'dcNodeGbNeg'
+    assert conv.dc_node2_id == 'dcNodeGbPos'
+    assert conv.control_mode == 'P_PCC'
+    assert conv.target_p == 300
+    assert conv.voltage_regulator_on == True
+    assert conv.idle_loss == 1.0
+    assert conv.switching_loss == 1.0
+    assert conv.resistive_loss == 1.0
+    assert conv.target_v_ac == 400
+    assert conv.dc_connected1 == True
+    assert conv.dc_connected2 == False
+    assert conv.pcc_terminal_id == 'TRDC-GB-xNodeDc1gb'
+
+
+def test_dc_ground_creation():
+    n = pypowsybl.network.create_dc_detailed_lcc_bipole_ground_return_network().get_sub_network('LccBipoleGroundReturn')
+    n.create_dc_grounds(
+        pd.DataFrame(index=['DC_GROUND_TEST'], columns=['dc_node_id', 'r'], data=[['dcNodeGbMid', 0.1]]))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr', 'DC_GROUND_TEST']),
+                            columns=['name', 'dc_node_id', 'r'],
+                            data=[['', 'dcNodeGbMid', 0.0], ['', 'dcNodeFrMid', 0.0], ['', 'dcNodeGbMid', 0.1]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)

@@ -4,12 +4,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import asyncio
 import warnings
-from typing import List
+from asyncio import Future
+from typing import List, Optional
 from pandas import DataFrame
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import (
     ConnectedComponentMode,
+    ComponentMode,
     BalanceType,
     VoltageInitMode,
     LoadFlowValidationParameters,
@@ -19,6 +22,7 @@ from pypowsybl.network import Network
 from pypowsybl.utils import create_data_frame_from_series_array
 from pypowsybl.report import ReportNode
 from .component_result import ComponentResult
+from .loadflow_results_future_wrapper import LoadFlowResultsFutureWrapper
 from .parameters import Parameters
 from .validation_result import ValidationResult
 from .validation_parameters import ValidationParameters, ValidationType
@@ -29,10 +33,11 @@ from .validation_parameters import ValidationParameters, ValidationType
 VoltageInitMode.__module__ = __name__
 BalanceType.__module__ = __name__
 ConnectedComponentMode.__module__ = __name__
+ComponentMode.__module__ = __name__
 
 
-def run_ac(network: Network, parameters: Parameters = None, provider: str = '', reporter: ReportNode = None,
-           report_node: ReportNode = None) -> \
+def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
+           report_node: Optional[ReportNode] = None) -> \
         List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run an AC load flow on a network.
@@ -55,8 +60,36 @@ def run_ac(network: Network, parameters: Parameters = None, provider: str = '', 
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
 
 
-def run_dc(network: Network, parameters: Parameters = None, provider: str = '', reporter: ReportNode = None,
-           report_node: ReportNode = None) -> List[ComponentResult]:  # pylint: disable=protected-access
+def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters: Optional[Parameters] = None, provider: str = '',
+                 report_node: Optional[ReportNode] = None) -> Future:  # pylint: disable=protected-access
+    """
+    Run an AC load flow on a network asynchronously.
+
+    Args:
+        network: a network
+        variant_id: the variant id, default on initial variant
+        parameters: the load flow parameters
+        provider: the load flow implementation provider, default is the default load flow provider
+        report_node:   the reporter to be used to create an execution report, default is None (no report)
+
+    Returns:
+        A future list of component results, one for each component of the network.
+    """
+    c_parameters = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    loop = asyncio.get_running_loop()
+    results_future = loop.create_future()
+    _pypowsybl.run_loadflow_async(network._handle,
+                                  variant_id,
+                                  False,
+                                  c_parameters,
+                                  provider,
+                                  None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
+                                  LoadFlowResultsFutureWrapper(loop, results_future))
+    return results_future
+
+
+def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: str = '', reporter: Optional[ReportNode] = None,
+           report_node: Optional[ReportNode] = None) -> List[ComponentResult]:  # pylint: disable=protected-access
     """
     Run a DC load flow on a network.
 
@@ -108,7 +141,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_loadflow_provider_names()
 
 
-def get_provider_parameters_names(provider: str = None) -> List[str]:
+def get_provider_parameters_names(provider:  Optional[str] = None) -> List[str]:
     """
     Get list of parameters for the specified loadflow provider.
 
@@ -121,7 +154,7 @@ def get_provider_parameters_names(provider: str = None) -> List[str]:
     return _pypowsybl.get_loadflow_provider_parameters_names('' if provider is None else provider)
 
 
-def get_provider_parameters(provider: str = None) -> DataFrame:
+def get_provider_parameters(provider:  Optional[str] = None) -> DataFrame:
     """
     Supported loadflow specific parameters for a given provider.
 
@@ -150,8 +183,8 @@ def get_provider_parameters(provider: str = None) -> DataFrame:
     return create_data_frame_from_series_array(series_array)
 
 
-def run_validation(network: Network, validation_types: List[ValidationType] = None,
-                   validation_parameters: ValidationParameters = None) -> ValidationResult:
+def run_validation(network: Network, validation_types: Optional[List[ValidationType]] = None,
+                   validation_parameters: Optional[ValidationParameters] = None) -> ValidationResult:
     """
     Checks that the network data are consistent with AC loadflow equations.
 

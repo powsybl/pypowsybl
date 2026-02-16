@@ -8,6 +8,8 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.CategoryInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.dynawo.models.loads.LoadOneTransformerBuilder;
@@ -20,6 +22,15 @@ import java.util.Collection;
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
 public class LoadOneTransformerAdder extends AbstractEquipmentAdder {
+
+    private static final CategoryInformation CATEGORY_INFORMATION = new CategoryInformation(
+            "LoadOneTransformer",
+            "Load with one transformer",
+            CategoryAttributeUtils.createFromMetadata(EQUIPMENT_METADATA));
+
+    protected LoadOneTransformerAdder() {
+        super(CATEGORY_INFORMATION);
+    }
 
     @Override
     public Collection<ModelInfo> getSupportedModels() {

@@ -15,25 +15,24 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>pypowsybl-parent</artifactId>
-        <version>1.12.0-SNAPSHOT</version>
+        <version>1.15.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>pypowsybl</artifactId>
     <description>A C interface to powsybl, for pypowsybl implementation</description>
 
     <packaging>jar</packaging>
-    <version>1.12.0-SNAPSHOT</version>
+    <version>1.15.0-SNAPSHOT</version>
 
     <properties>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-csv.version>1.11.0</commons-csv.version>
-        <graalvm.version>23.0.0</graalvm.version>
+        <graalvm.version>23.1.2</graalvm.version>
         <janino.version>3.1.0</janino.version>
         <mapdb.version>3.0.8</mapdb.version>
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
-        <monitoring.version>6.4.0</monitoring.version>
     </properties>
 
     <build>
@@ -165,6 +164,10 @@
             <artifactId>commons-csv</artifactId>
             <version>${commons-csv.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.re2j</groupId>
+            <artifactId>re2j</artifactId>
+        </dependency>
         <!-- workaround for https://github.com/oracle/graal/issues/1943 -->
         <dependency>
             <groupId>org.codehaus.janino</groupId>
@@ -173,7 +176,7 @@
         </dependency>
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
-            <artifactId>graal-sdk</artifactId>
+            <artifactId>nativeimage</artifactId>
             <version>${graalvm.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -291,6 +294,18 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-extensions-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-extensions-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-extensions-serde</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-entsoe-commons</artifactId>
         </dependency>
         <dependency>
@@ -377,6 +392,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.luben</groupId>
             <artifactId>zstd-jni</artifactId>
             <version>${zstdjni.version}</version>
@@ -407,8 +427,7 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
-            <artifactId>monitoring</artifactId>
-            <version>${monitoring.version}</version>
+            <artifactId>open-rao-monitoring</artifactId>
         </dependency>
     </dependencies>
 </project>

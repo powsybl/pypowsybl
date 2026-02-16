@@ -62,7 +62,7 @@ To see the list of available post processors:
 .. doctest::
 
    >>> pp.network.get_import_post_processors()
-   ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines']
+   ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines']
 
 Then a list of post processors can be pass to the load function:
 
@@ -104,6 +104,21 @@ The supported formats are:
     Export formats may support specific parameters,
     which you can find by using :func:`get_export_parameters`.
 
+Updating a network from a file
+------------------------------
+
+It is possible to only update part of a network data using the Network.update_from_file method (if the corresponding import format supports it).
+For example, you can import only an EQ file from a CGMES network, and then update it using the SSH file you need for the current situation.
+
+.. code-block::python
+
+    >>> network = pp.network.load('network_EQ.xml')
+    >>> network.get_generators()["target_p"]["GEN"]
+    numpy.nan
+    >>> network.update_from_file('network_SSH.xml')
+    >>> network.get_generators()["target_p"]["GEN"]
+    10.0
+
 Reading network elements data
 -----------------------------
 
@@ -132,6 +147,10 @@ Supported elements are:
  - injections
  - branches (lines and two windings transformers)
  - terminals are a practical view of those objects which are very important in the java implementation
+ - DC nodes
+ - DC lines
+ - voltage source converters
+ - DC grounds
 
 Each element of the network is mapped to one row of the dataframe, an each element attribute
 is mapped to one column of the dataframe (a :class:`~pandas.Series`).
@@ -286,6 +305,15 @@ its state has not changed, our generator still produces 607 MW:
    >>> network.get_generators()['target_p']['GEN'].item()
    607.0
 
+We also provide an automatic way to switch to a variant and then go back to previous one with:
+
+.. doctest::
+
+   >>> with network.working_variant('Variant'):
+   ...     network.update_generators(id='GEN', target_p=701)
+   ...     network.get_generators()['target_p']['GEN'].item()
+   701.0
+
 Once you're done working with your variant, you can remove it:
 
 .. doctest::
@@ -387,7 +415,7 @@ You can add a ratio tap changer on the leg 1 of the three-winding transformer wi
 
     rtc_df = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'target_deadband', 'target_v', 'on_load', 'low_tap', 'tap', 'side'],
+        columns=['id', 'target_deadband', 'target_v', 'oltc', 'low_tap', 'tap', 'side'],
         data=[('T1', 2, 200, False, 0, 1, 'ONE')])
     steps_df = pd.DataFrame.from_records(
         index='id',
@@ -918,7 +946,7 @@ For this example we will keep only voltage levels with voltage superior or equal
     S3VL1                 S3      400.0               440.0              390.0
     S4VL1                 S4      400.0               440.0              390.0
 
-    >>> net.reduce(v_min=400)
+    >>> net.reduce_by_voltage_range(v_min=400)
     >>> net.get_voltage_levels()
           name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
     id
@@ -941,7 +969,7 @@ For the next example we will keep voltage level S1VL1 with a depth of 1.
     S2VL1                 S2      400.0               440.0              390.0
     S3VL1                 S3      400.0               440.0              390.0
     S4VL1                 S4      400.0               440.0              390.0
-    >>> net.reduce(vl_depths=[['S1VL1', 1]])
+    >>> net.reduce_by_ids_and_depths(vl_depths=[('S1VL1', 1)])
     >>> net.get_voltage_levels()
           name substation_id  nominal_v  high_voltage_limit  low_voltage_limit
     id
@@ -951,7 +979,7 @@ For the next example we will keep voltage level S1VL1 with a depth of 1.
 S1VL1 is connected to S1VL2 by the transformer TWT, so it is kept after the network reduction.
 It is the only voltage level connected to S1VL1 by one branch.
 
-the parameter "ids" can be used to specify the exact voltage levels that will be kept
+Reduction can also be done by specifying directly the list of voltage levels to keep using the :meth:reduce_by_ids method.
 
 Using operational limits
 ------------------------

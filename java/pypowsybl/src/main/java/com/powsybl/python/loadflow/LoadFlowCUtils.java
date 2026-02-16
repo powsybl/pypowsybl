@@ -66,7 +66,8 @@ public final class LoadFlowCUtils {
                 .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
                 .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
                         .stream().map(Country::valueOf).collect(Collectors.toSet()))
-                .setConnectedComponentMode(LoadFlowParameters.ConnectedComponentMode.values()[loadFlowParametersPtr.getConnectedComponentMode()])
+                .setComponentMode(LoadFlowParameters.ComponentMode.values()[loadFlowParametersPtr.getComponentMode()])
+                .setHvdcAcEmulation(loadFlowParametersPtr.isHvdcAcEmulation())
                 .setDcPowerFactor(loadFlowParametersPtr.getDcPowerFactor());
     }
 

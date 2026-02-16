@@ -102,6 +102,15 @@ class SecurityAnalysisResult:
             print_limit_violation(operator_strategy_result.limit_violations)
         return table
 
+    def export_to_json(self, path: str) -> None:
+        """
+        Add the security analysis' output to the specified path in a JSON file.
+
+        Args :
+            path : the path where we ant the JSON file to be written after the security analysis.
+        """
+        _pypowsybl.export_to_json(self._handle, path)
+
     @property
     def limit_violations(self) -> pd.DataFrame:
         """

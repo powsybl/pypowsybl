@@ -31,11 +31,14 @@ Following methods may be used to create a new network instance:
    create_ieee118
    create_ieee300
    create_eurostag_tutorial_example1_network
+   create_eurostag_tutorial_example1_with_more_generators_network
    create_eurostag_tutorial_example1_with_power_limits_network
+   create_eurostag_tutorial_example1_with_tie_lines_and_areas
    create_four_substations_node_breaker_network
    create_four_substations_node_breaker_network_with_extensions
    create_micro_grid_be_network
    create_micro_grid_nl_network
+   create_metrix_tutorial_six_buses_network
 
 
 Network properties
@@ -81,8 +84,8 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_busbar_sections
    Network.get_buses
    Network.get_bus_breaker_view_buses
-   Network.get_current_limits
    Network.get_dangling_lines
+   Network.get_dangling_lines_generation
    Network.get_generators
    Network.get_hvdc_lines
    Network.get_identifiables
@@ -106,6 +109,15 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_voltage_levels
    Network.get_vsc_converter_stations
    Network.get_tie_lines
+   Network.get_grounds
+   Network.get_sub_networks
+   Network.get_sub_network
+   Network.detach
+   Network.get_dc_nodes
+   Network.get_dc_lines
+   Network.get_voltage_source_converters
+   Network.get_dc_grounds
+   Network.get_dc_buses
 
 Bus/Breaker or Node/Breaker topology description of a given voltage level can be retrieved using the following getters:
 
@@ -144,28 +156,45 @@ Network elements can be modified using dataframes:
    Network.update_3_windings_transformers
    Network.update_areas
    Network.update_batteries
+   Network.update_branches
    Network.update_buses
+   Network.update_busbar_sections
    Network.update_dangling_lines
+   Network.update_dangling_lines_generation
    Network.update_generators
+   Network.update_grounds
    Network.update_hvdc_lines
+   Network.update_injections
    Network.update_lcc_converter_stations
    Network.update_linear_shunt_compensator_sections
    Network.update_lines
    Network.update_loads
    Network.update_non_linear_shunt_compensator_sections
+   Network.update_operational_limits
    Network.update_phase_tap_changers
+   Network.update_phase_tap_changer_steps
    Network.update_ratio_tap_changers
+   Network.update_ratio_tap_changer_steps
    Network.update_shunt_compensators
    Network.update_static_var_compensators
    Network.update_substations
    Network.update_switches
+   Network.update_terminals
+   Network.update_tie_lines
    Network.update_voltage_levels
    Network.update_vsc_converter_stations
+   Network.update_dc_nodes
+   Network.update_dc_lines
+   Network.update_voltage_source_converters
+   Network.update_dc_grounds
+   Network.update_dc_buses
    Network.get_elements_properties
    Network.add_elements_properties
    Network.remove_elements_properties
    Network.add_aliases
    Network.remove_aliases
+   Network.apply_solved_values
+   Network.apply_solved_tap_position_and_section_count_values
 
 
 Network elements creation and removal
@@ -188,6 +217,7 @@ Network elements can be created or removed using the following methods:
    Network.create_curve_reactive_limits
    Network.create_dangling_lines
    Network.create_generators
+   Network.create_grounds
    Network.create_hvdc_lines
    Network.create_internal_connections
    Network.create_lcc_converter_stations
@@ -204,6 +234,10 @@ Network elements can be created or removed using the following methods:
    Network.create_voltage_levels
    Network.create_vsc_converter_stations
    Network.create_tie_lines
+   Network.create_dc_nodes
+   Network.create_dc_lines
+   Network.create_voltage_source_converters
+   Network.create_dc_grounds
    Network.remove_elements
    Network.remove_internal_connections
 
@@ -247,6 +281,9 @@ Miscellaneous network functions
    :nosignatures:
 
    Network.reduce
+   Network.reduce_by_ids
+   Network.reduce_by_voltage_range
+   Network.reduce_by_ids_and_depths
    Network.merge
    Network.get_single_line_diagram
    Network.write_single_line_diagram_svg
@@ -254,7 +291,9 @@ Miscellaneous network functions
    Network.write_matrix_multi_substation_single_line_diagram_svg
    Network.get_network_area_diagram
    Network.write_network_area_diagram_svg
+   Network.write_network_area_diagram
    Network.get_network_area_diagram_displayed_voltage_levels
+   Network.get_default_nad_profile
    Network.disconnect
    Network.connect
    Network.open_switch
@@ -275,6 +314,7 @@ I/O
    load_from_string
    load_from_binary_buffer
    load_from_binary_buffers
+   Network.update_from_file
    Network.dump
    Network.dump_to_string
    get_import_formats

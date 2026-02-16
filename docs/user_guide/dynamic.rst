@@ -19,8 +19,8 @@ For now we only support the Dynawo simulator integration, provided by the `Dynaw
 
 Prerequisites
 -------------
-The pypowsybl config file (generally located at ~/.itools/config.yaml) must define the dynawo section to find your dynawo installation and defaults parameters
-Here is an example of a simple config.yaml file. It uses the same configurations as in powsybl-dynawo.
+The pypowsybl config file (generally located at ~/.itools/config.yml) must define the dynawo section to find your dynawo installation and defaults parameters
+Here is an example of a simple config.yml file. It uses the same configurations as in powsybl-dynawo. Note that parameters can be set programmatically with the `Parameters` class.
 
 .. code-block:: yaml+jinja
 
@@ -52,7 +52,7 @@ There is a class for each of these elements.
 
 You will see a lot of arguments called parameterSetId. Dynawo simulator use a lot of parameters that will be stored in files.
 
-Pypowsybl will find the path to this file in the powsybl config.yaml in dynawo-simulation-default-parameters.parametersFile value.
+Pypowsybl will find the path to this file in the powsybl config.yml in dynawo-simulation-default-parameters.parametersFile value or in `Parameters`.
 
 The parameterSetId argument must match an id in this file (generally called models.par).
 
@@ -64,19 +64,32 @@ To run a Dynawo simulation:
 
     import pypowsybl.dynamic as dyn
     import pypowsybl as pp
+    from pandas import DataFrame
 
     # load a network
     network = pp.network.create_eurostag_tutorial_example1_network()
 
     # dynamic mapping
     model_mapping = dyn.ModelMapping()
+    # can be written with kwargs...
     model_mapping.add_base_load(static_id='LOAD',
                                 parameter_set_id='LAB',
                                 model_name='LoadAlphaBeta') # and so on
+    # or dataframe
+    gen_df = DataFrame.from_records(
+        index='static_id',
+        columns=['static_id', 'parameter_set_id', 'model_name'],
+        data=[('GEN', 'GENPV', 'GeneratorPV')])
+    model_mapping.add_synchronized_generator(gen_df)
+    # can also be created with the proper category
+    model_mapping.add_dynamic_model(category_name='SynchronizedGenerator'
+                                    static_id='GEN2',
+                                    parameter_set_id='GENPQ',
+                                    model_name='GeneratorPQ')
 
     # events mapping
     event_mapping = dyn.EventMapping()
-    event_mapping.add.add_disconnection(static_id='GEN', start_time=10)
+    event_mapping.add_disconnection(static_id='GEN', start_time=10)
     event_mapping.add_disconnection(static_id='NHV1_NHV2_1', start_time=10, disconnect_only='ONE')
 
     # curves mapping
@@ -85,11 +98,10 @@ To run a Dynawo simulation:
     variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value') # and so on
 
     # simulations parameters
-    start_time = 0
-    end_time = 50
+    parameters = dyn.Parameters(start_time=0, stop_time=50)
     sim = dyn.Simulation()
     # running the simulation
-    results = sim.run(network, model_mapping, event_mapping, variables_mapping, start_time, end_time)
+    results = sim.run(network, model_mapping, event_mapping, variables_mapping, parameters)
     # getting the results
     results.status()
     results.status_text() # error description if the simulation fails

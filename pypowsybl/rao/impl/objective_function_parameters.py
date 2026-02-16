@@ -1,3 +1,11 @@
+# Copyright (c) 2025, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
+from typing import Optional
+
 from pypowsybl._pypowsybl import (
     RaoParameters,
     ObjectiveFunctionType,
@@ -5,11 +13,11 @@ from pypowsybl._pypowsybl import (
 )
 
 class ObjectiveFunctionParameters:
-    def __init__(self, objective_function_type: ObjectiveFunctionType = None,
-                 unit: Unit = None,
-                 curative_min_obj_improvement: float = None,
-                 enforce_curative_security: bool = None,
-                 rao_parameters: RaoParameters = None) -> None:
+    def __init__(self, objective_function_type: Optional[ObjectiveFunctionType] = None,
+                 unit: Optional[Unit] = None,
+                 curative_min_obj_improvement: Optional[float] = None,
+                 enforce_curative_security: Optional[bool] = None,
+                 rao_parameters: Optional[RaoParameters] = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:

@@ -4,7 +4,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import numpy as np
 import pytest
 import pypowsybl as pp
 import pandas as pd
@@ -204,7 +203,6 @@ def test_loadflow_parameters():
     res = sa.run_ac(network, parameters=parameters)
     assert res.pre_contingency_result.status == pp.loadflow.ComponentStatus.CONVERGED
 
-
 def test_security_analysis_parameters():
     network = pp.network.create_eurostag_tutorial_example1_network()
     network.create_operational_limits(element_id='NHV1_NHV2_1', name='permanent_limit', side='ONE', type='CURRENT', value=400.0,
@@ -245,8 +243,8 @@ def test_security_analysis_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
-    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution']
+    assert pp.security.get_provider_parameters_names() == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution', 'startWithFrozenACEmulation']
+    assert pp.security.get_provider_parameters_names('OpenLoadFlow') == ['createResultExtension', 'contingencyPropagation', 'threadCount', 'dcFastMode', 'contingencyActivePowerLossDistribution', 'startWithFrozenACEmulation']
     with pytest.raises(pp.PyPowsyblError, match='No security analysis provider for name \'unknown\''):
         pp.security.get_provider_parameters_names('unknown')
 
@@ -368,6 +366,7 @@ def test_switch_action():
 
 def test_tap_changer_action():
     n = pp.network.create_micro_grid_be_network()
+    n.update_generators(id='3a3b27be-b18b-4385-b557-6735d733baf0', max_p=210)
 
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
@@ -390,6 +389,7 @@ def test_tap_changer_action():
 
 def test_shunt_action():
     n = pp.network.create_micro_grid_be_network()
+    n.update_generators(id='3a3b27be-b18b-4385-b557-6735d733baf0', max_p=210)
 
     sa = pp.security.create_analysis()
     sa.add_single_element_contingency('550ebe0d-f2b2-48c1-991f-cebea43a21aa', 'BE-G2_contingency')
@@ -420,6 +420,15 @@ def test_add_contingencies_from_json_file():
     assert 'contingency' in sa_result.post_contingency_results.keys()
     assert 'contingency2' in sa_result.post_contingency_results.keys()
 
+def test_add_operator_strategies_and_actions_from_json_file():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('LINE_S2S3', 'contingency')
+    sa.add_actions_from_json_file(str(DATA_DIR.joinpath('ActionFileTestV1.0.json')))
+    sa.add_operator_strategies_from_json_file(str(DATA_DIR.joinpath('OperatorStrategyFileTestV1.0.json')))
+    sa_result = sa.run_dc(n)
+    assert 'id1' in sa_result.operator_strategy_results.keys()
+
 def test_terminal_connection_action():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
@@ -429,3 +438,24 @@ def test_terminal_connection_action():
     sa_result = sa.run_ac(n)
     assert 'Line contingency' in sa_result.post_contingency_results.keys()
     assert 'OperatorStrategy1' in sa_result.operator_strategy_results.keys()
+
+def test_export_json_file_from_security_analysis():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa_result = sa.run_ac(n)
+    sa_result.export_to_json(str(DATA_DIR.joinpath('json_file_security_analysis.json')))
+
+def test_security_analysis_with_limit_reduction():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    reductions = pd.DataFrame.from_records(index=['limit_type'],
+                                           columns=['limit_type', 'permanent', 'temporary', 'value'],
+                                           data=[
+                                               ['CURRENT', True, False, 0.8],
+                                               ['CURRENT', False, True, 0.5],
+                                           ])
+    sa.add_limit_reductions(reductions)
+    sa_result = sa.run_ac(n)
+    df = sa_result.limit_violations
+    assert [0.8] == df.loc[df["limit_name"] == "permanent"]["limit_reduction"].unique()

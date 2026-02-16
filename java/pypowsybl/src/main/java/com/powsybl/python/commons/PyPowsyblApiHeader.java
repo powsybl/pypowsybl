@@ -308,11 +308,17 @@ public final class PyPowsyblApiHeader {
         @CField("countries_to_balance_count")
         void setCountriesToBalanceCount(int countriesToBalanceCount);
 
-        @CField("connected_component_mode")
-        int getConnectedComponentMode();
+        @CField("component_mode")
+        int getComponentMode();
 
-        @CField("connected_component_mode")
-        void setConnectedComponentMode(int connectedComponentMode);
+        @CField("component_mode")
+        void setComponentMode(int componentMode);
+
+        @CField("hvdc_ac_emulation")
+        boolean isHvdcAcEmulation();
+
+        @CField("hvdc_ac_emulation")
+        void setHvdcAcEmulation(boolean hvdcAcEmulation);
 
         @CField("dc_power_factor")
         double getDcPowerFactor();
@@ -483,6 +489,30 @@ public final class PyPowsyblApiHeader {
     @CStruct("sensitivity_analysis_parameters")
     public interface SensitivityAnalysisParametersPointer extends PointerBase {
 
+        @CField("flow_flow_sensitivity_value_threshold")
+        double getFlowFlowSensitivityValueThreshold();
+
+        @CField("flow_flow_sensitivity_value_threshold")
+        void setFlowFlowSensitivityValueThreshold(double threshold);
+
+        @CField("voltage_voltage_sensitivity_value_threshold")
+        double getVoltageVoltageSensitivityValueThreshold();
+
+        @CField("voltage_voltage_sensitivity_value_threshold")
+        void setVoltageVoltageSensitivityValueThreshold(double threshold);
+
+        @CField("flow_voltage_sensitivity_value_threshold")
+        double getFlowVoltageSensitivityValueThreshold();
+
+        @CField("flow_voltage_sensitivity_value_threshold")
+        void setFlowVoltageSensitivityValueThreshold(double threshold);
+
+        @CField("angle_flow_sensitivity_value_threshold")
+        double getAngleFlowSensitivityValueThreshold();
+
+        @CField("angle_flow_sensitivity_value_threshold")
+        void setAngleFlowSensitivityValueThreshold(double threshold);
+
         @CFieldAddress("provider_parameters")
         ProviderParameters getProviderParameters();
 
@@ -648,7 +678,12 @@ public final class PyPowsyblApiHeader {
         AREA_VOLTAGE_LEVELS,
         AREA_BOUNDARIES,
         INTERNAL_CONNECTION,
-        PROPERTIES;
+        PROPERTIES,
+        DC_LINE,
+        DC_NODE,
+        VOLTAGE_SOURCE_CONVERTER,
+        DC_GROUND,
+        DC_BUS;
 
         @CEnumValue
         public native int getCValue();
@@ -862,6 +897,12 @@ public final class PyPowsyblApiHeader {
 
         @CFieldAddress("data")
         <T extends PointerBase> ArrayPointer<T> data();
+
+        @CField("mask")
+        CIntPointer getMask();
+
+        @CField("mask")
+        void setMask(CIntPointer mask);
 
         SeriesPointer addressOf(int index);
     }
@@ -1258,49 +1299,40 @@ public final class PyPowsyblApiHeader {
 
         @CField("voltage_level_details")
         boolean isVoltageLevelDetails();
+
+        @CField("injections_added")
+        void setInjectionsAdded(boolean injectionsAdded);
+
+        @CField("injections_added")
+        boolean isInjectionsAdded();
     }
 
-    @CEnum("DynamicMappingType")
-    public enum DynamicMappingType {
-        BASE_LOAD,
-        LOAD_ONE_TRANSFORMER,
-        LOAD_ONE_TRANSFORMER_TAP_CHANGER,
-        LOAD_TWO_TRANSFORMERS,
-        LOAD_TWO_TRANSFORMERS_TAP_CHANGERS,
-        BASE_GENERATOR,
-        SYNCHRONIZED_GENERATOR,
-        SYNCHRONOUS_GENERATOR,
-        WECC,
-        GRID_FORMING_CONVERTER,
-        SIGNAL_N_GENERATOR,
-        HVDC_P,
-        HVDC_VSC,
-        BASE_TRANSFORMER,
-        BASE_STATIC_VAR_COMPENSATOR,
-        BASE_LINE,
-        BASE_BUS,
-        INFINITE_BUS,
-        OVERLOAD_MANAGEMENT_SYSTEM,
-        TWO_LEVEL_OVERLOAD_MANAGEMENT_SYSTEM,
-        UNDER_VOLTAGE,
-        PHASE_SHIFTER_I,
-        PHASE_SHIFTER_P,
-        PHASE_SHIFTER_BLOCKING_I,
-        TAP_CHANGER,
-        TAP_CHANGER_BLOCKING;
+    @CStruct("dynamic_simulation_parameters")
+    public interface DynamicSimulationParametersPointer extends PointerBase {
 
-        @CEnumValue
-        public native int getCValue();
+        @CFieldAddress("provider_parameters")
+        ProviderParameters getProviderParameters();
 
-        @CEnumLookup
-        public static native DynamicMappingType fromCValue(int value);
+        @CField("start_time")
+        double getStartTime();
+
+        @CField("start_time")
+        void setStartTime(double startTime);
+
+        @CField("stop_time")
+        double getStopTime();
+
+        @CField("stop_time")
+        void setStopTime(double stopTime);
     }
 
     @CEnum("EventMappingType")
     public enum EventMappingType {
         DISCONNECT,
         NODE_FAULT,
-        ACTIVE_POWER_VARIATION;
+        ACTIVE_POWER_VARIATION,
+        REACTIVE_POWER_VARIATION,
+        REFERENCE_VOLTAGE_VARIATION;
 
         @CEnumValue
         public native int getCValue();
@@ -1478,7 +1510,8 @@ public final class PyPowsyblApiHeader {
     @CEnum("RaoComputationStatus")
     public enum RaoComputationStatus {
         DEFAULT,
-        FAILURE;
+        FAILURE,
+        PARTIAL_FAILURE;
 
         @CEnumValue
         public native int getCValue();
@@ -1611,12 +1644,6 @@ public final class PyPowsyblApiHeader {
         @CField("max_preventive_search_tree_depth")
         void setMaxPreventiveSearchTreeDepth(int depth);
 
-        @CField("max_auto_search_tree_depth")
-        int getMaxAutoSearchTreeDepth();
-
-        @CField("max_auto_search_tree_depth")
-        void setMaxAutoSearchTreeDepth(int depth);
-
         @CField("max_curative_search_tree_depth")
         int getMaxCurativeSearchTreeDepth();
 
@@ -1651,12 +1678,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("execution_condition")
         void setExecutionCondition(int executionCondition);
-
-        @CField("re_optimize_curative_range_actions")
-        boolean getReOptimizeCurativeRangeActions();
-
-        @CField("re_optimize_curative_range_actions")
-        void setReOptimizeCurativeRangeActions(boolean reOptimizeCurativeRangeActions);
 
         @CField("hint_from_first_preventive_rao")
         boolean getHintFromFirstPreventiveRao();

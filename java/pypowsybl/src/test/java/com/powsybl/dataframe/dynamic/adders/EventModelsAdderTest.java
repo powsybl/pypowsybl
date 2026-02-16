@@ -45,7 +45,7 @@ class EventModelsAdderTest {
     @ParameterizedTest(name = "{0}")
     @MethodSource("eventProvider")
     void testEventAdders(EventMappingType mappingType, Consumer<DefaultUpdatingDataframe> updateDataframe) {
-        Network network = EurostagTutorialExample1Factory.create();
+        Network network = EurostagTutorialExample1Factory.createWithLFResults();
         dataframe.addSeries(START_TIME, false, new TestDoubleSeries(10));
         updateDataframe.accept(dataframe);
         EventMappingHandler.addElements(mappingType, eventModelsSupplier, dataframe);
@@ -67,6 +67,16 @@ class EventModelsAdderTest {
                         (Consumer<DefaultUpdatingDataframe>) df -> {
                             df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
                             df.addSeries(DELTA_P, false, new TestDoubleSeries(1.3));
+                        }),
+                Arguments.of(REACTIVE_POWER_VARIATION,
+                        (Consumer<DefaultUpdatingDataframe>) df -> {
+                            df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
+                            df.addSeries(DELTA_Q, false, new TestDoubleSeries(1.4));
+                        }),
+                Arguments.of(REFERENCE_VOLTAGE_VARIATION,
+                        (Consumer<DefaultUpdatingDataframe>) df -> {
+                            df.addSeries(STATIC_ID, false, new TestStringSeries("GEN"));
+                            df.addSeries(DELTA_U, false, new TestDoubleSeries(1.5));
                         }),
                 Arguments.of(NODE_FAULT,
                         (Consumer<DefaultUpdatingDataframe>) df -> {

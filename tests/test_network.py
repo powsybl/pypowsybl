@@ -27,7 +27,7 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile, SldProfile
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -62,8 +62,15 @@ def test_load_cgmes_two_zip():
     assert 3 == len(n.get_substations())
 
 
+def test_update_network_cgmes():
+    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
+    assert math.isnan(network.get_loads()["p0"]["EnergyConsumer"])
+    network.update_from_file(DATA_DIR.joinpath('load_SSH.xml'))
+    assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
+
+
 def test_load_post_processor():
-    assert ['loadflowResultsCompletion', 'odreGeoDataImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
 
 
@@ -404,10 +411,9 @@ def test_svc_data_frame():
     svcs = n.get_static_var_compensators()
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['SVC']),
-        columns=['name', 'b_min', 'b_max', 'target_v', 'target_q',
-                 'regulation_mode', 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id', 'bus_id',
-                 'connected'],
-        data=[['', -0.05, 0.05, 400, nan, 'VOLTAGE', 'SVC', nan, -12.54, nan, 'S4VL1', 'S4VL1_0', True]])
+        columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating',
+                 'regulated_element_id', 'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+        data=[['', -0.05, 0.05, 400, nan, 'VOLTAGE', True, 'SVC', nan, -12.54, nan, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=1e-2)
     n.update_static_var_compensators(pd.DataFrame(
         index=pd.Series(name='id', data=['SVC']),
@@ -417,10 +423,10 @@ def test_svc_data_frame():
     svcs = n.get_static_var_compensators()
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['SVC']),
-        columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id', 'p',
-                 'q', 'i',
+        columns=['name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode',
+                 'regulating', 'regulated_element_id', 'p', 'q', 'i',
                  'voltage_level_id', 'bus_id', 'connected'],
-        data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', 'VSC1', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
+        data=[['', -0.06, 0.06, 398, 100, 'REACTIVE_POWER', True, 'VSC1', -12, -13, 25.54, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, svcs, check_dtype=False, atol=1e-2)
     svcs = n.get_static_var_compensators(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
@@ -890,18 +896,18 @@ def test_exception():
 def test_ratio_tap_changers():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
-                                     'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc',
+                                     'regulating', 'target_v', 'target_deadband', 'regulating_bus_id'],
+                            data=[['', 1, nan, 0, 2, 3, True, True, 158.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
     update = pd.DataFrame(index=['NHV2_NLOAD'],
                           columns=['tap', 'regulating', 'target_v'],
                           data=[[0, False, 180]])
     n.update_ratio_tap_changers(update)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 0, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
+                            data=[['', 0, nan, 0, 2, 3, True, False, 180.0, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 
@@ -910,11 +916,11 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
-                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['TWO', 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
+                            data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
+                                  ['TWO', 17, 17, 1, 33, 33, True, False, 0.0, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
     update = pd.DataFrame(index=pd.MultiIndex.from_tuples([('84ed55f4-61f5-4d9d-8755-bba7b877a246', 'TWO')],
@@ -926,11 +932,11 @@ def test_ratio_tap_changers_3_windings():
     expected = pd.DataFrame(index=pd.Series(name='id', data=['b94318f6-6d24-4f56-96b9-df2531ad6543',
                                                              'e482b89a-fa84-4ea9-8e70-a83d44790957',
                                                              '84ed55f4-61f5-4d9d-8755-bba7b877a246']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
-                                  ['', 14, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
-                                  ['TWO', 9, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
+                            data=[['', 10, 10, 1, 25, 25, True, False, 0.0, 0.5, '8bbd7e74-ae20-4dce-8780-c20f8e18c2e0_0'],
+                                  ['', 14, 18, 1, 33, 33, True, True, 10.815, 0.5, '4ba71b59-ee2f-450b-9f7d-cc2f1cc5e386_0'],
+                                  ['TWO', 9, 17, 1, 33, 33, True, True, 16.7, 0.5, 'b10b171b-3bc5-4849-bb1f-61ed9ea1ec7c_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
     steps = n.get_ratio_tap_changer_steps()
@@ -942,15 +948,15 @@ def test_ratio_tap_changers_3_windings():
 def test_phase_tap_changers():
     n = pp.network.create_four_substations_node_breaker_network()
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
+            'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 15 == twt_values.tap
     assert 0 == twt_values.low_tap
     assert 32 == twt_values.high_tap
     assert 33 == twt_values.step_count
     assert not twt_values.regulating
-    assert 'FIXED_TAP' == twt_values.regulation_mode
+    assert 'CURRENT_LIMITER' == twt_values.regulation_mode
     assert pd.isna(twt_values.regulation_value)
     assert pd.isna(twt_values.target_deadband)
     update = pd.DataFrame(index=['TWT'],
@@ -959,8 +965,8 @@ def test_phase_tap_changers():
     n.update_ratio_tap_changers(id='TWT', regulating=False)
     n.update_phase_tap_changers(update)
     tap_changers = n.get_phase_tap_changers()
-    assert ['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'regulating', 'regulation_mode',
-            'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
+    assert ['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
+            'regulation_mode', 'regulation_value', 'target_deadband', 'regulating_bus_id'] == tap_changers.columns.tolist()
     twt_values = tap_changers.loc['TWT']
     assert 10 == twt_values.tap
     assert twt_values.regulating
@@ -1119,7 +1125,8 @@ def test_nad():
                                                                          bus_legend=False,
                                                                          substation_description_displayed=True,
                                                                          edge_info_displayed=EdgeInfoType.CURRENT,
-                                                                         voltage_level_details=False
+                                                                         voltage_level_details=False,
+                                                                         injections_added=False
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -1143,7 +1150,8 @@ def test_nad():
                                                                             bus_legend=False,
                                                                             substation_description_displayed=True,
                                                                             edge_info_displayed=EdgeInfoType.REACTIVE_POWER,
-                                                                            voltage_level_details=False
+                                                                            voltage_level_details=False,
+                                                                            injections_added=False
                                                                             ))
 
 
@@ -1238,20 +1246,39 @@ def test_nad_profile():
     assert re.search('.*<svg.*', nad_three_wt.svg)
     assert len(nad_three_wt.metadata) > 0
 
+    default_profile = n_three_wt.get_default_nad_profile()
+    assert list(default_profile.branch_labels.columns) == ['side1', 'middle', 'side2', 'arrow1', 'arrow2']
+    assert list(default_profile.three_wt_labels) == ['side1', 'side2', 'side3', 'arrow1', 'arrow2', 'arrow3']
+    assert list(default_profile.bus_descriptions) == ['description']
+    assert list(default_profile.vl_descriptions) == ['type', 'description']
 
-def test_current_limits():
-    network = pp.network.create_eurostag_tutorial_example1_network()
-    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
-        assert 9 == len(network.get_current_limits())
-    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
-        assert 5 == len(network.get_current_limits().loc['NHV1_NHV2_1'])
-    with pytest.warns(DeprecationWarning, match=re.escape("get_current_limits is deprecated, use get_operational_limits instead")):
-        current_limit = network.get_current_limits().sort_index().loc['NHV1_NHV2_1', '10\'']
-        expected = pd.DataFrame(index=pd.MultiIndex.from_tuples(names=['branch_id', 'name'],
-                                                                tuples=[('NHV1_NHV2_1', '10\'')]),
-                                columns=['side', 'value', 'acceptable_duration'],
-                                data=[['TWO', 1200.0, 600]])
-        pd.testing.assert_frame_equal(expected, current_limit, check_dtype=False)
+    
+def test_sld_profile():
+    diagram_profile = SldProfile()
+    assert not diagram_profile.labels
+    diagram_profile = SldProfile(labels=None)
+    assert not diagram_profile.labels
+    n = pp.network.create_ieee14()
+    sld_labels_df = pd.DataFrame.from_records(index='id', columns=['id', 'label', 'additional_label'],
+                                              data=[('B1-G', 'MY-GENERATOR', 'MGEN'),
+                                                    ('L1-5-1', 'MY-LINE1', ''),
+                                                    ('L1-2-1', 'MY-LINE2', ''),
+                                                    ('B1', 'MY-BUS1', '')])
+    sld_feeders_info_df = pd.DataFrame.from_records(index='id', columns=['id', 'type', 'side', 'direction', 'label'],
+                                                    data=[('L1-5-1', 'ARROW_ACTIVE', 'ONE', 'IN', 'ACTIVE VALUE1'),
+                                                          ('L1-5-1', 'ARROW_REACTIVE', 'ONE', 'OUT', 'REACTIVE VALUE1'),
+                                                          ('L1-2-1', 'ARROW_CURRENT', 'ONE', 'IN', 'CURRENT VALUE1'),
+                                                          ('B1-G', 'ARROW_ACTIVE', None, 'IN', 'G VALUE1')])
+    sld_styles_df = pd.DataFrame.from_records(index='id', columns=['id', 'color', 'bus_width', 'width', 'dash'],
+                                              data=[('B1', 'orange', '4px', '2px', '2, 2')])
+
+    diagram_profile=SldProfile(labels=sld_labels_df, feeders_info=sld_feeders_info_df, styles=sld_styles_df)
+    assert isinstance(diagram_profile.labels, pd.DataFrame)
+    assert isinstance(diagram_profile.feeders_info, pd.DataFrame)
+    assert isinstance(diagram_profile.styles, pd.DataFrame)
+    sld1=n.get_single_line_diagram('VL1', sld_profile=diagram_profile)
+    assert re.search('.*<svg.*', sld1.svg)
+    assert len(sld1.metadata) > 0
 
 
 def test_deep_copy():
@@ -1408,10 +1435,10 @@ def test_shunt():
     assert not df['fictitious']['SHUNT']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
+                                     'solved_section_count', 'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, False, nan, nan,
+                            data=[['', 0.0, -0.012, 'LINEAR', 1, 1, nan, False, nan, nan,
                                    'S1VL2_0', nan, 1920, nan, 'S1VL2', 'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     n.update_shunt_compensators(
@@ -1425,10 +1452,10 @@ def test_shunt():
                      data=[[True]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
                             columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
-                                     'voltage_regulation_on', 'target_v',
+                                     'solved_section_count', 'voltage_regulation_on', 'target_v',
                                      'target_deadband', 'regulating_bus_id', 'p', 'q', 'i',
                                      'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, True, 50, 3,
+                            data=[['', 0.0, -0.0, 'LINEAR', 1, 0, nan, True, 50, 3,
                                    '', nan, 1900, nan, 'S1VL2', '', False]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False)
     shunts = n.get_shunt_compensators(attributes=['bus_breaker_bus_id', 'node'])
@@ -1521,13 +1548,14 @@ def test_busbar_sections():
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',
                                                   'S4VL1_BBS']),
-                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'connected', 'fictitious'],
-                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', True, True],
-                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', True, False],
-                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', True, False],
-                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', True, False],
-                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', True, False]])
+                            columns=['name', 'v', 'angle', 'voltage_level_id', 'bus_id', 'bus_breaker_bus_id', 'node',
+                                     'connected', 'fictitious'],
+                            data=[['S1VL1_BBS', 224.6139, 2.2822, 'S1VL1', 'S1VL1_0', 'S1VL1_0', 0, True, True],
+                                  ['S1VL2_BBS1', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_0', 0, True, False],
+                                  ['S1VL2_BBS2', 400.0000, 0.0000, 'S1VL2', 'S1VL2_0', 'S1VL2_1', 1, True, False],
+                                  ['S2VL1_BBS', 408.8470, 0.7347, 'S2VL1', 'S2VL1_0', 'S2VL1_0', 0, True, False],
+                                  ['S3VL1_BBS', 400.0000, 0.0000, 'S3VL1', 'S3VL1_0', 'S3VL1_0', 0, True, False],
+                                  ['S4VL1_BBS', 400.0000, -1.1259, 'S4VL1', 'S4VL1_0', 'S4VL1_0', 0, True, False]])
     pd.testing.assert_frame_equal(expected, n.get_busbar_sections(all_attributes=True), check_dtype=False)
 
 
@@ -2097,47 +2125,48 @@ def test_limits():
     network = util.create_dangling_lines_network()
 
     expected = pd.DataFrame.from_records(
-        index='element_id',
+        index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
         data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False, 'DEFAULT', True),
               ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False, 'DEFAULT', True),
               ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False, 'DEFAULT', True)]
     )
-    pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False)
+    pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False,
+                                  check_index_type=False)
 
     network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False, 'DEFAULT', True),
-              ('NHV1_NHV2_1', 'LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False, 'DEFAULT', True),
-              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False, 'DEFAULT', True),
-              ('NHV1_NHV2_1', 'LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False, 'DEFAULT', True)])
+        data=[('LINE', 'ONE', 'permanent_limit', 'ACTIVE_POWER', 500, -1, False, 'DEFAULT', True),
+              ('LINE', 'ONE', 'permanent_limit', 'APPARENT_POWER', 500, -1, False, 'DEFAULT', True),
+              ('LINE', 'TWO', 'permanent_limit', 'ACTIVE_POWER', 1100, -1, False, 'DEFAULT', True),
+              ('LINE', 'TWO', 'permanent_limit', 'APPARENT_POWER', 1100, -1, False, 'DEFAULT', True)])
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_1']
     limits = limits[limits['name'] == 'permanent_limit']
-    pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False, 'DEFAULT', True],
-              ['NHV1_NHV2_2', 'LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False, 'DEFAULT', True]])
+        data=[['LINE', 'ONE', "20'", 'ACTIVE_POWER', 1200, 1200, False, 'DEFAULT', True],
+              ['LINE', 'ONE', "20'", 'APPARENT_POWER', 1200, 1200, False, 'DEFAULT', True]])
     limits = network.get_operational_limits(all_attributes=True).loc['NHV1_NHV2_2']
     limits = limits[limits['name'] == '20\'']
-    pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
     network = util.create_three_windings_transformer_with_current_limits_network()
     expected = pd.DataFrame.from_records(
-        index='element_id',
-        columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
+        index=['side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[['3WT', 'THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False, 'DEFAULT', True],
-              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False, 'DEFAULT', True],
-              ['3WT', 'THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False, 'DEFAULT', True]])
+        data=[['THREE_WINDINGS_TRANSFORMER', 'ONE', "10'", 'CURRENT', 1400, 600, False, 'DEFAULT', True],
+              ['THREE_WINDINGS_TRANSFORMER', 'TWO', "10'", 'CURRENT', 140, 600, False, 'DEFAULT', True],
+              ['THREE_WINDINGS_TRANSFORMER', 'THREE', "10'", 'CURRENT', 14, 600, False, 'DEFAULT', True]])
     limits = network.get_operational_limits(all_attributes=True).loc['3WT']
     limits = limits[limits['name'] == '10\'']
-    pd.testing.assert_frame_equal(expected, limits, check_dtype=False)
+    pd.testing.assert_frame_equal(expected, limits, check_dtype=False, check_index_type=False)
 
 def test_multiple_limit_groups():
     network = pp.network.create_eurostag_tutorial_example1_network()
@@ -2157,13 +2186,25 @@ def test_multiple_limit_groups():
     ]))
 
     limits = network.get_operational_limits(all_attributes=True)
-    assert('APPARENT_POWER' not in limits['type'].values)
+    assert('APPARENT_POWER' not in limits.index.get_level_values('type').to_list())
     all_limits = network.get_operational_limits(all_attributes=True, show_inactive_sets=True)
-    assert('APPARENT_POWER' in all_limits['type'].values)
+    assert('APPARENT_POWER' in all_limits.index.get_level_values('type').to_list())
 
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "DEFAULT")
     network.update_lines(id="NHV1_NHV2_1", selected_limits_group_1="SUMMER")
     assert(network.get_lines(all_attributes=True).loc["NHV1_NHV2_1"]["selected_limits_group_1"] == "SUMMER")
+
+def test_update_limits():
+    network = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
+    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 500
+    updating_df = pd.DataFrame.from_records(
+        index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
+        columns=['element_id', 'side', 'type', 'acceptable_duration', 'group_name', 'value'],
+        data=[('NHV1_NHV2_1', 'ONE', 'ACTIVE_POWER', -1, 'DEFAULT', 400)]
+    )
+    network.update_operational_limits(df=updating_df)
+    assert network.get_operational_limits().loc["NHV1_NHV2_1", "ONE", "ACTIVE_POWER", -1, "DEFAULT"].value == 400
+
 
 def test_validation_level():
     n = pp.network.create_ieee14()
@@ -2394,7 +2435,7 @@ def test_phase_tap_changer_regulated_side():
     tap_changer = n.get_phase_tap_changers(all_attributes=True).loc['TWT']
     assert not tap_changer.regulating
     assert tap_changer.regulated_side == 'ONE'
-    assert tap_changer.regulation_mode == 'FIXED_TAP'
+    assert tap_changer.regulation_mode == 'CURRENT_LIMITER'
     n.update_ratio_tap_changers(id='TWT', regulating=False)
     with pytest.raises(PyPowsyblError, match='regulated terminal is not set'):
         n.update_phase_tap_changers(id='TWT', target_deadband=0, regulation_value=300,
@@ -2513,6 +2554,97 @@ def test_terminals():
     assert "No enum constant" in str(e)
 
 
+def test_dc_nodes():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_nodes(pd.DataFrame(data={'nominal_v': 500}, index=['dcNodeFrPos']))
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
+        columns=['name', 'dc_bus_id', 'nominal_v', 'v'],
+        data=[['', 'dcNodeGbNeg_dcBus', 250, nan], ['', 'dcNodeGbPos_dcBus', 250, nan],
+              ['', 'dcNodeFrNeg_dcBus', 250, nan], ['', 'dcNodeFrPos_dcBus', 500, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_nodes(), check_dtype=False)
+
+    dc_nodes = n.get_dc_nodes(attributes=['nominal_v'])
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['dcNodeGbNeg', 'dcNodeGbPos', 'dcNodeFrNeg', 'dcNodeFrPos']),
+        columns=['nominal_v'], data=[[250], [250], [250], [500]])
+    pd.testing.assert_frame_equal(expected, dc_nodes, check_dtype=False, atol=1e-2)
+
+
+def test_dc_lines():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_lines(pd.DataFrame(data={'r': 1.0, 'i1': 10.0, 'i2': 10.0}, index=['dcLineNeg']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
+                            columns=['name', 'dc_node1_id', 'dc_node2_id', 'r', 'i1', 'p1', 'i2', 'p2'],
+                            data=[['', 'dcNodeFrNeg', 'dcNodeGbNeg', 1.0, 10.0, nan, 10.0, nan],
+                                  ['', 'dcNodeFrPos', 'dcNodeGbPos', 5.0, nan, nan, nan, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_lines(), check_dtype=False)
+
+    dc_lines = n.get_dc_lines(attributes=['dc_node1_id', 'dc_node2_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcLineNeg', 'dcLinePos']),
+                            columns=['dc_node1_id', 'dc_node2_id'],
+                            data=[['dcNodeFrNeg', 'dcNodeGbNeg'], ['dcNodeFrPos', 'dcNodeGbPos']])
+    pd.testing.assert_frame_equal(expected, dc_lines, check_dtype=False, atol=1e-2)
+
+
+def test_voltage_source_converters():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_voltage_source_converters(pd.DataFrame(
+        data={'dc_connected1': True, 'dc_connected2': True, 'voltage_regulator_on': False, 'control_mode': 'V_DC',
+              'pcc_terminal_id': 'VscFr', 'target_v_dc': 400.0, 'target_v_ac': 400.0, 'target_p': -50.0,
+              'target_q': 0.0, 'idle_loss': 0.5, 'switching_loss': 1.0, 'resistive_loss': 0.2, 'p_ac': 10.0,
+              'q_ac': 10.0, 'p_dc1': 10.0, 'p_dc2': 10.0}, index=['VscFr']))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']),
+                            columns=['name', 'voltage_level_id', 'bus1_id', 'bus2_id', 'dc_node1_id', 'dc_node2_id',
+                                     'dc_connected1', 'dc_connected2', 'pcc_terminal_id', 'voltage_regulator_on',
+                                     'control_mode', 'target_v_dc', 'target_v_ac', 'target_p', 'target_q', 'idle_loss',
+                                     'switching_loss', 'resistive_loss', 'p_ac', 'q_ac', 'p_dc1', 'p_dc2'], data=[
+            ['', 'VLDC-FR-xNodeDc1fr-150', 'VLDC-FR-xNodeDc1fr-150_0', '', 'dcNodeFrNeg', 'dcNodeFrPos', True, True,
+             'VscFr', False, 'V_DC', 400.0, 400.0, -50.0, 0.0, 0.5, 1.0, 0.2, 10.0, 10.0, 10.0, 10.0],
+            ['', 'VLDC-GB-xNodeDc1gb-150', 'VLDC-GB-xNodeDc1gb-150_0', '', 'dcNodeGbNeg', 'dcNodeGbPos', True, True,
+             'TRDC-GB-xNodeDc1gb', False, 'P_PCC', 500.0, 400.0, -200.0, 0.0, 0.0, 0.0, 0.0, nan, nan, nan, nan]])
+
+    pd.testing.assert_frame_equal(expected, n.get_voltage_source_converters(), check_dtype=False)
+
+    voltage_source_converters = n.get_voltage_source_converters(attributes=['voltage_level_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['VscFr', 'VscGb']), columns=['voltage_level_id'],
+                            data=[['VLDC-FR-xNodeDc1fr-150'], ['VLDC-GB-xNodeDc1gb-150']])
+    pd.testing.assert_frame_equal(expected, voltage_source_converters, check_dtype=False, atol=1e-2)
+
+
+def test_dc_grounds():
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
+    n.update_dc_grounds(pd.DataFrame(data={'r': 1.0}, index=['dcGroundGb']))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']),
+                            columns=['name', 'dc_node_id', 'r'],
+                            data=[['', 'dcNodeGbMid', 1.0], ['', 'dcNodeFrMid', 0.0]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
+
+    dc_grounds = n.get_dc_grounds(attributes=['dc_node_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcGroundGb', 'dcGroundFr']), columns=['dc_node_id'],
+                            data=[['dcNodeGbMid'], ['dcNodeFrMid']])
+    pd.testing.assert_frame_equal(expected, dc_grounds, check_dtype=False, atol=1e-2)
+
+
+def test_dc_buses():
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    n.update_dc_buses(pd.DataFrame(data={'v': 100}, index=['dcNodeFrPos_dcBus']))
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
+                                                  'dcNodeGbNeg_dcBus']),
+                            columns=['name', 'connected_component', 'dc_component', 'v'],
+                            data=[['', 0, 0, 100], ['', 0, 0, nan], ['', 0, 0, nan], ['', 0, 0, nan]])
+    pd.testing.assert_frame_equal(expected, n.get_dc_buses(), check_dtype=False)
+
+    dc_buses = n.get_dc_buses(attributes=['v'])
+    expected = pd.DataFrame(index=pd.Series(name='id',
+                                            data=['dcNodeFrPos_dcBus', 'dcNodeFrNeg_dcBus', 'dcNodeGbPos_dcBus',
+                                                  'dcNodeGbNeg_dcBus']), columns=['v'],
+                            data=[[100], [nan], [nan], [nan]])
+    pd.testing.assert_frame_equal(expected, dc_buses, check_dtype=False, atol=1e-2)
+
+
 def test_nad_parameters():
     nad_parameters = NadParameters()
     assert not nad_parameters.edge_name_displayed
@@ -2530,7 +2662,7 @@ def test_nad_parameters():
     assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
     assert nad_parameters.voltage_level_details
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER, False)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER, False, False)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2545,8 +2677,9 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
     assert nad_parameters.voltage_level_details == False
+    assert nad_parameters.injections_added == False
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT, True)
+    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT, True, True)
     assert nad_parameters.edge_name_displayed
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
@@ -2561,6 +2694,7 @@ def test_nad_parameters():
     assert nad_parameters.radius_factor == 120.0
     assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
     assert nad_parameters.voltage_level_details
+    assert nad_parameters.injections_added
 
 
 def test_update_dangling_line():
@@ -2732,6 +2866,66 @@ def test_q_min_max_at_target_p():
                                       data=[[-9999.99, 9999.99, -9999.99, 9999.99, -9999.99, 9999.99]])
     pd.testing.assert_frame_equal(expected_batteries, batteries, check_dtype=False)
 
+
+def test_rxbg_at_current_tap_transfo2():
+    network = pp.network.create_micro_grid_be_network()
+    transfo2 = network.get_2_windings_transformers(attributes=['r_at_current_tap', 'x_at_current_tap', 'g_at_current_tap', 'b_at_current_tap'])
+    expected_transfo2 = pd.DataFrame(index=pd.Series(name='id',
+                                                     data=['a708c3bc-465d-4fe7-b6ef-6fa6408a62b0',
+                                                           'b94318f6-6d24-4f56-96b9-df2531ad6543',
+                                                           'e482b89a-fa84-4ea9-8e70-a83d44790957']),
+                                     columns=['r_at_current_tap', 'x_at_current_tap', 'g_at_current_tap', 'b_at_current_tap'],
+                                     data=[[0.204769, 1.097992, 0.0, 0.0],
+                                           [0.2057, 2.78472, 0.0, 0.0],
+                                           [0.000903, 0.050402, 0.002009, -0.009626]])
+    pd.testing.assert_frame_equal(expected_transfo2, transfo2, check_dtype=False, atol=1e-6)
+
+
+def test_rxbg_at_current_tap_transfo3():
+    network = pp.network.create_micro_grid_be_network()
+    transfo3 = network.get_3_windings_transformers(attributes=['r1_at_current_tap', 'x1_at_current_tap', 'g1_at_current_tap', 'b1_at_current_tap',
+                                                               'r2_at_current_tap', 'x2_at_current_tap', 'g2_at_current_tap', 'b2_at_current_tap',
+                                                               'r3_at_current_tap', 'x3_at_current_tap', 'g3_at_current_tap', 'b3_at_current_tap'])
+    expected_transfo3 = pd.DataFrame(index=pd.Series(name='id',
+                                                     data=['84ed55f4-61f5-4d9d-8755-bba7b877a246']),
+                                     columns=['r1_at_current_tap', 'x1_at_current_tap', 'g1_at_current_tap', 'b1_at_current_tap',
+                                              'r2_at_current_tap', 'x2_at_current_tap', 'g2_at_current_tap', 'b2_at_current_tap',
+                                              'r3_at_current_tap', 'x3_at_current_tap', 'g3_at_current_tap', 'b3_at_current_tap'],
+                                     data=[[0.898462, 17.204128, 0.0, 0.000002,
+                                            1.07077, 19.6664, 0.0, 0.0,
+                                            4.837007, 21.760726, 0.0, 0.0]])
+    pd.testing.assert_frame_equal(expected_transfo3, transfo3, check_dtype=False, atol=1e-6)
+
+
+def test_regulated_bus_id():
+    n = pp.network.create_four_substations_node_breaker_network()
+    gens = n.get_generators(attributes=['regulated_bus_id', 'regulated_bus_breaker_bus_id'])
+    assert 'S1VL2_0' == gens['regulated_bus_id']['GH1']
+    assert 'S1VL2_7' == gens['regulated_bus_breaker_bus_id']['GH1']
+
+def test_apply_solved_values():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    pp.loadflow.run_ac(n)
+    assert 607.0 == n.get_generators().loc["GEN", "target_p"]
+    assert pytest.approx(-302.78, abs=1e-2) == n.get_generators().loc["GEN", "p"]
+    n.apply_solved_tap_position_and_section_count_values()
+    assert 607.0 == n.get_generators().loc["GEN", "target_p"]
+    n.apply_solved_values()
+    assert pytest.approx(302.78, abs=1e-2) == n.get_generators().loc["GEN", "target_p"]
+
+def test_create_dc_detailed_network():
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_network()
+    assert 'LccBipoleGroundReturn+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network()
+    assert 'LccBipoleGroundReturnNegativePoleOutage+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network()
+    assert 'LccBipoleGroundReturnWithDcLineSegments+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_lcc_bipole_metallic_return_network()
+    assert 'LccMonopoleMetallicReturn+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
+    assert 'VscSymmetricalMonopole+FR+GB' == n.id
+    n = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
+    assert 'VscAsymmetricalMonopole+FR+GB' == n.id
 
 if __name__ == '__main__':
     unittest.main()

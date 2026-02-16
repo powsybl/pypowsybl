@@ -8,28 +8,36 @@
 package com.powsybl.python.security;
 
 import com.powsybl.action.Action;
+import com.powsybl.action.ActionList;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingenciesProvider;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.python.commons.CommonObjects;
 import com.powsybl.python.contingency.ContingencyContainerImpl;
 import com.powsybl.security.*;
+import com.powsybl.security.limitreduction.LimitReduction;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.strategy.OperatorStrategy;
+import com.powsybl.security.strategy.OperatorStrategyList;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
-class SecurityAnalysisContext extends ContingencyContainerImpl {
+public class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     private final List<Action> actions = new ArrayList<>();
 
     private final List<OperatorStrategy> operatorStrategies = new ArrayList<>();
 
     private final List<StateMonitor> monitors = new ArrayList<>();
+
+    private final List<LimitReduction> limitReductions = new ArrayList<>();
 
     SecurityAnalysisResult run(Network network, SecurityAnalysisParameters securityAnalysisParameters, String provider, ReportNode reportNode) {
         ContingenciesProvider contingencies = this::createContingencies;
@@ -39,10 +47,31 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
                 .setOperatorStrategies(operatorStrategies)
                 .setActions(actions)
                 .setMonitors(monitors)
+                .setLimitReductions(limitReductions)
                 .setReportNode(reportNode == null ? ReportNode.NO_OP : reportNode);
         SecurityAnalysisReport report = SecurityAnalysis.find(provider)
                 .run(network, network.getVariantManager().getWorkingVariantId(), contingencies, runParameters);
         return report.getResult();
+    }
+
+    void addActionFromJsonFile(Path path) {
+        if (Files.exists(path)) {
+            ActionList actionList;
+            actionList = ActionList.readJsonFile(path);
+            actions.addAll(actionList.getActions());
+        } else {
+            throw new SecurityException("No actions found in " + path);
+        }
+    }
+
+    void addOperatorStrategyFromJsonFile(Path path) {
+        if (Files.exists(path)) {
+            OperatorStrategyList operatorStrategyList;
+            operatorStrategyList = OperatorStrategyList.read(path);
+            operatorStrategies.addAll(operatorStrategyList.getOperatorStrategies());
+        } else {
+            throw new SecurityException("No operatorStrategies found in " + path);
+        }
     }
 
     void addAction(Action action) {
@@ -55,5 +84,13 @@ class SecurityAnalysisContext extends ContingencyContainerImpl {
 
     void addMonitor(StateMonitor monitor) {
         monitors.add(monitor);
+    }
+
+    public void addLimitReduction(LimitReduction limitReduction) {
+        limitReductions.add(limitReduction);
+    }
+
+    public List<LimitReduction> getLimitReductions() {
+        return Collections.unmodifiableList(limitReductions);
     }
 }

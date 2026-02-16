@@ -1,6 +1,8 @@
 Sensitivity analysis
 ====================
 
+For detailed documentation of the Powsybl sensitivity analysis please refer to the `PowSyBl OpenLoadFlow documentation <https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/sensitivity/sensitivity.html>`_.
+
 You can use the module :mod:`pypowsybl.sensitivity` in order to perform sensitivity analysis on a network.
 
 DC sensitivity analysis
@@ -332,120 +334,8 @@ For advanced users, a more generic way to create factors is available allowing t
           NHV1_NHV2_1
     LOAD     0.501398
 
-Here is a table summarizing the possible functions and variables and if it is supported in AC or DC analysis.
-
-.. list-table:: Supported functions and variables combination
-   :header-rows: 1
-   :stub-columns: 1
-
-   * - Function \\ Variable
-     - INJECTION_ACTIVE_POWER
-     - INJECTION_REACTIVE_POWER
-     - TRANSFORMER_PHASE
-     - BUS_TARGET_VOLTAGE
-     - HVDC_LINE_ACTIVE_POWER
-     - TRANSFORMER_PHASE_1
-     - TRANSFORMER_PHASE_2
-     - TRANSFORMER_PHASE_3
-   * - BRANCH_ACTIVE_POWER_1
-     - AC + DC
-     - N/A
-     - AC + DC
-     - N/A
-     - AC + DC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-   * - BRANCH_CURRENT_1
-     - AC + DC
-     - AC
-     - AC + DC
-     - AC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-   * - BRANCH_REACTIVE_POWER_1
-     - N/A
-     - AC
-     - N/A
-     - AC
-     - N/A
-     - N/A
-     - N/A
-     - N/A
-   * - BRANCH_ACTIVE_POWER_2
-     - AC + DC
-     - N/A
-     - AC + DC
-     - N/A
-     - AC + DC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-   * - BRANCH_CURRENT_2
-     - AC + DC
-     - AC
-     - AC + DC
-     - AC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-   * - BRANCH_REACTIVE_POWER_2
-     - N/A
-     - AC
-     - N/A
-     - AC
-     - N/A
-     - N/A
-     - N/A
-     - N/A
-   * - BRANCH_ACTIVE_POWER_3
-     - AC + DC
-     - N/A
-     - AC + DC
-     - N/A
-     - AC + DC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-   * - BRANCH_CURRENT_3
-     - AC + DC
-     - AC
-     - AC + DC
-     - AC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-     - AC + DC
-   * - BRANCH_REACTIVE_POWER_3
-     - N/A
-     - AC
-     - N/A
-     - AC
-     - N/A
-     - N/A
-     - N/A
-     - N/A
-   * - BUS_VOLTAGE
-     - N/A
-     - AC
-     - N/A
-     - AC
-     - N/A
-     - N/A
-     - N/A
-     - N/A
-   * - BUS_REACTIVE_POWER
-     - N/A
-     - AC
-     - N/A
-     - AC
-     - N/A
-     - N/A
-     - N/A
-     - N/A
+As pypowsybl uses powsybl-open-loadflow to compute sensitivity analysis, the list of supported functions and variables in AC or DC
+is the same as the one documented in the `OpenLoadFlow documentation <https://powsybl.readthedocs.io/projects/powsybl-open-loadflow/en/latest/sensitivity/getting_started.html#getting-started>`_.
 
 A special value of `SensitivityVariableType` `AUTO_DETECT` allows to auto detect each of the variable type using its ID.
 It is important to notice that in this case, not all type of sensitivity variable are usable. For instance when an

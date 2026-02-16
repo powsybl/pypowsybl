@@ -541,6 +541,53 @@ def test_reference_priorities():
     assert network.get_extensions('referencePriorities').empty
 
 
+def test_voltage_per_reactive_power_control():
+    network = pn.create_four_substations_node_breaker_network()
+    assert network.get_extensions('voltagePerReactivePowerControl').empty
+
+    network.create_extensions('voltagePerReactivePowerControl', id="SVC", slope=0.5)
+    e = network.get_extensions('voltagePerReactivePowerControl')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['SVC']),
+        columns=['slope'],
+        data=[[0.5]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('voltagePerReactivePowerControl', id="SVC", slope=0.8)
+    e = network.get_extensions('voltagePerReactivePowerControl')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['SVC']),
+        columns=['slope'],
+        data=[[0.8]])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('voltagePerReactivePowerControl', ids="SVC")
+    assert network.get_extensions('voltagePerReactivePowerControl').empty
+
+
+def test_batteries_voltage_regulation():
+    network = pn.load(str(TEST_DIR.joinpath('battery.xiidm')))
+    assert network.get_extensions('voltageRegulation').empty
+
+    network.create_extensions('voltageRegulation', id='BAT', voltage_regulator_on=True, target_v=400.0)
+    e = network.get_extensions('voltageRegulation')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT']),
+        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
+        data=[[True, 400.0, 'BAT']])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.update_extensions('voltageRegulation', id=['BAT'], voltage_regulator_on=False, target_v=399.0)
+    e = network.get_extensions('voltageRegulation')
+    expected = pd.DataFrame(
+        index=pd.Series(name='id', data=['BAT']),
+        columns=['voltage_regulator_on', 'target_v', 'regulated_element_id'],
+        data=[[False, 399.0, 'BAT']])
+    pd.testing.assert_frame_equal(expected, e, check_dtype=False)
+
+    network.remove_extensions('voltageRegulation', ['BAT'])
+    assert network.get_extensions('voltageRegulation').empty
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
@@ -563,7 +610,7 @@ def test_get_extensions_information():
                'attributes'] == 'index : id (str), observable (bool), p_standard_deviation (float), p_redundant (bool), q_standard_deviation (float), q_redundant (bool), v_standard_deviation (float), v_redundant (bool)'
     assert extensions_information.loc['detail']['detail'] == 'Provides active power setpoint and reactive power setpoint for a load'
     assert extensions_information.loc['detail'][
-               'attributes'] == 'index : id (str), fixed_p (float), variable_p (float), fixed_q (float), variable_q (float)'
+               'attributes'] == 'index : id (str), fixed_p0 (float), variable_p0 (float), fixed_q0 (float), variable_q0 (float)'
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['detail'] == ''
     assert extensions_information.loc['hvdcOperatorActivePowerRange']['attributes'] == 'index : id (str), opr_from_cs1_to_cs2 (float), opr_from_cs2_to_cs1 (float)'
     assert extensions_information.loc['activePowerControl']['detail'] == 'Provides information about the participation of generators to balancing'
@@ -588,3 +635,10 @@ def test_get_extensions_information():
     assert extensions_information.loc['linePosition']['attributes'] == 'index : id (str), num (int), latitude (float), longitude (float)'
     assert extensions_information.loc['referencePriorities']['detail'] == 'Defines the angle reference generator, busbar section or load of a power flow calculation, i.e. which bus will be used with a zero-voltage angle.'
     assert extensions_information.loc['referencePriorities']['attributes'] == 'index : id (str), priority (int)'
+    assert extensions_information.loc['voltagePerReactivePowerControl']['detail'] == 'Models the voltage control static var compensators'
+    assert extensions_information.loc['voltagePerReactivePowerControl']['attributes'] == 'index : id (str), slope (float)'
+    assert extensions_information.loc['voltageRegulation']['detail'] == 'it allows to specify the voltage regulation mode for batteries'
+    assert extensions_information.loc['voltageRegulation']['attributes'] == 'index : id (str), voltage_regulator_on (bool), target_v (float), regulated_element_id (str)'
+    assert extensions_information.loc['synchronousGeneratorProperties']['attributes'] == 'index : id (str), numberOfWindings (str), governor (str), voltageRegulator (str), pss (str), auxiliaries (bool), internalTransformer (bool), rpcl (str), uva (str), aggregated (bool), qlim (bool)'
+    assert extensions_information.loc['synchronizedGeneratorProperties']['attributes'] == 'index : id (str), type (str), rpcl2 (bool)'
+    assert extensions_information.loc['generatorConnectionLevel']['attributes'] == 'index : id (str), level (str)'

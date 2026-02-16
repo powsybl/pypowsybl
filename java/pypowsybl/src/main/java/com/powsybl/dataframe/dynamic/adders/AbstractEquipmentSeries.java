@@ -19,11 +19,11 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEquipmentSeries<E extends Identifiable<?>, B extends EquipmentModelBuilder<E, B>> extends AbstractDynamicModelSeries<B> {
+public abstract class AbstractEquipmentSeries<E extends Identifiable<E>, B extends EquipmentModelBuilder<E, B>> extends AbstractDynamicModelSeries<B> {
 
     protected final StringSeries staticIds;
 
-    AbstractEquipmentSeries(UpdatingDataframe dataframe) {
+    public AbstractEquipmentSeries(UpdatingDataframe dataframe) {
         super(dataframe);
         this.staticIds = PersistentStringSeries.copyOf(dataframe, STATIC_ID);
     }

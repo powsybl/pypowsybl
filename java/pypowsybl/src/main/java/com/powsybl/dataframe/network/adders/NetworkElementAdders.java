@@ -53,7 +53,11 @@ public final class NetworkElementAdders {
             Map.entry(AREA, new AreaDataframeAdder()),
             Map.entry(AREA_VOLTAGE_LEVELS, new AreaVoltageLevelsDataframeAdder()),
             Map.entry(AREA_BOUNDARIES, new AreaBoundariesDataframeAdder()),
-            Map.entry(INTERNAL_CONNECTION, new InternalConnectionDataframeAdder())
+            Map.entry(INTERNAL_CONNECTION, new InternalConnectionDataframeAdder()),
+            Map.entry(DC_LINE, new DcLineDataframeAdder()),
+            Map.entry(DC_NODE, new DcNodeDataframeAdder()),
+            Map.entry(VOLTAGE_SOURCE_CONVERTER, new VoltageSourceConverterDataFrameAdder()),
+            Map.entry(DC_GROUND, new DcGroundDataFrameAdder())
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();

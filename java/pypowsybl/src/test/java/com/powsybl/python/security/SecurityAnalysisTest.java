@@ -11,12 +11,22 @@ import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
 import com.powsybl.contingency.ContingencyContextType;
 import com.powsybl.dataframe.impl.Series;
+import com.powsybl.dataframe.security.LimitReductionDataframeAdder;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.TestDoubleSeries;
+import com.powsybl.dataframe.update.TestIntSeries;
+import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.iidm.criteria.IdentifiableCriterion;
+import com.powsybl.iidm.criteria.duration.LimitDurationCriterion;
+import com.powsybl.iidm.network.Country;
+import com.powsybl.iidm.network.LimitType;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.network.Networks;
 import com.powsybl.security.SecurityAnalysisParameters;
 import com.powsybl.security.SecurityAnalysisResult;
+import com.powsybl.security.limitreduction.LimitReduction;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.BranchResult;
 import org.assertj.core.api.Assertions;
@@ -27,6 +37,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
@@ -47,11 +58,11 @@ class SecurityAnalysisTest {
         BranchResult branchResult = result.getPreContingencyResult().getNetworkResult().getBranchResults().get(0);
         var eps = Offset.offset(1e-12);
         assertThat(branchResult.getP1()).isCloseTo(302.44404914466014, eps);
-        assertThat(branchResult.getQ1()).isCloseTo(98.74027438014933, eps);
-        assertThat(branchResult.getI1()).isCloseTo(456.7689759899916, eps);
+        assertThat(branchResult.getQ1()).isCloseTo(98.74027438015084, eps);
+        assertThat(branchResult.getI1()).isCloseTo(456.7689759899928, eps);
         assertThat(branchResult.getP2()).isCloseTo(-300.43389523337316, eps);
-        assertThat(branchResult.getQ2()).isCloseTo(-137.18849307164064, eps);
-        assertThat(branchResult.getI2()).isCloseTo(488.99279636727357, eps);
+        assertThat(branchResult.getQ2()).isCloseTo(-137.18849307164206, eps);
+        assertThat(branchResult.getI2()).isCloseTo(488.9927963672751, eps);
         assertThat(result.getPostContingencyResults()).hasSize(1);
         assertThat(result.getPreContingencyResult().getNetworkResult().getBranchResults()).hasSize(1);
         branchResult = result.getPostContingencyResults().get(0).getNetworkResult().getBranchResults().get(0);
@@ -79,5 +90,31 @@ class SecurityAnalysisTest {
             .containsExactly("First contingency", "First contingency");
         Assertions.assertThat(series.get(1).getStrings())
             .containsExactly("NHV1_NHV2_2", "VLHV1");
+    }
+
+    @Test
+    void testLimitReductions() {
+        SecurityAnalysisContext analysisContext = new SecurityAnalysisContext();
+
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(2);
+        dataframe.addSeries("limit_type", true, new TestStringSeries("CURRENT", "CURRENT"));
+        dataframe.addSeries("permanent", false, new TestIntSeries(1, 0));
+        dataframe.addSeries("temporary", false, new TestIntSeries(0, 1));
+        dataframe.addSeries("country", false, new TestStringSeries("FR", "FR"));
+        dataframe.addSeries("max_voltage", false, new TestDoubleSeries(400.0, 400.0));
+        dataframe.addSeries("value", false, new TestDoubleSeries(0.8, 0.5));
+        new LimitReductionDataframeAdder().addElements(analysisContext, dataframe);
+
+        List<LimitReduction> limitReductions = analysisContext.getLimitReductions();
+        assertThat(limitReductions).hasSize(2);
+        LimitReduction limitReduction = limitReductions.getFirst();
+        assertEquals(LimitType.CURRENT, limitReduction.getLimitType());
+        assertEquals(ContingencyContext.all(), limitReduction.getContingencyContext());
+        assertThat(limitReduction.getDurationCriteria()).hasSize(1);
+        assertEquals(LimitDurationCriterion.LimitDurationType.PERMANENT, limitReduction.getDurationCriteria().getFirst().getType());
+        assertThat(limitReduction.getNetworkElementCriteria()).hasSize(1);
+        IdentifiableCriterion networkElementCriterion = (IdentifiableCriterion) limitReduction.getNetworkElementCriteria().getFirst();
+        assertEquals(400.0, networkElementCriterion.getNominalVoltageCriterion().getVoltageInterval().getNominalVoltageHighBound().get());
+        assertEquals(Country.FR, networkElementCriterion.getCountryCriterion().getCountries().getFirst());
     }
 }

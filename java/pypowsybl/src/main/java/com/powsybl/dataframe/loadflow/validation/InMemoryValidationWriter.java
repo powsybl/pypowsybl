@@ -73,8 +73,9 @@ public class InMemoryValidationWriter implements ValidationWriter {
     }
 
     @Override
-    public void write(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, StaticVarCompensator.RegulationMode regulationMode, double bMin, double bMax, boolean mainComponent, boolean validated) throws IOException {
-        svcData.add(new SvcValidationData(svcId, p, q, vControlled, vController, nominalVcontroller, reactivePowerSetpoint, voltageSetpoint, connected, regulationMode, bMin, bMax, mainComponent, validated));
+    public void write(String svcId, double p, double q, double vControlled, double vController, double nominalVcontroller, double reactivePowerSetpoint, double voltageSetpoint, boolean connected, StaticVarCompensator.RegulationMode regulationMode, boolean regulating, double bMin, double bMax, boolean mainComponent, boolean validated) throws IOException {
+        svcData.add(new SvcValidationData(svcId, p, q, vControlled, vController, nominalVcontroller, reactivePowerSetpoint, voltageSetpoint, connected, regulationMode, regulating, bMin, bMax, mainComponent, validated));
+
     }
 
     @Override

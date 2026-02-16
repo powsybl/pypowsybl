@@ -14,6 +14,7 @@ import org.apache.commons.lang3.function.TriFunction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -142,6 +143,11 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
         return (B) this;
     }
 
+    public B optionalInts(String name, Function<U, OptionalInt> value) {
+        series.add(new OptionalIntSeriesMapper<>(name, value));
+        return (B) this;
+    }
+
     public B booleans(String name, Predicate<U> value, BooleanSeriesMapper.BooleanUpdater<U> updater) {
         return booleans(name, value, updater, true);
     }
@@ -196,6 +202,11 @@ public class BaseDataframeMapperBuilder<T, U, C, B extends BaseDataframeMapperBu
 
     public <E extends Enum<E>> B enums(String name, Class<E> enumClass, Function<U, E> value, boolean defaultAttribute) {
         return enums(name, enumClass, value, null, defaultAttribute);
+    }
+
+    public <E extends Enum<E>> B enumsIndex(String name, Class<E> enumClass, Function<U, E> value) {
+        series.add(new EnumSeriesMapper<>(name, enumClass, value, null, true, true));
+        return (B) this;
     }
 
     public DataframeMapper<T, C> build() {

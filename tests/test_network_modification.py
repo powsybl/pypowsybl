@@ -620,6 +620,7 @@ def test_add_svc_bay():
                'position_order': 15,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
@@ -647,6 +648,7 @@ def test_add_svc_bay_deprecated_report():
                'position_order': 15,
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])
@@ -679,6 +681,7 @@ def test_add_svc_bay_bus_breaker():
                'bus_or_busbar_section_id': 'NGEN',
                'target_q': 200,
                'regulation_mode': 'REACTIVE_POWER',
+               'regulating': True,
                'target_v': 400,
                'b_min': 0,
                'b_max': 2}])

@@ -8,12 +8,22 @@ import pypowsybl as pp
 import pypowsybl.dynamic as dyn
 import pytest
 import pandas as pd
-
+import pypowsybl.network as pn
 
 @pytest.fixture(autouse=True)
 def set_up():
     pp.set_config_read(False)
 
+def test_categories_information():
+    model_mapping = dyn.ModelMapping()
+    assert model_mapping.get_categories_names()
+    info_df = model_mapping.get_categories_information()
+    assert info_df.loc['SimplifiedGenerator']['attribute'] == 'index : static_id (str), parameter_set_id (str), model_name (str)'
+    assert info_df.loc['SimplifiedGenerator']['description'] == 'Simplified generator not synchronized with the network frequency'
+    assert info_df.loc['PhaseShifterP']['attribute'] == 'index : dynamic_model_id (str), parameter_set_id (str), model_name (str), transformer (str)'
+    assert info_df.loc['PhaseShifterP']['description'] == 'Phase shifter P'
+    assert info_df.loc['TapChangerBlocking']['attribute'] == '[dataframe "Tcb"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe "Transformers"] index : dynamic_model_id (str), transformer_id (str) / [dataframe "U measurement 1"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 2"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 3"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 4"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 5"] index : dynamic_model_id (str), measurement_point_id (str)'
+    assert info_df.loc['TapChangerBlocking']['description'] == 'Tap changer blocking automation system'
 
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()
@@ -36,6 +46,7 @@ def test_add_mapping():
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
+    model_mapping.add_inertial_grid(static_id='GEN', parameter_set_id='in_grid', model_name='InertialGrid')
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_model_id='DM_OV', parameter_set_id='ov', controlled_branch='LINE1',
                                                  i_measurement='LINE2', i_measurement_side='TWO', model_name='OverloadManagementSystem')
@@ -57,8 +68,10 @@ def test_add_mapping():
     # Equipment with default model name and dynamic id
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab')
     # Equipment model from Supported models
-    model_name = model_mapping.get_supported_models(dyn.DynamicMappingType.BASE_LOAD)[0]
+    model_name = model_mapping.get_supported_models('Load')[0]
     model_mapping.add_base_load(static_id='LOAD', parameter_set_id='lab', model_name=model_name)
+    # Dynamic model from category name
+    model_mapping.add_dynamic_model(category_name='Load', static_id='LOAD', parameter_set_id='lab', model_name='LoadPQ')
 
 
 def test_dynamic_dataframe():
@@ -110,6 +123,8 @@ def test_add_event():
     event_mapping.add_disconnection(static_id='GEN', start_time=5)
     event_mapping.add_disconnection(static_id='LINE', start_time=3.3, disconnect_only='TWO')
     event_mapping.add_active_power_variation(static_id='LOAD', start_time=14, delta_p=2)
+    event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
+    event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
 
 
@@ -135,3 +150,107 @@ def test_add_output_variables():
     variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
     variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
     variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
+
+
+def test_default_parameters():
+    parameters = dyn.Parameters()
+    assert 0.0 == parameters.start_time
+    assert 10.0 == parameters.stop_time
+    assert not parameters.provider_parameters
+
+
+def test_parameters():
+    dynawo_param = {
+        'solver.type': 'IDA',
+        'precision': '1e-5'
+    }
+    parameters = dyn.Parameters(start_time=20, stop_time=100, provider_parameters=dynawo_param)
+    assert 20.0 == parameters.start_time
+    assert 100.0 == parameters.stop_time
+    assert 'IDA'== parameters.provider_parameters['solver.type']
+    assert '1e-5' == parameters.provider_parameters['precision']
+
+
+def test_synchronous_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'synchronousGeneratorProperties'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, numberOfWindings="THREE_WINDINGS",
+                        governor="Proportional", voltageRegulator="Proportional", pss="",
+                        auxiliaries=True, internalTransformer=False, rpcl="RPCL1",
+                        aggregated=False, qlim=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.numberOfWindings == "THREE_WINDINGS"
+    assert e.governor == "Proportional"
+    assert e.voltageRegulator == "Proportional"
+    assert e.pss == ""
+    assert e.auxiliaries == True
+    assert e.internalTransformer == False
+    assert e.rpcl == "RPCL1"
+    assert e.uva == "LOCAL"
+    assert e.aggregated == False
+    assert e.qlim == False
+
+    n.update_extensions(extension_name, id=element_id, numberOfWindings="FOUR_WINDINGS",
+                        governor="ProportionalIntegral", voltageRegulator="ProportionalIntegral", pss="Pss",
+                        auxiliaries=False, internalTransformer=True, rpcl="RPCL2",
+                        uva="DISTANT", aggregated=True, qlim=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.numberOfWindings == "FOUR_WINDINGS"
+    assert e.governor == "ProportionalIntegral"
+    assert e.voltageRegulator == "ProportionalIntegral"
+    assert e.pss == "Pss"
+    assert e.auxiliaries == False
+    assert e.internalTransformer == True
+    assert e.rpcl == "RPCL2"
+    assert e.uva == "DISTANT"
+    assert e.aggregated == True
+    assert e.qlim == True
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_synchronized_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'synchronizedGeneratorProperties'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id,
+                        type="PV", rpcl2=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.type == "PV"
+    assert e.rpcl2 == True
+
+    n.update_extensions(extension_name, id=element_id, type="PfQ", rpcl2=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.type == "PfQ"
+    assert e.rpcl2 == False
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_generator_connection_level_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'generatorConnectionLevel'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, level='TSO')
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.level == 'TSO'
+
+    n.update_extensions(extension_name, id=element_id, level='DSO')
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.level == 'DSO'
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty

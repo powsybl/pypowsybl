@@ -304,8 +304,8 @@ def test_sensitivity_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir']
-    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir']
+    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir', 'startWithFrozenACEmulation', 'threadCount']
+    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir', 'startWithFrozenACEmulation', 'threadCount']
     with pytest.raises(pp.PyPowsyblError, match='No sensitivity analysis provider for name \'unknown\''):
         pp.sensitivity.get_provider_parameters_names('unknown')
 
@@ -343,3 +343,25 @@ def test_busbar_section_sensi():
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm1')
     result = analysis.run(network)
     assert -0.8 == pytest.approx(result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'], 1e-4)
+
+def test_transfo3_sensi():
+    network = pp.network.create_micro_grid_be_network()
+    t3e_id = network.get_3_windings_transformers().head(1).index[0]
+    line_id = network.get_lines().head(1).index[0]
+    # Adding a phase tap changer to the three windings transformer leg one
+    ptc_df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': t3e_id,
+               'tap': 1,
+               'low_tap': 0,
+               'side': 'ONE'}])
+    step_df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': t3e_id, 'b': 2, 'g': 2, 'alpha': 2},
+              {'id': t3e_id, 'b': 2, 'g': 2, 'alpha': 4}])
+    network.create_phase_tap_changers(ptc_df, step_df)
+
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
+    result = analysis.run(network)
+    assert -0.002685 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-3)

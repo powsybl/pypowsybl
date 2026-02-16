@@ -75,7 +75,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         return units.stream();
     }
 
-    private static class ControlZoneGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, ControlZone> {
+    private static final class ControlZoneGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, ControlZone> {
 
         @Override
         public ControlZone getItem(Network network, UpdatingDataframe updatingDataframe, int lineNumber) {
@@ -97,7 +97,7 @@ public class SecondaryVoltageControlDataframeProvider implements NetworkExtensio
         }
     }
 
-    private static class ControlUnitGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, ControlUnitWithZone> {
+    private static final class ControlUnitGetter implements BaseDataframeMapperBuilder.ItemGetter<Network, ControlUnitWithZone> {
 
         @Override
         public ControlUnitWithZone getItem(Network network, UpdatingDataframe updatingDataframe, int lineNumber) {

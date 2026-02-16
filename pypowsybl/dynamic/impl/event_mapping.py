@@ -21,7 +21,7 @@ class EventMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_event_mapping()
 
-    def add_disconnection(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_disconnection(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates an equipment disconnection event
 
         Args:
@@ -48,8 +48,8 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.DISCONNECT, df, **kwargs)
 
-    def add_active_power_variation(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
-        """ Creates an equipment active power variation event
+    def add_active_power_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """ Creates an active power variation event on generator or load
 
         Args:
             df: Attributes as a dataframe.
@@ -75,7 +75,61 @@ class EventMapping:
         """
         self._add_all_event_mappings(EventMappingType.ACTIVE_POWER_VARIATION, df, **kwargs)
 
-    def add_node_fault(self, df: DataFrame = None, **kwargs: ArrayLike) -> None:
+    def add_reactive_power_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """ Creates a reactive power variation event on load and generator without dynamic model
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the load or generator affected by the event
+            - **start_time**: timestep at which the event happens
+            - **delta_q**: reactive power variation
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=14, delta_q=2)
+        """
+        self._add_all_event_mappings(EventMappingType.REACTIVE_POWER_VARIATION, df, **kwargs)
+
+    def add_reference_voltage_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """ Creates a reference voltage variation event on synchronized and synchronous generator
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the generator affected by the event
+            - **start_time**: timestep at which the event happens
+            - **delta_u**: reference voltage variation
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=14, delta_u=2)
+        """
+        self._add_all_event_mappings(EventMappingType.REFERENCE_VOLTAGE_VARIATION, df, **kwargs)
+
+    def add_node_fault(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """ Creates a bus node fault event
 
         Args:

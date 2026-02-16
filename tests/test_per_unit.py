@@ -94,7 +94,6 @@ def test_loads_per_unit():
 
 def test_busbar_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n)
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id',
@@ -166,10 +165,9 @@ def test_two_windings_transformers_per_unit():
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['TWT']),
                             columns=['name', 'r', 'x', 'g', 'b', 'rated_u1', 'rated_u2', 'rated_s', 'p1', 'q1', 'i1',
-                                     'p2',
-                                     'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
+                                     'p2', 'q2', 'i2', 'voltage_level1_id', 'voltage_level2_id', 'bus1_id', 'bus2_id',
                                      'connected1', 'connected2'],
-                            data=[['', 0.0013, 0.0092, 0, 0.0512, 1, 1, nan, -0.8, -0.1, 0.8076, 0.8008,
+                            data=[['', 0.0013, 0.0092, 0, 0.0512, 225.0, 400.0, nan, -0.8, -0.1, 0.8076, 0.8008,
                                    0.05486, 0.8027, 'S1VL1', 'S1VL2', 'S1VL1_0', 'S1VL2_0', True, True]])
     pd.testing.assert_frame_equal(expected, n.get_2_windings_transformers(), check_dtype=False, atol=10 ** -4)
     n.update_2_windings_transformers(
@@ -194,11 +192,10 @@ def test_shunt_compensators_per_unit():
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['SHUNT']),
-                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count',
+                            columns=['name', 'g', 'b', 'model_type', 'max_section_count', 'section_count', 'solved_section_count',
                                      'voltage_regulation_on', 'target_v', 'target_deadband', 'regulating_bus_id',
-                                     'p', 'q', 'i',
-                                     'voltage_level_id', 'bus_id', 'connected'],
-                            data=[['', 0, -19.2, 'LINEAR', 1, 1, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
+                                     'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
+                            data=[['', 0, -19.2, 'LINEAR', 1, 1, nan, False, nan, nan, 'S1VL2_0', nan, 19.2, nan, 'S1VL2',
                                    'S1VL2_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False, atol=1e-2)
 
@@ -279,9 +276,9 @@ def test_get_static_var_compensators_per_unit():
         n = per_unit_view(n, 100)
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 1.0, nan, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
     n.update_static_var_compensators(pd.DataFrame.from_records(
@@ -290,9 +287,9 @@ def test_get_static_var_compensators_per_unit():
 
     expected = pd.DataFrame.from_records(
         index='id',
-        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulated_element_id',
+        columns=['id', 'name', 'b_min', 'b_max', 'target_v', 'target_q', 'regulation_mode', 'regulating', 'regulated_element_id',
                  'p', 'q', 'i', 'voltage_level_id', 'bus_id', 'connected'],
-        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
+        data=[['SVC', '', -0.05, 0.05, 3, 4, 'VOLTAGE', True, 'SVC', 0, -0.13, 0.13, 'S4VL1', 'S4VL1_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_static_var_compensators(), check_dtype=False, atol=1e-2)
 
 
@@ -354,6 +351,8 @@ def test_reactive_capability_curve_points_per_unit():
 
 def test_three_windings_transformer_per_unit():
     n = util.create_three_windings_transformer_network()
+    # change rated_u0 to be different to rated_u1 to check per unit is correct
+    n.update_3_windings_transformers(id='3WT', rated_u0=140.0)
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(
@@ -365,12 +364,9 @@ def test_three_windings_transformer_per_unit():
                  'ratio_tap_position3', 'phase_tap_position3', 'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id',
                  'connected3'],
         data=[
-            ['', 1, 0.1, 0.01, 1, 0.1, 1, nan, -99999, -99999, nan, nan, nan, 'VL_132', 'VL_132_0', True, 0.00625,
-             0.000625,
-             0, 0,
-             1, nan, 2, -99999, nan, nan, nan, 'VL_33', 'VL_33_0', True, 0.001, 6.94444e-05, 0, 0, 1, nan, 0, -99999,
-             nan,
-             nan, nan, 'VL_11', 'VL_11_0', True]])
+            ['', 140, 0.088897, 0.01, 1.124885, 0.112488, 132.0, nan, -99999, -99999, nan, nan, nan, 'VL_132', 'VL_132_0', True, 0.00625,
+             0.000625, 0, 0, 33.0, nan, 2, -99999, nan, nan, nan, 'VL_33', 'VL_33_0', True, 0.001, 6.94444e-05, 0, 0, 11.0, nan, 0, -99999,
+             nan, nan, nan, 'VL_11', 'VL_11_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False,
                                   atol=1e-2)
     n.update_3_windings_transformers(pd.DataFrame(data=[
@@ -392,7 +388,7 @@ def test_three_windings_transformer_per_unit():
                  'voltage_level2_id', 'bus2_id', 'connected2', 'r3', 'x3', 'g3', 'b3', 'rated_u3', 'rated_s3',
                  'ratio_tap_position3', 'phase_tap_position3', 'p3', 'q3', 'i3', 'voltage_level3_id', 'bus3_id',
                  'connected3'],
-        data=[['', 1, 99, 9, 0, 0, 1, 100, -99999, -99999, 0.5, 0.1, 0.5, 'VL_132', 'VL_132_0', True, 99, 9, 0, 0,
+        data=[['', 140.0, 99, 9, 0, 0, 1, 100, -99999, -99999, 0.5, 0.1, 0.5, 'VL_132', 'VL_132_0', True, 99, 9, 0, 0,
                1, 100, 1, -99999, 0.5, 0.1, 0.48, 'VL_33', 'VL_33_0', True, 99, 9, 0, 0, 1, 100, 1, -99999, 0.5,
                0.1, 0.48, 'VL_11', 'VL_11_0', True]])
     pd.testing.assert_frame_equal(expected, n.get_3_windings_transformers(), check_dtype=False,
@@ -425,9 +421,9 @@ def test_ratio_tap_changers_per_unit():
     with pytest.warns(DeprecationWarning, match=re.escape("Per-unit view is deprecated and slow (make a deep copy of the network), use per unit mode of the network instead")):
         n = per_unit_view(n, 100)
     expected = pd.DataFrame(index=pd.Series(name='id', data=['NHV2_NLOAD']),
-                            columns=['side', 'tap', 'low_tap', 'high_tap', 'step_count', 'on_load', 'regulating',
+                            columns=['side', 'tap', 'solved_tap_position', 'low_tap', 'high_tap', 'step_count', 'oltc', 'regulating',
                                      'target_v', 'target_deadband', 'regulating_bus_id'],
-                            data=[['', 1, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0']])
+                            data=[['', 1, nan, 0, 2, 3, True, True, 1.053, 0.0, 'VLLOAD_0']])
     pd.testing.assert_frame_equal(expected, n.get_ratio_tap_changers(), check_dtype=False, atol=1e-2)
 
 

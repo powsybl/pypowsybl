@@ -7,8 +7,10 @@
 # Brings relevant types and methods into public namespace
 from .impl.loadflow import (
     run_ac,
+    run_ac_async,
     run_dc,
     ConnectedComponentMode,
+    ComponentMode,
     BalanceType,
     VoltageInitMode,
     get_provider_parameters_names,
