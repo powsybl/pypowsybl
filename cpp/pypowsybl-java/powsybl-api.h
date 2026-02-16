@@ -371,6 +371,7 @@ typedef struct sld_parameters_struct {
 } sld_parameters;
 
 typedef struct nad_parameters_struct {
+    unsigned char text_included;
     unsigned char edge_name_displayed;
     unsigned char edge_info_along_edge;
     unsigned char id_displayed;
@@ -386,6 +387,8 @@ typedef struct nad_parameters_struct {
     int edge_info_displayed;
     unsigned char voltage_level_details;
     unsigned char injections_added;
+    int max_steps;
+    double timeout_seconds;
 } nad_parameters;
 
 typedef enum {

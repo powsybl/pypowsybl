@@ -669,6 +669,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
+        .def_readwrite("text_included", &pypowsybl::NadParameters::text_included)
         .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
         .def_readwrite("edge_info_along_edge", &pypowsybl::NadParameters::edge_info_along_edge)
         .def_readwrite("power_value_precision", &pypowsybl::NadParameters::power_value_precision)
@@ -683,7 +684,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
         .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
         .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details)
-        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
+        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added)
+        .def_readwrite("max_steps", &pypowsybl::NadParameters::max_steps)
+        .def_readwrite("timeout_seconds", &pypowsybl::NadParameters::timeout_seconds);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));

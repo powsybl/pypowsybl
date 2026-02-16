@@ -1111,6 +1111,12 @@ public final class PyPowsyblApiHeader {
 
     @CStruct("nad_parameters")
     public interface NadParametersPointer extends PointerBase {
+        @CField("text_included")
+        void setTextIncluded(boolean edgeNameDisplayed);
+
+        @CField("text_included")
+        boolean isTextIncluded();
+
         @CField("edge_name_displayed")
         void setEdgeNameDisplayed(boolean edgeNameDisplayed);
 
@@ -1200,6 +1206,18 @@ public final class PyPowsyblApiHeader {
 
         @CField("injections_added")
         boolean isInjectionsAdded();
+
+        @CField("max_steps")
+        void setMaxSteps(int maxSteps);
+
+        @CField("max_steps")
+        int getMaxSteps();
+
+        @CField("timeout_seconds")
+        double getTimeoutSeconds();
+
+        @CField("timeout_seconds")
+        void setTimeoutSeconds(double timeoutSeconds);
     }
 
     @CStruct("dynamic_simulation_parameters")

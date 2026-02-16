@@ -12,12 +12,14 @@ class NadParameters:
     """
     This class represents nad parameters for a network area diagram svg generation."""
 
-    def __init__(self, edge_name_displayed: bool = False, id_displayed: bool = False,
+    def __init__(self, text_included: bool = True, edge_name_displayed: bool = False, id_displayed: bool = False,
                  edge_info_along_edge: bool = True, power_value_precision: int = 0, angle_value_precision: int = 1,
                  current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
                  substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
                  scaling_factor: int = 150000, radius_factor: float = 150.0,
-                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER, voltage_level_details: bool = True, injections_added: bool = False):
+                 edge_info_displayed: EdgeInfoType = EdgeInfoType.ACTIVE_POWER, voltage_level_details: bool = True,
+                 injections_added: bool = False, max_steps: int = 750, timeout_seconds: float = 10.0):
+        self._text_included = text_included
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -33,6 +35,13 @@ class NadParameters:
         self._edge_info_displayed = edge_info_displayed
         self._voltage_level_details = voltage_level_details
         self._injections_added = injections_added
+        self._max_steps = max_steps
+        self._timeout_seconds = timeout_seconds
+
+    @property
+    def text_included(self) -> bool:
+        """text_included"""
+        return self._text_included
 
     @property
     def edge_name_displayed(self) -> bool:
@@ -109,8 +118,19 @@ class NadParameters:
         """injections_added"""
         return self._injections_added
 
+    @property
+    def max_steps(self) -> int:
+        """max_steps"""
+        return self._max_steps
+
+    @property
+    def timeout_seconds(self) -> float:
+        """max_steps"""
+        return self._timeout_seconds
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
+        c_parameters.text_included = self._text_included
         c_parameters.edge_name_displayed = self._edge_name_displayed
         c_parameters.edge_info_along_edge = self._edge_info_along_edge
         c_parameters.id_displayed = self._id_displayed
@@ -126,10 +146,13 @@ class NadParameters:
         c_parameters.edge_info_displayed = self._edge_info_displayed
         c_parameters.voltage_level_details = self._voltage_level_details
         c_parameters.injections_added = self._injections_added
+        c_parameters.max_steps = self._max_steps
+        c_parameters.timeout_seconds = self._timeout_seconds
         return c_parameters
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
+               f"text_included={self._text_included}" \
                f"edge_name_displayed={self._edge_name_displayed}" \
                f", edge_info_along_edge={self._edge_info_along_edge}" \
                f", id_displayed={self._id_displayed}" \
@@ -145,4 +168,6 @@ class NadParameters:
                f", edge_info_displayed={self._edge_info_displayed}" \
                f", voltage_level_details={self._voltage_level_details}" \
                f", injections_added={self._injections_added}" \
+               f", max_steps={self._max_steps}" \
+               f", timeout_seconds={self._timeout_seconds}" \
                f")"
