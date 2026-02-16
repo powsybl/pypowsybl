@@ -31,6 +31,8 @@ public final class DynamicModelDataframeConstants {
     public static final String START_TIME = "start_time";
     public static final String DISCONNECT_ONLY = "disconnect_only";
     public static final String DELTA_P = "delta_p";
+    public static final String DELTA_Q = "delta_q";
+    public static final String DELTA_U = "delta_u";
     public static final String FAULT_TIME = "fault_time";
     public static final String X_PU = "x_pu";
     public static final String R_PU = "r_pu";

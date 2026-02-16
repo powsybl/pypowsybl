@@ -127,7 +127,7 @@ class Network:  # pylint: disable=too-many-public-methods
     @property
     def per_unit(self) -> bool:
         """
-        The nominal power to per unit the network (kVA)
+        Defines if the network data should be used in per-unit.
         """
         return self._per_unit
 
@@ -882,6 +882,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **rated_s**: The rated nominal power (MVA)
               - **reactive_limits_kind**: type of the reactive limit of the generator (can be MIN_MAX, CURVE or NONE)
               - **target_v**: the target voltage magnitude value for the generator (in kV)
+              - **equivalent_local_target_v** (optional): a local target voltage value expected to be consistent with the remote target voltage (in kV)
+                        (to be used by simulators that deactivate the remote voltage algorithms, or by dynamic simulators that use this voltage as a starting value)
               - **target_q**: the target reactive value for the generator (in MVAr)
               - **voltage_regulator_on**: ``True`` if the generator regulates voltage
               - **regulated_element_id**: the ID of the network element where voltage is regulated
@@ -1715,7 +1717,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
               - **dangling_line1_id**: The ID of the first dangling line
               - **dangling_line2_id**: The ID of the second dangling line
-              - **ucte_xnode_code**: The UCTE xnode code of the tie line, obtained from the dangling lines.
+              - **pairing_key**: the pairing key of the tie line, obtained from the dangling lines.
+              - **ucte_xnode_code**: deprecated for **pairing_key**.
               - **fictitious** (optional): ``True`` if the tie line is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the dangling lines
@@ -4387,7 +4390,7 @@ class Network:  # pylint: disable=too-many-public-methods
         The resulting dataframe, depending on the parameters, will have some of the following columns:
 
           - **element_id**: Identifier of the network element on which this limit applies (could be for example
-            a line or a transformer). This is the index column.
+            a line or a transformer)
           - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
             THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
           - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
@@ -4399,6 +4402,8 @@ class Network:  # pylint: disable=too-many-public-methods
           - **fictitious** (optional): `True` if this limit is fictitious
           - **group_name** (optional): The name of the operational limit group this limit is in
           - **selected** (optional): `True` if this limit's operational group is the selected one
+
+        The index of the dataframe is composed of the columns **element_id**, **side**, **type**, **acceptable_duration** and **group_name**.
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
@@ -4570,6 +4575,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **target_q**: target reactive power in MVar, when the generator does not regulate voltage
             - **rated_s**: nominal power in MVA
             - **target_v**: target voltage in kV, when the generator regulates voltage
+            - **equivalent_local_target_v**: local target voltage in kV, equivalent to the potential remote **target_v** (that must be set to use this)
             - **voltage_regulator_on**: true if the generator regulates voltage
 
         Examples:
@@ -5039,10 +5045,10 @@ class Network:  # pylint: disable=too-many-public-methods
             - **rated_u1**: nominal voltage of the side 1 of the transformer
             - **rated_u2**: nominal voltage of the side 2 of the transformer
             - **rated_s**: nominal power of the transformer
-            - **b**: the shunt susceptance, in S
-            - **g**: the shunt conductance, in S
-            - **r**: the resistance, in Ohm
-            - **x**: the reactance, in Ohm
+            - **b**: the shunt susceptance, in S, on side 2
+            - **g**: the shunt conductance, in S, on side 2
+            - **r**: the resistance, in Ohm, on side 2
+            - **x**: the reactance, in Ohm, on side 2
 
         Examples:
             Using keyword arguments:

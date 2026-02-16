@@ -58,11 +58,11 @@ class SecurityAnalysisTest {
         BranchResult branchResult = result.getPreContingencyResult().getNetworkResult().getBranchResults().get(0);
         var eps = Offset.offset(1e-12);
         assertThat(branchResult.getP1()).isCloseTo(302.44404914466014, eps);
-        assertThat(branchResult.getQ1()).isCloseTo(98.74027438014933, eps);
-        assertThat(branchResult.getI1()).isCloseTo(456.7689759899916, eps);
+        assertThat(branchResult.getQ1()).isCloseTo(98.74027438015084, eps);
+        assertThat(branchResult.getI1()).isCloseTo(456.7689759899928, eps);
         assertThat(branchResult.getP2()).isCloseTo(-300.43389523337316, eps);
-        assertThat(branchResult.getQ2()).isCloseTo(-137.18849307164064, eps);
-        assertThat(branchResult.getI2()).isCloseTo(488.99279636727357, eps);
+        assertThat(branchResult.getQ2()).isCloseTo(-137.18849307164206, eps);
+        assertThat(branchResult.getI2()).isCloseTo(488.9927963672751, eps);
         assertThat(result.getPostContingencyResults()).hasSize(1);
         assertThat(result.getPreContingencyResult().getNetworkResult().getBranchResults()).hasSize(1);
         branchResult = result.getPostContingencyResults().get(0).getNetworkResult().getBranchResults().get(0);

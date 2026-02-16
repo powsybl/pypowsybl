@@ -11,7 +11,7 @@ import re
 import tempfile
 
 import pytest
-from pypowsybl._pypowsybl import LoadFlowComponentStatus
+from pypowsybl._pypowsybl import LoadFlowComponentStatus, ConnectedComponentMode
 
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
@@ -80,7 +80,7 @@ def test_lf_parameters():
     parameters = lf.Parameters()
     assert parameters.dc_use_transformer_ratio
     assert 0 == len(parameters.countries_to_balance)
-    assert lf.ConnectedComponentMode.MAIN == parameters.connected_component_mode
+    assert (lf.ComponentMode.MAIN_CONNECTED == parameters.component_mode)
 
     # Testing setting independently every attributes
     attributes = {
@@ -96,7 +96,7 @@ def test_lf_parameters():
         'balance_type': [lf.BalanceType.PROPORTIONAL_TO_CONFORM_LOAD, lf.BalanceType.PROPORTIONAL_TO_GENERATION_P],
         'dc_use_transformer_ratio': [True, False],
         'countries_to_balance': [['FR'], ['BE']],
-        'connected_component_mode': [lf.ConnectedComponentMode.MAIN, lf.ConnectedComponentMode.ALL],
+        'component_mode': [lf.ComponentMode.MAIN_CONNECTED, lf.ComponentMode.ALL_CONNECTED, lf.ComponentMode.MAIN_SYNCHRONOUS],
         'dc_power_factor': [1.0, 0.95]
     }
 
@@ -109,6 +109,24 @@ def test_lf_parameters():
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
 
+def test_deprecated_connected_component_mode_parameter():
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        parameters = lf.Parameters(connected_component_mode=lf.ConnectedComponentMode.ALL)
+    assert parameters.component_mode == lf.ComponentMode.ALL_CONNECTED
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        parameters = lf.Parameters(connected_component_mode=lf.ConnectedComponentMode.MAIN)
+    assert parameters.component_mode == lf.ComponentMode.MAIN_CONNECTED
+
+    parameters2 = lf.Parameters()
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        assert parameters2.connected_component_mode == lf.ConnectedComponentMode.MAIN
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        parameters2.connected_component_mode = lf.ConnectedComponentMode.ALL
+    assert parameters2.component_mode == lf.ComponentMode.ALL_CONNECTED
+
+    parameters3 = lf.Parameters(component_mode=lf.ComponentMode.MAIN_SYNCHRONOUS)
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        assert parameters3.connected_component_mode is None
 
 def test_validation():
     n = pp.network.create_ieee14()
@@ -288,11 +306,13 @@ def test_get_provider_parameters_names():
                                    'disableInconsistentVoltageControls',
                                    'extrapolateReactiveLimits',
                                    'startWithFrozenACEmulation',
-                                   'generatorsWithZeroMwTargetAreNotStarted']
+                                   'generatorsWithZeroMwTargetAreNotStarted',
+                                   'incrementalShuntControlOuterLoopMaxSectionShift',
+                                   'fixVoltageTargets']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 78 == len(specific_parameters)
+    assert 80 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']

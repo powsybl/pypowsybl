@@ -8,6 +8,7 @@ import pypowsybl as pp
 import pypowsybl.dynamic as dyn
 import pytest
 import pandas as pd
+import pypowsybl.network as pn
 
 @pytest.fixture(autouse=True)
 def set_up():
@@ -45,6 +46,7 @@ def test_add_mapping():
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
+    model_mapping.add_inertial_grid(static_id='GEN', parameter_set_id='in_grid', model_name='InertialGrid')
     # Dynamic automation systems
     model_mapping.add_overload_management_system(dynamic_model_id='DM_OV', parameter_set_id='ov', controlled_branch='LINE1',
                                                  i_measurement='LINE2', i_measurement_side='TWO', model_name='OverloadManagementSystem')
@@ -121,6 +123,8 @@ def test_add_event():
     event_mapping.add_disconnection(static_id='GEN', start_time=5)
     event_mapping.add_disconnection(static_id='LINE', start_time=3.3, disconnect_only='TWO')
     event_mapping.add_active_power_variation(static_id='LOAD', start_time=14, delta_p=2)
+    event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
+    event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
 
 
@@ -165,3 +169,88 @@ def test_parameters():
     assert 100.0 == parameters.stop_time
     assert 'IDA'== parameters.provider_parameters['solver.type']
     assert '1e-5' == parameters.provider_parameters['precision']
+
+
+def test_synchronous_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'synchronousGeneratorProperties'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, numberOfWindings="THREE_WINDINGS",
+                        governor="Proportional", voltageRegulator="Proportional", pss="",
+                        auxiliaries=True, internalTransformer=False, rpcl="RPCL1",
+                        aggregated=False, qlim=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.numberOfWindings == "THREE_WINDINGS"
+    assert e.governor == "Proportional"
+    assert e.voltageRegulator == "Proportional"
+    assert e.pss == ""
+    assert e.auxiliaries == True
+    assert e.internalTransformer == False
+    assert e.rpcl == "RPCL1"
+    assert e.uva == "LOCAL"
+    assert e.aggregated == False
+    assert e.qlim == False
+
+    n.update_extensions(extension_name, id=element_id, numberOfWindings="FOUR_WINDINGS",
+                        governor="ProportionalIntegral", voltageRegulator="ProportionalIntegral", pss="Pss",
+                        auxiliaries=False, internalTransformer=True, rpcl="RPCL2",
+                        uva="DISTANT", aggregated=True, qlim=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.numberOfWindings == "FOUR_WINDINGS"
+    assert e.governor == "ProportionalIntegral"
+    assert e.voltageRegulator == "ProportionalIntegral"
+    assert e.pss == "Pss"
+    assert e.auxiliaries == False
+    assert e.internalTransformer == True
+    assert e.rpcl == "RPCL2"
+    assert e.uva == "DISTANT"
+    assert e.aggregated == True
+    assert e.qlim == True
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_synchronized_generator_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'synchronizedGeneratorProperties'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id,
+                        type="PV", rpcl2=True)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.type == "PV"
+    assert e.rpcl2 == True
+
+    n.update_extensions(extension_name, id=element_id, type="PfQ", rpcl2=False)
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.type == "PfQ"
+    assert e.rpcl2 == False
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty
+
+def test_generator_connection_level_properties():
+    n = pn.create_four_substations_node_breaker_network()
+    extension_name = 'generatorConnectionLevel'
+    element_id = 'GH1'
+
+    extensions = n.get_extensions(extension_name)
+    assert extensions.empty
+
+    n.create_extensions(extension_name, id=element_id, level='TSO')
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.level == 'TSO'
+
+    n.update_extensions(extension_name, id=element_id, level='DSO')
+    e = n.get_extensions(extension_name).loc[element_id]
+    assert e.level == 'DSO'
+
+    n.remove_extensions(extension_name, [element_id])
+    assert n.get_extensions(extension_name).empty

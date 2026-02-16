@@ -415,7 +415,6 @@ def test_loads_per_unit():
 
 def test_busbar_per_unit():
     n = pp.network.create_four_substations_node_breaker_network()
-    pp.loadflow.run_ac(n)
     n.per_unit = True
     expected = pd.DataFrame(index=pd.Series(name='id',
                                             data=['S1VL1_BBS', 'S1VL2_BBS1', 'S1VL2_BBS2', 'S2VL1_BBS', 'S3VL1_BBS',

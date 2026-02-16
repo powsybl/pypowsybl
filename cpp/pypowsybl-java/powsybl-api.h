@@ -69,7 +69,7 @@ typedef struct loadflow_parameters_struct {
     unsigned char dc_use_transformer_ratio;
     char** countries_to_balance;
     int countries_to_balance_count;
-    int connected_component_mode;
+    int component_mode;
     unsigned char hvdc_ac_emulation;
     double dc_power_factor;
 } loadflow_parameters;
@@ -395,6 +395,8 @@ typedef enum {
     DISCONNECT = 0,
     NODE_FAULT,
     ACTIVE_POWER_VARIATION,
+    REACTIVE_POWER_VARIATION,
+    REFERENCE_VOLTAGE_VARIATION,
 } EventMappingType;
 
 typedef enum {

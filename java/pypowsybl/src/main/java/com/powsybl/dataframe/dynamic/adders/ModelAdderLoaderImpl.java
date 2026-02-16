@@ -37,6 +37,7 @@ public class ModelAdderLoaderImpl implements ModelAdderLoader {
             new LineAdder(),
             new BaseBusAdder(),
             new InfiniteBusAdder(),
+            new InertialGridAdder(),
             // Automation systems
             new DynamicOverloadManagementSystemAdder(),
             new DynamicTwoLevelOverloadManagementSystemAdder(),

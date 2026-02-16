@@ -15,14 +15,14 @@
     <parent>
         <groupId>com.powsybl</groupId>
         <artifactId>pypowsybl-parent</artifactId>
-        <version>1.14.0-SNAPSHOT</version>
+        <version>1.15.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>pypowsybl</artifactId>
     <description>A C interface to powsybl, for pypowsybl implementation</description>
 
     <packaging>jar</packaging>
-    <version>1.14.0-SNAPSHOT</version>
+    <version>1.15.0-SNAPSHOT</version>
 
     <properties>
         <commons-collections4.version>4.4</commons-collections4.version>
@@ -291,6 +291,18 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-simulation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-extensions-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-extensions-impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-dynawo-extensions-serde</artifactId>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
