@@ -1288,7 +1288,7 @@ public final class NetworkCFunctions {
                         .setBusLegend(busLegend)
                         .setSubstationDescriptionDisplayed(substationDescription)));
         nadParameters.getLayoutParameters()
-                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
+                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded())
                 .setMaxSteps(nadParametersPointer.getMaxSteps())
                 .setTimeoutSeconds(nadParametersPointer.getTimeoutSeconds());
         return nadParameters;
