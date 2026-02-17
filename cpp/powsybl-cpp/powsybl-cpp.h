@@ -307,6 +307,7 @@ private:
 
 class LoadFlowParameters {
 public:
+    LoadFlowParameters();
     LoadFlowParameters(loadflow_parameters* src);
     std::shared_ptr<loadflow_parameters> to_c_struct() const;
     void load_to_c_struct(loadflow_parameters& params) const;
@@ -366,6 +367,7 @@ public:
 
 class SensitivityAnalysisParameters {
 public:
+    SensitivityAnalysisParameters();
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
     void load_to_c_struct(sensitivity_analysis_parameters& params) const;
@@ -591,6 +593,14 @@ public:
 
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
+
+    // Fast Rao extension
+    bool fast_rao_ext;
+    int number_of_cnecs_to_add;
+    bool add_unsecure_cnecs;
+    double margin_limit;
+
+    bool search_tree_parameters_ext;
 };
 
 RaoParameters* createRaoParameters();

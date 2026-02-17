@@ -12,6 +12,7 @@ import logging
 import queue
 from logging import handlers
 import pytest
+import math
 
 import pypowsybl as pp
 import pypowsybl.sensitivity
@@ -23,13 +24,14 @@ from pypowsybl._pypowsybl import (
     Solver,
     ExecutionCondition,
     Unit)
-from pypowsybl.rao import Parameters as RaoParameters, RaoResult
+from pypowsybl.rao import Parameters as RaoParameters, RaoResult, RaoSearchTreeParameters, FastRaoParameters
 from pypowsybl.rao import Glsk as RaoGlsk
 from pypowsybl.rao import (
     ObjectiveFunctionParameters,
     RangeActionOptimizationParameters,
+    RangeActionSearchTreeParameters,
     TopoOptimizationParameters,
-    MultithreadingParameters,
+    TopoSearchTreeParameters,
     SecondPreventiveRaoParameters,
     NotOptimizedCnecsParameters,
     LoadFlowAndSensitivityParameters,
@@ -42,118 +44,196 @@ RAO_PROVIDERS = ["SearchTreeRao", "FastRao"]
 
 def test_default_rao_parameters():
     parameters = RaoParameters()
+
     assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.SECURE_FLOW
+    assert parameters.objective_function_parameters.unit == Unit.MEGAWATT
+    assert parameters.objective_function_parameters.enforce_curative_security == False
+
+    assert math.isclose(parameters.range_action_optimization_parameters.pst_ra_min_impact_threshold, 0.01)
+    assert math.isclose(parameters.range_action_optimization_parameters.hvdc_ra_min_impact_threshold, 0.001)
+    assert math.isclose(parameters.range_action_optimization_parameters.injection_ra_min_impact_threshold, 0.001)
+
+    assert math.isclose(parameters.topo_optimization_parameters.relative_min_impact_threshold, 0.0)
+    assert math.isclose(parameters.topo_optimization_parameters.absolute_min_impact_threshold, 0.0)
+
+    assert parameters.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == False
+
+def test_default_rao_parameters_non_default_values():
+    objective_function_param = ObjectiveFunctionParameters(
+        objective_function_type=ObjectiveFunctionType.MIN_COST,
+        unit=Unit.KILOVOLT,
+        enforce_curative_security=True)
+
+    range_action_optim_param = RangeActionOptimizationParameters(
+        pst_ra_min_impact_threshold=5.0,
+        hvdc_ra_min_impact_threshold=22.0,
+        injection_ra_min_impact_threshold=44.0,
+    )
+    topo_optimization_param = TopoOptimizationParameters(
+        relative_min_impact_threshold=13.0,
+        absolute_min_impact_threshold=32.0,
+    )
+    not_optimized_cnecs_parameters = NotOptimizedCnecsParameters(
+        do_not_optimize_curative_cnecs_for_tsos_without_cras=True
+    )
+    parameters = RaoParameters(objective_function_parameters=objective_function_param,
+                               range_action_optimization_parameters=range_action_optim_param,
+                               topo_optimization_parameters=topo_optimization_param,
+                               not_optimized_cnecs_parameters=not_optimized_cnecs_parameters)
+
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
+    assert parameters.objective_function_parameters.unit == Unit.KILOVOLT
+    assert parameters.objective_function_parameters.enforce_curative_security == True
+
+    assert math.isclose(parameters.range_action_optimization_parameters.pst_ra_min_impact_threshold, 5.0)
+    assert math.isclose(parameters.range_action_optimization_parameters.hvdc_ra_min_impact_threshold, 22.0)
+    assert math.isclose(parameters.range_action_optimization_parameters.injection_ra_min_impact_threshold, 44.0)
+
+    assert math.isclose(parameters.topo_optimization_parameters.relative_min_impact_threshold, 13.0)
+    assert math.isclose(parameters.topo_optimization_parameters.absolute_min_impact_threshold, 32.0)
+
+    assert parameters.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
+
+def test_rao_parameters_from_files():
+    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN
+    assert parameters.search_tree_parameters.range_action_parameters.max_mip_iterations == 10
 
 def test_rao_parameters():
-    # Default
-    parameters = RaoParameters()
-    assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
-
-    # From file
-    parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/rao_parameters.json"))
-    assert parameters.range_action_optimization_parameters.max_mip_iterations == 10
-    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MAX_MIN_MARGIN
-
     # Full setup
     objective_function_param = ObjectiveFunctionParameters(
         objective_function_type=ObjectiveFunctionType.MIN_COST,
         unit=Unit.MEGAWATT,
-        curative_min_obj_improvement=1.0,
         enforce_curative_security=True
     )
-
     range_action_optim_param = RangeActionOptimizationParameters(
-        max_mip_iterations=10,
         pst_ra_min_impact_threshold=5.0,
+        hvdc_ra_min_impact_threshold=22.0,
+        injection_ra_min_impact_threshold=44.0
+    )
+    topo_optimization_param = TopoOptimizationParameters(
+        relative_min_impact_threshold=1.0,
+        absolute_min_impact_threshold=32.0
+    )
+    not_optimized_cnecs_parameters = NotOptimizedCnecsParameters(
+        do_not_optimize_curative_cnecs_for_tsos_without_cras=True
+    )
+    provider_parameters = {'MNEC_EXT_acceptable_margin_decrease': '10.2'}
+
+    parameters = RaoParameters(
+        objective_function_parameters=objective_function_param,
+        range_action_optimization_parameters=range_action_optim_param,
+        topo_optimization_parameters=topo_optimization_param,
+        not_optimized_cnecs_parameters=not_optimized_cnecs_parameters,
+        provider_parameters=provider_parameters
+    )
+
+    validate_rao_parameter(parameters)
+
+    # Serialization / deserialization roundtrip
+    validate_rao_parameter(RaoParameters.from_buffer_source(parameters.serialize_to_binary_buffer()))
+
+def validate_rao_parameter(parameters: RaoParameters):
+    assert parameters.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
+    assert parameters.objective_function_parameters.unit == Unit.MEGAWATT
+    assert parameters.objective_function_parameters.enforce_curative_security == True
+
+    assert math.isclose(parameters.range_action_optimization_parameters.pst_ra_min_impact_threshold, 5.0)
+    assert math.isclose(parameters.range_action_optimization_parameters.hvdc_ra_min_impact_threshold, 22.0)
+    assert math.isclose(parameters.range_action_optimization_parameters.injection_ra_min_impact_threshold, 44.0)
+
+    assert math.isclose(parameters.topo_optimization_parameters.relative_min_impact_threshold, 1.0)
+    assert math.isclose(parameters.topo_optimization_parameters.absolute_min_impact_threshold, 32.0)
+
+    assert parameters.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
+
+    assert math.isclose(float(parameters.provider_parameters['MNEC_EXT_acceptable_margin_decrease']), 10.2)
+
+def test_rao_search_tree_parameters():
+    search_tree_range_action_param = RangeActionSearchTreeParameters(
+        max_mip_iterations=10,
         pst_sensitivity_threshold=12.0,
         pst_model=PstModel.CONTINUOUS,
-        hvdc_ra_min_impact_threshold=22.0,
         hvdc_sensitivity_threshold=46.0,
-        injection_ra_min_impact_threshold=44.0,
         injection_ra_sensitivity_threshold=33.0,
         ra_range_shrinking=RaRangeShrinking.ENABLED_IN_FIRST_PRAO_AND_CRAO,
         solver=Solver.XPRESS,
         relative_mip_gap=22.0
     )
-
-    topo_optimization_param = TopoOptimizationParameters(
+    search_tree_topo_parameters = TopoSearchTreeParameters(
         max_preventive_search_tree_depth=10,
         max_curative_search_tree_depth=45,
-        relative_min_impact_threshold=13.0,
-        absolute_min_impact_threshold=32.0,
         skip_actions_far_from_most_limiting_element=False,
         max_number_of_boundaries_for_skipping_actions=6
     )
-
-    multithreading_param = MultithreadingParameters(
-        available_cpus=8
-    )
-
-    second_preventive_params = SecondPreventiveRaoParameters(
-        execution_condition=ExecutionCondition.COST_INCREASE,
-        hint_from_first_preventive_rao=False
-    )
-
-    not_optimized_cnecs_parameters = NotOptimizedCnecsParameters(
-        do_not_optimize_curative_cnecs_for_tsos_without_cras=True
-    )
-
     custom_sensi_param = pypowsybl.sensitivity.Parameters()
     custom_sensi_param.load_flow_parameters.phase_shifter_regulation_on = True
     sensitivity_parameters = LoadFlowAndSensitivityParameters(
         sensitivity_parameters=custom_sensi_param,
         sensitivity_failure_overcost=32.0
     )
-
-    provider_parameters = {'shifted_violation_penalty': '10.2'}
-
-    parameters2 = RaoParameters(
-        objective_function_parameters=objective_function_param,
-        range_action_optimization_parameters=range_action_optim_param,
-        topo_optimization_parameters=topo_optimization_param,
-        multithreading_parameters=multithreading_param,
+    second_preventive_params = SecondPreventiveRaoParameters(
+        execution_condition=ExecutionCondition.COST_INCREASE,
+        hint_from_first_preventive_rao=False
+    )
+    search_tree_parameters = RaoSearchTreeParameters(
+        curative_min_obj_improvement=1.0,
+        range_action_parameters=search_tree_range_action_param,
+        topo_parameters=search_tree_topo_parameters,
+        available_cpus=8,
         second_preventive_rao_parameters=second_preventive_params,
-        not_optimized_cnecs_parameters=not_optimized_cnecs_parameters,
-        loadflow_and_sensitivity_parameters=sensitivity_parameters,
-        provider_parameters=provider_parameters
+        loadflow_and_sensitivity_parameters=sensitivity_parameters
     )
 
-    assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
-    assert parameters2.objective_function_parameters.unit == Unit.MEGAWATT
-    assert parameters2.objective_function_parameters.curative_min_obj_improvement == 1.0
-    assert parameters2.objective_function_parameters.enforce_curative_security == True
+    parameters = RaoParameters(
+        search_tree_parameters=search_tree_parameters
+    )
 
-    assert parameters2.range_action_optimization_parameters.max_mip_iterations == 10.0
-    assert parameters2.range_action_optimization_parameters.pst_ra_min_impact_threshold == 5.0
-    assert parameters2.range_action_optimization_parameters.pst_sensitivity_threshold == 12.0
-    assert parameters2.range_action_optimization_parameters.pst_model == PstModel.CONTINUOUS
-    assert parameters2.range_action_optimization_parameters.hvdc_ra_min_impact_threshold == 22.0
-    assert parameters2.range_action_optimization_parameters.hvdc_sensitivity_threshold == 46.0
-    assert parameters2.range_action_optimization_parameters.injection_ra_min_impact_threshold == 44.0
-    assert parameters2.range_action_optimization_parameters.injection_ra_sensitivity_threshold == 33.0
-    assert parameters2.range_action_optimization_parameters.ra_range_shrinking == RaRangeShrinking.ENABLED_IN_FIRST_PRAO_AND_CRAO
-    assert parameters2.range_action_optimization_parameters.solver == Solver.XPRESS
-    assert parameters2.range_action_optimization_parameters.relative_mip_gap == 22.0
+    validate_search_tree_parameters(parameters)
 
-    assert parameters2.topo_optimization_parameters.max_preventive_search_tree_depth == 10
-    assert parameters2.topo_optimization_parameters.max_curative_search_tree_depth == 45
-    assert parameters2.topo_optimization_parameters.relative_min_impact_threshold == 13.0
-    assert parameters2.topo_optimization_parameters.absolute_min_impact_threshold == 32.0
-    assert parameters2.topo_optimization_parameters.skip_actions_far_from_most_limiting_element == False
-    assert parameters2.topo_optimization_parameters.max_number_of_boundaries_for_skipping_actions == 6
+    # Serialization / deserialization roundtrip
+    validate_search_tree_parameters(RaoParameters.from_buffer_source(parameters.serialize_to_binary_buffer()))
 
-    assert parameters2.multithreading_parameters.available_cpus == 8
+def validate_search_tree_parameters(parameters: RaoParameters):
+    assert math.isclose(parameters.search_tree_parameters.curative_min_obj_improvement, 1.0)
 
-    assert parameters2.second_preventive_rao_parameters.execution_condition == ExecutionCondition.COST_INCREASE
-    assert parameters2.second_preventive_rao_parameters.hint_from_first_preventive_rao == False
+    assert math.isclose(parameters.search_tree_parameters.range_action_parameters.max_mip_iterations, 10.0)
+    assert math.isclose(parameters.search_tree_parameters.range_action_parameters.pst_sensitivity_threshold, 12.0)
+    assert parameters.search_tree_parameters.range_action_parameters.pst_model == PstModel.CONTINUOUS
+    assert math.isclose(parameters.search_tree_parameters.range_action_parameters.hvdc_sensitivity_threshold, 46.0)
+    assert math.isclose(parameters.search_tree_parameters.range_action_parameters.injection_ra_sensitivity_threshold, 33.0)
+    assert parameters.search_tree_parameters.range_action_parameters.ra_range_shrinking == RaRangeShrinking.ENABLED_IN_FIRST_PRAO_AND_CRAO
+    assert parameters.search_tree_parameters.range_action_parameters.solver == Solver.XPRESS
+    assert math.isclose(parameters.search_tree_parameters.range_action_parameters.relative_mip_gap, 22.0)
 
-    assert parameters2.not_optimized_cnecs_parameters.do_not_optimize_curative_cnecs_for_tsos_without_cras == True
+    assert parameters.search_tree_parameters.topo_parameters.max_preventive_search_tree_depth == 10
+    assert parameters.search_tree_parameters.topo_parameters.max_curative_search_tree_depth == 45
+    assert parameters.search_tree_parameters.topo_parameters.skip_actions_far_from_most_limiting_element == False
+    assert parameters.search_tree_parameters.topo_parameters.max_number_of_boundaries_for_skipping_actions == 6
 
-    assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost == 32.0
-    assert parameters2.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters.phase_shifter_regulation_on == True
+    assert parameters.search_tree_parameters.available_cpus == 8
 
-    assert float(parameters2.provider_parameters['shifted_violation_penalty']) == 10.2
+    assert parameters.search_tree_parameters.second_preventive_rao_parameters.execution_condition == ExecutionCondition.COST_INCREASE
+    assert parameters.search_tree_parameters.second_preventive_rao_parameters.hint_from_first_preventive_rao == False
 
+    assert math.isclose(parameters.search_tree_parameters.loadflow_and_sensitivity_parameters.sensitivity_failure_overcost, 32.0)
+    assert parameters.search_tree_parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters.phase_shifter_regulation_on == True
+
+
+def test_fast_rao_parameters():
+    fast_rao_param = FastRaoParameters(number_of_cnecs_to_add=32,add_unsecure_cnecs=True, margin_limit=10.0)
+    parameters = RaoParameters(
+        fast_rao_parameters=fast_rao_param
+    )
+
+    validate_fast_rao_parameters(parameters)
+    # Serialization / deserialization roundtrip
+    validate_fast_rao_parameters(RaoParameters.from_buffer_source(parameters.serialize_to_binary_buffer()))
+
+def validate_fast_rao_parameters(parameters: RaoParameters):
+    assert parameters.fast_rao_parameters.number_of_cnecs_to_add == 32
+    assert parameters.fast_rao_parameters.add_unsecure_cnecs == True
+    assert math.isclose(parameters.fast_rao_parameters.margin_limit, 10.0)
 
 @pytest.mark.parametrize("rao_provider", RAO_PROVIDERS)
 def test_rao_from_files(rao_provider: str):
@@ -196,7 +276,7 @@ def test_rao_angle_monitoring_redispatching(rao_provider: str):
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
-    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+    load_flow_parameters = parameters.search_tree_parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
     crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_redispatching.json"))
     monitoring_glsk = RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml"))
 
@@ -220,7 +300,7 @@ def test_rao_angle_monitoring_with_results_from_file(rao_provider: str):
     rao_runner = pp.rao.create_rao()
     result_with_angle_monitoring = rao_runner.run_angle_monitoring(crac=crac, network=network,
                                                                    rao_result=RaoResult.from_file_source(crac, DATA_DIR.joinpath("rao/rao_result_for_monitoring.json")),
-                                                                   load_flow_parameters=parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters,
+                                                                   load_flow_parameters=parameters.search_tree_parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters,
                                                                    provider_str="OpenLoadFlow",
                                                                    monitoring_glsk=RaoGlsk.from_file_source(DATA_DIR.joinpath("rao/GlskB45test.xml")))
 
@@ -244,7 +324,7 @@ def test_rao_angle_monitoring_topological_action(rao_provider: str):
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
-    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+    load_flow_parameters = parameters.search_tree_parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
     crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/angle_monitoring_crac_topological_action.json"))
 
     rao_runner = pp.rao.create_rao()
@@ -269,7 +349,7 @@ def test_rao_voltage_monitoring(rao_provider: str):
 
     network = pp.network.load(DATA_DIR.joinpath("rao/monitoring.xiidm"))
     parameters = RaoParameters.from_file_source(DATA_DIR.joinpath("rao/monitoring_parameters.json"))
-    load_flow_parameters = parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
+    load_flow_parameters = parameters.search_tree_parameters.loadflow_and_sensitivity_parameters.sensitivity_parameters.load_flow_parameters
     crac = Crac.from_file_source(network, DATA_DIR.joinpath("rao/voltage_monitoring_crac.json"))
 
     rao_runner = pp.rao.create_rao()

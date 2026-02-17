@@ -16,6 +16,7 @@ class PYBIND11_EXPORT PyPowsyblError;
 }
 #include "powsybl-cpp.h"
 #include "pylogging.h"
+#include <iostream>
 
 namespace py = pybind11;
 
@@ -886,7 +887,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("sensitivity_parameters", &pypowsybl::RaoParameters::sensitivity_parameters)
             .def_readwrite("sensitivity_failure_overcost", &pypowsybl::RaoParameters::sensitivity_failure_overcost)
             .def_readwrite("provider_parameters_keys", &pypowsybl::RaoParameters::provider_parameters_keys)
-            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values);
+            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values)
+            .def_readwrite("fast_rao_ext", &pypowsybl::RaoParameters::fast_rao_ext)
+            .def_readwrite("number_of_cnecs_to_add", &pypowsybl::RaoParameters::number_of_cnecs_to_add)
+            .def_readwrite("add_unsecure_cnecs", &pypowsybl::RaoParameters::add_unsecure_cnecs)
+            .def_readwrite("margin_limit", &pypowsybl::RaoParameters::margin_limit)
+            .def_readwrite("search_tree_parameters_ext", &pypowsybl::RaoParameters::search_tree_parameters_ext);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {

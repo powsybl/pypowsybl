@@ -561,4 +561,11 @@ typedef struct rao_parameters_struct {
   char* sensitivity_provider;
   struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
   double sensitivity_failure_overcost;
+
+  unsigned char fast_rao_ext;
+  int number_of_cnecs_to_add;
+  unsigned char add_unsecure_cnecs;
+  double margin_limit;
+
+  unsigned char search_tree_parameters;
 } rao_parameters;
