@@ -1168,7 +1168,7 @@ def test_nad_fixed_positions():
     assert re.search('.*<svg.*', nad1.svg)
     assert len(nad1.metadata) > 0
 
-    fixed_positions_df2 = pd.DataFrame.from_records(index='id', 
+    fixed_positions_df2 = pd.DataFrame.from_records(index='id',
                                                    data=[{'id': 'VL8', 'x': 10.0, 'y': 20.0,
                                                           'legend_shift_x': 50.0, 'legend_shift_y': 51.0,
                                                           'legend_connection_shift_x': 52.0, 'legend_connection_shift_y': 53.0}])
@@ -1239,7 +1239,7 @@ def test_nad_profile():
                                                                  {'id': 'VL_33_0', 'description': 'BUS B'},
                                                                  {'id': 'VL_11_0', 'description': 'BUS C'}
                                                                  ])
-    diagram_profile_three_wt=pp.network.NadProfile(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df, 
+    diagram_profile_three_wt=pp.network.NadProfile(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df,
                                                          bus_descriptions=three_wt_bus_descriptions_df)
     assert isinstance(diagram_profile_three_wt.three_wt_labels, pd.DataFrame)
     nad_three_wt=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_profile=diagram_profile_three_wt)
@@ -1252,7 +1252,7 @@ def test_nad_profile():
     assert list(default_profile.bus_descriptions) == ['description']
     assert list(default_profile.vl_descriptions) == ['type', 'description']
 
-    
+
 def test_sld_profile():
     diagram_profile = SldProfile()
     assert not diagram_profile.labels
@@ -2821,7 +2821,7 @@ def test_is_loadable():
         file.touch()
         assert not pp.network.is_loadable(file)
 
-        
+
 def test_alpha_rho_transfo2():
     network = pp.network.create_micro_grid_be_network()
     transfo2 = network.get_2_windings_transformers(attributes=['rho', 'alpha'])

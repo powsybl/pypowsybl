@@ -4,6 +4,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from os import PathLike
+from pathlib import Path
+from typing import Union
+
+import networkx as nx
 from pandas import DataFrame
 import networkx as _nx
 import pypowsybl._pypowsybl as _pp
@@ -22,7 +27,7 @@ class NodeBreakerTopology:
     def __init__(self, network_handle: _pp.JavaHandle, voltage_level_id: str):
         self._internal_connections = create_data_frame_from_series_array(
             _pp.get_node_breaker_view_internal_connections(network_handle, voltage_level_id))
-        self._switchs = create_data_frame_from_series_array(
+        self._switches = create_data_frame_from_series_array(
             _pp.get_node_breaker_view_switches(network_handle, voltage_level_id))
         self._nodes = create_data_frame_from_series_array(
             _pp.get_node_breaker_view_nodes(network_handle, voltage_level_id))
@@ -43,7 +48,7 @@ class NodeBreakerTopology:
 
         This dataframe is indexed by the id of the switches.
         """
-        return self._switchs
+        return self._switches
 
     @property
     def nodes(self) -> DataFrame:
@@ -84,3 +89,47 @@ class NodeBreakerTopology:
                            open=row['open'], retained=row['retained'])
         graph.add_edges_from(self._internal_connections[['node1', 'node2']].values.tolist())
         return graph
+
+    def write_ampl(self, dir: Union[str, Path]) -> None:
+        """
+        Write the node/breaker topology in a columned file format (with space as a separator) so that it is
+        easily readable by AMPL for running topology optimization.
+
+        3 files are being generated:
+         - topo_graph.txt: the list of node connections (switches) in the graph.
+         - topo_switch_positions.txt: switch positions.
+         - topo_elements.txt: the elements ID and type associated to each of the nodes
+         - topo_buses.txt : the buses to which each of the nodes belong
+
+        Args:
+            dir: directory path to generate the 3 files
+        """
+        dir_path = Path(dir)
+        with open(dir_path / 'topo_graph.txt', 'w') as file:
+            file.write("# switch_id node1 node2\n")
+            for i, row in enumerate(self.switches.itertuples(index=False)):
+                file.write(f"{i} {row[4]} {row[5]}\n")
+
+        with open(dir_path / 'topo_switch_positions.txt', 'w') as file:
+            file.write("# switch_id open\n")
+            for i, row in enumerate(self.switches.itertuples(index=False)):
+                file.write(f"{i} {1 if row[2] else 0}\n")
+
+        with open(dir_path / 'topo_elements.txt', 'w') as file:
+            file.write("# node element_id element_type\n")
+            for node, row in self.nodes.iterrows():
+                file.write(f"{node} '{row['connectable_id']}' {row['connectable_type']}\n")
+
+        graph = nx.Graph()
+        graph.add_nodes_from(self.nodes.index.tolist())
+        topo_switches = self.switches
+        closed_topo_switches = topo_switches[~topo_switches['open']]
+        graph.add_edges_from(closed_topo_switches[['node1', 'node2']].values.tolist())
+        graph.add_edges_from(self.internal_connections[['node1', 'node2']].values.tolist())
+        components = list(nx.connected_components(graph))
+
+        with open(dir_path / 'topo_buses.txt', 'w') as file:
+            file.write("# bus_id node\n")
+            for i_component, component in enumerate(components):
+                for node in component:
+                    file.write(f"{i_component} {node}\n")
