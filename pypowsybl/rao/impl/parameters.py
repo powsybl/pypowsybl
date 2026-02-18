@@ -52,11 +52,13 @@ class Parameters:
         self.range_action_optimization_parameters = RangeActionOptimizationParameters(rao_parameters=c_parameters)
         self.topo_optimization_parameters = TopoOptimizationParameters(rao_parameters=c_parameters)
         self.not_optimized_cnecs_parameters = NotOptimizedCnecsParameters(rao_parameters=c_parameters)
+        self.fast_rao_parameters: Optional[FastRaoParameters]
         if c_parameters.fast_rao_ext:
             self.fast_rao_parameters = FastRaoParameters(rao_parameters=c_parameters)
         else:
             self.fast_rao_parameters = None
 
+        self.search_tree_parameters: Optional[RaoSearchTreeParameters]
         if c_parameters.search_tree_parameters_ext:
             self.search_tree_parameters = RaoSearchTreeParameters(rao_parameters=c_parameters)
         else:
