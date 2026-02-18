@@ -6,6 +6,7 @@ import pathlib
 import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
+from pypowsybl.network.scalable import Scalable
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -1505,3 +1506,16 @@ def test_split_or_merge_transformers():
     pp.network.replace_3_2_windings_transformers_with_3_windings_transformers(n)
     assert len(n.get_3_windings_transformers()) == 1
     assert len(n.get_2_windings_transformers()) == 3
+
+def test_scalable():
+    n = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
+
+    gen1_scalable = Scalable.from_id(injection_id="GEN1")
+    gen2_scalable = Scalable.from_id(injection_id="GEN2", min_value=100, max_value=500)
+
+    generators_scalable = Scalable.stack(scalables=[gen1_scalable, gen2_scalable], min_value=..., max_value=...,)
+                    #   = Scalable.stack(ids=["GEN1", "GEN2"], min=..., max=...,)
+
+    #load_scalable = Scalable.proportional(ids=['LOAD1', 'LOAD2'], min_value=0, max_value=1000, mode="PROPORTIONAL_TO_TARGETP")
+
+    generators_scalable.scale(n, parameters=ScalingParameters(scaling_type="DELTA_P", ...), asked=50)

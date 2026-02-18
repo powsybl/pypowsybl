@@ -562,3 +562,20 @@ typedef struct rao_parameters_struct {
   struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
   double sensitivity_failure_overcost;
 } rao_parameters;
+
+struct scalable_struct;
+
+typedef struct scalable_array_struct {
+  scalable_struct* scalables;
+  int scalables_count;
+} scalable_array;
+
+typedef struct scalable_struct {
+  int scalable_type;
+  double min_value;
+  double max_value;
+
+  char* injection_id;
+  scalable_array* children;
+} scalable;
+
