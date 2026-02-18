@@ -96,18 +96,24 @@ class NodeBreakerTopology:
         easily readable by AMPL for running topology optimization.
 
         3 files are being generated:
-         - topo_connections.txt: the list of node connections in the graph.
+         - topo_graph.txt: the list of node connections (switches) in the graph.
+         - topo_switch_positions.txt: switch positions.
          - topo_elements.txt: the elements ID and type associated to each of the nodes
-         - topo_valid.txt : the buses to which each of the nodes belong
+         - topo_buses.txt : the buses to which each of the nodes belong
 
         Args:
             dir: directory path to generate the 3 files
         """
         dir_path = Path(dir)
-        with open(dir_path / 'topo_connections.txt', 'w') as file:
-            file.write("# switch_id node1 node2 open\n")
+        with open(dir_path / 'topo_graph.txt', 'w') as file:
+            file.write("# switch_id node1 node2\n")
             for i, row in enumerate(self.switches.itertuples(index=False)):
-                file.write(f"{i} {row[4]} {row[5]} {1 if row[2] else 0}\n")
+                file.write(f"{i} {row[4]} {row[5]}\n")
+
+        with open(dir_path / 'topo_switch_positions.txt', 'w') as file:
+            file.write("# switch_id open\n")
+            for i, row in enumerate(self.switches.itertuples(index=False)):
+                file.write(f"{i} {1 if row[2] else 0}\n")
 
         with open(dir_path / 'topo_elements.txt', 'w') as file:
             file.write("# node element_id element_type\n")
@@ -122,9 +128,8 @@ class NodeBreakerTopology:
         graph.add_edges_from(self.internal_connections[['node1', 'node2']].values.tolist())
         components = list(nx.connected_components(graph))
 
-        i_topo = 0 # TODO will be used later on to generate multiple topologies
-        with open(dir_path / 'topo_valid.txt', 'w') as file:
-            file.write("# topo_id bus_id node\n")
+        with open(dir_path / 'topo_buses.txt', 'w') as file:
+            file.write("# bus_id node\n")
             for i_component, component in enumerate(components):
                 for node in component:
-                    file.write(f"{i_topo} {i_component} {node}\n")
+                    file.write(f"{i_component} {node}\n")
