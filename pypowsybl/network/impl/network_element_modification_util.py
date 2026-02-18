@@ -26,8 +26,8 @@ DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_
 
 
 def create_line_on_line(network: Network,
-                        df: DataFrame = None, raise_exception: bool = True,
-                        reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+                        df: Optional[DataFrame] = None, raise_exception: bool = True,
+                        reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Connects an existing voltage level to an existing line through a tee point.
 
@@ -82,8 +82,8 @@ def create_line_on_line(network: Network,
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def revert_create_line_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                               reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: str) -> None:
+def revert_create_line_on_line(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                               reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: str) -> None:
     """
     This method reverses the action done in the create_line_on_line method.
     It replaces 3 existing lines (with the same voltage level as the one on their side) with a new line,
@@ -116,8 +116,8 @@ def revert_create_line_on_line(network: Network, df: DataFrame = None, raise_exc
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                  reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def connect_voltage_level_on_line(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                  reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Cuts an existing line in two lines and connects an existing voltage level between them.
 
@@ -154,8 +154,8 @@ def connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def revert_connect_voltage_level_on_line(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def revert_connect_voltage_level_on_line(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                         reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     This method reverses the action done in the connect_voltage_level_on_line method.
     It replaces 2 existing lines (with the same voltage level at one of their side) with a new line,
@@ -186,8 +186,8 @@ def revert_connect_voltage_level_on_line(network: Network, df: DataFrame = None,
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def create_load_bay(network: Network, df: DataFrame = None, raise_exception: bool = True, reporter: ReportNode = None,
-                    report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_load_bay(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True, reporter: Optional[ReportNode] = None,
+                    report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Creates a load, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -221,8 +221,8 @@ def create_load_bay(network: Network, df: DataFrame = None, raise_exception: boo
     return _create_feeder_bay(network, [df], ElementType.LOAD, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                       reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_battery_bay(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                       reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Creates a battery, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -257,8 +257,8 @@ def create_battery_bay(network: Network, df: DataFrame = None, raise_exception: 
     return _create_feeder_bay(network, [df], ElementType.BATTERY, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_generator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                         reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_generator_bay(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                         reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Creates a generator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -297,14 +297,16 @@ def create_generator_bay(network: Network, df: DataFrame = None, raise_exception
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                             reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(),
+                             raise_exception: bool = True, reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
+                             **kwargs: ArrayLike) -> None:
     """
     Creates a dangling line, connects it to the network on a given bus or busbar section and creates the associated topology.
 
     Args:
         network: the network to which we want to add the dangling line
         df: Attributes as a dataframe.
+        generation_df: Optional dangling lines' generation part, only as a dataframe
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is True.
         reporter: deprecated, use report_node instead
@@ -318,7 +320,7 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         busbar section with an open disconnector. If the voltage level is bus/breaker, the dangling line is just
         connected to the bus.
 
-        Valid attributes are:
+        Valid attributes for dangling line dataframe or named arguments are:
 
         - **id**: the identifier of the new line
         - **name**: an optional human-readable name
@@ -332,16 +334,26 @@ def create_dangling_line_bay(network: Network, df: DataFrame = None, raise_excep
         - **position_order**: in node/breaker, the order of the dangling line, will fill the ConnectablePosition extension
         - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
 
+        Dangling line generation information must be provided as a dataframe.
+        Valid attributes are:
+
+        - **id**: Identifier of the dangling line that contains this generation part
+        - **min_p**: Minimum active power output of the dangling line's generation part
+        - **max_p**: Maximum active power output of the dangling line's generation part
+        - **target_p**: Active power target of the generation part
+        - **target_q**: Reactive power target of the generation part
+        - **target_v**: Voltage target of the generation part
+        - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
     """
-    return _create_feeder_bay(network, [df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
+    return _create_feeder_bay(network, [df, generation_df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
                               **kwargs)
 
 
 def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
                                  linear_model_df: Optional[DataFrame] = None,
                                  non_linear_model_df: Optional[DataFrame] = None,
-                                 raise_exception: bool = True, reporter: ReportNode = None,
-                                 report_node: ReportNode = None) -> None:
+                                 raise_exception: bool = True, reporter: Optional[ReportNode] = None,
+                                 report_node: Optional[ReportNode] = None) -> None:
     """
     Creates a shunt compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
 
@@ -398,8 +410,8 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
     return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter, report_node)
 
 
-def create_static_var_compensator_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                      reporter: ReportNode = None, report_node: ReportNode = None,
+def create_static_var_compensator_bay(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                      reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                                       **kwargs: ArrayLike) -> None:
     """
     Creates a static var compensator, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -438,8 +450,8 @@ def create_static_var_compensator_bay(network: Network, df: DataFrame = None, ra
                               **kwargs)
 
 
-def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                     reporter: ReportNode = None, report_node: ReportNode = None,
+def create_lcc_converter_station_bay(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                     reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                                      **kwargs: ArrayLike) -> None:
     """
     Creates a lcc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -475,8 +487,8 @@ def create_lcc_converter_station_bay(network: Network, df: DataFrame = None, rai
                               **kwargs)
 
 
-def create_vsc_converter_station_bay(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                     reporter: ReportNode = None, report_node: ReportNode = None,
+def create_vsc_converter_station_bay(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                     reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                                      **kwargs: ArrayLike) -> None:
     """
     Creates a vsc converter station, connects it to the network on a given bus or busbar section and creates the associated topology.
@@ -549,8 +561,8 @@ def _create_feeder_bay(network: Network, dfs: List[Optional[DataFrame]], element
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def replace_tee_point_by_voltage_level_on_line(network: Network, df: DataFrame = None,
-                                               raise_exception: bool = True, reporter: ReportNode = None, report_node: ReportNode = None,
+def replace_tee_point_by_voltage_level_on_line(network: Network, df: Optional[DataFrame] = None,
+                                               raise_exception: bool = True, reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                                                **kwargs: ArrayLike) -> None:
     """
     This method transforms the action done in the create_line_on_line function into the action done in the connect_voltage_level_on_line.
@@ -589,8 +601,8 @@ def replace_tee_point_by_voltage_level_on_line(network: Network, df: DataFrame =
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                  reporter: ReportNode = None, report_node: ReportNode = None,
+def create_voltage_level_topology(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                  reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                                   **kwargs: ArrayLike) -> None:
     """
     Creates the topology of a given symmetrical voltage level, containing a given number of busbar with a given number
@@ -647,12 +659,11 @@ def create_voltage_level_topology(network: Network, df: DataFrame = None, raise_
 def transform_list_to_str(entry: Union[str, List[str]]) -> str:
     if isinstance(entry, list):
         return ','.join(str(e.replace(' ', '')) for e in entry)
-    if isinstance(entry, str):
-        return entry.replace(' ', '')
+    return entry.replace(' ', '')
 
 
-def create_coupling_device(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                           reporter: ReportNode = None, report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_coupling_device(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                           reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Creates a coupling device on the network between two busbar sections of a same voltage level.
 
@@ -747,7 +758,7 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
 
 
 def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[str]], raise_exception: bool = True,
-                          reporter: ReportNode = None, report_node: ReportNode = None) -> None:
+                          reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> None:
     """
     Remove all voltage levels from a list and all their connectables.
     The lines and two windings transformers will also be removed in the voltage level on the other side as well as their switches.
@@ -773,9 +784,9 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
 
 
 def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
-                      shunt_compensator_ids: Dict[str, Union[str, List[str]]] = None,
-                      raise_exception: bool = True, reporter: ReportNode = None,
-                      report_node: ReportNode = None) -> None:
+                      shunt_compensator_ids: Optional[Dict[str, Union[str, List[str]]]] = None,
+                      raise_exception: bool = True, reporter: Optional[ReportNode] = None,
+                      report_node: Optional[ReportNode] = None) -> None:
     """
     Removes hvdc lines and their LCC or SVC converter stations. In the case of a LCC converter station, a list of shunt
     compensators can be specified to be deleted as well.
@@ -857,8 +868,8 @@ def get_unused_order_positions_before(network: Network, busbar_section_id: str) 
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bool = True, reporter: ReportNode = None,
-                     report_node: ReportNode = None, **kwargs: ArrayLike) -> None:
+def create_line_bays(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True, reporter: Optional[ReportNode] = None,
+                     report_node: Optional[ReportNode] = None, **kwargs: ArrayLike) -> None:
     """
     Creates a line and connects it to buses or busbar sections through standard feeder bays.
 
@@ -916,8 +927,8 @@ def create_line_bays(network: Network, df: DataFrame = None, raise_exception: bo
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, raise_exception: bool = True,
-                                       reporter: ReportNode = None, report_node: ReportNode = None,
+def create_2_windings_transformer_bays(network: Network, df: Optional[DataFrame] = None, raise_exception: bool = True,
+                                       reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                                        **kwargs: ArrayLike) -> None:
     """
     Creates a transformer and connects it to buses or busbar sections through standard feeder bays.
@@ -979,7 +990,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame = None, r
 
 
 def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]], raise_exception: bool = True,
-                       reporter: ReportNode = None, report_node: ReportNode = None) -> None:
+                       reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> None:
     """
     Remove all feeders from a list as well as their bays: the connectables will be removed and all equipment connecting
     them to a bus or busbar (breaker, disconnector, ...).
@@ -1007,3 +1018,41 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
     _pp.remove_elements_modification(network._handle, connectable_ids, None, _pp.RemoveModificationType.REMOVE_FEEDER,
                                      raise_exception,
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
+
+def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Optional[Union[str, List[str]]] = None,
+                                                                   report_node: Optional[ReportNode] = None) -> None:
+    """
+    Breaks the 3-windings transformers of a network into 3 2-windings transformers.
+
+    Args:
+        network: The network in which to transform the 3-windings transformers
+        transformer_ids (optional): an id or list of ids of 3-windings transformers to replace.
+                                    If not provided, all 3-windings transformers are replaced.
+        report_node (optional): the reporter to be used to create an execution report, default is None (no report).
+    """
+    if transformer_ids is None:
+        transformer_ids = []
+    if isinstance(transformer_ids, str):
+        transformer_ids = [transformer_ids]
+
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, False,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access
+
+def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Optional[Union[str, List[str]]] = None,
+                                                                   report_node: Optional[ReportNode] = None) -> None:
+    """
+    Creates 3 windings transformers on a network by merging 3 2-windings transformers that respect certain criteria.
+
+    Args:
+        network: The network in which to merge the 2-windings transformers
+        transformer_ids (optional): an id or list of ids of 2-windings transformers to replace.
+                                    If not provided, the whole network is scanned to find the split 3-windings transformers to merge
+        report_node (optional): the reporter to be used to create an execution report, default is None (no report).
+    """
+    if transformer_ids is None:
+        transformer_ids = []
+    if isinstance(transformer_ids, str):
+        transformer_ids = [transformer_ids]
+
+    _pp.split_or_merge_transformers(network._handle, transformer_ids, True,
+                                    None if report_node is None else report_node._report_node) # pylint: disable=protected-access

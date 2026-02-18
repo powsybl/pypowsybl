@@ -25,7 +25,7 @@ class DcSensitivityAnalysisResult(SensitivityAnalysisResult):
                  function_data_frame_index: Dict[str, List[str]]):
         SensitivityAnalysisResult.__init__(self, result_context_ptr, functions_ids, function_data_frame_index)
 
-    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[
+    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
         pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
@@ -45,7 +45,7 @@ class DcSensitivityAnalysisResult(SensitivityAnalysisResult):
                       DeprecationWarning)
         return self.get_sensitivity_matrix(matrix_id, contingency_id)
 
-    def get_reference_flows(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id: str = None) -> Optional[pd.DataFrame]:
+    def get_reference_flows(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[pd.DataFrame]:
         """
         .. deprecated:: 1.1.0
           Use :meth:`get_reference_matrix` instead.

@@ -1,0 +1,63 @@
+/**
+ * Copyright (c) 2022, RTE (http://www.rte-france.com)
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ * SPDX-License-Identifier: MPL-2.0
+ */
+package com.powsybl.python.logging;
+
+import ch.qos.logback.classic.Logger;
+import com.powsybl.python.commons.Directives;
+import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.Util.PointerProvider;
+import org.graalvm.nativeimage.IsolateThread;
+import org.graalvm.nativeimage.c.CContext;
+import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.function.CFunctionPointer;
+import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.slf4j.LoggerFactory;
+
+import static com.powsybl.python.commons.Util.doCatch;
+
+/**
+ * C functions related to logging.
+ *
+ * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
+ */
+@SuppressWarnings({"java:S1602", "java:S1604", "Convert2Lambda"})
+@CContext(Directives.class)
+public final class LoggingCFunctions {
+
+    static CFunctionPointer loggerCallback;
+
+    private LoggingCFunctions() {
+    }
+
+    public interface LoggerCallback extends CFunctionPointer {
+        @InvokeCFunctionPointer
+        void invoke(int level, long timestamp, CCharPointer loggerName, CCharPointer message);
+    }
+
+    @CEntryPoint(name = "setupLoggerCallback")
+    public static void setupLoggerCallback(IsolateThread thread, LoggerCallback fpointer, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new PointerProvider<CFunctionPointer>() {
+            @Override
+            public CFunctionPointer get() {
+                return loggerCallback = fpointer;
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setLogLevel")
+    public static void setLogLevel(IsolateThread thread, int logLevel, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Logger powsyblLogger = (Logger) LoggerFactory.getLogger("com.powsybl");
+                powsyblLogger.setLevel(PyLoggingUtil.pythonLevelToLogbackLevel(logLevel));
+            }
+        });
+    }
+}

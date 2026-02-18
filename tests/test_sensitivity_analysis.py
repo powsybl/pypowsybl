@@ -8,6 +8,7 @@ import pathlib
 import pytest
 import pypowsybl as pp
 import pandas as pd
+import re
 from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
 from pypowsybl.sensitivity import SensitivityFunctionType, SensitivityVariableType, ContingencyContextType
@@ -31,7 +32,7 @@ def test_config():
     n.update_generators(generators)
     sa = pp.sensitivity.create_dc_analysis()
     sa.add_single_element_contingency('L1-2-1')
-    sa.set_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
+    sa.add_branch_flow_factor_matrix(['L1-5-1', 'L2-3-1'], ['B1-G', 'B2-G', 'B3-G'])
     with pytest.raises(PyPowsyblError, match='No sensitivity analysis provider for name \'provider\''):
         sa.run(n)
     r = sa.run(n, provider='OpenLoadFlow')
@@ -233,7 +234,7 @@ def test_provider_names():
 def test_no_output_matrices_available():
     network = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
-    analysis.set_branch_flow_factor_matrix(network.get_lines().index.to_list(),
+    analysis.add_branch_flow_factor_matrix(network.get_lines().index.to_list(),
                                            network.get_generators().index.to_list())
     result = analysis.run(network)
     df = result.get_sensitivity_matrix('default')
@@ -250,8 +251,8 @@ def test_provider_parameters():
                                         provider_parameters={'maxNewtonRaphsonIterations': '1'})
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
-    analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
-    with pytest.raises(pp.PyPowsyblError, match='Load flow ended with status MAX_ITERATION_REACHED'):
+    analysis.add_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
+    with pytest.raises(pp.PyPowsyblError, match='Initial load flow of base situation ended with solver status MAX_ITERATION_REACHED'):
         analysis.run(n, parameters)
     # does not throw
     result = analysis.run(n)
@@ -270,21 +271,22 @@ def test_voltage_sensitivities_with_report():
     assert len(report2) > len(report1)
 
 def test_voltage_sensitivities_with_deprecated_report():
-    report_node = rp.Reporter()
-    report1 = str(report_node)
-    assert len(report1) > 0
-    n = pp.network.create_eurostag_tutorial_example1_network()
-    sa = pp.sensitivity.create_ac_analysis()
-    sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
-    sa.run(n, reporter=report_node)
-    report2 = str(report_node)
-    assert len(report2) > len(report1)
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
+        report_node = rp.Reporter()
+        report1 = str(report_node)
+        assert len(report1) > 0
+        n = pp.network.create_eurostag_tutorial_example1_network()
+        sa = pp.sensitivity.create_ac_analysis()
+        sa.add_bus_voltage_factor_matrix(['VLGEN_0'], ['GEN'])
+        sa.run(n, reporter=report_node)
+        report2 = str(report_node)
+        assert len(report2) > len(report1)
 
 
 def test_sensitivity_parameters():
     n = pp.network.create_eurostag_tutorial_example1_network()
     analysis = pp.sensitivity.create_ac_analysis()
-    analysis.set_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
+    analysis.add_branch_flow_factor_matrix(['NHV1_NHV2_1'], ['GEN'])
 
     # 1. distributing on generators
     parameters = pp.sensitivity.Parameters()
@@ -302,8 +304,8 @@ def test_sensitivity_parameters():
 
 
 def test_provider_parameters_names():
-    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir']
-    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir']
+    assert pp.sensitivity.get_provider_parameters_names() == ['debugDir', 'startWithFrozenACEmulation', 'threadCount']
+    assert pp.sensitivity.get_provider_parameters_names('OpenLoadFlow') == ['debugDir', 'startWithFrozenACEmulation', 'threadCount']
     with pytest.raises(pp.PyPowsyblError, match='No sensitivity analysis provider for name \'unknown\''):
         pp.sensitivity.get_provider_parameters_names('unknown')
 
@@ -311,7 +313,7 @@ def test_provider_parameters_names():
 def test_hvdc():
     network = pp.network.create_four_substations_node_breaker_network()
     analysis = pp.sensitivity.create_dc_analysis()
-    analysis.set_branch_flow_factor_matrix(["LINE_S2S3"], ["HVDC1"])
+    analysis.add_branch_flow_factor_matrix(["LINE_S2S3"], ["HVDC1"])
     results = analysis.run(network)
     assert {'default': ['HVDC1']} == results.function_data_frame_index
     assert {'default': ['LINE_S2S3']} == results.functions_ids
@@ -341,3 +343,25 @@ def test_busbar_section_sensi():
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_2, SensitivityVariableType.INJECTION_ACTIVE_POWER, 'm1')
     result = analysis.run(network)
     assert -0.8 == pytest.approx(result.get_sensitivity_matrix('m1').loc['S2VL1_BBS']['LINE_S2S3'], 1e-4)
+
+def test_transfo3_sensi():
+    network = pp.network.create_micro_grid_be_network()
+    t3e_id = network.get_3_windings_transformers().head(1).index[0]
+    line_id = network.get_lines().head(1).index[0]
+    # Adding a phase tap changer to the three windings transformer leg one
+    ptc_df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': t3e_id,
+               'tap': 1,
+               'low_tap': 0,
+               'side': 'ONE'}])
+    step_df = pd.DataFrame.from_records(
+        index='id',
+        data=[{'id': t3e_id, 'b': 2, 'g': 2, 'alpha': 2},
+              {'id': t3e_id, 'b': 2, 'g': 2, 'alpha': 4}])
+    network.create_phase_tap_changers(ptc_df, step_df)
+
+    analysis = pp.sensitivity.create_ac_analysis()
+    analysis.add_branch_flow_factor_matrix([line_id], [t3e_id], "ptc_test")
+    result = analysis.run(network)
+    assert -0.002685 == pytest.approx(result.get_sensitivity_matrix('ptc_test').loc[t3e_id][line_id], 1e-3)

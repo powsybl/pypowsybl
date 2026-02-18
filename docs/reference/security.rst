@@ -66,7 +66,24 @@ You can define operator strategies and remedial actions with the following metho
     SecurityAnalysis.add_load_reactive_power_action
     SecurityAnalysis.add_generator_active_power_action
     SecurityAnalysis.add_switch_action
+    SecurityAnalysis.add_phase_tap_changer_position_action
+    SecurityAnalysis.add_ratio_tap_changer_position_action
+    SecurityAnalysis.add_shunt_compensator_position_action
+    SecurityAnalysis.add_terminals_connection_action
     SecurityAnalysis.add_operator_strategy
+    SecurityAnalysis.add_actions_from_json_file
+    SecurityAnalysis.add_operator_strategies_from_json_file
+
+Define limit reductions
+-----------------------
+
+You can define limit reductions using :
+
+.. autosummary::
+   :nosignatures:
+   :toctree: api/
+
+    SecurityAnalysis.add_limit_reductions
 
 Results
 -------
@@ -87,4 +104,5 @@ When the security analysis is completed, you can inspect its results:
     SecurityAnalysisResult.branch_results
     SecurityAnalysisResult.bus_results
     SecurityAnalysisResult.three_windings_transformer_results
+    SecurityAnalysisResult.export_to_json
 

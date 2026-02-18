@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(pypowsybl-cpp)
 
 # Enable static linkage to prevent any future runtime binary compatibility issue
@@ -20,8 +20,7 @@ include_directories(${POWSYBL_CPP_SOURCE_DIR} ${PYPOWSYBL_JAVA_SOURCE_DIR} ${PYP
 link_directories(${PYPOWSYBL_JAVA_LIBRARY_DIR})
 pybind11_add_module(_pypowsybl pylogging.cpp bindings.cpp)
 
-add_dependencies(_pypowsybl native-image math-native)
-add_dependencies(math-native native-image)
+add_dependencies(_pypowsybl native-image)
 
 # Fix related to issue describred here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231
 # Should fix incompatibility between MSVC runtime 14.40.XXX and previous version

@@ -4,7 +4,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.20)
 project(powsybl-cpp)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -40,7 +40,7 @@ add_library(powsybl-cpp SHARED ${POWSYBL_CPP_SOURCES})
 add_dependencies(powsybl-cpp native-image)
 
 if(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
-    add_custom_command(TARGET powsybl-cpp POST_BUILD ${POWSYBL_CPP_INSTALL_EXTRA_COMMAND} COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:powsybl-cpp> $<TARGET_LINKER_FILE:powsybl-cpp> ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    add_custom_command(TARGET powsybl-cpp POST_BUILD ${POWSYBL_CPP_INSTALL_EXTRA_COMMAND} COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:powsybl-cpp> $<TARGET_LINKER_FILE:powsybl-cpp> ${CMAKE_CURRENT_BINARY_DIR}/${POWSYBL_MATH_NATIVE_JAR_ENTRY_DIR}/${POWSYBL_MATH_NATIVE_LIB} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 endif(DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
 
 # Fix related to issue described here https://github.com/actions/runner-images/issues/10004#issuecomment-2156109231

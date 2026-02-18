@@ -16,6 +16,8 @@ from .impl.node_breaker_topology import NodeBreakerTopology
 from .impl.sld_parameters import SldParameters
 from .impl.nad_parameters import NadLayoutType, EdgeInfoType
 from .impl.nad_parameters import NadParameters
+from .impl.nad_profile import NadProfile
+from .impl.sld_profile import SldProfile
 from .impl.layout_parameters import LayoutParameters
 from .impl.network_creation_util import (
     create_empty,
@@ -26,22 +28,34 @@ from .impl.network_creation_util import (
     create_ieee118,
     create_ieee300,
     create_eurostag_tutorial_example1_network,
+    create_eurostag_tutorial_example1_with_more_generators_network,
     create_eurostag_tutorial_example1_with_power_limits_network,
+    create_eurostag_tutorial_example1_with_tie_lines_and_areas,
     create_four_substations_node_breaker_network_with_extensions,
     create_four_substations_node_breaker_network,
     create_micro_grid_be_network,
     create_micro_grid_nl_network,
     create_metrix_tutorial_six_buses_network,
+    is_loadable,
     load,
     load_from_string,
     load_from_binary_buffer,
     load_from_binary_buffers,
-    _create_network)
+    _create_network,
+    create_dc_detailed_lcc_bipole_ground_return_network,
+    create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network,
+    create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network,
+    create_dc_detailed_lcc_bipole_metallic_return_network,
+    create_dc_detailed_vsc_symmetrical_monopole_network,
+    create_dc_detailed_vsc_asymmetrical_monopole_network
+)
 from .impl.util import (
     get_extensions_names,
     get_single_line_diagram_component_library_names,
     get_import_formats,
+    get_import_supported_extensions,
     get_export_formats,
+    get_import_post_processors,
     get_import_parameters,
     get_export_parameters,
     get_extensions_information
@@ -69,6 +83,9 @@ from .impl.network_element_modification_util import (
     get_unused_order_positions_before,
     create_line_bays,
     create_2_windings_transformer_bays,
-    remove_feeder_bays
+    remove_feeder_bays,
+    replace_3_windings_transformers_with_3_2_windings_transformers,
+    replace_3_2_windings_transformers_with_3_windings_transformers
 )
 from .impl.perunit import (PerUnitView, per_unit_view)
+from .impl.pandapower_converter import convert_from_pandapower

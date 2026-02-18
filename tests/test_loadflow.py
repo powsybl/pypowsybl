@@ -4,15 +4,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-import pathlib
 import json
+import pathlib
+import pickle
+import re
+import tempfile
+
+import pytest
+from pypowsybl._pypowsybl import LoadFlowComponentStatus, ConnectedComponentMode
 
 import pypowsybl as pp
 import pypowsybl.loadflow as lf
-from pypowsybl._pypowsybl import LoadFlowComponentStatus
-from pypowsybl.loadflow import ValidationType
-import pytest
 import pypowsybl.report as rp
+from pypowsybl.loadflow import ValidationType
 
 TEST_DIR = pathlib.Path(__file__).parent
 
@@ -60,9 +64,9 @@ def test_run_lf_ac_2slacks():
     sbr0 = results[0].slack_bus_results[0]
     sbr1 = results[0].slack_bus_results[1]
     assert 'VL4_0' == sbr0.id
-    assert abs(-0.75 - sbr0.active_power_mismatch) < 0.01
+    assert abs(sbr0.active_power_mismatch) < 0.01
     assert 'VL2_0' == sbr1.id
-    assert abs(-0.75 - sbr1.active_power_mismatch) < 0.01
+    assert abs(sbr1.active_power_mismatch) < 0.01
 
 
 def test_run_lf_dc():
@@ -76,7 +80,7 @@ def test_lf_parameters():
     parameters = lf.Parameters()
     assert parameters.dc_use_transformer_ratio
     assert 0 == len(parameters.countries_to_balance)
-    assert lf.ConnectedComponentMode.MAIN == parameters.connected_component_mode
+    assert (lf.ComponentMode.MAIN_CONNECTED == parameters.component_mode)
 
     # Testing setting independently every attributes
     attributes = {
@@ -92,7 +96,7 @@ def test_lf_parameters():
         'balance_type': [lf.BalanceType.PROPORTIONAL_TO_CONFORM_LOAD, lf.BalanceType.PROPORTIONAL_TO_GENERATION_P],
         'dc_use_transformer_ratio': [True, False],
         'countries_to_balance': [['FR'], ['BE']],
-        'connected_component_mode': [lf.ConnectedComponentMode.MAIN, lf.ConnectedComponentMode.ALL],
+        'component_mode': [lf.ComponentMode.MAIN_CONNECTED, lf.ComponentMode.ALL_CONNECTED, lf.ComponentMode.MAIN_SYNCHRONOUS],
         'dc_power_factor': [1.0, 0.95]
     }
 
@@ -105,6 +109,24 @@ def test_lf_parameters():
             setattr(parameters, attribute, value)
             assert value == getattr(parameters, attribute)
 
+def test_deprecated_connected_component_mode_parameter():
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        parameters = lf.Parameters(connected_component_mode=lf.ConnectedComponentMode.ALL)
+    assert parameters.component_mode == lf.ComponentMode.ALL_CONNECTED
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        parameters = lf.Parameters(connected_component_mode=lf.ConnectedComponentMode.MAIN)
+    assert parameters.component_mode == lf.ComponentMode.MAIN_CONNECTED
+
+    parameters2 = lf.Parameters()
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        assert parameters2.connected_component_mode == lf.ConnectedComponentMode.MAIN
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        parameters2.connected_component_mode = lf.ConnectedComponentMode.ALL
+    assert parameters2.component_mode == lf.ComponentMode.ALL_CONNECTED
+
+    parameters3 = lf.Parameters(component_mode=lf.ComponentMode.MAIN_SYNCHRONOUS)
+    with pytest.warns(DeprecationWarning, match=re.escape("connected_component_mode is deprecated, use component_mode parameter instead")):
+        assert parameters3.connected_component_mode is None
 
 def test_validation():
     n = pp.network.create_ieee14()
@@ -228,6 +250,7 @@ def test_get_provider_parameters_names():
                                    'maxPlausibleTargetVoltage',
                                    'minRealisticVoltage',
                                    'maxRealisticVoltage',
+                                   'minNominalVoltageRealisticVoltageCheck',
                                    'reactiveRangeCheckMode',
                                    'lowImpedanceThreshold',
                                    'networkCacheEnabled',
@@ -274,11 +297,22 @@ def test_get_provider_parameters_names():
                                    'voltageTargetPriorities',
                                    'transformerVoltageControlUseInitialTapPosition',
                                    'generatorVoltageControlMinNominalVoltage',
-                                   'fictitiousGeneratorVoltageControlCheckMode']
+                                   'fictitiousGeneratorVoltageControlCheckMode',
+                                   'areaInterchangeControl',
+                                   'areaInterchangeControlAreaType',
+                                   'areaInterchangePMaxMismatch',
+                                   'voltageRemoteControlRobustMode',
+                                   'forceTargetQInReactiveLimits',
+                                   'disableInconsistentVoltageControls',
+                                   'extrapolateReactiveLimits',
+                                   'startWithFrozenACEmulation',
+                                   'generatorsWithZeroMwTargetAreNotStarted',
+                                   'incrementalShuntControlOuterLoopMaxSectionShift',
+                                   'fixVoltageTargets']
 
 def test_get_provider_parameters():
     specific_parameters = pp.loadflow.get_provider_parameters('OpenLoadFlow')
-    assert 68 == len(specific_parameters)
+    assert 80 == len(specific_parameters)
     assert 'Slack bus selection mode' == specific_parameters['description']['slackBusSelectionMode']
     assert 'STRING' == specific_parameters['type']['slackBusSelectionMode']
     assert 'MOST_MESHED' == specific_parameters['default']['slackBusSelectionMode']
@@ -312,21 +346,22 @@ def test_run_lf_with_report():
     assert len(report3) > len(report2)
 
 def test_run_lf_with_deprecated_reporter():
-    n = pp.network.create_ieee14()
-    report_node = rp.Reporter()
-    report1 = str(report_node)
-    assert len(report1) > 0
-    pp.loadflow.run_ac(n, reporter=report_node)
-    report2 = str(report_node)
-    assert len(report2) > len(report1)
-    json_report = report_node.to_json()
-    assert len(json_report) > 0
-    json.loads(json_report)
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute reporter. Use report_node instead.")):
+        n = pp.network.create_ieee14()
+        report_node = rp.Reporter()
+        report1 = str(report_node)
+        assert len(report1) > 0
+        pp.loadflow.run_ac(n, reporter=report_node)
+        report2 = str(report_node)
+        assert len(report2) > len(report1)
+        json_report = report_node.to_json()
+        assert len(json_report) > 0
+        json.loads(json_report)
 
-    n2 = pp.network.create_eurostag_tutorial_example1_network()
-    pp.loadflow.run_ac(n2, reporter=report_node)
-    report3 = str(report_node)
-    assert len(report3) > len(report2)
+        n2 = pp.network.create_eurostag_tutorial_example1_network()
+        pp.loadflow.run_ac(n2, reporter=report_node)
+        report3 = str(report_node)
+        assert len(report3) > len(report2)
 
 
 def test_result_status_as_bool():
@@ -340,3 +375,25 @@ def test_wrong_regulated_bus_id():
     pp.loadflow.run_ac(net)
     parameters = lf.ValidationParameters()
     validation = pp.loadflow.run_validation(net, validation_parameters=parameters)
+
+
+def test_parameters_to_json():
+    p = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES)
+    json = p.to_json()
+    p2 = pp.loadflow.Parameters.from_json(json)
+    assert p2.voltage_init_mode == pp.loadflow.VoltageInitMode.DC_VALUES
+    json2 = p2.to_json()
+    assert json == json2
+
+
+def test_parameters_pickle():
+    p = pp.loadflow.Parameters(voltage_init_mode=pp.loadflow.VoltageInitMode.DC_VALUES, dc_power_factor=0.33333)
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        tmp_dir_path = pathlib.Path(tmp_dir_name)
+        data_file = tmp_dir_path.joinpath('parameters.pkl')
+        with open(data_file, 'wb') as f:
+            pickle.dump(p, f)
+        with open(data_file, 'rb') as f:
+            p2 = pickle.load(f)
+            assert p2.voltage_init_mode == pp.loadflow.VoltageInitMode.DC_VALUES
+            assert p2.dc_power_factor == 0.33333

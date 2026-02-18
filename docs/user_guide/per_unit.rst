@@ -31,11 +31,12 @@ The nominal apparent power is by default 100 MVA. It can be set like this :
 Per Unit formula
 ----------------
 
-#. Resistance R
+Resistance R
+~~~~~~~~~~~~
 
 for network elements with only one nominal voltage :
 
-.. math:: \frac{S_n}{V_nominal^2} R
+.. math:: \frac{S_n}{V_{nominal}^2} R
 
 with Sn the nominal apparent power
 For two winding transformers, the nominal voltage is the nominal voltage of the side 2
@@ -43,11 +44,12 @@ For lines, it is according to both sides :
 
 .. math:: \frac{S_n}{V_{nominal1} V_{nominal2}} R
 
-#. Reactance X
+Reactance X
+~~~~~~~~~~~
 
 for network elements with only one nominal voltage :
 
-.. math:: \frac{S_n}{V_nominal^2} X
+.. math:: \frac{S_n}{V_{nominal}^2} X
 
 with Sn the nominal apparent power
 For two winding transformers, the nominal voltage is the nominal voltage of the side 2
@@ -55,7 +57,8 @@ For lines, it is according to both sides :
 
 .. math:: \frac{S_n}{V_{nominal1} V_{nominal2}} X
 
-#. Susceptance B
+Susceptance B
+~~~~~~~~~~~~~
 
 for network elements with only one nominal voltage :
 
@@ -69,7 +72,8 @@ For lines, B is **on side one** according to both sides :
 
 where Y is the admittance (Y = 1/Z where Z is the impedance) and Im() the imaginary part
 
-#. Conductance G
+Conductance G
+~~~~~~~~~~~~~
 
 for network elements with only one nominal voltage :
 
@@ -84,30 +88,35 @@ For lines, G is **on side one** according to both sides :
 where Y is the admittance (Y = 1/Z where Z is the impedance) and Re() the real part
 for side 2 just inverse Vnominal1 and Vnominal2
 
-#. Voltage V
+Voltage V
+~~~~~~~~~
 
 .. math:: \frac{V}{V_{nominal}}
 
 the voltage is perunit by the nominal voltage. For network element with a target voltage, it per united by the nominal voltage of the target element.
 
-#. Active Power P
+Active Power P
+~~~~~~~~~~~~~~
 
 .. math:: \frac{P}{S_{n}}
 
 with Sn the nominal apparent power
 
-#. Reactive Power Q
+Reactive Power Q
+~~~~~~~~~~~~~~~~
 
 .. math:: \frac{Q}{S_{n}}
 
 with Sn the nominal apparent power
 
-#. Electric Current I
+Electric Current I
+~~~~~~~~~~~~~~~~~~
 
 .. math:: \frac{ \sqrt{3} V_{nominal}}{S_{n} 10^3} I
 
 with Sn the nominal apparent power
 
-#. Angle
+Angle
+~~~~~
 
-the angle are in degrees in PyPowSyBl, when per-united it is in radian.
+the angle are in degrees in PyPowSyBl, but when per-unit is activated it is in radian even if it is not really related to per-uniting.

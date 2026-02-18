@@ -9,7 +9,7 @@ import os as _os
 import inspect as _inspect
 import logging
 import atexit as _atexit
-from pypowsybl import _pypowsybl, voltage_initializer
+from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import PyPowsyblError
 from pypowsybl import (
     network,
@@ -18,13 +18,18 @@ from pypowsybl import (
     sensitivity,
     glsk,
     flowdecomposition,
-    shortcircuit
+    shortcircuit,
+    dynamic,
+    grid2op,
+    rao,
+    report,
+    voltage_initializer
 )
 from pypowsybl.network import per_unit_view
 
-__version__ = '1.7.0.dev1'
+__version__ = '1.15.0.dev1'
 
-# set JVM java.library.path to pypowsybl module installation directory to be able to load math library
+# set JVM java.library.path to pypowsybl module installation directory to be able to load native libraries
 _pypowsybl.set_java_library_path(_os.path.dirname(_inspect.getfile(_pypowsybl)))
 
 # make this modules importable with pythonic syntax "from pypowsybl.XXX import YYY
@@ -39,11 +44,16 @@ __all__ = [
     "glsk",
     "flowdecomposition",
     "shortcircuit",
-    "voltage_initializer"
+    "voltage_initializer",
+    "grid2op",
+    "dynamic",
+    "rao",
+    "report",
+    "PyPowsyblError"
 ]
 
 
-# setup a default logger that is the powsybl logger with by default no handler to avoir printing logs >= WARNING
+# setup a default logger that is the powsybl logger with by default no handler to avoid printing logs >= WARNING
 # to std err
 powsyblLogger = logging.getLogger('powsybl')
 powsyblLogger.addHandler(logging.NullHandler())
@@ -52,6 +62,8 @@ _pypowsybl.set_logger(powsyblLogger)
 # register closing of pypowsybl resources (computation manager...)
 _atexit.register(_pypowsybl.close)
 
+# log substratvm max heap size
+_pypowsybl.log_max_memory()
 
 def set_config_read(read_config: bool = True) -> None:
     """Set read ~/.itools/config.yml or not

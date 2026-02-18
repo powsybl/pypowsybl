@@ -1,0 +1,95 @@
+{
+  "version" : "3.2.1",
+  "objective-function" : {
+    "type" : "MAX_MIN_MARGIN",
+    "unit" : "MW",
+    "enforce-curative-security" : false
+  },
+  "range-actions-optimization" : {
+    "pst-ra-min-impact-threshold" : 0.01,
+    "hvdc-ra-min-impact-threshold" : 0.001,
+    "injection-ra-min-impact-threshold" : 0.001
+  },
+  "topological-actions-optimization" : {
+    "relative-minimum-impact-threshold" : 0.0,
+    "absolute-minimum-impact-threshold" : 1.0
+  },
+  "not-optimized-cnecs" : {
+    "do-not-optimize-curative-cnecs-for-tsos-without-cras" : false
+  },
+  "mnec-parameters" : {
+    "acceptable-margin-decrease" : 50.0
+  },
+  "loop-flow-parameters" : {
+    "acceptable-increase" : 0.0,
+    "countries" : [ ]
+  },
+  "extensions" : {
+    "open-rao-search-tree-parameters" : {
+      "objective-function" : {
+        "curative-min-obj-improvement" : 10000.0
+      },
+      "range-actions-optimization" : {
+        "max-mip-iterations" : 10,
+        "pst-sensitivity-threshold" : 1.0E-6,
+        "pst-model" : "APPROXIMATED_INTEGERS",
+        "hvdc-sensitivity-threshold" : 1.0E-6,
+        "injection-ra-sensitivity-threshold" : 1.0E-6,
+        "linear-optimization-solver" : {
+          "solver" : "CBC",
+          "relative-mip-gap" : 1.0E-4,
+          "solver-specific-parameters" : null
+        }
+      },
+      "topological-actions-optimization" : {
+        "max-preventive-search-tree-depth" : 2147483647,
+        "max-curative-search-tree-depth" : 2147483647,
+        "predefined-combinations" : [ ],
+        "skip-actions-far-from-most-limiting-element" : false,
+        "max-number-of-boundaries-for-skipping-actions" : 2
+      },
+      "second-preventive-rao" : {
+        "execution-condition" : "DISABLED",
+        "hint-from-first-preventive-rao" : false
+      },
+      "load-flow-and-sensitivity-computation" : {
+        "load-flow-provider" : "OpenLoadFlow",
+        "sensitivity-provider" : "OpenLoadFlow",
+        "sensitivity-failure-overcost" : 10000.0,
+        "sensitivity-parameters" : {
+          "version" : "1.0",
+          "load-flow-parameters" : {
+            "version" : "1.10",
+            "voltageInitMode" : "UNIFORM_VALUES",
+            "transformerVoltageControlOn" : false,
+            "phaseShifterRegulationOn" : false,
+            "useReactiveLimits" : true,
+            "twtSplitShuntAdmittance" : false,
+            "shuntCompensatorVoltageControlOn" : false,
+            "readSlackBus" : true,
+            "writeSlackBus" : true,
+            "dc" : true,
+            "distributedSlack" : true,
+            "balanceType" : "PROPORTIONAL_TO_GENERATION_P",
+            "dcUseTransformerRatio" : true,
+            "countriesToBalance" : [ ],
+            "componentMode" : "MAIN_CONNECTED",
+            "hvdcAcEmulation" : true
+          }
+        }
+      },
+      "multi-threading" : {
+        "available-cpus" : 1
+      },
+      "mnec-parameters" : {
+        "violation-cost" : 10.0,
+        "constraint-adjustment-coefficient" : 0.0
+      },
+      "loop-flow-parameters" : {
+        "ptdf-approximation" : "UPDATE_PTDF_WITH_TOPO",
+        "constraint-adjustment-coefficient" : 5.0,
+        "violation-cost" : 100.0
+      }
+    }
+  }
+}
