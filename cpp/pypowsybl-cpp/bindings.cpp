@@ -131,33 +131,6 @@ std::shared_ptr<dataframe_array> createDataframeArray(const std::vector<datafram
     return dataframeArray;
 }
 
-void deleteScalable(scalable* scalable) {
-    if (scalable->children != nullptr) {
-        delete scalable->children;
-    }
-    delete scalable;
-}
-
-std::shared_ptr<scalable_array> createScalableArray(std::vector<scalable*>& scalables) {
-
-}
-
-std::shared_ptr<scalable> createScalable(const std::string& injectionId, double minValue, double maxValue,
-    const std::vector<scalable*>& children_vector) {
-    std::shared_ptr<scalable> scalable(new ::scalable(), ::deleteScalable);
-
-    if (!children_vector.empty()) {
-        const std::shared_ptr<scalable_array> children = ::createScalableArray(children_vector);
-        scalable->children = children.get();
-    }
-    if (!injectionId.empty()) {
-        scalable->injection_id = pypowsybl::copyStringToCharPtr(injectionId);
-    }
-    scalable->min_value = minValue;
-    scalable->max_value = maxValue;
-    return scalable;
-}
-
 void createElementBind(pypowsybl::JavaHandle network, const std::vector<dataframe*>& dataframes, element_type elementType) {
     std::shared_ptr<dataframe_array> dataframeArray = ::createDataframeArray(dataframes);
     pypowsybl::createElement(network, dataframeArray.get(), elementType);
@@ -598,8 +571,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def(py::init());
 
     py::class_<dataframe, std::shared_ptr<dataframe>>(m, "Dataframe");
-
-    py::class_<scalable, std::shared_ptr<scalable>>(m, "Scalable");
 
     py::class_<pypowsybl::LoadFlowParameters>(m, "LoadFlowParameters")
             .def(py::init(&pypowsybl::createLoadFlowParameters))
@@ -1266,6 +1237,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
+
+    m.def("create_scalable", &pypowsybl::createScalable, "Create a Scalable", py::arg("type"), py::arg("injection_id"),
+        py::arg("min_value"), py::arg("max_value"), py::arg("children"));
 
     m.def("scale", &pypowsybl::scale, "Scale active power according to the provided Scalable", py::arg("network"), py::arg("scalable"),
           py::arg("scaling_parameters"), py::arg("asked"));

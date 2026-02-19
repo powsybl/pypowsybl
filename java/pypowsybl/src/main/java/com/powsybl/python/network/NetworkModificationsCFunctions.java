@@ -22,12 +22,10 @@ import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.BusbarSection;
 import com.powsybl.iidm.network.Network;
-import com.powsybl.iidm.network.ValidationException;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import org.apache.commons.lang3.Range;
 import org.graalvm.nativeimage.IsolateThread;
@@ -42,14 +40,11 @@ import org.graalvm.nativeimage.c.type.CIntPointer;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.DoubleSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
-import static com.powsybl.python.network.ScalableUtil.convertScalablePointerToScalable;
 
 /**
  * Defines the C functions for network modifications.
@@ -81,8 +76,8 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "getUnusedConnectableOrderPositions")
     public static ArrayPointer<CIntPointer> getUnusedConnectableOrderPositions(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                  CCharPointer busbarSectionId, CCharPointer beforeOrAfter,
-                                                                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                               CCharPointer busbarSectionId, CCharPointer beforeOrAfter,
+                                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CIntPointer> get() throws IOException {
@@ -129,8 +124,8 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "getModificationMetadata")
     public static DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
-                                                                                      NetworkModificationType networkModificationType,
-                                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                   NetworkModificationType networkModificationType,
+                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframeMetadataPointer get() throws IOException {
@@ -208,14 +203,56 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
+    enum ScalableType {
+        ELEMENT,
+        STACK;
+    }
+
+    @CEntryPoint(name = "createScalable")
+    public static ObjectHandle createScalable(IsolateThread thread, int scalableTypePos, CCharPointer injectionIdPtr, double minValue,
+                                              double maxValue, VoidPointerPointer childrenHandles, int childrenCount,
+                                              ExceptionHandlerPointer exceptionHandlerPointer) {
+        return doCatch(exceptionHandlerPointer, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Scalable scalable;
+                ScalableType scalableType = ScalableType.values()[scalableTypePos];
+                switch (scalableType) {
+                    case ELEMENT:
+                        String injectionId = CTypeUtil.toString(injectionIdPtr);
+                        if (injectionId == null) {
+                            throw new PowsyblException("Injection id not found for ELEMENT type scalable.");
+                        }
+                        scalable = Scalable.scalable(injectionId, minValue, maxValue);
+                        break;
+                    case STACK:
+                        if (childrenCount == 0) {
+                            throw new PowsyblException("Scalable children not found for STACK type scalable.");
+                        }
+                        Scalable[] children = new Scalable[childrenCount];
+                        for (int i = 0; i < childrenCount; ++i) {
+                            ObjectHandle childrenHandle = childrenHandles.read(i);
+                            Scalable child = ObjectHandles.getGlobal().get(childrenHandle);
+                            children[i] = child;
+                        }
+                        scalable = Scalable.stack(minValue, maxValue, children);
+                        break;
+                    default:
+                        throw new PowsyblException("Scalable type not supported: " + scalableType);
+                }
+                return ObjectHandles.getGlobal().create(scalable);
+            }
+        });
+    }
+
     @CEntryPoint(name = "scale")
-    public static double scale(IsolateThread thread, ObjectHandle networkHandle, ScalablePointer scalablePtr,
+    public static double scale(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle scalableHandle,
                                ObjectHandle scalingParametersHandle, double asked,
                                ExceptionHandlerPointer exceptionHandlerPointer) {
         return doCatch(exceptionHandlerPointer, new DoubleSupplier() {
             @Override
             public double getAsDouble() {
-                Scalable scalable = convertScalablePointerToScalable(scalablePtr);
+                Scalable scalable = ObjectHandles.getGlobal().get(scalableHandle);
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 ScalingParameters parameters = ObjectHandles.getGlobal().get(scalingParametersHandle);
                 return scalable.scale(network, asked, parameters);

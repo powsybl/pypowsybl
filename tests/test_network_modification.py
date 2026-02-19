@@ -1513,9 +1513,9 @@ def test_scalable():
     gen1_scalable = Scalable.from_id(injection_id="GEN1")
     gen2_scalable = Scalable.from_id(injection_id="GEN2", min_value=100, max_value=500)
 
-    generators_scalable = Scalable.stack(scalables=[gen1_scalable, gen2_scalable], min_value=..., max_value=...,)
-                    #   = Scalable.stack(ids=["GEN1", "GEN2"], min=..., max=...,)
+    # generators_scalable = Scalable.stack(scalables=[gen1_scalable, gen2_scalable], min_value=..., max_value=...,)
+    #                 #   = Scalable.stack(ids=["GEN1", "GEN2"], min=..., max=...,)
+    #
+    # #load_scalable = Scalable.proportional(ids=['LOAD1', 'LOAD2'], min_value=0, max_value=1000, mode="PROPORTIONAL_TO_TARGETP")
 
-    #load_scalable = Scalable.proportional(ids=['LOAD1', 'LOAD2'], min_value=0, max_value=1000, mode="PROPORTIONAL_TO_TARGETP")
-
-    generators_scalable.scale(n, parameters=ScalingParameters(scaling_type="DELTA_P", ...), asked=50)
+    # generators_scalable.scale(n, parameters=ScalingParameters(scaling_type="DELTA_P", ...), asked=50)

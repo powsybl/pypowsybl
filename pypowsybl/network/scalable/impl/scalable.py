@@ -21,9 +21,10 @@ class ScalableType(Enum):
     PROPORTIONAL = 3
 
 class Scalable:
+    _handle: _pp.JavaHandle
     type: ScalableType
-    min_value: float = float('-inf')
-    max_value: float = float('inf')
+    min_value: Optional[float]
+    max_value: Optional[float]
     element_id: Optional[str] = None
     children: Optional[List[Scalable]] = None
 
@@ -34,13 +35,14 @@ class Scalable:
                  element_id: Optional[str] = None,
                  children: Optional[List[Scalable]] = None):
         self.type = type
-        if min_value is not None:
-            self.min_value = min_value
-        if max_value is not None:
-            self.max_value = max_value
+        self.min_value = min_value
+        self.max_value = max_value
         self.max_value = max_value
         self.element_id  = element_id
         self.children = children
+        children_handles = [child._handle for child in children] if children is not None else []
+        _pp.create_scalable(self.type, injection_id=self.element_id, min_value=self.min_value,
+                            max_value=self.max_value, children=children_handles)
 
     @classmethod
     def from_id(cls, injection_id: str, min_value: Optional[float] = None, max_value: Optional[float] = None):
@@ -63,4 +65,3 @@ class Scalable:
     def scale(self, network: Network, asked: float, parameters: ScalingParameters = None) -> float:
         c_scalable = _pp.convert_to_c_scalable(self)
         return _pp.scale(network, c_scalable, parameters, asked)
-

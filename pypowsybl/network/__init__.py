@@ -4,6 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from pypowsybl._pypowsybl import ValidationLevel
+from pypowsybl._pypowsybl import ElementType
 from .impl.network import (
     Network,
 )
@@ -12,6 +14,7 @@ from .impl.svg import Svg
 from .impl.bus_breaker_topology import BusBreakerTopology
 from .impl.node_breaker_topology import NodeBreakerTopology
 from .impl.sld_parameters import SldParameters
+from .impl.nad_parameters import NadLayoutType, EdgeInfoType
 from .impl.nad_parameters import NadParameters
 from .impl.nad_profile import NadProfile
 from .impl.sld_profile import SldProfile
@@ -86,4 +89,4 @@ from .impl.network_element_modification_util import (
 )
 from .impl.perunit import (PerUnitView, per_unit_view)
 from .impl.pandapower_converter import convert_from_pandapower
-import scalable
+from .scalable import *

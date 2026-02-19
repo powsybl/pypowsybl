@@ -1010,7 +1010,9 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
 
-double scale(pypowsybl::JavaHandle network, scalable* scalable, pypowsybl::JavaHandle scalingParameters, double asked);
+JavaHandle createScalable(int scalableType, std::string injectionId, double minValue, double maxValue,
+                                     std::vector<JavaHandle> children);
+double scale(pypowsybl::JavaHandle network, pypowsybl::JavaHandle scalable, pypowsybl::JavaHandle scalingParameters, double asked);
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();

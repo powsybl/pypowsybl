@@ -1807,8 +1807,20 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
     pypowsybl::PowsyblCaller::get()->callJava(::splitOrMergeTransformers, network, transformerIdsPtr.get(), transformerIds.size(), merge, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-double scale(pypowsybl::JavaHandle network, pypowsybl::JavaHandle scalingParameters, scalable* scalablePtr, double asked) {
-    return PowsyblCaller::get()->callJava<double>(::scale, network, scalablePtr, scalingParameters, asked);
+JavaHandle createScalable(int scalableType, std::string injectionId, double minValue, double maxValue, std::vector<JavaHandle> children) {
+    std::vector<void*> childrenPtrs;
+    childrenPtrs.reserve(children.size());
+    for (int i = 0; i < children.size(); ++i) {
+        void* ptr = children[i];
+        childrenPtrs.push_back(ptr);
+    }
+    int childrenCount = childrenPtrs.size();
+    void** childrenData = (void**) childrenPtrs.data();
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createScalable, scalableType, copyStringToCharPtr(injectionId), minValue, maxValue, childrenData, childrenCount);
+}
+
+double scale(JavaHandle network, JavaHandle scalable, JavaHandle scalingParameters, double asked) {
+    return PowsyblCaller::get()->callJava<double>(::scale, network, scalable, scalingParameters, asked);
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/

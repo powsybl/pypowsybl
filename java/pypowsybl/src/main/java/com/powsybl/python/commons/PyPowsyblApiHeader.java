@@ -1610,44 +1610,4 @@ public final class PyPowsyblApiHeader {
         @CField("sensitivity_failure_overcost")
         void setSensitivityFailureOvercost(double sensitivityFailureOvercost);
     }
-
-    @CEnum("scalable_type")
-    public enum ScalableType {
-        ELEMENT,
-        STACK;
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native ScalableType fromCValue(int value);
-    }
-
-
-    @CStruct("scalable")
-    public interface ScalablePointer extends PointerBase {
-
-        @CField("scalable_type")
-        ScalableType getScalableType();
-
-        @CField("children")
-        ArrayPointer<ScalablePointer> getChildren();
-
-        @CField("injection_id")
-        CCharPointer getInjectionId();
-
-        @CField("min_value")
-        double getMinValue();
-
-        @CField("max_value")
-        double getMaxValue();
-    }
-
-    @CStruct("scalable_array")
-    public interface ScalableArrayPointer extends PointerBase {
-        @CField("scalables")
-        ArrayPointer<ScalablePointer> getScalables();
-
-        @CField("scalable_count")
-        int getScalableCount();
-    }
 }
