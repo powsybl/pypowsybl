@@ -6,4 +6,5 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 
-class ScalingParameters:
+class ScalingParameters(dict):
+    pass
