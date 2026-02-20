@@ -1819,8 +1819,53 @@ JavaHandle createScalable(int scalableType, std::string injectionId, double minV
     return PowsyblCaller::get()->callJava<JavaHandle>(::createScalable, scalableType, copyStringToCharPtr(injectionId), minValue, maxValue, childrenData, childrenCount);
 }
 
-double scale(JavaHandle network, JavaHandle scalable, JavaHandle scalingParameters, double asked) {
-    return PowsyblCaller::get()->callJava<double>(::scale, network, scalable, scalingParameters, asked);
+double scale(JavaHandle network, JavaHandle scalable, const ScalingParameters& scalingParameters, double asked) {
+    auto c_scaling_parameters = scalingParameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<double>(::scale, network, scalable, c_scaling_parameters.get(), asked);
+}
+
+void deleteScalingParameters(scaling_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->ignored_injection_ids, ptr->ignored_injection_ids_count);
+}
+
+ScalingParameters::ScalingParameters(scaling_parameters* src) {
+    scaling_convention = static_cast<ScalingConvention>(src->scaling_convention);
+    constant_power_factor = (bool) src->constant_power_factor;
+    reconnect = (bool) src->reconnect;
+    allows_generator_out_of_active_power_limits = (bool) src->allows_generator_out_of_active_power_limits;
+    priority = static_cast<Priority>(src->priority);
+    scaling_type = static_cast<ScalingType>(src->scaling_type);
+    copyCharPtrPtrToVector(src->ignored_injection_ids, src->ignored_injection_ids_count, ignored_injection_ids);
+}
+
+void ScalingParameters::load_to_c_struct(scaling_parameters& res) const {
+    res.scaling_convention = scaling_convention;
+    res.constant_power_factor = (unsigned char) constant_power_factor;
+    res.reconnect = (unsigned char) reconnect;
+    res.allows_generator_out_of_active_power_limits = (unsigned char) allows_generator_out_of_active_power_limits;
+    res.priority = priority;
+    res.scaling_type = scaling_type;
+    res.ignored_injection_ids = pypowsybl::copyVectorStringToCharPtrPtr(ignored_injection_ids);
+    res.ignored_injection_ids_count = ignored_injection_ids.size();
+}
+
+std::shared_ptr<scaling_parameters> ScalingParameters::to_c_struct() const {
+    scaling_parameters* res = new scaling_parameters();
+    load_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<scaling_parameters>(res, [](scaling_parameters* ptr){
+        deleteScalingParameters(ptr);
+        delete ptr;
+    });
+}
+
+ ScalingParameters* createScalingParameters() {
+    scaling_parameters* parameters_ptr = PowsyblCaller::get()->callJava<scaling_parameters*>(::createScalingParameters);
+    auto parameters = std::shared_ptr<scaling_parameters>(parameters_ptr, [](scaling_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       PowsyblCaller::get()->callJava(::freeScalingParameters, ptr);
+    });
+    return new ScalingParameters(parameters.get());
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/

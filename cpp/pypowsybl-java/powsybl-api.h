@@ -562,3 +562,30 @@ typedef struct rao_parameters_struct {
   struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
   double sensitivity_failure_overcost;
 } rao_parameters;
+
+typedef struct scaling_parameters_struct {
+    int scaling_convention;
+    unsigned char constant_power_factor;
+    unsigned char reconnect;
+    unsigned char allows_generator_out_of_active_power_limits;
+    int priority;
+    int scaling_type;
+    char** ignored_injection_ids;
+    int ignored_injection_ids_count;
+} scaling_parameters;
+
+typedef enum {
+    DELTA_P = 0,
+    TARGET_P,
+} scaling_type;
+
+typedef enum {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+} priority;
+
+typedef enum {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+} scaling_convention;

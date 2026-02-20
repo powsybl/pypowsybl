@@ -463,6 +463,37 @@ public:
     bool injections_added;
 };
 
+enum ScalingType {
+    DELTA_P = 0,
+    TARGET_P,
+};
+
+enum Priority {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+};
+
+enum ScalingConvention {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+};
+
+class ScalingParameters {
+public:
+    ScalingParameters(scaling_parameters* src);
+    std::shared_ptr<scaling_parameters> to_c_struct() const;
+    void load_to_c_struct(scaling_parameters& params) const;
+
+    ScalingConvention scaling_convention;
+    bool constant_power_factor;
+    bool reconnect;
+    bool allows_generator_out_of_active_power_limits;
+    Priority priority;
+    ScalingType scaling_type;
+    std::vector<std::string> ignored_injection_ids;
+};
+
 //=======short-circuit analysis==========
 enum ShortCircuitStudyType {
     SUB_TRANSIENT = 0,
@@ -1012,7 +1043,9 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
 
 JavaHandle createScalable(int scalableType, std::string injectionId, double minValue, double maxValue,
                                      std::vector<JavaHandle> children);
-double scale(pypowsybl::JavaHandle network, pypowsybl::JavaHandle scalable, pypowsybl::JavaHandle scalingParameters, double asked);
+double scale(pypowsybl::JavaHandle network, pypowsybl::JavaHandle scalable, const ScalingParameters& scalingParameters, double asked);
+
+ScalingParameters* createScalingParameters();
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();

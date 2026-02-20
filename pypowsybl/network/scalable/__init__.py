@@ -5,4 +5,5 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from .impl.scalable import Scalable, ScalableType
+from .impl.scalable import ElementScalable, StackScalable, ProportionalScalable, UpDownScalable
+from .impl.scaling_parameters import ScalingParameters

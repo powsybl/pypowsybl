@@ -1244,6 +1244,29 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("scale", &pypowsybl::scale, "Scale active power according to the provided Scalable", py::arg("network"), py::arg("scalable"),
           py::arg("scaling_parameters"), py::arg("asked"));
 
+    py::enum_<pypowsybl::ScalingType>(m, "ScalingType")
+            .value("DELTA_P", pypowsybl::ScalingType::DELTA_P)
+            .value("TARGET_P", pypowsybl::ScalingType::TARGET_P);
+
+    py::enum_<pypowsybl::Priority>(m, "Priority")
+            .value("RESPECT_OF_VOLUME_ASKED", pypowsybl::Priority::RESPECT_OF_VOLUME_ASKED)
+            .value("RESPECT_OF_DISTRIBUTION", pypowsybl::Priority::RESPECT_OF_DISTRIBUTION)
+            .value("ONESHOT", pypowsybl::Priority::ONESHOT);
+
+    py::enum_<pypowsybl::ScalingConvention>(m, "ScalingConvention")
+            .value("GENERATOR_SCALING_CONVENTION", pypowsybl::ScalingConvention::GENERATOR_SCALING_CONVENTION)
+            .value("LOAD_SCALING_CONVENTION", pypowsybl::ScalingConvention::LOAD_SCALING_CONVENTION);
+
+    py::class_<pypowsybl::ScalingParameters>(m, "ScalingParameters")
+        .def(py::init(&pypowsybl::createScalingParameters))
+        .def_readwrite("scaling_convention", &pypowsybl::ScalingParameters::scaling_convention)
+        .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::constant_power_factor)
+        .def_readwrite("reconnect", &pypowsybl::ScalingParameters::reconnect)
+        .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
+        .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
+        .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
+        .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids);
+
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
