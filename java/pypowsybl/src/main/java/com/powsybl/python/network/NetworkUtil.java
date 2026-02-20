@@ -52,23 +52,18 @@ public final class NetworkUtil {
         if (!(equipment instanceof Connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
         }
-        if (equipment instanceof Injection<?> injection) {
+        if (equipment instanceof Connectable<?> connectable) {
             if (connected) {
-                return injection.getTerminal().connect();
+                return connectable.connect();
             } else {
-                return injection.getTerminal().disconnect();
+                return connectable.disconnect();
             }
-        } else if (equipment instanceof Branch<?> branch) {
-            boolean done1;
-            boolean done2;
+        } else if (equipment instanceof TieLine tieLine) {
             if (connected) {
-                done1 = branch.getTerminal1().connect();
-                done2 = branch.getTerminal2().connect();
+                return tieLine.connectDanglingLines();
             } else {
-                done1 = branch.getTerminal1().disconnect();
-                done2 = branch.getTerminal2().disconnect();
+                return tieLine.disconnectDanglingLines();
             }
-            return done1 || done2;
         }
         return false;
     }
