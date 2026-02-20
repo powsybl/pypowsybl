@@ -49,23 +49,14 @@ public final class NetworkUtil {
         if (equipment == null) {
             throw new PowsyblException("Equipment '" + id + "' not found");
         }
-        if (!(equipment instanceof Connectable)) {
+        if (!(equipment instanceof Connectable<?> connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
         }
-        if (equipment instanceof Connectable<?> connectable) {
-            if (connected) {
-                return connectable.connect();
-            } else {
-                return connectable.disconnect();
-            }
-        } else if (equipment instanceof TieLine tieLine) {
-            if (connected) {
-                return tieLine.connectDanglingLines();
-            } else {
-                return tieLine.disconnectDanglingLines();
-            }
+        if (connected) {
+            return connectable.connect();
+        } else {
+            return connectable.disconnect();
         }
-        return false;
     }
 
     private static boolean isInMainCc(Terminal t) {
