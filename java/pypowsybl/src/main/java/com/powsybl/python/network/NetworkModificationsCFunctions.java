@@ -27,12 +27,15 @@ import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader.*;
+import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.apache.commons.lang3.Range;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
@@ -45,6 +48,7 @@ import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
+import static com.powsybl.python.network.ScalableUtils.freeScalingParametersContent;
 
 /**
  * Defines the C functions for network modifications.
@@ -217,13 +221,14 @@ public final class NetworkModificationsCFunctions {
             public ObjectHandle get() {
                 Scalable scalable;
                 ScalableType scalableType = ScalableType.values()[scalableTypePos];
+                boolean withValues = minValue != Double.MIN_VALUE || maxValue != Double.MAX_VALUE;
                 switch (scalableType) {
                     case ELEMENT:
                         String injectionId = CTypeUtil.toString(injectionIdPtr);
-                        if (injectionId == null) {
-                            throw new PowsyblException("Injection id not found for ELEMENT type scalable.");
+                        if (injectionId.isEmpty()) {
+                            throw new PowsyblException("An injection id must be given for ELEMENT type scalable.");
                         }
-                        scalable = Scalable.scalable(injectionId, minValue, maxValue);
+                        scalable = withValues ? Scalable.scalable(injectionId, minValue, maxValue) : Scalable.scalable(injectionId);
                         break;
                     case STACK:
                         if (childrenCount == 0) {
@@ -235,7 +240,7 @@ public final class NetworkModificationsCFunctions {
                             Scalable child = ObjectHandles.getGlobal().get(childrenHandle);
                             children[i] = child;
                         }
-                        scalable = Scalable.stack(minValue, maxValue, children);
+                        scalable = withValues ? Scalable.stack(minValue, maxValue, children) : Scalable.stack(children);
                         break;
                     default:
                         throw new PowsyblException("Scalable type not supported: " + scalableType);
@@ -247,15 +252,78 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "scale")
     public static double scale(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle scalableHandle,
-                               ObjectHandle scalingParametersHandle, double asked,
+                               ScalingParametersPointer scalingParametersPointer, double asked,
                                ExceptionHandlerPointer exceptionHandlerPointer) {
         return doCatch(exceptionHandlerPointer, new DoubleSupplier() {
             @Override
             public double getAsDouble() {
                 Scalable scalable = ObjectHandles.getGlobal().get(scalableHandle);
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
-                ScalingParameters parameters = ObjectHandles.getGlobal().get(scalingParametersHandle);
+                ScalingParameters parameters = convertScalingParameters(scalingParametersPointer);
                 return scalable.scale(network, asked, parameters);
+            }
+        });
+    }
+
+    public static void copyToCScalingParameters(ScalingParameters parameters, ScalingParametersPointer cParameters) {
+        cParameters.setScalingConvention(parameters.getScalingConvention().ordinal());
+        cParameters.setConstantPowerFactor(parameters.isConstantPowerFactor());
+        cParameters.setReconnect(parameters.isReconnect());
+        cParameters.setAllowsGeneratorOutOfActivePowerLimits(parameters.isAllowsGeneratorOutOfActivePowerLimits());
+        cParameters.setPriority(parameters.getPriority().ordinal());
+        cParameters.setScalingType(parameters.getScalingType().ordinal());
+        CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getIgnoredInjectionIds().size() * SizeOf.get(CCharPointerPointer.class));
+        ArrayList<String> ignoredInjectionIds = new ArrayList<>(parameters.getIgnoredInjectionIds());
+        for (int i = 0; i < parameters.getIgnoredInjectionIds().size(); i++) {
+            calloc.write(i, CTypeUtil.toCharPtr(ignoredInjectionIds.get(i)));
+        }
+        cParameters.setIgnoredInjectionIds(calloc);
+    }
+
+    public static ScalingParametersPointer convertToScalingParametersPointer(ScalingParameters parameters) {
+        ScalingParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(ScalingParametersPointer.class));
+        copyToCScalingParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    public static ScalingParameters createScalingParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? ScalingParameters.load() : new ScalingParameters();
+    }
+
+    public static ScalingParameters convertScalingParameters(ScalingParametersPointer scalingParametersPtr) {
+
+        List<String> injectionsIdsStringList = toStringList(scalingParametersPtr.getIgnoredInjectionIds(), scalingParametersPtr.getIgnoredInjectionIdsCount());
+
+        Set<String> ignoredInjectionIds = new HashSet<>();
+        injectionsIdsStringList.forEach(ignoredInjectionIds::add);
+
+        return createScalingParameters()
+                .setScalingConvention(Scalable.ScalingConvention.values()[scalingParametersPtr.getScalingConvention()])
+                .setConstantPowerFactor(scalingParametersPtr.isConstantPowerFactor())
+                .setReconnect(scalingParametersPtr.isReconnect())
+                .setAllowsGeneratorOutOfActivePowerLimits(scalingParametersPtr.isAllowsGeneratorOutOfActivePowerLimits())
+                .setPriority(ScalingParameters.Priority.values()[scalingParametersPtr.getPriority()])
+                .setScalingType(ScalingParameters.ScalingType.values()[scalingParametersPtr.getScalingType()])
+                .setIgnoredInjectionIds(ignoredInjectionIds);
+    }
+
+    public static void freeScalingParametersPointer(ScalingParametersPointer scalingParametersPtr) {
+        freeScalingParametersContent(scalingParametersPtr);
+        UnmanagedMemory.free(scalingParametersPtr);
+    }
+
+    @CEntryPoint(name = "createScalingParameters")
+    public static ScalingParametersPointer createScalingParametersPointer(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToScalingParametersPointer(createScalingParameters()));
+    }
+
+    @CEntryPoint(name = "freeScalingParameters")
+    public static void freeScalingParameters(IsolateThread thread, ScalingParametersPointer scalingParametersPtr,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeScalingParametersPointer(scalingParametersPtr);
             }
         });
     }
