@@ -1699,4 +1699,20 @@ public final class PyPowsyblApiHeader {
         @CEnumLookup
         public static native ScalingConvention fromCValue(int value);
     }
+
+    @CEnum("distribution_mode")
+    public enum DistributionMode {
+        PROPORTIONAL_TO_TARGETP,
+        PROPORTIONAL_TO_PMAX,
+        PROPORTIONAL_TO_DIFF_PMAX_TARGETP,
+        PROPORTIONAL_TO_DIFF_TARGETP_PMIN,
+        PROPORTIONAL_TO_P0,
+        UNIFORM_DISTRIBUTION;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native DistributionMode fromCValue(int value);
+    }
 }

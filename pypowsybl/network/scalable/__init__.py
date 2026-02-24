@@ -5,5 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from .impl.scalable import ElementScalable, StackScalable, ProportionalScalable, UpDownScalable
+from .impl.element import ElementScalable
+from .impl.proportional import ProportionalScalable
+from .impl.stack import StackScalable
+from .impl.updown import UpDownScalable
 from .impl.scaling_parameters import ScalingParameters

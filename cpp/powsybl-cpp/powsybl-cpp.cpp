@@ -1807,16 +1807,28 @@ void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<s
     pypowsybl::PowsyblCaller::get()->callJava(::splitOrMergeTransformers, network, transformerIdsPtr.get(), transformerIds.size(), merge, (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
-JavaHandle createScalable(int scalableType, std::string injectionId, double minValue, double maxValue, std::vector<JavaHandle> children) {
+JavaHandle createScalable(int scalableType, const std::string &injectionId, double minValue, double maxValue,
+    std::vector<JavaHandle> children, std::vector<double> percentages) {
     std::vector<void*> childrenPtrs;
     childrenPtrs.reserve(children.size());
-    for (int i = 0; i < children.size(); ++i) {
-        void* ptr = children[i];
+    for (auto & i : children) {
+        void* ptr = i;
         childrenPtrs.push_back(ptr);
     }
-    int childrenCount = childrenPtrs.size();
-    void** childrenData = (void**) childrenPtrs.data();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::createScalable, scalableType, copyStringToCharPtr(injectionId), minValue, maxValue, childrenData, childrenCount);
+    const int childrenCount = childrenPtrs.size();
+    void** childrenData = childrenPtrs.data();
+    const ToDoublePtr percentagesPtr(percentages);
+
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createScalable, scalableType, copyStringToCharPtr(injectionId),
+        minValue, maxValue, childrenData, childrenCount, percentagesPtr.get(), percentages.size());
+}
+
+std::vector<double> computeProportionalScalablePercentages(const std::vector<std::string>& injectionIds, distribution_mode mode, JavaHandle network) {
+    ToCharPtrPtr injectionIdsPtr(injectionIds);
+    auto countriesArrayPtr = PowsyblCaller::get()->callJava<array*>(::computeProportionalScalablePercentages, injectionIdsPtr.get(),
+        injectionIds.size(), mode, network);
+    ToPrimitiveVector<double> values(countriesArrayPtr);
+    return values.get();
 }
 
 double scale(JavaHandle network, JavaHandle scalable, const ScalingParameters& scalingParameters, double asked) {

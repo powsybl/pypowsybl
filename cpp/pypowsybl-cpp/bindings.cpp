@@ -1239,10 +1239,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
 
     m.def("create_scalable", &pypowsybl::createScalable, "Create a Scalable", py::arg("type"), py::arg("injection_id"),
-        py::arg("min_value"), py::arg("max_value"), py::arg("children"));
+        py::arg("min_value"), py::arg("max_value"), py::arg("children"), py::arg("percentages"));
 
     m.def("scale", &pypowsybl::scale, "Scale active power according to the provided Scalable", py::arg("network"), py::arg("scalable"),
           py::arg("scaling_parameters"), py::arg("asked"));
+
+    m.def("compute_proportional_scalable_percentages", &pypowsybl::computeProportionalScalablePercentages, "Computes distribution percentages",
+        py::arg("injection_id"), py::arg("mode"), py::arg("network"));
 
     py::enum_<pypowsybl::ScalingType>(m, "ScalingType")
             .value("DELTA_P", pypowsybl::ScalingType::DELTA_P)
@@ -1266,6 +1269,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
         .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
         .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids);
+
+    py::enum_<distribution_mode>(m, "DistributionMode")
+            .value("PROPORTIONAL_TO_TARGETP", PROPORTIONAL_TO_TARGETP)
+            .value("PROPORTIONAL_TO_PMAX", PROPORTIONAL_TO_PMAX)
+            .value("PROPORTIONAL_TO_DIFF_PMAX_TARGETP", PROPORTIONAL_TO_DIFF_PMAX_TARGETP)
+            .value("PROPORTIONAL_TO_DIFF_TARGETP_PMIN", PROPORTIONAL_TO_DIFF_TARGETP_PMIN)
+            .value("PROPORTIONAL_TO_P0", PROPORTIONAL_TO_P0)
+            .value("UNIFORM_DISTRIBUTION", UNIFORM_DISTRIBUTION);
 
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
