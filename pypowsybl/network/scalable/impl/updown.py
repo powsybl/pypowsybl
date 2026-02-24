@@ -11,7 +11,7 @@ class UpDownScalable(Scalable):
     up_scalable: Scalable
     down_scalable: Scalable
 
-    def __init__(self, up_injection_id: Optional[str], down_injection_id: Optional[str],
+    def __init__(self, up_injection_id: Optional[str] = None, down_injection_id: Optional[str] = None,
                  up_scalable: Optional[Scalable] = None, down_scalable: Optional[Scalable] = None,
                  min_value: Optional[float] = None, max_value: Optional[float] = None):
         if up_injection_id is None and up_scalable is None:
@@ -26,3 +26,11 @@ class UpDownScalable(Scalable):
         self.down_scalable = down_scalable if down_scalable is not None else ElementScalable(down_injection_id)
         super().__init__(type=JavaScalableType.UP_DOWN, min_value=min_value, max_value=max_value,
                          scalables=[self.up_scalable, self.down_scalable])
+
+    def __repr__(self) -> str:
+        desc: str =  f"{self.__class__.__name__}(" \
+                     f"up_scalable={self.up_scalable}," \
+                     f"down_scalable={self.down_scalable}"
+        desc += f", min_value={self.min_value}" if self.min_value != -float('inf') else ""
+        desc += f", max_value={self.max_value}" if self.max_value != float('inf') else ""
+        return desc + f")"
