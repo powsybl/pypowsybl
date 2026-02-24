@@ -15,12 +15,14 @@ import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.Replace3TwoWindingsTransformersByThreeWindingsTransformers;
 import com.powsybl.iidm.modification.ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers;
+import com.powsybl.iidm.modification.scalable.ProportionalScalable;
 import com.powsybl.iidm.modification.scalable.Scalable;
 import com.powsybl.iidm.modification.scalable.ScalingParameters;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.BusbarSection;
+import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
@@ -38,6 +40,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.io.IOException;
@@ -45,10 +48,13 @@ import java.util.*;
 import java.util.function.DoubleSupplier;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
+import static com.powsybl.python.commons.CTypeUtil.toDoubleList;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
+import static com.powsybl.python.commons.Util.convert;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
-import static com.powsybl.python.network.ScalableUtils.freeScalingParametersContent;
+import static com.powsybl.python.network.ScalableUtils.*;
+import static com.powsybl.python.network.ScalableUtils.convert;
 
 /**
  * Defines the C functions for network modifications.
@@ -207,14 +213,11 @@ public final class NetworkModificationsCFunctions {
         });
     }
 
-    enum ScalableType {
-        ELEMENT,
-        STACK;
-    }
-
     @CEntryPoint(name = "createScalable")
-    public static ObjectHandle createScalable(IsolateThread thread, int scalableTypePos, CCharPointer injectionIdPtr, double minValue,
-                                              double maxValue, VoidPointerPointer childrenHandles, int childrenCount,
+    public static ObjectHandle createScalable(IsolateThread thread, int scalableTypePos, CCharPointer injectionIdPtr,
+                                              double minValue, double maxValue,
+                                              VoidPointerPointer childrenHandles, int childrenCount,
+                                              CDoublePointer percentages, int percentagesCount,
                                               ExceptionHandlerPointer exceptionHandlerPointer) {
         return doCatch(exceptionHandlerPointer, new PointerProvider<>() {
             @Override
@@ -222,25 +225,26 @@ public final class NetworkModificationsCFunctions {
                 Scalable scalable;
                 ScalableType scalableType = ScalableType.values()[scalableTypePos];
                 boolean withValues = minValue != Double.MIN_VALUE || maxValue != Double.MAX_VALUE;
+                Scalable[] children = checkAndConvertScalableHandleList(childrenHandles, childrenCount, scalableType);
                 switch (scalableType) {
                     case ELEMENT:
-                        String injectionId = CTypeUtil.toString(injectionIdPtr);
-                        if (injectionId.isEmpty()) {
-                            throw new PowsyblException("An injection id must be given for ELEMENT type scalable.");
-                        }
+                        String injectionId = checkInjectionId(injectionIdPtr, scalableType);
                         scalable = withValues ? Scalable.scalable(injectionId, minValue, maxValue) : Scalable.scalable(injectionId);
                         break;
                     case STACK:
-                        if (childrenCount == 0) {
-                            throw new PowsyblException("Scalable children not found for STACK type scalable.");
-                        }
-                        Scalable[] children = new Scalable[childrenCount];
-                        for (int i = 0; i < childrenCount; ++i) {
-                            ObjectHandle childrenHandle = childrenHandles.read(i);
-                            Scalable child = ObjectHandles.getGlobal().get(childrenHandle);
-                            children[i] = child;
-                        }
                         scalable = withValues ? Scalable.stack(minValue, maxValue, children) : Scalable.stack(children);
+                        break;
+                    case UPDOWN:
+                        scalable = withValues ? Scalable.upDown(children[0], children[1], minValue, maxValue) :
+                                Scalable.upDown(children[0], children[1]);
+                        break;
+                    case PROPORTIONAL:
+                        if (percentagesCount != childrenCount) {
+                            throw new PowsyblException("Wrong number of percentages for PROPORTIONAL type scalable.");
+                        }
+                        List<Double> percentagesList = toDoubleList(percentages, percentagesCount);
+                        scalable = withValues ? Scalable.proportional(percentagesList, List.of(children), minValue, maxValue)
+                                : Scalable.proportional(percentagesList, List.of(children));
                         break;
                     default:
                         throw new PowsyblException("Scalable type not supported: " + scalableType);
@@ -248,6 +252,22 @@ public final class NetworkModificationsCFunctions {
                 return ObjectHandles.getGlobal().create(scalable);
             }
         });
+    }
+
+    private static Scalable[] checkAndConvertScalableHandleList(VoidPointerPointer scalableHandles, int scalableCount, ScalableType scalableType) {
+        if (scalableCount == 0 && scalableType != ScalableType.ELEMENT) {
+            throw new PowsyblException("Scalable children not found for " + scalableType + " type scalable.");
+        }
+        if (scalableCount != 2 && scalableType == ScalableType.UPDOWN) {
+            throw new PowsyblException("Wrong number of children for UPDOWN type scalable.");
+        }
+        Scalable[] scalables = new Scalable[scalableCount];
+        for (int i = 0; i < scalableCount; ++i) {
+            ObjectHandle scalableHandle = scalableHandles.read(i);
+            Scalable scalable = ObjectHandles.getGlobal().get(scalableHandle);
+            scalables[i] = scalable;
+        }
+        return scalables;
     }
 
     @CEntryPoint(name = "scale")
@@ -324,6 +344,24 @@ public final class NetworkModificationsCFunctions {
             @Override
             public void run() {
                 freeScalingParametersPointer(scalingParametersPtr);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "computeProportionalScalablePercentages")
+    public static ArrayPointer<CDoublePointer> computeProportionalScalablePercentages(IsolateThread thread, CCharPointerPointer injectionIdsPtr, int injectionCount,
+                                                              DistributionMode mode, ObjectHandle networkHandle,
+                                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CDoublePointer>>() {
+
+            @Override
+            public ArrayPointer<CDoublePointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> injectionIds = toStringList(injectionIdsPtr, injectionCount);
+                List<Injection<?>> injections = getInjections(network, injectionIds);
+                ProportionalScalable.DistributionMode distributionMode = convert(mode);
+                List<Double> percentages = ProportionalScalable.computePercentages(injections, distributionMode);
+                return createDoubleArray(percentages);
             }
         });
     }
