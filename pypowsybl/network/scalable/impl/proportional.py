@@ -27,6 +27,8 @@ class ProportionalScalable(Scalable):
             raise RuntimeError('One of "injection_ids" and "scalables" parameters must be defined.')
         if percentages is None and (network is None or mode is None):
             raise RuntimeError('Parameters "network", "injection_ids" and "mode" must be defined if a list of percentages is not provided.')
+        if injection_ids is not None:
+            scalables = [ElementScalable(injection_id=name) for name in injection_ids]
         self.percentages = percentages if percentages is not None else self.compute_scalables_percentages(injection_ids, network, mode)
         self.children = scalables if scalables is not None else [ElementScalable(injection_id) for injection_id in injection_ids]
         super().__init__(type=JavaScalableType.PROPORTIONAL, min_value=min_value, max_value=max_value,
@@ -34,4 +36,13 @@ class ProportionalScalable(Scalable):
 
     @staticmethod
     def compute_scalables_percentages(injection_ids: List[str], network: Network, mode: DistributionMode) -> List[float]:
-        compute_proportional_scalable_percentages(injection_ids, mode, network._handle)
+        return compute_proportional_scalable_percentages(injection_ids, mode, network._handle)
+
+    def __repr__(self) -> str:
+        desc: str =  f"{self.__class__.__name__}(" \
+                     f"children={self.children}" \
+                     f", percentages={self.percentages}"
+        desc += f", min_value={self.min_value}" if self.min_value != -float('inf') else ""
+        desc += f", max_value={self.max_value}" if self.max_value != float('inf') else ""
+        return desc + f")"
+

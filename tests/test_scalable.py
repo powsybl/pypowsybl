@@ -5,8 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 import pypowsybl as pp
-from pypowsybl._pypowsybl import ScalingConvention, ScalingType, Priority
-from pypowsybl.network import ElementScalable, StackScalable, ScalingParameters
+from pypowsybl._pypowsybl import ScalingConvention, ScalingType, Priority, DistributionMode
+from pypowsybl.network import ElementScalable, StackScalable, ScalingParameters, ProportionalScalable, UpDownScalable
 
 
 def test_element_scalable():
@@ -53,6 +53,43 @@ def test_stack_scalable():
     assert done == 1500.0
     assert n2.get_generators().loc["GEN", "target_p"] == 2107.0
     assert n2.get_generators().loc["GEN2", "target_p"] == 607.0
+
+def test_proportional_scalable():
+    n = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
+
+    assert n.get_generators().loc["GEN", "target_p"] == 607.0
+    assert n.get_generators().loc["GEN2", "target_p"] == 607.0
+    scal1 = ElementScalable(injection_id="GEN")
+    scal2 = ElementScalable(injection_id="GEN2")
+    generators_scalable = ProportionalScalable(scalables=[scal1, scal2], percentages=[10, 90])
+
+    done = generators_scalable.scale(n, asked=1000)
+    assert done == 1000.0
+    assert n.get_generators().loc["GEN", "target_p"] == 707.0
+    assert n.get_generators().loc["GEN2", "target_p"] == 1507.0
+
+    n.update_generators(id=["GEN", "GEN2"], target_p=[100, 900])
+    gen_scalable_from_distribution_model = ProportionalScalable(injection_ids=["GEN", "GEN2"],
+                                                                mode=DistributionMode.PROPORTIONAL_TO_TARGETP,
+                                                                network=n)
+    assert gen_scalable_from_distribution_model.percentages == [10, 90]
+
+def test_up_down_scalable():
+    n = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
+    scal1 = ElementScalable(injection_id="GEN")
+    scal2 = ElementScalable(injection_id="GEN2")
+    up_down_scalable = UpDownScalable(up_scalable=scal1, down_scalable=scal2, min_value=0)
+
+    done = up_down_scalable.scale(n, asked=1000)
+    assert done == 1000.0
+    assert n.get_generators().loc["GEN", "target_p"] == 1607.0
+    assert n.get_generators().loc["GEN2", "target_p"] == 607.0
+
+    done = up_down_scalable.scale(n, asked=-1000)
+    assert done == -607.0
+    assert n.get_generators().loc["GEN", "target_p"] == 1607.0
+    assert n.get_generators().loc["GEN2", "target_p"] == 0.0
+
 
 def test_scaling_parameters():
     parameters = ScalingParameters()
