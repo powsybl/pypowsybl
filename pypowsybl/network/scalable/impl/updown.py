@@ -7,7 +7,17 @@ from .scalable import Scalable, JavaScalableType
 
 
 class UpDownScalable(Scalable):
-    """Scalable combining one scalable used to up power and one to bring it down."""
+    """
+    Scalable based on two others : one used when scaling the power up and one to scale the power down
+
+    Args:
+        up_scalable: The Scalable used to up power
+        down_scalable: The Scalable used to bring power down
+        up_injection_id (in place of up_scalable): The id of the injection with which to create the up scalable
+        down_injection_id (in place of down_scalable): The id of the injection with which to create the down scalable
+        min_value (optional): The minimum active power value the modification can reach
+        max_value (optional): The maximum active power value the modification can reach
+    """
     up_scalable: Scalable
     down_scalable: Scalable
 

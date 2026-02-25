@@ -24,6 +24,9 @@ class JavaScalableType(Enum):
     UP_DOWN = 3
 
 class Scalable:
+    """
+    Basic abstraction of a scalable network modification.
+    """
     _handle: _pp.JavaHandle
     type: JavaScalableType
     min_value: float = - float('inf')
@@ -51,6 +54,14 @@ class Scalable:
                                            max_value=self.max_value, children=children_handles, percentages=percentages)
 
     def scale(self, network: Network, asked: float, parameters: ScalingParameters = ScalingParameters()) -> float:
+        """
+        Apply the active power scaling to a given network.
+
+        :param network: The network on which to apply the scaling
+        :param asked: The asked scaling value (in MW, delta or target depending on parameters)
+        :param parameters: Scaling parameters
+        :return: The actual active power value applied (still in delta or target depending on parameters)
+        """
         c_param = parameters._to_c_parameters()
         return _pp.scale(network._handle, self._handle, c_param, asked)
 

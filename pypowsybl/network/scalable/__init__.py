@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from .impl.element import ElementScalable
-from .impl.proportional import ProportionalScalable
+from .impl.proportional import ProportionalScalable, DistributionMode
 from .impl.stack import StackScalable
 from .impl.updown import UpDownScalable
 from .impl.scaling_parameters import ScalingParameters

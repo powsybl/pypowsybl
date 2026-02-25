@@ -7,7 +7,16 @@ from .scalable import Scalable, JavaScalableType
 
 
 class StackScalable(Scalable):
-    """Scalable based on a stack of scalables."""
+    """
+    Scalable that applies the asked modification on a list of underlying scalables, using them in order.
+    The power change is applied to the first Scalable in the list until it is at its limit, then to the next one.
+
+    Args:
+        scalables: The list of underlying Scalable to stack
+        injection_ids (in place of scalables): The list of injection ids with which to create the underlying Scalable
+        min_value (optional): The minimum active power value the modification can reach
+        max_value (optional): The maximum active power value the modification can reach
+    """
     children: List[Scalable] = []
 
     def __init__(self, injection_ids: Optional[List[str]] = None,
