@@ -118,6 +118,14 @@ def test_dynamic_dataframe():
         data=[('DM_TCB', 'B4')])
     model_mapping.add_tap_changer_blocking_automation_system(tcb_df, tfo_df, measurement1_df, measurement2_df)
 
+def test_events_information():
+    event_mapping = dyn.EventMapping()
+    info_df = event_mapping.get_events_information()
+    assert info_df.loc['ActivePowerVariation']['description'] == 'Active power variation on generator or load'
+    assert info_df.loc['ActivePowerVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_p (double)'
+    assert info_df.loc['ReferenceVoltageVariation']['description'] == 'Reference voltage variation on synchronous/synchronized generator'
+    assert info_df.loc['ReferenceVoltageVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_u (double)'
+
 
 def test_add_event():
     event_mapping = dyn.EventMapping()
@@ -127,6 +135,8 @@ def test_add_event():
     event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
     event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
+    # Event model from event name
+    event_mapping.add_event_model(event_name='ActivePowerVariation', static_id='GEN', start_time=1.5, delta_p=5)
 
 
 def test_add_event_dataframe():

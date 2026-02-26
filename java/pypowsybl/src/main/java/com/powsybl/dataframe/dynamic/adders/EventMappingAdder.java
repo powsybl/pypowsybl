@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.EventInformation;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 
@@ -28,4 +29,8 @@ public interface EventMappingAdder {
      */
     void addElements(PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe);
 
+    /**
+     * Returns event information
+     */
+    EventInformation getEventInformation();
 }

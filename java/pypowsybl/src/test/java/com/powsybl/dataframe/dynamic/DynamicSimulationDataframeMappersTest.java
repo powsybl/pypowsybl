@@ -7,15 +7,14 @@
  */
 package com.powsybl.dataframe.dynamic;
 
-import com.powsybl.dataframe.dynamic.adders.BaseLoadAdder;
-import com.powsybl.dataframe.dynamic.adders.PhaseShifterBlockingIAdder;
-import com.powsybl.dataframe.dynamic.adders.TapChangerBlockingAutomationSystemAdder;
+import com.powsybl.dataframe.dynamic.adders.*;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dynamicsimulation.TimelineEvent;
 import com.powsybl.timeseries.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,5 +102,23 @@ class DynamicSimulationDataframeMappersTest {
                         "index : static_id (str), parameter_set_id (str), model_name (str)",
                         "index : dynamic_model_id (str), parameter_set_id (str), model_name (str), phase_shifter_id (str)",
                         "[dataframe \"Tcb\"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe \"Transformers\"] index : dynamic_model_id (str), transformer_id (str) / [dataframe \"U measurement 1\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 2\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 3\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 4\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 5\"] index : dynamic_model_id (str), measurement_point_id (str)"));
+    }
+
+    @Test
+    void testEventInformationDataframe() {
+        Collection<EventMappingAdder> adders = EventMappingHandler.getEventMappingAdders().stream()
+                .filter(adder -> {
+                    String name = adder.getEventInformation().name();
+                    return "Disconnect".equalsIgnoreCase(name)
+                            || "ActivePowerVariation".equalsIgnoreCase(name);
+                })
+                .toList();
+        List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.eventInformationDataFrameMapper(), adders);
+        assertThat(series).satisfiesExactly(
+                names -> assertThat(names.getStrings()).containsExactly("ActivePowerVariation", "Disconnect"),
+                desc -> assertThat(desc.getStrings()).containsExactly("Active power variation on generator or load", "Disconnects a bus, a branch, an injection or an HVDC line"),
+                attr -> assertThat(attr.getStrings()).containsExactly(
+                        "index : static_id (str), start_time (double), delta_p (double)",
+                        "index : static_id (str), start_time (double), disconnect_only (str)"));
     }
 }

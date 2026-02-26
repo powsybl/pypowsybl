@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.EventInformation;
 import com.powsybl.dataframe.dynamic.PersistentDoubleSeries;
 import com.powsybl.dataframe.update.DoubleSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -30,9 +32,19 @@ public class ReferenceVoltageVariationAdder extends AbstractEventModelAdder {
             SeriesMetadata.doubles(START_TIME),
             SeriesMetadata.doubles(DELTA_U));
 
+    protected static final EventInformation INFORMATION = new EventInformation(
+            EventReferenceVoltageVariationBuilder.getModelInfo(),
+            CategoryAttributeUtils.createFromMetadata(METADATA)
+    );
+
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public EventInformation getEventInformation() {
+        return INFORMATION;
     }
 
     private static class ReferenceVoltageVariationSeries extends AbstractEventModelSeries<EventReferenceVoltageVariationBuilder> {

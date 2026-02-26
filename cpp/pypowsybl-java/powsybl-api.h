@@ -389,14 +389,6 @@ typedef struct nad_parameters_struct {
 } nad_parameters;
 
 typedef enum {
-    DISCONNECT = 0,
-    NODE_FAULT,
-    ACTIVE_POWER_VARIATION,
-    REACTIVE_POWER_VARIATION,
-    REFERENCE_VOLTAGE_VARIATION,
-} EventMappingType;
-
-typedef enum {
     CURVE = 0,
     FINAL_STATE,
 } OutputVariableType;
