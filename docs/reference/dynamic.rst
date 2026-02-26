@@ -32,6 +32,7 @@ ModelMapping
     ModelMapping.add_hvdc_vsc
     ModelMapping.add_base_transformer
     ModelMapping.add_base_static_var_compensator
+    ModelMapping.add_shunt
     ModelMapping.add_base_line
     ModelMapping.add_base_bus
     ModelMapping.add_infinite_bus

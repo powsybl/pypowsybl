@@ -544,6 +544,37 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('StaticVarCompensator', [df], **kwargs)
 
+    def add_shunt(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Add a shunt compensator mapping
+
+        :Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **static_id**: id of the network element to map
+            - **parameter_set_id**: id of the parameter for this model given in the dynawo configuration
+
+            - **model_name**: name of the model used for the mapping (if none the default model will be used)
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                model_mapping.add_shunt(static_id='SHUNT',
+                                               parameter_set_id='sh',
+                                               model_name='ShuntB')
+        """
+        self._add_all_dynamic_mappings('Shunt', [df], **kwargs)
+
     def add_base_line(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
         Add a line mapping

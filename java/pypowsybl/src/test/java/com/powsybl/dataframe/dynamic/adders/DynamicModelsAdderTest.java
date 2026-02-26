@@ -16,6 +16,7 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
+import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
 import com.powsybl.iidm.network.test.SvcTestCaseFactory;
 import com.powsybl.python.dynamic.PythonDynamicModelsSupplier;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -153,7 +154,8 @@ class DynamicModelsAdderTest {
                 Arguments.of("InfiniteBus", EurostagTutorialExample1Factory.create(), "NHV1"),
                 Arguments.of("HvdcP", HvdcTestNetwork.createVsc(), "L"),
                 Arguments.of("HvdcVsc", HvdcTestNetwork.createVsc(), "L"),
-                Arguments.of("InertialGrid", EurostagTutorialExample1Factory.create(), "GEN")
+                Arguments.of("InertialGrid", EurostagTutorialExample1Factory.create(), "GEN"),
+                Arguments.of("Shunt", ShuntTestCaseFactory.create(), "SHUNT")
                 );
     }
 
