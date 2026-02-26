@@ -11,9 +11,10 @@ import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
+import com.powsybl.dynawo.builders.ModelInfo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +24,8 @@ import java.util.function.Function;
  * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public final class DynamicSimulationDataframeMappersUtils {
+
+    private static final String DESCRIPTION_NAME = "description";
 
     private DynamicSimulationDataframeMappersUtils() {
     }
@@ -49,11 +52,34 @@ public final class DynamicSimulationDataframeMappersUtils {
     public static DataframeMapper<Collection<DynamicMappingAdder>, Void> categoriesDataFrameMapper() {
         return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, CategoryInformation, Void>()
                 .itemsStreamProvider(a -> a.stream()
-                        .map(DynamicMappingAdder::getCategoryInformation)
-                        .sorted(Comparator.comparing(CategoryInformation::name)))
+                        .map(DynamicMappingAdder::getCategoryInformation))
                 .stringsIndex("name", CategoryInformation::name)
-                .strings("description", CategoryInformation::description)
+                .strings(DESCRIPTION_NAME, CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<ModelInfo>, Void> supportedModelsDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<ModelInfo>, ModelInfo, Void>()
+                .itemsStreamProvider(Collection::stream)
+                .stringsIndex("name", ModelInfo::name)
+                .strings(DESCRIPTION_NAME, mi -> mi.doc() != null ? mi.doc() : "")
+                .build();
+    }
+
+    public static DataframeMapper<Collection<DynamicMappingAdder>, Void> allSupportedModelsDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, Pair<String, ModelInfo>, Void>()
+                .itemsStreamProvider(a -> a.stream()
+                        .flatMap(adder -> {
+                            String cat = adder.getCategory();
+                            return adder.getSupportedModels().stream().map(m -> Pair.of(cat, m));
+                        }))
+                .stringsIndex("name", p -> p.getValue().name())
+                .strings(DESCRIPTION_NAME, p -> {
+                    String doc = p.getValue().doc();
+                    return doc != null ? doc : "";
+                })
+                .strings("category", Pair::getKey)
                 .build();
     }
 }

@@ -954,6 +954,7 @@ std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string 
 std::vector<std::string> getCategories();
 SeriesArray* getCategoriesInformation();
 std::vector<std::string> getSupportedModels(std::string categoryName);
+SeriesArray* getSupportedModelsInformation(std::string categoryName);
 
 // results
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle);

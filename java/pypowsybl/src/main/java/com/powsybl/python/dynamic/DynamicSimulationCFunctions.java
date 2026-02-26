@@ -220,9 +220,25 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() throws IOException {
-                return Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr))));
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
+                return Util.createCharPtrArray(List.copyOf(
+                        categoryName.isEmpty() ? DynamicMappingHandler.getAllSupportedModels()
+                        : DynamicMappingHandler.getSupportedModels(categoryName)
+                ));
             }
         });
+    }
+
+    @CEntryPoint(name = "getSupportedModelsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getSupportedModelsInformation(IsolateThread thread,
+                                                                                               CCharPointer categoryNamePtr,
+                                                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        String categoryName = CTypeUtil.toString(categoryNamePtr);
+        return categoryName.isEmpty()
+                ? Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.allSupportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getDynamicMappingAdders())
+                : Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getSupportedModelsInformation(categoryName));
     }
 
     @CEntryPoint(name = "addEventMappings")

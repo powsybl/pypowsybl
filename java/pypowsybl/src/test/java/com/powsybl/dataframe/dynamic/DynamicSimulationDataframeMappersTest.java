@@ -7,15 +7,15 @@
  */
 package com.powsybl.dataframe.dynamic;
 
-import com.powsybl.dataframe.dynamic.adders.BaseLoadAdder;
-import com.powsybl.dataframe.dynamic.adders.PhaseShifterBlockingIAdder;
-import com.powsybl.dataframe.dynamic.adders.TapChangerBlockingAutomationSystemAdder;
+import com.powsybl.dataframe.dynamic.adders.*;
 import com.powsybl.dataframe.impl.Series;
 import com.powsybl.dynamicsimulation.TimelineEvent;
+import com.powsybl.dynawo.builders.ModelInfo;
 import com.powsybl.timeseries.*;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,8 +85,12 @@ class DynamicSimulationDataframeMappersTest {
 
     @Test
     void testCategoryDataframe() {
-        List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.categoriesDataFrameMapper(),
-                List.of(new BaseLoadAdder(), new TapChangerBlockingAutomationSystemAdder(), new PhaseShifterBlockingIAdder()));
+        Collection<DynamicMappingAdder> adders = DynamicMappingHandler.getDynamicMappingAdders().stream()
+                .filter(adder -> "Load".equalsIgnoreCase(adder.getCategory())
+                        || "TapChangerBlocking".equalsIgnoreCase(adder.getCategory())
+                        || "PhaseShifterBlockingI".equalsIgnoreCase(adder.getCategory()))
+                .toList();
+        List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.categoriesDataFrameMapper(), adders);
         assertThat(series).satisfiesExactly(
                 names -> assertThat(names.getStrings()).containsExactly("Load", "PhaseShifterBlockingI", "TapChangerBlocking"),
                 desc -> assertThat(desc.getStrings()).containsExactly("Standard load", "Phase shifter blocking I", "Tap changer blocking automation system"),
@@ -94,5 +98,28 @@ class DynamicSimulationDataframeMappersTest {
                         "index : static_id (str), parameter_set_id (str), model_name (str)",
                         "index : dynamic_model_id (str), parameter_set_id (str), model_name (str), phase_shifter_id (str)",
                         "[dataframe \"Tcb\"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe \"Transformers\"] index : dynamic_model_id (str), transformer_id (str) / [dataframe \"U measurement 1\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 2\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 3\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 4\"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe \"U measurement 5\"] index : dynamic_model_id (str), measurement_point_id (str)"));
+    }
+
+    @Test
+    void testSupportedModelsDataframe() {
+        Collection<ModelInfo> infos = DynamicMappingHandler.getSupportedModelsInformation("SimplifiedGenerator");
+        List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(), infos);
+        assertThat(series).satisfiesExactly(
+                names -> assertThat(names.getStrings()).containsExactly("GeneratorFictitious", "GeneratorPVFixed"),
+                desc -> assertThat(desc.getStrings()).containsExactly("Fictitious generator (behaves in a similar way as an alpha-beta load)", ""));
+    }
+
+    @Test
+    void testAllSupportedModelsDataframe() {
+        Collection<DynamicMappingAdder> adders = DynamicMappingHandler.getDynamicMappingAdders().stream()
+                .filter(adder -> "SimplifiedGenerator".equalsIgnoreCase(adder.getCategory())
+                    || "Line".equalsIgnoreCase(adder.getCategory()))
+                .toList();
+        List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.allSupportedModelsDataFrameMapper(), adders);
+        assertThat(series).satisfiesExactly(
+                names -> assertThat(names.getStrings()).containsExactly("Line", "GeneratorFictitious", "GeneratorPVFixed"),
+                desc -> assertThat(desc.getStrings()).containsExactly("Standard line", "Fictitious generator (behaves in a similar way as an alpha-beta load)", ""),
+                cat -> assertThat(cat.getStrings()).containsExactly("Line", "SimplifiedGenerator", "SimplifiedGenerator"));
+
     }
 }

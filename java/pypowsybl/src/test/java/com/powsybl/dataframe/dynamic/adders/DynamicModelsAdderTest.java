@@ -7,8 +7,10 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.models.AbstractPureDynamicBlackBoxModel;
 import com.powsybl.dynawo.models.TransformerSide;
 import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystem;
@@ -31,6 +33,8 @@ import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
@@ -131,6 +135,21 @@ class DynamicModelsAdderTest {
         wrongModelNameDF.addSeries(MODEL_NAME, false, new TestStringSeries("wrongModelName"));
         DynamicMappingHandler.addElements("Load", dynamicModelsSupplier, List.of(wrongModelNameDF));
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
+    }
+
+    @Test
+    void testUnknownCategory() {
+        String category = "WRONG_CATEGORY";
+        assertTrue(DynamicMappingHandler.getSupportedModels(category).isEmpty());
+        assertTrue(DynamicMappingHandler.getSupportedModelsInformation(category).isEmpty());
+
+        assertThatThrownBy(() -> DynamicMappingHandler.getMetadata(category))
+                .isInstanceOf(PowsyblException.class)
+                .hasMessage("No category named WRONG_CATEGORY");
+        List<UpdatingDataframe> dataframes = List.of();
+        assertThatThrownBy(() -> DynamicMappingHandler.addElements(category, null, dataframes))
+                .isInstanceOf(PowsyblException.class)
+                .hasMessage("No category named WRONG_CATEGORY");
     }
 
     private static Stream<Arguments> equipmentDataProvider() {
