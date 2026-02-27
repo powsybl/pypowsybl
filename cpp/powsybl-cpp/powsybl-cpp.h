@@ -463,6 +463,37 @@ public:
     bool injections_added;
 };
 
+enum ScalingType {
+    DELTA_P = 0,
+    TARGET_P,
+};
+
+enum Priority {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+};
+
+enum ScalingConvention {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+};
+
+class ScalingParameters {
+public:
+    ScalingParameters(scaling_parameters* src);
+    std::shared_ptr<scaling_parameters> to_c_struct() const;
+    void load_to_c_struct(scaling_parameters& params) const;
+
+    ScalingConvention scaling_convention;
+    bool constant_power_factor;
+    bool reconnect;
+    bool allows_generator_out_of_active_power_limits;
+    Priority priority;
+    ScalingType scaling_type;
+    std::vector<std::string> ignored_injection_ids;
+};
+
 //=======short-circuit analysis==========
 enum ShortCircuitStudyType {
     SUB_TRANSIENT = 0,
@@ -1010,6 +1041,11 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
+
+JavaHandle createScalable(int scalableType, const std::string& injectionId, double minValue, double maxValue, std::vector<JavaHandle> children, std::vector<double> percentages);
+double scale(JavaHandle network, JavaHandle scalable, const ScalingParameters& scalingParameters, double asked);
+std::vector<double> computeProportionalScalablePercentages(const std::vector<std::string>& injectionIds, distribution_mode mode, JavaHandle network);
+ScalingParameters* createScalingParameters();
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();

@@ -1232,6 +1232,46 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
 
+    m.def("create_scalable", &pypowsybl::createScalable, "Create a Scalable", py::arg("type"), py::arg("injection_id"),
+        py::arg("min_value"), py::arg("max_value"), py::arg("children"), py::arg("percentages"));
+
+    m.def("scale", &pypowsybl::scale, "Scale active power according to the provided Scalable", py::arg("network"), py::arg("scalable"),
+          py::arg("scaling_parameters"), py::arg("asked"));
+
+    m.def("compute_proportional_scalable_percentages", &pypowsybl::computeProportionalScalablePercentages, "Computes distribution percentages",
+        py::arg("injection_id"), py::arg("mode"), py::arg("network"));
+
+    py::enum_<pypowsybl::ScalingType>(m, "ScalingType")
+            .value("DELTA_P", pypowsybl::ScalingType::DELTA_P)
+            .value("TARGET_P", pypowsybl::ScalingType::TARGET_P);
+
+    py::enum_<pypowsybl::Priority>(m, "Priority")
+            .value("RESPECT_OF_VOLUME_ASKED", pypowsybl::Priority::RESPECT_OF_VOLUME_ASKED)
+            .value("RESPECT_OF_DISTRIBUTION", pypowsybl::Priority::RESPECT_OF_DISTRIBUTION)
+            .value("ONESHOT", pypowsybl::Priority::ONESHOT);
+
+    py::enum_<pypowsybl::ScalingConvention>(m, "ScalingConvention")
+            .value("GENERATOR_SCALING_CONVENTION", pypowsybl::ScalingConvention::GENERATOR_SCALING_CONVENTION)
+            .value("LOAD_SCALING_CONVENTION", pypowsybl::ScalingConvention::LOAD_SCALING_CONVENTION);
+
+    py::class_<pypowsybl::ScalingParameters>(m, "ScalingParameters")
+        .def(py::init(&pypowsybl::createScalingParameters))
+        .def_readwrite("scaling_convention", &pypowsybl::ScalingParameters::scaling_convention)
+        .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::constant_power_factor)
+        .def_readwrite("reconnect", &pypowsybl::ScalingParameters::reconnect)
+        .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
+        .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
+        .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
+        .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids);
+
+    py::enum_<distribution_mode>(m, "DistributionMode")
+            .value("PROPORTIONAL_TO_TARGETP", PROPORTIONAL_TO_TARGETP)
+            .value("PROPORTIONAL_TO_PMAX", PROPORTIONAL_TO_PMAX)
+            .value("PROPORTIONAL_TO_DIFF_PMAX_TARGETP", PROPORTIONAL_TO_DIFF_PMAX_TARGETP)
+            .value("PROPORTIONAL_TO_DIFF_TARGETP_PMIN", PROPORTIONAL_TO_DIFF_TARGETP_PMIN)
+            .value("PROPORTIONAL_TO_P0", PROPORTIONAL_TO_P0)
+            .value("UNIFORM_DISTRIBUTION", UNIFORM_DISTRIBUTION);
+
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,
                    "Nominal voltages are used for the calculation.")
