@@ -1,5 +1,5 @@
 # actual dependencies
-pandas==2.2.3
+pandas>=2.2.3
 prettytable>=2.0.0
 networkx
 matplotlib==3.9.2
@@ -15,7 +15,7 @@ sphinx==7.1.2
 furo==2024.1.29
 
 # CI dependencies
-setuptools==78.1.1
+setuptools>=78.1.1
 wheel==0.46.2
 coverage==7.3.2
 pytest>=8.3.3
