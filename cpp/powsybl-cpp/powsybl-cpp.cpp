@@ -587,7 +587,7 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
         delete ptr;
     });
 }
-  
+
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     params.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold;
     params.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold;
