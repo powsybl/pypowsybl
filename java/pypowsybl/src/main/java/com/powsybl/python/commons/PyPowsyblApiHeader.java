@@ -1594,6 +1594,36 @@ public final class PyPowsyblApiHeader {
 
         @CField("sensitivity_failure_overcost")
         void setSensitivityFailureOvercost(double sensitivityFailureOvercost);
+
+        @CField("fast_rao_ext")
+        boolean getFastRaoExt();
+
+        @CField("fast_rao_ext")
+        void setFastRaoExt(boolean fastRaoExt);
+
+        @CField("number_of_cnecs_to_add")
+        int getNumberOfCnecsToAdd();
+
+        @CField("number_of_cnecs_to_add")
+        void setNumberOfCnecsToAdd(int numberOfCnecsToAdd);
+
+        @CField("add_unsecure_cnecs")
+        boolean getAddUnsecureCnecs();
+
+        @CField("add_unsecure_cnecs")
+        void setAddUnsecureCnecs(boolean addUnsecureCnecs);
+
+        @CField("margin_limit")
+        double getMarginLimit();
+
+        @CField("margin_limit")
+        void setMarginLimit(double marginLimit);
+
+        @CField("search_tree_parameters")
+        boolean getSearchTreeParameters();
+
+        @CField("search_tree_parameters")
+        void setSearchTreeParameters(boolean searchTreeParameters);
     }
 
 }

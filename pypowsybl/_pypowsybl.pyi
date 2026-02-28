@@ -944,6 +944,11 @@ class RaoParameters:
     sensitivity_failure_overcost: float
     provider_parameters_keys: List[str]
     provider_parameters_values: List[str]
+    fast_rao_ext: bool
+    search_tree_parameters_ext: bool
+    number_of_cnecs_to_add: int
+    add_unsecure_cnecs: bool
+    margin_limit: float
     def __init__(self) -> None: ...
 
 class RaoComputationStatus:
