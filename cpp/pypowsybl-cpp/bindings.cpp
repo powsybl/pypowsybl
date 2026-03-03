@@ -215,7 +215,7 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("category_name"));
 
     // timeseries mapping
-    m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("is_dynamic"), py::arg("output_variable_type"));
+    m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("output_variable_type"));
 
     // events mapping
     m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("event_name"), py::arg("mapping_df"));

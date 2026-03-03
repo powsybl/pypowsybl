@@ -8,6 +8,7 @@ from typing import List, Union
 
 from pypowsybl import _pypowsybl as _pp
 from pypowsybl._pypowsybl import OutputVariableType # pylint: disable=protected-access
+import warnings
 
 
 class OutputVariableMapping:
@@ -18,49 +19,60 @@ class OutputVariableMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_timeseries_mapping()
 
-    def add_dynamic_model_curves(self, dynamic_model_id: str, variables: Union[List[str], str]) -> None:
+    def add_curves(self, model_id: str, variables: Union[List[str], str]) -> None:
         """
-        Adds curves mapping on a single dynamic model
+        Adds curves on a single dynamic model or network equipment without dynamic model
 
-        :param dynamic_model_id: id of the dynamic model
+        :param model_id: dynamic model or equipment id
         :param variables: single element or list of variables names to record
         """
         if isinstance(variables, str):
             variables = [variables]
-        self._add_output_variables(dynamic_model_id, variables, True, OutputVariableType.CURVE)
+        self._add_output_variables(model_id, variables, OutputVariableType.CURVE)
+
+
+    def add_dynamic_model_curves(self, dynamic_model_id: str, variables: Union[List[str], str]) -> None:
+        """
+        . deprecated:: 1.15.0
+        Use :method:`add_model_curves` instead.
+        """
+        warnings.warn("add_dynamic_model_curves is deprecated, use add_model_curves instead", DeprecationWarning)
+        self.add_curves(dynamic_model_id, variables)
 
     def add_standard_model_curves(self, static_id: str, variables: Union[List[str], str]) -> None:
         """
-        Adds curves mapping on a single network equipment without dynamic model
+        . deprecated:: 1.15.0
+        Use :method:`add_model_curves` instead.
+        """
+        warnings.warn("add_standard_model_curves is deprecated, use add_model_curves instead", DeprecationWarning)
+        self.add_curves(static_id, variables)
 
-        :param static_id: id of the network equipment
+    def add_final_state_values(self, model_id: str, variables: Union[List[str], str]) -> None:
+        """
+        Adds final state values on a single dynamic model or network equipment without dynamic model
+
+        :param model_id: dynamic model or equipment id
         :param variables: single element or list of variables names to record
         """
         if isinstance(variables, str):
             variables = [variables]
-        self._add_output_variables(static_id, variables, False, OutputVariableType.CURVE)
+        self._add_output_variables(model_id, variables, OutputVariableType.FINAL_STATE)
 
     def add_dynamic_model_final_state_values(self, dynamic_model_id: str, variables: Union[List[str], str]) -> None:
         """
-        Adds final state values mapping on a single dynamic model
-
-        :param dynamic_model_id: id of the dynamic model
-        :param variables: single element or list of variables names to record
+        . deprecated:: 1.15.0
+        Use :method:`add_model_final_state_values` instead.
         """
-        if isinstance(variables, str):
-            variables = [variables]
-        self._add_output_variables(dynamic_model_id, variables, True, OutputVariableType.FINAL_STATE)
+        warnings.warn("add_dynamic_model_final_state_values is deprecated, use add_model_final_state_values instead", DeprecationWarning)
+        self.add_final_state_values(dynamic_model_id, variables)
 
     def add_standard_model_final_state_values(self, static_id: str, variables: Union[List[str], str]) -> None:
         """
-        Adds final state values mapping on a single network equipment without dynamic model
-
-        :param static_id: id of the network equipment
-        :param variables: single element or list of variables names to record
+        . deprecated:: 1.15.0
+        Use :method:`add_model_final_state_values` instead.
         """
-        if isinstance(variables, str):
-            variables = [variables]
-        self._add_output_variables(static_id, variables, False, OutputVariableType.FINAL_STATE)
+        warnings.warn("add_standard_model_final_state_values is deprecated, use add_model_final_state_values instead", DeprecationWarning)
+        self.add_final_state_values(static_id, variables)
 
-    def _add_output_variables(self, element_id: str, variables: List[str], is_dynamic: bool, output_variable_type: OutputVariableType) -> None:
-        _pp.add_output_variables(self._handle, element_id, variables, is_dynamic, output_variable_type)
+    def _add_output_variables(self, element_id: str, variables: List[str], output_variable_type: OutputVariableType) -> None:
+        _pp.add_output_variables(self._handle, element_id, variables, output_variable_type)
