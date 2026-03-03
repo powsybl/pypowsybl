@@ -55,6 +55,7 @@ def test_add_mapping():
     model_mapping.add_hvdc_vsc(static_id='HVDC_LINE', parameter_set_id='hvdc_vsc', model_name='HvdcVSCDanglingP')
     model_mapping.add_base_transformer(static_id='TFO', parameter_set_id='tfo', model_name='TransformerFixedRatio')
     model_mapping.add_base_static_var_compensator(static_id='SVARC', parameter_set_id='svarc', model_name='StaticVarCompensatorPV')
+    model_mapping.add_shunt(static_id='SHUNT', parameter_set_id='sh', model_name='ShuntB')
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
@@ -129,6 +130,14 @@ def test_dynamic_dataframe():
         data=[('DM_TCB', 'B4')])
     model_mapping.add_tap_changer_blocking_automation_system(tcb_df, tfo_df, measurement1_df, measurement2_df)
 
+def test_events_information():
+    event_mapping = dyn.EventMapping()
+    info_df = event_mapping.get_events_information()
+    assert info_df.loc['ActivePowerVariation']['description'] == 'Active power variation on generator or load'
+    assert info_df.loc['ActivePowerVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_p (double)'
+    assert info_df.loc['ReferenceVoltageVariation']['description'] == 'Reference voltage variation on synchronous/synchronized generator'
+    assert info_df.loc['ReferenceVoltageVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_u (double)'
+
 
 def test_add_event():
     event_mapping = dyn.EventMapping()
@@ -138,6 +147,8 @@ def test_add_event():
     event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
     event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
+    # Event model from event name
+    event_mapping.add_event_model(event_name='ActivePowerVariation', static_id='GEN', start_time=1.5, delta_p=5)
 
 
 def test_add_event_dataframe():

@@ -1221,21 +1221,6 @@ public final class PyPowsyblApiHeader {
         void setStopTime(double stopTime);
     }
 
-    @CEnum("EventMappingType")
-    public enum EventMappingType {
-        DISCONNECT,
-        NODE_FAULT,
-        ACTIVE_POWER_VARIATION,
-        REACTIVE_POWER_VARIATION,
-        REFERENCE_VOLTAGE_VARIATION;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native EventMappingType fromCValue(int value);
-    }
-
     @CEnum("OutputVariableType")
     public enum OutputVariableType {
         CURVE,

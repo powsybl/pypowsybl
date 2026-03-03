@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
+import com.powsybl.dataframe.dynamic.adders.EventMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
 import com.powsybl.dynawo.builders.ModelInfo;
 import org.apache.commons.lang3.tuple.Pair;
@@ -80,6 +81,16 @@ public final class DynamicSimulationDataframeMappersUtils {
                     return doc != null ? doc : "";
                 })
                 .strings("category", Pair::getKey)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<EventMappingAdder>, Void> eventInformationDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<EventMappingAdder>, EventInformation, Void>()
+                .itemsStreamProvider(a -> a.stream()
+                        .map(EventMappingAdder::getEventInformation))
+                .stringsIndex("name", EventInformation::name)
+                .strings("description", EventInformation::description)
+                .strings("attribute", EventInformation::attribute)
                 .build();
     }
 }

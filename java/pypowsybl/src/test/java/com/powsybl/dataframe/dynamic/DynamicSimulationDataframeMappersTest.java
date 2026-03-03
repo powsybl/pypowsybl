@@ -67,6 +67,15 @@ class DynamicSimulationDataframeMappersTest {
     }
 
     @Test
+    void testEmptyCurveDataframesMapper() {
+        List<Series> series = TimeSeriesConverter.createSeries(List.of());
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("timestamp");
+        assertThat(series).satisfiesExactly(index -> assertThat(index.getStrings()).isEmpty());
+    }
+
+    @Test
     void testTimelineDataframesMapper() {
         List<TimelineEvent> timelineEvents = List.of(
                 new TimelineEvent(0.0, "BBM_GEN6", "PMIN : activation"),
@@ -120,6 +129,22 @@ class DynamicSimulationDataframeMappersTest {
                 names -> assertThat(names.getStrings()).containsExactly("Line", "GeneratorFictitious", "GeneratorPVFixed"),
                 desc -> assertThat(desc.getStrings()).containsExactly("Standard line", "Fictitious generator (behaves in a similar way as an alpha-beta load)", ""),
                 cat -> assertThat(cat.getStrings()).containsExactly("Line", "SimplifiedGenerator", "SimplifiedGenerator"));
+    }
 
+    void testEventInformationDataframe() {
+        Collection<EventMappingAdder> adders = EventMappingHandler.getEventMappingAdders().stream()
+                .filter(adder -> {
+                    String name = adder.getEventInformation().name();
+                    return "Disconnect".equalsIgnoreCase(name)
+                            || "ActivePowerVariation".equalsIgnoreCase(name);
+                })
+                .toList();
+        List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.eventInformationDataFrameMapper(), adders);
+        assertThat(series).satisfiesExactly(
+                names -> assertThat(names.getStrings()).containsExactly("ActivePowerVariation", "Disconnect"),
+                desc -> assertThat(desc.getStrings()).containsExactly("Active power variation on generator or load", "Disconnects a bus, a branch, an injection or an HVDC line"),
+                attr -> assertThat(attr.getStrings()).containsExactly(
+                        "index : static_id (str), start_time (double), delta_p (double)",
+                        "index : static_id (str), start_time (double), disconnect_only (str)"));
     }
 }
