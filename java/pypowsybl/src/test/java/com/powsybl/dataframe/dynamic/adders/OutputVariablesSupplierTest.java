@@ -25,17 +25,17 @@ class OutputVariablesSupplierTest {
     @Test
     void testPythonSupplier() {
         PythonOutputVariablesSupplier supplier = new PythonOutputVariablesSupplier();
-        supplier.addOutputVariables("LOAD", List.of("load_PPu", "load_QPu"), true, CURVE);
-        supplier.addOutputVariables("NGEN", List.of("Upu_value"), false, FINAL_STATE);
+        supplier.addOutputVariables("LOAD", List.of("load_PPu", "load_QPu"), CURVE);
+        supplier.addOutputVariables("NGEN", List.of("Upu_value"), FINAL_STATE);
         List<OutputVariable> variables = supplier.get(EurostagTutorialExample1Factory.create());
         assertThat(variables).satisfiesExactly(
-                var1 -> assertThat(var1).hasFieldOrPropertyWithValue("dynamicModelId", "LOAD")
+                var1 -> assertThat(var1).hasFieldOrPropertyWithValue("modelId", "LOAD")
                         .hasFieldOrPropertyWithValue("variable", "load_PPu")
                         .hasFieldOrPropertyWithValue("outputType", CURVE),
-                var2 -> assertThat(var2).hasFieldOrPropertyWithValue("dynamicModelId", "LOAD")
+                var2 -> assertThat(var2).hasFieldOrPropertyWithValue("modelId", "LOAD")
                         .hasFieldOrPropertyWithValue("variable", "load_QPu")
                         .hasFieldOrPropertyWithValue("outputType", CURVE),
-                var3 -> assertThat(var3).hasFieldOrPropertyWithValue("dynamicModelId", "NGEN")
+                var3 -> assertThat(var3).hasFieldOrPropertyWithValue("modelId", "NGEN")
                         .hasFieldOrPropertyWithValue("variable", "Upu_value")
                         .hasFieldOrPropertyWithValue("outputType", FINAL_STATE)
         );
