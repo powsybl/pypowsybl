@@ -26,6 +26,7 @@ import java.util.function.Function;
  */
 public final class DynamicSimulationDataframeMappersUtils {
 
+    private static final String NAMED_INDEX_NAME = "name";
     private static final String DESCRIPTION_NAME = "description";
 
     private DynamicSimulationDataframeMappersUtils() {
@@ -54,7 +55,7 @@ public final class DynamicSimulationDataframeMappersUtils {
         return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, CategoryInformation, Void>()
                 .itemsStreamProvider(a -> a.stream()
                         .map(DynamicMappingAdder::getCategoryInformation))
-                .stringsIndex("name", CategoryInformation::name)
+                .stringsIndex(NAMED_INDEX_NAME, CategoryInformation::name)
                 .strings(DESCRIPTION_NAME, CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
                 .build();
@@ -63,8 +64,8 @@ public final class DynamicSimulationDataframeMappersUtils {
     public static DataframeMapper<Collection<ModelInfo>, Void> supportedModelsDataFrameMapper() {
         return new DataframeMapperBuilder<Collection<ModelInfo>, ModelInfo, Void>()
                 .itemsStreamProvider(Collection::stream)
-                .stringsIndex("name", ModelInfo::name)
-                .strings(DESCRIPTION_NAME, mi -> mi.doc() != null ? mi.doc() : "")
+                .stringsIndex(NAMED_INDEX_NAME, ModelInfo::name)
+                .strings(DESCRIPTION_NAME, ModelInfo::doc)
                 .build();
     }
 
@@ -75,11 +76,8 @@ public final class DynamicSimulationDataframeMappersUtils {
                             String cat = adder.getCategory();
                             return adder.getSupportedModels().stream().map(m -> Pair.of(cat, m));
                         }))
-                .stringsIndex("name", p -> p.getValue().name())
-                .strings(DESCRIPTION_NAME, p -> {
-                    String doc = p.getValue().doc();
-                    return doc != null ? doc : "";
-                })
+                .stringsIndex(NAMED_INDEX_NAME, p -> p.getValue().name())
+                .strings(DESCRIPTION_NAME, p -> p.getValue().doc())
                 .strings("category", Pair::getKey)
                 .build();
     }
@@ -88,8 +86,8 @@ public final class DynamicSimulationDataframeMappersUtils {
         return new DataframeMapperBuilder<Collection<EventMappingAdder>, EventInformation, Void>()
                 .itemsStreamProvider(a -> a.stream()
                         .map(EventMappingAdder::getEventInformation))
-                .stringsIndex("name", EventInformation::name)
-                .strings("description", EventInformation::description)
+                .stringsIndex(NAMED_INDEX_NAME, EventInformation::name)
+                .strings(DESCRIPTION_NAME, EventInformation::description)
                 .strings("attribute", EventInformation::attribute)
                 .build();
     }
