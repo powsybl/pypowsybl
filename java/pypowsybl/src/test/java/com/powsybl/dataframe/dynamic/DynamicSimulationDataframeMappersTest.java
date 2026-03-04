@@ -127,7 +127,9 @@ class DynamicSimulationDataframeMappersTest {
         List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.allSupportedModelsDataFrameMapper(), adders);
         assertThat(series).satisfiesExactly(
                 names -> assertThat(names.getStrings()).containsExactly("Line", "GeneratorFictitious", "GeneratorPVFixed"),
-                desc -> assertThat(desc.getStrings()).containsExactly("Standard line", "Fictitious generator (behaves in a similar way as an alpha-beta load)", ""),
+                desc -> assertThat(desc.getStrings()).containsExactly("Standard line.",
+                        "Simplified generator model with voltage-dependent active and reactive power.",
+                        "Simplified generator model with fixed active and reactive power."),
                 cat -> assertThat(cat.getStrings()).containsExactly("Line", "SimplifiedGenerator", "SimplifiedGenerator"));
     }
 
@@ -142,7 +144,8 @@ class DynamicSimulationDataframeMappersTest {
         List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.eventInformationDataFrameMapper(), adders);
         assertThat(series).satisfiesExactly(
                 names -> assertThat(names.getStrings()).containsExactly("ActivePowerVariation", "Disconnect"),
-                desc -> assertThat(desc.getStrings()).containsExactly("Active power variation on generator or load", "Disconnects a bus, a branch, an injection or an HVDC line"),
+                desc -> assertThat(desc.getStrings()).containsExactly("Active power variation on generator or load.",
+                        "Disconnects a bus, a branch, an injection or an HVDC line."),
                 attr -> assertThat(attr.getStrings()).containsExactly(
                         "index : static_id (str), start_time (double), delta_p (double)",
                         "index : static_id (str), start_time (double), disconnect_only (str)"));

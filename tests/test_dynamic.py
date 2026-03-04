@@ -29,12 +29,12 @@ def test_supported_models_information():
     model_mapping = dyn.ModelMapping()
     assert model_mapping.get_supported_models()
     info_df = model_mapping.get_supported_models_information('Load')
-    assert info_df.loc['LoadAlphaBeta']['description'] == 'Voltage-dependent load'
-    assert info_df.loc['LoadPQ']['description'] == 'PQ load'
+    assert info_df.loc['LoadAlphaBeta']['description'] == 'Voltage-dependent load.'
+    assert info_df.loc['LoadPQ']['description'] == 'PQ load.'
     all_info_df = model_mapping.get_supported_models_information()
-    assert all_info_df.loc['Line']['description'] == 'Standard line'
+    assert all_info_df.loc['Line']['description'] == 'Standard line.'
     assert all_info_df.loc['Line']['category'] == 'Line'
-    assert all_info_df.loc['LoadPQ']['description'] == 'PQ load'
+    assert all_info_df.loc['LoadPQ']['description'] == 'PQ load.'
     assert all_info_df.loc['LoadPQ']['category'] == 'Load'
 
 def test_add_mapping():
@@ -133,9 +133,9 @@ def test_dynamic_dataframe():
 def test_events_information():
     event_mapping = dyn.EventMapping()
     info_df = event_mapping.get_events_information()
-    assert info_df.loc['ActivePowerVariation']['description'] == 'Active power variation on generator or load'
+    assert info_df.loc['ActivePowerVariation']['description'] == 'Active power variation on generator or load.'
     assert info_df.loc['ActivePowerVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_p (double)'
-    assert info_df.loc['ReferenceVoltageVariation']['description'] == 'Reference voltage variation on synchronous/synchronized generator'
+    assert info_df.loc['ReferenceVoltageVariation']['description'] == 'Reference voltage variation on synchronous/synchronized generator.'
     assert info_df.loc['ReferenceVoltageVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_u (double)'
 
 
