@@ -1764,6 +1764,10 @@ std::vector<std::string> getSupportedModels(std::string categoryName) {
     return vector.get();
 }
 
+SeriesArray* getSupportedModelsInformation(std::string categoryName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSupportedModelsInformation, (char*) categoryName.c_str()));
+}
+
 std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string categoryName) {
     dataframes_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframes_metadata*>(::getDynamicMappingsMetaData, (char*) categoryName.c_str());
     std::vector<std::vector<SeriesMetadata>> res;
