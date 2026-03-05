@@ -852,7 +852,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<pypowsybl::RaoParameters>(m, "RaoParameters")
             .def(py::init(&pypowsybl::createRaoParameters))
             .def_readwrite("objective_function_type", &pypowsybl::RaoParameters::objective_function_type)
-            .def_readwrite("unit", &pypowsybl::RaoParameters::unit)
             .def_readwrite("curative_min_obj_improvement", &pypowsybl::RaoParameters::curative_min_obj_improvement)
             .def_readwrite("enforce_curative_security", &pypowsybl::RaoParameters::enforce_curative_security)
             .def_readwrite("solver", &pypowsybl::RaoParameters::solver)

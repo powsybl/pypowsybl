@@ -21,8 +21,7 @@ from pypowsybl._pypowsybl import (
     PstModel,
     RaRangeShrinking,
     Solver,
-    ExecutionCondition,
-    Unit)
+    ExecutionCondition)
 from pypowsybl.rao import Parameters as RaoParameters, RaoResult
 from pypowsybl.rao import Glsk as RaoGlsk
 from pypowsybl.rao import (
@@ -57,7 +56,6 @@ def test_rao_parameters():
     # Full setup
     objective_function_param = ObjectiveFunctionParameters(
         objective_function_type=ObjectiveFunctionType.MIN_COST,
-        unit=Unit.MEGAWATT,
         curative_min_obj_improvement=1.0,
         enforce_curative_security=True
     )
@@ -119,7 +117,6 @@ def test_rao_parameters():
     )
 
     assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
-    assert parameters2.objective_function_parameters.unit == Unit.MEGAWATT
     assert parameters2.objective_function_parameters.curative_min_obj_improvement == 1.0
     assert parameters2.objective_function_parameters.enforce_curative_security == True
 
