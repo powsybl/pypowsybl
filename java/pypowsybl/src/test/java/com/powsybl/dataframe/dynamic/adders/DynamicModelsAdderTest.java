@@ -13,6 +13,7 @@ import com.powsybl.dynawo.models.AbstractPureDynamicBlackBoxModel;
 import com.powsybl.dynawo.models.TransformerSide;
 import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystem;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.PhaseTapChanger;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -67,6 +68,24 @@ class DynamicModelsAdderTest {
     void testAutomationSystemAdders(String category, Consumer<DefaultUpdatingDataframe> updateDataframe) {
         String expectedModelName = DynamicMappingHandler.getSupportedModels(category).stream().findFirst().orElse("");
         Network network = EurostagTutorialExample1Factory.createWithLFResults();
+        network.getTwoWindingsTransformer("NGEN_NHV1")
+                .newPhaseTapChanger()
+                .setTapPosition(0)
+                .setLowTapPosition(0)
+                .setRegulating(true)
+                .setRegulationMode(PhaseTapChanger.RegulationMode.CURRENT_LIMITER)
+                .setRegulationTerminal(network.getTwoWindingsTransformer("NGEN_NHV1").getTerminal2())
+                .setRegulationValue(1.0)
+                .setTargetDeadband(0)
+                .beginStep()
+                .setR(1.0)
+                .setX(2.0)
+                .setG(3.0)
+                .setB(4.0)
+                .setAlpha(5.0)
+                .setRho(6.0)
+                .endStep()
+                .add();
         String dynamicModelId = "BBM_automation_system";
         setupDataFrame(dataframe, dynamicModelId, expectedModelName);
         updateDataframe.accept(dataframe);

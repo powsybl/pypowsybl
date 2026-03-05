@@ -824,15 +824,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAX_MIN_RELATIVE_MARGIN", pypowsybl::ObjectiveFunctionType::MAX_MIN_RELATIVE_MARGIN, "")
             .value("MIN_COST", pypowsybl::ObjectiveFunctionType::MIN_COST, "");
 
-    py::enum_<pypowsybl::Unit>(m, "Unit")
-            .value("AMPERE", pypowsybl::Unit::AMPERE)
-            .value("DEGREE", pypowsybl::Unit::DEGREE)
-            .value("MEGAWATT", pypowsybl::Unit::MEGAWATT)
-            .value("KILOVOLT", pypowsybl::Unit::KILOVOLT)
-            .value("PERCENT_IMAX", pypowsybl::Unit::PERCENT_IMAX)
-            .value("TAP", pypowsybl::Unit::TAP)
-            .value("SECTION_COUNT", pypowsybl::Unit::SECTION_COUNT);
-
     py::enum_<pypowsybl::Solver>(m, "Solver")
             .value("CBC", pypowsybl::Solver::CBC)
             .value("SCIP", pypowsybl::Solver::SCIP)

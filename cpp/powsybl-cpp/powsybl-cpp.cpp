@@ -377,7 +377,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
    sensitivity_parameters(src->sensitivity_parameters)
 {
     objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
-    unit = static_cast<Unit>(src->unit);
     curative_min_obj_improvement = src->curative_min_obj_improvement;
     enforce_curative_security = (bool) src->enforce_curative_security;
 

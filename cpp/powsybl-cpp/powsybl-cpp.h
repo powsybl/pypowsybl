@@ -502,16 +502,6 @@ enum ObjectiveFunctionType {
     MIN_COST
 };
 
-enum Unit {
-    AMPERE = 0,
-    DEGREE,
-    MEGAWATT,
-    KILOVOLT,
-    PERCENT_IMAX,
-    TAP,
-    SECTION_COUNT
-};
-
 enum Solver {
     CBC,
     SCIP,
@@ -543,7 +533,6 @@ public:
 
     // Objective function parameters
     ObjectiveFunctionType objective_function_type;
-    Unit unit;
     bool enforce_curative_security;
     double curative_min_obj_improvement;
 

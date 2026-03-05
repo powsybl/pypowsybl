@@ -524,7 +524,6 @@ typedef struct rao_parameters_struct {
   struct provider_parameters_struct provider_parameters;
   int objective_function_type; // Objective function parameters
   unsigned char enforce_curative_security;
-  int unit; // Objective function parameters
   double curative_min_obj_improvement;
 
   // range action solver
