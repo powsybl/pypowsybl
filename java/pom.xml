@@ -84,6 +84,14 @@
         </dependencies>
     </dependencyManagement>
 
+    <repositories>
+        <repository>
+            <id>artelys.artifactory</id>
+            <name>Artelys Artifactory</name>
+            <url>https://artifactory.artelys.com/artifactory/ext-release-local</url>
+        </repository>
+    </repositories>
+
     <modules>
         <module>pypowsybl</module>
     </modules>

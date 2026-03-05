@@ -1,0 +1,6 @@
+{
+  "resources":{
+  "includes":[
+    {"pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.ac.solver.AcSolverFactory\\E"}
+  ]}
+}

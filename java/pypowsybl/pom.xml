@@ -429,5 +429,10 @@
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-monitoring</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-open-loadflow-knitro-solver</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
