@@ -428,7 +428,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
 void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.objective_function_type = objective_function_type;
-    res.unit = unit;
     res.curative_min_obj_improvement = curative_min_obj_improvement;
     res.enforce_curative_security = enforce_curative_security;
 
