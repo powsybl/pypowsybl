@@ -1,0 +1,14 @@
+[
+  {
+    "name":"com.powsybl.openloadflow.ac.solver.AcSolverFactory",
+    "queryAllDeclaredConstructors" : true,
+    "queryAllPublicConstructors" : true,
+    "queryAllDeclaredMethods" : true,
+    "queryAllPublicMethods" : true,
+    "allDeclaredClasses" : true,
+    "allDeclaredFields" : true,
+    "allPublicClasses" : true,
+    "allPublicMethods" : true,
+    "allPublicConstructors" : true
+  }
+]
