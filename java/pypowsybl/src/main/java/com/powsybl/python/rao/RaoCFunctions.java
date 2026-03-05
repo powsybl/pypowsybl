@@ -15,7 +15,6 @@ import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
-import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
@@ -39,7 +38,10 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.function.Supplier;
@@ -456,7 +458,6 @@ public final class RaoCFunctions {
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
         searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
-        raoParameters.getObjectiveFunctionParameters().setUnit(Unit.values()[paramPointer.getUnit()]);
         raoParameters.getObjectiveFunctionParameters().setEnforceCurativeSecurity(paramPointer.getEnforceCurativeSecurity());
 
         // Range action optimization solver
@@ -546,7 +547,6 @@ public final class RaoCFunctions {
 
         // Objective function parameters
         paramsPtr.setObjectiveFunctionType(parameters.getObjectiveFunctionParameters().getType().ordinal());
-        paramsPtr.setUnit(parameters.getObjectiveFunctionParameters().getUnit().ordinal());
         paramsPtr.setEnforceCurativeSecurity(parameters.getObjectiveFunctionParameters().getEnforceCurativeSecurity());
         paramsPtr.setCurativeMinObjImprovement(searchTreeParameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
 

@@ -1431,12 +1431,6 @@ public final class PyPowsyblApiHeader {
         @CField("enforce_curative_security")
         void setEnforceCurativeSecurity(boolean enforceCurativeSecurity);
 
-        @CField("unit")
-        int getUnit();
-
-        @CField("unit")
-        void setUnit(int unit);
-
         @CField("curative_min_obj_improvement")
         double getCurativeMinObjImprovement();
 
