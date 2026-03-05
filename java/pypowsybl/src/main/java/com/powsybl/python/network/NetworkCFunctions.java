@@ -1130,6 +1130,7 @@ public final class NetworkCFunctions {
             public boolean getAsBoolean() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 String idStr = CTypeUtil.toString(id);
+
                 return NetworkUtil.updateConnectableStatus(network, idStr, connected);
             }
         });

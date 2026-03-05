@@ -185,10 +185,29 @@ class Network:  # pylint: disable=too-many-public-methods
     def close_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, False)
 
-    def connect(self, id: str) -> bool:
-        return _pp.update_connectable_status(self._handle, id, True)
+    def connect(self, id: str, operate_disconnectors: bool = False, operate_fictitious: bool = False) -> bool:
+        """
+        Connects a connectable element's terminal or terminals.
+
+        Args:
+            id: The ID of the element to connect.
+            operate_disconnectors: Whether disconnectors can be closed during connection.
+            operate_fictitious: Whether fictitious switches can be closed during connection.
+
+        Returns:
+            True if the connection was successful, False otherwise.
+        """
+        return _pp.update_connectable_status(self._handle, id, True, operate_disconnectors, operate_fictitious)
 
     def disconnect(self, id: str) -> bool:
+        """
+
+        Args:
+            id:
+
+        Returns:
+
+        """
         return _pp.update_connectable_status(self._handle, id, False)
 
     def dump(self, file: PathOrStr, format: str = 'XIIDM', parameters: ParamsDict = None,
