@@ -9,6 +9,8 @@ package com.powsybl.dataframe.dynamic.adders;
 
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.dataframe.dynamic.CategoryAttributeUtils;
+import com.powsybl.dataframe.dynamic.EventInformation;
 import com.powsybl.dataframe.dynamic.PersistentStringSeries;
 import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
@@ -31,9 +33,19 @@ public class DisconnectAdder extends AbstractEventModelAdder {
             SeriesMetadata.doubles(START_TIME),
             SeriesMetadata.strings(DISCONNECT_ONLY));
 
+    protected static final EventInformation INFORMATION = new EventInformation(
+            EventDisconnectionBuilder.getModelInfo(),
+            CategoryAttributeUtils.createFromMetadata(METADATA)
+    );
+
     @Override
     public List<SeriesMetadata> getMetadata() {
         return METADATA;
+    }
+
+    @Override
+    public EventInformation getEventInformation() {
+        return INFORMATION;
     }
 
     private static class DisconnectSeries extends AbstractEventModelSeries<EventDisconnectionBuilder> {
