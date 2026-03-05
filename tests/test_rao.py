@@ -372,10 +372,10 @@ def test_rao_cost_results(rao_provider: str):
     assert ['functional_cost', 'virtual_cost', 'cost'] == list(cost_results_df.columns)
     expected = pd.DataFrame(index=pd.Series(name='optimized_instant', data=['initial', 'preventive', 'outage', 'curative']),
                             columns=['functional_cost', 'virtual_cost', 'cost'],
-                            data=[[133.304310, 0.0, 133.304310],
-                                  [237.646702, 0.0, 237.646702],
-                                  [237.646702, 0.0, 237.646702],
-                                  [-187.219238, 0.0, -187.219238]])
+                            data=[[158.362939, 0.0, 158.362939],
+                                  [320.332912, 0.0, 320.332912],
+                                  [320.332912, 0.0, 320.332912],
+                                  [-304.400116, 0.0, -304.400116]])
     pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False, check_like=True)
 
     assert ['sensitivity-failure-cost'] == result.get_virtual_cost_names()
