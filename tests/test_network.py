@@ -211,6 +211,18 @@ def test_connect_disconnect():
     assert n.disconnect('L1-2-1')
     assert n.connect('L1-2-1')
 
+def test_connect_disconnect_with_modes():
+    n = pp.network.create_four_substations_node_breaker_network()
+    n.update_switches(id="S2VL1_BBS_LINES2S3_DISCONNECTOR", open=True)
+
+    assert n.disconnect("LINE_S2S3")
+    assert not n.connect("LINE_S2S3")
+    assert n.connect("LINE_S2S3", operate_disconnectors=True)
+
+    n.update_switches(id="S2VL1_LINES2S3_BREAKER", fictitious=True)
+    assert not n.disconnect("LINE_S2S3")
+    assert n.disconnect("LINE_S2S3", operate_fictitious=True)
+    assert n.connect("LINE_S2S3", operate_fictitious=True)
 
 def test_network_attributes():
     n = pp.network.create_eurostag_tutorial_example1_network()
