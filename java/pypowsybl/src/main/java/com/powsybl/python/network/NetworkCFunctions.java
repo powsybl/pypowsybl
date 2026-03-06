@@ -1124,6 +1124,7 @@ public final class NetworkCFunctions {
 
     @CEntryPoint(name = "updateConnectableStatus")
     public static boolean updateConnectableStatus(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean connected,
+                                                  boolean allowDisconnectors, boolean allowFictitious,
                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
             @Override
@@ -1131,7 +1132,7 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 String idStr = CTypeUtil.toString(id);
 
-                return NetworkUtil.updateConnectableStatus(network, idStr, connected);
+                return NetworkUtil.updateConnectableStatus(network, idStr, connected, allowDisconnectors, allowFictitious);
             }
         });
     }
