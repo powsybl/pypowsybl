@@ -35,12 +35,37 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum.ACTIVE_POWER;
+import static com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum.EMPTY;
+
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
  */
 public final class NetworkAreaDiagramUtil {
 
     private NetworkAreaDiagramUtil() {
+    }
+
+    public static int getEquivalentValueForEdgeInfo(DefaultLabelProvider.EdgeInfoEnum edgeInfoEnum) {
+        return switch (edgeInfoEnum) {
+            case ACTIVE_POWER -> 0;
+            case REACTIVE_POWER -> 1;
+            case CURRENT -> 2;
+            case NAME -> 3;
+            case VALUE_PERMANENT_LIMIT_PERCENTAGE -> 4;
+            case EMPTY -> -1;
+        };
+    }
+
+    public static DefaultLabelProvider.EdgeInfoEnum getEquivalentEdgeInfoEnum(int edgeInfoValue) {
+        return switch (edgeInfoValue) {
+            case 0 -> ACTIVE_POWER;
+            case 1 -> DefaultLabelProvider.EdgeInfoEnum.REACTIVE_POWER;
+            case 2 -> DefaultLabelProvider.EdgeInfoEnum.CURRENT;
+            case 3 -> DefaultLabelProvider.EdgeInfoEnum.NAME;
+            case 4 -> DefaultLabelProvider.EdgeInfoEnum.VALUE_PERMANENT_LIMIT_PERCENTAGE;
+            default -> EMPTY;
+        };
     }
 
     static void writeSvg(Network network, List<String> voltageLevelIds, int depth, Writer writer, Writer metadataWriter,
@@ -99,6 +124,10 @@ public final class NetworkAreaDiagramUtil {
                 .setFixedHeight(600);
         return new NadParameters()
                 .setSvgParameters(svgParameters);
+    }
+
+    static DefaultLabelProvider.EdgeInfoParameters createEdgeInfoParameters() {
+        return new DefaultLabelProvider.EdgeInfoParameters(ACTIVE_POWER, EMPTY, EMPTY, EMPTY);
     }
 
     static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds, double nominalVoltageLowerBound, double nominalVoltageUpperBound, int depth) {
