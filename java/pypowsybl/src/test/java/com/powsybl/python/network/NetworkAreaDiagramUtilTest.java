@@ -74,14 +74,23 @@ class NetworkAreaDiagramUtilTest {
         NetworkAreaDiagramUtil.BRANCH_LABELS_MAPPER.createDataframe(labelMap, new DefaultDataframeHandler(series::add), new DataframeFilter());
         assertThat(series)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
-                .containsExactly("id", "side1", "middle", "side2", "arrow1", "arrow2");
+                .containsExactly("id", "side1Internal", "side1External", "middle1", "middle2", "side2Internal",
+                    "side2External", "arrow1", "arrowMiddle", "arrow2");
 
         List<com.powsybl.dataframe.impl.Series> seriesTwt = new ArrayList<>();
         Map<String, CustomLabelProvider.ThreeWtLabels> labelTwtMap = NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(network, pars);
         NetworkAreaDiagramUtil.TWT_LABELS_MAPPER.createDataframe(labelTwtMap, new DefaultDataframeHandler(seriesTwt::add), new DataframeFilter());
         assertThat(seriesTwt)
                 .extracting(com.powsybl.dataframe.impl.Series::getName)
-                .containsExactly("id", "side1", "side2", "side3", "arrow1", "arrow2", "arrow3");
+                .containsExactly("id", "side1Internal", "side1External", "side2Internal",
+                    "side2External", "side3Internal", "side3External", "arrow1", "arrow2", "arrow3");
+
+        List<com.powsybl.dataframe.impl.Series> seriesInjections = new ArrayList<>();
+        Map<String, CustomLabelProvider.InjectionLabels> labelInjectionsMap = NetworkAreaDiagramUtil.getInjectionLabelsMap(network, pars);
+        NetworkAreaDiagramUtil.INJECTION_LABELS_MAPPER.createDataframe(labelInjectionsMap, new DefaultDataframeHandler(seriesInjections::add), new DataframeFilter());
+        assertThat(seriesInjections)
+            .extracting(com.powsybl.dataframe.impl.Series::getName)
+            .containsExactly("id", "labelInternal", "labelExternal", "arrow");
 
         List<com.powsybl.dataframe.impl.Series> seriesBusDescription = new ArrayList<>();
         Map<String, String> busDescriptionMap = NetworkAreaDiagramUtil.getBusDescriptionsMap(network, pars);

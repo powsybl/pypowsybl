@@ -1919,6 +1919,19 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultInjectionsLabels")
+    public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultInjectionsLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SvgParameters pars = getNadSvgParsForDefaultLabels();
+                Map<String, CustomLabelProvider.InjectionLabels> labelMap = NetworkAreaDiagramUtil.getInjectionLabelsMap(network, pars);
+                return Dataframes.createCDataframe(NetworkAreaDiagramUtil.INJECTION_LABELS_MAPPER, labelMap);
+            }
+        });
+    }
+
     @CEntryPoint(name = "getNetworkAreaDiagramDefaultThreeWtLabels")
     public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultThreeWtLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {

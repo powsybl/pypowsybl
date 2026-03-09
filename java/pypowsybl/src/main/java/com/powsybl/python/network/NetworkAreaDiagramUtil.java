@@ -129,8 +129,12 @@ public final class NetworkAreaDiagramUtil {
         return NetworkAreaDiagram.getDisplayedVoltageLevels(network, voltageLevelIds, depth);
     }
 
-    public record CustomLabelData(Map<String, CustomLabelProvider.BranchLabels> branchLabels, Map<String, CustomLabelProvider.ThreeWtLabels> threeWtLabels,
-                                  Map<String, String> busDescriptions, Map<String, List<String>> vlDescriptions, Map<String, List<String>> vlDetails) {
+    public record CustomLabelData(Map<String, CustomLabelProvider.BranchLabels> branchLabels,
+                                  Map<String, CustomLabelProvider.ThreeWtLabels> threeWtLabels,
+                                  Map<String, CustomLabelProvider.InjectionLabels> injectionLabels,
+                                  Map<String, String> busDescriptions,
+                                  Map<String, List<String>> vlDescriptions,
+                                  Map<String, List<String>> vlDetails) {
     }
 
     public static Map<String, CustomLabelProvider.BranchLabels> getBranchLabelsMap(Graph graph, LabelProvider labelProvider) {
@@ -141,30 +145,18 @@ public final class NetworkAreaDiagramUtil {
                     String branchId = branchEdge.getEquipmentId();
                     String type = branchEdge.getType();
                     EdgeInfo e1 = labelProvider.getBranchEdgeInfo(branchId, BranchEdge.Side.ONE, type).orElse(null);
-                    String side1Label = "";
-                    EdgeInfo.Direction dir1 = null;
-                    if (e1 != null) {
-                        side1Label = e1.getLabelB().orElse("");
-                        dir1 = e1.getDirection().orElse(null);
-
-                    }
+                    EdgeInfoLabels edgeInfoLabels1 = getEdgeInfoLabels(e1);
 
                     EdgeInfo e2 = labelProvider.getBranchEdgeInfo(branchId, BranchEdge.Side.TWO, type).orElse(null);
-                    String side2Label = "";
-                    EdgeInfo.Direction dir2 = null;
-                    if (e2 != null) {
-                        side2Label = e2.getLabelB().orElse("");
-                        dir2 = e2.getDirection().orElse(null);
-                    }
+                    EdgeInfoLabels edgeInfoLabels2 = getEdgeInfoLabels(e2);
 
                     EdgeInfo eMiddle = labelProvider.getBranchEdgeInfo(branchId, type).orElse(null);
-                    String edgeLabel = "";
-                    if (eMiddle != null) {
-                        edgeLabel = eMiddle.getLabelB().orElse("");
-                    }
+                    EdgeInfoLabels edgeInfoLabelsMiddle = getEdgeInfoLabels(eMiddle);
 
-                    return new CustomLabelProvider.BranchLabels(side1Label, null, edgeLabel, null,
-                            side2Label, null, dir1, null, dir2);
+                    return new CustomLabelProvider.BranchLabels(edgeInfoLabels1.labelA, edgeInfoLabels1.labelB,
+                        edgeInfoLabelsMiddle.labelA, edgeInfoLabelsMiddle.labelB,
+                        edgeInfoLabels2.labelA, edgeInfoLabels2.labelB,
+                        edgeInfoLabels1.direction, edgeInfoLabelsMiddle.direction, edgeInfoLabels2.direction);
                 }));
     }
 
@@ -174,39 +166,24 @@ public final class NetworkAreaDiagramUtil {
         return NetworkAreaDiagramUtil.getBranchLabelsMap(graph, labelProvider);
     }
 
-    private static CustomLabelProvider.ThreeWtLabels buildThreeWtLabelsRecord(List<ThreeWtEdge> dataList, Graph graph, LabelProvider labelProvider) {
-        String side1 = null;
-        String side2 = null;
-        String side3 = null;
-        EdgeInfo.Direction direction1 = null;
-        EdgeInfo.Direction direction2 = null;
-        EdgeInfo.Direction direction3 = null;
+    private static CustomLabelProvider.ThreeWtLabels buildThreeWtLabelsRecord(List<ThreeWtEdge> dataList, LabelProvider labelProvider) {
+        EdgeInfoLabels edgeInfoLabelsSide1 = getEdgeInfoLabels(null);
+        EdgeInfoLabels edgeInfoLabelsSide2 = getEdgeInfoLabels(null);
+        EdgeInfoLabels edgeInfoLabelsSide3 = getEdgeInfoLabels(null);
 
         for (ThreeWtEdge edge : dataList) {
             ThreeWtEdge.Side side = edge.getSide();
-            Optional<EdgeInfo> edgeInfo = labelProvider.getThreeWindingTransformerEdgeInfo(edge.getEquipmentId(), side);
-            if (edgeInfo.isPresent()) {
-                EdgeInfo.Direction dir = edgeInfo.get().getDirection().orElse(null);
-                String label = edgeInfo.get().getLabelB().orElse("");
-
-                switch (side) {
-                    case ONE -> {
-                        side1 = label;
-                        direction1 = dir;
-                    }
-                    case TWO -> {
-                        side2 = label;
-                        direction2 = dir;
-                    }
-                    case THREE -> {
-                        side3 = label;
-                        direction3 = dir;
-                    }
-                }
+            EdgeInfo edgeInfo = labelProvider.getThreeWindingTransformerEdgeInfo(edge.getEquipmentId(), side).orElse(null);
+            switch (side) {
+                case ONE -> edgeInfoLabelsSide1 = getEdgeInfoLabels(edgeInfo);
+                case TWO -> edgeInfoLabelsSide2 = getEdgeInfoLabels(edgeInfo);
+                case THREE -> edgeInfoLabelsSide3 = getEdgeInfoLabels(edgeInfo);
             }
         }
-        return new CustomLabelProvider.ThreeWtLabels(side1, null, side2, null, side3, null,
-                direction1, direction2, direction3);
+        return new CustomLabelProvider.ThreeWtLabels(edgeInfoLabelsSide1.labelA, edgeInfoLabelsSide1.labelB,
+            edgeInfoLabelsSide2.labelA, edgeInfoLabelsSide2.labelB,
+            edgeInfoLabelsSide3.labelA, edgeInfoLabelsSide3.labelB,
+                edgeInfoLabelsSide1.direction, edgeInfoLabelsSide2.direction, edgeInfoLabelsSide3.direction);
     }
 
     public static Map<String, CustomLabelProvider.ThreeWtLabels> getThreeWtBranchLabelsMap(Graph graph, LabelProvider labelProvider) {
@@ -214,7 +191,7 @@ public final class NetworkAreaDiagramUtil {
                 ThreeWtEdge::getEquipmentId,
                 Collectors.collectingAndThen(
                         Collectors.toList(),
-                        list -> buildThreeWtLabelsRecord(list, graph, labelProvider)
+                        list -> buildThreeWtLabelsRecord(list, labelProvider)
                 )
         ));
     }
@@ -223,6 +200,23 @@ public final class NetworkAreaDiagramUtil {
         LabelProvider labelProvider = new DefaultLabelProvider(network, pars);
         Graph graph = new NetworkGraphBuilder(network, new LayoutParameters()).buildGraph();
         return NetworkAreaDiagramUtil.getThreeWtBranchLabelsMap(graph, labelProvider);
+    }
+
+    public static Map<String, CustomLabelProvider.InjectionLabels> getInjectionLabelsMap(Graph graph, LabelProvider labelProvider) {
+
+        return graph.getInjections().stream()
+            .collect(Collectors.toMap(Identifiable::getEquipmentId, injection -> {
+                String branchId = injection.getEquipmentId();
+                EdgeInfo edgeInfo = labelProvider.getInjectionEdgeInfo(branchId).orElse(null);
+                EdgeInfoLabels edgeInfoLabels = getEdgeInfoLabels(edgeInfo);
+                return new CustomLabelProvider.InjectionLabels(edgeInfoLabels.labelA, edgeInfoLabels.labelB, edgeInfoLabels.direction);
+            }));
+    }
+
+    public static Map<String, CustomLabelProvider.InjectionLabels> getInjectionLabelsMap(Network network, SvgParameters pars) {
+        LabelProvider labelProvider = new DefaultLabelProvider(network, pars);
+        Graph graph = new NetworkGraphBuilder(network, new LayoutParameters()).buildGraph();
+        return NetworkAreaDiagramUtil.getInjectionLabelsMap(graph, labelProvider);
     }
 
     public static Map<String, String> getBusDescriptionsMap(Graph graph, LabelProvider labelProvider) {
@@ -301,12 +295,28 @@ public final class NetworkAreaDiagramUtil {
                     .map(x -> Map.entry(x.getKey(), x.getValue()))
                     .toList())
             .stringsIndex("id", Map.Entry::getKey)
-            .strings("side1", ble -> ble.getValue().side1External())
-            .strings("middle", ble -> ble.getValue().middle1())
-            .strings("side2", ble -> ble.getValue().side2External())
+            .strings("side1Internal", ble -> ble.getValue().side1Internal())
+            .strings("side1External", ble -> ble.getValue().side1External())
+            .strings("middle1", ble -> ble.getValue().middle1())
+            .strings("middle2", ble -> ble.getValue().middle2())
+            .strings("side2Internal", ble -> ble.getValue().side2Internal())
+            .strings("side2External", ble -> ble.getValue().side2External())
             .strings("arrow1", ble -> getBranchArrowAsString(ble.getValue(), BranchEdge.Side.ONE))
+            .strings("arrowMiddle", ble -> getDirectionAsString(ble.getValue().arrowMiddle()))
             .strings("arrow2", ble -> getBranchArrowAsString(ble.getValue(), BranchEdge.Side.TWO))
             .build();
+
+    public static final DataframeMapper<Map<String, CustomLabelProvider.InjectionLabels>, Void> INJECTION_LABELS_MAPPER = new DataframeMapperBuilder<Map<String, CustomLabelProvider.InjectionLabels>,
+        Map.Entry<String, CustomLabelProvider.InjectionLabels>, Void>()
+        .itemsProvider(c -> c.entrySet()
+            .stream()
+            .map(x -> Map.entry(x.getKey(), x.getValue()))
+            .toList())
+        .stringsIndex("id", Map.Entry::getKey)
+        .strings("labelInternal", ble -> ble.getValue().labelInternal())
+        .strings("labelExternal", ble -> ble.getValue().labelExternal())
+        .strings("arrow", ble -> getDirectionAsString(ble.getValue().arrow()))
+        .build();
 
     public static final DataframeMapper<Map<String, CustomLabelProvider.ThreeWtLabels>, Void> TWT_LABELS_MAPPER = new DataframeMapperBuilder<Map<String, CustomLabelProvider.ThreeWtLabels>,
             Map.Entry<String, CustomLabelProvider.ThreeWtLabels>, Void>()
@@ -315,9 +325,12 @@ public final class NetworkAreaDiagramUtil {
                     .map(x -> Map.entry(x.getKey(), x.getValue()))
                     .toList())
             .stringsIndex("id", Map.Entry::getKey)
-            .strings("side1", ble -> ble.getValue().side1External())
-            .strings("side2", ble -> ble.getValue().side2External())
-            .strings("side3", ble -> ble.getValue().side3External())
+            .strings("side1Internal", ble -> ble.getValue().side1Internal())
+            .strings("side1External", ble -> ble.getValue().side1External())
+            .strings("side2Internal", ble -> ble.getValue().side2Internal())
+            .strings("side2External", ble -> ble.getValue().side2External())
+            .strings("side3Internal", ble -> ble.getValue().side3Internal())
+            .strings("side3External", ble -> ble.getValue().side3External())
             .strings("arrow1", ble -> getTwtLegArrowAsString(ble.getValue(), ThreeWtEdge.Side.ONE))
             .strings("arrow2", ble -> getTwtLegArrowAsString(ble.getValue(), ThreeWtEdge.Side.TWO))
             .strings("arrow3", ble -> getTwtLegArrowAsString(ble.getValue(), ThreeWtEdge.Side.THREE))
@@ -363,4 +376,18 @@ public final class NetworkAreaDiagramUtil {
         .strings("type", x -> x.type)
         .strings("description", x -> x.description)
         .build();
+
+    private static EdgeInfoLabels getEdgeInfoLabels(EdgeInfo edgeInfo) {
+        String labelA = "";
+        String labelB = "";
+        EdgeInfo.Direction direction = null;
+        if (edgeInfo != null) {
+            labelA = edgeInfo.getLabelA().orElse("");
+            labelB = edgeInfo.getLabelB().orElse("");
+            direction = edgeInfo.getDirection().orElse(null);
+        }
+        return new EdgeInfoLabels(labelA, labelB, direction);
+    }
+
+    private record EdgeInfoLabels(String labelA, String labelB, EdgeInfo.Direction direction) { }
 }
