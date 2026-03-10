@@ -1054,6 +1054,10 @@ SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultThreeWtLabels, network));
 }
 
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultInjectionsLabels, network));
+}
+
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBusDescriptions, network));
 }

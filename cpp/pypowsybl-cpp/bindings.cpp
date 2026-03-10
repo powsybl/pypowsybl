@@ -723,6 +723,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_default_twt_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultTwtLabels, "Get network area diagram default twt labels",
             py::arg("network"));
 
+    m.def("get_default_injections_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultInjectionsLabels, "Get network area diagram default injections labels",
+            py::arg("network"));
+
     m.def("get_default_bus_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultBusDescriptions, "Get network area diagram default bus descriptions",
         py::arg("network"));
 

@@ -746,6 +746,8 @@ SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network)
 
 SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network);
 
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network);
+
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network);
 
 SeriesArray* getNetworkAreaDiagramDefaultVoltageLevelDescriptions(const JavaHandle& network);

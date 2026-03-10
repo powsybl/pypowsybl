@@ -44,6 +44,7 @@ from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
 from .nad_parameters import NadParameters
+from .edge_info_parameters import EdgeInfoParameters
 from .nad_profile import NadProfile
 from .sld_profile import SldProfile
 from .svg import Svg
@@ -484,7 +485,11 @@ class Network:  # pylint: disable=too-many-public-methods
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             edge_name_displayed: if true displays the edge's names
         """
-        nad_p = NadParameters(edge_name_displayed=edge_name_displayed)
+        edge_info_parameters = EdgeInfoParameters(info_side_external=_pp.EdgeInfoType.ACTIVE_POWER,
+                                                  info_middle_side1=_pp.EdgeInfoType.NAME if edge_name_displayed else _pp.EdgeInfoType.EMPTY,
+                                                  info_middle_side2=_pp.EdgeInfoType.EMPTY,
+                                                  info_side_internal=_pp.EdgeInfoType.EMPTY)
+        nad_p = NadParameters(edge_info_parameters=edge_info_parameters)
         self.write_network_area_diagram(svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
                                         low_nominal_voltage_bound, nad_p)
 
@@ -594,16 +599,18 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_default_nad_profile(self) -> NadProfile:
         """
-        Creates a default NadProfile for branch labels, twt labels, bus descriptions, and VL descriptions.
+        Creates a default NadProfile for branch labels, twt labels, injection labels, bus descriptions, and VL descriptions.
 
         Returns:
             a NadProfile where the labels and descriptions dataframes have been set with the content from the default NAD content provider.
         """
         branch_labels_df = create_data_frame_from_series_array(_pp.get_default_branch_labels_nad(self._handle))
         twt_labels_df = create_data_frame_from_series_array(_pp.get_default_twt_labels_nad(self._handle))
+        injections_labels_df = create_data_frame_from_series_array(_pp.get_default_injections_labels_nad(self._handle))
         bus_descriptions_df = create_data_frame_from_series_array(_pp.get_default_bus_descriptions_nad(self._handle))
         vl_infos_df = create_data_frame_from_series_array(_pp.get_default_voltage_level_descriptions_nad(self._handle))
-        return NadProfile(branch_labels=branch_labels_df, three_wt_labels=twt_labels_df, bus_descriptions=bus_descriptions_df, vl_descriptions=vl_infos_df)
+        return NadProfile(branch_labels=branch_labels_df, three_wt_labels=twt_labels_df, injections_labels=injections_labels_df,
+                          bus_descriptions=bus_descriptions_df, vl_descriptions=vl_infos_df)
 
 
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: Optional[Set[float]] = None,
