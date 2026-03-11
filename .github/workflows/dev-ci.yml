@@ -46,12 +46,12 @@ jobs:
 
       - name: Install dependencies
         run: | 
-          python3 -m pip install --upgrade pip
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
       - name: Build wheel
         run: |
-          python3 setup.py bdist_wheel
+          python setup.py bdist_wheel
           auditwheel repair dist/*.whl
 
       - name: Install wheel
@@ -59,7 +59,7 @@ jobs:
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
-        run: python3 basic_import_test.py
+        run: python basic_import_test.py
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
@@ -72,7 +72,7 @@ jobs:
       - name: Dev install  # In order to generate coverage and linting, we need to install in sources
         run: |
           pip uninstall -y pypowsybl
-          python3 setup.py develop
+          python setup.py develop
 
       - name: Generate coverage
         run: |
