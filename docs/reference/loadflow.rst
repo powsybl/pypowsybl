@@ -33,6 +33,8 @@ The execution of the loadflow can be customized using loadflow parameters.
     Parameters
     get_provider_parameters_names
     get_provider_parameters
+    Parameters.to_json
+    Parameters.from_json
 
 .. include it in the toctree
 .. toctree::
