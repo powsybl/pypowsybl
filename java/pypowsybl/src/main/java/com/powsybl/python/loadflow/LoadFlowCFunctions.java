@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.loadflow;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.extensions.Extension;
 import com.powsybl.commons.parameters.Parameter;
 import com.powsybl.commons.report.ReportNode;
@@ -72,7 +73,13 @@ public final class LoadFlowCFunctions {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
-                PyPowsyblConfiguration.setDefaultLoadFlowProvider(CTypeUtil.toString(provider));
+                String providerName = CTypeUtil.toString(provider);
+                if (LoadFlowProvider.findAll().stream()
+                        .anyMatch(provider -> provider.getName().equals(providerName))) {
+                    PyPowsyblConfiguration.setDefaultLoadFlowProvider(providerName);
+                } else {
+                    throw new PowsyblException("No loadflow provider for name '" + providerName + "'");
+                }
             }
         });
     }
@@ -197,7 +204,7 @@ public final class LoadFlowCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public LoadFlowParametersPointer get() {
-                return convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters(), null);
+                return convertToLoadFlowParametersPointer(LoadFlowCUtils.createLoadFlowParameters(), PyPowsyblConfiguration.getDefaultLoadFlowProvider());
             }
         });
     }
@@ -210,7 +217,7 @@ public final class LoadFlowCFunctions {
             public LoadFlowParametersPointer get() throws IOException {
                 String parametersJson = CTypeUtil.toString(parametersJsonPtr);
                 try (InputStream is = new ByteArrayInputStream(parametersJson.getBytes(StandardCharsets.UTF_8))) {
-                    return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is), null);
+                    return convertToLoadFlowParametersPointer(JsonLoadFlowParameters.read(is), PyPowsyblConfiguration.getDefaultLoadFlowProvider());
                 }
             }
         });

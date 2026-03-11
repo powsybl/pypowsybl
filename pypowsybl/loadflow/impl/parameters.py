@@ -30,7 +30,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     """
     Parameters for a loadflow execution.
 
-    All parameters are first read from you configuration file, then overridden with
+    All parameters are first read from your configuration file, then overridden with
     the constructor arguments.
 
     Please note that loadflow providers may not honor all parameters, according to their capabilities.
