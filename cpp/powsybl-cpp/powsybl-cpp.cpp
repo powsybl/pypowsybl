@@ -1054,6 +1054,10 @@ SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultThreeWtLabels, network));
 }
 
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultInjectionsLabels, network));
+}
+
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBusDescriptions, network));
 }
@@ -1603,7 +1607,6 @@ SldParameters::SldParameters(sld_parameters* src) {
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
-    edge_name_displayed = (bool) src->edge_name_displayed;
     edge_info_along_edge = (bool) src->edge_info_along_edge;
     id_displayed = (bool) src->id_displayed;
     power_value_precision = src->power_value_precision;
@@ -1615,9 +1618,12 @@ NadParameters::NadParameters(nad_parameters* src) {
     layout_type = static_cast<NadLayoutType>(src->layout_type);
     scaling_factor = src->scaling_factor;
     radius_factor = src->radius_factor;
-    edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
     voltage_level_details = (bool) src->voltage_level_details;
     injections_added = (bool) src->injections_added;
+    info_side_external = static_cast<EdgeInfoType>(src->info_side_external);
+    info_middle_side1 = static_cast<EdgeInfoType>(src->info_middle_side1);
+    info_middle_side2 = static_cast<EdgeInfoType>(src->info_middle_side2);
+    info_side_internal = static_cast<EdgeInfoType>(src->info_side_internal);
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1635,7 +1641,6 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {
-    res.edge_name_displayed = (unsigned char) edge_name_displayed;
     res.edge_info_along_edge = (unsigned char) edge_info_along_edge;
     res.id_displayed = (unsigned char) id_displayed;
     res.power_value_precision = power_value_precision;
@@ -1647,9 +1652,12 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.layout_type = (int) layout_type;
     res.scaling_factor = scaling_factor;
     res.radius_factor = radius_factor;
-    res.edge_info_displayed = (int) edge_info_displayed;
     res.voltage_level_details = (unsigned char) voltage_level_details;
     res.injections_added = (unsigned char) injections_added;
+    res.info_side_external = (int) info_side_external;
+    res.info_middle_side1 = (int) info_middle_side1;
+    res.info_middle_side2 = (int) info_middle_side2;
+    res.info_side_internal = (int) info_side_internal;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
