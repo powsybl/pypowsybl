@@ -39,8 +39,10 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup path
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python.version }}
 
       - name: Install dependencies
         run: | 
