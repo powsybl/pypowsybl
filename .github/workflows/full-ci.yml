@@ -54,7 +54,7 @@ jobs:
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Build wheel
         run: |
@@ -62,7 +62,7 @@ jobs:
           auditwheel repair dist/*.whl
 
       - name: Install wheel
-        run: pip install wheelhouse/*.whl --user
+        run: pip3 install wheelhouse/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
@@ -78,7 +78,7 @@ jobs:
 
       - name: Dev install  # In order to generate coverage and linting, we need to install in sources
         run: |
-          pip uninstall -y pypowsybl
+          pip3 uninstall -y pypowsybl
           python3 setup.py develop
 
       - name: Generate coverage
@@ -166,7 +166,7 @@ jobs:
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip3 install -r requirements.txt
 
       - name: Download native libraries
         uses: actions/download-artifact@v4
@@ -185,7 +185,7 @@ jobs:
           auditwheel repair dist/*.whl
 
       - name: Install wheel
-        run: pip install wheelhouse/*.whl --user
+        run: pip3 install wheelhouse/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests

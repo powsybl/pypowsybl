@@ -43,7 +43,9 @@ jobs:
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: | 
+          python3 -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Build wheel
         run: |
