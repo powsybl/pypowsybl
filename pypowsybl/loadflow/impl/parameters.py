@@ -204,11 +204,22 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     @staticmethod
     def from_json(json_str: str) -> "Parameters":
+        """
+        Creates a Parameters object from a JSON string.
+        Only provider parameters corresponding to the default_provider (see ``get_default_provider``) will be loaded from the JSON.
+
+        Args:
+            json_str: JSON string containing the parameters.
+        """
         parameters = Parameters()
         parameters._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(json_str))
         return parameters
 
     def to_json(self) -> str:
+        """
+        Creates JSON string representation of the Parameters.
+        Only provider parameters corresponding to the default_provider (see ``get_default_provider``) will be loaded from the JSON.
+        """
         return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(self._to_c_parameters())
 
     def __getstate__(self) -> Dict[str, Any]:
