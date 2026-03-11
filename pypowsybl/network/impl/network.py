@@ -2620,7 +2620,7 @@ class Network:  # pylint: disable=too-many-public-methods
               - **step_count**: the count of taps, should be equal to (high_tap - low_tap)
               - **oltc**: true if the tap changer has on-load regulation capability
               - **regulating**: true if the phase shifter is in regulation
-              - **regulation_mode**: regulation mode, among CURRENT_LIMITER, ACTIVE_POWER_CONTROL, and FIXED_TAP
+              - **regulation_mode**: regulation mode, among CURRENT_LIMITER and ACTIVE_POWER_CONTROL
               - **regulation_value**: the target value, in A or MW, depending on regulation_mode
               - **target_deadband**: the regulation deadband around the target value
               - **regulating_bus_id**: the bus where the phase shifter regulates
@@ -5401,7 +5401,7 @@ class Network:  # pylint: disable=too-many-public-methods
             - **id**: the transformer where this tap changer will be created
             - **tap**: the current tap position
             - **low_tap**: the number of the lowest tap position (default 0)
-            - **regulation_mode**: the regulation mode (CURRENT_LIMITER, ACTIVE_POWER_CONTROL, FIXED_TAP)
+            - **regulation_mode**: the regulation mode (CURRENT_LIMITER or ACTIVE_POWER_CONTROL)
             - **target_deadband**: the regulation deadband
             - **regulating**: true if the tap changer should regulate
             - **regulated_side**: the side where the current or active power is regulated (ONE or TWO if two-winding
