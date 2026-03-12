@@ -17,14 +17,14 @@ permissions:
 jobs:
   manylinux_complete_build:
     name: Build linux native libraries and ${{ matrix.python.name }} wheel
-    runs-on: ubuntu-22.04
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     strategy:
       matrix:
         python:
           - {
-            name: cp39,
-            abi: cp39,
+            name: cp310,
+            abi: cp310,
             version: '3.10'
           }
 
