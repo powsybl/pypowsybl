@@ -6,20 +6,24 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.openrao.commons.OpenRaoException;
 import com.powsybl.openrao.commons.Unit;
-import com.powsybl.openrao.data.crac.api.Crac;
-import com.powsybl.openrao.data.crac.api.Instant;
+import com.powsybl.openrao.data.crac.api.*;
 import com.powsybl.openrao.data.crac.api.cnec.AngleCnec;
+import com.powsybl.openrao.data.crac.api.cnec.Cnec;
 import com.powsybl.openrao.data.crac.api.cnec.FlowCnec;
 import com.powsybl.openrao.data.crac.api.cnec.VoltageCnec;
 import com.powsybl.openrao.data.crac.api.networkaction.NetworkAction;
-import com.powsybl.openrao.data.crac.api.rangeaction.PstRangeAction;
-import com.powsybl.openrao.data.crac.api.rangeaction.RangeAction;
-import com.powsybl.openrao.data.crac.api.RemedialAction;
-import com.powsybl.openrao.data.crac.api.State;
+import com.powsybl.openrao.data.crac.api.range.Range;
+import com.powsybl.openrao.data.crac.api.range.RangeType;
+import com.powsybl.openrao.data.crac.api.rangeaction.*;
+import com.powsybl.openrao.data.crac.api.threshold.Threshold;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.math3.util.Pair;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class RaoDataframes {
 
@@ -378,6 +382,236 @@ public final class RaoDataframes {
             .itemsProvider(RaoDataframes::getVirtualCost)
             .stringsIndex(OPTIMIZED_INSTANT, c -> c.instant() != null ? c.instant().getId() : INITIAL_INSTANT)
             .doubles(virtualCostName, c -> c.virtualCosts().get(virtualCostName))
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracInstantsMapper() {
+        return new DataframeMapperBuilder<Crac, Instant, Void>()
+            .itemsProvider(Crac::getSortedInstants)
+            .stringsIndex("id", Identifiable::getId)
+            .strings("kind", instant -> String.valueOf(instant.getKind()))
+            .ints("order", Instant::getOrder)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracRemedialActionsUsageLimit() {
+        return new DataframeMapperBuilder<Crac, Map.Entry<Instant, RaUsageLimits>, Void>()
+            .itemsProvider(crac -> crac.getRaUsageLimitsPerInstant().entrySet().stream().toList())
+            .stringsIndex("instant", e -> e.getKey().getId())
+            .ints("value", e -> e.getValue().getMaxRa())
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracMaxTsoUsageLimit() {
+        return new DataframeMapperBuilder<Crac, Map.Entry<Instant, RaUsageLimits>, Void>()
+            .itemsProvider(crac -> crac.getRaUsageLimitsPerInstant().entrySet().stream().toList())
+            .stringsIndex("instant", e -> e.getKey().getId())
+            .ints("value", e -> e.getValue().getMaxTso())
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracPerTsoUsageLimit(Function<RaUsageLimits, Map<String, Integer>> func) {
+        return new DataframeMapperBuilder<Crac, Triple<Instant, String, Integer>, Void>()
+            .itemsProvider(crac ->
+                crac.getRaUsageLimitsPerInstant().entrySet().stream()
+                    .flatMap(e ->
+                        func.apply(e.getValue()).entrySet().stream()
+                            .map(v -> Triple.of(e.getKey(), v.getKey(), v.getValue()))
+                    )
+                    .toList())
+            .stringsIndex("instant", e -> e.getLeft().getId())
+            .stringsIndex("tso", Triple::getMiddle)
+            .ints("value", Triple::getRight)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracContingencies() {
+        return new DataframeMapperBuilder<Crac, Contingency, Void>()
+            .itemsProvider(crac -> crac.getContingencies().stream().toList())
+            .stringsIndex("id", Contingency::getId)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracContingencyElements() {
+        return new DataframeMapperBuilder<Crac, Pair<String, String>, Void>()
+            .itemsProvider(crac ->
+                crac.getContingencies().stream()
+                    .flatMap(c ->
+                        c.getElements().stream()
+                            .map(elem -> Pair.create(c.getId(), elem.getId()))
+                    )
+                    .toList())
+            .stringsIndex("id", Pair::getFirst)
+            .stringsIndex("network_element_id", Pair::getSecond)
+            .build();
+    }
+
+    /**
+     * TODO check NetworkElement vs NetworkElements ?
+     */
+    public static DataframeMapper<Crac, Void> cracFlowCnecs() {
+        return new DataframeMapperBuilder<Crac, FlowCnec, Void>()
+            .itemsProvider(crac ->
+                crac.getFlowCnecs().stream().toList())
+            .stringsIndex("id", FlowCnec::getId)
+            .strings("name", FlowCnec::getName)
+            .strings("network_element_id", cnec -> cnec.getNetworkElement().getId())
+            .strings("operator", FlowCnec::getOperator)
+            .strings("border", FlowCnec::getBorder)
+            .strings("instant", cnec -> cnec.getState().getInstant() != null ? cnec.getState().getInstant().getId() : "")
+            .strings("contingency_id", cnec -> cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "")
+            .booleans("optimized", FlowCnec::isOptimized)
+            .booleans("monitored", FlowCnec::isMonitored)
+            .doubles("reliability_margin",  FlowCnec::getReliabilityMargin)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracAngleCnecs() {
+        return new DataframeMapperBuilder<Crac, AngleCnec, Void>()
+            .itemsProvider(crac ->
+                crac.getAngleCnecs().stream().toList())
+            .stringsIndex("id", AngleCnec::getId)
+            .strings("name", AngleCnec::getName)
+            .strings("exporting_network_element_id", cnec -> cnec.getExportingNetworkElement().getId())
+            .strings("exporting_network_element_id", cnec -> cnec.getImportingNetworkElement().getId())
+            .strings("operator", AngleCnec::getOperator)
+            .strings("border", AngleCnec::getBorder)
+            .strings("instant", cnec -> cnec.getState().getInstant() != null ? cnec.getState().getInstant().getId() : "")
+            .strings("contingency_id", cnec -> cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "")
+            .booleans("optimized", AngleCnec::isOptimized)
+            .booleans("monitored", AngleCnec::isMonitored)
+            .doubles("reliability_margin",  AngleCnec::getReliabilityMargin)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracVoltageCnecs() {
+        return new DataframeMapperBuilder<Crac, VoltageCnec, Void>()
+            .itemsProvider(crac ->
+                crac.getVoltageCnecs().stream().toList())
+            .stringsIndex("id", VoltageCnec::getId)
+            .strings("name", VoltageCnec::getName)
+            .strings("network_element_id", cnec -> cnec.getNetworkElement().getId())
+            .strings("operator", VoltageCnec::getOperator)
+            .strings("border", VoltageCnec::getBorder)
+            .strings("instant", cnec -> cnec.getState().getInstant() != null ? cnec.getState().getInstant().getId() : "")
+            .strings("contingency_id", cnec -> cnec.getState().getContingency().isPresent() ? cnec.getState().getContingency().get().getId() : "")
+            .booleans("optimized", VoltageCnec::isOptimized)
+            .booleans("monitored", VoltageCnec::isMonitored)
+            .doubles("reliability_margin",  VoltageCnec::getReliabilityMargin)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracThresholds() {
+        return new DataframeMapperBuilder<Crac, Triple<String, Threshold, String>, Void>()
+            .itemsProvider(RaoDataframes::gatherThresholds)
+            .stringsIndex("id", Triple::getLeft)
+            .strings("min", t -> t.getMiddle().min().isPresent() ? t.getMiddle().min().get().toString() : "")
+            .strings("max", t -> t.getMiddle().max().isPresent() ? t.getMiddle().max().get().toString() : "")
+            .strings("unit", t -> t.getMiddle().getUnit().name())
+            .strings("side", Triple::getRight)
+            .build();
+    }
+
+    public static List<Triple<String, Threshold, String>> gatherThresholds(Crac crac) {
+        List<Triple<String, Threshold, String>> thresholds = new ArrayList<>();
+        crac.getFlowCnecs().forEach((
+            cnec -> cnec.getThresholds().forEach(
+                threshold -> thresholds.add(Triple.of(cnec.getId(), threshold, threshold.getSide().name())))));
+        crac.getAngleCnecs().forEach((
+            cnec -> cnec.getThresholds().forEach(
+                threshold -> thresholds.add(Triple.of(cnec.getId(), threshold, "")))));
+        crac.getVoltageCnecs().forEach((
+            cnec -> cnec.getThresholds().forEach(
+                threshold -> thresholds.add(Triple.of(cnec.getId(), threshold, "")))));
+        return thresholds;
+    }
+
+    public static <T extends RangeAction<?>> DataframeMapper<Crac, Void> cracRangeActions(Function<Crac, List<T>> actionsSupplier) {
+        return new DataframeMapperBuilder<Crac, T, Void>()
+            .itemsProvider(actionsSupplier)
+            .stringsIndex("id", T::getId)
+            .strings("name", T::getName)
+            .strings("operator", T::getOperator)
+            .strings("network_element_id", a -> a.getNetworkElements().stream().toList().getFirst().getId())
+            .strings("group_id", a -> a.getGroupId().isPresent() ? a.getGroupId().get() : "")
+            .strings("speed", a -> a.getSpeed().isPresent() ? a.getSpeed().get().toString() : "")
+            .strings("activation_cost", a -> a.getActivationCost().isPresent() ? a.getActivationCost().get().toString() : "")
+            .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).isPresent() ? a.getVariationCost(VariationDirection.UP).get().toString() : "")
+            .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).isPresent() ? a.getVariationCost(VariationDirection.UP).get().toString() : "")
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracInjectionRangeActions() {
+        return new DataframeMapperBuilder<Crac, InjectionRangeAction, Void>()
+            .itemsProvider(crac -> crac.getInjectionRangeActions().stream().toList())
+            .stringsIndex("id", InjectionRangeAction::getId)
+            .strings("name", InjectionRangeAction::getName)
+            .strings("operator", InjectionRangeAction::getOperator)
+            .strings("group_id", a -> a.getGroupId().isPresent() ? a.getGroupId().get() : "")
+            .strings("speed", a -> a.getSpeed().isPresent() ? a.getSpeed().get().toString() : "")
+            .strings("activation_cost", a -> a.getActivationCost().isPresent() ? a.getActivationCost().get().toString() : "")
+            .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).isPresent() ? a.getVariationCost(VariationDirection.UP).get().toString() : "")
+            .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).isPresent() ? a.getVariationCost(VariationDirection.UP).get().toString() : "")
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracInjectionRaElements() {
+        return new DataframeMapperBuilder<Crac, Triple<InjectionRangeAction, NetworkElement, Double>, Void>()
+            .itemsProvider(crac ->
+                crac.getInjectionRangeActions().stream()
+                    .flatMap(e ->
+                        e.getInjectionDistributionKeys().entrySet().stream()
+                            .map(v -> Triple.of(e, v.getKey(), v.getValue()))
+                    )
+                    .toList())
+            .stringsIndex("id", e -> e.getLeft().getId())
+            .strings("network_element_id", e -> e.getMiddle().getId())
+            .doubles("distribution_key", Triple::getRight)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracCounterTradeRangeActions() {
+        return new DataframeMapperBuilder<Crac, CounterTradeRangeAction, Void>()
+            .itemsProvider(crac -> crac.getCounterTradeRangeActions().stream().toList())
+            .stringsIndex("id", CounterTradeRangeAction::getId)
+            .strings("name", CounterTradeRangeAction::getName)
+            .strings("operator", CounterTradeRangeAction::getOperator)
+            .strings("exporting_country", a -> a.getExportingCountry().name())
+            .strings("importing_country", a -> a.getImportingCountry().name())
+            .strings("group_id", a -> a.getGroupId().isPresent() ? a.getGroupId().get() : "")
+            .strings("speed", a -> a.getSpeed().isPresent() ? a.getSpeed().get().toString() : "")
+            .strings("activation_cost", a -> a.getActivationCost().isPresent() ? a.getActivationCost().get().toString() : "")
+            .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).isPresent() ? a.getVariationCost(VariationDirection.UP).get().toString() : "")
+            .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).isPresent() ? a.getVariationCost(VariationDirection.UP).get().toString() : "")
+            .build();
+    }
+
+    private record Range(String raId, double min, double max, RangeType rangeType) {};
+
+    private static List<Range> flattenRanges(Crac crac) {
+        List<Range> ranges = new ArrayList<>();
+        crac.getPstRangeActions().forEach(
+            a -> a.getRanges().forEach(
+                r -> ranges.add(new Range(a.getId(), r.getMinTap(), r.getMaxTap(), r.getRangeType()))));
+        crac.getHvdcRangeActions().forEach(
+            a -> a.getRanges().forEach(
+                r -> ranges.add(new Range(a.getId(), r.getMin(), r.getMax(), r.getRangeType()))));
+        crac.getInjectionRangeActions().forEach(
+            a -> a.getRanges().forEach(
+                r -> ranges.add(new Range(a.getId(), r.getMin(), r.getMax(), r.getRangeType()))));
+        crac.getCounterTradeRangeActions().forEach(
+            a -> a.getRanges().forEach(
+                r -> ranges.add(new Range(a.getId(), r.getMin(), r.getMax(), r.getRangeType()))));
+        return ranges;
+    }
+
+    public static DataframeMapper<Crac, Void> cracRanges() {
+        return new DataframeMapperBuilder<Crac, Range, Void>()
+            .itemsProvider(RaoDataframes::flattenRanges)
+            .stringsIndex("id", Range::raId)
+            .doubles("min", Range::min)
+            .doubles("max", Range::max)
+            .strings("range_type", r -> r.rangeType().name())
             .build();
     }
 }

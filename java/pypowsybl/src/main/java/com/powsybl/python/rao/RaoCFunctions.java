@@ -17,6 +17,7 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
+import com.powsybl.openrao.data.crac.api.RaUsageLimits;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.*;
@@ -42,12 +43,13 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
-import static com.powsybl.python.rao.RaoDataframes.createVirtualCostResultMapper;
+import static com.powsybl.python.rao.RaoDataframes.*;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
@@ -648,5 +650,110 @@ public final class RaoCFunctions {
         parameterPointer.getProviderParameters().setProviderParametersKeysCount(keys.size());
         parameterPointer.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(values));
         parameterPointer.getProviderParameters().setProviderParametersValuesCount(values.size());
+    }
+
+    @CEntryPoint(name = "getCracInstants")
+    public static ArrayPointer<SeriesPointer> getCracInstants(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracInstantsMapper(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxRemedialActionsUsageLimit")
+    public static ArrayPointer<SeriesPointer> getMaxRemedialActionsUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRemedialActionsUsageLimit(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxTsoUsageLimit")
+    public static ArrayPointer<SeriesPointer> getMaxTsoUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracMaxTsoUsageLimit(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxTopologicalActionPerTsoUsageLimit")
+    public static ArrayPointer<SeriesPointer> getMaxTopologicalActionPerTsoUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimit(RaUsageLimits::getMaxTopoPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxPstActionPerTsoUsageLimit")
+    public static ArrayPointer<SeriesPointer> getMaxPstActionPerTsoUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimit(RaUsageLimits::getMaxPstPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxRemedialActionPerTsoUsageLimit")
+    public static ArrayPointer<SeriesPointer> getMaxRemedialActionPerTsoUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimit(RaUsageLimits::getMaxRaPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxElementaryActionPerTsoUsageLimit")
+    public static ArrayPointer<SeriesPointer> getMaxElementaryActionPerTsoUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimit(RaUsageLimits::getMaxElementaryActionsPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracContingencies")
+    public static ArrayPointer<SeriesPointer> getCracContingencies(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracContingencies(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracContingencyElements")
+    public static ArrayPointer<SeriesPointer> getCracContingencyElements(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracContingencyElements(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracFlowCnecs")
+    public static ArrayPointer<SeriesPointer> getCracFlowCnecs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracFlowCnecs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracAngleCnecs")
+    public static ArrayPointer<SeriesPointer> getCracAngleCnecs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracAngleCnecs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracVoltageCnecs")
+    public static ArrayPointer<SeriesPointer> getCracVoltageCnecs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracVoltageCnecs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracThresholds")
+    public static ArrayPointer<SeriesPointer> getCracThresholds(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracThresholds(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracPstRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracPstRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getPstRangeActions().stream().toList()), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracHvdcRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracHvdcRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getHvdcRangeActions().stream().toList()), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracInjectionRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracInjectionRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracInjectionRangeActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracInjectionRaElements")
+    public static ArrayPointer<SeriesPointer> getCracInjectionRaElements(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracInjectionRaElements(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracCounterTradeRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracCounterTradeRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracCounterTradeRangeActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracRangeActionRanges")
+    public static ArrayPointer<SeriesPointer> getCracRangeActionRanges(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRanges(), exceptionHandlerPtr);
+    }
+
+    public static ArrayPointer<SeriesPointer> cracGenericMethod(IsolateThread thread, ObjectHandle cracHandle, DataframeMapper<Crac, Void> mapper, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                return Dataframes.createCDataframe(mapper, crac);
+            }
+        });
     }
 }
