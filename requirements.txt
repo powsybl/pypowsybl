@@ -2,7 +2,7 @@
 pandas>=2.2.3
 prettytable>=2.0.0
 networkx
-matplotlib==3.9.2
+matplotlib
 
 # optional dependencies
 pandapower>=2.14.11
@@ -22,3 +22,4 @@ pylint==3.2.0
 pybind11[global]>=2.13.6
 cmake>=3.20
 wheel
+matplotlib

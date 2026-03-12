@@ -18,14 +18,14 @@ jobs:
   manylinux_complete_build:
     name: Build linux native libraries and ${{ matrix.python.name }} wheel
     runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2024-11-16-d70d8cd
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     strategy:
       matrix:
         python:
           - {
-            name: cp39,
-            abi: cp39,
-            version: '3.9'
+            name: cp310,
+            abi: cp310,
+            version: '3.10'
           }
 
     steps:
@@ -136,11 +136,6 @@ jobs:
       matrix:
         python:
           - {
-            name: cp310,
-            abi: cp310,
-            version: '3.10'
-          }
-          - {
             name: cp311,
             abi: cp311,
             version: '3.11'
@@ -154,6 +149,11 @@ jobs:
             name: cp313,
             abi: cp313,
             version: '3.13'
+          }
+          - {
+            name: cp314,
+            abi: cp314,
+            version: '3.14'
           }
 
     steps:
@@ -233,8 +233,8 @@ jobs:
           }
         python:
           - {
-            name: cp39,
-            version: '3.9',
+            name: cp310,
+            version: '3.10',
           }
 
     steps:
@@ -334,10 +334,6 @@ jobs:
           }
         python:
           - {
-            name: cp310,
-            version: '3.10',
-          }
-          - {
             name: cp311,
             version: '3.11',
           }
@@ -348,6 +344,10 @@ jobs:
           - {
             name: cp313,
             version: '3.13',
+          }
+          - {
+            name: cp314,
+            version: '3.14',
           }
 
     steps:
