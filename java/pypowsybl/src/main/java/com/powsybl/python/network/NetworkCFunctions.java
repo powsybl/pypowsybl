@@ -1179,6 +1179,7 @@ public final class NetworkCFunctions {
             case CURRENT -> 2;
             default -> throw new PowsyblException("Type of information not taken into account");
         };
+        cParameters.setTextIncluded(parameters.getSvgParameters().isEdgeInfosIncluded() || parameters.getSvgParameters().isVoltageLevelLegendsIncluded());
         cParameters.setEdgeNameDisplayed(defaultEdgeInfoParameters.infoMiddleSide1().equals(NAME));
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(defaultLabelProviderParameters.isIdDisplayed());
@@ -1191,6 +1192,8 @@ public final class NetworkCFunctions {
         cParameters.setEdgeInfoDisplayed(edgeInfo);
         cParameters.setVoltageLevelDetails(defaultLabelProviderParameters.isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
+        cParameters.setMaxSteps(parameters.getLayoutParameters().getMaxSteps());
+        cParameters.setTimeoutSeconds(parameters.getLayoutParameters().getTimeoutSeconds());
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1266,6 +1269,8 @@ public final class NetworkCFunctions {
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
+                .setVoltageLevelLegendsIncluded(nadParametersPointer.isTextIncluded())
+                .setEdgeInfosIncluded(nadParametersPointer.isTextIncluded())
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
                 .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
@@ -1283,7 +1288,9 @@ public final class NetworkCFunctions {
                         .setBusLegend(busLegend)
                         .setSubstationDescriptionDisplayed(substationDescription)));
         nadParameters.getLayoutParameters()
-                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
+                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded())
+                .setMaxSteps(nadParametersPointer.getMaxSteps())
+                .setTimeoutSeconds(nadParametersPointer.getTimeoutSeconds());
         return nadParameters;
     }
 
