@@ -17,5 +17,16 @@
       "id" : "GEN",
       "type" : "GENERATOR"
     } ]
+  } , {
+    "id" : "contingency3",
+    "elements" : [ {
+      "id" : "GEN",
+      "type" : "GENERATOR"
+    } ],
+    "extensions" : {
+      "contingency-load-flow-parameters" : {
+        "outerLoopNames" : []
+      }
+    }
   } ]
 }
