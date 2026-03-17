@@ -806,9 +806,9 @@ public final class RaoCFunctions {
         return cracGenericMethod(thread, cracHandle, cracOnConstraintUsageRule(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getOnFlowConstrainInCountryUsageRule")
-    public static ArrayPointer<SeriesPointer> getOnFlowConstrainInCountryUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracOnFlowConstrainInCountryUsageRule(), exceptionHandlerPtr);
+    @CEntryPoint(name = "getOnFlowConstraintInCountryUsageRule")
+    public static ArrayPointer<SeriesPointer> getOnFlowConstraintInCountryUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnFlowConstraintInCountryUsageRule(), exceptionHandlerPtr);
     }
 
     public static ArrayPointer<SeriesPointer> cracGenericMethod(IsolateThread thread, ObjectHandle cracHandle, DataframeMapper<Crac, Void> mapper, ExceptionHandlerPointer exceptionHandlerPtr) {

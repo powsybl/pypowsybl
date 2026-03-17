@@ -1336,7 +1336,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_on_instant_usage_rule", &pypowsybl::getOnInstantUsageRule, "Get on instant usage rule", py::arg("crac"));
     m.def("get_on_contingency_state_usage_rule", &pypowsybl::getOnContingencyStateUsageRule, "Get on contingency state usage rule", py::arg("crac"));
     m.def("get_on_constraint_usage_rule", &pypowsybl::getOnConstraintUsageRule, "Get on constraint usage rule", py::arg("crac"));
-    m.def("get_on_flow_constrain_in_country_usage_rule", &pypowsybl::getOnFlowConstrainInCountryUsageRule, "Get on flow constrain in country usage rule", py::arg("crac"));
+    m.def("get_on_flow_constraint_in_country_usage_rule", &pypowsybl::getOnFlowConstraintInCountryUsageRule, "Get on flow constraint in country usage rule", py::arg("crac"));
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)

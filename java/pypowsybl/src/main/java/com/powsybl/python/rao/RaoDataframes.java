@@ -746,7 +746,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracOnFlowConstrainInCountryUsageRule() {
+    public static DataframeMapper<Crac, Void> cracOnFlowConstraintInCountryUsageRule() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, OnFlowConstraintInCountry>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getUsageRules().stream()
                 .filter(OnFlowConstraintInCountry.class::isInstance).map(rule -> Pair.create(a, (OnFlowConstraintInCountry) rule))).toList())

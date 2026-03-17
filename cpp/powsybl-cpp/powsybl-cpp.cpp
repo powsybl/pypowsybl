@@ -2219,8 +2219,8 @@ SeriesArray* getOnConstraintUsageRule(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnConstraintUsageRule, cracHandle));
 }
 
-SeriesArray* getOnFlowConstrainInCountryUsageRule(const JavaHandle& cracHandle) {
-  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstrainInCountryUsageRule, cracHandle));
+SeriesArray* getOnFlowConstraintInCountryUsageRule(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstraintInCountryUsageRule, cracHandle));
 }
 
 JavaHandle getCrac(const JavaHandle& raoContext) {

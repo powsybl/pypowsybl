@@ -1071,7 +1071,7 @@ SeriesArray* getSwitchPairsAction(const JavaHandle& cracHandle);
 SeriesArray* getOnInstantUsageRule(const JavaHandle& cracHandle);
 SeriesArray* getOnContingencyStateUsageRule(const JavaHandle& cracHandle);
 SeriesArray* getOnConstraintUsageRule(const JavaHandle& cracHandle);
-SeriesArray* getOnFlowConstrainInCountryUsageRule(const JavaHandle& cracHandle);
+SeriesArray* getOnFlowConstraintInCountryUsageRule(const JavaHandle& cracHandle);
 
 void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);

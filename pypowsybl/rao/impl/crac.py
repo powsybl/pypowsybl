@@ -344,11 +344,11 @@ class Crac:
         return create_data_frame_from_series_array(series)
 
     """
-    Get on flow constrain in country usage rule
+    Get on flow constraint in country usage rule
 
     Returns:
         A dataframe containing the on flow constrain in country usage rule
     """
-    def get_on_flow_constrain_in_country_usage_rule(self):
-        series = _pypowsybl.get_on_flow_constrain_in_country_usage_rule(self._handle)
+    def get_on_flow_constraint_in_country_usage_rule(self):
+        series = _pypowsybl.get_on_flow_constraint_in_country_usage_rule(self._handle)
         return create_data_frame_from_series_array(series)
