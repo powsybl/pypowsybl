@@ -43,7 +43,6 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static com.powsybl.python.commons.CTypeUtil.*;
@@ -745,6 +744,71 @@ public final class RaoCFunctions {
     @CEntryPoint(name = "getCracRangeActionRanges")
     public static ArrayPointer<SeriesPointer> getCracRangeActionRanges(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return cracGenericMethod(thread, cracHandle, cracRanges(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracNetworkActions")
+    public static ArrayPointer<SeriesPointer> getCracNetworkActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracNetworkActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getTerminalConnectionActions")
+    public static ArrayPointer<SeriesPointer> getTerminalConnectionActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracTerminalConnectionActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getPstTapPositionActions")
+    public static ArrayPointer<SeriesPointer> getPstTapPositionActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPstTapPositionActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getGeneratorActions")
+    public static ArrayPointer<SeriesPointer> getGeneratorActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracGeneratorActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getLoadActions")
+    public static ArrayPointer<SeriesPointer> getLoadActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracLoadActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getDanglingLineActions")
+    public static ArrayPointer<SeriesPointer> getDanglingLineActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracDanglingLineActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getShuntCompensatorPositionActions")
+    public static ArrayPointer<SeriesPointer> getShuntCompensatorPositionActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracShuntCompensatorPositionActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getSwitchActions")
+    public static ArrayPointer<SeriesPointer> getSwitchActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracSwitchActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getSwitchPairsAction")
+    public static ArrayPointer<SeriesPointer> getSwitchPairsAction(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracSwitchPairsAction(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnInstantUsageRule")
+    public static ArrayPointer<SeriesPointer> getOnInstantUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnInstantUsageRule(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnContingencyStateUsageRule")
+    public static ArrayPointer<SeriesPointer> getOnContingencyStateUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnContingencyStateUsageRule(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnConstraintUsageRule")
+    public static ArrayPointer<SeriesPointer> getOnConstraintUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnConstraintUsageRule(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnFlowConstrainInCountryUsageRule")
+    public static ArrayPointer<SeriesPointer> getOnFlowConstrainInCountryUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnFlowConstrainInCountryUsageRule(), exceptionHandlerPtr);
     }
 
     public static ArrayPointer<SeriesPointer> cracGenericMethod(IsolateThread thread, ObjectHandle cracHandle, DataframeMapper<Crac, Void> mapper, ExceptionHandlerPointer exceptionHandlerPtr) {

@@ -1305,6 +1305,39 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
     m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, py::call_guard<py::gil_scoped_release>(), "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 
+    m.def("get_crac_instants", &pypowsybl::getCracInstants, "Get crac instants", py::arg("crac"));
+    m.def("get_max_remedial_actions_usage_limit", &pypowsybl::getMaxRemedialActionsUsageLimit, "Get max remedial actions usage limit", py::arg("crac"));
+    m.def("get_max_tso_usage_limit", &pypowsybl::getMaxTsoUsageLimit, "Get max tso usage limit", py::arg("crac"));
+    m.def("get_max_topological_action_per_tso_usage_limit", &pypowsybl::getMaxTopologicalActionPerTsoUsageLimit, "Get max topological action per tso usage limit", py::arg("crac"));
+    m.def("get_max_pst_action_per_tso_usage_limit", &pypowsybl::getMaxPstActionPerTsoUsageLimit, "Get max pst action per tso usage limit", py::arg("crac"));
+    m.def("get_max_remedial_action_per_tso_usage_limit", &pypowsybl::getMaxRemedialActionPerTsoUsageLimit, "Get max remedial action per tso usage limit", py::arg("crac"));
+    m.def("get_max_elementary_action_per_tso_usage_limit", &pypowsybl::getMaxElementaryActionPerTsoUsageLimit, "Get max elementary action per tso usage limit", py::arg("crac"));
+    m.def("get_crac_contingencies", &pypowsybl::getCracContingencies, "Get crac contingencies", py::arg("crac"));
+    m.def("get_crac_contingency_elements", &pypowsybl::getCracContingencyElements, "Get crac contingency elements", py::arg("crac"));
+    m.def("get_crac_flow_cnecs", &pypowsybl::getCracFlowCnecs, "Get crac flow cnecs", py::arg("crac"));
+    m.def("get_crac_angle_cnecs", &pypowsybl::getCracAngleCnecs, "Get crac angle cnecs", py::arg("crac"));
+    m.def("get_crac_voltage_cnecs", &pypowsybl::getCracVoltageCnecs, "Get crac voltage cnecs", py::arg("crac"));
+    m.def("get_crac_thresholds", &pypowsybl::getCracThresholds, "Get crac thresholds", py::arg("crac"));
+    m.def("get_crac_pst_range_actions", &pypowsybl::getCracPstRangeActions, "Get crac pst range actions", py::arg("crac"));
+    m.def("get_crac_hvdc_range_actions", &pypowsybl::getCracHvdcRangeActions, "Get crac hvdc range actions", py::arg("crac"));
+    m.def("get_crac_injection_range_actions", &pypowsybl::getCracInjectionRangeActions, "Get crac injection range actions", py::arg("crac"));
+    m.def("get_crac_injection_ra_elements", &pypowsybl::getCracInjectionRaElements, "Get crac injection ra elements", py::arg("crac"));
+    m.def("get_crac_counter_trade_range_actions", &pypowsybl::getCracCounterTradeRangeActions, "Get crac counter trade range actions", py::arg("crac"));
+    m.def("get_crac_range_action_ranges", &pypowsybl::getCracRangeActionRanges, "Get crac range action ranges", py::arg("crac"));
+    m.def("get_crac_network_actions", &pypowsybl::getCracNetworkActions, "Get crac network actions", py::arg("crac"));
+    m.def("get_terminal_connection_actions", &pypowsybl::getTerminalConnectionActions, "Get terminal connection actions", py::arg("crac"));
+    m.def("get_pst_tap_position_actions", &pypowsybl::getPstTapPositionActions, "Get pst tap position actions", py::arg("crac"));
+    m.def("get_generator_actions", &pypowsybl::getGeneratorActions, "Get generator actions", py::arg("crac"));
+    m.def("get_load_actions", &pypowsybl::getLoadActions, "Get load actions", py::arg("crac"));
+    m.def("get_dangling_line_actions", &pypowsybl::getDanglingLineActions, "Get dangling line actions", py::arg("crac"));
+    m.def("get_shunt_compensator_position_actions", &pypowsybl::getShuntCompensatorPositionActions, "Get shunt compensator position actions", py::arg("crac"));
+    m.def("get_switch_actions", &pypowsybl::getSwitchActions, "Get switch actions", py::arg("crac"));
+    m.def("get_switch_pairs_action", &pypowsybl::getSwitchPairsAction, "Get switch pairs action", py::arg("crac"));
+    m.def("get_on_instant_usage_rule", &pypowsybl::getOnInstantUsageRule, "Get on instant usage rule", py::arg("crac"));
+    m.def("get_on_contingency_state_usage_rule", &pypowsybl::getOnContingencyStateUsageRule, "Get on contingency state usage rule", py::arg("crac"));
+    m.def("get_on_constraint_usage_rule", &pypowsybl::getOnConstraintUsageRule, "Get on constraint usage rule", py::arg("crac"));
+    m.def("get_on_flow_constrain_in_country_usage_rule", &pypowsybl::getOnFlowConstrainInCountryUsageRule, "Get on flow constrain in country usage rule", py::arg("crac"));
+
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
             .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)

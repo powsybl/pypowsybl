@@ -2095,6 +2095,134 @@ SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHand
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVirtualCostResults, cracHandle, resultHandle, (char*) virtualCostName.c_str()));
 }
 
+SeriesArray* getCracInstants(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracInstants, cracHandle));
+}
+
+SeriesArray* getMaxRemedialActionsUsageLimit(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionsUsageLimit, cracHandle));
+}
+
+SeriesArray* getMaxTsoUsageLimit(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxTsoUsageLimit, cracHandle));
+}
+
+SeriesArray* getMaxTopologicalActionPerTsoUsageLimit(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxTopologicalActionPerTsoUsageLimit, cracHandle));
+}
+
+SeriesArray* getMaxPstActionPerTsoUsageLimit(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxPstActionPerTsoUsageLimit, cracHandle));
+}
+
+SeriesArray* getMaxRemedialActionPerTsoUsageLimit(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionPerTsoUsageLimit, cracHandle));
+}
+
+SeriesArray* getMaxElementaryActionPerTsoUsageLimit(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxElementaryActionPerTsoUsageLimit, cracHandle));
+}
+
+SeriesArray* getCracContingencies(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracContingencies, cracHandle));
+}
+
+SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracContingencyElements, cracHandle));
+}
+
+SeriesArray* getCracFlowCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracFlowCnecs, cracHandle));
+}
+
+SeriesArray* getCracAngleCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracAngleCnecs, cracHandle));
+}
+
+SeriesArray* getCracVoltageCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracVoltageCnecs, cracHandle));
+}
+
+SeriesArray* getCracThresholds(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracThresholds, cracHandle));
+}
+
+SeriesArray* getCracPstRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracPstRangeActions, cracHandle));
+}
+
+SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracHvdcRangeActions, cracHandle));
+}
+
+SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracInjectionRangeActions, cracHandle));
+}
+
+SeriesArray* getCracInjectionRaElements(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracInjectionRaElements, cracHandle));
+}
+
+SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeRangeActions, cracHandle));
+}
+
+SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracRangeActionRanges, cracHandle));
+}
+
+SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracNetworkActions, cracHandle));
+}
+
+SeriesArray* getTerminalConnectionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getTerminalConnectionActions, cracHandle));
+}
+
+SeriesArray* getPstTapPositionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getPstTapPositionActions, cracHandle));
+}
+
+SeriesArray* getGeneratorActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getGeneratorActions, cracHandle));
+}
+
+SeriesArray* getLoadActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getLoadActions, cracHandle));
+}
+
+SeriesArray* getDanglingLineActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getDanglingLineActions, cracHandle));
+}
+
+SeriesArray* getShuntCompensatorPositionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getShuntCompensatorPositionActions, cracHandle));
+}
+
+SeriesArray* getSwitchActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSwitchActions, cracHandle));
+}
+
+SeriesArray* getSwitchPairsAction(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSwitchPairsAction, cracHandle));
+}
+
+SeriesArray* getOnInstantUsageRule(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnInstantUsageRule, cracHandle));
+}
+
+SeriesArray* getOnContingencyStateUsageRule(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnContingencyStateUsageRule, cracHandle));
+}
+
+SeriesArray* getOnConstraintUsageRule(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnConstraintUsageRule, cracHandle));
+}
+
+SeriesArray* getOnFlowConstrainInCountryUsageRule(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstrainInCountryUsageRule, cracHandle));
+}
+
 JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
