@@ -229,5 +229,33 @@
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true
+  },
+  {
+    "name" : "com.artelys.knitro.api.nativelibrary.KNLibrary",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "com.artelys.knitro.api.nativelibrary.KNLibrary$LM_context_ptr",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "com.artelys.knitro.api.nativelibrary.KNLibrary$KN_context_ptr",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
+  },
+  {
+    "name" : "com.artelys.knitro.api.nativelibrary.KNLibrary$CB_context_ptr",
+    "allDeclaredConstructors" : true,
+    "allPublicConstructors" : true,
+    "allDeclaredMethods" : true,
+    "allPublicMethods" : true
   }
 ]
