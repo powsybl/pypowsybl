@@ -1,2 +1,7 @@
 [
+  {
+    "interfaces": [
+      "com.artelys.knitro.api.nativelibrary.KNLibrary"
+    ]
+  }
 ]
