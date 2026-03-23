@@ -4,7 +4,67 @@
     {"pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"},
     {"pattern":"\\QMETA-INF/services/javax.xml.datatype.DatatypeFactory\\E"}, 
     {"pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"},
-    {"pattern":"\\Qcom/sun/jna/win32-x86-64/jnidispatch.dll\\E"}
+    {"pattern":"\\Qcom/sun/jna/win32-x86-64/jnidispatch.dll\\E"}, {
+    "pattern":"\\QMETA-INF/lib/windows_64/math.dll\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/ch.qos.logback.classic.spi.Configurator\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.commons.config.PlatformConfigProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.commons.extensions.ExtensionAdderProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.commons.report.ReportResourceBundle\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.iidm.network.NetworkFactoryService\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowDefaultParametersLoader\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.loadflow.LoadFlowProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.ac.solver.AcSolverFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.equations.EquationSystemPostProcessor\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.lf.outerloop.config.AcOuterLoopConfig\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/com.powsybl.openloadflow.network.LfNetworkLoaderPostProcessor\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
+  }, {
+    "pattern":"\\Qieee9cdf.txt\\E"
+  }, {
+    "pattern":"\\Qlogback-test.scmo\\E"
+  }, {
+    "pattern":"\\Qlogback-test.xml\\E"
+  }, {
+    "pattern":"\\Qlogback.scmo\\E"
+  }, {
+    "pattern":"\\Qlogback.xml\\E"
+  }, {
+    "pattern":"\\Qnatives/windows_64/math.dll\\E"
+  }, {
+    "pattern":"\\Qwindows_64/math.dll\\E"
+  }
   ]},
-  "bundles":[{"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}]
+  "bundles":[
+    {"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}, {
+    "name":"com.powsybl.commons.reports",
+    "locales":[""]
+  }, {
+    "name":"com.powsybl.dynawo.commons.reports",
+    "locales":[""]
+  }, {
+    "name":"com.powsybl.entsoe.commons.reports",
+    "locales":[""]
+  }, {
+    "name":"com.powsybl.openloadflow.reports",
+    "locales":[""]
+  }, {
+    "name":"com.powsybl.pypowsybl.reports",
+    "locales":[""]
+  }]
 }

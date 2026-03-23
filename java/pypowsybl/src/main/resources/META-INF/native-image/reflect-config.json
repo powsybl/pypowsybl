@@ -257,5 +257,282 @@
     "allPublicConstructors" : true,
     "allDeclaredMethods" : true,
     "allPublicMethods" : true
+  },
+  {
+    "name":"ch.qos.logback.classic.encoder.PatternLayoutEncoder",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"ch.qos.logback.classic.joran.SerializedModelConfigurator",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"ch.qos.logback.classic.util.DefaultJoranConfigurator",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"ch.qos.logback.core.encoder.Encoder",
+    "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+  },
+  {
+    "name":"ch.qos.logback.core.encoder.LayoutWrappingEncoder",
+    "methods":[{"name":"setParent","parameterTypes":["ch.qos.logback.core.spi.ContextAware"] }]
+  },
+  {
+    "name":"ch.qos.logback.core.pattern.PatternLayoutEncoderBase",
+    "methods":[{"name":"setPattern","parameterTypes":["java.lang.String"] }]
+  },
+  {
+    "name":"ch.qos.logback.core.spi.ContextAware",
+    "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+  },
+  {
+    "name":"com.artelys.knitro.api.nativelibrary.KNLibrary$CB_context_ptr",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.artelys.knitro.api.nativelibrary.KNLibrary$KN_context_ptr",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.artelys.knitro.api.nativelibrary.KNLibrary$KN_eval_callback",
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"apply","parameterTypes":["com.sun.jna.Pointer","com.sun.jna.Pointer","com.artelys.knitro.api.nativelibrary.KN_eval_request","com.artelys.knitro.api.nativelibrary.KN_eval_result","com.sun.jna.Pointer"] }]
+  },
+  {
+    "name":"com.artelys.knitro.api.nativelibrary.KN_eval_request",
+    "allDeclaredFields":true,
+    "queryAllPublicConstructors":true,
+    "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["com.sun.jna.Pointer"] }]
+  },
+  {
+    "name":"com.artelys.knitro.api.nativelibrary.KN_eval_result",
+    "allDeclaredFields":true,
+    "queryAllPublicConstructors":true,
+    "fields":[{"name":"OPTIONS"}, {"name":"STRING_ENCODING"}, {"name":"STRUCTURE_ALIGNMENT"}, {"name":"TYPE_MAPPER"}],
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["com.sun.jna.Pointer"] }]
+  },
+  {
+    "name":"com.googlecode.openbeans.Introspector"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.BranchSideConversion",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.BranchTypeConversion",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.BusTypeConversion",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfBranch",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "queryAllDeclaredConstructors":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getCircuit","parameterTypes":[] }, {"name":"getRating2","parameterTypes":[] }, {"name":"getRating3","parameterTypes":[] }, {"name":"setArea","parameterTypes":["int"] }, {"name":"setChargingSusceptance","parameterTypes":["double"] }, {"name":"setCircuit","parameterTypes":["int"] }, {"name":"setControlBusNumber","parameterTypes":["int"] }, {"name":"setFinalAngle","parameterTypes":["double"] }, {"name":"setFinalTurnsRatio","parameterTypes":["double"] }, {"name":"setLossZone","parameterTypes":["int"] }, {"name":"setMaxTapOrPhaseShift","parameterTypes":["double"] }, {"name":"setMaxVoltageActiveOrReactivePowerLimit","parameterTypes":["double"] }, {"name":"setMinTapOrPhaseShift","parameterTypes":["double"] }, {"name":"setMinVoltageActiveOrReactivePowerLimit","parameterTypes":["double"] }, {"name":"setRating1","parameterTypes":["int"] }, {"name":"setRating2","parameterTypes":["int"] }, {"name":"setRating3","parameterTypes":["int"] }, {"name":"setReactance","parameterTypes":["double"] }, {"name":"setResistance","parameterTypes":["double"] }, {"name":"setSide","parameterTypes":["com.powsybl.ieeecdf.model.IeeeCdfBranch$Side"] }, {"name":"setStepSize","parameterTypes":["double"] }, {"name":"setTapBusNumber","parameterTypes":["int"] }, {"name":"setType","parameterTypes":["com.powsybl.ieeecdf.model.IeeeCdfBranch$Type"] }, {"name":"setzBusNumber","parameterTypes":["int"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfBranchBeanInfo"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfBranchCustomizer"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfBus",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "queryAllDeclaredConstructors":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setActiveGeneration","parameterTypes":["double"] }, {"name":"setActiveLoad","parameterTypes":["double"] }, {"name":"setAreaNumber","parameterTypes":["int"] }, {"name":"setBaseVoltage","parameterTypes":["double"] }, {"name":"setDesiredVoltage","parameterTypes":["double"] }, {"name":"setFinalAngle","parameterTypes":["double"] }, {"name":"setFinalVoltage","parameterTypes":["double"] }, {"name":"setLossZoneNumber","parameterTypes":["int"] }, {"name":"setMaxReactivePowerOrVoltageLimit","parameterTypes":["double"] }, {"name":"setMinReactivePowerOrVoltageLimit","parameterTypes":["double"] }, {"name":"setName","parameterTypes":["java.lang.String"] }, {"name":"setNumber","parameterTypes":["int"] }, {"name":"setReactiveGeneration","parameterTypes":["double"] }, {"name":"setReactiveLoad","parameterTypes":["double"] }, {"name":"setRemoteControlledBusNumber","parameterTypes":["int"] }, {"name":"setShuntConductance","parameterTypes":["double"] }, {"name":"setShuntSusceptance","parameterTypes":["double"] }, {"name":"setType","parameterTypes":["com.powsybl.ieeecdf.model.IeeeCdfBus$Type"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfBusBeanInfo"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfBusCustomizer"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfInterchangeData",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "queryAllDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfInterchangeDataBeanInfo"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfInterchangeDataCustomizer"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfLossZone",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "queryAllDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfLossZoneBeanInfo"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfLossZoneCustomizer"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfTieLine",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "queryAllDeclaredConstructors":true
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfTieLineBeanInfo"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfTieLineCustomizer"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfTitle",
+    "allDeclaredFields":true,
+    "queryAllDeclaredMethods":true,
+    "queryAllPublicMethods":true,
+    "queryAllDeclaredConstructors":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setCaseIdentification","parameterTypes":["java.lang.String"] }, {"name":"setDate","parameterTypes":["java.time.LocalDate"] }, {"name":"setMvaBase","parameterTypes":["double"] }, {"name":"setOriginatorName","parameterTypes":["java.lang.String"] }, {"name":"setSeason","parameterTypes":["com.powsybl.ieeecdf.model.IeeeCdfTitle$Season"] }, {"name":"setYear","parameterTypes":["int"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfTitleBeanInfo"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.IeeeCdfTitleCustomizer"
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.LocalDateConversion",
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"com.powsybl.ieeecdf.model.SeasonConversion",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.lang.String[]"] }]
+  },
+  {
+    "name":"com.powsybl.python.logging.CustomAppender",
+    "queryAllPublicMethods":true,
+    "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setEncoder","parameterTypes":["ch.qos.logback.core.encoder.Encoder"] }]
+  },
+  {
+    "name":"com.sun.jna.CallbackProxy",
+    "methods":[{"name":"callback","parameterTypes":["java.lang.Object[]"] }]
+  },
+  {
+    "name":"com.sun.jna.ptr.DoubleByReference",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.jna.ptr.IntByReference",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.jna.ptr.PointerByReference",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.sun.jna.win32.DLLCallback"
+  },
+  {
+    "name":"com.sun.org.apache.xerces.internal.jaxp.SAXParserFactoryImpl",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"com.univocity.parsers.conversions.EnumConversion",
+    "queryAllPublicMethods":true
+  },
+  {
+    "name":"java.beans.BeanInfo",
+    "methods":[{"name":"getPropertyDescriptors","parameterTypes":[] }]
+  },
+  {
+    "name":"java.beans.FeatureDescriptor",
+    "methods":[{"name":"getName","parameterTypes":[] }]
+  },
+  {
+    "name":"java.beans.Introspector",
+    "methods":[{"name":"getBeanInfo","parameterTypes":["java.lang.Class","java.lang.Class"] }]
+  },
+  {
+    "name":"java.beans.PropertyDescriptor",
+    "methods":[{"name":"getReadMethod","parameterTypes":[] }, {"name":"getWriteMethod","parameterTypes":[] }]
+  },
+  {
+    "name":"java.beans.PropertyVetoException"
+  },
+  {
+    "name":"java.lang.Object",
+    "methods":[{"name":"equals","parameterTypes":["java.lang.Object"] }, {"name":"hashCode","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
+  },
+  {
+    "name":"java.lang.Throwable",
+    "methods":[{"name":"addSuppressed","parameterTypes":["java.lang.Throwable"] }]
+  },
+  {
+    "name":"java.lang.invoke.MethodHandle",
+    "methods":[{"name":"bindTo","parameterTypes":["java.lang.Object"] }, {"name":"invokeWithArguments","parameterTypes":["java.lang.Object[]"] }]
+  },
+  {
+    "name":"java.lang.invoke.MethodHandles",
+    "methods":[{"name":"lookup","parameterTypes":[] }, {"name":"privateLookupIn","parameterTypes":["java.lang.Class","java.lang.invoke.MethodHandles$Lookup"] }]
+  },
+  {
+    "name":"java.lang.invoke.MethodHandles$Lookup",
+    "methods":[{"name":"findSpecial","parameterTypes":["java.lang.Class","java.lang.String","java.lang.invoke.MethodType","java.lang.Class"] }, {"name":"in","parameterTypes":["java.lang.Class"] }, {"name":"unreflectSpecial","parameterTypes":["java.lang.reflect.Method","java.lang.Class"] }]
+  },
+  {
+    "name":"java.lang.invoke.MethodType",
+    "methods":[{"name":"methodType","parameterTypes":["java.lang.Class","java.lang.Class[]"] }]
+  },
+  {
+    "name":"java.lang.reflect.Method",
+    "methods":[{"name":"isDefault","parameterTypes":[] }, {"name":"isVarArgs","parameterTypes":[] }]
+  },
+  {
+    "name":"java.nio.Buffer"
+  },
+  {
+    "name":"java.security.SecureRandomParameters"
+  },
+  {
+    "name":"java.util.concurrent.ForkJoinTask",
+    "fields":[{"name":"aux"}, {"name":"status"}]
+  },
+  {
+    "name":"java.util.concurrent.atomic.AtomicBoolean",
+    "fields":[{"name":"value"}]
+  },
+  {
+    "name":"java.util.concurrent.atomic.AtomicReference",
+    "fields":[{"name":"value"}]
+  },
+  {
+    "name":"jdk.internal.misc.Unsafe"
+  },
+  {
+    "name":"sun.security.provider.DRBG",
+    "methods":[{"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+  },
+  {
+    "name":"sun.security.provider.SHA",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
+  },
+  {
+    "name":"sun.security.provider.SHA2$SHA256",
+    "methods":[{"name":"<init>","parameterTypes":[] }]
   }
 ]
