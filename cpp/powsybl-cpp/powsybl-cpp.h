@@ -1045,7 +1045,7 @@ SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle);
 SeriesArray* getMaxTsoUsageLimit(const JavaHandle& cracHandle);
 SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
 SeriesArray* getMaxPstActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
-SeriesArray* getMaxRemedialActionPerTsoUsageLimit(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
 SeriesArray* getMaxElementaryActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
 SeriesArray* getCracContingencies(const JavaHandle& cracHandle);
 SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle);
