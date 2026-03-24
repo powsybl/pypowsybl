@@ -360,7 +360,7 @@ public final class NetworkCFunctions {
                 }
                 dataSourceList.add(ds);
             } else {
-                throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
+                throw new PowsyblException("Network loading/updating from memory buffer only supported with zipped networks.");
             }
         }
         return new MultipleReadOnlyDataSource(dataSourceList);

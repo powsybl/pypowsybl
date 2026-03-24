@@ -476,7 +476,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("save_network_to_string", &pypowsybl::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network_to_binary_buffer", saveNetworkToBinaryBufferPython, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network_to_binary_buffer", saveNetworkToBinaryBufferPython, "Save network in a given format to a binary buffer", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
