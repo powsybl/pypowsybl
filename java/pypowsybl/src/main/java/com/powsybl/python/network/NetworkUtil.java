@@ -49,28 +49,14 @@ public final class NetworkUtil {
         if (equipment == null) {
             throw new PowsyblException("Equipment '" + id + "' not found");
         }
-        if (!(equipment instanceof Connectable)) {
+        if (!(equipment instanceof Connectable<?> connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
         }
-        if (equipment instanceof Injection<?> injection) {
-            if (connected) {
-                return injection.getTerminal().connect();
-            } else {
-                return injection.getTerminal().disconnect();
-            }
-        } else if (equipment instanceof Branch<?> branch) {
-            boolean done1;
-            boolean done2;
-            if (connected) {
-                done1 = branch.getTerminal1().connect();
-                done2 = branch.getTerminal2().connect();
-            } else {
-                done1 = branch.getTerminal1().disconnect();
-                done2 = branch.getTerminal2().disconnect();
-            }
-            return done1 || done2;
+        if (connected) {
+            return connectable.connect();
+        } else {
+            return connectable.disconnect();
         }
-        return false;
     }
 
     private static boolean isInMainCc(Terminal t) {

@@ -10,6 +10,7 @@ package com.powsybl.dataframe.dynamic;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
+import com.powsybl.dataframe.dynamic.adders.EventMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
 
 import java.util.Collection;
@@ -54,6 +55,16 @@ public final class DynamicSimulationDataframeMappersUtils {
                 .stringsIndex("name", CategoryInformation::name)
                 .strings("description", CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<EventMappingAdder>, Void> eventInformationDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<EventMappingAdder>, EventInformation, Void>()
+                .itemsStreamProvider(a -> a.stream()
+                        .map(EventMappingAdder::getEventInformation))
+                .stringsIndex("name", EventInformation::name)
+                .strings("description", EventInformation::description)
+                .strings("attribute", EventInformation::attribute)
                 .build();
     }
 }

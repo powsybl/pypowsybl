@@ -100,6 +100,8 @@ def test_minimal_simulation():
     assert DynamicSimulationStatus.SUCCESS == res.status()
     assert "" == res.status_text()
     assert False == res.timeline().empty
+    assert True == res.final_state_values().empty
+    assert True == res.curves().empty
 
 def test_provider_parameters_list():
     assert dyn.Simulation.get_provider_parameters_names()
