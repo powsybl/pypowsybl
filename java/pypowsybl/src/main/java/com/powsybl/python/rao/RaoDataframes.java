@@ -398,7 +398,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracRemedialActionsUsageLimit() {
+    public static DataframeMapper<Crac, Void> cracRemedialActionsUsageLimits() {
         return new DataframeMapperBuilder<Crac, Map.Entry<Instant, RaUsageLimits>, Void>()
             .itemsProvider(crac -> crac.getRaUsageLimitsPerInstant().entrySet().stream().toList())
             .stringsIndex("instant", e -> e.getKey().getId())
@@ -414,7 +414,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracPerTsoUsageLimit(Function<RaUsageLimits, Map<String, Integer>> func) {
+    public static DataframeMapper<Crac, Void> cracPerTsoUsageLimits(Function<RaUsageLimits, Map<String, Integer>> func) {
         return new DataframeMapperBuilder<Crac, Triple<Instant, String, Integer>, Void>()
             .itemsProvider(crac ->
                 crac.getRaUsageLimitsPerInstant().entrySet().stream()
@@ -674,7 +674,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracDanglingLineActions() {
+    public static DataframeMapper<Crac, Void> cracBoundaryLineActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, DanglingLineAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
                 .filter(elementary -> LoadAction.NAME.equals(elementary.getType()))

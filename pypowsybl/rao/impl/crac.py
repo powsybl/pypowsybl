@@ -50,7 +50,7 @@ class Crac:
             
             This DataFrame is indexed by the id of the instants.
         """
-        series = _pypowsybl.get_crac_instants(self._handle)
+        series = _pypowsybl.get_instants(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_max_remedial_actions_usage_limits(self) -> DataFrame:
@@ -67,16 +67,17 @@ class Crac:
 
             This DataFrame is indexed by the id of the instants.
         """
-        series = _pypowsybl.get_max_remedial_actions_usage_limit(self._handle)
+        series = _pypowsybl.get_max_remedial_actions_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
-    """
-    Get max tso usage limit
 
-    Returns:
-        A dataframe containing the max tso usage limit
-    """
     def get_max_tso_usage_limit(self) -> DataFrame:
+        """
+        Get max tso usage limit
+
+        Returns:
+           A dataframe containing the max tso usage limit
+        """
         series = _pypowsybl.get_max_tso_usage_limit(self._handle)
         return create_data_frame_from_series_array(series)
 
@@ -96,7 +97,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the instants and the name of the TSOs.
         """
-        series = _pypowsybl.get_max_topological_action_per_tso_usage_limit(self._handle)
+        series = _pypowsybl.get_max_topological_actions_per_tso_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_max_pst_actions_per_tso_usage_limits(self) -> DataFrame:
@@ -115,11 +116,11 @@ class Crac:
 
             This DataFrame is indexed by the id of the instants and the name of the TSOs.
         """
-        series = _pypowsybl.get_max_pst_action_per_tso_usage_limit(self._handle)
+        series = _pypowsybl.get_max_pst_actions_per_tso_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_max_remedial_actions_per_tso_usage_limits(self) -> DataFrame:
-    """
+        """
         Get the maximum number of remedial actions that can be activated by the RAO per instant for a given TSO in a
         DataFrame.
 
@@ -134,7 +135,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the instants and the name of the TSOs.
         """
-        series = _pypowsybl.get_max_remedial_action_per_tso_usage_limit(self._handle)
+        series = _pypowsybl.get_max_remedial_actions_per_tso_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_max_elementary_actions_per_tso_usage_limits(self) -> DataFrame:
@@ -153,7 +154,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the instants and the name of the TSOs.
         """
-        series = _pypowsybl.get_max_elementary_action_per_tso_usage_limit(self._handle)
+        series = _pypowsybl.get_max_elementary_actions_per_tso_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_contingencies(self) -> DataFrame:
@@ -208,7 +209,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the FlowCNECs.
         """
-        series = _pypowsybl.get_crac_flow_cnecs(self._handle)
+        series = _pypowsybl.get_flow_cnecs(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_angle_cnecs(self) -> DataFrame:
@@ -234,7 +235,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the AngleCNECs.
         """
-        series = _pypowsybl.get_crac_angle_cnecs(self._handle)
+        series = _pypowsybl.get_angle_cnecs(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_voltage_cnecs(self) -> DataFrame:
@@ -259,7 +260,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the VoltageCNECs.
         """
-        series = _pypowsybl.get_crac_voltage_cnecs(self._handle)
+        series = _pypowsybl.get_voltage_cnecs(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_thresholds(self) -> DataFrame:
@@ -279,7 +280,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the CNECs.
         """
-        series = _pypowsybl.get_crac_thresholds(self._handle)
+        series = _pypowsybl.get_thresholds(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_pst_range_actions(self) -> DataFrame:
@@ -371,7 +372,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the injection range actions.
         """
-        series = _pypowsybl.get_crac_injection_ra_elements(self._handle)
+        series = _pypowsybl.get_network_element_ids_and_keys(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_counter_trade_range_actions(self) -> DataFrame:
@@ -454,7 +455,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_terminal_connection_actions(self._handle)
+        series = _pypowsybl.get_crac_terminal_connection_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_pst_tap_position_actions(self) -> DataFrame:
@@ -473,7 +474,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_pst_tap_position_actions(self._handle)
+        series = _pypowsybl.get_crac_pst_tap_position_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_generator_actions(self) -> DataFrame:
@@ -491,7 +492,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_generator_actions(self._handle)
+        series = _pypowsybl.get_crac_generator_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_load_actions(self) -> DataFrame:
@@ -509,8 +510,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-    def get_load_actions(self) -> DataFrame:
-        series = _pypowsybl.get_load_actions(self._handle)
+        series = _pypowsybl.get_crac_load_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_boundary_line_actions(self) -> DataFrame:
@@ -529,7 +529,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_dangling_line_actions(self._handle)
+        series = _pypowsybl.get_crac_boundary_line_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_shunt_compensator_position_actions(self) -> DataFrame:
@@ -549,7 +549,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_shunt_compensator_position_actions(self._handle)
+        series = _pypowsybl.get_crac_shunt_compensator_position_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_switch_actions(self) -> DataFrame:
@@ -567,7 +567,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_switch_actions(self._handle)
+        series = _pypowsybl.get_crac_switch_actions(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_switch_pairs(self) -> DataFrame:
@@ -585,7 +585,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_switch_pairs_action(self._handle)
+        series = _pypowsybl.get_crac_switch_pairs_action(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_on_instant_usage_rules(self) -> DataFrame:
@@ -602,7 +602,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent remedial actions.
         """
-        series = _pypowsybl.get_on_instant_usage_rule(self._handle)
+        series = _pypowsybl.get_on_instant_usage_rules(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_on_contingency_state_usage_rules(self) -> DataFrame:
@@ -620,7 +620,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent remedial actions.
         """
-        series = _pypowsybl.get_on_contingency_state_usage_rule(self._handle)
+        series = _pypowsybl.get_on_contingency_state_usage_rules(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_on_constraint_usage_rules(self) -> DataFrame:
@@ -638,7 +638,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent remedial actions.
         """
-        series = _pypowsybl.get_on_constraint_usage_rule(self._handle)
+        series = _pypowsybl.get_on_constraint_usage_rules(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_on_flow_constraint_in_country_usage_rules(self) -> DataFrame:
@@ -657,5 +657,5 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent remedial actions.
         """
-        series = _pypowsybl.get_on_flow_constraint_in_country_usage_rule(self._handle)
+        series = _pypowsybl.get_on_flow_constraint_in_country_usage_rules(self._handle)
         return create_data_frame_from_series_array(series)
