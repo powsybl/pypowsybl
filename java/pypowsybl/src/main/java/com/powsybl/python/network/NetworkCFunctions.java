@@ -279,34 +279,7 @@ public final class NetworkCFunctions {
             public ObjectHandle get() {
                 Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-                List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
-                List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
-                for (int i = 0; i < bufferCount; ++i) {
-                    ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
-                    Optional<CompressionFormat> format = detectCompressionFormat(buffer);
-                    if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                        InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
-                        String commonBasename = null;
-                        try {
-                            for (String filename : ds.listNames(".*")) {
-                                String basename = DataSourceUtil.getBaseName(filename);
-                                commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
-                            }
-                        } catch (IOException e) {
-                            throw new PowsyblException("Unsupported network data format in zip buffer.");
-                        }
-                        if (commonBasename != null) {
-                            ds.setBaseName(commonBasename);
-                        }
-                        dataSourceList.add(ds);
-                    } else {
-                        throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
-                    }
-                }
-                if (reportNode == null) {
-                    reportNode = ReportNode.NO_OP;
-                }
-                MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+                MultipleReadOnlyDataSource dataSource = createDataSourceFromBuffers(data, dataSizes, bufferCount);
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 Network network = Network.read(dataSource, LocalComputationManager.getDefault(), importConfig, parameters,
                         NetworkFactory.findDefault(), IMPORTERS_LOADER_SUPPLIER, reportNode);
@@ -352,38 +325,39 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-                List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
-                List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
-                for (int i = 0; i < bufferCount; ++i) {
-                    ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
-                    Optional<CompressionFormat> format = detectCompressionFormat(buffer);
-                    if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                        InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
-                        String commonBasename = null;
-                        try {
-                            for (String filename : ds.listNames(".*")) {
-                                String basename = DataSourceUtil.getBaseName(filename);
-                                commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
-                            }
-                        } catch (IOException e) {
-                            throw new PowsyblException("Unsupported network data format in zip buffer.");
-                        }
-                        if (commonBasename != null) {
-                            ds.setBaseName(commonBasename);
-                        }
-                        dataSourceList.add(ds);
-                    } else {
-                        throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
-                    }
-                }
-                if (reportNode == null) {
-                    reportNode = ReportNode.NO_OP;
-                }
-                MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+                MultipleReadOnlyDataSource dataSource = createDataSourceFromBuffers(data, dataSizes, bufferCount);
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 network.update(dataSource, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
             }
         });
+    }
+
+    private static MultipleReadOnlyDataSource createDataSourceFromBuffers(CCharPointerPointer data, CIntPointer dataSizes, int bufferCount) {
+        List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
+        List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
+        for (int i = 0; i < bufferCount; ++i) {
+            ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
+            Optional<CompressionFormat> format = detectCompressionFormat(buffer);
+            if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
+                InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
+                String commonBasename = null;
+                try {
+                    for (String filename : ds.listNames(".*")) {
+                        String basename = DataSourceUtil.getBaseName(filename);
+                        commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
+                    }
+                } catch (IOException e) {
+                    throw new PowsyblException("Unsupported network data format in zip buffer.");
+                }
+                if (commonBasename != null) {
+                    ds.setBaseName(commonBasename);
+                }
+                dataSourceList.add(ds);
+            } else {
+                throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
+            }
+        }
+        return new MultipleReadOnlyDataSource(dataSourceList);
     }
 
     @CEntryPoint(name = "saveNetwork")
