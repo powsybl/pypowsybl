@@ -279,6 +279,9 @@ public final class NetworkCFunctions {
             public ObjectHandle get() {
                 Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
                 MultipleReadOnlyDataSource dataSource = createDataSourceFromBuffers(data, dataSizes, bufferCount);
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 Network network = Network.read(dataSource, LocalComputationManager.getDefault(), importConfig, parameters,
@@ -325,6 +328,9 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
                 MultipleReadOnlyDataSource dataSource = createDataSourceFromBuffers(data, dataSizes, bufferCount);
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 network.update(dataSource, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
