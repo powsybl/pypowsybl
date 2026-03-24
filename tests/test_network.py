@@ -69,6 +69,13 @@ def test_update_network_cgmes():
     assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
 
 
+def test_update_netowrk_from_binary_buffers():
+    network = pp.network.load(DATA_DIR.joinpath('load_EQ.xml'))
+    assert math.isnan(network.get_loads()["p0"]["EnergyConsumer"])
+    network.update_from_binary_buffer(io.BytesIO(DATA_DIR.joinpath('load_SSH.zip').read_bytes()))
+    assert 10.0 == network.get_loads()["p0"]["EnergyConsumer"]
+
+
 def test_load_post_processor():
     assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])

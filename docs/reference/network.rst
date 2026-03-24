@@ -315,6 +315,8 @@ I/O
    load_from_binary_buffer
    load_from_binary_buffers
    Network.update_from_file
+   Network.update_from_binary_buffer
+   Network.update_from_binary_buffers
    Network.dump
    Network.dump_to_string
    get_import_formats
