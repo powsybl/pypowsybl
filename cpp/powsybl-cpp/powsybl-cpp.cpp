@@ -2103,10 +2103,6 @@ SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionsUsageLimits, cracHandle));
 }
 
-SeriesArray* getMaxTsoUsageLimit(const JavaHandle& cracHandle) {
-  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxTsoUsageLimit, cracHandle));
-}
-
 SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxTopologicalActionsPerTsoUsageLimits, cracHandle));
 }

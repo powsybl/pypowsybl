@@ -406,14 +406,6 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracMaxTsoUsageLimit() {
-        return new DataframeMapperBuilder<Crac, Map.Entry<Instant, RaUsageLimits>, Void>()
-            .itemsProvider(crac -> crac.getRaUsageLimitsPerInstant().entrySet().stream().toList())
-            .stringsIndex("instant", e -> e.getKey().getId())
-            .ints("value", e -> e.getValue().getMaxTso())
-            .build();
-    }
-
     public static DataframeMapper<Crac, Void> cracPerTsoUsageLimits(Function<RaUsageLimits, Map<String, Integer>> func) {
         return new DataframeMapperBuilder<Crac, Triple<Instant, String, Integer>, Void>()
             .itemsProvider(crac ->

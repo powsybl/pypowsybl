@@ -1307,7 +1307,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("get_instants", &pypowsybl::getInstants, "Get crac instants", py::arg("crac"));
     m.def("get_max_remedial_actions_usage_limits", &pypowsybl::getMaxRemedialActionsUsageLimits, "Get max remedial actions usage limit", py::arg("crac"));
-    m.def("get_max_tso_usage_limit", &pypowsybl::getMaxTsoUsageLimit, "Get max tso usage limit", py::arg("crac"));
     m.def("get_max_topological_actions_per_tso_usage_limits", &pypowsybl::getMaxTopologicalActionsPerTsoUsageLimits, "Get max topological action per tso usage limit", py::arg("crac"));
     m.def("get_max_pst_actions_per_tso_usage_limits", &pypowsybl::getMaxPstActionsPerTsoUsageLimits, "Get max pst action per tso usage limit", py::arg("crac"));
     m.def("get_max_remedial_actions_per_tso_usage_limits", &pypowsybl::getMaxRemedialActionsPerTsoUsageLimits, "Get max remedial action per tso usage limit", py::arg("crac"));

@@ -70,17 +70,6 @@ class Crac:
         series = _pypowsybl.get_max_remedial_actions_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
-
-    def get_max_tso_usage_limit(self) -> DataFrame:
-        """
-        Get max tso usage limit
-
-        Returns:
-           A dataframe containing the max tso usage limit
-        """
-        series = _pypowsybl.get_max_tso_usage_limit(self._handle)
-        return create_data_frame_from_series_array(series)
-
     def get_max_topological_actions_per_tso_usage_limits(self) -> DataFrame:
         """
         Get the maximum number of topological actions that can be activated by the RAO per instant for a given TSO in a

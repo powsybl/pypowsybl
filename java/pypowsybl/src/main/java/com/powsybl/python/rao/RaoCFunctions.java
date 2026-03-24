@@ -661,11 +661,6 @@ public final class RaoCFunctions {
         return cracGenericMethod(thread, cracHandle, cracRemedialActionsUsageLimits(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getMaxTsoUsageLimit")
-    public static ArrayPointer<SeriesPointer> getMaxTsoUsageLimit(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracMaxTsoUsageLimit(), exceptionHandlerPtr);
-    }
-
     @CEntryPoint(name = "getMaxTopologicalActionsPerTsoUsageLimits")
     public static ArrayPointer<SeriesPointer> getMaxTopologicalActionsPerTsoUsageLimits(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimits(RaUsageLimits::getMaxTopoPerTso), exceptionHandlerPtr);
