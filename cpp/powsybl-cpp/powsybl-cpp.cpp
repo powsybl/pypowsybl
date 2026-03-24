@@ -2096,7 +2096,7 @@ SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHand
 }
 
 SeriesArray* getInstants(const JavaHandle& cracHandle) {
-  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracInstants, cracHandle));
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getInstants, cracHandle));
 }
 
 SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle) {
