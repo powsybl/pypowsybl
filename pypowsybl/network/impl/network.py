@@ -178,6 +178,37 @@ class Network:  # pylint: disable=too-many-public-methods
                            [] if post_processors is None else post_processors,
                            None if report_node is None else report_node._report_node)
 
+    def update_from_binary_buffer(self, buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None,
+                                  post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None) -> None:
+        """
+        Update a network from a binary buffer.
+
+        Args:
+           buffer:    The BytesIO data buffer
+           parameters:  A dictionary of import parameters
+           post_processors: a list of import post processors (will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        self.update_from_binary_buffers([buffer], parameters, post_processors, report_node)
+
+    def update_from_binary_buffers(self, buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None,
+                                  post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None) -> None:
+        """
+        Update a network from a list of binary buffers.
+        Only zipped CGMES are supported for several zipped source load.
+
+        Args:
+           buffers:    The BytesIO data buffers
+           parameters:  A dictionary of import parameters
+           post_processors: a list of import post processors (will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        buffer_list = []
+        for buff in buffers:
+            buffer_list.append(buff.getbuffer())
+        _pp.update_network_from_binary_buffers(self._handle, buffer_list, {} if parameters is None else parameters,
+                                         [] if post_processors is None else post_processors,
+                                         None if report_node is None else report_node._report_node)
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)

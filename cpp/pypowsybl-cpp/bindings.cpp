@@ -23,8 +23,9 @@ namespace py = pybind11;
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc);
 
 pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
-
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
+void updateNetworkFromBinaryBuffersPython(const pypowsybl::JavaHandle& network, std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode);
+
 
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac);
 pypowsybl::JavaHandle loadGlskSource(const py::buffer& glsk);
@@ -460,11 +461,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
               py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
-    m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network_from_binary_buffers", loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("update_network", &pypowsybl::updateNetwork, "Update a network from a file", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+
+    m.def("update_network_from_binary_buffers", updateNetworkFromBinaryBuffersPython, "Update a network from a list of binary buffers",
+        py::arg("network"), py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
@@ -472,7 +476,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("save_network_to_string", &pypowsybl::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network_to_binary_buffer", ::saveNetworkToBinaryBufferPython, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network_to_binary_buffer", saveNetworkToBinaryBufferPython, "Save network in a given format to a binary buffer", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
@@ -1468,6 +1472,33 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
     pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
     return bytes;
+}
+
+void updateNetworkFromBinaryBuffersPython(const pypowsybl::JavaHandle& network, std::vector<py::buffer> byteBuffers,
+    const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
+    pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
+    pypowsybl::ToCharPtrPtr postProcessorsPtr(postProcessors);
+
+    char** dataPtrs = new char*[byteBuffers.size()];
+    int* dataSizes = new int[byteBuffers.size()];
+    for(int i=0; i < byteBuffers.size(); ++i) {
+        py::buffer_info info = byteBuffers[i].request();
+        dataPtrs[i] = static_cast<char*>(info.ptr);
+        dataSizes[i] = info.size;
+    }
+
+    pypowsybl::PowsyblCaller::get()->callJava(::updateNetworkFromBinaryBuffers, network, dataPtrs, dataSizes, byteBuffers.size(), parameterNamesPtr.get(),
+                                              parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(),
+                                              postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac) {
