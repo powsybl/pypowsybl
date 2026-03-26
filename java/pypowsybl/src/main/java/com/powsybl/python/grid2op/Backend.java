@@ -7,13 +7,11 @@
  */
 package com.powsybl.python.grid2op;
 
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.modification.SetGeneratorToLocalRegulation;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.util.Identifiables;
-import com.powsybl.loadflow.LoadFlow;
-import com.powsybl.loadflow.LoadFlowParameters;
-import com.powsybl.loadflow.LoadFlowProvider;
-import com.powsybl.loadflow.LoadFlowResult;
+import com.powsybl.loadflow.*;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.Util;
@@ -859,10 +857,13 @@ public class Backend implements Closeable {
         return checkIsolatedAndDisconnectedInjections(shunts, false);
     }
 
-    public LoadFlowResult runLoadFlow(LoadFlowParameters parameters) {
+    public LoadFlowResult runLoadFlow(LoadFlowParameters parameters, ReportNode reportNode) {
         checkIsolatedAndDisconnectedInjections();
         ensureTopoVectIsUpToDate();
-        LoadFlowResult result = loadFlowRunner.run(network, parameters);
+        LoadFlowRunParameters runParameters = new LoadFlowRunParameters()
+                .setParameters(parameters)
+                .setReportNode(reportNode);
+        LoadFlowResult result = loadFlowRunner.run(network, runParameters);
         updateState();
         return result;
     }
