@@ -885,8 +885,10 @@ bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool
     return PowsyblCaller::get()->callJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
 }
 
-bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected) {
-    return PowsyblCaller::get()->callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected);
+bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected,
+                             bool allowDisconnectors, bool allowFictitious) {
+    return PowsyblCaller::get()->callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected,
+        allowDisconnectors, allowFictitious);
 }
 
 std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
