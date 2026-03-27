@@ -699,7 +699,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracSwitchPairsAction() {
+    public static DataframeMapper<Crac, Void> cracSwitchPairs() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, SwitchPair>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
                 .filter(SwitchPair.class::isInstance)

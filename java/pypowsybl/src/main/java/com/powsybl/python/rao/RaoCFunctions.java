@@ -781,9 +781,9 @@ public final class RaoCFunctions {
         return cracGenericMethod(thread, cracHandle, cracSwitchActions(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getCracSwitchPairsAction")
-    public static ArrayPointer<SeriesPointer> getCracSwitchPairsAction(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracSwitchPairsAction(), exceptionHandlerPtr);
+    @CEntryPoint(name = "getCracSwitchPairs")
+    public static ArrayPointer<SeriesPointer> getCracSwitchPairs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracSwitchPairs(), exceptionHandlerPtr);
     }
 
     @CEntryPoint(name = "getOnInstantUsageRules")

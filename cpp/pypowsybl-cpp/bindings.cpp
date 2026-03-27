@@ -1331,7 +1331,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_crac_boundary_line_actions", &pypowsybl::getCracBoundaryLineActions, "Get boundary line actions", py::arg("crac"));
     m.def("get_crac_shunt_compensator_position_actions", &pypowsybl::getCracShuntCompensatorPositionActions, "Get shunt compensator position actions", py::arg("crac"));
     m.def("get_crac_switch_actions", &pypowsybl::getCracSwitchActions, "Get switch actions", py::arg("crac"));
-    m.def("get_crac_switch_pairs_action", &pypowsybl::getCracSwitchPairsAction, "Get switch pairs action", py::arg("crac"));
+    m.def("get_crac_switch_pairs", &pypowsybl::getCracSwitchPairs, "Get switch pairs", py::arg("crac"));
     m.def("get_on_instant_usage_rules", &pypowsybl::getOnInstantUsageRules, "Get on instant usage rules", py::arg("crac"));
     m.def("get_on_contingency_state_usage_rules", &pypowsybl::getOnContingencyStateUsageRules, "Get on contingency state usage rules", py::arg("crac"));
     m.def("get_on_constraint_usage_rules", &pypowsybl::getOnConstraintUsageRules, "Get on constraint usage rules", py::arg("crac"));

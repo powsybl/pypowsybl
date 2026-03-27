@@ -1066,7 +1066,7 @@ SeriesArray* getCracLoadActions(const JavaHandle& cracHandle);
 SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle);
 SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle);
 SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle);
-SeriesArray* getCracSwitchPairsAction(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchPairs(const JavaHandle& cracHandle);
 SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle);
 SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle);
 SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle);

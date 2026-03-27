@@ -574,7 +574,7 @@ class Crac:
 
             This DataFrame is indexed by the id of the parent network actions.
         """
-        series = _pypowsybl.get_crac_switch_pairs_action(self._handle)
+        series = _pypowsybl.get_crac_switch_pairs(self._handle)
         return create_data_frame_from_series_array(series)
 
     def get_on_instant_usage_rules(self) -> DataFrame:
