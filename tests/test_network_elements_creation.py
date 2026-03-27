@@ -948,6 +948,27 @@ def test_deprecated_ucte_xnode_code_dataframe():
     assert 'ucte_xnode_code' in network.get_dangling_lines().columns
 
 
+def test_connect_tie_lines():
+    network = pn.create_empty()
+    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
+    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
+                                  low_voltage_limit=[200, 200],
+                                  nominal_v=[225, 225],
+                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
+    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
+    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1])
+    network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='DL_TEST', dangling_line2_id='DL_TEST2')
+    assert network.get_tie_lines().loc['TIE_LINE_TEST', 'connected1'] and network.get_tie_lines().loc['TIE_LINE_TEST', 'connected2']
+
+    network.disconnect('TIE_LINE_TEST')
+    assert not (network.get_tie_lines().loc['TIE_LINE_TEST', 'connected1'] or network.get_tie_lines().loc['TIE_LINE_TEST', 'connected2'])
+
+    network.update_tie_lines(id='TIE_LINE_TEST', connected1=True)
+    assert network.get_tie_lines().loc['TIE_LINE_TEST', 'connected1'] and not network.get_tie_lines().loc['TIE_LINE_TEST', 'connected2']
+
+
 def test_3_windings_transformers_creation():
     n = pn.create_eurostag_tutorial_example1_network()
     df = pd.DataFrame.from_records(index='id', data=[{

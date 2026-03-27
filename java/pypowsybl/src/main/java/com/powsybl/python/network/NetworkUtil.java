@@ -48,6 +48,10 @@ public final class NetworkUtil {
         Identifiable<?> equipment = network.getIdentifiable(id);
         if (equipment == null) {
             throw new PowsyblException("Equipment '" + id + "' not found");
+        } else if (equipment instanceof TieLine tieLine) {
+            boolean connected1 = updateConnectableStatus(network, tieLine.getDanglingLine1().getId(), connected);
+            boolean connected2 = updateConnectableStatus(network, tieLine.getDanglingLine2().getId(), connected);
+            return connected1 && connected2;
         }
         if (!(equipment instanceof Connectable<?> connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
