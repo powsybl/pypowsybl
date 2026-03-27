@@ -469,7 +469,7 @@ public final class RaoDataframes {
             .stringsIndex("id", AngleCnec::getId)
             .strings("name", AngleCnec::getName)
             .strings("exporting_network_element_id", cnec -> cnec.getExportingNetworkElement().getId())
-            .strings("exporting_network_element_id", cnec -> cnec.getImportingNetworkElement().getId())
+            .strings("importing_network_element_id", cnec -> cnec.getImportingNetworkElement().getId())
             .strings("operator", AngleCnec::getOperator)
             .strings("border", AngleCnec::getBorder)
             .strings("instant", cnec -> Optional.of(cnec.getState().getInstant()).map(Instant::getId).orElse(""))
