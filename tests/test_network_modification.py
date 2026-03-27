@@ -1,11 +1,12 @@
+import pathlib
+import re
+
+import pandas as pd
 import pytest
 
 import pypowsybl as pp
-import pandas as pd
-import pathlib
-import re
-from pypowsybl import PyPowsyblError
 import pypowsybl.report as rp
+from pypowsybl import PyPowsyblError
 
 TEST_DIR = pathlib.Path(__file__).parent
 
