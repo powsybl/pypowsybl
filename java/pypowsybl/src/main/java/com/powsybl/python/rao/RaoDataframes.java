@@ -710,7 +710,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracOnInstantUsageRule() {
+    public static DataframeMapper<Crac, Void> cracOnInstantUsageRules() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, UsageRule>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getUsageRules().stream().map(rule -> Pair.create(a, rule))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
@@ -718,7 +718,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracOnContingencyStateUsageRule() {
+    public static DataframeMapper<Crac, Void> cracOnContingencyStateUsageRules() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, OnContingencyState>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getUsageRules().stream()
                 .filter(OnContingencyState.class::isInstance).map(rule -> Pair.create(a, (OnContingencyState) rule))).toList())
@@ -728,7 +728,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracOnConstraintUsageRule() {
+    public static DataframeMapper<Crac, Void> cracOnConstraintUsageRules() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, OnConstraint<Cnec<?>>>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getUsageRules().stream()
                 .filter(OnConstraint.class::isInstance).map(rule -> Pair.create(a, (OnConstraint<Cnec<?>>) rule))).toList())
@@ -738,7 +738,7 @@ public final class RaoDataframes {
             .build();
     }
 
-    public static DataframeMapper<Crac, Void> cracOnFlowConstraintInCountryUsageRule() {
+    public static DataframeMapper<Crac, Void> cracOnFlowConstraintInCountryUsageRules() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, OnFlowConstraintInCountry>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getUsageRules().stream()
                 .filter(OnFlowConstraintInCountry.class::isInstance).map(rule -> Pair.create(a, (OnFlowConstraintInCountry) rule))).toList())

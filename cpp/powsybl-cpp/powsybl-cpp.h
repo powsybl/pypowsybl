@@ -1067,10 +1067,10 @@ SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle);
 SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle);
 SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle);
 SeriesArray* getCracSwitchPairsAction(const JavaHandle& cracHandle);
-SeriesArray* getOnInstantUsageRule(const JavaHandle& cracHandle);
-SeriesArray* getOnContingencyStateUsageRule(const JavaHandle& cracHandle);
-SeriesArray* getOnConstraintUsageRule(const JavaHandle& cracHandle);
-SeriesArray* getOnFlowConstraintInCountryUsageRule(const JavaHandle& cracHandle);
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle);
 
 void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);

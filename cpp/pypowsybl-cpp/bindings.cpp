@@ -1332,10 +1332,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_crac_shunt_compensator_position_actions", &pypowsybl::getCracShuntCompensatorPositionActions, "Get shunt compensator position actions", py::arg("crac"));
     m.def("get_crac_switch_actions", &pypowsybl::getCracSwitchActions, "Get switch actions", py::arg("crac"));
     m.def("get_crac_switch_pairs_action", &pypowsybl::getCracSwitchPairsAction, "Get switch pairs action", py::arg("crac"));
-    m.def("get_on_instant_usage_rule", &pypowsybl::getOnInstantUsageRule, "Get on instant usage rule", py::arg("crac"));
-    m.def("get_on_contingency_state_usage_rule", &pypowsybl::getOnContingencyStateUsageRule, "Get on contingency state usage rule", py::arg("crac"));
-    m.def("get_on_constraint_usage_rule", &pypowsybl::getOnConstraintUsageRule, "Get on constraint usage rule", py::arg("crac"));
-    m.def("get_on_flow_constraint_in_country_usage_rule", &pypowsybl::getOnFlowConstraintInCountryUsageRule, "Get on flow constraint in country usage rule", py::arg("crac"));
+    m.def("get_on_instant_usage_rules", &pypowsybl::getOnInstantUsageRules, "Get on instant usage rules", py::arg("crac"));
+    m.def("get_on_contingency_state_usage_rules", &pypowsybl::getOnContingencyStateUsageRules, "Get on contingency state usage rules", py::arg("crac"));
+    m.def("get_on_constraint_usage_rules", &pypowsybl::getOnConstraintUsageRules, "Get on constraint usage rules", py::arg("crac"));
+    m.def("get_on_flow_constraint_in_country_usage_rules", &pypowsybl::getOnFlowConstraintInCountryUsageRules, "Get on flow constraint in country usage rules", py::arg("crac"));
 
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)

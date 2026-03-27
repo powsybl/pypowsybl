@@ -2203,19 +2203,19 @@ SeriesArray* getCracSwitchPairsAction(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracSwitchPairsAction, cracHandle));
 }
 
-SeriesArray* getOnInstantUsageRule(const JavaHandle& cracHandle) {
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnInstantUsageRule, cracHandle));
 }
 
-SeriesArray* getOnContingencyStateUsageRule(const JavaHandle& cracHandle) {
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnContingencyStateUsageRule, cracHandle));
 }
 
-SeriesArray* getOnConstraintUsageRule(const JavaHandle& cracHandle) {
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnConstraintUsageRule, cracHandle));
 }
 
-SeriesArray* getOnFlowConstraintInCountryUsageRule(const JavaHandle& cracHandle) {
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle) {
   return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstraintInCountryUsageRule, cracHandle));
 }
 

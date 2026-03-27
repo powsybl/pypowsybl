@@ -786,24 +786,24 @@ public final class RaoCFunctions {
         return cracGenericMethod(thread, cracHandle, cracSwitchPairsAction(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getOnInstantUsageRule")
-    public static ArrayPointer<SeriesPointer> getOnInstantUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracOnInstantUsageRule(), exceptionHandlerPtr);
+    @CEntryPoint(name = "getOnInstantUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnInstantUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnInstantUsageRules(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getOnContingencyStateUsageRule")
-    public static ArrayPointer<SeriesPointer> getOnContingencyStateUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracOnContingencyStateUsageRule(), exceptionHandlerPtr);
+    @CEntryPoint(name = "getOnContingencyStateUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnContingencyStateUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnContingencyStateUsageRules(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getOnConstraintUsageRule")
-    public static ArrayPointer<SeriesPointer> getOnConstraintUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracOnConstraintUsageRule(), exceptionHandlerPtr);
+    @CEntryPoint(name = "getOnConstraintUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnConstraintUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnConstraintUsageRules(), exceptionHandlerPtr);
     }
 
-    @CEntryPoint(name = "getOnFlowConstraintInCountryUsageRule")
-    public static ArrayPointer<SeriesPointer> getOnFlowConstraintInCountryUsageRule(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracOnFlowConstraintInCountryUsageRule(), exceptionHandlerPtr);
+    @CEntryPoint(name = "getOnFlowConstraintInCountryUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnFlowConstraintInCountryUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnFlowConstraintInCountryUsageRules(), exceptionHandlerPtr);
     }
 
     public static ArrayPointer<SeriesPointer> cracGenericMethod(IsolateThread thread, ObjectHandle cracHandle, DataframeMapper<Crac, Void> mapper, ExceptionHandlerPointer exceptionHandlerPtr) {
