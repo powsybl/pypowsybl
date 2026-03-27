@@ -1040,6 +1040,38 @@ SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resu
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
 
+SeriesArray* getInstants(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxPstActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxElementaryActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getCracContingencies(const JavaHandle& cracHandle);
+SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle);
+SeriesArray* getFlowCnecs(const JavaHandle& cracHandle);
+SeriesArray* getAngleCnecs(const JavaHandle& cracHandle);
+SeriesArray* getVoltageCnecs(const JavaHandle& cracHandle);
+SeriesArray* getThresholds(const JavaHandle& cracHandle);
+SeriesArray* getCracPstRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle);
+SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle);
+SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle);
+SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracPstTapPositionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracGeneratorActions(const JavaHandle& cracHandle);
+SeriesArray* getCracLoadActions(const JavaHandle& cracHandle);
+SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle);
+SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchPairs(const JavaHandle& cracHandle);
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle);
+
 void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 
