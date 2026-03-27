@@ -27,7 +27,8 @@ import pypowsybl as pp
 import pypowsybl.report as rp
 import util
 from pypowsybl import PyPowsyblError
-from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, EdgeInfoType, NadProfile, SldProfile
+from pypowsybl.network import ValidationLevel, SldParameters, NadLayoutType, NadParameters, LayoutParameters, \
+    EdgeInfoType, NadProfile, SldProfile, EdgeInfoParameters
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data'
@@ -1126,8 +1127,11 @@ def test_nad():
     assert re.search('.*<svg.*', nad.svg)
     nad = n.get_network_area_diagram('VL6', high_nominal_voltage_bound=50, depth=10)
     assert re.search('.*<svg.*', nad.svg)
-    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True,
-                                                                         id_displayed=True,
+    edge_info_parameters = EdgeInfoParameters(info_side_external=EdgeInfoType.ACTIVE_POWER,
+                                              info_middle_side1=EdgeInfoType.NAME,
+                                              info_middle_side2=EdgeInfoType.REACTIVE_POWER,
+                                              info_side_internal=EdgeInfoType.CURRENT)
+    nad = n.get_network_area_diagram('VL6', nad_parameters=NadParameters(id_displayed=True,
                                                                          edge_info_along_edge=False,
                                                                          power_value_precision=1,
                                                                          angle_value_precision=0,
@@ -1135,9 +1139,9 @@ def test_nad():
                                                                          voltage_value_precision=0,
                                                                          bus_legend=False,
                                                                          substation_description_displayed=True,
-                                                                         edge_info_displayed=EdgeInfoType.CURRENT,
                                                                          voltage_level_details=False,
-                                                                         injections_added=False
+                                                                         injections_added=False,
+                                                                         edge_info_parameters=edge_info_parameters
                                                                          ))
     assert re.search('.*<svg.*', nad.svg)
     with tempfile.TemporaryDirectory() as tmp_dir_name:
@@ -1151,8 +1155,7 @@ def test_nad():
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10)
         n.write_network_area_diagram_svg(test_svg, low_nominal_voltage_bound=10, depth=10)
         n.write_network_area_diagram_svg(test_svg, high_nominal_voltage_bound=50, depth=10)
-        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(edge_name_displayed=True,
-                                                                            id_displayed=True,
+        n.write_network_area_diagram(test_svg, nad_parameters=NadParameters(id_displayed=True,
                                                                             edge_info_along_edge=False,
                                                                             power_value_precision=1,
                                                                             angle_value_precision=0,
@@ -1160,9 +1163,9 @@ def test_nad():
                                                                             voltage_value_precision=0,
                                                                             bus_legend=False,
                                                                             substation_description_displayed=True,
-                                                                            edge_info_displayed=EdgeInfoType.REACTIVE_POWER,
                                                                             voltage_level_details=False,
-                                                                            injections_added=False
+                                                                            injections_added=False,
+                                                                            edge_info_parameters=edge_info_parameters
                                                                             ))
 
 
@@ -1201,8 +1204,12 @@ def test_nad_profile():
     assert not diagram_profile.branch_labels
     n = pp.network.create_ieee14()
     branch_labels_df = pd.DataFrame.from_records(index='id',
-                                             data=[{'id': 'L1-5-1', 'side1': 'S1_1', 'middle': 'MIDDLE_1', 'side2': 'S2_1', 'arrow1': 'IN', 'arrow2': 'IN'},
-                                                   {'id': 'L2-5-1', 'side1': 'S1_2', 'middle': 'MIDDLE_2', 'side2': 'S2_2', 'arrow1': 'OUT', 'arrow2': 'OUT'}])
+                                             data=[{'id': 'L1-5-1', 'side1Internal': 'S1_1_Internal', 'side1External': 'S1_1_External',
+                                                    'middle1': 'MIDDLE_1', 'middle2': 'MIDDLE_2', 'side2Internal': 'S2_1_Internal', 'side2External': 'S2_1_External',
+                                                    'arrow1': 'IN', 'arrowMiddle': 'IN', 'arrow2': 'IN'},
+                                                   {'id': 'L2-5-1', 'side1Internal': 'S1_2_Internal', 'side1External': 'S1_2_External',
+                                                    'middle1': 'MIDDLE_1', 'middle2': 'MIDDLE_2', 'side2Internal': 'S2_2_Internal', 'side2External': 'S2_2_External',
+                                                    'arrow1': 'OUT', 'arrowMiddle': 'OUT', 'arrow2': 'OUT'}])
     vl_descriptions_df=pd.DataFrame.from_records(index='id',
                                              data=[
                                                  {'id': 'VL1', 'type': 'HEADER', 'description': 'VL1 header'},
@@ -1221,7 +1228,11 @@ def test_nad_profile():
     assert isinstance(diagram_profile.branch_labels, pd.DataFrame)
     assert isinstance(diagram_profile.vl_descriptions, pd.DataFrame)
     assert isinstance(diagram_profile.bus_descriptions, pd.DataFrame)
-    pars=pp.network.NadParameters(edge_name_displayed=True)
+    edge_info_parameters = EdgeInfoParameters(info_side_external=EdgeInfoType.ACTIVE_POWER,
+                                              info_middle_side1=EdgeInfoType.NAME,
+                                              info_middle_side2=EdgeInfoType.REACTIVE_POWER,
+                                              info_side_internal=EdgeInfoType.CURRENT)
+    pars=pp.network.NadParameters(edge_info_parameters=edge_info_parameters)
     nad1=n.get_network_area_diagram(voltage_level_ids='VL1', depth=1, nad_parameters=pars, nad_profile=diagram_profile)
     assert re.search('.*<svg.*', nad1.svg)
     assert len(nad1.metadata) > 0
@@ -1235,7 +1246,9 @@ def test_nad_profile():
     n_three_wt=pp.network._create_network('three_windings_transformer')
     three_wt_labels_df = pd.DataFrame.from_records(index='id',
                                                    data=[
-                                                       {'id': '3WT', 'side1': 'SIDE1',  'side2': 'SIDE2', 'side3': 'SIDE3',
+                                                       {'id': '3WT', 'side1Internal': 'SIDE1', 'side1External': 'SIDE1',
+                                                        'side2Internal': 'SIDE2', 'side2External': 'SIDE2',
+                                                        'side3Internal': 'SIDE3', 'side3External': 'SIDE3',
                                                         'arrow1':'OUT', 'arrow2':'IN', 'arrow3':'OUT'}
                                                         ])
     three_wt_vl_descriptions_df=pd.DataFrame.from_records(index='id',
@@ -1250,18 +1263,35 @@ def test_nad_profile():
                                                                  {'id': 'VL_33_0', 'description': 'BUS B'},
                                                                  {'id': 'VL_11_0', 'description': 'BUS C'}
                                                                  ])
-    diagram_profile_three_wt=pp.network.NadProfile(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df, 
+    diagram_profile_three_wt=pp.network.NadProfile(three_wt_labels = three_wt_labels_df, vl_descriptions=three_wt_vl_descriptions_df,
                                                          bus_descriptions=three_wt_bus_descriptions_df)
     assert isinstance(diagram_profile_three_wt.three_wt_labels, pd.DataFrame)
     nad_three_wt=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_profile=diagram_profile_three_wt)
     assert re.search('.*<svg.*', nad_three_wt.svg)
     assert len(nad_three_wt.metadata) > 0
 
+    injections_labels_df = pd.DataFrame.from_records(index='id',
+                                                     data=[
+                                                         {'id': 'LOAD_33', 'labelInternal': 'LOAD_33_Internal', 'labelExternal': 'LOAD_33_External', 'arrow': 'IN'},
+                                                         {'id': 'LOAD_11', 'labelInternal': 'LOAD_11_Internal', 'labelExternal': 'LOAD_11_External', 'arrow': 'IN'},
+                                                         {'id': 'GEN_132', 'labelInternal': 'GEN_132_Internal', 'labelExternal': 'GEN_132_External', 'arrow': 'OUT'},
+                                                     ])
+    diagram_profile_injections=pp.network.NadProfile(vl_descriptions=three_wt_vl_descriptions_df,
+                                                   bus_descriptions=three_wt_bus_descriptions_df,
+                                                   injections_labels=injections_labels_df)
+    assert isinstance(diagram_profile_injections.injections_labels, pd.DataFrame)
+    nad_injections=n_three_wt.get_network_area_diagram(nad_parameters=pars, nad_profile=diagram_profile_injections)
+    assert re.search('.*<svg.*', nad_injections.svg)
+    assert len(nad_injections.metadata) > 0
+
     default_profile = n_three_wt.get_default_nad_profile()
-    assert list(default_profile.branch_labels.columns) == ['side1', 'middle', 'side2', 'arrow1', 'arrow2']
-    assert list(default_profile.three_wt_labels) == ['side1', 'side2', 'side3', 'arrow1', 'arrow2', 'arrow3']
+    assert list(default_profile.branch_labels.columns) == ["side1Internal", "side1External", "middle1", "middle2", "side2Internal",
+                    "side2External", "arrow1", "arrowMiddle", "arrow2"]
+    assert list(default_profile.three_wt_labels) == ["side1Internal", "side1External", "side2Internal",
+                    "side2External", "side3Internal", "side3External", "arrow1", "arrow2", "arrow3"]
     assert list(default_profile.bus_descriptions) == ['description']
     assert list(default_profile.vl_descriptions) == ['type', 'description']
+    assert list(default_profile.injections_labels.columns) == ["labelInternal", "labelExternal", "arrow"]
 
     
 def test_sld_profile():
@@ -2658,7 +2688,6 @@ def test_dc_buses():
 
 def test_nad_parameters():
     nad_parameters = NadParameters()
-    assert not nad_parameters.edge_name_displayed
     assert nad_parameters.edge_info_along_edge
     assert not nad_parameters.id_displayed
     assert nad_parameters.power_value_precision == 0
@@ -2670,11 +2699,21 @@ def test_nad_parameters():
     assert nad_parameters.layout_type == NadLayoutType.FORCE_LAYOUT
     assert nad_parameters.scaling_factor == 150000
     assert nad_parameters.radius_factor == 150.0
-    assert nad_parameters.edge_info_displayed == EdgeInfoType.ACTIVE_POWER
     assert nad_parameters.voltage_level_details
+    edge_info_parameters = nad_parameters.edge_info_parameters
+    assert edge_info_parameters.info_side_external == EdgeInfoType.ACTIVE_POWER
+    assert edge_info_parameters.info_middle_side1 == EdgeInfoType.EMPTY
+    assert edge_info_parameters.info_middle_side2 == EdgeInfoType.EMPTY
+    assert edge_info_parameters.info_side_internal == EdgeInfoType.EMPTY
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.REACTIVE_POWER, False, False)
-    assert nad_parameters.edge_name_displayed
+    edge_info_parameters = EdgeInfoParameters(info_side_external=EdgeInfoType.REACTIVE_POWER,
+                                              info_middle_side1=EdgeInfoType.ACTIVE_POWER,
+                                              info_middle_side2=EdgeInfoType.NAME,
+                                              info_side_internal=EdgeInfoType.EMPTY)
+    nad_parameters = NadParameters(id_displayed=True, edge_info_along_edge=False,
+                                   power_value_precision=1, angle_value_precision=2, current_value_precision=1, voltage_value_precision=2, bus_legend=False,
+                                   substation_description_displayed=True, layout_type=NadLayoutType.GEOGRAPHICAL, scaling_factor=100000, radius_factor=120.0,
+                                   voltage_level_details=False, injections_added=False, edge_info_parameters=edge_info_parameters)
     assert not nad_parameters.edge_info_along_edge
     assert nad_parameters.id_displayed
     assert nad_parameters.power_value_precision == 1
@@ -2686,27 +2725,23 @@ def test_nad_parameters():
     assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
     assert nad_parameters.scaling_factor == 100000
     assert nad_parameters.radius_factor == 120.0
-    assert nad_parameters.edge_info_displayed == EdgeInfoType.REACTIVE_POWER
     assert nad_parameters.voltage_level_details == False
     assert nad_parameters.injections_added == False
+    assert nad_parameters.edge_info_parameters == edge_info_parameters
 
-    nad_parameters = NadParameters(True, True, False, 1, 2, 1, 2, False, True, NadLayoutType.GEOGRAPHICAL, 100000, 120.0, EdgeInfoType.CURRENT, True, True)
-    assert nad_parameters.edge_name_displayed
-    assert not nad_parameters.edge_info_along_edge
-    assert nad_parameters.id_displayed
-    assert nad_parameters.power_value_precision == 1
-    assert nad_parameters.angle_value_precision == 2
-    assert nad_parameters.current_value_precision == 1
-    assert nad_parameters.voltage_value_precision == 2
-    assert not nad_parameters.bus_legend
-    assert nad_parameters.substation_description_displayed
-    assert nad_parameters.layout_type == NadLayoutType.GEOGRAPHICAL
-    assert nad_parameters.scaling_factor == 100000
-    assert nad_parameters.radius_factor == 120.0
-    assert nad_parameters.edge_info_displayed == EdgeInfoType.CURRENT
-    assert nad_parameters.voltage_level_details
-    assert nad_parameters.injections_added
 
+def test_deprecated_nad_parameters():
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.")):
+        NadParameters(edge_name_displayed=True)
+
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.")):
+        assert not NadParameters().edge_name_displayed
+
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.")):
+        NadParameters(edge_info_displayed=EdgeInfoType.REACTIVE_POWER)
+
+    with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.")):
+        assert NadParameters().edge_info_displayed == EdgeInfoType.ACTIVE_POWER
 
 def test_update_dangling_line():
     network = pp.network.create_eurostag_tutorial_example1_network()

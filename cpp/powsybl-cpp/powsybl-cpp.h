@@ -437,7 +437,10 @@ enum class NadLayoutType {
 enum class EdgeInfoType {
     ACTIVE_POWER = 0,
     REACTIVE_POWER,
-    CURRENT
+    CURRENT,
+    NAME,
+    VALUE_PERMANENT_LIMIT_PERCENTAGE,
+    EMPTY
 };
 
 class NadParameters {
@@ -446,7 +449,6 @@ public:
     std::shared_ptr<nad_parameters> to_c_struct() const;
     void nad_to_c_struct(nad_parameters& params) const;
 
-    bool edge_name_displayed;
     bool edge_info_along_edge;
     bool id_displayed;
     int power_value_precision;
@@ -458,9 +460,12 @@ public:
     NadLayoutType layout_type;
     int scaling_factor;
     double radius_factor;
-    EdgeInfoType edge_info_displayed;
     bool voltage_level_details;
     bool injections_added;
+    EdgeInfoType info_side_external;
+    EdgeInfoType info_middle_side1;
+    EdgeInfoType info_middle_side2;
+    EdgeInfoType info_side_internal;
 };
 
 //=======short-circuit analysis==========
@@ -740,6 +745,8 @@ std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaH
 SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network);
 
 SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network);
 
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network);
 

@@ -1111,12 +1111,6 @@ public final class PyPowsyblApiHeader {
 
     @CStruct("nad_parameters")
     public interface NadParametersPointer extends PointerBase {
-        @CField("edge_name_displayed")
-        void setEdgeNameDisplayed(boolean edgeNameDisplayed);
-
-        @CField("edge_name_displayed")
-        boolean isEdgeNameDisplayed();
-
         @CField("id_displayed")
         void setIdDisplayed(boolean idDisplayed);
 
@@ -1183,12 +1177,6 @@ public final class PyPowsyblApiHeader {
         @CField("radius_factor")
         void setRadiusFactor(double radiusFactor);
 
-        @CField("edge_info_displayed")
-        void setEdgeInfoDisplayed(int edgeInfoDisplayed);
-
-        @CField("edge_info_displayed")
-        int getEdgeInfoDisplayed();
-
         @CField("voltage_level_details")
         void setVoltageLevelDetails(boolean isVoltageLevelDetails);
 
@@ -1200,6 +1188,30 @@ public final class PyPowsyblApiHeader {
 
         @CField("injections_added")
         boolean isInjectionsAdded();
+
+        @CField("info_side_external")
+        void setInfoSideExternal(int infoSideExternal);
+
+        @CField("info_side_external")
+        int getInfoSideExternal();
+
+        @CField("info_middle_side1")
+        void setInfoMiddleSide1(int infoMiddleSide1);
+
+        @CField("info_middle_side1")
+        int getInfoMiddleSide1();
+
+        @CField("info_middle_side2")
+        void setInfoMiddleSide2(int infoMiddleSide2);
+
+        @CField("info_middle_side2")
+        int getInfoMiddleSide2();
+
+        @CField("info_side_internal")
+        void setInfoSideInternal(int infoSideInternal);
+
+        @CField("info_side_internal")
+        int getInfoSideInternal();
     }
 
     @CStruct("dynamic_simulation_parameters")

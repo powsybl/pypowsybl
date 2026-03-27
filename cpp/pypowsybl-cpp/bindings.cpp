@@ -663,11 +663,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::EdgeInfoType>(m, "EdgeInfoType")
             .value("ACTIVE_POWER", pypowsybl::EdgeInfoType::ACTIVE_POWER)
             .value("REACTIVE_POWER", pypowsybl::EdgeInfoType::REACTIVE_POWER)
-            .value("CURRENT", pypowsybl::EdgeInfoType::CURRENT);
+            .value("CURRENT", pypowsybl::EdgeInfoType::CURRENT)
+            .value("NAME", pypowsybl::EdgeInfoType::NAME)
+            .value("VALUE_PERMANENT_LIMIT_PERCENTAGE", pypowsybl::EdgeInfoType::VALUE_PERMANENT_LIMIT_PERCENTAGE)
+            .value("EMPTY", pypowsybl::EdgeInfoType::EMPTY);
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
-        .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
         .def_readwrite("edge_info_along_edge", &pypowsybl::NadParameters::edge_info_along_edge)
         .def_readwrite("power_value_precision", &pypowsybl::NadParameters::power_value_precision)
         .def_readwrite("current_value_precision", &pypowsybl::NadParameters::current_value_precision)
@@ -679,9 +681,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
-        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
         .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details)
-        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
+        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added)
+        .def_readwrite("info_side_external", &pypowsybl::NadParameters::info_side_external)
+        .def_readwrite("info_middle_side1", &pypowsybl::NadParameters::info_middle_side1)
+        .def_readwrite("info_middle_side2", &pypowsybl::NadParameters::info_middle_side2)
+        .def_readwrite("info_side_internal", &pypowsybl::NadParameters::info_side_internal);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));
@@ -720,6 +725,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("network"));
 
     m.def("get_default_twt_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultTwtLabels, "Get network area diagram default twt labels",
+            py::arg("network"));
+
+    m.def("get_default_injections_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultInjectionsLabels, "Get network area diagram default injections labels",
             py::arg("network"));
 
     m.def("get_default_bus_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultBusDescriptions, "Get network area diagram default bus descriptions",
