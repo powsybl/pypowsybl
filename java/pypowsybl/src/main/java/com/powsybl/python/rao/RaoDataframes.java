@@ -625,7 +625,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracTerminalConnectionActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, TerminalsConnectionAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                    .filter(elementary -> TerminalsConnectionAction.NAME.equals(elementary.getType()))
+                    .filter(TerminalsConnectionAction.class::isInstance)
                     .map(elementary -> Pair.create(a, (TerminalsConnectionAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getElementId())
@@ -636,7 +636,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracPstTapPositionActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, PhaseTapChangerTapPositionAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(elementary -> PhaseTapChangerTapPositionAction.NAME.equals(elementary.getType()))
+                .filter(PhaseTapChangerTapPositionAction.class::isInstance)
                 .map(elementary -> Pair.create(a, (PhaseTapChangerTapPositionAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getTransformerId())
@@ -647,7 +647,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracGeneratorActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, GeneratorAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(elementary -> PhaseTapChangerTapPositionAction.NAME.equals(elementary.getType()))
+                .filter(GeneratorAction.class::isInstance)
                 .map(elementary -> Pair.create(a, (GeneratorAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getGeneratorId())
@@ -658,7 +658,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracLoadActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, LoadAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(elementary -> LoadAction.NAME.equals(elementary.getType()))
+                .filter(LoadAction.class::isInstance)
                 .map(elementary -> Pair.create(a, (LoadAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getLoadId())
@@ -669,7 +669,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracBoundaryLineActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, DanglingLineAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(elementary -> LoadAction.NAME.equals(elementary.getType()))
+                .filter(DanglingLineAction.class::isInstance)
                 .map(elementary -> Pair.create(a, (DanglingLineAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getDanglingLineId())
@@ -680,7 +680,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracShuntCompensatorPositionActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, ShuntCompensatorPositionAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(elementary -> LoadAction.NAME.equals(elementary.getType()))
+                .filter(ShuntCompensatorPositionAction.class::isInstance)
                 .map(elementary -> Pair.create(a, (ShuntCompensatorPositionAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getShuntCompensatorId())
@@ -691,7 +691,7 @@ public final class RaoDataframes {
     public static DataframeMapper<Crac, Void> cracSwitchActions() {
         return new DataframeMapperBuilder<Crac, Pair<NetworkAction, SwitchAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(elementary -> LoadAction.NAME.equals(elementary.getType()))
+                .filter(SwitchAction.class::isInstance)
                 .map(elementary -> Pair.create(a, (SwitchAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getSwitchId())
