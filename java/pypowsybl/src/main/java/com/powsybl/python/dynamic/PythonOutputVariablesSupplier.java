@@ -25,25 +25,19 @@ public class PythonOutputVariablesSupplier implements OutputVariablesSupplier {
 
     private final List<BiConsumer<Consumer<OutputVariable>, ReportNode>> outputVariablesSupplierList = new ArrayList<>();
 
-    public void addOutputVariables(String elementId, List<String> variables, boolean isDynamic, OutputVariable.OutputType type) {
-        outputVariablesSupplierList.add((c, r) -> {
-            DynawoOutputVariablesBuilder builder = new DynawoOutputVariablesBuilder(r)
+    public void addOutputVariables(String elementId, List<String> variables, OutputVariable.OutputType type) {
+        outputVariablesSupplierList.add((c, r) -> new DynawoOutputVariablesBuilder(r)
+                .id(elementId)
                 .variables(variables)
-                .outputType(type);
-            if (isDynamic) {
-                builder.dynamicModelId(elementId);
-            } else {
-                builder.staticId(elementId);
-            }
-            builder.add(c);
-        });
+                .outputType(type)
+                .add(c));
     }
 
     @Override
     public List<OutputVariable> get(Network network, ReportNode reportNode) {
-        List<OutputVariable> curves = new ArrayList<>();
+        List<OutputVariable> outputVariables = new ArrayList<>();
         ReportNode supplierReportNode = SupplierReport.createOutputVariablesSupplierReportNode(reportNode);
-        outputVariablesSupplierList.forEach(c -> c.accept(curves::add, supplierReportNode));
-        return curves;
+        outputVariablesSupplierList.forEach(c -> c.accept(outputVariables::add, supplierReportNode));
+        return outputVariables;
     }
 }

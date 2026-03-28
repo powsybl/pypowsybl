@@ -291,6 +291,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-dynawo-simulation</artifactId>
+            <version>3.2.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
