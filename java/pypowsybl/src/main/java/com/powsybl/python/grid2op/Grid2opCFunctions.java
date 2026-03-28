@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.grid2op;
 
+import com.powsybl.commons.report.ReportNode;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowResult;
@@ -18,6 +19,7 @@ import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowComponentResultPoin
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
+import com.powsybl.python.report.ReportCUtils;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -236,13 +238,15 @@ public final class Grid2opCFunctions {
     @CEntryPoint(name = "runGrid2opLoadFlow")
     public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle backendHandle, boolean dc,
                                                                            PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
+                                                                           ObjectHandle reportNodeHandle,
                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return Util.doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<LoadFlowComponentResultPointer>>() {
             @Override
             public ArrayPointer<LoadFlowComponentResultPointer> get() throws IOException {
                 Backend backend = ObjectHandles.getGlobal().get(backendHandle);
+                ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, backend.getLoadFlowProvider());
-                LoadFlowResult result = backend.runLoadFlow(parameters);
+                LoadFlowResult result = backend.runLoadFlow(parameters, reportNode);
                 return createLoadFlowComponentResultArrayPointer(result);
             }
         });

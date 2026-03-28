@@ -1063,7 +1063,7 @@ array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValue
 void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
 void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
 bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters);
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, JavaHandle* reportNode);
 
 }
 #endif //PYPOWSYBL_H
