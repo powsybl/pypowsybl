@@ -695,7 +695,7 @@ public final class RaoDataframes {
                 .map(elementary -> Pair.create(a, (SwitchAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getSwitchId())
-            .strings("active_power_value", pair -> pair.getSecond().isOpen() ? "open" : "close")
+            .strings("action_type", pair -> pair.getSecond().isOpen() ? "open" : "close")
             .build();
     }
 
