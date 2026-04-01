@@ -363,7 +363,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will only keep elements of voltage level between 90 and 250kV, replacing the lines cut at the boundary by dangling lines.
         """
-        _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+        _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_boundary_lines=with_dangling_lines)
 
     def reduce_by_ids(self, ids: List[str], with_dangling_lines: bool = False) -> None:
         """
@@ -380,7 +380,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will only keep voltage levels VL1 and VL2 and all network elements between them.
         """
-        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_boundary_lines=with_dangling_lines)
 
     def reduce_by_ids_and_depths(self, vl_depths: List[tuple[str, int]], with_dangling_lines: bool = False) -> None:
         """
@@ -402,7 +402,7 @@ class Network:  # pylint: disable=too-many-public-methods
         for v in vl_depths:
             vls.append(v[0])
             depths.append(v[1])
-        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=[], vls=vls, depths=depths, with_dangling_lines=with_dangling_lines)
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=[], vls=vls, depths=depths, with_boundary_lines=with_dangling_lines)
 
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: Optional[PathOrStr] = None,
@@ -1705,7 +1705,7 @@ class Network:  # pylint: disable=too-many-public-methods
             per-unit calculations. While this is generally not an issue, this produces counterintuitive results
             in the case of dangling lines of different nominal voltages.
         """
-        return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
+        return self.get_elements(ElementType.BOUNDARY_LINE, all_attributes, attributes, **kwargs)
 
     def get_dangling_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                                       **kwargs: ArrayLike) -> DataFrame:
@@ -1734,7 +1734,7 @@ class Network:  # pylint: disable=too-many-public-methods
             This dataframe is indexed by the id of the dangling lines
 
         """
-        return self.get_elements(ElementType.DANGLING_LINE_GENERATION, all_attributes, attributes, **kwargs)
+        return self.get_elements(ElementType.BOUNDARY_LINE_GENERATION, all_attributes, attributes, **kwargs)
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -2996,7 +2996,7 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **id**: area identifier
-              - **boundary_type** (optional): either `DANGLING_LINE` or `TERMINAL`
+              - **boundary_type** (optional): either `BOUNDARY_LINE` or `TERMINAL`
               - **element**: either identifier of the Dangling Line or the equipment terminal
               - **side** (optional): equipment side
               - **ac**: True if the boundary is considered as AC and not DC
@@ -3419,7 +3419,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dangling_lines(id='L-1', p0=10, q0=3)
                 network.update_dangling_lines(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
-        return self._update_elements(ElementType.DANGLING_LINE, df, **kwargs)
+        return self._update_elements(ElementType.BOUNDARY_LINE, df, **kwargs)
 
     def update_dangling_lines_generation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -3452,7 +3452,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dangling_lines_generation(id='DL', voltage_regulator_on=True, target_v=225)
                 network.update_dangling_lines_generation(id=['DL', 'DL2'],  voltage_regulator_on=[True, True], target_v=[225, 400])
         """
-        return self._update_elements(ElementType.DANGLING_LINE_GENERATION, df, **kwargs)
+        return self._update_elements(ElementType.BOUNDARY_LINE_GENERATION, df, **kwargs)
 
     def update_vsc_converter_stations(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -4430,7 +4430,7 @@ class Network:  # pylint: disable=too-many-public-methods
           - **element_id**: Identifier of the network element on which this limit applies (could be for example
             a line or a transformer)
           - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
-            THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+            THREE_WINDINGS_TRANSFORMER, BOUNDARY_LINE)
           - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
           - **name**:       The name of the limit
           - **type**:       The type of the limit (CURRENT, ACTIVE_POWER, APPARENT_POWER)
@@ -4872,7 +4872,7 @@ class Network:  # pylint: disable=too-many-public-methods
             warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
             kwargs['pairing_key'] = ucte_x_node_code
             kwargs.pop(ucte_xnode_code_str)
-        return self._create_elements(ElementType.DANGLING_LINE, [df, generation_df], **kwargs)
+        return self._create_elements(ElementType.BOUNDARY_LINE, [df, generation_df], **kwargs)
 
     def create_lcc_converter_stations(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -5800,19 +5800,35 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - **id**: the identifier of the new tie line
             - **name**: an optional human-readable name
-            - **dangling_line1_id**: the ID of the first dangling line
+            - **boundary_line1_id**: the ID of the first boundary line
               It must already exist.
-            - **dangling_line2_id**: the ID of the second dangling line
+            - **boundary_line2_id**: the ID of the second boundary line
               It must already exist.
+
+            **dangling_line1_id** and **dangling_line2_id** are deprecated attributes, use **boundary_line1_id**
+            and **boundary_line2_id** instead.
 
         Examples:
             Using keyword arguments:
 
             .. code-block:: python
 
-                network.create_tie_lines(id='tie_line_1', dangling_line1_id='DL-1', dangling_line2_id='DL-2')
+                network.create_tie_lines(id='tie_line_1', boundary_line1_id='BL-1', boundary_line2_id='BL-2')
 
         """
+        if df is not None:
+            if "dangling_line1_id" in df.columns:
+                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
+                df = df.rename(columns={'dangling_line1_id': 'boundary_line1_id'})
+            if "dangling_line2_id" in df.columns:
+                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
+                df = df.rename(columns={'dangling_line2_id': 'boundary_line2_id'})
+        if kwargs.get('dangling_line1_id') is not None:
+            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
+            kwargs['boundary_line1_id'] = kwargs.pop('dangling_line1_id')
+        if kwargs.get('dangling_line2_id') is not None:
+            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
+            kwargs['boundary_line2_id'] = kwargs.pop('dangling_line2_id')
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
     def create_areas(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -5905,7 +5921,7 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the area
-            - **boundary_type**: either `DANGLING_LINE` or `TERMINAL`, defaults to `DANGLING_LINE`.
+            - **boundary_type**: either `BOUNDARY_LINE` or `TERMINAL`, defaults to `BOUNDARY_LINE`.
             - **element**: dangling line identifier, or any connectable
             - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
             - **ac**: True is boundary is to be considered as AC
@@ -5920,7 +5936,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 # define dangling lines NHV1_XNODE1 and NVH1_XNODE2 as boundaries of AreaA, and
                 # define dangling lines XNODE1_NHV2 and XNODE2_NHV2 as boundaries of AreaB
                 network.create_areas_boundaries(id=['AreaA', 'AreaA', 'AreaB', 'AreaB'],
-                                                boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
+                                                boundary_type=['BOUNDARY_LINE', 'BOUNDARY_LINE', 'BOUNDARY_LINE', 'BOUNDARY_LINE'],
                                                 element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
                                                 ac=[True, True, True, True])
 

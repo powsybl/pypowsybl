@@ -365,8 +365,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
             .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::LINEAR_SHUNT_COMPENSATOR_SECTION)
-            .value("DANGLING_LINE", element_type::DANGLING_LINE)
-            .value("DANGLING_LINE_GENERATION", element_type::DANGLING_LINE_GENERATION)
+            .value("BOUNDARY_LINE", element_type::BOUNDARY_LINE)
+            .value("BOUNDARY_LINE_GENERATION", element_type::BOUNDARY_LINE_GENERATION)
             .value("TIE_LINE", element_type::TIE_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
@@ -481,7 +481,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("v_min"), py::arg("v_max"),
-          py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
+          py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_boundary_lines"));
 
     py::enum_<pypowsybl::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus", "Loadflow status for one connected component.")
             .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED, "The loadflow has converged.")

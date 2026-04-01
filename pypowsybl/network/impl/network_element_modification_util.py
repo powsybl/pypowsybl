@@ -345,7 +345,7 @@ def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, g
         - **target_v**: Voltage target of the generation part
         - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
     """
-    return _create_feeder_bay(network, [df, generation_df], ElementType.DANGLING_LINE, raise_exception, reporter, report_node,
+    return _create_feeder_bay(network, [df, generation_df], ElementType.BOUNDARY_LINE, raise_exception, reporter, report_node,
                               **kwargs)
 
 

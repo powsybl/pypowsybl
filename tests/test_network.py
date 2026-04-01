@@ -720,10 +720,10 @@ def test_areas_boundaries_data_frame():
             'ControlArea_A', 'ControlArea_A',
             'ControlArea_B', 'ControlArea_B']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
-              ['DANGLING_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
-              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
-              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
+        data=[['BOUNDARY_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
+              ['BOUNDARY_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
+              ['BOUNDARY_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['BOUNDARY_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test adding boundaries to area
@@ -733,7 +733,7 @@ def test_areas_boundaries_data_frame():
                    area_type=['testAreaType', 'testAreaType'],
                    interchange_target=[10., nan])
     n.create_areas_boundaries(id=['testAreaA', 'testAreaA', 'testAreaB', 'testAreaB'],
-                              boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
+                              boundary_type=['BOUNDARY_LINE', 'BOUNDARY_LINE', 'BOUNDARY_LINE', 'BOUNDARY_LINE'],
                               element=['NHV1_XNODE1', 'NHV1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
                               ac=[True, True, True, True])
     areas_boundaries = n.get_areas_boundaries(all_attributes=True).sort_values(by=['id', 'element'])
@@ -742,10 +742,10 @@ def test_areas_boundaries_data_frame():
             'testAreaA', 'testAreaA',
             'testAreaB', 'testAreaB']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
-              ['DANGLING_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
-              ['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
-              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
+        data=[['BOUNDARY_LINE', 'NHV1_XNODE1', '', True, -301.44, -116.55],
+              ['BOUNDARY_LINE', 'NHV1_XNODE2', '', True, -301.44, -116.55],
+              ['BOUNDARY_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['BOUNDARY_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test removal
@@ -757,8 +757,8 @@ def test_areas_boundaries_data_frame():
         index=pd.Series(name='id', data=[
             'testAreaB', 'testAreaB']),
         columns=['boundary_type', 'element', 'side', 'ac', 'p', 'q'],
-        data=[['DANGLING_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
-              ['DANGLING_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
+        data=[['BOUNDARY_LINE', 'XNODE1_NHV2', '', True, +301.44, +116.55],
+              ['BOUNDARY_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
     # test using terminals instead of dangling lines, e.g. boundary located at NGEN_NHV1 HV side
@@ -1372,8 +1372,8 @@ def test_lines():
 def test_dangling_lines():
     n = util.create_dangling_lines_network()
     df = n.get_dangling_lines(all_attributes=True)
-    assert not df['fictitious']['DL']
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
+    assert not df['fictitious']['BL']
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id',
                                      'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
@@ -1381,9 +1381,9 @@ def test_dangling_lines():
                                    '', '', False, '']])
     pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
     n.update_dangling_lines(
-        pd.DataFrame(index=['DL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
+        pd.DataFrame(index=['BL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                      data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
-    updated = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
+    updated = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
                            columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                     'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                            data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, nan, nan, nan, 'VL', '', False,
@@ -1392,7 +1392,7 @@ def test_dangling_lines():
     n = util.create_dangling_lines_network()
     dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
-        index=pd.Series(name='id', data=['DL']),
+        index=pd.Series(name='id', data=['BL']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['BUS', -1]])
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
@@ -2169,9 +2169,9 @@ def test_limits():
         index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
         columns=['element_id', 'element_type', 'side', 'name', 'type', 'value', 'acceptable_duration',
                  'fictitious', 'group_name', 'selected'],
-        data=[('DL', 'DANGLING_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False, 'DEFAULT', True),
-              ('DL', 'DANGLING_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False, 'DEFAULT', True),
-              ('DL', 'DANGLING_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False, 'DEFAULT', True)]
+        data=[('BL', 'BOUNDARY_LINE', 'NONE', 'permanent_limit', 'CURRENT', 100, -1, False, 'DEFAULT', True),
+              ('BL', 'BOUNDARY_LINE', 'NONE', '20\'', 'CURRENT', 120, 1200, False, 'DEFAULT', True),
+              ('BL', 'BOUNDARY_LINE', 'NONE', '10\'', 'CURRENT', 140, 600, False, 'DEFAULT', True)]
     )
     pd.testing.assert_frame_equal(expected, network.get_operational_limits(all_attributes=True), check_dtype=False,
                                   check_index_type=False)

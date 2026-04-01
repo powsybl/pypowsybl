@@ -141,15 +141,15 @@ def test_dangling_lines_per_unit():
     pp.loadflow.run_ac(n)
     n.per_unit = True
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.5, 0.3, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                    True, '', '', False, '']])
     dangling_lines = n.get_dangling_lines()
     pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -4)
-    n.update_dangling_lines(pd.DataFrame(index=['DL'], columns=['p0', 'q0'], data=[[0.75, 0.25]]))
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['DL']),
+    n.update_dangling_lines(pd.DataFrame(index=['BL'], columns=['p0', 'q0'], data=[[0.75, 0.25]]))
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.75, 0.25, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',

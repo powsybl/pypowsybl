@@ -179,8 +179,7 @@ def test_rao_from_buffers(rao_provider: str):
 
     assert json_result["computationStatus"] == "default"
     expected_keys = ['type', 'version', 'info', 'computationStatus', 'executionDetails', 'costResults',
-                     'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
-                     'networkActionResults', 'rangeActionResults']
+                     'computationStatusMap', 'flowCnecResults', 'networkActionResults', 'rangeActionResults']
     if rao_provider == "FastRao":
         expected_keys.append("extensions")
     assert list(json_result.keys()) == expected_keys
