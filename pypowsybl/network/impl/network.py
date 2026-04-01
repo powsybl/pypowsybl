@@ -1726,7 +1726,7 @@ class Network:  # pylint: disable=too-many-public-methods
                            **kwargs: ArrayLike) -> DataFrame:
         """
         .. deprecated:: 1.15.0
-        Use :meth:`get_boundary_lines` instead.
+            Use :meth:`get_boundary_lines` instead.
         """
         warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning)
         return self.get_boundary_lines(all_attributes, attributes, **kwargs)
@@ -1763,7 +1763,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                       **kwargs: ArrayLike) -> DataFrame:
         """
         .. deprecated:: 1.15.0
-        Use :meth:`get_boundary_lines_generation` instead.
+            Use :meth:`get_boundary_lines_generation` instead.
         """
         warnings.warn("get_dangling_lines_generation is deprecated, use get_boundary_lines_generation instead.",
                       DeprecationWarning)
