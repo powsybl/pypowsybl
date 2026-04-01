@@ -297,16 +297,16 @@ def create_generator_bay(network: Network, df: Optional[DataFrame] = None, raise
     return _create_feeder_bay(network, [df], ElementType.GENERATOR, raise_exception, reporter, report_node, **kwargs)
 
 
-def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(),
+def create_boundary_line_bay(network: Network, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(),
                              raise_exception: bool = True, reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
                              **kwargs: ArrayLike) -> None:
     """
-    Creates a dangling line, connects it to the network on a given bus or busbar section and creates the associated topology.
+    Creates a boundary line, connects it to the network on a given bus or busbar section and creates the associated topology.
 
     Args:
-        network: the network to which we want to add the dangling line
+        network: the network to which we want to add the boundary line
         df: Attributes as a dataframe.
-        generation_df: Optional dangling lines' generation part, only as a dataframe
+        generation_df: Optional boundary lines' generation part, only as a dataframe
         raise_exception: optionally, whether the calculation should throw exceptions. In any case, errors will
          be logged. Default is True.
         reporter: deprecated, use report_node instead
@@ -315,12 +315,12 @@ def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, g
 
     Notes:
         The voltage level containing the busbar section can be described in node/breaker or bus/breaker topology.
-        If the voltage level is node/breaker, the dangling line is connected to the busbar with a breaker and a closed
-        disconnector. If the network has position extensions, the dangling line will also be connected to every parallel
-        busbar section with an open disconnector. If the voltage level is bus/breaker, the dangling line is just
+        If the voltage level is node/breaker, the boundary line is connected to the busbar with a breaker and a closed
+        disconnector. If the network has position extensions, the boundary line will also be connected to every parallel
+        busbar section with an open disconnector. If the voltage level is bus/breaker, the boundary line is just
         connected to the bus.
 
-        Valid attributes for dangling line dataframe or named arguments are:
+        Valid attributes for boundary line dataframe or named arguments are:
 
         - **id**: the identifier of the new line
         - **name**: an optional human-readable name
@@ -331,15 +331,15 @@ def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, g
         - **g**: the shunt conductance, in S
         - **b**: the shunt susceptance, in S
         - **bus_or_busbar_section_id**: id of the bus or of the busbar section to which the injection will be connected with a closed disconnector.
-        - **position_order**: in node/breaker, the order of the dangling line, will fill the ConnectablePosition extension
-        - **direction**: optionally, in node/breaker, the direction of the dangling line, will fill the ConnectablePosition extension, default is BOTTOM.
+        - **position_order**: in node/breaker, the order of the boundary line, will fill the ConnectablePosition extension
+        - **direction**: optionally, in node/breaker, the direction of the boundary line, will fill the ConnectablePosition extension, default is BOTTOM.
 
-        Dangling line generation information must be provided as a dataframe.
+        Boundary line generation information must be provided as a dataframe.
         Valid attributes are:
 
-        - **id**: Identifier of the dangling line that contains this generation part
-        - **min_p**: Minimum active power output of the dangling line's generation part
-        - **max_p**: Maximum active power output of the dangling line's generation part
+        - **id**: Identifier of the boundary line that contains this generation part
+        - **min_p**: Minimum active power output of the boundary line's generation part
+        - **max_p**: Maximum active power output of the boundary line's generation part
         - **target_p**: Active power target of the generation part
         - **target_q**: Reactive power target of the generation part
         - **target_v**: Voltage target of the generation part
@@ -348,6 +348,16 @@ def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, g
     return _create_feeder_bay(network, [df, generation_df], ElementType.BOUNDARY_LINE, raise_exception, reporter, report_node,
                               **kwargs)
 
+
+def create_dangling_line_bay(network: Network, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(),
+                             raise_exception: bool = True, reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None,
+                             **kwargs: ArrayLike) -> None:
+    """
+    .. deprecated:: 1.15.0
+        Use :func:`create_boundary_line_bay` instead.
+    """
+    warnings.warn("create_dangling_line_bay is deprecated, use create_boundary_line_bay instead.", DeprecationWarning)
+    return create_boundary_line_bay(network, df, generation_df, raise_exception, reporter, report_node, **kwargs)
 
 def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
                                  linear_model_df: Optional[DataFrame] = None,

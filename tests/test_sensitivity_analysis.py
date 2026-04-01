@@ -186,10 +186,10 @@ def test_sensi_power_transfer():
 
 def test_xnode_sensi():
     n = pp.network.load(str(DATA_DIR.joinpath('simple-eu-xnode.uct')))
-    # assert there is one dangling line (corresponding to the UCTE xnode)
-    dangling_lines = n.get_dangling_lines()
-    assert len(dangling_lines) == 1
-    # create a new zone with only one xnode, this is the dangling line id that has to be configured (corresponding
+    # assert there is one boundary line (corresponding to the UCTE xnode)
+    boundary_lines = n.get_boundary_lines()
+    assert len(boundary_lines) == 1
+    # create a new zone with only one xnode, this is the boundary line id that has to be configured (corresponding
     # to the line connecting the xnode in the UCTE file)
     zone_x = pp.sensitivity.create_empty_zone("X")
     zone_x.add_injection('NNL2AA1  XXXXXX11 1')

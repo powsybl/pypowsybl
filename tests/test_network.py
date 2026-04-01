@@ -761,7 +761,7 @@ def test_areas_boundaries_data_frame():
               ['BOUNDARY_LINE', 'XNODE2_NHV2', '', True, +301.44, +116.55]])
     pd.testing.assert_frame_equal(expected, areas_boundaries, check_dtype=False, atol=1e-2)
 
-    # test using terminals instead of dangling lines, e.g. boundary located at NGEN_NHV1 HV side
+    # test using terminals instead of boundary lines, e.g. boundary located at NGEN_NHV1 HV side
     n = pp.network.create_eurostag_tutorial_example1_network()
     n.create_areas(id=['testAreaA', 'testAreaB'],
                    area_type=['testAreaType', 'testAreaType'],
@@ -1369,9 +1369,9 @@ def test_lines():
     pd.testing.assert_frame_equal(expected, lines, check_dtype=False, atol=1e-2)
 
 
-def test_dangling_lines():
-    n = util.create_dangling_lines_network()
-    df = n.get_dangling_lines(all_attributes=True)
+def test_boundary_lines():
+    n = util.create_boundary_lines_network()
+    df = n.get_boundary_lines(all_attributes=True)
     assert not df['fictitious']['BL']
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
@@ -1379,8 +1379,8 @@ def test_dangling_lines():
                                      'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 10.0, 1.0, 0.0001, 0.00001, 50.0, 30.0, nan, nan, nan, 'VL', 'VL_0', True,
                                    '', '', False, '']])
-    pd.testing.assert_frame_equal(expected, n.get_dangling_lines(), check_dtype=False)
-    n.update_dangling_lines(
+    pd.testing.assert_frame_equal(expected, n.get_boundary_lines(), check_dtype=False)
+    n.update_boundary_lines(
         pd.DataFrame(index=['BL'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
                      data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
     updated = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
@@ -1388,18 +1388,18 @@ def test_dangling_lines():
                                     'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                            data=[['', 11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, nan, nan, nan, 'VL', '', False,
                                   '', '', False, '']])
-    pd.testing.assert_frame_equal(updated, n.get_dangling_lines(), check_dtype=False)
-    n = util.create_dangling_lines_network()
-    dangling_lines = n.get_dangling_lines(attributes=['bus_breaker_bus_id', 'node'])
+    pd.testing.assert_frame_equal(updated, n.get_boundary_lines(), check_dtype=False)
+    n = util.create_boundary_lines_network()
+    boundary_lines = n.get_boundary_lines(attributes=['bus_breaker_bus_id', 'node'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['BL']),
         columns=['bus_breaker_bus_id', 'node'],
         data=[['BUS', -1]])
-    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+    pd.testing.assert_frame_equal(expected, boundary_lines, check_dtype=False, atol=1e-2)
 
     # test boundary point columns
     n = pp.network.create_micro_grid_be_network()
-    dangling_lines = n.get_dangling_lines(attributes=['p', 'q',
+    boundary_lines = n.get_boundary_lines(attributes=['p', 'q',
                                                       'boundary_p', 'boundary_q', 'boundary_i', 'boundary_v_mag', 'boundary_v_angle'])
     expected = pd.DataFrame(
         index=pd.Series(name='id', data=['17086487-56ba-4979-b8de-064025a6b4da',
@@ -1413,35 +1413,58 @@ def test_dangling_lines():
               [-82.84, 138.45, 90.03, -148.60,  244.20,  410.80, -6.57],
               [-23.83,   1.27, 26.80,   -1.48,   68.95,  224.81, -5.52],
               [-36.85,  80.68, 43.68,  -84.87,  133.58,  412.60, -6.74]])
-    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=1e-2)
+    pd.testing.assert_frame_equal(expected, boundary_lines, check_dtype=False, atol=1e-2)
 
 
-def test_dangling_line_generation():
-    n = util.create_dangling_lines_network()
-    df = n.get_dangling_lines_generation()
+def test_boundary_line_generation():
+    n = util.create_boundary_lines_network()
+    df = n.get_boundary_lines_generation()
     assert df.empty
 
-    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2_wrong']), columns=["target_v", "voltage_regulator_on"],
+    wrong_generation_df = pd.DataFrame(index=pd.Series(name='id', data=['BL2_wrong']), columns=["target_v", "voltage_regulator_on"],
                                  data=[[225, True]])
     with pytest.raises(PyPowsyblError) as context:
-        n.create_dangling_lines(generation_df=wrong_generation_df, id='DL2_wrong', voltage_level_id='VL', bus_id='BUS',
+        n.create_boundary_lines(generation_df=wrong_generation_df, id='BL2_wrong', voltage_level_id='VL', bus_id='BUS',
                                 p0=100, q0=100, r=0, x=0, g=0, b=0)
     assert "invalid value (NaN) for active power setpoint" in str(context)
+
+    generation_df = pd.DataFrame(index=pd.Series(name='id', data=['BL2']),
+                                 columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
+                                 data= [[0, 100, 100, 225, True]])
+    n.create_boundary_lines(generation_df=generation_df, id='BL2', voltage_level_id='VL', bus_id='BUS',
+                            p0=100, q0=100, r=0, x=0, g=0, b=0)
+    df2 = n.get_boundary_lines_generation()
+    assert df2['voltage_regulator_on']['BL2']
+    assert math.isnan(df2['target_q']['BL2'])
+
+    n.update_boundary_lines_generation(pd.DataFrame(index=['BL2'], columns=['target_q', 'voltage_regulator_on'],
+                                         data=[[100, False]]))
+    df3 = n.get_boundary_lines_generation()
+    assert not df3['voltage_regulator_on']['BL2']
+    assert df3['target_q']['BL2']==100
+
+
+def test_deprecated_dangling_line():
+    n = util.create_boundary_lines_network()
+    with pytest.warns(DeprecationWarning):
+        n.get_dangling_lines()
+    with pytest.warns(DeprecationWarning):
+        n.get_dangling_lines_generation()
 
     generation_df = pd.DataFrame(index=pd.Series(name='id', data=['DL2']),
                                  columns=["min_p", "max_p", "target_p", "target_v", "voltage_regulator_on"],
                                  data= [[0, 100, 100, 225, True]])
-    n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
+    with pytest.warns(DeprecationWarning):
+        n.create_dangling_lines(generation_df=generation_df, id='DL2', voltage_level_id='VL', bus_id='BUS',
                             p0=100, q0=100, r=0, x=0, g=0, b=0)
-    df2 = n.get_dangling_lines_generation()
-    assert df2['voltage_regulator_on']['DL2']
-    assert math.isnan(df2['target_q']['DL2'])
-
-    n.update_dangling_lines_generation(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
-                                         data=[[100, False]]))
-    df3 = n.get_dangling_lines_generation()
-    assert not df3['voltage_regulator_on']['DL2']
-    assert df3['target_q']['DL2']==100
+    assert n.get_boundary_lines()['connected']['DL2']
+    with pytest.warns(DeprecationWarning):
+        n.update_dangling_lines_generation(pd.DataFrame(index=['DL2'], columns=['target_q', 'voltage_regulator_on'],
+                                                        data=[[100, False]]))
+    with pytest.warns(DeprecationWarning):
+        n.update_dangling_lines(pd.DataFrame(index=['DL2'], columns=['r', 'x', 'g', 'b', 'p0', 'q0', 'connected'],
+                         data=[[11.0, 1.1, 0.0002, 0.00002, 40.0, 40.0, False]]))
+    assert not n.get_boundary_lines()['connected']['DL2']
 
 
 def test_batteries():
@@ -2163,7 +2186,7 @@ def test_dataframe_elements_filtering():
 
 
 def test_limits():
-    network = util.create_dangling_lines_network()
+    network = util.create_boundary_lines_network()
 
     expected = pd.DataFrame.from_records(
         index=['element_id', 'side', 'type', 'acceptable_duration', 'group_name'],
@@ -2743,11 +2766,11 @@ def test_deprecated_nad_parameters():
     with pytest.warns(DeprecationWarning, match=re.escape("Use of deprecated attribute edge_info_displayed. Use edge_info_parameters instead.")):
         assert NadParameters().edge_info_displayed == EdgeInfoType.ACTIVE_POWER
 
-def test_update_dangling_line():
+def test_update_boundary_line():
     network = pp.network.create_eurostag_tutorial_example1_network()
-    network.create_dangling_lines(id='dangling_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
-    network.update_dangling_lines(id=['dangling_line'], pairing_key=['XNODE'])
-    assert network.get_dangling_lines().loc['dangling_line'].pairing_key == 'XNODE'
+    network.create_boundary_lines(id='boundary_line', voltage_level_id='VLGEN', bus_id='NGEN', p0=100, q0=100, r=0, x=0, g=0, b=0)
+    network.update_boundary_lines(id=['boundary_line'], pairing_key=['XNODE'])
+    assert network.get_boundary_lines().loc['boundary_line'].pairing_key == 'XNODE'
 
 
 def test_update_name():

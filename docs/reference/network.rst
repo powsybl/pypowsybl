@@ -84,7 +84,9 @@ All network elements are accessible as dataframes, using the following getters.
    Network.get_busbar_sections
    Network.get_buses
    Network.get_bus_breaker_view_buses
+   Network.get_boundary_lines
    Network.get_dangling_lines
+   Network.get_boundary_lines_generation
    Network.get_dangling_lines_generation
    Network.get_generators
    Network.get_hvdc_lines
@@ -159,7 +161,9 @@ Network elements can be modified using dataframes:
    Network.update_branches
    Network.update_buses
    Network.update_busbar_sections
+   Network.update_boundary_lines
    Network.update_dangling_lines
+   Network.update_boundary_lines_generation
    Network.update_dangling_lines_generation
    Network.update_generators
    Network.update_grounds
@@ -215,6 +219,7 @@ Network elements can be created or removed using the following methods:
    Network.create_busbar_sections
    Network.create_buses
    Network.create_curve_reactive_limits
+   Network.create_boundary_lines
    Network.create_dangling_lines
    Network.create_generators
    Network.create_grounds
@@ -340,6 +345,7 @@ Advanced network modifications
    create_line_bays
    create_load_bay
    create_battery_bay
+   create_boundary_line_bay
    create_dangling_line_bay
    create_generator_bay
    create_shunt_compensator_bay
