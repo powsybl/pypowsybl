@@ -50,8 +50,8 @@ public class ContingencyContainerImpl implements ContingencyContainer {
             return new BusbarSectionContingency(elementId);
         } else if (identifiable instanceof Generator) {
             return new GeneratorContingency(elementId);
-        } else if (identifiable instanceof DanglingLine) {
-            return new DanglingLineContingency(elementId);
+        } else if (identifiable instanceof BoundaryLine) {
+            return new BoundaryLineContingency(elementId);
         } else if (identifiable instanceof StaticVarCompensator) {
             return new StaticVarCompensatorContingency(elementId);
         } else if (identifiable instanceof ShuntCompensator) {

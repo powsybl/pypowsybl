@@ -169,7 +169,7 @@ public final class NetworkAreaDiagramUtil {
     public static Map<String, CustomLabelProvider.BranchLabels> getBranchLabelsMap(Graph graph, LabelProvider labelProvider) {
 
         return graph.getBranchEdgeStream()
-                .filter(be -> !(BranchEdge.DANGLING_LINE_EDGE.equals(be.getType())))
+                .filter(be -> !(BranchEdge.BOUNDARY_LINE_EDGE.equals(be.getType())))
                 .collect(Collectors.toMap(Identifiable::getEquipmentId, branchEdge -> {
                     String branchId = branchEdge.getEquipmentId();
                     String type = branchEdge.getType();

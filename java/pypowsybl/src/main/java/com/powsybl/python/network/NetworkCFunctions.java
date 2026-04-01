@@ -470,14 +470,14 @@ public final class NetworkCFunctions {
                                      CCharPointerPointer idsPtrPtr, int idsCount,
                                      CCharPointerPointer vlsPtrPtr, int vlsCount,
                                      CIntPointer depthsPtr, int depthsCount,
-                                     boolean withDanglingLines,
+                                     boolean withBoundaryLines,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 ReductionOptions options = new ReductionOptions();
-                options.withDanglingLlines(withDanglingLines);
+                options.withBoundaryLines(withBoundaryLines);
                 List<NetworkPredicate> predicates = new ArrayList<>();
                 if (vMax != Double.MAX_VALUE || vMin != 0) {
                     predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));

@@ -44,7 +44,7 @@ public class PyPowsyblNetworksProvider implements Networks.NetworksProvider {
             factory("eurostag_tutorial_example1_with_tie_line", Networks::eurostagWithTieLine),
             factory("eurostag_tutorial_example1_with_tie_lines_and_areas", Networks::eurostagWithTieLinesAndAreas),
             factory("batteries", (Supplier<Network>) BatteryNetworkFactory::create),
-            factory("dangling_lines", (Supplier<Network>) DanglingLineNetworkFactory::create),
+            factory("boundary_lines", (Supplier<Network>) BoundaryLineNetworkFactory::create),
             factory("three_windings_transformer", (Supplier<Network>) ThreeWindingsTransformerNetworkFactory::create),
             factory("three_windings_transformer_with_current_limits", ThreeWindingsTransformerNetworkFactory::createWithCurrentLimits),
             factory("shunt", (Supplier<Network>) ShuntTestCaseFactory::create),

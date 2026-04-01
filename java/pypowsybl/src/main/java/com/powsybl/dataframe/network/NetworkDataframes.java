@@ -78,8 +78,8 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.SHUNT_COMPENSATOR, shunts());
         mappers.put(DataframeElementType.NON_LINEAR_SHUNT_COMPENSATOR_SECTION, shuntsNonLinear());
         mappers.put(DataframeElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, linearShuntsSections());
-        mappers.put(DataframeElementType.DANGLING_LINE, danglingLines());
-        mappers.put(DataframeElementType.DANGLING_LINE_GENERATION, danglingLinesGeneration());
+        mappers.put(DataframeElementType.BOUNDARY_LINE, boundaryLines());
+        mappers.put(DataframeElementType.BOUNDARY_LINE_GENERATION, boundaryLinesGeneration());
         mappers.put(DataframeElementType.TIE_LINE, tieLines());
         mappers.put(DataframeElementType.LCC_CONVERTER_STATION, lccs());
         mappers.put(DataframeElementType.VSC_CONVERTER_STATION, vscs());
@@ -703,9 +703,9 @@ public final class NetworkDataframes {
                 .build();
     }
 
-    static NetworkDataframeMapper danglingLines() {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream(), getOrThrow(Network::getDanglingLine, "Dangling line"))
-                .stringsIndex("id", DanglingLine::getId)
+    static NetworkDataframeMapper boundaryLines() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getBoundaryLineStream(), getOrThrow(Network::getBoundaryLine, "Boundary line"))
+                .stringsIndex("id", BoundaryLine::getId)
                 .strings("name", dl -> dl.getOptionalName().orElse(""), Identifiable::setName)
                 .doubles("r", (dl, context) -> perUnitRX(context, dl.getR(), dl.getTerminal()), (dl, r, context) -> dl.setR(unPerUnitRX(context, dl.getTerminal(), r)))
                 .doubles("x", (dl, context) -> perUnitRX(context, dl.getX(), dl.getTerminal()), (dl, x, context) -> dl.setX(unPerUnitRX(context, dl.getTerminal(), x)))
@@ -726,21 +726,21 @@ public final class NetworkDataframes {
                 .strings("bus_breaker_bus_id", getBusBreakerViewBusId(), NetworkDataframes::setBusBreakerViewBusId, false)
                 .ints("node", dl -> getNode(dl.getTerminal()), false)
                 .booleans("connected", dl -> dl.getTerminal().isConnected(), connectInjection())
-                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""), DanglingLine::setPairingKey)
+                .strings("pairing_key", dl -> Objects.toString(dl.getPairingKey(), ""), BoundaryLine::setPairingKey)
                 .strings("ucte_xnode_code", dl -> Objects.toString(dl.getPairingKey(), ""))
-                .booleans("paired", DanglingLine::isPaired)
+                .booleans("paired", BoundaryLine::isPaired)
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .strings("tie_line_id", dl -> dl.getTieLine().map(Identifiable::getId).orElse(""))
                 .strings("selected_limits_group", dl -> dl.getSelectedOperationalLimitsGroupId().orElse(DEFAULT_OPERATIONAL_LIMIT_GROUP_ID),
-                        DanglingLine::setSelectedOperationalLimitsGroup, false)
+                        BoundaryLine::setSelectedOperationalLimitsGroup, false)
                 .addProperties()
                 .build();
     }
 
-    static NetworkDataframeMapper danglingLinesGeneration() {
-        return NetworkDataframeMapperBuilder.ofStream(network -> network.getDanglingLineStream().filter(dl -> Optional.ofNullable(dl.getGeneration()).isPresent()),
-                        getOrThrow(Network::getDanglingLine, "Dangling line with generation"))
-                .stringsIndex("id", DanglingLine::getId)
+    static NetworkDataframeMapper boundaryLinesGeneration() {
+        return NetworkDataframeMapperBuilder.ofStream(network -> network.getBoundaryLineStream().filter(dl -> Optional.ofNullable(dl.getGeneration()).isPresent()),
+                        getOrThrow(Network::getBoundaryLine, "Boundary line with generation"))
+                .stringsIndex("id", BoundaryLine::getId)
                 .doubles("min_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getMinP()),
                         (dl, minP, context) -> dl.getGeneration().setMinP(unPerUnitPQ(context, minP)))
                 .doubles("max_p", (dl, context) -> perUnitPQ(context, dl.getGeneration().getMaxP()),
@@ -760,8 +760,8 @@ public final class NetworkDataframes {
         return NetworkDataframeMapperBuilder.ofStream(Network::getTieLineStream, getOrThrow(Network::getTieLine, "Tie line"))
                 .stringsIndex("id", TieLine::getId)
                 .strings("name", tl -> tl.getOptionalName().orElse(""), Identifiable::setName)
-                .strings("dangling_line1_id", tl -> tl.getDanglingLine1().getId())
-                .strings("dangling_line2_id", tl -> tl.getDanglingLine2().getId())
+                .strings("boundary_line1_id", tl -> tl.getBoundaryLine1().getId())
+                .strings("boundary_line2_id", tl -> tl.getBoundaryLine2().getId())
                 .strings("pairing_key", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
@@ -1803,8 +1803,8 @@ public final class NetworkDataframes {
         String sideStr = dataframe.getStringValue("side", index).orElse(null);
         OperationalLimitsGroup group;
         if (sideStr == null || sideStr.equals("NONE")) {
-            if (identifiable instanceof DanglingLine) {
-                group = ((DanglingLine) identifiable).getOperationalLimitsGroup(groupName)
+            if (identifiable instanceof BoundaryLine) {
+                group = ((BoundaryLine) identifiable).getOperationalLimitsGroup(groupName)
                         .orElseThrow(() -> new IllegalArgumentException("No limit group named " + groupName + " for element " + id));
             } else {
                 throw new PowsyblException("side must be provided for this element : " + id);
@@ -2061,14 +2061,14 @@ public final class NetworkDataframes {
     private static String getAreaBoundaryType(AreaBoundary areaBoundary) {
         Objects.requireNonNull(areaBoundary);
         return areaBoundary.getBoundary().map(
-                b -> PyPowsyblApiHeader.ElementType.DANGLING_LINE.name()
+                b -> PyPowsyblApiHeader.ElementType.BOUNDARY_LINE.name()
         ).orElse(PyPowsyblApiHeader.ElementType.TERMINAL.name());
     }
 
     private static String getAreaBoundaryElement(AreaBoundary areaBoundary) {
         Objects.requireNonNull(areaBoundary);
         return areaBoundary.getBoundary().map(
-                b -> b.getDanglingLine().getId()
+                b -> b.getBoundaryLine().getId()
         ).orElseGet(() -> areaBoundary.getTerminal().orElseThrow().getConnectable().getId());
     }
 
