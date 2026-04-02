@@ -7,6 +7,7 @@
  */
 package com.powsybl.dataframe;
 
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 /**
@@ -25,6 +26,11 @@ public interface DataframeHandler {
     @FunctionalInterface
     interface OptionalIntSeriesWriter {
         void set(int index, OptionalInt value);
+    }
+
+    @FunctionalInterface
+    interface OptionalDoubleSeriesWriter {
+        void set(int index, OptionalDouble value);
     }
 
     @FunctionalInterface
@@ -53,6 +59,8 @@ public interface DataframeHandler {
     IntSeriesWriter newIntSeries(String name, int size);
 
     OptionalIntSeriesWriter newOptionalIntSeries(String name, int size);
+
+    OptionalDoubleSeriesWriter newOptionalDoubleSeries(String name, int size);
 
     BooleanSeriesWriter newBooleanSeries(String name, int size);
 

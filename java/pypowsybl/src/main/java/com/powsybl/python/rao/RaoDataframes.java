@@ -501,8 +501,8 @@ public final class RaoDataframes {
         return new DataframeMapperBuilder<Crac, Triple<String, Threshold, String>, Void>()
             .itemsProvider(RaoDataframes::gatherThresholds)
             .stringsIndex("id", Triple::getLeft)
-            .strings("min", t -> t.getMiddle().min().isPresent() ? t.getMiddle().min().get().toString() : "")
-            .strings("max", t -> t.getMiddle().max().isPresent() ? t.getMiddle().max().get().toString() : "")
+            .optionalDoubles("min", t -> t.getMiddle().min().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .optionalDoubles("max", t -> t.getMiddle().max().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .strings("unit", t -> t.getMiddle().getUnit().name())
             .strings("side", Triple::getRight)
             .build();
@@ -545,9 +545,9 @@ public final class RaoDataframes {
             .strings("operator", InjectionRangeAction::getOperator)
             .strings("group_id", a -> a.getGroupId().orElse(""))
             .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
-            .strings("activation_cost", a -> a.getActivationCost().map(Object::toString).orElse(""))
-            .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(Object::toString).orElse(""))
-            .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(Object::toString).orElse(""))
+            .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .build();
     }
 
@@ -576,9 +576,9 @@ public final class RaoDataframes {
             .strings("importing_country", a -> a.getImportingCountry().name())
             .strings("group_id", a -> a.getGroupId().orElse(""))
             .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
-            .strings("activation_cost", a -> a.getActivationCost().map(Object::toString).orElse(""))
-            .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(Object::toString).orElse(""))
-            .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(Object::toString).orElse(""))
+            .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .build();
     }
 
@@ -618,7 +618,7 @@ public final class RaoDataframes {
             .strings("name", NetworkAction::getName)
             .strings("operator", NetworkAction::getOperator)
             .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
-            .strings("activation_cost", a -> a.getActivationCost().map(Object::toString).orElse(""))
+            .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .build();
     }
 
@@ -651,7 +651,7 @@ public final class RaoDataframes {
                 .map(elementary -> Pair.create(a, (GeneratorAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getGeneratorId())
-            .strings("active_power_value", pair -> pair.getSecond().getActivePowerValue().isPresent() ? String.valueOf(pair.getSecond().getActivePowerValue().getAsDouble()) : "")
+            .optionalDoubles("active_power_value", pair -> pair.getSecond().getActivePowerValue())
             .build();
     }
 
@@ -662,7 +662,7 @@ public final class RaoDataframes {
                 .map(elementary -> Pair.create(a, (LoadAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getLoadId())
-            .strings("active_power_value", pair -> pair.getSecond().getActivePowerValue().isPresent() ? String.valueOf(pair.getSecond().getActivePowerValue().getAsDouble()) : "")
+            .optionalDoubles("active_power_value", pair -> pair.getSecond().getActivePowerValue())
             .build();
     }
 
@@ -673,7 +673,7 @@ public final class RaoDataframes {
                 .map(elementary -> Pair.create(a, (DanglingLineAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
             .strings("network_element_id", pair -> pair.getSecond().getDanglingLineId())
-            .strings("active_power_value", pair -> pair.getSecond().getActivePowerValue().isPresent() ? String.valueOf(pair.getSecond().getActivePowerValue().getAsDouble()) : "")
+            .optionalDoubles("active_power_value", pair -> pair.getSecond().getActivePowerValue())
             .build();
     }
 

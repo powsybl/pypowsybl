@@ -147,7 +147,7 @@ class TestRaoCrac:
         assert ['min', 'max', 'unit', 'side'] == list(df.columns)
         threshold = df.loc['cnec1outageId']
 
-        assert '-800.0' == threshold['min']
+        assert -800.0 == threshold['min']
         assert 'AMPERE' == threshold['unit']
         assert 'ONE' == threshold['side']
 
@@ -179,8 +179,8 @@ class TestRaoCrac:
 
         assert 'injectionRange1Name' == action['name']
         assert 30 == action['speed']
-        assert '800.0' == action['activation_cost']
-        assert '2000.0' == action['variation_cost_up']
+        assert 800.0 == action['activation_cost']
+        assert 2000.0 == action['variation_cost_up']
 
     def test_network_elements_ids_and_keys(self):
         df = self.crac.get_network_element_ids_and_keys()
@@ -198,7 +198,7 @@ class TestRaoCrac:
         action = df.loc['counterTradeRange1Id']
         assert 'counterTradeRange1Name' == action['name']
         assert 30 == action['speed']
-        assert '10000.0' == action['activation_cost']
+        assert 10000.0 == action['activation_cost']
 
     def test_ranges(self):
         df = self.crac.get_ranges()
@@ -236,14 +236,14 @@ class TestRaoCrac:
         assert ['network_element_id', 'active_power_value'] == list(df.columns)
         action = df.loc['injectionSetpointRaId']
         assert 'injection' == action['network_element_id']
-        assert '260.0' == action['active_power_value']
+        assert 260.0 == action['active_power_value']
 
     def test_load_actions(self):
         df = self.crac.get_load_actions()
         assert ['network_element_id', 'active_power_value'] == list(df.columns)
         action = df.loc['complexNetworkAction2Id']
         assert 'LD1' == action['network_element_id']
-        assert '260.0' == action['active_power_value']
+        assert 260.0 == action['active_power_value']
 
     def test_shunt_compensator_position_actions(self):
         df = self.crac.get_shunt_compensator_position_actions()
