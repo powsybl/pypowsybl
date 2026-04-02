@@ -37,9 +37,9 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoParameters;
+import com.powsybl.nad.svg.EdgeInfoEnum;
+import com.powsybl.nad.svg.EdgeInfoParameters;
+import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -1302,13 +1302,12 @@ public final class NetworkCFunctions {
         boolean busLegend = nadParametersPointer.isBusLegend();
         boolean substationDescription = nadParametersPointer.isSubstationDescriptionDisplayed();
         EdgeInfoParameters edgeInfoParameters = convertEdgeInfoParameters(nadParametersPointer);
-        nadParameters.setLabelProviderFactory((n, s) -> new DefaultLabelProvider(n,
-                edgeInfoParameters,
-                s.createValueFormatter(),
+        nadParameters.setLabelProviderFactory(new DefaultLabelProviderFactory(
                 new LabelProviderParameters()
                         .setIdDisplayed(idDisplayed)
                         .setBusLegend(busLegend)
-                        .setSubstationDescriptionDisplayed(substationDescription)));
+                        .setSubstationDescriptionDisplayed(substationDescription)
+                        .setEdgeInfoParameters(edgeInfoParameters)));
         nadParameters.getLayoutParameters()
                 .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;
