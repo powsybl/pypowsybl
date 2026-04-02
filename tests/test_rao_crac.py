@@ -8,6 +8,7 @@ import pathlib
 import unittest
 import pandas as pd
 import pytest
+import math
 
 import pypowsybl as pp
 from pypowsybl.rao import Crac
@@ -107,7 +108,7 @@ class TestRaoCrac:
         assert '' == cnec['contingency_id']
         assert True == cnec['optimized']
         assert False == cnec['monitored']
-        assert 0.0 == cnec['reliability_margin']
+        assert math.isclose(0.0, cnec['reliability_margin'])
 
     def test_angle_cnecs(self):
         df = self.crac.get_angle_cnecs()
@@ -124,7 +125,7 @@ class TestRaoCrac:
         assert 'contingency1Id' == cnec['contingency_id']
         assert False== cnec['optimized']
         assert True == cnec['monitored']
-        assert 0.0 == cnec['reliability_margin']
+        assert math.isclose(0.0, cnec['reliability_margin'])
 
     def test_voltage_cnecs(self):
         df = self.crac.get_voltage_cnecs()
@@ -140,7 +141,7 @@ class TestRaoCrac:
         assert 'contingency1Id' == cnec['contingency_id']
         assert False == cnec['optimized']
         assert True == cnec['monitored']
-        assert 0.0 == cnec['reliability_margin']
+        assert math.isclose(0.0, cnec['reliability_margin'])
 
     def test_thresholds(self):
         df = self.crac.get_thresholds()
@@ -179,8 +180,8 @@ class TestRaoCrac:
 
         assert 'injectionRange1Name' == action['name']
         assert 30 == action['speed']
-        assert 800.0 == action['activation_cost']
-        assert 2000.0 == action['variation_cost_up']
+        assert math.isclose(800.0, action['activation_cost'])
+        assert math.isclose(2000.0, action['variation_cost_up'])
 
     def test_network_elements_ids_and_keys(self):
         df = self.crac.get_network_element_ids_and_keys()
@@ -198,7 +199,7 @@ class TestRaoCrac:
         action = df.loc['counterTradeRange1Id']
         assert 'counterTradeRange1Name' == action['name']
         assert 30 == action['speed']
-        assert 10000.0 == action['activation_cost']
+        assert math.isclose(10000.0, action['activation_cost'])
 
     def test_ranges(self):
         df = self.crac.get_ranges()
@@ -215,7 +216,7 @@ class TestRaoCrac:
         assert ['name', 'operator', 'speed', 'activation_cost'] == list(df.columns)
         action = df.loc['complexNetworkActionId']
         assert 'complexNetworkActionName' == action['name']
-        assert 40.0 == action['speed']
+        assert math.isclose(40.0, action['speed'])
 
     def test_terminal_connection_actions(self):
         df = self.crac.get_terminal_connection_actions()
@@ -236,14 +237,14 @@ class TestRaoCrac:
         assert ['network_element_id', 'active_power_value'] == list(df.columns)
         action = df.loc['injectionSetpointRaId']
         assert 'injection' == action['network_element_id']
-        assert 260.0 == action['active_power_value']
+        assert math.isclose(260.0, action['active_power_value'])
 
     def test_load_actions(self):
         df = self.crac.get_load_actions()
         assert ['network_element_id', 'active_power_value'] == list(df.columns)
         action = df.loc['complexNetworkAction2Id']
         assert 'LD1' == action['network_element_id']
-        assert 260.0 == action['active_power_value']
+        assert math.isclose(260.0, action['active_power_value'])
 
     def test_shunt_compensator_position_actions(self):
         df = self.crac.get_shunt_compensator_position_actions()
