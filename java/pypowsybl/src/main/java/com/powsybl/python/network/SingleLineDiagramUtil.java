@@ -8,10 +8,9 @@
 package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.Network;
-import com.powsybl.sld.cgmes.layout.CgmesVoltageLevelLayoutFactory;
-import com.powsybl.sld.layout.MatrixZoneLayoutFactory;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.SldParameters;
+import com.powsybl.sld.layout.MatrixZoneLayoutFactory;
 import com.powsybl.sld.library.SldComponentLibrary;
 
 import java.io.IOException;
@@ -83,9 +82,7 @@ public final class SingleLineDiagramUtil {
     }
 
     static SldParameters createSldParameters() {
-        SldParameters sldParameters = new SldParameters().setVoltageLevelLayoutFactoryCreator(
-                n -> new CgmesVoltageLevelLayoutFactory(n, null, 0.3)
-        );
+        SldParameters sldParameters = new SldParameters();
         sldParameters.getSvgParameters().setSvgWidthAndHeightAdded(true);
         return sldParameters;
     }
