@@ -33,16 +33,16 @@ class OutputVariableMapping:
 
     def add_dynamic_model_curves(self, dynamic_model_id: str, variables: Union[List[str], str]) -> None:
         """
-        . deprecated:: 1.15.0
-        Use :method:`add_model_curves` instead.
+        .. deprecated:: 1.15.0
+            Use `add_model_curves` instead.
         """
         warnings.warn("add_dynamic_model_curves is deprecated, use add_model_curves instead", DeprecationWarning)
         self.add_curves(dynamic_model_id, variables)
 
     def add_standard_model_curves(self, static_id: str, variables: Union[List[str], str]) -> None:
         """
-        . deprecated:: 1.15.0
-        Use :method:`add_model_curves` instead.
+        .. deprecated:: 1.15.0
+            Use :func:`add_model_curves` instead.
         """
         warnings.warn("add_standard_model_curves is deprecated, use add_model_curves instead", DeprecationWarning)
         self.add_curves(static_id, variables)
@@ -60,16 +60,16 @@ class OutputVariableMapping:
 
     def add_dynamic_model_final_state_values(self, dynamic_model_id: str, variables: Union[List[str], str]) -> None:
         """
-        . deprecated:: 1.15.0
-        Use :method:`add_model_final_state_values` instead.
+        .. deprecated:: 1.15.0
+            Use :func:`add_model_final_state_values` instead.
         """
         warnings.warn("add_dynamic_model_final_state_values is deprecated, use add_model_final_state_values instead", DeprecationWarning)
         self.add_final_state_values(dynamic_model_id, variables)
 
     def add_standard_model_final_state_values(self, static_id: str, variables: Union[List[str], str]) -> None:
         """
-        . deprecated:: 1.15.0
-        Use :method:`add_model_final_state_values` instead.
+        .. deprecated:: 1.15.0
+            Use :func:`add_model_final_state_values` instead.
         """
         warnings.warn("add_standard_model_final_state_values is deprecated, use add_model_final_state_values instead", DeprecationWarning)
         self.add_final_state_values(static_id, variables)
