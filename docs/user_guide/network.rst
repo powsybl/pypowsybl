@@ -119,6 +119,8 @@ For example, you can import only an EQ file from a CGMES network, and then updat
     >>> network.get_generators()["target_p"]["GEN"]
     10.0
 
+The update can also be done using binary bytes buffers, using :func:`Network.update_from_binary_buffer` or :func:`Network.update_from_binary_buffers`
+
 Reading network elements data
 -----------------------------
 

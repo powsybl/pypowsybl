@@ -27,8 +27,8 @@ public class TieLineDataframeAdder extends AbstractSimpleAdder {
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),
-            SeriesMetadata.strings("dangling_line1_id"),
-            SeriesMetadata.strings("dangling_line2_id")
+            SeriesMetadata.strings("boundary_line1_id"),
+            SeriesMetadata.strings("boundary_line2_id")
     );
 
     @Override
@@ -38,20 +38,20 @@ public class TieLineDataframeAdder extends AbstractSimpleAdder {
 
     private static class TieLineSeries extends IdentifiableSeries {
 
-        private final StringSeries danglingLine1Ids;
-        private final StringSeries danglingLine2Ids;
+        private final StringSeries boundaryLine1Ids;
+        private final StringSeries boundaryLine2Ids;
 
         TieLineSeries(UpdatingDataframe dataframe) {
             super(dataframe);
-            this.danglingLine1Ids = dataframe.getStrings("dangling_line1_id");
-            this.danglingLine2Ids = dataframe.getStrings("dangling_line2_id");
+            this.boundaryLine1Ids = dataframe.getStrings("boundary_line1_id");
+            this.boundaryLine2Ids = dataframe.getStrings("boundary_line2_id");
         }
 
         TieLineAdder create(Network network, int row) {
             TieLineAdder adder = network.newTieLine();
             setIdentifiableAttributes(adder, row);
-            applyIfPresent(danglingLine1Ids, row, adder::setDanglingLine1);
-            applyIfPresent(danglingLine2Ids, row, adder::setDanglingLine2);
+            applyIfPresent(boundaryLine1Ids, row, adder::setBoundaryLine1);
+            applyIfPresent(boundaryLine2Ids, row, adder::setBoundaryLine2);
             return adder;
         }
     }

@@ -437,7 +437,10 @@ enum class NadLayoutType {
 enum class EdgeInfoType {
     ACTIVE_POWER = 0,
     REACTIVE_POWER,
-    CURRENT
+    CURRENT,
+    NAME,
+    VALUE_PERMANENT_LIMIT_PERCENTAGE,
+    EMPTY
 };
 
 class NadParameters {
@@ -446,7 +449,6 @@ public:
     std::shared_ptr<nad_parameters> to_c_struct() const;
     void nad_to_c_struct(nad_parameters& params) const;
 
-    bool edge_name_displayed;
     bool edge_info_along_edge;
     bool id_displayed;
     int power_value_precision;
@@ -458,9 +460,12 @@ public:
     NadLayoutType layout_type;
     int scaling_factor;
     double radius_factor;
-    EdgeInfoType edge_info_displayed;
     bool voltage_level_details;
     bool injections_added;
+    EdgeInfoType info_side_external;
+    EdgeInfoType info_middle_side1;
+    EdgeInfoType info_middle_side2;
+    EdgeInfoType info_side_internal;
 };
 
 //=======short-circuit analysis==========
@@ -502,16 +507,6 @@ enum ObjectiveFunctionType {
     MIN_COST
 };
 
-enum Unit {
-    AMPERE = 0,
-    DEGREE,
-    MEGAWATT,
-    KILOVOLT,
-    PERCENT_IMAX,
-    TAP,
-    SECTION_COUNT
-};
-
 enum Solver {
     CBC,
     SCIP,
@@ -543,7 +538,6 @@ public:
 
     // Objective function parameters
     ObjectiveFunctionType objective_function_type;
-    Unit unit;
     bool enforce_curative_security;
     double curative_min_obj_improvement;
 
@@ -709,7 +703,7 @@ DynamicSimulationParameters* createDynamicSimulationParameters();
 
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
+void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines);
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
@@ -740,6 +734,8 @@ std::vector<std::string> getNetworkAreaDiagramDisplayedVoltageLevels(const JavaH
 SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network);
 
 SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network);
+
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network);
 
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network);
 
@@ -1040,6 +1036,38 @@ SeriesArray* getRangeActionResults(const JavaHandle& cracHandle, const JavaHandl
 SeriesArray* getCostResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle);
 std::vector<std::string> getVirtualCostNames(const JavaHandle& resultHandle);
 SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHandle& resultHandle, const std::string& virtualCostName);
+
+SeriesArray* getInstants(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxPstActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxRemedialActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getMaxElementaryActionsPerTsoUsageLimits(const JavaHandle& cracHandle);
+SeriesArray* getCracContingencies(const JavaHandle& cracHandle);
+SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle);
+SeriesArray* getFlowCnecs(const JavaHandle& cracHandle);
+SeriesArray* getAngleCnecs(const JavaHandle& cracHandle);
+SeriesArray* getVoltageCnecs(const JavaHandle& cracHandle);
+SeriesArray* getThresholds(const JavaHandle& cracHandle);
+SeriesArray* getCracPstRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle);
+SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle);
+SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle);
+SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle);
+SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracPstTapPositionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracGeneratorActions(const JavaHandle& cracHandle);
+SeriesArray* getCracLoadActions(const JavaHandle& cracHandle);
+SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle);
+SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle);
+SeriesArray* getCracSwitchPairs(const JavaHandle& cracHandle);
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle);
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle);
 
 void setLoopFlowGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);
 void setMonitoringGlsk(const JavaHandle& raoContext, const JavaHandle& glsk);

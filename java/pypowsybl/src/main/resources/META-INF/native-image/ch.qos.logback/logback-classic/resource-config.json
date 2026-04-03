@@ -2,6 +2,8 @@
   "resources":{
   "includes":[
     {"pattern":"\\Qlogback.xml\\E"},
-    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"}
+    {"pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"},
+    {"pattern":"\\Qch/qos/logback/classic/logback-classic-version.properties\\E"},
+    {"pattern":"\\Qch/qos/logback/core/logback-core-version.properties\\E"}
   ]}
 }

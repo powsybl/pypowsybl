@@ -238,7 +238,8 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
 
         SensitivityResultWriter valueWriter = new SensitivityResultWriter() {
             @Override
-            public void writeSensitivityValue(int factorContext, int contingencyIndex, double value, double functionReference) {
+            public void writeSensitivityValue(int factorContext, int contingencyIndex, int strategyIndex,
+                                              double value, double functionReference) {
                 MatrixInfo m = factorIndexMatrixMap.floorEntry(factorContext).getValue();
 
                 int columnIdx = m.getOffsetColumn() + (factorContext - m.getOffsetData()) % m.getColumnCount();
@@ -252,7 +253,7 @@ class SensitivityAnalysisContext extends ContingencyContainerImpl {
             }
 
             @Override
-            public void writeContingencyStatus(int i, SensitivityAnalysisResult.Status status) {
+            public void writeStateStatus(int i, int strategy, SensitivityAnalysisResult.Status status) {
                 // nothing to do
             }
         };

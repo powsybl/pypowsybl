@@ -64,7 +64,7 @@ public final class PerUnitUtil {
             line.getTerminal2().getVoltageLevel().getNominalV(), line.getTerminal1().getVoltageLevel().getNominalV());
     }
 
-    public static double perUnitG(NetworkDataframeContext context, DanglingLine dl) {
+    public static double perUnitG(NetworkDataframeContext context, BoundaryLine dl) {
         return perUnitG(context, dl.getG(), dl.getR(), dl.getX(),
             dl.getTerminal().getVoltageLevel().getNominalV(), dl.getTerminal().getVoltageLevel().getNominalV());
     }
@@ -103,9 +103,9 @@ public final class PerUnitUtil {
         return unPerUnitGB(context, gb, twt.getTerminal2().getVoltageLevel().getNominalV());
     }
 
-    public static double unPerUnitG(NetworkDataframeContext context, DanglingLine danglingLine, double g) {
-        return unPerUnitG(context, g, danglingLine.getR(), danglingLine.getX(),
-            danglingLine.getTerminal().getVoltageLevel().getNominalV(), danglingLine.getTerminal().getVoltageLevel().getNominalV());
+    public static double unPerUnitG(NetworkDataframeContext context, BoundaryLine boundaryLine, double g) {
+        return unPerUnitG(context, g, boundaryLine.getR(), boundaryLine.getX(),
+            boundaryLine.getTerminal().getVoltageLevel().getNominalV(), boundaryLine.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double unPerUnitGB(NetworkDataframeContext context, ShuntCompensator shuntCompensator, double gb) {
@@ -138,7 +138,7 @@ public final class PerUnitUtil {
         return perUnitGB(context, gb, twt.getTerminal2().getVoltageLevel().getNominalV());
     }
 
-    public static double perUnitB(NetworkDataframeContext context, DanglingLine dl) {
+    public static double perUnitB(NetworkDataframeContext context, BoundaryLine dl) {
         return perUnitGB(context, dl.getB(), dl.getTerminal().getVoltageLevel().getNominalV());
     }
 
@@ -164,8 +164,8 @@ public final class PerUnitUtil {
             line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV());
     }
 
-    public static double unPerUnitB(NetworkDataframeContext context, DanglingLine danglingLine, double b) {
-        return unPerUnitGB(context, b, danglingLine.getTerminal().getVoltageLevel().getNominalV());
+    public static double unPerUnitB(NetworkDataframeContext context, BoundaryLine boundaryLine, double b) {
+        return unPerUnitGB(context, b, boundaryLine.getTerminal().getVoltageLevel().getNominalV());
     }
 
     public static double unPerUnitB(NetworkDataframeContext context, double b, double r, double x, double nominalV1, double nominalV2) {

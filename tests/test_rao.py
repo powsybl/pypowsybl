@@ -21,8 +21,7 @@ from pypowsybl._pypowsybl import (
     PstModel,
     RaRangeShrinking,
     Solver,
-    ExecutionCondition,
-    Unit)
+    ExecutionCondition)
 from pypowsybl.rao import Parameters as RaoParameters, RaoResult
 from pypowsybl.rao import Glsk as RaoGlsk
 from pypowsybl.rao import (
@@ -57,7 +56,6 @@ def test_rao_parameters():
     # Full setup
     objective_function_param = ObjectiveFunctionParameters(
         objective_function_type=ObjectiveFunctionType.MIN_COST,
-        unit=Unit.MEGAWATT,
         curative_min_obj_improvement=1.0,
         enforce_curative_security=True
     )
@@ -119,7 +117,6 @@ def test_rao_parameters():
     )
 
     assert parameters2.objective_function_parameters.objective_function_type == ObjectiveFunctionType.MIN_COST
-    assert parameters2.objective_function_parameters.unit == Unit.MEGAWATT
     assert parameters2.objective_function_parameters.curative_min_obj_improvement == 1.0
     assert parameters2.objective_function_parameters.enforce_curative_security == True
 
@@ -182,8 +179,7 @@ def test_rao_from_buffers(rao_provider: str):
 
     assert json_result["computationStatus"] == "default"
     expected_keys = ['type', 'version', 'info', 'computationStatus', 'executionDetails', 'costResults',
-                     'computationStatusMap', 'flowCnecResults', 'angleCnecResults', 'voltageCnecResults',
-                     'networkActionResults', 'rangeActionResults']
+                     'computationStatusMap', 'flowCnecResults', 'networkActionResults', 'rangeActionResults']
     if rao_provider == "FastRao":
         expected_keys.append("extensions")
     assert list(json_result.keys()) == expected_keys
@@ -375,10 +371,10 @@ def test_rao_cost_results(rao_provider: str):
     assert ['functional_cost', 'virtual_cost', 'cost'] == list(cost_results_df.columns)
     expected = pd.DataFrame(index=pd.Series(name='optimized_instant', data=['initial', 'preventive', 'outage', 'curative']),
                             columns=['functional_cost', 'virtual_cost', 'cost'],
-                            data=[[133.304310, 0.0, 133.304310],
-                                  [237.646702, 0.0, 237.646702],
-                                  [237.646702, 0.0, 237.646702],
-                                  [-187.219238, 0.0, -187.219238]])
+                            data=[[158.362939, 0.0, 158.362939],
+                                  [320.332912, 0.0, 320.332912],
+                                  [320.332912, 0.0, 320.332912],
+                                  [-304.400116, 0.0, -304.400116]])
     pd.testing.assert_frame_equal(expected, cost_results_df, check_dtype=False, check_like=True)
 
     assert ['sensitivity-failure-cost'] == result.get_virtual_cost_names()

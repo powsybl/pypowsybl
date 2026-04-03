@@ -23,8 +23,9 @@ namespace py = pybind11;
 void setLogLevelFromPythonLogger(pypowsybl::GraalVmGuard* guard, exception_handler* exc);
 
 pypowsybl::JavaHandle loadNetworkFromBinaryBuffersPython(std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode, bool allowVariantMultiThreadAccess);
-
 py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, pypowsybl::JavaHandle* reportNode);
+void updateNetworkFromBinaryBuffersPython(const pypowsybl::JavaHandle& network, std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode);
+
 
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac);
 pypowsybl::JavaHandle loadGlskSource(const py::buffer& glsk);
@@ -365,8 +366,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("SHUNT_COMPENSATOR", element_type::SHUNT_COMPENSATOR)
             .value("NON_LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::NON_LINEAR_SHUNT_COMPENSATOR_SECTION)
             .value("LINEAR_SHUNT_COMPENSATOR_SECTION", element_type::LINEAR_SHUNT_COMPENSATOR_SECTION)
-            .value("DANGLING_LINE", element_type::DANGLING_LINE)
-            .value("DANGLING_LINE_GENERATION", element_type::DANGLING_LINE_GENERATION)
+            .value("BOUNDARY_LINE", element_type::BOUNDARY_LINE)
+            .value("BOUNDARY_LINE_GENERATION", element_type::BOUNDARY_LINE_GENERATION)
             .value("TIE_LINE", element_type::TIE_LINE)
             .value("LCC_CONVERTER_STATION", element_type::LCC_CONVERTER_STATION)
             .value("VSC_CONVERTER_STATION", element_type::VSC_CONVERTER_STATION)
@@ -461,11 +462,14 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("load_network_from_string", &pypowsybl::loadNetworkFromString, "Load a network from a string", py::call_guard<py::gil_scoped_release>(),
               py::arg("file_name"), py::arg("file_content"),py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
-    m.def("load_network_from_binary_buffers", ::loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("load_network_from_binary_buffers", loadNetworkFromBinaryBuffersPython, "Load a network from a list of binary buffer", py::call_guard<py::gil_scoped_release>(),
               py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"), py::arg("allow_variant_multi_thread_access"));
 
     m.def("update_network", &pypowsybl::updateNetwork, "Update a network from a file", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
+
+    m.def("update_network_from_binary_buffers", updateNetworkFromBinaryBuffersPython, "Update a network from a list of binary buffers",
+        py::arg("network"), py::arg("buffers"), py::arg("parameters"), py::arg("post_processors"), py::arg("report_node"));
 
     m.def("save_network", &pypowsybl::saveNetwork, "Save network to a file in a given format", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("file"),py::arg("format"), py::arg("parameters"), py::arg("report_node"));
@@ -473,12 +477,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("save_network_to_string", &pypowsybl::saveNetworkToString, "Save network in a given format to a string", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
-    m.def("save_network_to_binary_buffer", ::saveNetworkToBinaryBufferPython, "Save network in a given format to a binary byffer", py::call_guard<py::gil_scoped_release>(),
+    m.def("save_network_to_binary_buffer", saveNetworkToBinaryBufferPython, "Save network in a given format to a binary buffer", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("format"), py::arg("parameters"), py::arg("report_node"));
 
     m.def("reduce_network", &pypowsybl::reduceNetwork, "Reduce network", py::call_guard<py::gil_scoped_release>(),
           py::arg("network"), py::arg("v_min"), py::arg("v_max"),
-          py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_dangling_lines"));
+          py::arg("ids"), py::arg("vls"), py::arg("depths"), py::arg("with_boundary_lines"));
 
     py::enum_<pypowsybl::LoadFlowComponentStatus>(m, "LoadFlowComponentStatus", "Loadflow status for one connected component.")
             .value("CONVERGED", pypowsybl::LoadFlowComponentStatus::CONVERGED, "The loadflow has converged.")
@@ -660,11 +664,13 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::enum_<pypowsybl::EdgeInfoType>(m, "EdgeInfoType")
             .value("ACTIVE_POWER", pypowsybl::EdgeInfoType::ACTIVE_POWER)
             .value("REACTIVE_POWER", pypowsybl::EdgeInfoType::REACTIVE_POWER)
-            .value("CURRENT", pypowsybl::EdgeInfoType::CURRENT);
+            .value("CURRENT", pypowsybl::EdgeInfoType::CURRENT)
+            .value("NAME", pypowsybl::EdgeInfoType::NAME)
+            .value("VALUE_PERMANENT_LIMIT_PERCENTAGE", pypowsybl::EdgeInfoType::VALUE_PERMANENT_LIMIT_PERCENTAGE)
+            .value("EMPTY", pypowsybl::EdgeInfoType::EMPTY);
 
     py::class_<pypowsybl::NadParameters>(m, "NadParameters")
         .def(py::init(&pypowsybl::createNadParameters))
-        .def_readwrite("edge_name_displayed", &pypowsybl::NadParameters::edge_name_displayed)
         .def_readwrite("edge_info_along_edge", &pypowsybl::NadParameters::edge_info_along_edge)
         .def_readwrite("power_value_precision", &pypowsybl::NadParameters::power_value_precision)
         .def_readwrite("current_value_precision", &pypowsybl::NadParameters::current_value_precision)
@@ -676,9 +682,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("layout_type", &pypowsybl::NadParameters::layout_type)
         .def_readwrite("scaling_factor", &pypowsybl::NadParameters::scaling_factor)
         .def_readwrite("radius_factor", &pypowsybl::NadParameters::radius_factor)
-        .def_readwrite("edge_info_displayed",&pypowsybl::NadParameters::edge_info_displayed)
         .def_readwrite("voltage_level_details", &pypowsybl::NadParameters::voltage_level_details)
-        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added);
+        .def_readwrite("injections_added", &pypowsybl::NadParameters::injections_added)
+        .def_readwrite("info_side_external", &pypowsybl::NadParameters::info_side_external)
+        .def_readwrite("info_middle_side1", &pypowsybl::NadParameters::info_middle_side1)
+        .def_readwrite("info_middle_side2", &pypowsybl::NadParameters::info_middle_side2)
+        .def_readwrite("info_side_internal", &pypowsybl::NadParameters::info_side_internal);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));
@@ -717,6 +726,9 @@ PYBIND11_MODULE(_pypowsybl, m) {
         py::arg("network"));
 
     m.def("get_default_twt_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultTwtLabels, "Get network area diagram default twt labels",
+            py::arg("network"));
+
+    m.def("get_default_injections_labels_nad", &pypowsybl::getNetworkAreaDiagramDefaultInjectionsLabels, "Get network area diagram default injections labels",
             py::arg("network"));
 
     m.def("get_default_bus_descriptions_nad", &pypowsybl::getNetworkAreaDiagramDefaultBusDescriptions, "Get network area diagram default bus descriptions",
@@ -819,15 +831,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .value("MAX_MIN_RELATIVE_MARGIN", pypowsybl::ObjectiveFunctionType::MAX_MIN_RELATIVE_MARGIN, "")
             .value("MIN_COST", pypowsybl::ObjectiveFunctionType::MIN_COST, "");
 
-    py::enum_<pypowsybl::Unit>(m, "Unit")
-            .value("AMPERE", pypowsybl::Unit::AMPERE)
-            .value("DEGREE", pypowsybl::Unit::DEGREE)
-            .value("MEGAWATT", pypowsybl::Unit::MEGAWATT)
-            .value("KILOVOLT", pypowsybl::Unit::KILOVOLT)
-            .value("PERCENT_IMAX", pypowsybl::Unit::PERCENT_IMAX)
-            .value("TAP", pypowsybl::Unit::TAP)
-            .value("SECTION_COUNT", pypowsybl::Unit::SECTION_COUNT);
-
     py::enum_<pypowsybl::Solver>(m, "Solver")
             .value("CBC", pypowsybl::Solver::CBC)
             .value("SCIP", pypowsybl::Solver::SCIP)
@@ -850,7 +853,6 @@ PYBIND11_MODULE(_pypowsybl, m) {
     py::class_<pypowsybl::RaoParameters>(m, "RaoParameters")
             .def(py::init(&pypowsybl::createRaoParameters))
             .def_readwrite("objective_function_type", &pypowsybl::RaoParameters::objective_function_type)
-            .def_readwrite("unit", &pypowsybl::RaoParameters::unit)
             .def_readwrite("curative_min_obj_improvement", &pypowsybl::RaoParameters::curative_min_obj_improvement)
             .def_readwrite("enforce_curative_security", &pypowsybl::RaoParameters::enforce_curative_security)
             .def_readwrite("solver", &pypowsybl::RaoParameters::solver)
@@ -1306,6 +1308,38 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
     m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, py::call_guard<py::gil_scoped_release>(), "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
 
+    m.def("get_instants", &pypowsybl::getInstants, "Get crac instants", py::arg("crac"));
+    m.def("get_max_remedial_actions_usage_limits", &pypowsybl::getMaxRemedialActionsUsageLimits, "Get max remedial actions usage limit", py::arg("crac"));
+    m.def("get_max_topological_actions_per_tso_usage_limits", &pypowsybl::getMaxTopologicalActionsPerTsoUsageLimits, "Get max topological action per tso usage limit", py::arg("crac"));
+    m.def("get_max_pst_actions_per_tso_usage_limits", &pypowsybl::getMaxPstActionsPerTsoUsageLimits, "Get max pst action per tso usage limit", py::arg("crac"));
+    m.def("get_max_remedial_actions_per_tso_usage_limits", &pypowsybl::getMaxRemedialActionsPerTsoUsageLimits, "Get max remedial action per tso usage limit", py::arg("crac"));
+    m.def("get_max_elementary_actions_per_tso_usage_limits", &pypowsybl::getMaxElementaryActionsPerTsoUsageLimits, "Get max elementary action per tso usage limit", py::arg("crac"));
+    m.def("get_crac_contingencies", &pypowsybl::getCracContingencies, "Get crac contingencies", py::arg("crac"));
+    m.def("get_crac_contingency_elements", &pypowsybl::getCracContingencyElements, "Get crac contingency elements", py::arg("crac"));
+    m.def("get_flow_cnecs", &pypowsybl::getFlowCnecs, "Get crac flow cnecs", py::arg("crac"));
+    m.def("get_angle_cnecs", &pypowsybl::getAngleCnecs, "Get crac angle cnecs", py::arg("crac"));
+    m.def("get_voltage_cnecs", &pypowsybl::getVoltageCnecs, "Get crac voltage cnecs", py::arg("crac"));
+    m.def("get_thresholds", &pypowsybl::getThresholds, "Get crac thresholds", py::arg("crac"));
+    m.def("get_crac_pst_range_actions", &pypowsybl::getCracPstRangeActions, "Get crac pst range actions", py::arg("crac"));
+    m.def("get_crac_hvdc_range_actions", &pypowsybl::getCracHvdcRangeActions, "Get crac hvdc range actions", py::arg("crac"));
+    m.def("get_crac_injection_range_actions", &pypowsybl::getCracInjectionRangeActions, "Get crac injection range actions", py::arg("crac"));
+    m.def("get_network_element_ids_and_keys", &pypowsybl::getNetworkElementIdsAndKeys, "Get crac injection ra elements", py::arg("crac"));
+    m.def("get_crac_counter_trade_range_actions", &pypowsybl::getCracCounterTradeRangeActions, "Get crac counter trade range actions", py::arg("crac"));
+    m.def("get_crac_range_action_ranges", &pypowsybl::getCracRangeActionRanges, "Get crac range action ranges", py::arg("crac"));
+    m.def("get_crac_network_actions", &pypowsybl::getCracNetworkActions, "Get crac network actions", py::arg("crac"));
+    m.def("get_crac_terminal_connection_actions", &pypowsybl::getCracTerminalConnectionActions, "Get terminal connection actions", py::arg("crac"));
+    m.def("get_crac_pst_tap_position_actions", &pypowsybl::getCracPstTapPositionActions, "Get pst tap position actions", py::arg("crac"));
+    m.def("get_crac_generator_actions", &pypowsybl::getCracGeneratorActions, "Get generator actions", py::arg("crac"));
+    m.def("get_crac_load_actions", &pypowsybl::getCracLoadActions, "Get load actions", py::arg("crac"));
+    m.def("get_crac_boundary_line_actions", &pypowsybl::getCracBoundaryLineActions, "Get boundary line actions", py::arg("crac"));
+    m.def("get_crac_shunt_compensator_position_actions", &pypowsybl::getCracShuntCompensatorPositionActions, "Get shunt compensator position actions", py::arg("crac"));
+    m.def("get_crac_switch_actions", &pypowsybl::getCracSwitchActions, "Get switch actions", py::arg("crac"));
+    m.def("get_crac_switch_pairs", &pypowsybl::getCracSwitchPairs, "Get switch pairs", py::arg("crac"));
+    m.def("get_on_instant_usage_rules", &pypowsybl::getOnInstantUsageRules, "Get on instant usage rules", py::arg("crac"));
+    m.def("get_on_contingency_state_usage_rules", &pypowsybl::getOnContingencyStateUsageRules, "Get on contingency state usage rules", py::arg("crac"));
+    m.def("get_on_constraint_usage_rules", &pypowsybl::getOnConstraintUsageRules, "Get on constraint usage rules", py::arg("crac"));
+    m.def("get_on_flow_constraint_in_country_usage_rules", &pypowsybl::getOnFlowConstraintInCountryUsageRules, "Get on flow constraint in country usage rules", py::arg("crac"));
+
     py::enum_<Grid2opStringValueType>(m, "Grid2opStringValueType")
             .value("VOLTAGE_LEVEL_NAME", Grid2opStringValueType::VOLTAGE_LEVEL_NAME)
             .value("LOAD_NAME", Grid2opStringValueType::LOAD_NAME)
@@ -1469,6 +1503,33 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
     py::bytes bytes((char*) byteArray->ptr, byteArray->length);
     pypowsybl::PowsyblCaller::get()->callJava<>(::freeBinaryBuffer, byteArray);
     return bytes;
+}
+
+void updateNetworkFromBinaryBuffersPython(const pypowsybl::JavaHandle& network, std::vector<py::buffer> byteBuffers,
+    const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode) {
+    std::vector<std::string> parameterNames;
+    std::vector<std::string> parameterValues;
+    parameterNames.reserve(parameters.size());
+    parameterValues.reserve(parameters.size());
+    for (std::pair<std::string, std::string> p : parameters) {
+        parameterNames.push_back(p.first);
+        parameterValues.push_back(p.second);
+    }
+    pypowsybl::ToCharPtrPtr parameterNamesPtr(parameterNames);
+    pypowsybl::ToCharPtrPtr parameterValuesPtr(parameterValues);
+    pypowsybl::ToCharPtrPtr postProcessorsPtr(postProcessors);
+
+    char** dataPtrs = new char*[byteBuffers.size()];
+    int* dataSizes = new int[byteBuffers.size()];
+    for(int i=0; i < byteBuffers.size(); ++i) {
+        py::buffer_info info = byteBuffers[i].request();
+        dataPtrs[i] = static_cast<char*>(info.ptr);
+        dataSizes[i] = info.size;
+    }
+
+    pypowsybl::PowsyblCaller::get()->callJava(::updateNetworkFromBinaryBuffers, network, dataPtrs, dataSizes, byteBuffers.size(), parameterNamesPtr.get(),
+                                              parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(),
+                                              postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac) {

@@ -1,6 +1,6 @@
 package com.powsybl.python.security;
 
-import com.powsybl.security.LimitViolation;
+import com.powsybl.contingency.violations.LimitViolation;
 
 import java.util.Objects;
 
