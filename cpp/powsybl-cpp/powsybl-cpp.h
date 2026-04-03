@@ -507,16 +507,6 @@ enum ObjectiveFunctionType {
     MIN_COST
 };
 
-enum Unit {
-    AMPERE = 0,
-    DEGREE,
-    MEGAWATT,
-    KILOVOLT,
-    PERCENT_IMAX,
-    TAP,
-    SECTION_COUNT
-};
-
 enum Solver {
     CBC,
     SCIP,
@@ -548,7 +538,6 @@ public:
 
     // Objective function parameters
     ObjectiveFunctionType objective_function_type;
-    Unit unit;
     bool enforce_curative_security;
     double curative_min_obj_improvement;
 
@@ -714,7 +703,7 @@ DynamicSimulationParameters* createDynamicSimulationParameters();
 
 std::string saveNetworkToString(const JavaHandle& network, const std::string& format, const std::map<std::string, std::string>& parameters, JavaHandle* reportNode);
 
-void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines);
+void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines);
 
 LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 

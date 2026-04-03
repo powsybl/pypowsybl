@@ -155,8 +155,8 @@ typedef enum {
     SHUNT_COMPENSATOR,
     NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
     LINEAR_SHUNT_COMPENSATOR_SECTION,
-    DANGLING_LINE,
-    DANGLING_LINE_GENERATION,
+    BOUNDARY_LINE,
+    BOUNDARY_LINE_GENERATION,
     TIE_LINE,
     LCC_CONVERTER_STATION,
     VSC_CONVERTER_STATION,
@@ -518,7 +518,6 @@ typedef struct rao_parameters_struct {
   struct provider_parameters_struct provider_parameters;
   int objective_function_type; // Objective function parameters
   unsigned char enforce_curative_security;
-  int unit; // Objective function parameters
   double curative_min_obj_improvement;
 
   // range action solver

@@ -37,9 +37,9 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoParameters;
+import com.powsybl.nad.svg.EdgeInfoEnum;
+import com.powsybl.nad.svg.EdgeInfoParameters;
+import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -470,14 +470,14 @@ public final class NetworkCFunctions {
                                      CCharPointerPointer idsPtrPtr, int idsCount,
                                      CCharPointerPointer vlsPtrPtr, int vlsCount,
                                      CIntPointer depthsPtr, int depthsCount,
-                                     boolean withDanglingLines,
+                                     boolean withBoundaryLines,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 ReductionOptions options = new ReductionOptions();
-                options.withDanglingLlines(withDanglingLines);
+                options.withBoundaryLines(withBoundaryLines);
                 List<NetworkPredicate> predicates = new ArrayList<>();
                 if (vMax != Double.MAX_VALUE || vMin != 0) {
                     predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
@@ -1302,13 +1302,12 @@ public final class NetworkCFunctions {
         boolean busLegend = nadParametersPointer.isBusLegend();
         boolean substationDescription = nadParametersPointer.isSubstationDescriptionDisplayed();
         EdgeInfoParameters edgeInfoParameters = convertEdgeInfoParameters(nadParametersPointer);
-        nadParameters.setLabelProviderFactory((n, s) -> new DefaultLabelProvider(n,
-                edgeInfoParameters,
-                s.createValueFormatter(),
+        nadParameters.setLabelProviderFactory(new DefaultLabelProviderFactory(
                 new LabelProviderParameters()
                         .setIdDisplayed(idDisplayed)
                         .setBusLegend(busLegend)
-                        .setSubstationDescriptionDisplayed(substationDescription)));
+                        .setSubstationDescriptionDisplayed(substationDescription)
+                        .setEdgeInfoParameters(edgeInfoParameters)));
         nadParameters.getLayoutParameters()
                 .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;

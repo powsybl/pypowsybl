@@ -464,8 +464,8 @@ def test_secondary_voltage_control():
 def test_geo_data():
     n = pn.load(str(DATA_DIR.joinpath('MicroGridTestConfiguration_T4_BE_BB_Complete_v2.zip')), {'iidm.import.cgmes.post-processors': 'cgmesGLImport'})
     substation_expected = pd.DataFrame.from_records(index='id',
-                                         data=[{'id': '87f7002b-056f-4a6a-a872-1744eea757e3', 'latitude': 51.3251, 'longitude': 4.25926},
-                                               {'id': '37e14a0f-5e34-4647-a062-8bfd9305fa9d', 'latitude': 50.8038, 'longitude': 4.30089}])
+                                         data=[{'id': '37e14a0f-5e34-4647-a062-8bfd9305fa9d', 'latitude': 50.8038, 'longitude': 4.30089},
+                                               {'id': '87f7002b-056f-4a6a-a872-1744eea757e3', 'latitude': 51.3251, 'longitude': 4.25926}])
     pd.testing.assert_frame_equal(n.get_extensions('substationPosition'), substation_expected)
     line_expected = pd.DataFrame.from_records(data=[{'id': 'b58bf21a-096a-4dae-9a01-3f03b60c24c7', 'num': 0, 'latitude': 50.8035, 'longitude': 4.30113},
                                                     {'id': 'b58bf21a-096a-4dae-9a01-3f03b60c24c7', 'num': 1, 'latitude': 50.9169, 'longitude': 4.34509},

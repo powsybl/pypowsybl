@@ -320,15 +320,15 @@ class NetworkDataframesTest {
     }
 
     @Test
-    void danglingLines() {
+    void boundaryLines() {
         Network network = EurostagTutorialExample1Factory.create();
-        List<Series> series = createDataFrame(DANGLING_LINE, network);
+        List<Series> series = createDataFrame(BOUNDARY_LINE, network);
 
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i", "voltage_level_id", "bus_id",
                         "connected", "pairing_key", "ucte_xnode_code", "paired", "tie_line_id");
-        List<Series> allAttributeSeries = createDataFrame(DANGLING_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        List<Series> allAttributeSeries = createDataFrame(BOUNDARY_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "r", "x", "g", "b", "p0", "q0", "p", "q", "i",
@@ -338,9 +338,9 @@ class NetworkDataframesTest {
     }
 
     @Test
-    void danglingLinesGeneration() {
+    void boundaryLinesGeneration() {
         Network network = EurostagTutorialExample1Factory.create();
-        List<Series> series = createDataFrame(DANGLING_LINE_GENERATION, network);
+        List<Series> series = createDataFrame(BOUNDARY_LINE_GENERATION, network);
 
         assertThat(series)
                 .extracting(Series::getName)
@@ -355,11 +355,11 @@ class NetworkDataframesTest {
 
         assertThat(series)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "pairing_key", "ucte_xnode_code");
+                .containsExactly("id", "name", "boundary_line1_id", "boundary_line2_id", "pairing_key", "ucte_xnode_code");
         List<Series> allAttributeSeries = createDataFrame(TIE_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
-                .containsExactly("id", "name", "dangling_line1_id", "dangling_line2_id", "pairing_key", "ucte_xnode_code", "fictitious");
+                .containsExactly("id", "name", "boundary_line1_id", "boundary_line2_id", "pairing_key", "ucte_xnode_code", "fictitious");
     }
 
     @Test

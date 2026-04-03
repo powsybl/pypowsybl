@@ -377,7 +377,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
    sensitivity_parameters(src->sensitivity_parameters)
 {
     objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
-    unit = static_cast<Unit>(src->unit);
     curative_min_obj_improvement = src->curative_min_obj_improvement;
     enforce_curative_security = (bool) src->enforce_curative_security;
 
@@ -429,7 +428,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
 void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.objective_function_type = objective_function_type;
-    res.unit = unit;
     res.curative_min_obj_improvement = curative_min_obj_improvement;
     res.enforce_curative_security = enforce_curative_security;
 
@@ -874,11 +872,11 @@ std::string saveNetworkToString(const JavaHandle& network, const std::string& fo
 }
 
 void reduceNetwork(const JavaHandle& network, double v_min, double v_max, const std::vector<std::string>& ids,
-                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines) {
+                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines) {
     ToCharPtrPtr elementIdPtr(ids);
     ToCharPtrPtr vlsPtr(vls);
     ToIntPtr depthsPtr(depths);
-    PowsyblCaller::get()->callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
+    PowsyblCaller::get()->callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withBoundaryLines);
 }
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {

@@ -9,18 +9,15 @@ package com.powsybl.python.network;
 
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.dataframe.DataframeMapperBuilder;
-import com.powsybl.iidm.network.*;
-import com.powsybl.nad.layout.LayoutParameters;
-import com.powsybl.nad.model.Identifiable;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.NetworkAreaDiagram;
 import com.powsybl.nad.build.iidm.NetworkGraphBuilder;
 import com.powsybl.nad.build.iidm.VoltageLevelFilter;
+import com.powsybl.nad.layout.LayoutParameters;
 import com.powsybl.nad.model.*;
-import com.powsybl.nad.svg.CustomLabelProvider;
-import com.powsybl.nad.svg.EdgeInfo;
-import com.powsybl.nad.svg.LabelProvider;
-import com.powsybl.nad.svg.SvgParameters;
+import com.powsybl.nad.svg.*;
 import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
 
 import java.io.IOException;
@@ -30,13 +27,16 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum.ACTIVE_POWER;
-import static com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum.EMPTY;
+import static com.powsybl.nad.svg.EdgeInfoEnum.ACTIVE_POWER;
+import static com.powsybl.nad.svg.EdgeInfoEnum.EMPTY;
 
 /**
  * @author Geoffroy Jamgotchian {@literal <geoffroy.jamgotchian at rte-france.com>}
@@ -46,7 +46,7 @@ public final class NetworkAreaDiagramUtil {
     private NetworkAreaDiagramUtil() {
     }
 
-    public static int getEquivalentValueForEdgeInfo(DefaultLabelProvider.EdgeInfoEnum edgeInfoEnum) {
+    public static int getEquivalentValueForEdgeInfo(EdgeInfoEnum edgeInfoEnum) {
         return switch (edgeInfoEnum) {
             case ACTIVE_POWER -> 0;
             case REACTIVE_POWER -> 1;
@@ -57,13 +57,13 @@ public final class NetworkAreaDiagramUtil {
         };
     }
 
-    public static DefaultLabelProvider.EdgeInfoEnum getEquivalentEdgeInfoEnum(int edgeInfoValue) {
+    public static EdgeInfoEnum getEquivalentEdgeInfoEnum(int edgeInfoValue) {
         return switch (edgeInfoValue) {
             case 0 -> ACTIVE_POWER;
-            case 1 -> DefaultLabelProvider.EdgeInfoEnum.REACTIVE_POWER;
-            case 2 -> DefaultLabelProvider.EdgeInfoEnum.CURRENT;
-            case 3 -> DefaultLabelProvider.EdgeInfoEnum.NAME;
-            case 4 -> DefaultLabelProvider.EdgeInfoEnum.VALUE_PERMANENT_LIMIT_PERCENTAGE;
+            case 1 -> EdgeInfoEnum.REACTIVE_POWER;
+            case 2 -> EdgeInfoEnum.CURRENT;
+            case 3 -> EdgeInfoEnum.NAME;
+            case 4 -> EdgeInfoEnum.VALUE_PERMANENT_LIMIT_PERCENTAGE;
             default -> EMPTY;
         };
     }
@@ -126,8 +126,8 @@ public final class NetworkAreaDiagramUtil {
                 .setSvgParameters(svgParameters);
     }
 
-    static DefaultLabelProvider.EdgeInfoParameters createEdgeInfoParameters() {
-        return new DefaultLabelProvider.EdgeInfoParameters(ACTIVE_POWER, EMPTY, EMPTY, EMPTY);
+    static EdgeInfoParameters createEdgeInfoParameters() {
+        return new EdgeInfoParameters(ACTIVE_POWER, EMPTY, EMPTY, EMPTY);
     }
 
     static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds, double nominalVoltageLowerBound, double nominalVoltageUpperBound, int depth) {
@@ -169,7 +169,7 @@ public final class NetworkAreaDiagramUtil {
     public static Map<String, CustomLabelProvider.BranchLabels> getBranchLabelsMap(Graph graph, LabelProvider labelProvider) {
 
         return graph.getBranchEdgeStream()
-                .filter(be -> !(BranchEdge.DANGLING_LINE_EDGE.equals(be.getType())))
+                .filter(be -> !(BranchEdge.BOUNDARY_LINE_EDGE.equals(be.getType())))
                 .collect(Collectors.toMap(Identifiable::getEquipmentId, branchEdge -> {
                     String branchId = branchEdge.getEquipmentId();
                     String type = branchEdge.getType();

@@ -1,8 +1,7 @@
 {
-  "version" : "3.2.1",
+  "version" : "3.3",
   "objective-function" : {
     "type" : "MAX_MIN_MARGIN",
-    "unit" : "A",
     "enforce-curative-security" : true
   },
   "range-actions-optimization" : {

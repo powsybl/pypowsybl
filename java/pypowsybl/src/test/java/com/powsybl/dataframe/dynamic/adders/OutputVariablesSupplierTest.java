@@ -35,8 +35,8 @@ class OutputVariablesSupplierTest {
                 var2 -> assertThat(var2).hasFieldOrPropertyWithValue("dynamicModelId", "LOAD")
                         .hasFieldOrPropertyWithValue("variable", "load_QPu")
                         .hasFieldOrPropertyWithValue("outputType", CURVE),
-                var3 -> assertThat(var3).hasFieldOrPropertyWithValue("dynamicModelId", "NETWORK")
-                        .hasFieldOrPropertyWithValue("variable", "NGEN_Upu_value")
+                var3 -> assertThat(var3).hasFieldOrPropertyWithValue("dynamicModelId", "NGEN")
+                        .hasFieldOrPropertyWithValue("variable", "Upu_value")
                         .hasFieldOrPropertyWithValue("outputType", FINAL_STATE)
         );
     }

@@ -597,8 +597,8 @@ public final class PyPowsyblApiHeader {
         SHUNT_COMPENSATOR,
         NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
         LINEAR_SHUNT_COMPENSATOR_SECTION,
-        DANGLING_LINE,
-        DANGLING_LINE_GENERATION,
+        BOUNDARY_LINE,
+        BOUNDARY_LINE_GENERATION,
         TIE_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
@@ -1430,12 +1430,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("enforce_curative_security")
         void setEnforceCurativeSecurity(boolean enforceCurativeSecurity);
-
-        @CField("unit")
-        int getUnit();
-
-        @CField("unit")
-        void setUnit(int unit);
 
         @CField("curative_min_obj_improvement")
         double getCurativeMinObjImprovement();
