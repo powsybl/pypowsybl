@@ -84,7 +84,7 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
         Map<Area, List<Pair<Terminal, Boolean>>> terminalBoundaries = new HashMap<>();
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String areaId = series.getIds().get(i);
-            String boundaryTypeStr = series.getBoundaryTypes() == null ? "DANGLING_LINE" : series.getBoundaryTypes().get(i);
+            String boundaryTypeStr = series.getBoundaryTypes() == null ? "BOUNDARY_LINE" : series.getBoundaryTypes().get(i);
             String element = series.getElements().get(i);
             String side = series.getSides() == null ? "" : series.getSides().get(i);
             boolean ac = series.getAcs() == null || series.getAcs().get(i) == 1;
@@ -107,7 +107,7 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
                 Terminal terminal = NetworkUtils.getTerminalOrThrow(network, element, side);
                 terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(terminal, ac));
             } else {
-                throw new PowsyblException("Area boundary boundary_type must be either DANGLING_LINE or TERMINAL");
+                throw new PowsyblException("Area boundary boundary_type must be either BOUNDARY_LINE or TERMINAL");
             }
         }
         // delete boundaries of involved areas

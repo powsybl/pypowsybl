@@ -136,8 +136,8 @@ def test_shunt_compensators_per_unit():
     pd.testing.assert_frame_equal(expected, n.get_shunt_compensators(), check_dtype=False, atol=1e-2)
 
 
-def test_dangling_lines_per_unit():
-    n = util.create_dangling_lines_network()
+def test_boundary_line_per_unit():
+    n = util.create_boundary_lines_network()
     pp.loadflow.run_ac(n)
     n.per_unit = True
 
@@ -146,16 +146,16 @@ def test_dangling_lines_per_unit():
                                      'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.5, 0.3, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                    True, '', '', False, '']])
-    dangling_lines = n.get_dangling_lines()
-    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -4)
-    n.update_dangling_lines(pd.DataFrame(index=['BL'], columns=['p0', 'q0'], data=[[0.75, 0.25]]))
+    boundary_lines = n.get_boundary_lines()
+    pd.testing.assert_frame_equal(expected, boundary_lines, check_dtype=False, atol=10 ** -4)
+    n.update_boundary_lines(pd.DataFrame(index=['BL'], columns=['p0', 'q0'], data=[[0.75, 0.25]]))
     expected = pd.DataFrame(index=pd.Series(name='id', data=['BL']),
                             columns=['name', 'r', 'x', 'g', 'b', 'p0', 'q0', 'p', 'q', 'i', 'voltage_level_id',
                                      'bus_id', 'connected', 'pairing_key', 'ucte_xnode_code', 'paired', 'tie_line_id'],
                             data=[['', 0.1, 0.01, 0.01, 0.001, 0.75, 0.25, 0.5482, 0.3029, 0.6263, 'VL', 'VL_0',
                                    True, '', '', False, '']])
-    dangling_lines = n.get_dangling_lines()
-    pd.testing.assert_frame_equal(expected, dangling_lines, check_dtype=False, atol=10 ** -4)
+    boundary_lines = n.get_boundary_lines()
+    pd.testing.assert_frame_equal(expected, boundary_lines, check_dtype=False, atol=10 ** -4)
 
 
 def test_lcc_converter_stations_per_unit():

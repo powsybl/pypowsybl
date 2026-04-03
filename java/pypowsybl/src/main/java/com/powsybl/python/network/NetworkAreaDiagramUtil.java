@@ -126,10 +126,6 @@ public final class NetworkAreaDiagramUtil {
                 .setSvgParameters(svgParameters);
     }
 
-    static EdgeInfoParameters createEdgeInfoParameters() {
-        return new EdgeInfoParameters(ACTIVE_POWER, EMPTY, EMPTY, EMPTY);
-    }
-
     static VoltageLevelFilter getNominalVoltageFilter(Network network, List<String> voltageLevelIds, double nominalVoltageLowerBound, double nominalVoltageUpperBound, int depth) {
         if (nominalVoltageLowerBound >= 0 && nominalVoltageUpperBound >= 0) {
             return VoltageLevelFilter.createNominalVoltageFilter(network, voltageLevelIds, nominalVoltageLowerBound, nominalVoltageUpperBound, depth);

@@ -343,11 +343,11 @@ def test_add_battery_bay_bus_breaker():
     assert position.size == 0
 
 
-def test_add_dangling_line_bay():
+def test_add_boundary_line_bay():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(index='id', data=[{
-        'id': 'new_dangling_line',
-        'name': 'dangling_line',
+        'id': 'new_boundary_line',
+        'name': 'boundary_line',
         'p0': 100,
         'q0': 101,
         'r': 2,
@@ -357,26 +357,26 @@ def test_add_dangling_line_bay():
         'position_order': 15,
         'bus_or_busbar_section_id': 'S1VL1_BBS'
     }])
-    pp.network.create_dangling_line_bay(n, df)
-    dangling_line = n.get_dangling_lines().loc['new_dangling_line']
-    assert dangling_line.voltage_level_id == 'S1VL1'
-    assert dangling_line.r == 2
-    assert dangling_line.x == 2
-    assert dangling_line.g == 1
-    assert dangling_line.b == 1
-    assert dangling_line.p0 == 100
-    assert dangling_line.q0 == 101
-    position = n.get_extensions('position').loc["new_dangling_line"]
+    pp.network.create_boundary_line_bay(n, df)
+    boundary_line = n.get_boundary_lines().loc['new_boundary_line']
+    assert boundary_line.voltage_level_id == 'S1VL1'
+    assert boundary_line.r == 2
+    assert boundary_line.x == 2
+    assert boundary_line.g == 1
+    assert boundary_line.b == 1
+    assert boundary_line.p0 == 100
+    assert boundary_line.q0 == 101
+    position = n.get_extensions('position').loc["new_boundary_line"]
     assert position.order == 15
-    assert position.feeder_name == 'new_dangling_line'
+    assert position.feeder_name == 'new_boundary_line'
     assert position.direction == 'BOTTOM'
 
 
-def test_add_dangling_line_bay_deprecated_reporter():
+def test_add_boundary_line_bay_deprecated_reporter():
     n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(index='id', data=[{
-        'id': 'new_dangling_line',
-        'name': 'dangling_line',
+        'id': 'new_boundary_line',
+        'name': 'boundary_line',
         'p0': 100,
         'q0': 101,
         'r': 2,
@@ -390,25 +390,51 @@ def test_add_dangling_line_bay_deprecated_reporter():
         report_node = rp.Reporter()
         report1 = str(report_node)
         assert len(report1) > 0
-        pp.network.create_dangling_line_bay(n, df, reporter=report_node)
+        pp.network.create_boundary_line_bay(n, df, reporter=report_node)
         report2 = str(report_node)
         assert len(report2) > len(report1)
-        dangling_line = n.get_dangling_lines().loc['new_dangling_line']
-        assert dangling_line.voltage_level_id == 'S1VL1'
-        assert dangling_line.r == 2
-        assert dangling_line.x == 2
-        assert dangling_line.g == 1
-        assert dangling_line.b == 1
-        assert dangling_line.p0 == 100
-        assert dangling_line.q0 == 101
-        position = n.get_extensions('position').loc["new_dangling_line"]
+        boundary_line = n.get_boundary_lines().loc['new_boundary_line']
+        assert boundary_line.voltage_level_id == 'S1VL1'
+        assert boundary_line.r == 2
+        assert boundary_line.x == 2
+        assert boundary_line.g == 1
+        assert boundary_line.b == 1
+        assert boundary_line.p0 == 100
+        assert boundary_line.q0 == 101
+        position = n.get_extensions('position').loc["new_boundary_line"]
         assert position.order == 15
-        assert position.feeder_name == 'new_dangling_line'
+        assert position.feeder_name == 'new_boundary_line'
         assert position.direction == 'BOTTOM'
 
 
-def test_add_dangling_line_bay_bus_breaker():
+def test_add_boundary_line_bay_bus_breaker():
     n = pp.network.create_eurostag_tutorial_example1_network()
+    df = pd.DataFrame.from_records(index='id', data=[{
+        'id': 'new_boundary_line',
+        'name': 'boundary_line',
+        'p0': 100,
+        'q0': 101,
+        'r': 2,
+        'x': 2,
+        'g': 1,
+        'b': 1,
+        'bus_or_busbar_section_id': 'NGEN'
+    }])
+    pp.network.create_boundary_line_bay(n, df)
+    boundary_line = n.get_boundary_lines().loc['new_boundary_line']
+    assert boundary_line.voltage_level_id == 'VLGEN'
+    assert boundary_line.r == 2
+    assert boundary_line.x == 2
+    assert boundary_line.g == 1
+    assert boundary_line.b == 1
+    assert boundary_line.p0 == 100
+    assert boundary_line.q0 == 101
+    position = n.get_extensions('position')
+    assert position.size == 0
+
+
+def test_deprecated_dangling_line_bay():
+    n = pp.network.create_four_substations_node_breaker_network_with_extensions()
     df = pd.DataFrame.from_records(index='id', data=[{
         'id': 'new_dangling_line',
         'name': 'dangling_line',
@@ -418,19 +444,13 @@ def test_add_dangling_line_bay_bus_breaker():
         'x': 2,
         'g': 1,
         'b': 1,
-        'bus_or_busbar_section_id': 'NGEN'
+        'position_order': 15,
+        'bus_or_busbar_section_id': 'S1VL1_BBS'
     }])
-    pp.network.create_dangling_line_bay(n, df)
-    dangling_line = n.get_dangling_lines().loc['new_dangling_line']
-    assert dangling_line.voltage_level_id == 'VLGEN'
-    assert dangling_line.r == 2
-    assert dangling_line.x == 2
-    assert dangling_line.g == 1
-    assert dangling_line.b == 1
-    assert dangling_line.p0 == 100
-    assert dangling_line.q0 == 101
-    position = n.get_extensions('position')
-    assert position.size == 0
+    with pytest.warns(DeprecationWarning, match=re.escape("create_dangling_line_bay is deprecated, use create_boundary_line_bay instead.")):
+        pp.network.create_dangling_line_bay(n, df)
+    boundary_line = n.get_boundary_lines().loc['new_dangling_line']
+    assert boundary_line.voltage_level_id == 'S1VL1'
 
 
 def test_add_linear_shunt_bay():
