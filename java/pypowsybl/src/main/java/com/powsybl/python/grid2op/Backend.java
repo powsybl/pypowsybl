@@ -626,9 +626,9 @@ public class Backend implements Closeable {
                     if (changedPtr.read(i) == 1) {
                         Load load = loads.get(i);
                         load.setQ0(valuePtr.read(i));
-                        loadP.getPtr().write(i, load.getQ0());
+                        loadQ.getPtr().write(i, load.getQ0());
                         if (LOGGER.isTraceEnabled()) {
-                            LOGGER.trace("Update load '{}' q0 {}", load.getId(), load.getP0());
+                            LOGGER.trace("Update load '{}' q0 {}", load.getId(), load.getQ0());
                         }
                         updatedLoadQ0Count++;
                     }
