@@ -88,7 +88,6 @@ import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.dataframe.CDataframeHandler.*;
-import static com.powsybl.python.network.NetworkAreaDiagramUtil.createEdgeInfoParameters;
 
 /**
  * Defines the basic C functions for a network.
@@ -1196,9 +1195,8 @@ public final class NetworkCFunctions {
     }
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
-        // To remove when all default parameters of DefaultLabelProvider can be obtained
-        LabelProviderParameters defaultLabelProviderParameters = new LabelProviderParameters();
-        EdgeInfoParameters defaultEdgeInfoParameters = createEdgeInfoParameters();
+        LabelProviderParameters defaultLabelProviderParameters = ((DefaultLabelProviderFactory) parameters.getLabelProviderFactory()).getParameters();
+        EdgeInfoParameters defaultEdgeInfoParameters = defaultLabelProviderParameters.getEdgeInfoParameters();
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(defaultLabelProviderParameters.isIdDisplayed());
         cParameters.setPowerValuePrecision(parameters.getSvgParameters().getPowerValuePrecision());
@@ -1784,7 +1782,7 @@ public final class NetworkCFunctions {
             }
 
             nadParameters.setLabelProviderFactory((n, svgParameters) ->
-                    new TmpFixCustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customVlLegends));
+                    new CustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customVlLegends));
         }
     }
 
