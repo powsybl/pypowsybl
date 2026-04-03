@@ -667,12 +667,12 @@ public final class RaoDataframes {
     }
 
     public static DataframeMapper<Crac, Void> cracBoundaryLineActions() {
-        return new DataframeMapperBuilder<Crac, Pair<NetworkAction, DanglingLineAction>, Void>()
+        return new DataframeMapperBuilder<Crac, Pair<NetworkAction, BoundaryLineAction>, Void>()
             .itemsProvider(crac -> crac.getNetworkActions().stream().flatMap(a -> a.getElementaryActions().stream()
-                .filter(DanglingLineAction.class::isInstance)
-                .map(elementary -> Pair.create(a, (DanglingLineAction) elementary))).toList())
+                .filter(BoundaryLineAction.class::isInstance)
+                .map(elementary -> Pair.create(a, (BoundaryLineAction) elementary))).toList())
             .stringsIndex("id", pair -> pair.getFirst().getId())
-            .strings("network_element_id", pair -> pair.getSecond().getDanglingLineId())
+            .strings("network_element_id", pair -> pair.getSecond().getBoundaryLineId())
             .optionalDoubles("active_power_value", pair -> pair.getSecond().getActivePowerValue())
             .build();
     }
