@@ -115,7 +115,8 @@ class DynamicSimulationDataframeMappersTest {
         List<Series> series = createSeries(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(), infos);
         assertThat(series).satisfiesExactly(
                 names -> assertThat(names.getStrings()).containsExactly("GeneratorFictitious", "GeneratorPVFixed"),
-                desc -> assertThat(desc.getStrings()).containsExactly("Fictitious generator (behaves in a similar way as an alpha-beta load)", ""));
+                desc -> assertThat(desc.getStrings()).containsExactly("Simplified generator model with voltage-dependent active and reactive power.",
+                        "Simplified generator model with fixed active and reactive power."));
     }
 
     @Test
@@ -133,6 +134,7 @@ class DynamicSimulationDataframeMappersTest {
                 cat -> assertThat(cat.getStrings()).containsExactly("Line", "SimplifiedGenerator", "SimplifiedGenerator"));
     }
 
+    @Test
     void testEventInformationDataframe() {
         Collection<EventMappingAdder> adders = EventMappingHandler.getEventMappingAdders().stream()
                 .filter(adder -> {
