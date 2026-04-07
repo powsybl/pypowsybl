@@ -2294,9 +2294,10 @@ bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHand
     return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
 }
 
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get(),
+        (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 }

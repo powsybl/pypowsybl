@@ -17,6 +17,7 @@ from pypowsybl._pypowsybl import Grid2opUpdateIntegerValueType
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters, ComponentResult
 from pypowsybl.network import Network
+from pypowsybl.report import ReportNode
 
 
 class Backend:
@@ -89,6 +90,7 @@ class Backend:
     def check_isolated_and_disconnected_injections(self) -> bool:
         return _pypowsybl.check_grid2op_isolated_and_disconnected_injections(self._handle)
 
-    def run_pf(self, dc: bool = False, parameters: Optional[Parameters] = None) -> List[ComponentResult]:
+    def run_pf(self, dc: bool = False, parameters: Optional[Parameters] = None, report_node: Optional[ReportNode] = None) -> List[ComponentResult]:
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
-        return [ComponentResult(res) for res in _pypowsybl.run_grid2op_loadflow(self._handle, dc, p)]
+        return [ComponentResult(res) for res in _pypowsybl.run_grid2op_loadflow(self._handle, dc, p,
+                                                                                report_node._report_node if report_node is not None else None)]
