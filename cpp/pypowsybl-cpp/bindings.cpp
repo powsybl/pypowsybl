@@ -214,9 +214,10 @@ void dynamicSimulationBindings(py::module_& m) {
     m.def("get_categories", &pypowsybl::getCategories);
     m.def("get_categories_information", &pypowsybl::getCategoriesInformation);
     m.def("get_supported_models", &pypowsybl::getSupportedModels, py::arg("category_name"));
+    m.def("get_supported_models_information", &pypowsybl::getSupportedModelsInformation, py::arg("category_name"));
 
     // timeseries mapping
-    m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("is_dynamic"), py::arg("output_variable_type"));
+    m.def("add_output_variables", &pypowsybl::addOutputVariables, py::arg("output_variables_handle"), py::arg("dynamic_id"), py::arg("variables"), py::arg("output_variable_type"));
 
     // events mapping
     m.def("add_all_event_mappings", &pypowsybl::addEventMappings, py::arg("event_mapping_handle"), py::arg("event_name"), py::arg("mapping_df"));
@@ -1402,7 +1403,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("check_grid2op_isolated_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
-    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"));
+    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"),
+        py::arg("report_node"));
 }
 
 void onLoadFlowResult(array* resultsPtr, void* resultFuturePtr) {

@@ -25,6 +25,18 @@ def test_categories_information():
     assert info_df.loc['TapChangerBlocking']['attribute'] == '[dataframe "Tcb"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe "Transformers"] index : dynamic_model_id (str), transformer_id (str) / [dataframe "U measurement 1"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 2"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 3"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 4"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 5"] index : dynamic_model_id (str), measurement_point_id (str)'
     assert info_df.loc['TapChangerBlocking']['description'] == 'Tap changer blocking automation system'
 
+def test_supported_models_information():
+    model_mapping = dyn.ModelMapping()
+    assert model_mapping.get_supported_models()
+    info_df = model_mapping.get_supported_models_information('Load')
+    assert info_df.loc['LoadAlphaBeta']['description'] == 'Voltage-dependent load.'
+    assert info_df.loc['LoadPQ']['description'] == 'PQ load.'
+    all_info_df = model_mapping.get_supported_models_information()
+    assert all_info_df.loc['Line']['description'] == 'Standard line.'
+    assert all_info_df.loc['Line']['category'] == 'Line'
+    assert all_info_df.loc['LoadPQ']['description'] == 'PQ load.'
+    assert all_info_df.loc['LoadPQ']['category'] == 'Load'
+
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()
     # Equipments
@@ -153,14 +165,27 @@ def test_add_event_dataframe():
 
 def test_add_output_variables():
     variables = dyn.OutputVariableMapping()
-    variables.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
-    variables.add_dynamic_model_curves('test_dyn_load_id_1', ['load_PPu', 'load_QPu'])
-    variables.add_standard_model_curves('test_gen_id_1', 'generator_UStatorPu')
-    variables.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
-    variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', 'load_PPu')
-    variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
-    variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
-    variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
+    variables.add_curves('test_gen_id_1', 'generator_UStatorPu')
+    variables.add_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    variables.add_final_state_values('test_dyn_load_id_2', 'load_PPu')
+    variables.add_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    # deprecated methods
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_curves('test_dyn_load_id_1', ['load_PPu', 'load_QPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_curves('test_gen_id_1', 'generator_UStatorPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', 'load_PPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
 
 
 def test_default_parameters():

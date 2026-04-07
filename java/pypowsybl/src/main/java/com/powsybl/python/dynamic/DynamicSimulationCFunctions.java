@@ -219,9 +219,25 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() throws IOException {
-                return Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr))));
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
+                return Util.createCharPtrArray(List.copyOf(
+                        categoryName.isEmpty() ? DynamicMappingHandler.getAllSupportedModels()
+                        : DynamicMappingHandler.getSupportedModels(categoryName)
+                ));
             }
         });
+    }
+
+    @CEntryPoint(name = "getSupportedModelsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getSupportedModelsInformation(IsolateThread thread,
+                                                                                               CCharPointer categoryNamePtr,
+                                                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        String categoryName = CTypeUtil.toString(categoryNamePtr);
+        return categoryName.isEmpty()
+                ? Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.allSupportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getDynamicMappingAdders())
+                : Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getSupportedModelsInformation(categoryName));
     }
 
     @CEntryPoint(name = "addEventMappings")
@@ -266,7 +282,6 @@ public final class DynamicSimulationCFunctions {
                                           CCharPointer dynamicIdPtr,
                                           CCharPointerPointer variablesPtrPtr,
                                           int variableCount,
-                                          boolean isDynamic,
                                           OutputVariableType variableType,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
@@ -275,8 +290,7 @@ public final class DynamicSimulationCFunctions {
                 String dynamicId = CTypeUtil.toString(dynamicIdPtr);
                 List<String> variables = toStringList(variablesPtrPtr, variableCount);
                 PythonOutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesHandle);
-                outputVariablesSupplier.addOutputVariables(dynamicId, variables, isDynamic, convert(variableType));
-
+                outputVariablesSupplier.addOutputVariables(dynamicId, variables, convert(variableType));
             }
         });
     }

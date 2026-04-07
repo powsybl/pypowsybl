@@ -15,6 +15,7 @@ ModelMapping
     ModelMapping.get_categories_names
     ModelMapping.get_categories_information
     ModelMapping.get_supported_models
+    ModelMapping.get_supported_models_information
     ModelMapping.add_dynamic_model
     ModelMapping.add_base_load
     ModelMapping.add_load_one_transformer
@@ -65,6 +66,8 @@ OutputVariableMapping
     :toctree: api/
 
     OutputVariableMapping
+    OutputVariableMapping.add_curves
+    OutputVariableMapping.add_final_state_values
     OutputVariableMapping.add_dynamic_model_curves
     OutputVariableMapping.add_standard_model_curves
     OutputVariableMapping.add_dynamic_model_final_state_values

@@ -1731,9 +1731,9 @@ void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, data
     PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, (char*) eventName.c_str(), mappingDf);
 }
 
-void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType) {
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, OutputVariableType variableType) {
     ToCharPtrPtr variablesPtr(variables);
-    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), isDynamic, variableType);
+    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), variableType);
 }
 
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle) {
@@ -1768,6 +1768,10 @@ SeriesArray* getCategoriesInformation() {
 std::vector<std::string> getSupportedModels(std::string categoryName) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, (char*) categoryName.c_str()));
     return vector.get();
+}
+
+SeriesArray* getSupportedModelsInformation(std::string categoryName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSupportedModelsInformation, (char*) categoryName.c_str()));
 }
 
 std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string categoryName) {
@@ -2290,9 +2294,10 @@ bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHand
     return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
 }
 
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get(),
+        (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 }

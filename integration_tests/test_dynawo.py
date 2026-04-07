@@ -39,8 +39,8 @@ def test_simulation():
     event_mapping.add_active_power_variation(static_id='B3-L', start_time=4, delta_p=0.02)
 
     variables_mapping = dyn.OutputVariableMapping()
-    variables_mapping.add_dynamic_model_curves(dynamic_model_id='B6-G', variables=['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
-    variables_mapping.add_standard_model_final_state_values(static_id='B3', variables='Upu_value')
+    variables_mapping.add_curves(model_id='B6-G', variables=['generator_PGen', 'generator_QGen', 'generator_UStatorPu'])
+    variables_mapping.add_final_state_values(model_id='B3', variables='Upu_value')
     testPath = Path(__file__).parent
     dynawo_param = {
         'parametersFile': str(testPath.joinpath('models.par')),

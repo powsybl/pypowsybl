@@ -12,9 +12,10 @@ import com.powsybl.dataframe.DataframeMapperBuilder;
 import com.powsybl.dataframe.dynamic.adders.DynamicMappingAdder;
 import com.powsybl.dataframe.dynamic.adders.EventMappingAdder;
 import com.powsybl.dynamicsimulation.TimelineEvent;
+import com.powsybl.dynawo.builders.ModelInfo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -24,6 +25,9 @@ import java.util.function.Function;
  * @author Nicolas Pierre {@literal <nicolas.pierre@artelys.com>}
  */
 public final class DynamicSimulationDataframeMappersUtils {
+
+    private static final String NAMED_INDEX_NAME = "name";
+    private static final String DESCRIPTION_NAME = "description";
 
     private DynamicSimulationDataframeMappersUtils() {
     }
@@ -50,11 +54,31 @@ public final class DynamicSimulationDataframeMappersUtils {
     public static DataframeMapper<Collection<DynamicMappingAdder>, Void> categoriesDataFrameMapper() {
         return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, CategoryInformation, Void>()
                 .itemsStreamProvider(a -> a.stream()
-                        .map(DynamicMappingAdder::getCategoryInformation)
-                        .sorted(Comparator.comparing(CategoryInformation::name)))
-                .stringsIndex("name", CategoryInformation::name)
-                .strings("description", CategoryInformation::description)
+                        .map(DynamicMappingAdder::getCategoryInformation))
+                .stringsIndex(NAMED_INDEX_NAME, CategoryInformation::name)
+                .strings(DESCRIPTION_NAME, CategoryInformation::description)
                 .strings("attribute", CategoryInformation::attribute)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<ModelInfo>, Void> supportedModelsDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<ModelInfo>, ModelInfo, Void>()
+                .itemsStreamProvider(Collection::stream)
+                .stringsIndex(NAMED_INDEX_NAME, ModelInfo::name)
+                .strings(DESCRIPTION_NAME, ModelInfo::doc)
+                .build();
+    }
+
+    public static DataframeMapper<Collection<DynamicMappingAdder>, Void> allSupportedModelsDataFrameMapper() {
+        return new DataframeMapperBuilder<Collection<DynamicMappingAdder>, Pair<String, ModelInfo>, Void>()
+                .itemsStreamProvider(a -> a.stream()
+                        .flatMap(adder -> {
+                            String cat = adder.getCategory();
+                            return adder.getSupportedModels().stream().map(m -> Pair.of(cat, m));
+                        }))
+                .stringsIndex(NAMED_INDEX_NAME, p -> p.getValue().name())
+                .strings(DESCRIPTION_NAME, p -> p.getValue().doc())
+                .strings("category", Pair::getKey)
                 .build();
     }
 
@@ -62,8 +86,8 @@ public final class DynamicSimulationDataframeMappersUtils {
         return new DataframeMapperBuilder<Collection<EventMappingAdder>, EventInformation, Void>()
                 .itemsStreamProvider(a -> a.stream()
                         .map(EventMappingAdder::getEventInformation))
-                .stringsIndex("name", EventInformation::name)
-                .strings("description", EventInformation::description)
+                .stringsIndex(NAMED_INDEX_NAME, EventInformation::name)
+                .strings(DESCRIPTION_NAME, EventInformation::description)
                 .strings("attribute", EventInformation::attribute)
                 .build();
     }
