@@ -34,7 +34,7 @@ class OutputVariableMapping:
     def add_dynamic_model_curves(self, dynamic_model_id: str, variables: Union[List[str], str]) -> None:
         """
         .. deprecated:: 1.15.0
-            Use `add_curves` instead.
+            Use :func:`add_curves` instead.
         """
         warnings.warn("add_dynamic_model_curves is deprecated, use add_curves instead", DeprecationWarning)
         self.add_curves(dynamic_model_id, variables)
