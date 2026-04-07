@@ -27,12 +27,15 @@ class ScalingParameters:
         allows_generator_out_of_active_power_limits:
             If True, the scalable can modify the active power of a generator even if it is out of its active power limits (``False`` by default)
         priority: representing the priority of the scaling for ProportionalScalable. It can be either :
-                    - ``RESPECT_OF_VOLUME_ASKED`` (the scaling will distribute the power asked as much as possible by iterating if elements get saturated,
-                     even if it means not respecting potential percentages)
-                    - ``RESPECT_OF_DISTRIBUTION`` (the scaling will respect the percentages even if it means not scaling all what is asked)
-                    - ``ONESHOT`` (the scaling will distribute the power asked as is, in one iteration even if elements get saturated and even if it means
-                     not respecting potential percentages).
+
+            - ``RESPECT_OF_VOLUME_ASKED`` (the scaling will distribute the power asked as much as possible by iterating if elements get saturated, even if it means not respecting potential percentages)
+
+            - ``RESPECT_OF_DISTRIBUTION`` (the scaling will respect the percentages even if it means not scaling all what is asked)
+
+            - ``ONESHOT`` (the scaling will distribute the power asked as is, in one iteration even if elements get saturated and even if it means not respecting potential percentages).
+
             (``ONESHOT`` by default)
+
         scaling_type: The type of scaling to use. The default is ``DELTA_P`` and can be changed to ``TARGET_P``.
         ignored_injection_ids: List of injection ids to ignore when scaling.
     """

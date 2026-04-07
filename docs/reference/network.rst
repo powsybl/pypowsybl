@@ -380,20 +380,27 @@ Scalable network modifications
 
 These network modifications can be created to apply active power change across one or multiple injections
 
-.. autosummary:
-:toctree: api/
-:nosignatures:
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
 
    Scalable.scale
    ElementScalable
    StackScalable
+   StackScalable.from_ids
+   StackScalable.from_scalables
    ProportionalScalable
+   ProportionalScalable.from_ids_and_percentages
+   ProportionalScalable.from_scalables_and_percentages
+   ProportionalScalable.from_ids_and_distribution_mode
    UpDownScalable
+   UpDownScalable.from_ids
+   UpDownScalable.from_scalables
 
 The ``scale`` method is parametrized by a ScalingParameters object :
 
-.. autosummary:
-:toctree: api/
-:nosignatures:
+.. autosummary::
+   :toctree: api/
+   :nosignatures:
 
     ScalingParameters
