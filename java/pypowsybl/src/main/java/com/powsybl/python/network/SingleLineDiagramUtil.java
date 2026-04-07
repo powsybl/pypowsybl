@@ -8,9 +8,9 @@
 package com.powsybl.python.network;
 
 import com.powsybl.iidm.network.Network;
+import com.powsybl.sld.layout.MatrixZoneLayoutFactory;
 import com.powsybl.sld.SingleLineDiagram;
 import com.powsybl.sld.SldParameters;
-import com.powsybl.sld.layout.MatrixZoneLayoutFactory;
 import com.powsybl.sld.library.SldComponentLibrary;
 
 import java.io.IOException;
