@@ -13,7 +13,7 @@ import com.powsybl.python.dynamic.PythonEventModelsSupplier;
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEventModelAdder implements EventMappingAdder {
+public abstract class AbstractEventModelAdder implements EventMappingAdder {
 
     @Override
     public void addElements(PythonEventModelsSupplier modelMapping, UpdatingDataframe dataframe) {

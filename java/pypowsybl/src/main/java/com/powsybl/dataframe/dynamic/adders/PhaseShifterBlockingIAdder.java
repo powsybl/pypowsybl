@@ -41,7 +41,7 @@ public class PhaseShifterBlockingIAdder extends AbstractSimpleDynamicModelAdder 
             "Phase shifter blocking I",
             CategoryAttributeUtils.createFromMetadata(METADATA));
 
-    public PhaseShifterBlockingIAdder() {
+    protected PhaseShifterBlockingIAdder() {
         super(Collections.singletonList(METADATA), CATEGORY_INFORMATION);
     }
 
