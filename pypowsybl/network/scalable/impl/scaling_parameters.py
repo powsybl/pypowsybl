@@ -37,13 +37,13 @@ class ScalingParameters:
         ignored_injection_ids: List of injection ids to ignore when scaling.
     """
 
-    def __init__(self, scaling_convention: ScalingConvention  = None,
-                 constant_power_factor: bool = None,
-                 reconnect: bool = None,
-                 allows_generator_out_of_active_power_limits: bool = None,
-                 priority: Priority = None,
-                 scaling_type: ScalingType = None,
-                 ignored_injection_ids: List[str] = None):
+    def __init__(self, scaling_convention: ScalingConvention | None = None,
+                 constant_power_factor: bool | None = None,
+                 reconnect: bool | None = None,
+                 allows_generator_out_of_active_power_limits: bool | None = None,
+                 priority: Priority | None = None,
+                 scaling_type: ScalingType | None = None,
+                 ignored_injection_ids: List[str] | None = None):
         self._init_with_default_values()
         if scaling_convention is not None:
             self.scaling_convention = scaling_convention

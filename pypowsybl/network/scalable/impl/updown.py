@@ -9,33 +9,46 @@ from .scalable import Scalable, JavaScalableType
 class UpDownScalable(Scalable):
     """
     Scalable based on two others : one used when scaling the power up and one to scale the power down
-
-    Args:
-        up_scalable: The Scalable used to up power
-        down_scalable: The Scalable used to bring power down
-        up_injection_id (in place of up_scalable): The id of the injection with which to create the up scalable
-        down_injection_id (in place of down_scalable): The id of the injection with which to create the down scalable
-        min_value (optional): The minimum active power value the modification can reach
-        max_value (optional): The maximum active power value the modification can reach
     """
     up_scalable: Scalable
     down_scalable: Scalable
 
-    def __init__(self, up_injection_id: Optional[str] = None, down_injection_id: Optional[str] = None,
-                 up_scalable: Optional[Scalable] = None, down_scalable: Optional[Scalable] = None,
+    def __init__(self, up_scalable: Scalable, down_scalable: Scalable,
                  min_value: Optional[float] = None, max_value: Optional[float] = None):
-        if up_injection_id is None and up_scalable is None:
-            raise RuntimeError('One of "up_injection_id" and "up_scalable" parameters must be defined.')
-        if down_injection_id is None and down_scalable is None:
-            raise RuntimeError('One of "down_injection_id" and "down_scalable" parameters must be defined.')
-        if up_injection_id is not None and up_scalable is not None:
-            raise RuntimeError('Parameters "up_injection_id" and "up_scalable" are mutually exclusive.')
-        if down_injection_id is not None and down_scalable is not None:
-            raise RuntimeError('Parameters "down_injection_id" and "down_scalable" are mutually exclusive.')
-        self.up_scalable = up_scalable if up_scalable is not None else ElementScalable(up_injection_id)
-        self.down_scalable = down_scalable if down_scalable is not None else ElementScalable(down_injection_id)
+        self.up_scalable = up_scalable
+        self.down_scalable = down_scalable
         super().__init__(type=JavaScalableType.UP_DOWN, min_value=min_value, max_value=max_value,
                          scalables=[self.up_scalable, self.down_scalable])
+
+    @classmethod
+    def from_ids(cls, up_injection_id: str, down_injection_id: str,
+                 min_value: Optional[float] = None, max_value: Optional[float] = None) -> UpDownScalable:
+        """
+        Create an UpDownScalable from two injection ids.
+
+        Args:
+            up_injection_id: The id of the injection with which to create the up scalable
+            down_injection_id: The id of the injection with which to create the down scalable
+            min_value (optional): The minimum active power value the modification can reach
+            max_value (optional): The maximum active power value the modification can reach
+        """
+        return cls(up_scalable=ElementScalable(up_injection_id), down_scalable=ElementScalable(down_injection_id),
+                   min_value=min_value, max_value=max_value)
+
+    @classmethod
+    def from_scalables(cls, up_scalable: Scalable, down_scalable: Scalable,
+                       min_value: Optional[float] = None, max_value: Optional[float] = None) -> UpDownScalable:
+        """
+        Create an UpDownScalable from two Scalable.
+
+        Args:
+            up_scalable: The Scalable used to up power
+            down_scalable: The Scalable used to lower power
+            min_value (optional): The minimum active power value the modification can reach
+            max_value (optional): The maximum active power value the modification can reach
+        """
+        return cls(up_scalable=up_scalable, down_scalable=down_scalable,
+                   min_value=min_value, max_value=max_value)
 
     def __repr__(self) -> str:
         desc: str =  f"{self.__class__.__name__}(" \
