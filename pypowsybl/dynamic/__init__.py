@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from .impl.output_variable_mapping import OutputVariableMapping, OutputVariableType
+from .impl.output_variable_mapping import OutputVariableMapping
 from .impl.event_mapping import EventMapping
 from .impl.simulation_result import SimulationResult
 from .impl.simulation import Simulation

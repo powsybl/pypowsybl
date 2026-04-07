@@ -282,7 +282,6 @@ public final class DynamicSimulationCFunctions {
                                           CCharPointer dynamicIdPtr,
                                           CCharPointerPointer variablesPtrPtr,
                                           int variableCount,
-                                          boolean isDynamic,
                                           OutputVariableType variableType,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
@@ -291,8 +290,7 @@ public final class DynamicSimulationCFunctions {
                 String dynamicId = CTypeUtil.toString(dynamicIdPtr);
                 List<String> variables = toStringList(variablesPtrPtr, variableCount);
                 PythonOutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesHandle);
-                outputVariablesSupplier.addOutputVariables(dynamicId, variables, isDynamic, convert(variableType));
-
+                outputVariablesSupplier.addOutputVariables(dynamicId, variables, convert(variableType));
             }
         });
     }

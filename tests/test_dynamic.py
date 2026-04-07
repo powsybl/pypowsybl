@@ -165,14 +165,27 @@ def test_add_event_dataframe():
 
 def test_add_output_variables():
     variables = dyn.OutputVariableMapping()
-    variables.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
-    variables.add_dynamic_model_curves('test_dyn_load_id_1', ['load_PPu', 'load_QPu'])
-    variables.add_standard_model_curves('test_gen_id_1', 'generator_UStatorPu')
-    variables.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
-    variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', 'load_PPu')
-    variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
-    variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
-    variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
+    variables.add_curves('test_gen_id_1', 'generator_UStatorPu')
+    variables.add_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    variables.add_final_state_values('test_dyn_load_id_2', 'load_PPu')
+    variables.add_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    # deprecated methods
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_curves('test_dyn_load_id_1', ['load_PPu', 'load_QPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_curves('test_gen_id_1', 'generator_UStatorPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', 'load_PPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
 
 
 def test_default_parameters():

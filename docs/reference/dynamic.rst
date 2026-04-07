@@ -66,6 +66,8 @@ OutputVariableMapping
     :toctree: api/
 
     OutputVariableMapping
+    OutputVariableMapping.add_curves
+    OutputVariableMapping.add_final_state_values
     OutputVariableMapping.add_dynamic_model_curves
     OutputVariableMapping.add_standard_model_curves
     OutputVariableMapping.add_dynamic_model_final_state_values

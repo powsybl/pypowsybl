@@ -103,8 +103,8 @@ To run a Dynawo simulation:
 
     # curves mapping
     variables_mapping = dyn.OutputVariableMapping()
-    variables_mapping.add_dynamic_model_curves("DM_LOAD", ["load_PPu", "load_QPu"])
-    variables_mapping.add_standard_model_final_state_values('NGEN', 'Upu_value') # and so on
+    variables_mapping.add_curves("LOAD", ["load_PPu", "load_QPu"])
+    variables_mapping.add_final_state_values('NGEN', 'Upu_value') # and so on
 
     # simulations parameters
     parameters = dyn.Parameters(start_time=0, stop_time=50)
