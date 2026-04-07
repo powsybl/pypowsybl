@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-core
-          ref: debug_dgs
+          ref: pf_fix_missing_curmg
           path: powsybl-core
 
       - name: Build and install core
