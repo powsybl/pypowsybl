@@ -376,7 +376,6 @@ Utility functions
 
 Scalable network modifications
 ------------------------------
-.. module:: pypowsybl.network.scalable
 
 These network modifications can be created to apply active power change across one or multiple injections
 
@@ -403,4 +402,4 @@ The ``scale`` method is parametrized by a ScalingParameters object :
    :toctree: api/
    :nosignatures:
 
-    ScalingParameters
+   ScalingParameters

@@ -92,4 +92,5 @@ from .impl.network_element_modification_util import (
 )
 from .impl.perunit import (PerUnitView, per_unit_view)
 from .impl.pandapower_converter import convert_from_pandapower
-from .scalable import *
+import scalable
+
