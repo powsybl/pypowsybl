@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-core
-          ref: pf_fix_missing_curmg
+          ref: powerfactory_elmLodmv_elmXnet_plus_fix
           path: powsybl-core
 
       - name: Build and install core
