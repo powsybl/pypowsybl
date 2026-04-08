@@ -637,7 +637,8 @@ void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
-bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected);
+bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected, bool allowDisconnectors,
+                             bool allowFictitious);
 
 std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
                                                const std::vector<std::string>& countries, bool mainCc, bool mainSc,
