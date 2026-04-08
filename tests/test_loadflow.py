@@ -27,14 +27,13 @@ def set_up():
 
 def test_config():
     assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
-    pp.loadflow.set_default_provider("provider")
-    assert 'provider' == pp.loadflow.get_default_provider()
     n = pp.network.create_ieee14()
     with pytest.raises(Exception, match='No loadflow provider for name \'provider\''):
-        lf.run_ac(n)
+        pp.loadflow.set_default_provider("provider")
+    pp.loadflow.set_default_provider("DynaFlow")
     results = lf.run_ac(n, provider='OpenLoadFlow')
     assert lf.ComponentStatus.CONVERGED == results[0].status
-    assert 'provider' == pp.loadflow.get_default_provider()
+    assert 'DynaFlow' == pp.loadflow.get_default_provider()
     pp.loadflow.set_default_provider("OpenLoadFlow")
     assert 'OpenLoadFlow' == pp.loadflow.get_default_provider()
 
@@ -326,6 +325,25 @@ def test_provider_parameters():
     result = pp.loadflow.run_ac(n, parameters)
     assert LoadFlowComponentStatus.MAX_ITERATION_REACHED == result[0].status
     assert 3 == result[0].iteration_count
+
+
+def test_parameters_json_round_trip():
+    params = lf.Parameters(
+        distributed_slack=True,
+        balance_type=lf.BalanceType.PROPORTIONAL_TO_GENERATION_P,
+        voltage_init_mode=lf.VoltageInitMode.DC_VALUES,
+        provider_parameters={"slackDistributionFailureBehavior": "LEAVE_ON_SLACK_BUS"},
+        dc_use_transformer_ratio=True,
+    )
+    json_str = params.to_json()
+
+    params_reloaded = lf.Parameters.from_json(json_str)
+    assert params_reloaded.distributed_slack == params.distributed_slack
+    assert params_reloaded.balance_type == params.balance_type
+    assert params_reloaded.voltage_init_mode == params.voltage_init_mode
+    assert params_reloaded.dc_use_transformer_ratio == params.dc_use_transformer_ratio
+    assert params_reloaded.provider_parameters != {}
+    assert params_reloaded.provider_parameters["slackDistributionFailureBehavior"] == "LEAVE_ON_SLACK_BUS"
 
 
 def test_run_lf_with_report():
