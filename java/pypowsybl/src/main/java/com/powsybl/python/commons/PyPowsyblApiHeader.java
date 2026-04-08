@@ -1212,6 +1212,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("info_side_internal")
         int getInfoSideInternal();
+
+        @CField("scale_factor")
+        int getScaleFactor();
+
+        @CField("scale_factor")
+        void setScaleFactor(double scaleFactor);
     }
 
     @CStruct("dynamic_simulation_parameters")

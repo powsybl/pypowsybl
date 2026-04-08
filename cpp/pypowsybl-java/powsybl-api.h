@@ -388,6 +388,7 @@ typedef struct nad_parameters_struct {
     int info_middle_side1;
     int info_middle_side2;
     int info_side_internal;
+    double scale_factor;
 } nad_parameters;
 
 typedef enum {

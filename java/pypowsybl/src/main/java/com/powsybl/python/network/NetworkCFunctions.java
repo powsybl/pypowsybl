@@ -1207,6 +1207,7 @@ public final class NetworkCFunctions {
         cParameters.setSubstationDescriptionDisplayed(defaultLabelProviderParameters.isSubstationDescriptionDisplayed());
         cParameters.setVoltageLevelDetails(defaultLabelProviderParameters.isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
+        cParameters.setScaleFactor(parameters.getLayoutParameters().getScaleFactor());
         copyToCEdgeInfoParameters(defaultEdgeInfoParameters, cParameters);
     }
 
@@ -1286,8 +1287,9 @@ public final class NetworkCFunctions {
     public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer, Network network) {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
         LayoutFactory layoutFactory = switch (nadParametersPointer.getLayoutType()) {
-            case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
-            default: yield new BasicForceLayoutFactory();
+            case 1 -> new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), Atlas2ForceLayout::new);
+            case 2 -> new BasicForceLayoutFactory();
+            default -> Atlas2ForceLayout::new;
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()

@@ -1622,6 +1622,7 @@ NadParameters::NadParameters(nad_parameters* src) {
     info_middle_side1 = static_cast<EdgeInfoType>(src->info_middle_side1);
     info_middle_side2 = static_cast<EdgeInfoType>(src->info_middle_side2);
     info_side_internal = static_cast<EdgeInfoType>(src->info_side_internal);
+    scale_factor = src->scale_factor;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1656,6 +1657,7 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.info_middle_side1 = (int) info_middle_side1;
     res.info_middle_side2 = (int) info_middle_side2;
     res.info_side_internal = (int) info_side_internal;
+    res.scale_factor = scale_factor;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

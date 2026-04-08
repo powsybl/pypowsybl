@@ -437,6 +437,7 @@ class NadParameters:
     info_middle_side1: EdgeInfoType
     info_middle_side2: EdgeInfoType
     info_side_internal: EdgeInfoType
+    scale_factor: float
     def __init__(self) -> None: ...
 
 class SlackBusResult:

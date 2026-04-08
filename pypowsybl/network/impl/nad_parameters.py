@@ -25,7 +25,8 @@ class NadParameters:
                  scaling_factor: int = 150000, radius_factor: float = 150.0,
                  edge_info_displayed: Optional[EdgeInfoType] = None, voltage_level_details: bool = True,
                  injections_added: bool = False,
-                 edge_info_parameters: Optional[EdgeInfoParameters] = None):
+                 edge_info_parameters: Optional[EdgeInfoParameters] = None,
+                 scale_factor: float = 1.0):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -43,6 +44,7 @@ class NadParameters:
         self._check_edge_info_parameters(edge_name_displayed=edge_name_displayed,
                                          edge_info_displayed=edge_info_displayed,
                                          edge_info_parameters=edge_info_parameters)
+        self._scale_factor = scale_factor
 
     def _check_edge_info_parameters(self, edge_name_displayed: Optional[bool] = None,
                                     edge_info_displayed: Optional[EdgeInfoType] = None,
@@ -139,6 +141,11 @@ class NadParameters:
         """edge_info_parameters"""
         return self._edge_info_parameters
 
+    @property
+    def scale_factor(self) -> float:
+        """scale_factor"""
+        return self._scale_factor
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_info_along_edge = self._edge_info_along_edge
@@ -154,10 +161,11 @@ class NadParameters:
         c_parameters.radius_factor = self._radius_factor
         c_parameters.voltage_level_details = self._voltage_level_details
         c_parameters.injections_added = self._injections_added
-        c_parameters.info_side_external = self._edge_info_parameters._info_side_external
-        c_parameters.info_middle_side1 = self._edge_info_parameters._info_middle_side1
-        c_parameters.info_middle_side2 = self._edge_info_parameters._info_middle_side2
-        c_parameters.info_side_internal = self._edge_info_parameters._info_side_internal
+        c_parameters.info_side_external = self._edge_info_parameters.info_side_external
+        c_parameters.info_middle_side1 = self._edge_info_parameters.info_middle_side1
+        c_parameters.info_middle_side2 = self._edge_info_parameters.info_middle_side2
+        c_parameters.info_side_internal = self._edge_info_parameters.info_side_internal
+        c_parameters.scale_factor = self._scale_factor
         return c_parameters
 
     def __repr__(self) -> str:
@@ -176,4 +184,5 @@ class NadParameters:
                f", voltage_level_details={self._voltage_level_details}" \
                f", injections_added={self._injections_added}" \
                f", edge_info_parameters={self._edge_info_parameters}" \
+               f", scale_factor={self._scale_factor}" \
                f")"
