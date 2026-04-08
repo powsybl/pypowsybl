@@ -7,12 +7,15 @@
  */
 package com.powsybl.dataframe.dynamic.adders;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
 import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.dynawo.models.AbstractPureDynamicBlackBoxModel;
 import com.powsybl.dynawo.models.TransformerSide;
 import com.powsybl.dynawo.models.automationsystems.TapChangerBlockingAutomationSystem;
 import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.PhaseTapChanger;
 import com.powsybl.iidm.network.TwoSides;
 import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
 import com.powsybl.iidm.network.test.HvdcTestNetwork;
@@ -32,6 +35,8 @@ import java.util.stream.Stream;
 
 import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstants.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
@@ -68,6 +73,24 @@ class DynamicModelsAdderTest {
     void testAutomationSystemAdders(String category, Consumer<DefaultUpdatingDataframe> updateDataframe) {
         String expectedModelName = DynamicMappingHandler.getSupportedModels(category).stream().findFirst().orElse("");
         Network network = EurostagTutorialExample1Factory.createWithLFResults();
+        network.getTwoWindingsTransformer("NGEN_NHV1")
+                .newPhaseTapChanger()
+                .setTapPosition(0)
+                .setLowTapPosition(0)
+                .setRegulating(true)
+                .setRegulationMode(PhaseTapChanger.RegulationMode.CURRENT_LIMITER)
+                .setRegulationTerminal(network.getTwoWindingsTransformer("NGEN_NHV1").getTerminal2())
+                .setRegulationValue(1.0)
+                .setTargetDeadband(0)
+                .beginStep()
+                .setR(1.0)
+                .setX(2.0)
+                .setG(3.0)
+                .setB(4.0)
+                .setAlpha(5.0)
+                .setRho(6.0)
+                .endStep()
+                .add();
         String dynamicModelId = "BBM_automation_system";
         setupDataFrame(dataframe, dynamicModelId, expectedModelName);
         updateDataframe.accept(dataframe);
@@ -132,6 +155,21 @@ class DynamicModelsAdderTest {
         wrongModelNameDF.addSeries(MODEL_NAME, false, new TestStringSeries("wrongModelName"));
         DynamicMappingHandler.addElements("Load", dynamicModelsSupplier, List.of(wrongModelNameDF));
         assertThat(dynamicModelsSupplier.get(network)).isEmpty();
+    }
+
+    @Test
+    void testUnknownCategory() {
+        String category = "WRONG_CATEGORY";
+        assertTrue(DynamicMappingHandler.getSupportedModels(category).isEmpty());
+        assertTrue(DynamicMappingHandler.getSupportedModelsInformation(category).isEmpty());
+
+        assertThatThrownBy(() -> DynamicMappingHandler.getMetadata(category))
+                .isInstanceOf(PowsyblException.class)
+                .hasMessage("No category named WRONG_CATEGORY");
+        List<UpdatingDataframe> dataframes = List.of();
+        assertThatThrownBy(() -> DynamicMappingHandler.addElements(category, null, dataframes))
+                .isInstanceOf(PowsyblException.class)
+                .hasMessage("No category named WRONG_CATEGORY");
     }
 
     private static Stream<Arguments> equipmentDataProvider() {

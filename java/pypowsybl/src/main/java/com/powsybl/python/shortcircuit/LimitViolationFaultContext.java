@@ -7,7 +7,7 @@
  */
 package com.powsybl.python.shortcircuit;
 
-import com.powsybl.security.LimitViolation;
+import com.powsybl.contingency.violations.LimitViolation;
 
 import java.util.Objects;
 

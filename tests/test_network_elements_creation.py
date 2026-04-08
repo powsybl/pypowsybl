@@ -367,10 +367,10 @@ def test_lines_creation():
     assert new_line.voltage_level2_id == 'S4VL1'
 
 
-def test_dangling_lines():
-    n = util.create_dangling_lines_network()
+def test_boundary_lines():
+    n = util.create_boundary_lines_network()
     df = pd.DataFrame.from_records(index='id', data=[{
-        'id': 'DL_TEST',
+        'id': 'BL_TEST',
         'name': '',
         'voltage_level_id': 'VL',
         'bus_id': 'BUS',
@@ -381,8 +381,8 @@ def test_dangling_lines():
         'g': 1,
         'b': 1
     }])
-    n.create_dangling_lines(df)
-    new_dl = n.get_dangling_lines().loc['DL_TEST']
+    n.create_boundary_lines(df)
+    new_dl = n.get_boundary_lines().loc['BL_TEST']
     assert new_dl.voltage_level_id == 'VL'
     assert new_dl.r == 2
     assert new_dl.x == 2
@@ -843,47 +843,35 @@ def test_error_messages():
     check_unknown_voltage_level_error_message(network.create_generators)
     check_unknown_voltage_level_error_message(network.create_switches)
     check_unknown_voltage_level_error_message(network.create_static_var_compensators)
-    check_unknown_voltage_level_error_message(network.create_dangling_lines)
+    check_unknown_voltage_level_error_message(network.create_boundary_lines)
     check_unknown_voltage_level_error_message(network.create_lcc_converter_stations)
     check_unknown_voltage_level_error_message(network.create_vsc_converter_stations)
 
 
 def test_tie_line_creation():
-    network = pn.create_empty()
-    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
-    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
-                                  low_voltage_limit=[200, 200],
-                                  nominal_v=[225, 225],
-                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
-    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
+    network = create_base_network_for_tie_line_tests()
     with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
-        network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+        network.create_boundary_lines(id=['BL_TEST', 'BL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
                                       bus_id=['BUS_TEST', 'BUS_TEST2'],
                                       p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
                                       ucte_xnode_code=['XNODE', 'XNODE'])
     df = pd.DataFrame.from_records(
-        columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
-        data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
+        columns=['id', 'boundary_line1_id', 'boundary_line2_id'],
+        data=[('TIE_LINE_TEST', 'BL_TEST', 'BL_TEST2')],
         index='id')
     network.create_tie_lines(df)
     assert 'TIE_LINE_TEST' in network.get_tie_lines().index
 
 
 def test_tie_line_creation_fail_if_xnodes_are_different():
-    network = pn.create_empty()
-    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
-    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
-                                  low_voltage_limit=[200, 200],
-                                  nominal_v=[225, 225],
-                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
-    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+    network = create_base_network_for_tie_line_tests()
+    network.create_boundary_lines(id=['BL_TEST', 'BL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
                                   bus_id=['BUS_TEST', 'BUS_TEST2'],
                                   p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
                                   pairing_key=['XNODE1', 'XNODE'])
     df = pd.DataFrame.from_records(
-        columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
-        data=[('TIE_LINE_TEST', 'DL_TEST', 'DL_TEST2')],
+        columns=['id', 'boundary_line1_id', 'boundary_line2_id'],
+        data=[('TIE_LINE_TEST', 'BL_TEST', 'BL_TEST2')],
         index='id')
     with pytest.raises(PyPowsyblError) as exc:
         network.create_tie_lines(df)
@@ -891,17 +879,11 @@ def test_tie_line_creation_fail_if_xnodes_are_different():
 
 
 def test_tie_line_kwargs():
-    network = pn.create_empty()
-    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
-    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
-                                  low_voltage_limit=[200, 200],
-                                  nominal_v=[225, 225],
-                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
-    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+    network = create_base_network_for_tie_line_tests()
+    network.create_boundary_lines(id=['BL_TEST', 'BL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
                                   bus_id=['BUS_TEST', 'BUS_TEST2'],
                                   p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1])
-    network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='DL_TEST', dangling_line2_id='DL_TEST2')
+    network.create_tie_lines(id='TIE_LINE_TEST', boundary_line1_id='BL_TEST', boundary_line2_id='BL_TEST2')
     assert 'TIE_LINE_TEST' in network.get_tie_lines().index
 
     network.update_tie_lines(id='TIE_LINE_TEST', fictitious=True)
@@ -912,24 +894,50 @@ def test_tie_line_kwargs():
 
 
 def test_deprecated_ucte_xnode_code_kwargs():
-    network = pn.create_empty()
-    network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
-    network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
-                                  low_voltage_limit=[200, 200],
-                                  nominal_v=[225, 225],
-                                  topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
-    network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
+    network = create_base_network_for_tie_line_tests()
     with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
-        network.create_dangling_lines(id=['DL_TEST', 'DL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+        network.create_boundary_lines(id=['BL_TEST', 'BL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
                                       bus_id=['BUS_TEST', 'BUS_TEST2'],
                                       p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
                                       ucte_xnode_code=['XNODE1', 'XNODE'])
-    assert 'DL_TEST' in network.get_dangling_lines().index
-    assert 'DL_TEST2' in network.get_dangling_lines().index
-    assert 'ucte_xnode_code' in network.get_dangling_lines().columns
+    assert 'BL_TEST' in network.get_boundary_lines().index
+    assert 'BL_TEST2' in network.get_boundary_lines().index
+    assert 'ucte_xnode_code' in network.get_boundary_lines().columns
 
 
 def test_deprecated_ucte_xnode_code_dataframe():
+    network = create_base_network_for_tie_line_tests()
+    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
+        network.create_boundary_lines(pd.DataFrame.from_records(
+            columns=['id', 'voltage_level_id', 'bus_id', 'p0', 'q0', 'r', 'x', 'g', 'b', 'ucte_xnode_code'],
+            data=[('BL_TEST', 'VLTEST', 'BUS_TEST', 100, 101, 2, 2, 1, 1, 'XNODE1'),
+                  ('BL_TEST2', 'VLTEST2', 'BUS_TEST2', 100, 101, 2, 2, 1, 1, 'XNODE')],
+            index='id'))
+    assert 'BL_TEST' in network.get_boundary_lines().index
+    assert 'BL_TEST2' in network.get_boundary_lines().index
+    assert 'ucte_xnode_code' in network.get_boundary_lines().columns
+
+
+def test_tie_line_deprecated_dangling_line():
+    network = create_base_network_for_tie_line_tests()
+    network.create_boundary_lines(id=['BL_TEST', 'BL_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'],
+                                  bus_id=['BUS_TEST', 'BUS_TEST2'],
+                                  p0=[100, 100], q0=[101, 101], r=[2, 2], x=[2, 2], g=[1, 1], b=[1, 1],
+                                  pairing_key=['pairing_key', 'pairing_key'])
+    df = pd.DataFrame.from_records(
+        columns=['id', 'dangling_line1_id', 'dangling_line2_id'],
+        data=[('TIE_LINE_TEST', 'BL_TEST', 'BL_TEST2')],
+        index='id')
+    with pytest.warns(DeprecationWarning, match=re.escape("dangling_line1_id is deprecated")):
+        with pytest.warns(DeprecationWarning, match=re.escape("dangling_line2_id is deprecated")):
+            network.create_tie_lines(df)
+    network.remove_elements('TIE_LINE_TEST')
+    with pytest.warns(DeprecationWarning, match=re.escape("dangling_line1_id is deprecated")):
+        with pytest.warns(DeprecationWarning, match=re.escape("dangling_line2_id is deprecated")):
+            network.create_tie_lines(id='TIE_LINE_TEST', dangling_line1_id='BL_TEST', dangling_line2_id='BL_TEST2')
+
+
+def create_base_network_for_tie_line_tests():
     network = pn.create_empty()
     network.create_substations(id=['S1', 'S2'], tso=['TERNA', 'RTE'])
     network.create_voltage_levels(id=['VLTEST', 'VLTEST2'], high_voltage_limit=[250, 250],
@@ -937,15 +945,7 @@ def test_deprecated_ucte_xnode_code_dataframe():
                                   nominal_v=[225, 225],
                                   topology_kind=['BUS_BREAKER', 'BUS_BREAKER'])
     network.create_buses(id=['BUS_TEST', 'BUS_TEST2'], voltage_level_id=['VLTEST', 'VLTEST2'])
-    with pytest.warns(DeprecationWarning, match=re.escape("ucte_xnode_code is deprecated, use pairing_key")):
-        network.create_dangling_lines(pd.DataFrame.from_records(
-            columns=['id', 'voltage_level_id', 'bus_id', 'p0', 'q0', 'r', 'x', 'g', 'b', 'ucte_xnode_code'],
-            data=[('DL_TEST', 'VLTEST', 'BUS_TEST', 100, 101, 2, 2, 1, 1, 'XNODE1'),
-                  ('DL_TEST2', 'VLTEST2', 'BUS_TEST2', 100, 101, 2, 2, 1, 1, 'XNODE')],
-            index='id'))
-    assert 'DL_TEST' in network.get_dangling_lines().index
-    assert 'DL_TEST2' in network.get_dangling_lines().index
-    assert 'ucte_xnode_code' in network.get_dangling_lines().columns
+    return network
 
 
 def test_connect_tie_lines():

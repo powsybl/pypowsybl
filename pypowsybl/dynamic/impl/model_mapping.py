@@ -37,9 +37,9 @@ class ModelMapping:
         """
         return create_data_frame_from_series_array(_pp.get_categories_information())
 
-    def get_supported_models(self, category_name: str) -> List[str]:
+    def get_supported_models(self, category_name: str = '') -> List[str]:
         """
-        Get the supported dynamic models for a given category
+        Get the supported dynamic models for a given category or for all categories if no category_name is given
 
         Args:
             category_name: dynamic model category name
@@ -48,6 +48,18 @@ class ModelMapping:
             list of the supported models
         """
         return _pp.get_supported_models(category_name)
+
+    def get_supported_models_information(self, category_name: str = '') -> DataFrame:
+        """
+        Get more informations about the supported dynamic models for a given category or for all categories if no category_name is given
+
+        Args:
+            category_name: dynamic model category name
+
+        Returns:
+            a dataframe with information about the supported models
+        """
+        return create_data_frame_from_series_array(_pp.get_supported_models_information(category_name))
 
     def add_base_load(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

@@ -377,7 +377,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
    sensitivity_parameters(src->sensitivity_parameters)
 {
     objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
-    unit = static_cast<Unit>(src->unit);
     curative_min_obj_improvement = src->curative_min_obj_improvement;
     enforce_curative_security = (bool) src->enforce_curative_security;
 
@@ -429,7 +428,6 @@ RaoParameters::RaoParameters(rao_parameters* src):
 
 void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.objective_function_type = objective_function_type;
-    res.unit = unit;
     res.curative_min_obj_improvement = curative_min_obj_improvement;
     res.enforce_curative_security = enforce_curative_security;
 
@@ -874,11 +872,11 @@ std::string saveNetworkToString(const JavaHandle& network, const std::string& fo
 }
 
 void reduceNetwork(const JavaHandle& network, double v_min, double v_max, const std::vector<std::string>& ids,
-                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines) {
+                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines) {
     ToCharPtrPtr elementIdPtr(ids);
     ToCharPtrPtr vlsPtr(vls);
     ToIntPtr depthsPtr(depths);
-    PowsyblCaller::get()->callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
+    PowsyblCaller::get()->callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withBoundaryLines);
 }
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {
@@ -1052,6 +1050,10 @@ SeriesArray* getNetworkAreaDiagramDefaultBranchLabels(const JavaHandle& network)
 
 SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultThreeWtLabels, network));
+}
+
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultInjectionsLabels, network));
 }
 
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network) {
@@ -1603,7 +1605,6 @@ SldParameters::SldParameters(sld_parameters* src) {
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
-    edge_name_displayed = (bool) src->edge_name_displayed;
     edge_info_along_edge = (bool) src->edge_info_along_edge;
     id_displayed = (bool) src->id_displayed;
     power_value_precision = src->power_value_precision;
@@ -1615,9 +1616,12 @@ NadParameters::NadParameters(nad_parameters* src) {
     layout_type = static_cast<NadLayoutType>(src->layout_type);
     scaling_factor = src->scaling_factor;
     radius_factor = src->radius_factor;
-    edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
     voltage_level_details = (bool) src->voltage_level_details;
     injections_added = (bool) src->injections_added;
+    info_side_external = static_cast<EdgeInfoType>(src->info_side_external);
+    info_middle_side1 = static_cast<EdgeInfoType>(src->info_middle_side1);
+    info_middle_side2 = static_cast<EdgeInfoType>(src->info_middle_side2);
+    info_side_internal = static_cast<EdgeInfoType>(src->info_side_internal);
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1635,7 +1639,6 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {
-    res.edge_name_displayed = (unsigned char) edge_name_displayed;
     res.edge_info_along_edge = (unsigned char) edge_info_along_edge;
     res.id_displayed = (unsigned char) id_displayed;
     res.power_value_precision = power_value_precision;
@@ -1647,9 +1650,12 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.layout_type = (int) layout_type;
     res.scaling_factor = scaling_factor;
     res.radius_factor = radius_factor;
-    res.edge_info_displayed = (int) edge_info_displayed;
     res.voltage_level_details = (unsigned char) voltage_level_details;
     res.injections_added = (unsigned char) injections_added;
+    res.info_side_external = (int) info_side_external;
+    res.info_middle_side1 = (int) info_middle_side1;
+    res.info_middle_side2 = (int) info_middle_side2;
+    res.info_side_internal = (int) info_side_internal;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1725,9 +1731,9 @@ void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, data
     PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, (char*) eventName.c_str(), mappingDf);
 }
 
-void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType) {
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, OutputVariableType variableType) {
     ToCharPtrPtr variablesPtr(variables);
-    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), isDynamic, variableType);
+    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), variableType);
 }
 
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle) {
@@ -1762,6 +1768,10 @@ SeriesArray* getCategoriesInformation() {
 std::vector<std::string> getSupportedModels(std::string categoryName) {
     ToStringVector vector(PowsyblCaller::get()->callJava<array*>(::getSupportedModels, (char*) categoryName.c_str()));
     return vector.get();
+}
+
+SeriesArray* getSupportedModelsInformation(std::string categoryName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSupportedModelsInformation, (char*) categoryName.c_str()));
 }
 
 std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string categoryName) {
@@ -2095,6 +2105,130 @@ SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHand
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVirtualCostResults, cracHandle, resultHandle, (char*) virtualCostName.c_str()));
 }
 
+SeriesArray* getInstants(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getInstants, cracHandle));
+}
+
+SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionsUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxTopologicalActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxPstActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxPstActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxRemedialActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxElementaryActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxElementaryActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getCracContingencies(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracContingencies, cracHandle));
+}
+
+SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracContingencyElements, cracHandle));
+}
+
+SeriesArray* getFlowCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFlowCnecs, cracHandle));
+}
+
+SeriesArray* getAngleCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getAngleCnecs, cracHandle));
+}
+
+SeriesArray* getVoltageCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecs, cracHandle));
+}
+
+SeriesArray* getThresholds(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getThresholds, cracHandle));
+}
+
+SeriesArray* getCracPstRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracPstRangeActions, cracHandle));
+}
+
+SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracHvdcRangeActions, cracHandle));
+}
+
+SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracInjectionRangeActions, cracHandle));
+}
+
+SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkElementIdsAndKeys, cracHandle));
+}
+
+SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeRangeActions, cracHandle));
+}
+
+SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracRangeActionRanges, cracHandle));
+}
+
+SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracNetworkActions, cracHandle));
+}
+
+SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracTerminalConnectionActions, cracHandle));
+}
+
+SeriesArray* getCracPstTapPositionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracPstTapPositionActions, cracHandle));
+}
+
+SeriesArray* getCracGeneratorActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracGeneratorActions, cracHandle));
+}
+
+SeriesArray* getCracLoadActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracLoadActions, cracHandle));
+}
+
+SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracBoundaryLineActions, cracHandle));
+}
+
+SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracShuntCompensatorPositionActions, cracHandle));
+}
+
+SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracSwitchActions, cracHandle));
+}
+
+SeriesArray* getCracSwitchPairs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracSwitchPairs, cracHandle));
+}
+
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnInstantUsageRules, cracHandle));
+}
+
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnContingencyStateUsageRules, cracHandle));
+}
+
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnConstraintUsageRules, cracHandle));
+}
+
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstraintInCountryUsageRules, cracHandle));
+}
+
 JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
@@ -2160,9 +2294,10 @@ bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHand
     return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
 }
 
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get(),
+        (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 }

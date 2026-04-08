@@ -153,10 +153,10 @@ public final class NetworkUtil {
                     (String) branch.getSelectedOperationalLimitsGroupId2().orElse(null),
                     branch.getTerminal2().getVoltageLevel().getNominalV());
         });
-        network.getDanglingLineStream().forEach(danglingLine ->
-            addOperationalLimitGroupsLimits(limits, danglingLine.getOperationalLimitsGroups(), danglingLine, NONE,
-                    danglingLine.getSelectedOperationalLimitsGroupId().orElse(null),
-                    danglingLine.getTerminal().getVoltageLevel().getNominalV())
+        network.getBoundaryLineStream().forEach(boundaryLine ->
+            addOperationalLimitGroupsLimits(limits, boundaryLine.getOperationalLimitsGroups(), boundaryLine, NONE,
+                    boundaryLine.getSelectedOperationalLimitsGroupId().orElse(null),
+                    boundaryLine.getTerminal().getVoltageLevel().getNominalV())
         );
         network.getThreeWindingsTransformerStream().forEach(twt -> {
             addOperationalLimitGroupsLimits(limits, twt.getLeg1().getOperationalLimitsGroups(), twt, ONE,

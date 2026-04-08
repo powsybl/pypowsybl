@@ -80,11 +80,11 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
         UpdatingDataframe primaryTable = dataframes.get(0);
         AreaBoundaries series = new AreaBoundaries(primaryTable);
 
-        Map<Area, List<Pair<DanglingLine, Boolean>>> danglingLineBoundaries = new HashMap<>();
+        Map<Area, List<Pair<BoundaryLine, Boolean>>> boundaryLineBoundaries = new HashMap<>();
         Map<Area, List<Pair<Terminal, Boolean>>> terminalBoundaries = new HashMap<>();
         for (int i = 0; i < primaryTable.getRowCount(); i++) {
             String areaId = series.getIds().get(i);
-            String boundaryTypeStr = series.getBoundaryTypes() == null ? "DANGLING_LINE" : series.getBoundaryTypes().get(i);
+            String boundaryTypeStr = series.getBoundaryTypes() == null ? "BOUNDARY_LINE" : series.getBoundaryTypes().get(i);
             String element = series.getElements().get(i);
             String side = series.getSides() == null ? "" : series.getSides().get(i);
             boolean ac = series.getAcs() == null || series.getAcs().get(i) == 1;
@@ -93,27 +93,27 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
             Connectable<?> connectable = element.isEmpty() ? null : NetworkUtils.getConnectableOrThrow(network, element);
             if (connectable == null) {
                 // add an entry so that everything will be deleted for the area
-                danglingLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(null, null));
+                boundaryLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(null, null));
                 terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(null, null));
                 continue;
             }
             PyPowsyblApiHeader.ElementType boundaryType = PyPowsyblApiHeader.ElementType.valueOf(boundaryTypeStr);
-            if (Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.DANGLING_LINE)) {
-                // Boundary modeled by a dangling line
-                DanglingLine danglingLine = NetworkUtils.getDanglingLineOrThrow(network, element);
-                danglingLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(danglingLine, ac));
+            if (Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.BOUNDARY_LINE)) {
+                // Boundary modeled by a boundary line
+                BoundaryLine boundaryLine = NetworkUtils.getBoundaryLineOrThrow(network, element);
+                boundaryLineBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(boundaryLine, ac));
             } else if (Objects.equals(boundaryType, PyPowsyblApiHeader.ElementType.TERMINAL)) {
                 // Boundary modeled by a terminal
                 Terminal terminal = NetworkUtils.getTerminalOrThrow(network, element, side);
                 terminalBoundaries.computeIfAbsent(area, k -> new ArrayList<>()).add(Pair.of(terminal, ac));
             } else {
-                throw new PowsyblException("Area boundary boundary_type must be either DANGLING_LINE or TERMINAL");
+                throw new PowsyblException("Area boundary boundary_type must be either BOUNDARY_LINE or TERMINAL");
             }
         }
         // delete boundaries of involved areas
         // If a given area has *only* a null boundary in the updating dataframe, this results
         // in the area having all its boundaries unlinked.
-        Set<Area> areas = new HashSet<>(danglingLineBoundaries.keySet());
+        Set<Area> areas = new HashSet<>(boundaryLineBoundaries.keySet());
         areas.addAll(terminalBoundaries.keySet());
         areas.forEach(a -> a.getAreaBoundaryStream().toList()
                 .forEach(areaBoundary -> {
@@ -121,7 +121,7 @@ public class AreaBoundariesDataframeAdder implements NetworkElementAdder {
                     areaBoundary.getTerminal().ifPresent(a::removeAreaBoundary);
                 }));
         // create new boundaries
-        danglingLineBoundaries.forEach((area, list) -> list.stream()
+        boundaryLineBoundaries.forEach((area, list) -> list.stream()
                 .filter(pair -> pair.getLeft() != null)
                 .forEach(pair -> area.newAreaBoundary()
                         .setBoundary(pair.getLeft().getBoundary())

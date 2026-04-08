@@ -16,7 +16,7 @@ import com.powsybl.dataframe.update.StringSeries;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.topology.CreateFeederBay;
 import com.powsybl.iidm.modification.topology.CreateFeederBayBuilder;
-import com.powsybl.iidm.network.DanglingLineAdder;
+import com.powsybl.iidm.network.BoundaryLineAdder;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
@@ -32,7 +32,7 @@ import static com.powsybl.dataframe.network.adders.SeriesUtils.applyIfPresent;
  * @author Etienne Lesot {@literal <etienne.lesot at rte-france.com>}
  * @author Sylvain Leclerc {@literal <sylvain.leclerc@rte-france.com>}
  */
-public class DanglingLineDataframeAdder implements NetworkElementAdder {
+public class BoundaryLineDataframeAdder implements NetworkElementAdder {
 
     private static final List<SeriesMetadata> METADATA = List.of(
         SeriesMetadata.stringIndex("id"),
@@ -65,7 +65,7 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
         return List.of(METADATA, GENERATION_METADATA);
     }
 
-    private static class DanglingLineSeries extends InjectionSeries {
+    private static class BoundaryLineSeries extends InjectionSeries {
 
         private final StringSeries voltageLevels;
         private final DoubleSeries p0;
@@ -85,7 +85,7 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
         private final DoubleSeries targetV;
         private final IntSeries voltageRegulatorOn;
 
-        DanglingLineSeries(UpdatingDataframe dataframe, UpdatingDataframe generationDataframe) {
+        BoundaryLineSeries(UpdatingDataframe dataframe, UpdatingDataframe generationDataframe) {
             super(dataframe);
             this.voltageLevels = dataframe.getStrings("voltage_level_id");
             this.p0 = dataframe.getDoubles("p0");
@@ -116,11 +116,11 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
             }
         }
 
-        Optional<DanglingLineAdder> createAdder(Network network, int row, boolean throwException) {
+        Optional<BoundaryLineAdder> createAdder(Network network, int row, boolean throwException) {
             Optional<VoltageLevel> vl = getVoltageLevelOrThrowWithBusOrBusbarSectionId(network, row, voltageLevels,
                 busOrBusbarSections, throwException);
             if (vl.isPresent()) {
-                DanglingLineAdder adder = vl.get().newDanglingLine();
+                BoundaryLineAdder adder = vl.get().newBoundaryLine();
                 setInjectionAttributes(adder, row);
                 applyIfPresent(p0, row, adder::setP0);
                 applyIfPresent(q0, row, adder::setQ0);
@@ -136,14 +136,14 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
             }
         }
 
-        private void addGenerationIfPresent(DanglingLineAdder adder, int row) {
+        private void addGenerationIfPresent(BoundaryLineAdder adder, int row) {
             if (generationIndexes == null) {
                 return;
             }
             String id = ids.get(row);
             Integer generationRow = generationIndexes.get(id);
             if (generationRow != null) {
-                DanglingLineAdder.GenerationAdder genAdder = adder.newGeneration();
+                BoundaryLineAdder.GenerationAdder genAdder = adder.newGeneration();
                 applyIfPresent(minP, generationRow, genAdder::setMinP);
                 applyIfPresent(maxP, generationRow, genAdder::setMaxP);
                 applyIfPresent(targetP, generationRow, genAdder::setTargetP);
@@ -160,27 +160,27 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
         private static Map<String, Integer> getGenerationIndexes(UpdatingDataframe generationDf) {
             StringSeries ids = generationDf.getStrings("id");
             if (ids == null) {
-                throw new PowsyblException("Dangling line generation dataframe: id is not set");
+                throw new PowsyblException("Boundary line generation dataframe: id is not set");
             }
             Map<String, Integer> indexes = new HashMap<>();
             for (int generationIndex = 0; generationIndex < generationDf.getRowCount(); generationIndex++) {
-                String danglingLineId = ids.get(generationIndex);
-                indexes.put(danglingLineId, generationIndex);
+                String boundaryLineId = ids.get(generationIndex);
+                indexes.put(boundaryLineId, generationIndex);
             }
             return indexes;
         }
 
         void create(Network network, int row, boolean throwException) {
-            Optional<DanglingLineAdder> adder = createAdder(network, row, throwException);
-            adder.ifPresent(DanglingLineAdder::add);
+            Optional<BoundaryLineAdder> adder = createAdder(network, row, throwException);
+            adder.ifPresent(BoundaryLineAdder::add);
         }
 
         void createWithBay(Network network, int row, UpdatingDataframe primaryDataframe, boolean throwException, ReportNode reportNode) {
-            Optional<DanglingLineAdder> adder = createAdder(network, row, throwException);
+            Optional<BoundaryLineAdder> adder = createAdder(network, row, throwException);
             adder.ifPresent(presentAdder -> addWithBay(network, row, primaryDataframe, presentAdder, throwException, reportNode));
         }
 
-        void addWithBay(Network network, int row, UpdatingDataframe dataframe, DanglingLineAdder adder, boolean throwException, ReportNode reportNode) {
+        void addWithBay(Network network, int row, UpdatingDataframe dataframe, BoundaryLineAdder adder, boolean throwException, ReportNode reportNode) {
             String busOrBusbarSectionId = busOrBusbarSections.get(row);
             OptionalInt injectionPositionOrder = dataframe.getIntValue("position_order", row);
             ConnectablePosition.Direction direction = ConnectablePosition.Direction.valueOf(dataframe.getStringValue("direction", row).orElse("BOTTOM"));
@@ -200,7 +200,7 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
     public void addElements(Network network, List<UpdatingDataframe> dataframes) {
         UpdatingDataframe dataframe = dataframes.get(0);
         UpdatingDataframe generationDataframe = dataframes.get(1);
-        DanglingLineSeries series = new DanglingLineSeries(dataframe, generationDataframe);
+        BoundaryLineSeries series = new BoundaryLineSeries(dataframe, generationDataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.create(network, row, true);
         }
@@ -210,7 +210,7 @@ public class DanglingLineDataframeAdder implements NetworkElementAdder {
     public void addElementsWithBay(Network network, List<UpdatingDataframe> dataframes, boolean throwException, ReportNode reportNode) {
         UpdatingDataframe dataframe = dataframes.get(0);
         UpdatingDataframe generationDataframe = dataframes.get(1);
-        DanglingLineSeries series = new DanglingLineSeries(dataframe, generationDataframe);
+        BoundaryLineSeries series = new BoundaryLineSeries(dataframe, generationDataframe);
         for (int row = 0; row < dataframe.getRowCount(); row++) {
             series.createWithBay(network, row, dataframe, true, reportNode);
         }

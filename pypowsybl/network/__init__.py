@@ -16,6 +16,7 @@ from .impl.node_breaker_topology import NodeBreakerTopology
 from .impl.sld_parameters import SldParameters
 from .impl.nad_parameters import NadLayoutType, EdgeInfoType
 from .impl.nad_parameters import NadParameters
+from .impl.edge_info_parameters import EdgeInfoParameters
 from .impl.nad_profile import NadProfile
 from .impl.sld_profile import SldProfile
 from .impl.layout_parameters import LayoutParameters
@@ -44,6 +45,7 @@ from .impl.network_creation_util import (
     _create_network,
     create_dc_detailed_lcc_bipole_ground_return_network,
     create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network,
+    create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network,
     create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network,
     create_dc_detailed_lcc_bipole_metallic_return_network,
     create_dc_detailed_vsc_symmetrical_monopole_network,
@@ -68,6 +70,7 @@ from .impl.network_element_modification_util import (
     create_load_bay,
     create_battery_bay,
     create_generator_bay,
+    create_boundary_line_bay,
     create_dangling_line_bay,
     create_shunt_compensator_bay,
     create_static_var_compensator_bay,

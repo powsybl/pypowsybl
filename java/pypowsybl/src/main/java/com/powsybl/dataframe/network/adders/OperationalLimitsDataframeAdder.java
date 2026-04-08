@@ -159,6 +159,16 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             }
 
             @Override
+            public Collection<String> getAllSelectedOperationalLimitsGroupIds() {
+                return branch.getAllSelectedOperationalLimitsGroupIds(side);
+            }
+
+            @Override
+            public List<String> getAllSelectedOperationalLimitsGroupIdsOrdered() {
+                return branch.getAllSelectedOperationalLimitsGroupIdsOrdered(side);
+            }
+
+            @Override
             public Optional<OperationalLimitsGroup> getOperationalLimitsGroup(String s) {
                 return side == TwoSides.ONE ? branch.getOperationalLimitsGroup1(s) : branch.getOperationalLimitsGroup2(s);
             }
@@ -166,6 +176,11 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             @Override
             public Optional<OperationalLimitsGroup> getSelectedOperationalLimitsGroup() {
                 return side == TwoSides.ONE ? branch.getSelectedOperationalLimitsGroup1() : branch.getSelectedOperationalLimitsGroup2();
+            }
+
+            @Override
+            public Collection<OperationalLimitsGroup> getAllSelectedOperationalLimitsGroups() {
+                return branch.getAllSelectedOperationalLimitsGroups(side);
             }
 
             @Override
@@ -180,6 +195,11 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
                 } else {
                     branch.setSelectedOperationalLimitsGroup2(s);
                 }
+            }
+
+            @Override
+            public void addSelectedOperationalLimitsGroups(String... strings) {
+                branch.addSelectedOperationalLimitsGroups(side, strings);
             }
 
             @Override
@@ -198,6 +218,11 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
                 } else {
                     branch.cancelSelectedOperationalLimitsGroup2();
                 }
+            }
+
+            @Override
+            public void deselectOperationalLimitsGroups(String... strings) {
+                branch.deselectOperationalLimitsGroups(side, strings);
             }
 
             @Override
@@ -266,11 +291,11 @@ public class OperationalLimitsDataframeAdder implements NetworkElementAdder {
             case LINE, TWO_WINDINGS_TRANSFORMER -> {
                 return getBranchAsFlowsLimitsHolder((Branch<?>) identifiable, toBranchSide(side));
             }
-            case DANGLING_LINE -> {
+            case BOUNDARY_LINE -> {
                 if (side != TemporaryLimitData.Side.NONE) {
-                    throw new PowsyblException(String.format("Invalid value for dangling line side: %s, must be NONE", side));
+                    throw new PowsyblException(String.format("Invalid value for boundary line side: %s, must be NONE", side));
                 }
-                return (DanglingLine) identifiable;
+                return (BoundaryLine) identifiable;
             }
             case THREE_WINDINGS_TRANSFORMER -> {
                 ThreeWindingsTransformer transformer = (ThreeWindingsTransformer) identifiable;

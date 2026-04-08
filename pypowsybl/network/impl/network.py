@@ -44,6 +44,7 @@ from .bus_breaker_topology import BusBreakerTopology
 from .node_breaker_topology import NodeBreakerTopology
 from .sld_parameters import SldParameters
 from .nad_parameters import NadParameters
+from .edge_info_parameters import EdgeInfoParameters
 from .nad_profile import NadProfile
 from .sld_profile import SldProfile
 from .svg import Svg
@@ -178,6 +179,37 @@ class Network:  # pylint: disable=too-many-public-methods
                            [] if post_processors is None else post_processors,
                            None if report_node is None else report_node._report_node)
 
+    def update_from_binary_buffer(self, buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None,
+                                  post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None) -> None:
+        """
+        Update a network from a binary buffer.
+
+        Args:
+           buffer:    The BytesIO data buffer
+           parameters:  A dictionary of import parameters
+           post_processors: a list of import post processors (will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        self.update_from_binary_buffers([buffer], parameters, post_processors, report_node)
+
+    def update_from_binary_buffers(self, buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None,
+                                  post_processors: Optional[List[str]] = None, report_node: Optional[ReportNode] = None) -> None:
+        """
+        Update a network from a list of binary buffers.
+        Only zipped CGMES are supported for several zipped source load.
+
+        Args:
+           buffers:    The BytesIO data buffers
+           parameters:  A dictionary of import parameters
+           post_processors: a list of import post processors (will be added to the ones defined by the platform config)
+           report_node: the reporter to be used to create an execution report, default is None (no report)
+        """
+        buffer_list = []
+        for buff in buffers:
+            buffer_list.append(buff.getbuffer())
+        _pp.update_network_from_binary_buffers(self._handle, buffer_list, {} if parameters is None else parameters,
+                                         [] if post_processors is None else post_processors,
+                                         None if report_node is None else report_node._report_node)
 
     def open_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, True)
@@ -315,30 +347,37 @@ class Network:  # pylint: disable=too-many-public-methods
             depths.append(v[1])
         _pp.reduce_network(self._handle, v_min, v_max, ids, vls, depths, with_dangling_lines)
 
-    def reduce_by_voltage_range(self, v_min: float = 0, v_max: float = sys.float_info.max, with_dangling_lines: bool = False) -> None:
+    def reduce_by_voltage_range(self, v_min: float = 0, v_max: float = sys.float_info.max, with_boundary_lines: bool = False,
+                                with_dangling_lines: Optional[bool] = None) -> None:
         """
         Reduce to a smaller network (only keeping all elements whose nominal voltage is in the specified voltage range)
 
         :param v_min: minimum voltage of the voltage levels kept after reducing
         :param v_max: voltage maximum of the voltage levels kept after reducing
-        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+        :param with_boundary_lines: whether boundary lines should be created to replace lines cut at the boundary of reduction
+        :param with_dangling_lines: deprecated, use with_boundary_lines instead
 
         Example:
 
             .. code-block:: python
 
-                network.reduce_by_voltage_range(v_min=90, v_max=250, with_dangling_lines=True)
+                network.reduce_by_voltage_range(v_min=90, v_max=250, with_boundary_lines=True)
 
-            will only keep elements of voltage level between 90 and 250kV, replacing the lines cut at the boundary by dangling lines.
+            will only keep elements of voltage level between 90 and 250kV, replacing the lines cut at the boundary by boundary lines.
         """
-        _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+        if with_dangling_lines is not None:
+            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning)
+            with_boundary_lines = with_dangling_lines
+        _pp.reduce_network(self._handle, v_min=v_min, v_max=v_max, ids=[], vls=[], depths=[], with_boundary_lines=with_boundary_lines)
 
-    def reduce_by_ids(self, ids: List[str], with_dangling_lines: bool = False) -> None:
+    def reduce_by_ids(self, ids: List[str], with_boundary_lines: bool = False,
+                      with_dangling_lines: Optional[bool] = None) -> None:
         """
         Reduce to a smaller network (only keeping voltage levels whose id is in the specified list)
 
         :param ids: list of the voltage level ids that should be kept in the reduced network
-        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+        :param with_boundary_lines: whether boundary lines should be created to replace lines cut at the boundary of reduction
+        :param with_dangling_lines: deprecated, use with_boundary_lines instead
 
         Example:
 
@@ -348,14 +387,19 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will only keep voltage levels VL1 and VL2 and all network elements between them.
         """
-        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_dangling_lines=with_dangling_lines)
+        if with_dangling_lines is not None:
+            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning)
+            with_boundary_lines = with_dangling_lines
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=ids, vls=[], depths=[], with_boundary_lines=with_boundary_lines)
 
-    def reduce_by_ids_and_depths(self, vl_depths: List[tuple[str, int]], with_dangling_lines: bool = False) -> None:
+    def reduce_by_ids_and_depths(self, vl_depths: List[tuple[str, int]], with_boundary_lines: bool = False,
+                                 with_dangling_lines: Optional[bool] = None) -> None:
         """
         Reduce to a smaller network (keeping the specified voltage levels with all respective neighbours at most at the specified depth).
 
         :param vl_depths: list of the voltage level ids that should be kept in the reduced network
-        :param with_dangling_lines: whether dangling lines should be created to replace lines cut at the boundary of reduction
+        :param with_boundary_lines: whether boundary lines should be created to replace lines cut at the boundary of reduction
+        :param with_dangling_lines: deprecated, use with_boundary_lines instead
 
         Example:
 
@@ -365,12 +409,15 @@ class Network:  # pylint: disable=too-many-public-methods
 
             will only keep voltage levels VL1 and its neighbours, and VL25 with all elements around it with at most 3 connections between them.
         """
+        if with_dangling_lines is not None:
+            warnings.warn("with_dangling_lines is deprecated, use with_boundary_lines instead", DeprecationWarning)
+            with_boundary_lines = with_dangling_lines
         vls = []
         depths = []
         for v in vl_depths:
             vls.append(v[0])
             depths.append(v[1])
-        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=[], vls=vls, depths=depths, with_dangling_lines=with_dangling_lines)
+        _pp.reduce_network(self._handle, v_min=0, v_max=sys.float_info.max, ids=[], vls=vls, depths=depths, with_boundary_lines=with_boundary_lines)
 
 
     def write_single_line_diagram_svg(self, container_id: str, svg_file: PathOrStr, metadata_file: Optional[PathOrStr] = None,
@@ -484,7 +531,11 @@ class Network:  # pylint: disable=too-many-public-methods
             low_nominal_voltage_bound: low bound to filter voltage level according to nominal voltage
             edge_name_displayed: if true displays the edge's names
         """
-        nad_p = NadParameters(edge_name_displayed=edge_name_displayed)
+        edge_info_parameters = EdgeInfoParameters(info_side_external=_pp.EdgeInfoType.ACTIVE_POWER,
+                                                  info_middle_side1=_pp.EdgeInfoType.NAME if edge_name_displayed else _pp.EdgeInfoType.EMPTY,
+                                                  info_middle_side2=_pp.EdgeInfoType.EMPTY,
+                                                  info_side_internal=_pp.EdgeInfoType.EMPTY)
+        nad_p = NadParameters(edge_info_parameters=edge_info_parameters)
         self.write_network_area_diagram(svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
                                         low_nominal_voltage_bound, nad_p)
 
@@ -594,16 +645,18 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def get_default_nad_profile(self) -> NadProfile:
         """
-        Creates a default NadProfile for branch labels, twt labels, bus descriptions, and VL descriptions.
+        Creates a default NadProfile for branch labels, twt labels, injection labels, bus descriptions, and VL descriptions.
 
         Returns:
             a NadProfile where the labels and descriptions dataframes have been set with the content from the default NAD content provider.
         """
         branch_labels_df = create_data_frame_from_series_array(_pp.get_default_branch_labels_nad(self._handle))
         twt_labels_df = create_data_frame_from_series_array(_pp.get_default_twt_labels_nad(self._handle))
+        injections_labels_df = create_data_frame_from_series_array(_pp.get_default_injections_labels_nad(self._handle))
         bus_descriptions_df = create_data_frame_from_series_array(_pp.get_default_bus_descriptions_nad(self._handle))
         vl_infos_df = create_data_frame_from_series_array(_pp.get_default_voltage_level_descriptions_nad(self._handle))
-        return NadProfile(branch_labels=branch_labels_df, three_wt_labels=twt_labels_df, bus_descriptions=bus_descriptions_df, vl_descriptions=vl_infos_df)
+        return NadProfile(branch_labels=branch_labels_df, three_wt_labels=twt_labels_df, injections_labels=injections_labels_df,
+                          bus_descriptions=bus_descriptions_df, vl_descriptions=vl_infos_df)
 
 
     def get_elements_ids(self, element_type: ElementType, nominal_voltages: Optional[Set[float]] = None,
@@ -1567,10 +1620,10 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.LINEAR_SHUNT_COMPENSATOR_SECTION, all_attributes, attributes, **kwargs)
 
-    def get_dangling_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
+    def get_boundary_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                            **kwargs: ArrayLike) -> DataFrame:
         r"""
-        Get a dataframe of dangling lines.
+        Get a dataframe of boundary lines.
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
@@ -1579,44 +1632,44 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Returns:
-            A dataframe of dangling lines.
+            A dataframe of boundary lines.
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **r**: The resistance of the dangling line (Ohm)
-              - **x**: The reactance of the dangling line (Ohm)
-              - **g**: the conductance of dangling line (in Siemens)
-              - **b**: the susceptance of dangling line (in Siemens)
+              - **r**: The resistance of the boundary line (Ohm)
+              - **x**: The reactance of the boundary line (Ohm)
+              - **g**: the conductance of boundary line (in Siemens)
+              - **b**: the susceptance of boundary line (in Siemens)
               - **p0**: The active power setpoint
               - **q0**: The reactive power setpoint
-              - **p**: active flow on the dangling line, ``NaN`` if no loadflow has been computed (in MW)
-              - **q**: the reactive flow on the dangling line, ``NaN`` if no loadflow has been computed  (in MVAr)
-              - **i**: The current on the dangling line, ``NaN`` if no loadflow has been computed (in A)
-              - **boundary_p** (optional): active flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
-              - **boundary_q** (optional): reactive flow on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
-              - **boundary_i** (optional): current on the dangling line at boundary bus side, ``NaN`` if no loadflow has been computed (in A)
+              - **p**: active flow on the boundary line, ``NaN`` if no loadflow has been computed (in MW)
+              - **q**: the reactive flow on the boundary line, ``NaN`` if no loadflow has been computed  (in MVAr)
+              - **i**: The current on the boundary line, ``NaN`` if no loadflow has been computed (in A)
+              - **boundary_p** (optional): active flow on the boundary line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_q** (optional): reactive flow on the boundary line at boundary bus side, ``NaN`` if no loadflow has been computed (in MW)
+              - **boundary_i** (optional): current on the boundary line at boundary bus side, ``NaN`` if no loadflow has been computed (in A)
               - **boundary_v_mag** (optional): voltage magnitude of the boundary bus, ``NaN`` if no loadflow has been computed (in kV)
               - **boundary_v_angle** (optional): voltage angle of the boundary bus, ``NaN`` if no loadflow has been computed (in degree)
-              - **voltage_level_id**: at which substation the dangling line is connected
+              - **voltage_level_id**: at which substation the boundary line is connected
               - **bus_id**: bus where this line is connected
               - **bus_breaker_bus_id** (optional): bus of the bus-breaker view where this line is connected
               - **node**  (optional): node where this line is connected, in node-breaker voltage levels
-              - **connected**: ``True`` if the dangling line is connected to a bus
-              - **fictitious** (optional): ``True`` if the dangling line is part of the model and not of the actual network
-              - **pairing_key**: the pairing key associated to the dangling line, to be used for creating tie lines.
+              - **connected**: ``True`` if the boundary line is connected to a bus
+              - **fictitious** (optional): ``True`` if the boundary line is part of the model and not of the actual network
+              - **pairing_key**: the pairing key associated to the boundary line, to be used for creating tie lines.
               - **ucte_xnode_code**: deprecated for pairing_key.
-              - **paired**: if the dangling line is paired with a tie line
-              - **tie_line_id**: the ID of the tie line if the dangling line is paired
+              - **paired**: if the boundary line is paired with a tie line
+              - **tie_line_id**: the ID of the tie line if the boundary line is paired
 
-            This dataframe is indexed by the id of the dangling lines
+            This dataframe is indexed by the id of the boundary lines
 
         Examples:
 
             .. code-block:: python
 
-                net = pp.network.create_dangling_lines_network()
-                net.get_dangling_lines()
+                net = pp.network.create_boundary_lines_network()
+                net.get_boundary_lines()
 
             will output something like:
 
@@ -1624,13 +1677,13 @@ class Network:  # pylint: disable=too-many-public-methods
             \     r   x      g       b   p0   q0   p   q   i voltage_level_id bus_id connected
             == ==== === ====== ======= ==== ==== === === === ================ ====== =========
             id
-            DL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
+            BL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
             == ==== === ====== ======= ==== ==== === === === ================ ====== =========
 
             .. code-block:: python
 
-                net = pp.network.create_dangling_lines_network()
-                net.get_dangling_lines(all_attributes=True)
+                net = pp.network.create_boundary_lines_network()
+                net.get_boundary_lines(all_attributes=True)
 
             will output something like:
 
@@ -1638,13 +1691,13 @@ class Network:  # pylint: disable=too-many-public-methods
             \     r   x      g       b   p0   q0   p   q   i voltage_level_id bus_id connected
             == ==== === ====== ======= ==== ==== === === === ================ ====== =========
             id
-            DL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
+            BL 10.0 1.0 0.0001 0.00001 50.0 30.0 NaN NaN NaN               VL   VL_0      True
             == ==== === ====== ======= ==== ==== === === === ================ ====== =========
 
             .. code-block:: python
 
-                net = pp.network.create_dangling_lines_network()
-                net.get_dangling_lines(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
+                net = pp.network.create_boundary_lines_network()
+                net.get_boundary_lines(attributes=['p','q','i','voltage_level_id','bus_id','connected'])
 
             will output something like:
 
@@ -1652,27 +1705,36 @@ class Network:  # pylint: disable=too-many-public-methods
             \    p   q   i voltage_level_id bus_id connected
             == === === === ================ ====== =========
             id
-            DL NaN NaN NaN               VL   VL_0      True
+            BL NaN NaN NaN               VL   VL_0      True
             == === === === ================ ====== =========
 
         .. note::
 
             This note applies only if you are using the per-unit mode in your network (i.e., network.per_unit=True).
 
-            If two dangling lines are paired in a tie-line and have different nominal voltages, the per-unit values
-            for `boundary_i` and `boundary_v_mag` will differ between the two dangling lines.
+            If two boundary lines are paired in a tie-line and have different nominal voltages, the per-unit values
+            for `boundary_i` and `boundary_v_mag` will differ between the two boundary lines.
 
             Currently, PowSyBl network model does not support the concept of nominal voltage for the boundary
-            fictitious bus. Therefore, the nominal voltage at the dangling line network side is used for
+            fictitious bus. Therefore, the nominal voltage at the boundary line network side is used for
             per-unit calculations. While this is generally not an issue, this produces counterintuitive results
-            in the case of dangling lines of different nominal voltages.
+            in the case of boundary lines of different nominal voltages.
         """
-        return self.get_elements(ElementType.DANGLING_LINE, all_attributes, attributes, **kwargs)
+        return self.get_elements(ElementType.BOUNDARY_LINE, all_attributes, attributes, **kwargs)
 
-    def get_dangling_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
+    def get_dangling_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
+                           **kwargs: ArrayLike) -> DataFrame:
+        """
+        .. deprecated:: 1.15.0
+            Use :meth:`get_boundary_lines` instead.
+        """
+        warnings.warn("get_dangling_lines is deprecated, use get_boundary_lines instead.", DeprecationWarning)
+        return self.get_boundary_lines(all_attributes, attributes, **kwargs)
+
+    def get_boundary_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                                       **kwargs: ArrayLike) -> DataFrame:
         r"""
-        Get a dataframe of dangling lines generation part.
+        Get a dataframe of boundary lines generation part.
 
         Args:
             all_attributes: flag for including all attributes in the dataframe, default is false
@@ -1681,22 +1743,31 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs: the data to be selected, as named arguments.
 
         Returns:
-            A dataframe of dangling lines generation part.
+            A dataframe of boundary lines generation part.
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **min_p**: Minimum active power output of the dangling line's generation part
-              - **max_p**: Maximum active power output of the dangling line's generation part
+              - **min_p**: Minimum active power output of the boundary line's generation part
+              - **max_p**: Maximum active power output of the boundary line's generation part
               - **target_p**: Active power target of the generation part
               - **target_q**: Reactive power target of the generation part
               - **target_v**: Voltage target of the generation part
               - **voltage_regulator_on**: ``True`` if the generation part regulates voltage
 
-            This dataframe is indexed by the id of the dangling lines
-
+            This dataframe is indexed by the id of the boundary lines.
         """
-        return self.get_elements(ElementType.DANGLING_LINE_GENERATION, all_attributes, attributes, **kwargs)
+        return self.get_elements(ElementType.BOUNDARY_LINE_GENERATION, all_attributes, attributes, **kwargs)
+
+    def get_dangling_lines_generation(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
+                                      **kwargs: ArrayLike) -> DataFrame:
+        """
+        .. deprecated:: 1.15.0
+            Use :meth:`get_boundary_lines_generation` instead.
+        """
+        warnings.warn("get_dangling_lines_generation is deprecated, use get_boundary_lines_generation instead.",
+                      DeprecationWarning)
+        return self.get_boundary_lines_generation(all_attributes, attributes, **kwargs)
 
     def get_tie_lines(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                       **kwargs: ArrayLike) -> DataFrame:
@@ -1715,15 +1786,17 @@ class Network:  # pylint: disable=too-many-public-methods
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
 
-              - **dangling_line1_id**: The ID of the first dangling line
-              - **dangling_line2_id**: The ID of the second dangling line
-              - **pairing_key**: the pairing key of the tie line, obtained from the dangling lines.
+              - **boundary_line1_id**: The ID of the first boundary line
+              - **boundary_line2_id**: The ID of the second boundary line
+              - **dangling_line1_id**: deprecated for **boundary_line1_id**
+              - **dangling_line2_id**: deprecated for **boundary_line2_id**
+              - **pairing_key**: the pairing key of the tie line, obtained from the boundary lines.
               - **ucte_xnode_code**: deprecated for **pairing_key**.
               - **connected1**: ``True`` if the dangling line 1 is connected to a bus
               - **connected2**: ``True`` if the dangling line 2 is connected to a bus
               - **fictitious** (optional): ``True`` if the tie line is part of the model and not of the actual network
 
-            This dataframe is indexed by the id of the dangling lines
+            This dataframe is indexed by the id of the tie lines
         """
         return self.get_elements(ElementType.TIE_LINE, all_attributes, attributes, **kwargs)
 
@@ -2960,8 +3033,8 @@ class Network:  # pylint: disable=too-many-public-methods
             The resulting dataframe, depending on the parameters, will include the following columns:
 
               - **id**: area identifier
-              - **boundary_type** (optional): either `DANGLING_LINE` or `TERMINAL`
-              - **element**: either identifier of the Dangling Line or the equipment terminal
+              - **boundary_type** (optional): either `BOUNDARY_LINE` or `TERMINAL`
+              - **element**: either identifier of the boundary Line or the equipment terminal
               - **side** (optional): equipment side
               - **ac**: True if the boundary is considered as AC and not DC
               - **p**: Active power at boundary (MW)
@@ -3345,9 +3418,9 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.BATTERY, df, **kwargs)
 
-    def update_dangling_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_boundary_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Update dangling lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        Update boundary lines with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -3369,25 +3442,33 @@ class Network:  # pylint: disable=too-many-public-methods
             - `connected`
             - `fictitious`
             - `pairing_key`
-            - `bus_breaker_bus_id` if the dangling line is in a voltage level with `BUS_BREAKER` topology
+            - `bus_breaker_bus_id` if the boundary line is in a voltage level with `BUS_BREAKER` topology
             - `selected_limits_group`
 
         See Also:
-            :meth:`get_dangling_lines`
+            :meth:`get_boundary_lines`
 
         Examples:
             Some examples using keyword arguments:
 
             .. code-block:: python
 
-                network.update_dangling_lines(id='L-1', p0=10, q0=3)
-                network.update_dangling_lines(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
+                network.update_boundary_lines(id='L-1', p0=10, q0=3)
+                network.update_boundary_lines(id=['L-1', 'L-2'],  p0=[10, 20], q0=[3, 5])
         """
-        return self._update_elements(ElementType.DANGLING_LINE, df, **kwargs)
+        return self._update_elements(ElementType.BOUNDARY_LINE, df, **kwargs)
 
-    def update_dangling_lines_generation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def update_dangling_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Update dangling lines generation part with data provided as a :class:`~pandas.DataFrame` or as named arguments.
+        .. deprecated:: 1.15.0
+            Use :meth:`update_boundary_lines` instead.
+        """
+        warnings.warn("update_dangling_lines is deprecated, use update_boundary_lines instead.", DeprecationWarning)
+        self.update_boundary_lines(df, **kwargs)
+
+    def update_boundary_lines_generation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update boundary lines generation part with data provided as a :class:`~pandas.DataFrame` or as named arguments.
 
         Args:
             df: the data to be updated, as a dataframe.
@@ -3406,17 +3487,25 @@ class Network:  # pylint: disable=too-many-public-methods
             - `voltage_regulator_on`
 
         See Also:
-            :meth:`get_dangling_lines_generation`
+            :meth:`get_boundary_lines_generation`
 
         Examples:
             Some examples using keyword arguments:
 
             .. code-block:: python
 
-                network.update_dangling_lines_generation(id='DL', voltage_regulator_on=True, target_v=225)
-                network.update_dangling_lines_generation(id=['DL', 'DL2'],  voltage_regulator_on=[True, True], target_v=[225, 400])
+                network.update_boundary_lines_generation(id='BL', voltage_regulator_on=True, target_v=225)
+                network.update_boundary_lines_generation(id=['BL', 'BL2'],  voltage_regulator_on=[True, True], target_v=[225, 400])
         """
-        return self._update_elements(ElementType.DANGLING_LINE_GENERATION, df, **kwargs)
+        return self._update_elements(ElementType.BOUNDARY_LINE_GENERATION, df, **kwargs)
+
+    def update_dangling_lines_generation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.15.0
+            Use :meth:`update_boundary_lines_generation` instead.
+        """
+        warnings.warn("update_dangling_lines_generation is deprecated, use update_boundary_lines_generation instead", DeprecationWarning)
+        self.update_boundary_lines_generation(df, **kwargs)
 
     def update_vsc_converter_stations(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -4396,7 +4485,7 @@ class Network:  # pylint: disable=too-many-public-methods
           - **element_id**: Identifier of the network element on which this limit applies (could be for example
             a line or a transformer)
           - **element_type**: Type of the network element on which this limit applies (LINE, TWO_WINDINGS_TRANSFORMER,
-            THREE_WINDINGS_TRANSFORMER, DANGLING_LINE)
+            THREE_WINDINGS_TRANSFORMER, BOUNDARY_LINE)
           - **side**:       The side of the element on which this limit applies (ONE, TWO, THREE)
           - **name**:       The name of the limit
           - **type**:       The type of the limit (CURRENT, ACTIVE_POWER, APPARENT_POWER)
@@ -4774,18 +4863,18 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._create_elements(ElementType.BATTERY, [df], **kwargs)
 
-    def create_dangling_lines(self, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(), **kwargs: ArrayLike) -> None:
+    def create_boundary_lines(self, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(), **kwargs: ArrayLike) -> None:
         """
-        Creates dangling lines.
+        Creates boundary lines.
 
         Args:
             df: Attributes as a dataframe.
-            generation_df: Attributes of the dangling lines optional generation part, only as a dataframe
+            generation_df: Attributes of the boundary lines optional generation part, only as a dataframe
             kwargs: Attributes as keyword arguments.
 
         Notes:
 
-            General dangling line data may be provided as a dataframe or as keyword arguments.
+            General boundary line data may be provided as a dataframe or as keyword arguments.
             In the latter case, all arguments must have the same length.
 
             Valid attributes are:
@@ -4806,15 +4895,15 @@ class Network:  # pylint: disable=too-many-public-methods
             - **x**: the reactance, in Ohms
             - **g**: the shunt conductance, in S
             - **b**: the shunt susceptance, in S
-            - **pairing_key**: the optional pairing key associated to the dangling line, to be used for creating tie lines.
+            - **pairing_key**: the optional pairing key associated to the boundary line, to be used for creating tie lines.
             - **ucte_xnode_code**: deprecated, use pairing_key instead.
 
-            Dangling line generation information must be provided as a dataframe.
+            Boundary line generation information must be provided as a dataframe.
             Valid attributes are:
 
-            - **id**: Identifier of the dangling line that contains this generation part
-            - **min_p**: Minimum active power output of the dangling line's generation part
-            - **max_p**: Maximum active power output of the dangling line's generation part
+            - **id**: Identifier of the boundary line that contains this generation part
+            - **min_p**: Minimum active power output of the boundary line's generation part
+            - **max_p**: Maximum active power output of the boundary line's generation part
             - **target_p**: Active power target of the generation part
             - **target_q**: Reactive power target of the generation part
             - **target_v**: Voltage target of the generation part
@@ -4825,7 +4914,7 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                network.create_dangling_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
+                network.create_boundary_lines(id='BAT-1', voltage_level_id='VL1', bus_id='B1',
                                               p0=10, q0=3, r=0, x=5, g=0, b=1e-6)
         """
         ucte_xnode_code_str = 'ucte_xnode_code'
@@ -4838,7 +4927,15 @@ class Network:  # pylint: disable=too-many-public-methods
             warnings.warn(ucte_xnode_code_str + " is deprecated, use pairing_key", DeprecationWarning)
             kwargs['pairing_key'] = ucte_x_node_code
             kwargs.pop(ucte_xnode_code_str)
-        return self._create_elements(ElementType.DANGLING_LINE, [df, generation_df], **kwargs)
+        return self._create_elements(ElementType.BOUNDARY_LINE, [df, generation_df], **kwargs)
+
+    def create_dangling_lines(self, df: Optional[DataFrame] = None, generation_df: DataFrame = pd.DataFrame(), **kwargs: ArrayLike) -> None:
+        """
+        .. deprecated:: 1.15.0
+            Use :meth:`create_boundary_lines` instead.
+        """
+        warnings.warn("create_dangling_lines is deprecated, use create_boundary_lines", DeprecationWarning)
+        self.create_boundary_lines(df, generation_df, **kwargs)
 
     def create_lcc_converter_stations(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -5750,8 +5847,8 @@ class Network:  # pylint: disable=too-many-public-methods
 
     def create_tie_lines(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
-        Creates tie lines from two dangling lines.
-        Both dangling lines must have the same UCTE Xnode code.
+        Creates tie lines from two boundary lines.
+        Both boundary lines must have the same pairing key (formerly named UCTE Xnode code).
 
         Args:
             df: Attributes as a dataframe.
@@ -5766,19 +5863,35 @@ class Network:  # pylint: disable=too-many-public-methods
 
             - **id**: the identifier of the new tie line
             - **name**: an optional human-readable name
-            - **dangling_line1_id**: the ID of the first dangling line
+            - **boundary_line1_id**: the ID of the first boundary line
               It must already exist.
-            - **dangling_line2_id**: the ID of the second dangling line
+            - **boundary_line2_id**: the ID of the second boundary line
               It must already exist.
+
+            **dangling_line1_id** and **dangling_line2_id** are deprecated attributes, use **boundary_line1_id**
+            and **boundary_line2_id** instead.
 
         Examples:
             Using keyword arguments:
 
             .. code-block:: python
 
-                network.create_tie_lines(id='tie_line_1', dangling_line1_id='DL-1', dangling_line2_id='DL-2')
+                network.create_tie_lines(id='tie_line_1', boundary_line1_id='BL-1', boundary_line2_id='BL-2')
 
         """
+        if df is not None:
+            if "dangling_line1_id" in df.columns:
+                warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
+                df = df.rename(columns={'dangling_line1_id': 'boundary_line1_id'})
+            if "dangling_line2_id" in df.columns:
+                warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
+                df = df.rename(columns={'dangling_line2_id': 'boundary_line2_id'})
+        if kwargs.get('dangling_line1_id') is not None:
+            warnings.warn("dangling_line1_id is deprecated, use boundary_line1_id instead", DeprecationWarning)
+            kwargs['boundary_line1_id'] = kwargs.pop('dangling_line1_id')
+        if kwargs.get('dangling_line2_id') is not None:
+            warnings.warn("dangling_line2_id is deprecated, use boundary_line2_id instead", DeprecationWarning)
+            kwargs['boundary_line2_id'] = kwargs.pop('dangling_line2_id')
         return self._create_elements(ElementType.TIE_LINE, [df], **kwargs)
 
     def create_areas(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
@@ -5871,9 +5984,9 @@ class Network:  # pylint: disable=too-many-public-methods
             Valid attributes are:
 
             - **id**: the identifier of the area
-            - **boundary_type**: either `DANGLING_LINE` or `TERMINAL`, defaults to `DANGLING_LINE`.
-            - **element**: dangling line identifier, or any connectable
-            - **side**: if element is not a dangling line (e.g. a branch or transformer), the terminal side
+            - **boundary_type**: either `BOUNDARY_LINE` or `TERMINAL`, defaults to `BOUNDARY_LINE`.
+            - **element**: boundary line identifier, or any connectable
+            - **side**: if element is not a boundary line (e.g. a branch or transformer), the terminal side
             - **ac**: True is boundary is to be considered as AC
 
         See Also:
@@ -5883,10 +5996,10 @@ class Network:  # pylint: disable=too-many-public-methods
 
             .. code-block:: python
 
-                # define dangling lines NHV1_XNODE1 and NVH1_XNODE2 as boundaries of AreaA, and
-                # define dangling lines XNODE1_NHV2 and XNODE2_NHV2 as boundaries of AreaB
+                # define boundary lines NHV1_XNODE1 and NVH1_XNODE2 as boundaries of AreaA, and
+                # define boundary lines XNODE1_NHV2 and XNODE2_NHV2 as boundaries of AreaB
                 network.create_areas_boundaries(id=['AreaA', 'AreaA', 'AreaB', 'AreaB'],
-                                                boundary_type=['DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE', 'DANGLING_LINE'],
+                                                boundary_type=['BOUNDARY_LINE', 'BOUNDARY_LINE', 'BOUNDARY_LINE', 'BOUNDARY_LINE'],
                                                 element=['NHV1_XNODE1', 'NVH1_XNODE2', 'XNODE1_NHV2', 'XNODE2_NHV2'],
                                                 ac=[True, True, True, True])
 
@@ -6231,8 +6344,8 @@ class Network:  # pylint: disable=too-many-public-methods
         load flow calculation. The copied values are :
         - **solved_tap_position** -> **tap** for ratio/phase tap changers
         - **solved_section_count** -> **section_count** for shunt/compensators
-        - **targetP/Q** -> **P/Q** for generators, dangling lines, batteries
-        - **targetV** -> **V** for generators and dangling lines
+        - **targetP/Q** -> **P/Q** for generators, boundary lines, batteries
+        - **targetV** -> **V** for generators and boundary lines
         - **P0/Q0** -> **P/Q** for loads
         """
         _pp.apply_solved_values(self._handle)

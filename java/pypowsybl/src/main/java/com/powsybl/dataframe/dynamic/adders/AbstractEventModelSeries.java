@@ -25,7 +25,7 @@ import static com.powsybl.dataframe.dynamic.adders.DynamicModelDataframeConstant
 /**
  * @author Laurent Issertial {@literal <laurent.issertial at rte-france.com>}
  */
-abstract class AbstractEventModelSeries<T extends ModelBuilder<EventModel>> implements EventModelSeries {
+public abstract class AbstractEventModelSeries<T extends ModelBuilder<EventModel>> implements EventModelSeries {
 
     protected final StringSeries staticIds;
     protected final DoubleSeries startTimes;

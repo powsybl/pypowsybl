@@ -37,9 +37,9 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum;
-import com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoParameters;
+import com.powsybl.nad.svg.EdgeInfoEnum;
+import com.powsybl.nad.svg.EdgeInfoParameters;
+import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
@@ -84,7 +84,6 @@ import java.util.zip.ZipOutputStream;
 
 import static com.powsybl.iidm.network.util.Networks.applySolvedTapPositionAndSolvedSectionCount;
 import static com.powsybl.iidm.network.util.Networks.applySolvedValues;
-import static com.powsybl.nad.svg.iidm.DefaultLabelProvider.EdgeInfoEnum.*;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import static com.powsybl.python.commons.Util.*;
@@ -279,34 +278,10 @@ public final class NetworkCFunctions {
             public ObjectHandle get() {
                 Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-                List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
-                List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
-                for (int i = 0; i < bufferCount; ++i) {
-                    ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
-                    Optional<CompressionFormat> format = detectCompressionFormat(buffer);
-                    if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
-                        InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
-                        String commonBasename = null;
-                        try {
-                            for (String filename : ds.listNames(".*")) {
-                                String basename = DataSourceUtil.getBaseName(filename);
-                                commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
-                            }
-                        } catch (IOException e) {
-                            throw new PowsyblException("Unsupported network data format in zip buffer.");
-                        }
-                        if (commonBasename != null) {
-                            ds.setBaseName(commonBasename);
-                        }
-                        dataSourceList.add(ds);
-                    } else {
-                        throw new PowsyblException("Network loading from memory buffer only supported with zipped networks.");
-                    }
-                }
                 if (reportNode == null) {
                     reportNode = ReportNode.NO_OP;
                 }
-                MultipleReadOnlyDataSource dataSource = new MultipleReadOnlyDataSource(dataSourceList);
+                MultipleReadOnlyDataSource dataSource = createDataSourceFromBuffers(data, dataSizes, bufferCount);
                 var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
                 Network network = Network.read(dataSource, LocalComputationManager.getDefault(), importConfig, parameters,
                         NetworkFactory.findDefault(), IMPORTERS_LOADER_SUPPLIER, reportNode);
@@ -337,6 +312,57 @@ public final class NetworkCFunctions {
                 network.update(ds, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
             }
         });
+    }
+
+    @CEntryPoint(name = "updateNetworkFromBinaryBuffers")
+    public static void updateNetworkFromBinaryBuffers(IsolateThread thread, ObjectHandle networkHandle, CCharPointerPointer data,
+                                                      CIntPointer dataSizes, int bufferCount,
+                                                      CCharPointerPointer parameterNamesPtrPtr, int parameterNamesCount,
+                                                      CCharPointerPointer parameterValuesPtrPtr, int parameterValuesCount,
+                                                      CCharPointerPointer postProcessorsPtrPtr, int postProcessorsCount,
+                                                      ObjectHandle reportNodeHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                Properties parameters = createParameters(parameterNamesPtrPtr, parameterNamesCount, parameterValuesPtrPtr, parameterValuesCount);
+                ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
+                if (reportNode == null) {
+                    reportNode = ReportNode.NO_OP;
+                }
+                MultipleReadOnlyDataSource dataSource = createDataSourceFromBuffers(data, dataSizes, bufferCount);
+                var importConfig = createImportConfig(postProcessorsPtrPtr, postProcessorsCount);
+                network.update(dataSource, LocalComputationManager.getDefault(), importConfig, parameters, IMPORTERS_LOADER_SUPPLIER, reportNode);
+            }
+        });
+    }
+
+    private static MultipleReadOnlyDataSource createDataSourceFromBuffers(CCharPointerPointer data, CIntPointer dataSizes, int bufferCount) {
+        List<Integer> bufferSizes = CTypeUtil.toIntegerList(dataSizes, bufferCount);
+        List<ReadOnlyDataSource> dataSourceList = new ArrayList<>();
+        for (int i = 0; i < bufferCount; ++i) {
+            ByteBuffer buffer = CTypeConversion.asByteBuffer(data.read(i), bufferSizes.get(i));
+            Optional<CompressionFormat> format = detectCompressionFormat(buffer);
+            if (format.isPresent() && CompressionFormat.ZIP.equals(format.get())) {
+                InMemoryZipFileDataSource ds = new InMemoryZipFileDataSource(binaryBufferToBytes(buffer));
+                String commonBasename = null;
+                try {
+                    for (String filename : ds.listNames(".*")) {
+                        String basename = DataSourceUtil.getBaseName(filename);
+                        commonBasename = commonBasename == null ? basename : StringUtils.getCommonPrefix(commonBasename, basename);
+                    }
+                } catch (IOException e) {
+                    throw new PowsyblException("Unsupported network data format in zip buffer.");
+                }
+                if (commonBasename != null) {
+                    ds.setBaseName(commonBasename);
+                }
+                dataSourceList.add(ds);
+            } else {
+                throw new PowsyblException("Network loading/updating from memory buffer only supported with zipped networks.");
+            }
+        }
+        return new MultipleReadOnlyDataSource(dataSourceList);
     }
 
     @CEntryPoint(name = "saveNetwork")
@@ -443,14 +469,14 @@ public final class NetworkCFunctions {
                                      CCharPointerPointer idsPtrPtr, int idsCount,
                                      CCharPointerPointer vlsPtrPtr, int vlsCount,
                                      CIntPointer depthsPtr, int depthsCount,
-                                     boolean withDanglingLines,
+                                     boolean withBoundaryLines,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 ReductionOptions options = new ReductionOptions();
-                options.withDanglingLlines(withDanglingLines);
+                options.withBoundaryLines(withBoundaryLines);
                 List<NetworkPredicate> predicates = new ArrayList<>();
                 if (vMax != Double.MAX_VALUE || vMin != 0) {
                     predicates.add(new NominalVoltageNetworkPredicate(vMin, vMax));
@@ -1169,17 +1195,8 @@ public final class NetworkCFunctions {
     }
 
     public static void copyToCNadParameters(NadParameters parameters, NadParametersPointer cParameters) {
-        // To remove when all default parameters of DefaultLabelProvider can be obtained
-        LabelProviderParameters defaultLabelProviderParameters = new LabelProviderParameters();
-        EdgeInfoParameters defaultEdgeInfoParameters = new EdgeInfoParameters(ACTIVE_POWER, EMPTY, EMPTY, EMPTY);
-
-        int edgeInfo = switch (defaultEdgeInfoParameters.infoSideExternal()) {
-            case ACTIVE_POWER -> 0;
-            case REACTIVE_POWER -> 1;
-            case CURRENT -> 2;
-            default -> throw new PowsyblException("Type of information not taken into account");
-        };
-        cParameters.setEdgeNameDisplayed(defaultEdgeInfoParameters.infoMiddleSide1().equals(NAME));
+        LabelProviderParameters defaultLabelProviderParameters = ((DefaultLabelProviderFactory) parameters.getLabelProviderFactory()).getParameters();
+        EdgeInfoParameters defaultEdgeInfoParameters = defaultLabelProviderParameters.getEdgeInfoParameters();
         cParameters.setEdgeInfoAlongEdge(parameters.getSvgParameters().isEdgeInfoAlongEdge());
         cParameters.setIdDisplayed(defaultLabelProviderParameters.isIdDisplayed());
         cParameters.setPowerValuePrecision(parameters.getSvgParameters().getPowerValuePrecision());
@@ -1188,9 +1205,9 @@ public final class NetworkCFunctions {
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
         cParameters.setBusLegend(defaultLabelProviderParameters.isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(defaultLabelProviderParameters.isSubstationDescriptionDisplayed());
-        cParameters.setEdgeInfoDisplayed(edgeInfo);
         cParameters.setVoltageLevelDetails(defaultLabelProviderParameters.isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
+        copyToCEdgeInfoParameters(defaultEdgeInfoParameters, cParameters);
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1198,6 +1215,20 @@ public final class NetworkCFunctions {
         return doCatch(exceptionHandlerPtr, () -> {
             return convertToNadParametersPointer(NetworkAreaDiagramUtil.createNadParameters());
         });
+    }
+
+    public static void copyToCEdgeInfoParameters(EdgeInfoParameters parameters, NadParametersPointer paramsPointer) {
+        paramsPointer.setInfoSideExternal(parameters.infoSideExternal().ordinal());
+        paramsPointer.setInfoMiddleSide1(parameters.infoMiddleSide1().ordinal());
+        paramsPointer.setInfoMiddleSide2(parameters.infoMiddleSide2().ordinal());
+        paramsPointer.setInfoSideInternal(parameters.infoSideInternal().ordinal());
+    }
+
+    public static EdgeInfoParameters convertEdgeInfoParameters(NadParametersPointer edgeInfoParametersPointer) {
+        return new EdgeInfoParameters(EdgeInfoEnum.values()[edgeInfoParametersPointer.getInfoSideExternal()],
+            EdgeInfoEnum.values()[edgeInfoParametersPointer.getInfoMiddleSide1()],
+            EdgeInfoEnum.values()[edgeInfoParametersPointer.getInfoMiddleSide2()],
+            EdgeInfoEnum.values()[edgeInfoParametersPointer.getInfoSideInternal()]);
     }
 
     public static void freeSldParametersPointer(SldParametersPointer sldParametersPtr) {
@@ -1258,12 +1289,6 @@ public final class NetworkCFunctions {
             case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
             default: yield new BasicForceLayoutFactory();
         };
-        EdgeInfoEnum edgeInfo = switch (nadParametersPointer.getEdgeInfoDisplayed()) {
-            case 0 -> ACTIVE_POWER;
-            case 1 -> REACTIVE_POWER;
-            case 2 -> CURRENT;
-            default -> throw new PowsyblException("Type of information not taken into account");
-        };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
                 .setEdgeInfoAlongEdge(nadParametersPointer.isEdgeInfoAlongEdge())
@@ -1271,17 +1296,16 @@ public final class NetworkCFunctions {
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
                 .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
                 .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision());
-        EdgeInfoEnum middleInfo = nadParametersPointer.isEdgeNameDisplayed() ? NAME : EMPTY;
         boolean idDisplayed = nadParametersPointer.isIdDisplayed();
         boolean busLegend = nadParametersPointer.isBusLegend();
         boolean substationDescription = nadParametersPointer.isSubstationDescriptionDisplayed();
-        nadParameters.setLabelProviderFactory((n, s) -> new DefaultLabelProvider(n,
-                new EdgeInfoParameters(edgeInfo, middleInfo, EMPTY, EMPTY),
-                s.createValueFormatter(),
+        EdgeInfoParameters edgeInfoParameters = convertEdgeInfoParameters(nadParametersPointer);
+        nadParameters.setLabelProviderFactory(new DefaultLabelProviderFactory(
                 new LabelProviderParameters()
                         .setIdDisplayed(idDisplayed)
                         .setBusLegend(busLegend)
-                        .setSubstationDescriptionDisplayed(substationDescription)));
+                        .setSubstationDescriptionDisplayed(substationDescription)
+                        .setEdgeInfoParameters(edgeInfoParameters)));
         nadParameters.getLayoutParameters()
                 .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
         return nadParameters;
@@ -1758,7 +1782,7 @@ public final class NetworkCFunctions {
             }
 
             nadParameters.setLabelProviderFactory((n, svgParameters) ->
-                    new TmpFixCustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customVlLegends));
+                    new CustomLabelProvider(branchLabels, customThreeWtLabels, customInjectionsLabels, customVlLegends));
         }
     }
 
@@ -1915,6 +1939,19 @@ public final class NetworkCFunctions {
                 SvgParameters pars = getNadSvgParsForDefaultLabels();
                 Map<String, CustomLabelProvider.BranchLabels> labelMap = NetworkAreaDiagramUtil.getBranchLabelsMap(network, pars);
                 return Dataframes.createCDataframe(NetworkAreaDiagramUtil.BRANCH_LABELS_MAPPER, labelMap);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getNetworkAreaDiagramDefaultInjectionsLabels")
+    public static ArrayPointer<SeriesPointer> getNetworkAreaDiagramDefaultInjectionsLabels(IsolateThread thread, ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                SvgParameters pars = getNadSvgParsForDefaultLabels();
+                Map<String, CustomLabelProvider.InjectionLabels> labelMap = NetworkAreaDiagramUtil.getInjectionLabelsMap(network, pars);
+                return Dataframes.createCDataframe(NetworkAreaDiagramUtil.INJECTION_LABELS_MAPPER, labelMap);
             }
         });
     }

@@ -63,7 +63,6 @@ class Parameters:
     def _to_c_parameters(self) -> RaoParameters:
         c_parameters = RaoParameters()
         c_parameters.objective_function_type = self.objective_function_parameters.objective_function_type
-        c_parameters.unit = self.objective_function_parameters.unit
         c_parameters.curative_min_obj_improvement = self.objective_function_parameters.curative_min_obj_improvement
         c_parameters.enforce_curative_security = self.objective_function_parameters.enforce_curative_security
 
