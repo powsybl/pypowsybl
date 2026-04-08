@@ -766,6 +766,8 @@ public final class NetworkDataframes {
                 .strings("dangling_line2_id", tl -> tl.getBoundaryLine2().getId())
                 .strings("pairing_key", tl -> Objects.toString(tl.getPairingKey(), ""))
                 .strings("ucte_xnode_code", tl -> Objects.toString(tl.getPairingKey(), ""))
+                .booleans("connected1", t -> t.getTerminal1().isConnected(), connectBranchSide1())
+                .booleans("connected2", t -> t.getTerminal2().isConnected(), connectBranchSide2())
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();

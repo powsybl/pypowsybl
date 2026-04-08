@@ -1814,6 +1814,8 @@ class Network:  # pylint: disable=too-many-public-methods
               - **dangling_line2_id**: deprecated for **boundary_line2_id**
               - **pairing_key**: the pairing key of the tie line, obtained from the boundary lines.
               - **ucte_xnode_code**: deprecated for **pairing_key**.
+              - **connected1**: ``True`` if the dangling line 1 is connected to a bus
+              - **connected2**: ``True`` if the dangling line 2 is connected to a bus
               - **fictitious** (optional): ``True`` if the tie line is part of the model and not of the actual network
 
             This dataframe is indexed by the id of the tie lines
@@ -4209,6 +4211,8 @@ class Network:  # pylint: disable=too-many-public-methods
             Attributes that can be updated are :
 
             - `fictitious`
+            - `connected1`
+            - `connected2`
 
         See Also:
             :meth:`get_tie_lines`
