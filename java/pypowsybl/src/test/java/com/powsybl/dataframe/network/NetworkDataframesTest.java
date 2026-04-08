@@ -356,12 +356,12 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "boundary_line1_id", "dangling_line1_id", "boundary_line2_id",
-                        "dangling_line2_id", "pairing_key", "ucte_xnode_code");
+                        "dangling_line2_id", "pairing_key", "ucte_xnode_code", "connected1", "connected2");
         List<Series> allAttributeSeries = createDataFrame(TIE_LINE, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
         assertThat(allAttributeSeries)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "boundary_line1_id", "dangling_line1_id", "boundary_line2_id",
-                        "dangling_line2_id", "pairing_key", "ucte_xnode_code", "fictitious");
+                        "dangling_line2_id", "pairing_key", "ucte_xnode_code", "connected1", "connected2", "fictitious");
     }
 
     @Test

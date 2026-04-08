@@ -11,10 +11,12 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
+import com.powsybl.iidm.network.util.SwitchPredicates;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,18 +46,37 @@ public final class NetworkUtil {
         return false;
     }
 
-    static boolean updateConnectableStatus(Network network, String id, boolean connected) {
+    static boolean updateConnectableStatus(Network network, String id, boolean connected, boolean allowDisconnectors, boolean allowFictitious) {
         Identifiable<?> equipment = network.getIdentifiable(id);
         if (equipment == null) {
             throw new PowsyblException("Equipment '" + id + "' not found");
+        } else if (equipment instanceof TieLine tieLine) {
+            boolean connected1 = updateConnectableStatus(network, tieLine.getBoundaryLine1().getId(), connected);
+            boolean connected2 = updateConnectableStatus(network, tieLine.getBoundaryLine2().getId(), connected);
+            return connected1 && connected2;
         }
         if (!(equipment instanceof Connectable<?> connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
         }
-        if (connected) {
-            return connectable.connect();
+        Predicate<Switch> predicate;
+        if (allowFictitious) {
+            if (allowDisconnectors) {
+                predicate = SwitchPredicates.IS_BREAKER_OR_DISCONNECTOR;
+            } else {
+                predicate = SwitchPredicates.IS_BREAKER;
+            }
         } else {
-            return connectable.disconnect();
+            if (allowDisconnectors) {
+                predicate = SwitchPredicates.IS_NONFICTIONAL;
+            } else {
+                predicate = SwitchPredicates.IS_NONFICTIONAL_BREAKER;
+            }
+        }
+
+        if (connected) {
+            return connectable.connect(predicate);
+        } else {
+            return connectable.disconnect(predicate);
         }
     }
 
