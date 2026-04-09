@@ -376,6 +376,7 @@ Utility functions
 
 Scalable network modifications
 ------------------------------
+.. module:: pypowsybl.network.scalable
 
 These network modifications can be created to apply active power change across one or multiple injections
 
