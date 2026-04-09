@@ -26,7 +26,7 @@ class NadParameters:
                  edge_info_displayed: Optional[EdgeInfoType] = None, voltage_level_details: bool = True,
                  injections_added: bool = False,
                  edge_info_parameters: Optional[EdgeInfoParameters] = None,
-                 scale_factor: float = 1.0):
+                 scale_factor: float = 1.0, timeout_seconds: float = 10.0):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -45,6 +45,7 @@ class NadParameters:
                                          edge_info_displayed=edge_info_displayed,
                                          edge_info_parameters=edge_info_parameters)
         self._scale_factor = scale_factor
+        self._timeout_seconds = timeout_seconds
 
     def _check_edge_info_parameters(self, edge_name_displayed: Optional[bool] = None,
                                     edge_info_displayed: Optional[EdgeInfoType] = None,
@@ -146,6 +147,11 @@ class NadParameters:
         """scale_factor"""
         return self._scale_factor
 
+    @property
+    def timeout_seconds(self) -> float:
+        """max_steps"""
+        return self._timeout_seconds
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_info_along_edge = self._edge_info_along_edge
@@ -166,6 +172,7 @@ class NadParameters:
         c_parameters.info_middle_side2 = self._edge_info_parameters.info_middle_side2
         c_parameters.info_side_internal = self._edge_info_parameters.info_side_internal
         c_parameters.scale_factor = self._scale_factor
+        c_parameters.timeout_seconds = self._timeout_seconds
         return c_parameters
 
     def __repr__(self) -> str:
@@ -185,4 +192,5 @@ class NadParameters:
                f", injections_added={self._injections_added}" \
                f", edge_info_parameters={self._edge_info_parameters}" \
                f", scale_factor={self._scale_factor}" \
+               f", timeout_seconds={self._timeout_seconds}" \
                f")"

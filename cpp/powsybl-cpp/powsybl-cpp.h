@@ -467,6 +467,7 @@ public:
     EdgeInfoType info_middle_side2;
     EdgeInfoType info_side_internal;
     double scale_factor;
+    double timeout_seconds;
 };
 
 //=======short-circuit analysis==========

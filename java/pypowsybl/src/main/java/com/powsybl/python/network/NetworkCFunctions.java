@@ -1205,10 +1205,20 @@ public final class NetworkCFunctions {
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
         cParameters.setBusLegend(defaultLabelProviderParameters.isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(defaultLabelProviderParameters.isSubstationDescriptionDisplayed());
+        cParameters.setLayoutType(getLayoutType(parameters.getLayoutFactory()));
         cParameters.setVoltageLevelDetails(defaultLabelProviderParameters.isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
         cParameters.setScaleFactor(parameters.getLayoutParameters().getScaleFactor());
+        cParameters.setTimeoutSeconds(parameters.getLayoutParameters().getTimeoutSeconds());
         copyToCEdgeInfoParameters(defaultEdgeInfoParameters, cParameters);
+    }
+
+    private static int getLayoutType(LayoutFactory layoutFactory) {
+        return switch (layoutFactory) {
+            case GeographicalLayoutFactory ignored -> 1;
+            case BasicForceLayoutFactory ignored -> 2;
+            default -> 0; // Default factory is Atlas2ForceLayout
+        };
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1307,9 +1317,12 @@ public final class NetworkCFunctions {
                         .setIdDisplayed(idDisplayed)
                         .setBusLegend(busLegend)
                         .setSubstationDescriptionDisplayed(substationDescription)
-                        .setEdgeInfoParameters(edgeInfoParameters)));
+                        .setEdgeInfoParameters(edgeInfoParameters)
+                        .setVoltageLevelDetails(nadParametersPointer.isVoltageLevelDetails())));
         nadParameters.getLayoutParameters()
-                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
+                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded())
+                .setScaleFactor(nadParametersPointer.getScaleFactor())
+                .setTimeoutSeconds(nadParametersPointer.getTimeoutSeconds());
         return nadParameters;
     }
 
