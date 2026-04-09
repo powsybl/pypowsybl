@@ -341,6 +341,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-loadflow</artifactId>
+            <version>2.1.1-not-vectorized</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
