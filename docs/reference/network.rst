@@ -372,35 +372,3 @@ Utility functions
     get_connectables_order_positions
     get_unused_order_positions_before
     get_unused_order_positions_after
-
-
-Scalable network modifications
-------------------------------
-.. module:: pypowsybl.network.scalable
-
-These network modifications can be created to apply active power change across one or multiple injections
-
-.. autosummary::
-   :toctree: api/
-   :nosignatures:
-
-   Scalable.scale
-   ElementScalable
-   StackScalable
-   StackScalable.from_ids
-   StackScalable.from_scalables
-   ProportionalScalable
-   ProportionalScalable.from_ids_and_percentages
-   ProportionalScalable.from_scalables_and_percentages
-   ProportionalScalable.from_ids_and_distribution_mode
-   UpDownScalable
-   UpDownScalable.from_ids
-   UpDownScalable.from_scalables
-
-The ``scale`` method is parametrized by a ScalingParameters object :
-
-.. autosummary::
-   :toctree: api/
-   :nosignatures:
-
-   ScalingParameters
