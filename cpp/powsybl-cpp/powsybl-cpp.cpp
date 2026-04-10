@@ -333,6 +333,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     component_mode = static_cast<ComponentMode>(src->component_mode);
     hvdc_ac_emulation = (bool) src->hvdc_ac_emulation;
     dc_power_factor = (double) src->dc_power_factor;
+    dc = (bool) src ->dc;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
@@ -354,6 +355,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.component_mode = component_mode;
     res.hvdc_ac_emulation = (unsigned char) hvdc_ac_emulation;
     res.dc_power_factor = dc_power_factor;
+    res.dc = dc;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
@@ -958,11 +960,11 @@ DynamicSimulationParameters* createDynamicSimulationParameters() {
     return new DynamicSimulationParameters(parameters.get());
 }
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters,
                                           const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
     return new LoadFlowComponentResultArray(
-            PowsyblCaller::get()->callJava<array*>(::runLoadFlow, network, dc, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode));
+            PowsyblCaller::get()->callJava<array*>(::runLoadFlow, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& loadflow_validation_parameters) {
@@ -1084,9 +1086,9 @@ void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& j
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
-                               const std::string& provider, bool dc, JavaHandle* reportNode) {
+                               const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reportNode == nullptr) ? nullptr : *reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 JavaHandle createSensitivityAnalysis() {
@@ -1215,9 +1217,9 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
                   (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
@@ -2304,9 +2306,9 @@ bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHand
     return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
 }
 
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, JavaHandle* reportNode) {
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get(),
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, c_parameters.get(),
         (reportNode == nullptr) ? nullptr : *reportNode));
 }
 

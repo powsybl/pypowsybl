@@ -94,6 +94,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  connected_component_mode: Optional[ConnectedComponentMode] = None,
                  dc_power_factor: Optional[float] = None,
                  hvdc_ac_emulation: Optional[bool] = None,
+                 dc: Optional[bool] = None,
                  provider_parameters: Optional[Dict[str, str]] = None):
         self._init_with_default_values()
         if voltage_init_mode is not None:
@@ -132,6 +133,8 @@ class Parameters:  # pylint: disable=too-few-public-methods
             self.hvdc_ac_emulation = hvdc_ac_emulation
         if dc_power_factor is not None:
             self.dc_power_factor = dc_power_factor
+        if dc is not None:
+            self.dc = dc
         if provider_parameters is not None:
             self.provider_parameters = provider_parameters
 
@@ -151,6 +154,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         self.component_mode = c_parameters.component_mode
         self.hvdc_ac_emulation = c_parameters.hvdc_ac_emulation
         self.dc_power_factor = c_parameters.dc_power_factor
+        self.dc = c_parameters.dc
         self.provider_parameters = dict(
             zip(c_parameters.provider_parameters_keys, c_parameters.provider_parameters_values))
 
@@ -174,6 +178,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         c_parameters.component_mode = self.component_mode
         c_parameters.hvdc_ac_emulation = self.hvdc_ac_emulation
         c_parameters.dc_power_factor = self.dc_power_factor
+        c_parameters.dc = self.dc
         c_parameters.provider_parameters_keys = list(self.provider_parameters.keys())
         c_parameters.provider_parameters_values = list(self.provider_parameters.values())
         return c_parameters
@@ -245,5 +250,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
                f", component_mode={self.component_mode!r}" \
                f", hvdc_ac_emulation={self.hvdc_ac_emulation!r}" \
                f", dc_power_factor={self.dc_power_factor!r}" \
+               f", dc={self.dc!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"

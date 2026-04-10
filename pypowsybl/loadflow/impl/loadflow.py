@@ -56,7 +56,8 @@ def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: 
         warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
         report_node = reporter
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
-    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, False, p, provider,
+    p.dc = False
+    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, p, provider,
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
 
 
@@ -76,11 +77,11 @@ def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters:
         A future list of component results, one for each component of the network.
     """
     c_parameters = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
+    c_parameters.dc = False
     loop = asyncio.get_running_loop()
     results_future = loop.create_future()
     _pypowsybl.run_loadflow_async(network._handle,
                                   variant_id,
-                                  False,
                                   c_parameters,
                                   provider,
                                   None if report_node is None else report_node._report_node,  # pylint: disable=protected-access
@@ -107,7 +108,8 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
         warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
         report_node = reporter
     p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
-    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, True, p, provider,
+    p.dc = True
+    return [ComponentResult(res) for res in _pypowsybl.run_loadflow(network._handle, p, provider,
                                                                     None if report_node is None else report_node._report_node)]  # pylint: disable=protected-access
 
 

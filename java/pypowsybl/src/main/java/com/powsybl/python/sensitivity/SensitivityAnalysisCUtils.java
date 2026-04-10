@@ -38,7 +38,7 @@ public final class SensitivityAnalysisCUtils {
         return PyPowsyblConfiguration.isReadConfig() ? SensitivityAnalysisParameters.load() : new SensitivityAnalysisParameters();
     }
 
-    public static SensitivityAnalysisParameters createSensitivityAnalysisParameters(boolean dc, PyPowsyblApiHeader.SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPointer,
+    public static SensitivityAnalysisParameters createSensitivityAnalysisParameters(PyPowsyblApiHeader.SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPointer,
                                                                               SensitivityAnalysisProvider provider) {
         SensitivityAnalysisParameters parameters = createSensitivityAnalysisParameters();
         parameters.setFlowFlowSensitivityValueThreshold(sensitivityAnalysisParametersPointer.getFlowFlowSensitivityValueThreshold());
@@ -46,7 +46,7 @@ public final class SensitivityAnalysisCUtils {
         parameters.setFlowVoltageSensitivityValueThreshold(sensitivityAnalysisParametersPointer.getFlowVoltageSensitivityValueThreshold());
         parameters.setAngleFlowSensitivityValueThreshold(sensitivityAnalysisParametersPointer.getAngleFlowSensitivityValueThreshold());
 
-        parameters.setLoadFlowParameters(LoadFlowCUtils.createLoadFlowParameters(dc, sensitivityAnalysisParametersPointer.getLoadFlowParameters(),
+        parameters.setLoadFlowParameters(LoadFlowCUtils.createLoadFlowParameters(sensitivityAnalysisParametersPointer.getLoadFlowParameters(),
                 LoadFlowCUtils.getLoadFlowProvider(provider.getLoadFlowProviderName().orElse(PyPowsyblConfiguration.getDefaultLoadFlowProvider()))));
         Map<String, String> specificParametersProperties = getSpecificParameters(sensitivityAnalysisParametersPointer);
 
