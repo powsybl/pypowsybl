@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
+from typing import List, Optional
 from pypowsybl._pypowsybl import (ScalingType, ScalingConvention, Priority, ScalingParameters as CParameters)
 
 # enforcing some class metadata on classes imported from C extension,
@@ -40,13 +40,13 @@ class ScalingParameters:
         ignored_injection_ids: List of injection ids to ignore when scaling.
     """
 
-    def __init__(self, scaling_convention: ScalingConvention | None = None,
-                 constant_power_factor: bool | None = None,
-                 reconnect: bool | None = None,
-                 allows_generator_out_of_active_power_limits: bool | None = None,
-                 priority: Priority | None = None,
-                 scaling_type: ScalingType | None = None,
-                 ignored_injection_ids: List[str] | None = None):
+    def __init__(self, scaling_convention: Optional[ScalingConvention] = None,
+                 constant_power_factor: Optional[bool] = None,
+                 reconnect: Optional[bool] = None,
+                 allows_generator_out_of_active_power_limits: Optional[bool] = None,
+                 priority: Optional[Priority] = None,
+                 scaling_type: Optional[ScalingType] = None,
+                 ignored_injection_ids: Optional[List[str]] = None):
         self._init_with_default_values()
         if scaling_convention is not None:
             self.scaling_convention = scaling_convention
