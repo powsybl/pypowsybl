@@ -505,8 +505,8 @@ def parameters_round_trip():
 
 def test_redispatch_ra_setpoints():
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-min-margin-mw.json", 0.0)
-    #validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-costly-mw.json", 500.0)
-    #validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-costly-shifted-20-mw.json", 480.0)
+    validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-costly-mw.json", 500.0)
+    validate_redispatch_ra_setpoint("rao/crac-simple-rd-mw.json","rao/rao-parameters-costly-shifted-20-mw.json", 480.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-min-margin-ampere.json", 0.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-ampere.json", 346.0)
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-shifted-20-ampere.json", 333.0)
