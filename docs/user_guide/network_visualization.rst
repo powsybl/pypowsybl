@@ -329,7 +329,7 @@ Network-area diagrams can be customized through NadParameters:
     >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
     >>> edge_info_parameters = EdgeInfoParameters(info_side_external=EdgeInfoType.ACTIVE_POWER, info_middle_side1=EdgeInfoType.EMPTY, info_middle_side2=EdgeInfoType.EMPTY, info_side_internal=EdgeInfoType.EMPTY)
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False, injections_added=True, edge_info_parameters=edge_info_parameters, scale_factor=1.0, timeout_seconds = 10))
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False, injections_added=True, edge_info_parameters=edge_info_parameters, scale_factor=1.0, timeout_seconds = 10, edge_info_included=True, voltage_level_legends_included=True))
 
     - edge_name_displayed (deprecated, use edge_info_parameters instead): if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
@@ -346,6 +346,8 @@ Network-area diagrams can be customized through NadParameters:
     - edge_info_parameters: type of info displayed (default value: info_side_external=EdgeInfoType.ACTIVE_POWER, info_middle_side1=EdgeInfoType.EMPTY, info_middle_side2=EdgeInfoType.EMPTY, info_side_internal=EdgeInfoType.EMPTY)
     - scale_factor: factor of which the whole NAD will be scaled (default value 1.0)
     - timeout_seconds: timeout in seconds for the force layout (default value 10.)
+    - edge_info_included: if true, the resulting SVG will contain the edge info data. If false, this data will only be in the metadata.
+    - voltage_level_legends_included: if true, the resulting SVG will contain the voltage level legends data. If false, this data will only be in the metadata.
 
 
 

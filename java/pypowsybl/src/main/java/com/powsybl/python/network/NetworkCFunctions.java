@@ -1210,6 +1210,8 @@ public final class NetworkCFunctions {
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
         cParameters.setScaleFactor(parameters.getLayoutParameters().getScaleFactor());
         cParameters.setTimeoutSeconds(parameters.getLayoutParameters().getTimeoutSeconds());
+        cParameters.setEdgeInfoIncluded(parameters.getSvgParameters().isEdgeInfosIncluded());
+        cParameters.setVoltageLevelLegendsIncluded(parameters.getSvgParameters().isVoltageLevelLegendsIncluded());
         copyToCEdgeInfoParameters(defaultEdgeInfoParameters, cParameters);
     }
 
@@ -1307,7 +1309,9 @@ public final class NetworkCFunctions {
                 .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
                 .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
-                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision());
+                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
+                .setEdgeInfosIncluded(nadParametersPointer.isEdgeInfoIncluded())
+                .setVoltageLevelLegendsIncluded(nadParametersPointer.isVoltageLevelLegendsIncluded());
         boolean idDisplayed = nadParametersPointer.isIdDisplayed();
         boolean busLegend = nadParametersPointer.isBusLegend();
         boolean substationDescription = nadParametersPointer.isSubstationDescriptionDisplayed();

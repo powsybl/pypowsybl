@@ -1624,6 +1624,8 @@ NadParameters::NadParameters(nad_parameters* src) {
     info_side_internal = static_cast<EdgeInfoType>(src->info_side_internal);
     scale_factor = src->scale_factor;
     timeout_seconds = src->timeout_seconds;
+    edge_info_included = (bool) src->edge_info_included;
+    voltage_level_legends_included = (bool) src->voltage_level_legends_included;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1660,6 +1662,8 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.info_side_internal = (int) info_side_internal;
     res.scale_factor = scale_factor;
     res.timeout_seconds = timeout_seconds;
+    res.edge_info_included = (unsigned char) edge_info_included;
+    res.voltage_level_legends_included = (unsigned char) voltage_level_legends_included;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {

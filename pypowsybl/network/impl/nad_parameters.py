@@ -26,7 +26,8 @@ class NadParameters:
                  edge_info_displayed: Optional[EdgeInfoType] = None, voltage_level_details: bool = True,
                  injections_added: bool = False,
                  edge_info_parameters: Optional[EdgeInfoParameters] = None,
-                 scale_factor: float = 1.0, timeout_seconds: float = 10.0):
+                 scale_factor: float = 1.0, timeout_seconds: float = 10.0,
+                 edge_info_included: bool = True, voltage_level_legends_included: bool = True):
         self._edge_name_displayed = edge_name_displayed
         self._edge_info_along_edge = edge_info_along_edge
         self._id_displayed = id_displayed
@@ -46,6 +47,8 @@ class NadParameters:
                                          edge_info_parameters=edge_info_parameters)
         self._scale_factor = scale_factor
         self._timeout_seconds = timeout_seconds
+        self._edge_info_included = edge_info_included
+        self._voltage_level_legends_included = voltage_level_legends_included
 
     def _check_edge_info_parameters(self, edge_name_displayed: Optional[bool] = None,
                                     edge_info_displayed: Optional[EdgeInfoType] = None,
@@ -152,6 +155,16 @@ class NadParameters:
         """max_steps"""
         return self._timeout_seconds
 
+    @property
+    def edge_info_included(self) -> bool:
+        """edge_info_included"""
+        return self._edge_info_included
+
+    @property
+    def voltage_level_legends_included(self) -> bool:
+        """voltage_level_legends_included"""
+        return self._voltage_level_legends_included
+
     def _to_c_parameters(self) -> _pp.NadParameters:
         c_parameters = _pp.NadParameters()
         c_parameters.edge_info_along_edge = self._edge_info_along_edge
@@ -173,6 +186,8 @@ class NadParameters:
         c_parameters.info_side_internal = self._edge_info_parameters.info_side_internal
         c_parameters.scale_factor = self._scale_factor
         c_parameters.timeout_seconds = self._timeout_seconds
+        c_parameters.edge_info_included = self._edge_info_included
+        c_parameters.voltage_level_legends_included = self._voltage_level_legends_included
         return c_parameters
 
     def __repr__(self) -> str:
@@ -193,4 +208,6 @@ class NadParameters:
                f", edge_info_parameters={self._edge_info_parameters}" \
                f", scale_factor={self._scale_factor}" \
                f", timeout_seconds={self._timeout_seconds}" \
+               f", edge_info_included={self._edge_info_included}" \
+               f", voltage_level_legends_included={self._voltage_level_legends_included}" \
                f")"

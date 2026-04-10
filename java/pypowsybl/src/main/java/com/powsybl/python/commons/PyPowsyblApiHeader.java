@@ -1224,6 +1224,18 @@ public final class PyPowsyblApiHeader {
 
         @CField("timeout_seconds")
         void setTimeoutSeconds(double timeoutSeconds);
+
+        @CField("edge_info_included")
+        void setEdgeInfoIncluded(boolean edgeInfoIncluded);
+
+        @CField("edge_info_included")
+        boolean isEdgeInfoIncluded();
+
+        @CField("voltage_level_legends_included")
+        void setVoltageLevelLegendsIncluded(boolean voltageLevelLegendsIncluded);
+
+        @CField("voltage_level_legends_included")
+        boolean isVoltageLevelLegendsIncluded();
     }
 
     @CStruct("dynamic_simulation_parameters")
