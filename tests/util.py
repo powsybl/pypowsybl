@@ -3,14 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
-from typing import Union, List
+from typing import Union
 import io
 import pandas as pd
 from pypowsybl.network import Network
 import pypowsybl as pp
 
 
-def dataframe_from_string(df_str: str, index: Union[str, List[str]] = 'id') -> pd.DataFrame:
+def dataframe_from_string(df_str: str, index: Union[str, list[str]] = 'id') -> pd.DataFrame:
     """
     Creates a dataframe from a table provided as a fixed-width formatted string.
     """

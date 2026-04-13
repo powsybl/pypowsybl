@@ -10,10 +10,7 @@ from pypowsybl import _pypowsybl
 from pypowsybl.utils import path_to_str
 from os import PathLike
 
-from typing import (
-    Union,
-    Any
-)
+from typing import Any
 
 class Glsk:
     """
@@ -24,7 +21,7 @@ class Glsk:
         self._handle = handle
 
     @classmethod
-    def from_file_source(cls, glsk_file: Union[str, PathLike]) -> Any :
+    def from_file_source(cls, glsk_file: str | PathLike) -> Any :
         return Glsk.from_buffer_source(io.BytesIO(open(path_to_str(glsk_file), "rb").read()))
 
     @classmethod

@@ -3,8 +3,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from __future__ import annotations
 import warnings
-from typing import Optional
 
 import pypowsybl._pypowsybl as _pp
 from pypowsybl._pypowsybl import (
@@ -18,14 +18,14 @@ class NadParameters:
     """
     This class represents nad parameters for a network area diagram svg generation."""
 
-    def __init__(self, edge_name_displayed: Optional[bool] = None, id_displayed: bool = False,
+    def __init__(self, edge_name_displayed: bool | None = None, id_displayed: bool = False,
                  edge_info_along_edge: bool = True, power_value_precision: int = 0, angle_value_precision: int = 1,
                  current_value_precision: int = 0, voltage_value_precision: int = 1, bus_legend: bool = True,
                  substation_description_displayed: bool = False, layout_type: NadLayoutType = NadLayoutType.FORCE_LAYOUT,
                  scaling_factor: int = 150000, radius_factor: float = 150.0,
-                 edge_info_displayed: Optional[EdgeInfoType] = None, voltage_level_details: bool = True,
+                 edge_info_displayed: EdgeInfoType | None = None, voltage_level_details: bool = True,
                  injections_added: bool = False,
-                 edge_info_parameters: Optional[EdgeInfoParameters] = None,
+                 edge_info_parameters: EdgeInfoParameters | None = None,
                  scale_factor: float = 1.0, timeout_seconds: float = 10.0,
                  edge_info_included: bool = True, voltage_level_legends_included: bool = True):
         self._edge_name_displayed = edge_name_displayed
@@ -50,9 +50,9 @@ class NadParameters:
         self._edge_info_included = edge_info_included
         self._voltage_level_legends_included = voltage_level_legends_included
 
-    def _check_edge_info_parameters(self, edge_name_displayed: Optional[bool] = None,
-                                    edge_info_displayed: Optional[EdgeInfoType] = None,
-                                    edge_info_parameters: Optional[EdgeInfoParameters] = None) -> None:
+    def _check_edge_info_parameters(self, edge_name_displayed: bool | None = None,
+                                    edge_info_displayed: EdgeInfoType | None = None,
+                                    edge_info_parameters: EdgeInfoParameters | None = None) -> None:
         if edge_name_displayed is not None:
             warnings.warn("Use of deprecated attribute edge_name_displayed. Use edge_info_parameters instead.", DeprecationWarning)
         if edge_info_displayed is not None:

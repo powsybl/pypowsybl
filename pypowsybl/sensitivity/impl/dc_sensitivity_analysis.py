@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import Union, Optional
 
 from pypowsybl.network import Network
 from pypowsybl.report import ReportNode
@@ -22,8 +21,8 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
     def __init__(self, handle: _pypowsybl.JavaHandle):
         SensitivityAnalysis.__init__(self, handle)
 
-    def run(self, network: Network, parameters: Optional[Union[Parameters, LfParameters]] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> DcSensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Parameters | LfParameters | None = None,
+            provider: str = '', reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> DcSensitivityAnalysisResult:
         """ Runs the sensitivity analysis
 
         Args:

@@ -4,17 +4,15 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 from pypowsybl._pypowsybl import (
     RaoParameters,
     ExecutionCondition
 )
 
 class SecondPreventiveRaoParameters:
-    def __init__(self, execution_condition: Optional[ExecutionCondition] = None,
-                 hint_from_first_preventive_rao: Optional[bool] = None,
-                 rao_parameters: Optional[RaoParameters] = None) -> None:
+    def __init__(self, execution_condition: ExecutionCondition | None = None,
+                 hint_from_first_preventive_rao: bool | None = None,
+                 rao_parameters: RaoParameters | None = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:

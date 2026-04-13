@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict
 import pandas as pd
 from prettytable import PrettyTable
 from pypowsybl import _pypowsybl
@@ -39,7 +38,7 @@ class SecurityAnalysisResult:
         return self._pre_contingency_result
 
     @property
-    def post_contingency_results(self) -> Dict[str, PostContingencyResult]:
+    def post_contingency_results(self) -> dict[str, PostContingencyResult]:
         """
         Results for the contingencies, as a dictionary contingency ID -> result.
         """
@@ -58,7 +57,7 @@ class SecurityAnalysisResult:
         return result
 
     @property
-    def operator_strategy_results(self) -> Dict[str, OperatorStrategyResult]:
+    def operator_strategy_results(self) -> dict[str, OperatorStrategyResult]:
         """
         Results for the operator strategies, as a dictionary operator strategy ID -> result.
         """

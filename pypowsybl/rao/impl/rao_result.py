@@ -15,12 +15,7 @@ from pandas import DataFrame
 from pypowsybl.utils import path_to_str
 from os import PathLike
 
-from typing import (
-    Union,
-    Dict,
-    Any,
-    List
-)
+from typing import Any
 
 class RaoResult:
     """
@@ -33,7 +28,7 @@ class RaoResult:
         self._status = _pypowsybl.get_rao_result_status(self._handle_result)
 
     @classmethod
-    def from_file_source(cls, crac: Crac, result_file: Union[str, PathLike]) -> Any :
+    def from_file_source(cls, crac: Crac, result_file: str | PathLike) -> Any :
         return RaoResult.from_buffer_source(crac, io.BytesIO(open(path_to_str(result_file), "rb").read()))
 
     @classmethod
@@ -75,7 +70,7 @@ class RaoResult:
         serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
-    def get_virtual_cost_names(self) -> List[str]:
+    def get_virtual_cost_names(self) -> list[str]:
         return _pypowsybl.get_virtual_cost_names(self._handle_result)
 
     def get_virtual_cost_results(self, virtual_cost_name: str) -> DataFrame:
@@ -95,5 +90,5 @@ class RaoResult:
         """
         return io.BytesIO(_pypowsybl.serialize_rao_results_to_buffer(self._handle_result, self._handle_crac))
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return json.load(self.serialize_to_binary_buffer())

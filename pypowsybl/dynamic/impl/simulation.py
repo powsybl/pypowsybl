@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
-from typing import Optional
 from pandas import DataFrame
 from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
@@ -25,10 +23,10 @@ class Simulation:  # pylint: disable=too-few-public-methods
     def run(self,
             network: Network,
             model_mapping: ModelMapping,
-            event_mapping: Optional[EventMapping] = None,
-            timeseries_mapping: Optional[OutputVariableMapping] = None,
-            parameters: Optional[Parameters] = None,
-            report_node: Optional[ReportNode] = None
+            event_mapping: EventMapping | None = None,
+            timeseries_mapping: OutputVariableMapping | None = None,
+            parameters: Parameters | None = None,
+            report_node: ReportNode | None = None
             ) -> SimulationResult:
         """Run the dynawo simulation"""
         return SimulationResult(
@@ -44,7 +42,7 @@ class Simulation:  # pylint: disable=too-few-public-methods
 
 
     @staticmethod
-    def get_provider_parameters_names() -> List[str]:
+    def get_provider_parameters_names() -> list[str]:
         """
         Get list of parameters for Dynawo provider.
 

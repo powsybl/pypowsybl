@@ -7,7 +7,6 @@
 import io
 import warnings
 from os import PathLike
-from typing import Union, Dict, List, Optional
 
 import pypowsybl._pypowsybl as _pp
 
@@ -256,7 +255,7 @@ def create_dc_detailed_vsc_asymmetrical_monopole_network(allow_variant_multi_thr
     return _create_network('dc_detailed_vsc_asymmetrical_monopole', '', allow_variant_multi_thread_access)
 
 
-def is_loadable(file: Union[str, PathLike]) -> bool:
+def is_loadable(file: str | PathLike) -> bool:
     """
       Check if a file is a loadable network.
 
@@ -276,9 +275,9 @@ def is_loadable(file: Union[str, PathLike]) -> bool:
     return _pp.is_network_loadable(file)
 
 
-def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None,
-         post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-         report_node: Optional[ReportNode] = None, allow_variant_multi_thread_access: bool = False) -> Network:
+def load(file: str | PathLike, parameters: dict[str, str] | None = None,
+         post_processors: list[str] | None = None, reporter: ReportNode | None = None,
+         report_node: ReportNode | None = None, allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a file. File should be in a supported format.
 
@@ -318,9 +317,9 @@ def load(file: Union[str, PathLike], parameters: Optional[Dict[str, str]] = None
                                     allow_variant_multi_thread_access))
 
 
-def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, str]] = None,
-                            post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                            report_node: Optional[ReportNode] = None,
+def load_from_binary_buffer(buffer: io.BytesIO, parameters: dict[str, str] | None = None,
+                            post_processors: list[str] | None = None, reporter: ReportNode | None = None,
+                            report_node: ReportNode | None = None,
                             allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a binary buffer.
@@ -344,9 +343,9 @@ def load_from_binary_buffer(buffer: io.BytesIO, parameters: Optional[Dict[str, s
                                     allow_variant_multi_thread_access)
 
 
-def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dict[str, str]] = None,
-                             post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                             report_node: Optional[ReportNode] = None,
+def load_from_binary_buffers(buffers: list[io.BytesIO], parameters: dict[str, str] | None = None,
+                             post_processors: list[str] | None = None, reporter: ReportNode | None = None,
+                             report_node: ReportNode | None = None,
                              allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a list of binary buffers. Only zipped CGMES are supported for several zipped source load.
@@ -375,9 +374,9 @@ def load_from_binary_buffers(buffers: List[io.BytesIO], parameters: Optional[Dic
                                                         allow_variant_multi_thread_access))
 
 
-def load_from_string(file_name: str, file_content: str, parameters: Optional[Dict[str, str]] = None,
-                     post_processors: Optional[List[str]] = None, reporter: Optional[ReportNode] = None,
-                     report_node: Optional[ReportNode] = None,
+def load_from_string(file_name: str, file_content: str, parameters: dict[str, str] | None = None,
+                     post_processors: list[str] | None = None, reporter: ReportNode | None = None,
+                     report_node: ReportNode | None = None,
                      allow_variant_multi_thread_access: bool = False) -> Network:
     """
     Load a network from a string. File content should be in a supported format.

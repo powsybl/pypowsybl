@@ -4,12 +4,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict, List, Optional
 from pypowsybl._pypowsybl import PyPowsyblError
 
 
 class Zone:
-    def __init__(self, id: str, shift_keys_by_injections_ids: Optional[Dict[str, float]] = None):
+    def __init__(self, id: str, shift_keys_by_injections_ids: dict[str, float] | None = None):
         self._id = id
         self._shift_keys_by_injections_ids = {} if shift_keys_by_injections_ids is None else shift_keys_by_injections_ids
 
@@ -18,11 +17,11 @@ class Zone:
         return self._id
 
     @property
-    def shift_keys_by_injections_ids(self) -> Dict[str, float]:
+    def shift_keys_by_injections_ids(self) -> dict[str, float]:
         return self._shift_keys_by_injections_ids
 
     @property
-    def injections_ids(self) -> List[str]:
+    def injections_ids(self) -> list[str]:
         return list(self._shift_keys_by_injections_ids.keys())
 
     def get_shift_key(self, injection_id: str) -> float:

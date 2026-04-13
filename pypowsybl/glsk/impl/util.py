@@ -4,14 +4,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union
 from os import PathLike
 from pypowsybl import _pypowsybl
 from pypowsybl.utils import path_to_str  # pylint: disable=protected-access
 from .glsk_document import GLSKDocument
 
 
-def load(file: Union[str, PathLike]) -> GLSKDocument:
+def load(file: str | PathLike) -> GLSKDocument:
     """
     Loads a GLSK file.
 

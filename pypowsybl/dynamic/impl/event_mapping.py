@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
@@ -29,7 +28,7 @@ class EventMapping:
         """
         return create_data_frame_from_series_array(_pp.get_events_information())
 
-    def add_disconnection(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_disconnection(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """ Creates an equipment disconnection event
 
         Args:
@@ -56,7 +55,7 @@ class EventMapping:
         """
         self._add_all_event_mappings("Disconnect", df, **kwargs)
 
-    def add_active_power_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_active_power_variation(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """ Creates an active power variation event on generator or load
 
         Args:
@@ -83,7 +82,7 @@ class EventMapping:
         """
         self._add_all_event_mappings("ActivePowerVariation", df, **kwargs)
 
-    def add_reactive_power_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_reactive_power_variation(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """ Creates a reactive power variation event on load and generator without dynamic model
 
         Args:
@@ -110,7 +109,7 @@ class EventMapping:
         """
         self._add_all_event_mappings("ReactivePowerVariation", df, **kwargs)
 
-    def add_reference_voltage_variation(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_reference_voltage_variation(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """ Creates a reference voltage variation event on synchronized and synchronous generator
 
         Args:
@@ -137,7 +136,7 @@ class EventMapping:
         """
         self._add_all_event_mappings("ReferenceVoltageVariation", df, **kwargs)
 
-    def add_node_fault(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_node_fault(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """ Creates a bus node fault event
 
         Args:
@@ -166,7 +165,7 @@ class EventMapping:
         """
         self._add_all_event_mappings("NodeFault", df, **kwargs)
 
-    def add_event_model(self, event_name: str, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_event_model(self, event_name: str, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add an event model with event_name
 
@@ -196,7 +195,7 @@ class EventMapping:
         """
         self._add_all_event_mappings(event_name, df, **kwargs)
 
-    def _add_all_event_mappings(self, event_name: str, mapping_df: Optional[DataFrame], **kwargs: ArrayLike) -> None:
+    def _add_all_event_mappings(self, event_name: str, mapping_df: DataFrame | None, **kwargs: ArrayLike) -> None:
         metadata = _pp.get_event_mappings_meta_data(event_name)
         if kwargs:
             kwargs = _add_index_to_kwargs(metadata, **kwargs)

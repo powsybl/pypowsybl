@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import List, Optional
 
 from numpy.typing import ArrayLike
 from pandas import DataFrame
@@ -36,12 +35,12 @@ class ShortCircuitAnalysis:
     def set_bus_fault(self, bus_id: str, element_id: str, r: ArrayLike, x: ArrayLike) -> None:
         self.set_faults(id=bus_id, element_id=element_id, r=r, x=x, fault_type='BUS_FAULT')
 
-    def _set_faults(self, dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
+    def _set_faults(self, dfs: list[DataFrame | None], **kwargs: ArrayLike) -> None:
         metadata = _pypowsybl.get_faults_dataframes_metadata()
         c_dfs = _get_c_dataframes(dfs, [metadata], **kwargs)
         _pypowsybl.set_faults(self._handle, c_dfs[0])
 
-    def set_faults(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def set_faults(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Define faults to be analysed in the short-circuit simulation.
 
@@ -85,8 +84,8 @@ class ShortCircuitAnalysis:
         """
         self._set_faults([df], **kwargs)
 
-    def run(self, network: Network, parameters: Optional[Parameters] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> ShortCircuitAnalysisResult:
+    def run(self, network: Network, parameters: Parameters | None = None,
+            provider: str = '', reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> ShortCircuitAnalysisResult:
         """ Runs a short-circuit analysis.
 
         Args:

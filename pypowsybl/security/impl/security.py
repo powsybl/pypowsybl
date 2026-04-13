@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import Union, List, Optional
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 
@@ -33,8 +32,8 @@ class SecurityAnalysis(ContingencyContainer):
     def __init__(self, handle: _pypowsybl.JavaHandle):
         ContingencyContainer.__init__(self, handle)
 
-    def run_ac(self, network: Network, parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
-               provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> SecurityAnalysisResult:
+    def run_ac(self, network: Network, parameters: Parameters | pypowsybl.loadflow.Parameters | None = None,
+               provider: str = '', reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> SecurityAnalysisResult:
         """ Runs an AC security analysis.
 
         Args:
@@ -59,8 +58,8 @@ class SecurityAnalysis(ContingencyContainer):
             _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider,
                                              None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
-    def run_dc(self, network: Network, parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
-               provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> SecurityAnalysisResult:
+    def run_dc(self, network: Network, parameters: Parameters | pypowsybl.loadflow.Parameters | None = None,
+               provider: str = '', reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> SecurityAnalysisResult:
         """ Runs a DC security analysis.
 
         Args:
@@ -87,10 +86,10 @@ class SecurityAnalysis(ContingencyContainer):
                                              None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
-                               contingency_ids: Optional[Union[List[str], str]] = None,
-                               branch_ids: Optional[List[str]] = None,
-                               voltage_level_ids: Optional[List[str]] = None,
-                               three_windings_transformer_ids: Optional[List[str]] = None) -> None:
+                               contingency_ids: list[str] | str | None = None,
+                               branch_ids: list[str] | None = None,
+                               voltage_level_ids: list[str] | None = None,
+                               three_windings_transformer_ids: list[str] | None = None) -> None:
         """ Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -122,9 +121,9 @@ class SecurityAnalysis(ContingencyContainer):
                                           three_windings_transformer_ids, contingency_ids)
 
     def add_precontingency_monitored_elements(self,
-                                              branch_ids: Optional[List[str]] = None,
-                                              voltage_level_ids: Optional[List[str]] = None,
-                                              three_windings_transformer_ids: Optional[List[str]] = None) -> None:
+                                              branch_ids: list[str] | None = None,
+                                              voltage_level_ids: list[str] | None = None,
+                                              three_windings_transformer_ids: list[str] | None = None) -> None:
         """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -138,10 +137,10 @@ class SecurityAnalysis(ContingencyContainer):
                                            voltage_level_ids=voltage_level_ids,
                                            three_windings_transformer_ids=three_windings_transformer_ids)
 
-    def add_postcontingency_monitored_elements(self, contingency_ids: Union[List[str], str],
-                                               branch_ids: Optional[List[str]] = None,
-                                               voltage_level_ids: Optional[List[str]] = None,
-                                               three_windings_transformer_ids: Optional[List[str]] = None) -> None:
+    def add_postcontingency_monitored_elements(self, contingency_ids: list[str] | str,
+                                               branch_ids: list[str] | None = None,
+                                               voltage_level_ids: list[str] | None = None,
+                                               three_windings_transformer_ids: list[str] | None = None) -> None:
         """ Add elements to be monitored by the security analysis for specific contingencies.
         The security analysis result will provide additional information for those elements, like the power and current values.
 
@@ -247,9 +246,9 @@ class SecurityAnalysis(ContingencyContainer):
         _pypowsybl.add_terminals_connection_action(self._handle, action_id, element_id, side, opening)
 
 
-    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
-                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: Optional[List[str]] = None,
-                              violation_types: Optional[List[ViolationType]] = None) -> None:
+    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: list[str],
+                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: list[str] | None = None,
+                              violation_types: list[ViolationType] | None = None) -> None:
         """ Add an operator strategy to the specified contingency
 
         Args:
@@ -286,7 +285,7 @@ class SecurityAnalysis(ContingencyContainer):
 
         _pypowsybl.add_operator_strategy_from_json_file(self._handle, path_to_json_file)
 
-    def add_limit_reductions(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_limit_reductions(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add limit reductions to the security analysis.
         If two reductions can be applied to the same limit, the last one in addition order is the one applied.

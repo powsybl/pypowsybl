@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import List, Union, Optional
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
 from pypowsybl.report import ReportNode
@@ -22,10 +21,10 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         SensitivityAnalysis.__init__(self, handle)
-        self.bus_voltage_ids: List[str] = []
-        self.target_voltage_ids: List[str] = []
+        self.bus_voltage_ids: list[str] = []
+        self.target_voltage_ids: list[str] = []
 
-    def set_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str]) -> None:
+    def set_bus_voltage_factor_matrix(self, bus_ids: list[str], target_voltage_ids: list[str]) -> None:
         """
         .. deprecated:: 1.1.0
           Use :meth:`add_bus_voltage_factor_matrix` instead.
@@ -40,7 +39,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
                       DeprecationWarning)
         self.add_bus_voltage_factor_matrix(bus_ids, target_voltage_ids)
 
-    def add_bus_voltage_factor_matrix(self, bus_ids: List[str], target_voltage_ids: List[str], matrix_id: str = DEFAULT_MATRIX_ID) -> None:
+    def add_bus_voltage_factor_matrix(self, bus_ids: list[str], target_voltage_ids: list[str], matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines buses voltage sensitivities to be computed.
 
@@ -54,8 +53,8 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run(self, network: Network, parameters: Optional[Union[Parameters, LfParameters]] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> AcSensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Parameters | LfParameters | None = None,
+            provider: str = '', reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> AcSensitivityAnalysisResult:
         """
         Runs the sensitivity analysis.
 

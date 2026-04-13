@@ -4,10 +4,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
 import pandas as pd
 
-OptionalDf = Optional[pd.DataFrame]
+OptionalDf = pd.DataFrame | None
 
 
 class ValidationResult:

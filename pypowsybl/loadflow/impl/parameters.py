@@ -4,6 +4,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+from __future__ import annotations
+
 from pypowsybl._pypowsybl import (
     ComponentMode,
     ConnectedComponentMode,
@@ -13,7 +15,8 @@ from pypowsybl._pypowsybl import (
     PyPowsyblError
 )
 import warnings
-from typing import Sequence, Dict, Optional, Any
+from collections.abc import Sequence
+from typing import Any
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -79,24 +82,24 @@ class Parameters:  # pylint: disable=too-few-public-methods
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
 
-    def __init__(self, voltage_init_mode: Optional[VoltageInitMode] = None,
-                 transformer_voltage_control_on: Optional[bool] = None,
-                 use_reactive_limits: Optional[bool] = None,
-                 phase_shifter_regulation_on: Optional[bool] = None,
-                 twt_split_shunt_admittance: Optional[bool] = None,
-                 shunt_compensator_voltage_control_on: Optional[bool] = None,
-                 read_slack_bus: Optional[bool] = None,
-                 write_slack_bus: Optional[bool] = None,
-                 distributed_slack: Optional[bool] = None,
-                 balance_type: Optional[BalanceType] = None,
-                 dc_use_transformer_ratio: Optional[bool] = None,
-                 countries_to_balance: Optional[Sequence[str]] = None,
-                 component_mode: Optional[ComponentMode] = None,
-                 connected_component_mode: Optional[ConnectedComponentMode] = None,
-                 dc_power_factor: Optional[float] = None,
-                 hvdc_ac_emulation: Optional[bool] = None,
-                 dc: Optional[bool] = None,
-                 provider_parameters: Optional[Dict[str, str]] = None):
+    def __init__(self, voltage_init_mode: VoltageInitMode | None = None,
+                 transformer_voltage_control_on: bool | None = None,
+                 use_reactive_limits: bool | None = None,
+                 phase_shifter_regulation_on: bool | None = None,
+                 twt_split_shunt_admittance: bool | None = None,
+                 shunt_compensator_voltage_control_on: bool | None = None,
+                 read_slack_bus: bool | None = None,
+                 write_slack_bus: bool | None = None,
+                 distributed_slack: bool | None = None,
+                 balance_type: BalanceType | None = None,
+                 dc_use_transformer_ratio: bool | None = None,
+                 countries_to_balance: Sequence[str] | None = None,
+                 component_mode: ComponentMode | None = None,
+                 connected_component_mode: ConnectedComponentMode | None = None,
+                 dc_power_factor: float | None = None,
+                 hvdc_ac_emulation: bool | None = None,
+                 dc: bool | None = None,
+                 provider_parameters: dict[str, str] | None = None):
         self._init_with_default_values()
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
@@ -185,7 +188,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         return c_parameters
 
     @property
-    def connected_component_mode(self) -> Optional[ConnectedComponentMode]:
+    def connected_component_mode(self) -> ConnectedComponentMode | None:
         warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
         return self._convert_to_connected_component_mode()
 
@@ -200,7 +203,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         else:
             self.component_mode = ComponentMode.ALL_CONNECTED
 
-    def _convert_to_connected_component_mode(self) -> Optional[ConnectedComponentMode]:
+    def _convert_to_connected_component_mode(self) -> ConnectedComponentMode | None:
         if self.component_mode == ComponentMode.MAIN_CONNECTED:
             return ConnectedComponentMode.MAIN
         elif self.component_mode == ComponentMode.ALL_CONNECTED:
@@ -228,10 +231,10 @@ class Parameters:  # pylint: disable=too-few-public-methods
         """
         return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(self._to_c_parameters())
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         return {'json': self.to_json()}
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         self._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(state['json']))
 
     def __repr__(self) -> str:

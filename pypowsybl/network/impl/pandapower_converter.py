@@ -8,7 +8,6 @@ import math
 import typing
 from enum import Enum
 from importlib import util
-from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -39,7 +38,7 @@ def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     n.create_substations(id='s')
     create_buses(n, n_pdp)
     create_loads(n, n_pdp)
-    slack_weight_by_gen_id: Dict[str, float] = {}
+    slack_weight_by_gen_id: dict[str, float] = {}
     create_generators(n, n_pdp, slack_weight_by_gen_id)
     create_shunts(n, n_pdp)
     create_lines(n, n_pdp)
@@ -49,7 +48,7 @@ def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     return n
 
 
-def create_extensions(n: Network, slack_weight_by_gen_id: Dict[str, float]) -> None:
+def create_extensions(n: Network, slack_weight_by_gen_id: dict[str, float]) -> None:
     if len(slack_weight_by_gen_id) > 0:
         highest_weight_gen_id = max(slack_weight_by_gen_id, key=lambda k: slack_weight_by_gen_id[k])
         for index, (gen_id, weight) in enumerate(slack_weight_by_gen_id.items()):
@@ -209,7 +208,7 @@ class PandaPowerGeneratorType(Enum):
     EXT_GRID = 2
     STATIC_GENERATOR = 3
 
-def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_by_gen_id: Dict[str, float], generator_type: PandaPowerGeneratorType) -> None:
+def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_by_gen_id: dict[str, float], generator_type: PandaPowerGeneratorType) -> None:
     if len(gen) > 0:
         gen_and_bus: DataFrame = gen.merge(bus, left_on='bus', right_index=True, how='left', suffixes=('', '_x'))
         gen_id = generate_injection_id(gen_and_bus, 'gen' if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else 'sgen')
@@ -264,7 +263,7 @@ def create_generator_target_v(gen_and_bus: DataFrame, generator_type: PandaPower
         'vn_kv'] if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else pd.Series([1.0] * len(gen_and_bus))
 
 
-def fill_generator_slack_weight(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType, slack_weight_by_gen_id: Dict[str, float]) -> None:
+def fill_generator_slack_weight(gen_and_bus: DataFrame, generator_type: PandaPowerGeneratorType, slack_weight_by_gen_id: dict[str, float]) -> None:
     if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR:
         for index, row in gen_and_bus.iterrows():
             index = typing.cast(int, index)  # safe cas from hashtable to int needed by mypy
@@ -272,7 +271,7 @@ def fill_generator_slack_weight(gen_and_bus: DataFrame, generator_type: PandaPow
             slack_weight_by_gen_id[build_injection_id('gen', row['bus'], index)] = weight
 
 
-def create_generators(n: Network, n_pdp: pandapowerNet, slack_weight_by_gen_id: Dict[str, float]) -> None:
+def create_generators(n: Network, n_pdp: pandapowerNet, slack_weight_by_gen_id: dict[str, float]) -> None:
     _create_generators(n, n_pdp.gen, n_pdp.bus, slack_weight_by_gen_id, PandaPowerGeneratorType.GENERATOR)
     _create_generators(n, n_pdp.ext_grid, n_pdp.bus, slack_weight_by_gen_id, PandaPowerGeneratorType.EXT_GRID)
     _create_generators(n, n_pdp.sgen, n_pdp.bus, slack_weight_by_gen_id, PandaPowerGeneratorType.STATIC_GENERATOR)

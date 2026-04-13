@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict, List, Optional
 import numpy as np
 import pandas as pd
 from pypowsybl import _pypowsybl
@@ -25,15 +24,15 @@ class SensitivityAnalysisResult:
 
     def __init__(self,
                  result_context_ptr: _pypowsybl.JavaHandle,
-                 functions_ids: Dict[str, List[str]],
-                 function_data_frame_index: Dict[str, List[str]]):
+                 functions_ids: dict[str, list[str]],
+                 function_data_frame_index: dict[str, list[str]]):
         self._handle = result_context_ptr
         self.result_context_ptr = result_context_ptr
         self.functions_ids = functions_ids
         self.function_data_frame_index = function_data_frame_index
 
     @staticmethod
-    def clean_contingency_id(contingency_id: Optional[str]) -> str:
+    def clean_contingency_id(contingency_id: str | None) -> str:
         return '' if contingency_id is None else contingency_id
 
     def process_ptdf(self, df: pd.DataFrame, matrix_id: str) -> pd.DataFrame:
@@ -46,8 +45,8 @@ class SensitivityAnalysisResult:
         # remove rows corresponding to power transfer second zone
         return df.drop([TO_REMOVE], errors='ignore')
 
-    def get_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
-        pd.DataFrame]:
+    def get_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  str | None = None) \
+            -> pd.DataFrame | None:
         """
         Get the matrix of sensitivity values on the base case or on post contingency state.
 
@@ -70,7 +69,7 @@ class SensitivityAnalysisResult:
 
         return self.process_ptdf(df, matrix_id) # only used for PTDF
 
-    def get_reference_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None, reference_column_id: str = DEFAULT_REFERENCE_COLUMN_ID) -> Optional[pd.DataFrame]:
+    def get_reference_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  str | None = None, reference_column_id: str = DEFAULT_REFERENCE_COLUMN_ID) -> pd.DataFrame | None:
         """
         The reference values on the base case or on post contingency state.
 

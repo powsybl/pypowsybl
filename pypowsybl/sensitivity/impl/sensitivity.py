@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import warnings
-from typing import List, Dict
 
 from pypowsybl import _pypowsybl
 from pypowsybl.security import ContingencyContainer
@@ -21,10 +20,10 @@ class SensitivityAnalysis(ContingencyContainer):
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         ContingencyContainer.__init__(self, handle)
-        self.functions_ids: Dict[str, List[str]] = {}
-        self.function_data_frame_index: Dict[str, List[str]] = {}
+        self.functions_ids: dict[str, list[str]] = {}
+        self.function_data_frame_index: dict[str, list[str]] = {}
 
-    def set_zones(self, zones: List[Zone]) -> None:
+    def set_zones(self, zones: list[Zone]) -> None:
         """
         Define zones that will be used in branch flow factor matrix.
 
@@ -38,7 +37,7 @@ class SensitivityAnalysis(ContingencyContainer):
         _pypowsybl.set_zones(self._handle, _zones)
 
     @staticmethod
-    def _process_variable_ids(variables_ids: List) -> tuple:
+    def _process_variable_ids(variables_ids: list) -> tuple:
         flatten_variables_ids = []
         branch_data_frame_index = []
         for variable_id in variables_ids:
@@ -56,7 +55,7 @@ class SensitivityAnalysis(ContingencyContainer):
                 raise PyPowsyblError(f'Unsupported factor variable type {type(variable_id)}')
         return (flatten_variables_ids, branch_data_frame_index)
 
-    def set_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str]) -> None:
+    def set_branch_flow_factor_matrix(self, branches_ids: list[str], variables_ids: list[str]) -> None:
         """
         .. deprecated:: 0.14.0
           Use :meth:`add_branch_flow_factor_matrix` instead.
@@ -77,7 +76,7 @@ class SensitivityAnalysis(ContingencyContainer):
                       DeprecationWarning)
         self.add_branch_flow_factor_matrix(branches_ids, variables_ids)
 
-    def add_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
+    def add_branch_flow_factor_matrix(self, branches_ids: list[str], variables_ids: list[str],
                                       matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power flow factor matrix, with a list of branches IDs and a list of variables.
@@ -95,7 +94,7 @@ class SensitivityAnalysis(ContingencyContainer):
         self.add_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.ALL,
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
-    def add_precontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
+    def add_precontingency_branch_flow_factor_matrix(self, branches_ids: list[str], variables_ids: list[str],
                                                      matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power flow factor matrix for the base case, with a list of branches IDs and a list of variables.
@@ -113,8 +112,8 @@ class SensitivityAnalysis(ContingencyContainer):
         self.add_factor_matrix(branches_ids, variables_ids, [], ContingencyContextType.NONE,
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
-    def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: List[str], variables_ids: List[str],
-                                                      contingencies_ids: List[str],
+    def add_postcontingency_branch_flow_factor_matrix(self, branches_ids: list[str], variables_ids: list[str],
+                                                      contingencies_ids: list[str],
                                                       matrix_id: str = DEFAULT_MATRIX_ID) -> None:
         """
         Defines branch active power flow factor matrix for specific post contingencies states, with a list of branches IDs and a list of variables.
@@ -133,7 +132,7 @@ class SensitivityAnalysis(ContingencyContainer):
         self.add_factor_matrix(branches_ids, variables_ids, contingencies_ids, ContingencyContextType.SPECIFIC,
                                SensitivityFunctionType.BRANCH_ACTIVE_POWER_1, SensitivityVariableType.AUTO_DETECT, matrix_id)
 
-    def add_factor_matrix(self, functions_ids: List[str], variables_ids: List[str], contingencies_ids: List[str],
+    def add_factor_matrix(self, functions_ids: list[str], variables_ids: list[str], contingencies_ids: list[str],
                           contingency_context_type: ContingencyContextType,
                           sensitivity_function_type: SensitivityFunctionType,
                           sensitivity_variable_type: SensitivityVariableType = SensitivityVariableType.AUTO_DETECT,

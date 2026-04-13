@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Dict, List, Tuple
 from pypowsybl._pypowsybl import (
     create_voltage_initializer_params,
     voltage_initializer_add_variable_shunt_compensators,
@@ -46,7 +45,7 @@ class VoltageInitializerParameters:
     def __init__(self) -> None:
         self._handle = create_voltage_initializer_params()
 
-    def add_variable_shunt_compensators(self, shunt_id_list: List[str]) -> None:
+    def add_variable_shunt_compensators(self, shunt_id_list: list[str]) -> None:
         """
         Indicate to voltage initializer that the given shunt compensator has a variable susceptance.
 
@@ -56,7 +55,7 @@ class VoltageInitializerParameters:
         for shunt_id in shunt_id_list:
             voltage_initializer_add_variable_shunt_compensators(self._handle, shunt_id)
 
-    def add_constant_q_generators(self, generator_id_list: List[str]) -> None:
+    def add_constant_q_generators(self, generator_id_list: list[str]) -> None:
         """
         Indicate to voltage initializer that the given generator have a constant target reactive power.
 
@@ -66,7 +65,7 @@ class VoltageInitializerParameters:
         for generator_id in generator_id_list:
             voltage_initializer_add_constant_q_generators(self._handle, generator_id)
 
-    def add_variable_two_windings_transformers(self, transformer_id_list: List[str]) -> None:
+    def add_variable_two_windings_transformers(self, transformer_id_list: list[str]) -> None:
         """
         Indicate to voltage initializer that the given 2wt have a variable ratio.
 
@@ -76,7 +75,7 @@ class VoltageInitializerParameters:
         for transformer_id in transformer_id_list:
             voltage_initializer_add_variable_two_windings_transformers(self._handle, transformer_id)
 
-    def add_specific_low_voltage_limits(self, low_limits: List[Tuple[str, bool, float]]) -> None:
+    def add_specific_low_voltage_limits(self, low_limits: list[tuple[str, bool, float]]) -> None:
         """
         Indicate to voltage initializer to override the network low voltages limits,
         limit can be given relative to former limit or absolute.
@@ -87,12 +86,12 @@ class VoltageInitializerParameters:
         Use this if voltage initializer cannot converge because of infeasibility.
 
         Args:
-            low_limits: A List with elements as (voltage level id, is limit relative, limit value)
+            low_limits: A list with elements as (voltage level id, is limit relative, limit value)
         """
         for voltage_level_id, is_relative, limit in low_limits:
             voltage_initializer_add_specific_low_voltage_limits(self._handle, voltage_level_id, is_relative, limit)
 
-    def add_specific_high_voltage_limits(self, high_limits: List[Tuple[str, bool, float]]) -> None:
+    def add_specific_high_voltage_limits(self, high_limits: list[tuple[str, bool, float]]) -> None:
         """
         Indicate to voltage initializer to override the network high voltages limits,
         limit can be given relative to previous limit or absolute.
@@ -103,12 +102,12 @@ class VoltageInitializerParameters:
         Use this if voltage initializer cannot converge because of infeasibility.
 
         Args:
-            high_limits: A List with elements as (voltage level id, is limit relative, limit value)
+            high_limits: A list with elements as (voltage level id, is limit relative, limit value)
         """
         for voltage_level_id, is_relative, limit in high_limits:
             voltage_initializer_add_specific_high_voltage_limits(self._handle, voltage_level_id, is_relative, limit)
 
-    def add_specific_voltage_limits(self, limits: Dict[str, Tuple[float, float]]) -> None:
+    def add_specific_voltage_limits(self, limits: dict[str, tuple[float, float]]) -> None:
         """
         Indicate to voltage initializer to override the network voltages limits.
         Limits are given relative to previous limits.
