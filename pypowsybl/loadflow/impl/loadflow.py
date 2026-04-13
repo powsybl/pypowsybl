@@ -44,7 +44,7 @@ def run_ac(network: Network, parameters: Optional[Parameters] = None, provider: 
 
     Args:
         network:    a network
-        parameters: the load flow parameters
+        parameters: the load flow parameters, dc attribute is forced to false
         provider:   the load flow implementation provider, default is the default load flow provider
         reporter: deprecated, use report_node instead
         report_node:   the reporter to be used to create an execution report, default is None (no report)
@@ -69,7 +69,7 @@ def run_ac_async(network: Network, variant_id: str = 'InitialState', parameters:
     Args:
         network: a network
         variant_id: the variant id, default on initial variant
-        parameters: the load flow parameters
+        parameters: the load flow parameters, dc attribute is forced to false
         provider: the load flow implementation provider, default is the default load flow provider
         report_node:   the reporter to be used to create an execution report, default is None (no report)
 
@@ -96,7 +96,7 @@ def run_dc(network: Network, parameters: Optional[Parameters] = None, provider: 
 
     Args:
         network:    a network
-        parameters: the load flow parameters
+        parameters: the load flow parameters, dc attribute is forced to true
         provider:   the load flow implementation provider, default is the default load flow provider
         reporter: deprecated, use report_node instead
         report_node:   the reporter to be used to create an execution report, default is None (no report)

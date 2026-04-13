@@ -74,6 +74,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
             ``ALL`` to component_mode = ``ALL_CONNECTED``).
         hvdc_ac_emulation: Enable AC emulation of HVDC links.
         dc_power_factor: Power factor used to convert current limits into active power limits in DC calculations.
+        dc: Defines if you want to run an AC power flow (false) or a DC power flow (true).
         provider_parameters: Define parameters linked to the loadflow provider
             the names of the existing parameters can be found with method ``get_provider_parameters_names``
     """
