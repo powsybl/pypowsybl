@@ -388,6 +388,10 @@ typedef struct nad_parameters_struct {
     int info_middle_side1;
     int info_middle_side2;
     int info_side_internal;
+    double scale_factor;
+    double timeout_seconds;
+    unsigned char edge_info_included;
+    unsigned char voltage_level_legends_included;
 } nad_parameters;
 
 typedef enum {

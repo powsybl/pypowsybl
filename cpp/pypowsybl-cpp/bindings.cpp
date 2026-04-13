@@ -687,7 +687,11 @@ PYBIND11_MODULE(_pypowsybl, m) {
         .def_readwrite("info_side_external", &pypowsybl::NadParameters::info_side_external)
         .def_readwrite("info_middle_side1", &pypowsybl::NadParameters::info_middle_side1)
         .def_readwrite("info_middle_side2", &pypowsybl::NadParameters::info_middle_side2)
-        .def_readwrite("info_side_internal", &pypowsybl::NadParameters::info_side_internal);
+        .def_readwrite("info_side_internal", &pypowsybl::NadParameters::info_side_internal)
+        .def_readwrite("scale_factor", &pypowsybl::NadParameters::scale_factor)
+        .def_readwrite("timeout_seconds", &pypowsybl::NadParameters::timeout_seconds)
+        .def_readwrite("edge_info_included", &pypowsybl::NadParameters::edge_info_included)
+        .def_readwrite("voltage_level_legends_included", &pypowsybl::NadParameters::voltage_level_legends_included);
 
     m.def("write_single_line_diagram_svg", &pypowsybl::writeSingleLineDiagramSvg, "Write single line diagram SVG",
           py::arg("network"), py::arg("container_id"), py::arg("svg_file"), py::arg("metadata_file"), py::arg("sld_parameters"), py::arg("labels"), py::arg("feeders_info"), py::arg("styles"));

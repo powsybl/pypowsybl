@@ -1166,16 +1166,16 @@ public final class PyPowsyblApiHeader {
         int getLayoutType();
 
         @CField("scaling_factor")
-        int getScalingFactor();
-
-        @CField("scaling_factor")
         void setScalingFactor(int scalingFactor);
 
-        @CField("radius_factor")
-        double getRadiusFactor();
+        @CField("scaling_factor")
+        int getScalingFactor();
 
         @CField("radius_factor")
         void setRadiusFactor(double radiusFactor);
+
+        @CField("radius_factor")
+        double getRadiusFactor();
 
         @CField("voltage_level_details")
         void setVoltageLevelDetails(boolean isVoltageLevelDetails);
@@ -1212,6 +1212,30 @@ public final class PyPowsyblApiHeader {
 
         @CField("info_side_internal")
         int getInfoSideInternal();
+
+        @CField("scale_factor")
+        double getScaleFactor();
+
+        @CField("scale_factor")
+        void setScaleFactor(double scaleFactor);
+
+        @CField("timeout_seconds")
+        double getTimeoutSeconds();
+
+        @CField("timeout_seconds")
+        void setTimeoutSeconds(double timeoutSeconds);
+
+        @CField("edge_info_included")
+        void setEdgeInfoIncluded(boolean edgeInfoIncluded);
+
+        @CField("edge_info_included")
+        boolean isEdgeInfoIncluded();
+
+        @CField("voltage_level_legends_included")
+        void setVoltageLevelLegendsIncluded(boolean voltageLevelLegendsIncluded);
+
+        @CField("voltage_level_legends_included")
+        boolean isVoltageLevelLegendsIncluded();
     }
 
     @CStruct("dynamic_simulation_parameters")

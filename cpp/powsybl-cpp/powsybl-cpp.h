@@ -466,6 +466,10 @@ public:
     EdgeInfoType info_middle_side1;
     EdgeInfoType info_middle_side2;
     EdgeInfoType info_side_internal;
+    double scale_factor;
+    double timeout_seconds;
+    bool edge_info_included;
+    bool voltage_level_legends_included;
 };
 
 //=======short-circuit analysis==========

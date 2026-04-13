@@ -437,6 +437,10 @@ class NadParameters:
     info_middle_side1: EdgeInfoType
     info_middle_side2: EdgeInfoType
     info_side_internal: EdgeInfoType
+    scale_factor: float
+    timeout_seconds: float
+    edge_info_included: bool
+    voltage_level_legends_included: bool
     def __init__(self) -> None: ...
 
 class SlackBusResult:

@@ -1207,9 +1207,22 @@ public final class NetworkCFunctions {
         cParameters.setVoltageValuePrecision(parameters.getSvgParameters().getVoltageValuePrecision());
         cParameters.setBusLegend(defaultLabelProviderParameters.isBusLegend());
         cParameters.setSubstationDescriptionDisplayed(defaultLabelProviderParameters.isSubstationDescriptionDisplayed());
+        cParameters.setLayoutType(getLayoutType(parameters.getLayoutFactory()));
         cParameters.setVoltageLevelDetails(defaultLabelProviderParameters.isVoltageLevelDetails());
         cParameters.setInjectionsAdded(parameters.getLayoutParameters().isInjectionsAdded());
+        cParameters.setScaleFactor(parameters.getLayoutParameters().getScaleFactor());
+        cParameters.setTimeoutSeconds(parameters.getLayoutParameters().getTimeoutSeconds());
+        cParameters.setEdgeInfoIncluded(parameters.getSvgParameters().isEdgeInfosIncluded());
+        cParameters.setVoltageLevelLegendsIncluded(parameters.getSvgParameters().isVoltageLevelLegendsIncluded());
         copyToCEdgeInfoParameters(defaultEdgeInfoParameters, cParameters);
+    }
+
+    private static int getLayoutType(LayoutFactory layoutFactory) {
+        return switch (layoutFactory) {
+            case GeographicalLayoutFactory ignored -> 1;
+            case BasicForceLayoutFactory ignored -> 2;
+            default -> 0; // Default factory is Atlas2ForceLayout
+        };
     }
 
     @CEntryPoint(name = "createNadParameters")
@@ -1288,8 +1301,9 @@ public final class NetworkCFunctions {
     public static NadParameters convertNadParameters(NadParametersPointer nadParametersPointer, Network network) {
         NadParameters nadParameters = NetworkAreaDiagramUtil.createNadParameters();
         LayoutFactory layoutFactory = switch (nadParametersPointer.getLayoutType()) {
-            case 1: yield new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), new BasicForceLayoutFactory());
-            default: yield new BasicForceLayoutFactory();
+            case 1 -> new GeographicalLayoutFactory(network, nadParametersPointer.getScalingFactor(), nadParametersPointer.getRadiusFactor(), Atlas2ForceLayout::new);
+            case 2 -> new BasicForceLayoutFactory();
+            default -> Atlas2ForceLayout::new;
         };
         nadParameters.setLayoutFactory(layoutFactory);
         nadParameters.getSvgParameters()
@@ -1297,7 +1311,9 @@ public final class NetworkCFunctions {
                 .setPowerValuePrecision(nadParametersPointer.getPowerValuePrecision())
                 .setCurrentValuePrecision(nadParametersPointer.getCurrentValuePrecision())
                 .setAngleValuePrecision(nadParametersPointer.getAngleValuePrecision())
-                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision());
+                .setVoltageValuePrecision(nadParametersPointer.getVoltageValuePrecision())
+                .setEdgeInfosIncluded(nadParametersPointer.isEdgeInfoIncluded())
+                .setVoltageLevelLegendsIncluded(nadParametersPointer.isVoltageLevelLegendsIncluded());
         boolean idDisplayed = nadParametersPointer.isIdDisplayed();
         boolean busLegend = nadParametersPointer.isBusLegend();
         boolean substationDescription = nadParametersPointer.isSubstationDescriptionDisplayed();
@@ -1307,9 +1323,12 @@ public final class NetworkCFunctions {
                         .setIdDisplayed(idDisplayed)
                         .setBusLegend(busLegend)
                         .setSubstationDescriptionDisplayed(substationDescription)
-                        .setEdgeInfoParameters(edgeInfoParameters)));
+                        .setEdgeInfoParameters(edgeInfoParameters)
+                        .setVoltageLevelDetails(nadParametersPointer.isVoltageLevelDetails())));
         nadParameters.getLayoutParameters()
-                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded());
+                .setInjectionsAdded(nadParametersPointer.isInjectionsAdded())
+                .setScaleFactor(nadParametersPointer.getScaleFactor())
+                .setTimeoutSeconds(nadParametersPointer.getTimeoutSeconds());
         return nadParameters;
     }
 
