@@ -325,6 +325,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("dc_power_factor")
         void setDcPowerFactor(double dcPowerFactor);
+
+        @CField("dc")
+        boolean getDc();
+
+        @CField("dc")
+        void setDc(boolean dc);
     }
 
     @CStruct("loadflow_validation_parameters")

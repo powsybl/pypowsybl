@@ -92,5 +92,6 @@ class Backend:
 
     def run_pf(self, dc: bool = False, parameters: Parameters | None = None, report_node: ReportNode | None = None) -> list[ComponentResult]:
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
-        return [ComponentResult(res) for res in _pypowsybl.run_grid2op_loadflow(self._handle, dc, p,
+        p.dc = dc
+        return [ComponentResult(res) for res in _pypowsybl.run_grid2op_loadflow(self._handle, p,
                                                                                 report_node._report_node if report_node is not None else None)]

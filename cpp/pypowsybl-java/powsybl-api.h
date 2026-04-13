@@ -72,6 +72,7 @@ typedef struct loadflow_parameters_struct {
     int component_mode;
     unsigned char hvdc_ac_emulation;
     double dc_power_factor;
+    unsigned char dc;
 } loadflow_parameters;
 
 typedef struct loadflow_validation_parameters_struct {

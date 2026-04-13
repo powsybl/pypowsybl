@@ -49,8 +49,7 @@ public final class LoadFlowCUtils {
         return PyPowsyblConfiguration.isReadConfig() ? LoadFlowParameters.load() : new LoadFlowParameters();
     }
 
-    public static LoadFlowParameters convertLoadFlowParameters(boolean dc,
-                                                               LoadFlowParametersPointer loadFlowParametersPtr) {
+    public static LoadFlowParameters convertLoadFlowParameters(LoadFlowParametersPointer loadFlowParametersPtr) {
         return createLoadFlowParameters()
                 .setVoltageInitMode(LoadFlowParameters.VoltageInitMode.values()[loadFlowParametersPtr.getVoltageInitMode()])
                 .setTransformerVoltageControlOn(loadFlowParametersPtr.isTransformerVoltageControlOn())
@@ -61,7 +60,7 @@ public final class LoadFlowCUtils {
                 .setReadSlackBus(loadFlowParametersPtr.isReadSlackBus())
                 .setWriteSlackBus(loadFlowParametersPtr.isWriteSlackBus())
                 .setDistributedSlack(loadFlowParametersPtr.isDistributedSlack())
-                .setDc(dc)
+                .setDc(loadFlowParametersPtr.getDc())
                 .setBalanceType(LoadFlowParameters.BalanceType.values()[loadFlowParametersPtr.getBalanceType()])
                 .setDcUseTransformerRatio(loadFlowParametersPtr.isDcUseTransformerRatio())
                 .setCountriesToBalance(CTypeUtil.toStringList(loadFlowParametersPtr.getCountriesToBalance(), loadFlowParametersPtr.getCountriesToBalanceCount())
@@ -75,9 +74,9 @@ public final class LoadFlowCUtils {
      * Creates loadflow parameters from its C representation, for the given loadflow provider.
      * The provider is used to instantiate implementation-specific parameters.
      */
-    public static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer cParameters,
+    public static LoadFlowParameters createLoadFlowParameters(LoadFlowParametersPointer cParameters,
                                                               LoadFlowProvider provider) {
-        LoadFlowParameters parameters = convertLoadFlowParameters(dc, cParameters);
+        LoadFlowParameters parameters = convertLoadFlowParameters(cParameters);
         Map<String, String> specificParametersProperties = getSpecificParameters(cParameters);
 
         provider.loadSpecificParameters(specificParametersProperties).ifPresent(ext -> {
@@ -93,9 +92,9 @@ public final class LoadFlowCUtils {
         return parameters;
     }
 
-    public static LoadFlowParameters createLoadFlowParameters(boolean dc, LoadFlowParametersPointer cParameters,
+    public static LoadFlowParameters createLoadFlowParameters(LoadFlowParametersPointer cParameters,
                                                               String providerName) {
-        return createLoadFlowParameters(dc, cParameters, getLoadFlowProvider(providerName));
+        return createLoadFlowParameters(cParameters, getLoadFlowProvider(providerName));
     }
 
     /**
