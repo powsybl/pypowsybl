@@ -131,7 +131,8 @@ public final class FlowDecompositionCFunctions {
                 String lfProviderName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(lfProviderName);
                 String sensiProviderName = PyPowsyblConfiguration.getDefaultSensitivityAnalysisProvider();
-                LoadFlowParameters loadFlowParameters = LoadFlowCUtils.createLoadFlowParameters(DC, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters loadFlowParameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
+                loadFlowParameters.setDc(DC);
                 FlowDecompositionParameters flowDecompositionParameters = FlowDecompositionCUtils.createFlowDecompositionParameters(flowDecompositionParametersPtr);
 
                 logger().debug("Loadflow provider used is : {}", loadFlowProvider.getName());

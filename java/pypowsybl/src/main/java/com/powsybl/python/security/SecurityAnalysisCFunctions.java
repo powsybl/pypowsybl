@@ -279,7 +279,7 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
-                                                   CCharPointer providerName, boolean dc, ObjectHandle reportNodeHandle,
+                                                   CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
@@ -288,7 +288,7 @@ public final class SecurityAnalysisCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 SecurityAnalysisProvider provider = SecurityAnalysisCUtils.getSecurityAnalysisProvider(CTypeUtil.toString(providerName));
                 logger().info("Security analysis provider used for security analysis is : {}", provider.getName());
-                SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(dc, securityAnalysisParametersPointer, provider);
+                SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(securityAnalysisParametersPointer, provider);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
                 SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
                 return ObjectHandles.getGlobal().create(result);
