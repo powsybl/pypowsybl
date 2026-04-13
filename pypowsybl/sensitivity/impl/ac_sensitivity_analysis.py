@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import List, Union, Optional
+from typing import List, Union
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
 from pypowsybl.report import ReportNode
@@ -54,8 +54,8 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         self.bus_voltage_ids = bus_ids
         self.target_voltage_ids = target_voltage_ids
 
-    def run(self, network: Network, parameters: Optional[Union[Parameters, LfParameters]] = None,
-            provider: str = '', reporter: Optional[ReportNode] = None, report_node: Optional[ReportNode] = None) -> AcSensitivityAnalysisResult:
+    def run(self, network: Network, parameters: Union[Parameters, LfParameters] | None = None,
+            provider: str = '', reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> AcSensitivityAnalysisResult:
         """
         Runs the sensitivity analysis.
 

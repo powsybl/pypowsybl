@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Optional, Union
+from typing import List, Union
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
@@ -61,7 +61,7 @@ class ModelMapping:
         """
         return create_data_frame_from_series_array(_pp.get_supported_models_information(category_name))
 
-    def add_base_load(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_base_load(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a load mapping
 
@@ -91,7 +91,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('Load', [df], **kwargs)
 
-    def add_load_one_transformer(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_load_one_transformer(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with one transformer mapping
 
@@ -122,7 +122,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('LoadOneTransformer', [df], **kwargs)
 
-    def add_load_one_transformer_tap_changer(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_load_one_transformer_tap_changer(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with one transformer and tap changer mapping
 
@@ -153,7 +153,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('LoadOneTransformerTapChanger', [df], **kwargs)
 
-    def add_load_two_transformers(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_load_two_transformers(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with two transformers mapping
 
@@ -184,7 +184,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('LoadTwoTransformers', [df], **kwargs)
 
-    def add_load_two_transformers_tap_changers(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_load_two_transformers_tap_changers(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a load with two transformers and tap changers mapping
 
@@ -215,7 +215,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('LoadTwoTransformersTapChangers', [df], **kwargs)
 
-    def add_base_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_base_generator(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a base generator mapping
 
@@ -246,7 +246,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('SimplifiedGenerator', [df], **kwargs)
 
-    def add_synchronized_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_synchronized_generator(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a synchronized generator mapping
 
@@ -277,7 +277,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('SynchronizedGenerator', [df], **kwargs)
 
-    def add_synchronous_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_synchronous_generator(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a synchronous generator mapping
 
@@ -308,7 +308,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('SynchronousGenerator', [df], **kwargs)
 
-    def add_wecc(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_wecc(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a WECC mapping
 
@@ -339,7 +339,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('Wecc', [df], **kwargs)
 
-    def add_grid_forming_converter(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_grid_forming_converter(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a grid forming converter mapping
 
@@ -370,7 +370,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('GridFormingConverter', [df], **kwargs)
 
-    def add_signal_n_generator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_signal_n_generator(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a signal N generator mapping
 
@@ -401,7 +401,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('SignalNGenerator', [df], **kwargs)
 
-    def add_inertial_grid(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_inertial_grid(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add an inertial grid mapping
 
@@ -432,7 +432,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('InertialGrid', [df], **kwargs)
 
-    def add_hvdc_p(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_hvdc_p(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add an HVDC P mapping
 
@@ -463,7 +463,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('HvdcP', [df], **kwargs)
 
-    def add_hvdc_vsc(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_hvdc_vsc(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add an HVDC VSC mapping
 
@@ -494,7 +494,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('HvdcVsc', [df], **kwargs)
 
-    def add_base_transformer(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_base_transformer(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a transformer mapping
 
@@ -525,7 +525,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('Transformer', [df], **kwargs)
 
-    def add_base_static_var_compensator(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_base_static_var_compensator(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a static var compensator mapping
 
@@ -556,7 +556,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('StaticVarCompensator', [df], **kwargs)
 
-    def add_shunt(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_shunt(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a shunt compensator mapping
 
@@ -587,7 +587,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('Shunt', [df], **kwargs)
 
-    def add_base_line(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_base_line(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a line mapping
 
@@ -618,7 +618,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('Line', [df], **kwargs)
 
-    def add_base_bus(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_base_bus(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a base bus mapping
 
@@ -649,7 +649,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('Bus', [df], **kwargs)
 
-    def add_infinite_bus(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_infinite_bus(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add an infinite bus mapping
 
@@ -680,7 +680,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('InfiniteBus', [df], **kwargs)
 
-    def add_overload_management_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_overload_management_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic overload management system (not link to a network element)
         
@@ -716,7 +716,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('OverloadManagementSystem', [df], **kwargs)
 
-    def add_two_level_overload_management_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_two_level_overload_management_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic two level overload management system (not link to a network element)
 
@@ -756,7 +756,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('TwoLevelOverloadManagementSystem', [df], **kwargs)
 
-    def add_under_voltage_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_under_voltage_automation_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic under voltage automation system (not link to a network element)
 
@@ -788,7 +788,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('UnderVoltageAutomationSystem', [df], **kwargs)
 
-    def add_phase_shifter_i_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_phase_shifter_i_automation_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic phase shifter I automation system (not link to a network element)
         
@@ -820,7 +820,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('PhaseShifterI', [df], **kwargs)
 
-    def add_phase_shifter_p_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_phase_shifter_p_automation_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic phase shifter P automation system (not link to a network element)
         
@@ -852,7 +852,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('PhaseShifterP', [df], **kwargs)
 
-    def add_phase_shifter_blocking_i_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_phase_shifter_blocking_i_automation_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic phase shifter blocking I automation system (not link to a network element)
         
@@ -884,7 +884,7 @@ class ModelMapping:
         """
         self._add_all_dynamic_mappings('PhaseShifterBlockingI', [df], **kwargs)
 
-    def add_tap_changer_automation_system(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+    def add_tap_changer_automation_system(self, df: DataFrame | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic tap changer automation system (not link to a network element)
         
@@ -919,8 +919,8 @@ class ModelMapping:
         self._add_all_dynamic_mappings('TapChanger', [df], **kwargs)
 
     def add_tap_changer_blocking_automation_system(self, df: DataFrame, tfo_df: DataFrame, mp1_df: DataFrame,
-                                                   mp2_df: Optional[DataFrame] = None, mp3_df: Optional[DataFrame] = None,
-                                                   mp5_df: Optional[DataFrame] = None, mp4_df: Optional[DataFrame] = None) -> None:
+                                                   mp2_df: DataFrame | None = None, mp3_df: DataFrame | None = None,
+                                                   mp5_df: DataFrame | None = None, mp4_df: DataFrame | None = None) -> None:
         """
         Add a dynamic tap changer blocking automation system (not link to a network element)
         
@@ -977,7 +977,7 @@ class ModelMapping:
         dfs = [df, tfo_df, mp1_df, mp2_df, mp3_df, mp4_df, mp5_df]
         self._add_all_dynamic_mappings('TapChangerBlocking', [DataFrame() if df is None else df for df in dfs])
 
-    def add_dynamic_model(self, category_name: str, df: Optional[Union[DataFrame, List[Optional[DataFrame]]]] = None, **kwargs: ArrayLike) -> None:
+    def add_dynamic_model(self, category_name: str, df: Union[DataFrame, List[DataFrame | None]] | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic model from category_name
 
@@ -1010,7 +1010,7 @@ class ModelMapping:
             df = [df]
         self._add_all_dynamic_mappings(category_name, df, **kwargs)
 
-    def _add_all_dynamic_mappings(self, category_name: str, mapping_dfs: List[Optional[DataFrame]], **kwargs: ArrayLike) -> None:
+    def _add_all_dynamic_mappings(self, category_name: str, mapping_dfs: List[DataFrame | None], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_dynamic_mappings_meta_data(category_name)
         c_dfs = _get_c_dataframes(mapping_dfs, metadata, **kwargs)
         _pp.add_all_dynamic_mappings(self._handle, category_name, c_dfs)

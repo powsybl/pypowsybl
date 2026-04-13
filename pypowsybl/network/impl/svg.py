@@ -4,14 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 
 class Svg:
     """
     This class represents a single line diagram."""
 
-    def __init__(self, content: str, metadata:  Optional[str] = None):
+    def __init__(self, content: str, metadata:  str | None = None):
         self._content = content
         self._metadata = metadata
 
@@ -20,7 +18,7 @@ class Svg:
         return self._content
 
     @property
-    def metadata(self) -> Optional[str]:
+    def metadata(self) -> str | None:
         return self._metadata
 
     def __str__(self) -> str:

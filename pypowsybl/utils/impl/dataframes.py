@@ -11,7 +11,7 @@ Provides utility methods for dataframes handling:
  - creation of C API dataframes
  - ...
 """
-from typing import Optional as _Optional, Any as _Any, Dict as _Dict, List
+from typing import Any as _Any, Dict as _Dict, List
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
@@ -62,7 +62,7 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFra
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: _Optional[DataFrame] = None, **kwargs: _Any) -> DataFrame:
+def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame | None = None, **kwargs: _Any) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -178,9 +178,9 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     return DataFrame(index=index, data=data)
 
 
-def _get_c_dataframes(dfs: List[_Optional[DataFrame]], metadata: List[List[_pp.SeriesMetadata]],
-                      **kwargs: _ArrayLike) -> List[_Optional[_pp.Dataframe]]:
-    c_dfs: List[_Optional[_pp.Dataframe]] = []
+def _get_c_dataframes(dfs: List[DataFrame | None], metadata: List[List[_pp.SeriesMetadata]],
+                      **kwargs: _ArrayLike) -> List[_pp.Dataframe | None]:
+    c_dfs: List[_pp.Dataframe | None] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     for i, df in enumerate(dfs):
         if df is None:

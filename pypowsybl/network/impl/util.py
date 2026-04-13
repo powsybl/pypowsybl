@@ -4,13 +4,13 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Optional, Dict
+from typing import List, Dict
 from pandas import DataFrame
 import pypowsybl._pypowsybl as _pp
 from pypowsybl.utils import create_data_frame_from_series_array
 
 # Type definition
-ParamsDict = Optional[Dict[str, str]]
+ParamsDict = Dict[str, str] | None
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:

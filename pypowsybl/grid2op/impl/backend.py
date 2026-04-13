@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-from typing import List, Optional, Type, Literal, Dict, Any
+from typing import List, Type, Literal, Dict, Any
 
 import numpy as np
 from pypowsybl._pypowsybl import Grid2opDoubleValueType
@@ -47,9 +47,9 @@ class Backend:
     def __enter__(self) -> Backend:
         return self
 
-    def __exit__(self, exc_type: Optional[Type[BaseException]],
-                       exc_value: Optional[BaseException],
-                       traceback: Optional[object]) -> Literal[False]:
+    def __exit__(self, exc_type: Type[BaseException] | None,
+                       exc_value: BaseException | None,
+                       traceback: object | None) -> Literal[False]:
         self.close()
         return False
 
@@ -90,7 +90,7 @@ class Backend:
     def check_isolated_and_disconnected_injections(self) -> bool:
         return _pypowsybl.check_grid2op_isolated_and_disconnected_injections(self._handle)
 
-    def run_pf(self, dc: bool = False, parameters: Optional[Parameters] = None, report_node: Optional[ReportNode] = None) -> List[ComponentResult]:
+    def run_pf(self, dc: bool = False, parameters: Parameters | None = None, report_node: ReportNode | None = None) -> List[ComponentResult]:
         p = parameters._to_c_parameters() if parameters is not None else _pypowsybl.LoadFlowParameters()  # pylint: disable=protected-access
         return [ComponentResult(res) for res in _pypowsybl.run_grid2op_loadflow(self._handle, dc, p,
                                                                                 report_node._report_node if report_node is not None else None)]

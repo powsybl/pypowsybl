@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import Dict, List, Optional
+from typing import Dict, List
 import pandas as pd
 from pypowsybl import _pypowsybl
 from .sensitivity_analysis_result import SensitivityAnalysisResult, DEFAULT_MATRIX_ID
@@ -25,8 +25,8 @@ class DcSensitivityAnalysisResult(SensitivityAnalysisResult):
                  function_data_frame_index: Dict[str, List[str]]):
         SensitivityAnalysisResult.__init__(self, result_context_ptr, functions_ids, function_data_frame_index)
 
-    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[
-        pd.DataFrame]:
+    def get_branch_flows_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  str | None = None) \
+            -> pd.DataFrame | None:
         """
         .. deprecated:: 1.1.0
           Use :meth:`get_sensitivity_matrix` instead.
@@ -45,7 +45,7 @@ class DcSensitivityAnalysisResult(SensitivityAnalysisResult):
                       DeprecationWarning)
         return self.get_sensitivity_matrix(matrix_id, contingency_id)
 
-    def get_reference_flows(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  Optional[str] = None) -> Optional[pd.DataFrame]:
+    def get_reference_flows(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  str | None = None) -> pd.DataFrame | None:
         """
         .. deprecated:: 1.1.0
           Use :meth:`get_reference_matrix` instead.

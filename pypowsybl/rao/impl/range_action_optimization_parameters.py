@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 from pypowsybl._pypowsybl import (
     RaoParameters,
     Solver,
@@ -14,19 +12,19 @@ from pypowsybl._pypowsybl import (
 )
 
 class RangeActionOptimizationParameters:
-    def __init__(self, max_mip_iterations: Optional[int] = None,
-                 pst_ra_min_impact_threshold: Optional[float] = None,
-                 hvdc_ra_min_impact_threshold: Optional[float] = None,
-                 injection_ra_min_impact_threshold: Optional[float] = None,
-                 pst_sensitivity_threshold: Optional[float] = None,
-                 hvdc_sensitivity_threshold: Optional[float] = None,
-                 injection_ra_sensitivity_threshold: Optional[float] = None,
-                 pst_model: Optional[PstModel] = None,
-                 ra_range_shrinking: Optional[RaRangeShrinking] = None,
-                 solver: Optional[Solver] = None,
-                 relative_mip_gap: Optional[float] = None,
-                 solver_specific_parameters:  Optional[str] = None,
-                 rao_parameters: Optional[RaoParameters] = None) -> None:
+    def __init__(self, max_mip_iterations: int | None = None,
+                 pst_ra_min_impact_threshold: float | None = None,
+                 hvdc_ra_min_impact_threshold: float | None = None,
+                 injection_ra_min_impact_threshold: float | None = None,
+                 pst_sensitivity_threshold: float | None = None,
+                 hvdc_sensitivity_threshold: float | None = None,
+                 injection_ra_sensitivity_threshold: float | None = None,
+                 pst_model: PstModel | None = None,
+                 ra_range_shrinking: RaRangeShrinking | None = None,
+                 solver: Solver | None = None,
+                 relative_mip_gap: float | None = None,
+                 solver_specific_parameters:  str | None = None,
+                 rao_parameters: RaoParameters | None = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:

@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import RescaleMode
 
@@ -40,12 +38,12 @@ class Parameters:  # pylint: disable=too-few-public-methods
     DISABLE_SENSITIVITY_EPSILON = -1
 
     def __init__(self,
-                 enable_losses_compensation: Optional[bool] = None,
-                 losses_compensation_epsilon: Optional[float] = None,
-                 sensitivity_epsilon: Optional[float] = None,
-                 rescale_mode: Optional[RescaleMode] = None,
-                 dc_fallback_enabled_after_ac_divergence: Optional[bool] = None,
-                 sensitivity_variable_batch_size: Optional[int] = None):
+                 enable_losses_compensation: bool | None = None,
+                 losses_compensation_epsilon: float | None = None,
+                 sensitivity_epsilon: float | None = None,
+                 rescale_mode: RescaleMode | None = None,
+                 dc_fallback_enabled_after_ac_divergence: bool | None = None,
+                 sensitivity_variable_batch_size: int | None = None):
 
         self._init_with_default_values()
         if enable_losses_compensation is not None:

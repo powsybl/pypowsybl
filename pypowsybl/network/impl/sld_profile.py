@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 from pandas import DataFrame
 
 import pypowsybl._pypowsybl as _pp
@@ -31,34 +29,34 @@ class SldProfile:
                   _pp.SeriesMetadata('width',0,False,False,False),
                   _pp.SeriesMetadata('dash',0,False,False,False)]
 
-    def __init__(self, labels: Optional[DataFrame] = None, feeders_info: Optional[DataFrame] = None, styles: Optional[DataFrame] = None):
+    def __init__(self, labels: DataFrame | None = None, feeders_info: DataFrame | None = None, styles: DataFrame | None = None):
         self._labels = labels
         self._feeders_info = feeders_info
         self._styles = styles
 
     @property
-    def labels(self) -> Optional[DataFrame]:
+    def labels(self) -> DataFrame | None:
         """labels"""
         return self._labels
 
     @property
-    def feeders_info(self) -> Optional[DataFrame]:
+    def feeders_info(self) -> DataFrame | None:
         """feeders_info"""
         return self._feeders_info
 
     @property
-    def styles(self) -> Optional[DataFrame]:
+    def styles(self) -> DataFrame | None:
         """styles"""
         return self._styles
 
-    def _create_sld_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_sld_labels_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._labels is None else _create_c_dataframe(self._labels.fillna(''),
                                                                            SldProfile._sld_labels_metadata)
 
-    def _create_sld_feeders_info_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_sld_feeders_info_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._feeders_info is None else _create_c_dataframe(self._feeders_info.fillna(''),
                                                                            SldProfile._sld_feeders_info_metadata)
 
-    def _create_sld_styles_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_sld_styles_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._styles is None else _create_c_dataframe(self._styles.fillna(''),
                                                                            SldProfile._sld_style_metadata)

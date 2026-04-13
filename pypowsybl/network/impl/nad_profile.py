@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 from pandas import DataFrame
 
 import pypowsybl._pypowsybl as _pp
@@ -74,10 +72,10 @@ class NadProfile:
                   _pp.SeriesMetadata('dash3',0,False,False,False)]
 
 
-    def __init__(self, branch_labels: Optional[DataFrame] = None, three_wt_labels: Optional[DataFrame] = None,
-                 injections_labels: Optional[DataFrame] = None, bus_descriptions: Optional[DataFrame] = None,
-                 vl_descriptions: Optional[DataFrame] = None, bus_node_styles: Optional[DataFrame] = None,
-                 edge_styles: Optional[DataFrame] = None, three_wt_styles: Optional[DataFrame] = None):
+    def __init__(self, branch_labels: DataFrame | None = None, three_wt_labels: DataFrame | None = None,
+                 injections_labels: DataFrame | None = None, bus_descriptions: DataFrame | None = None,
+                 vl_descriptions: DataFrame | None = None, bus_node_styles: DataFrame | None = None,
+                 edge_styles: DataFrame | None = None, three_wt_styles: DataFrame | None = None):
         self._branch_labels = branch_labels
         self._three_wt_labels = three_wt_labels
         self._injections_labels = injections_labels
@@ -88,72 +86,72 @@ class NadProfile:
         self._three_wt_styles = three_wt_styles
 
     @property
-    def branch_labels(self) -> Optional[DataFrame]:
+    def branch_labels(self) -> DataFrame | None:
         """branch_labels"""
         return self._branch_labels
 
     @property
-    def three_wt_labels(self) -> Optional[DataFrame]:
+    def three_wt_labels(self) -> DataFrame | None:
         """three_wt_labels"""
         return self._three_wt_labels
 
     @property
-    def injections_labels(self) -> Optional[DataFrame]:
+    def injections_labels(self) -> DataFrame | None:
         """injections_labels"""
         return self._injections_labels
 
     @property
-    def bus_descriptions(self) -> Optional[DataFrame]:
+    def bus_descriptions(self) -> DataFrame | None:
         """bus_description"""
         return self._bus_descriptions
 
     @property
-    def vl_descriptions(self) -> Optional[DataFrame]:
+    def vl_descriptions(self) -> DataFrame | None:
         """vl_descriptions"""
         return self._vl_descriptions
 
     @property
-    def bus_node_styles(self) -> Optional[DataFrame]:
+    def bus_node_styles(self) -> DataFrame | None:
         """bus_node_styles"""
         return self._bus_node_styles
 
     @property
-    def edge_styles(self) -> Optional[DataFrame]:
+    def edge_styles(self) -> DataFrame | None:
         """edge_styles"""
         return self._edge_styles
 
     @property
-    def three_wt_styles(self) -> Optional[DataFrame]:
+    def three_wt_styles(self) -> DataFrame | None:
         """three_wt_styles"""
         return self._three_wt_styles
 
-    def _create_nad_branch_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_branch_labels_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._branch_labels is None else _create_c_dataframe(self._branch_labels.fillna(''),
                                                                            NadProfile._nad_branch_labels_metadata)
 
-    def _create_nad_three_wt_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_three_wt_labels_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._three_wt_labels is None else _create_c_dataframe(self._three_wt_labels.fillna(''),
                                                                            NadProfile._nad_three_wt_metadata)
 
-    def _create_nad_injections_labels_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_injections_labels_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._injections_labels is None else _create_c_dataframe(self._injections_labels.fillna(''),
                                                                            NadProfile._nad_injections_metadata)
 
-    def _create_nad_bus_descriptions_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_bus_descriptions_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._bus_descriptions is None else _create_c_dataframe(self._bus_descriptions.fillna(''),
                                                                            NadProfile._nad_bus_descriptions_metadata)
 
-    def _create_nad_vl_descriptions_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_vl_descriptions_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._vl_descriptions is None else _create_c_dataframe(self._vl_descriptions.fillna(''),
                                                                            NadProfile._nad_descriptions_metadata)
 
-    def _create_nad_bus_node_styles_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_bus_node_styles_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._bus_node_styles is None else _create_c_dataframe(self._bus_node_styles.fillna(''),
                                                                            NadProfile._nad_bus_node_styles_metadata)
 
-    def _create_nad_edge_styles_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_edge_styles_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._edge_styles is None else _create_c_dataframe(self._edge_styles.fillna(''),
                                                                            NadProfile._nad_edge_styles_metadata)
-    def _create_nad_three_wt_styles_c_dataframe(self) -> Optional[_pp.Dataframe]:
+    def _create_nad_three_wt_styles_c_dataframe(self) -> _pp.Dataframe | None:
         return None if self._three_wt_styles is None else _create_c_dataframe(self._three_wt_styles.fillna(''),
                                                                            NadProfile._nad_three_wt_styles_metadata)

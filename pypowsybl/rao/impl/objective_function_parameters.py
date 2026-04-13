@@ -4,18 +4,16 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Optional
-
 from pypowsybl._pypowsybl import (
     RaoParameters,
     ObjectiveFunctionType
 )
 
 class ObjectiveFunctionParameters:
-    def __init__(self, objective_function_type: Optional[ObjectiveFunctionType] = None,
-                 curative_min_obj_improvement: Optional[float] = None,
-                 enforce_curative_security: Optional[bool] = None,
-                 rao_parameters: Optional[RaoParameters] = None) -> None:
+    def __init__(self, objective_function_type: ObjectiveFunctionType | None = None,
+                 curative_min_obj_improvement: float | None = None,
+                 enforce_curative_security: bool | None = None,
+                 rao_parameters: RaoParameters | None = None) -> None:
         if rao_parameters is not None:
             self._init_from_c(rao_parameters)
         else:
