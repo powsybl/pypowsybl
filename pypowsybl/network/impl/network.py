@@ -14,11 +14,10 @@ import datetime
 from datetime import timezone
 import warnings
 from os import PathLike
+from collections.abc import Sequence
 from typing import (
-    Sequence,
-    Set,
-    Union,
-    Any, Type, Literal
+    Any,
+    Literal
 )
 
 from numpy import inf
@@ -61,7 +60,7 @@ class WorkingVariantScope:
         self._network.set_working_variant(self._variant_id)
         return self
 
-    def __exit__(self, exc_type: Type[BaseException | None],
+    def __exit__(self, exc_type: type[BaseException | None],
                        exc_value: BaseException | None,
                        traceback: object | None) -> Literal[False]:
         self._network.set_working_variant(self._old_variant_id)
@@ -159,7 +158,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self._forecast_distance = datetime.timedelta(minutes=att.forecast_distance)
         self._case_date = datetime.datetime.fromtimestamp(att.case_date, timezone.utc)
 
-    def update_from_file(self, file: Union[str, PathLike], parameters: dict[str, str] | None = None, post_processors: list[str] | None = None,
+    def update_from_file(self, file: str | PathLike, parameters: dict[str, str] | None = None, post_processors: list[str] | None = None,
              report_node: ReportNode | None = None) -> None:
         """
         Updates a network by loading information from a file. File should be in a supported format.
@@ -533,7 +532,7 @@ class Network:  # pylint: disable=too-many-public-methods
                                                                                                            )
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
-    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: Union[str, list[str]] | None = None,
+    def write_network_area_diagram_svg(self, svg_file: PathOrStr, voltage_level_ids: str | list[str] | None = None,
                                        depth: int = 0, high_nominal_voltage_bound: float = -1,
                                        low_nominal_voltage_bound: float = -1,
                                        edge_name_displayed: bool = False) -> None:
@@ -558,7 +557,7 @@ class Network:  # pylint: disable=too-many-public-methods
         self.write_network_area_diagram(svg_file, voltage_level_ids, depth, high_nominal_voltage_bound,
                                         low_nominal_voltage_bound, nad_p)
 
-    def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: Union[str, list[str]] | None = None,
+    def write_network_area_diagram(self, svg_file: PathOrStr, voltage_level_ids: str | list[str] | None = None,
                                    depth: int = 0, high_nominal_voltage_bound: float = -1,
                                    low_nominal_voltage_bound: float = -1,
                                    nad_parameters: NadParameters | None = None,
@@ -607,7 +606,7 @@ class Network:  # pylint: disable=too-many-public-methods
                   _pp.SeriesMetadata('legend_connection_shift_y',1,False,False,False)]
         return _create_c_dataframe(df, nad_positions_metadata)
 
-    def get_network_area_diagram(self, voltage_level_ids: Union[str, list[str]] | None = None, depth: int = 0,
+    def get_network_area_diagram(self, voltage_level_ids: str | list[str] | None = None, depth: int = 0,
                                  high_nominal_voltage_bound: float = -1, low_nominal_voltage_bound: float = -1,
                                  nad_parameters: NadParameters | None = None, fixed_positions: DataFrame | None = None,
                                  nad_profile: NadProfile | None = None) -> Svg:
@@ -645,7 +644,7 @@ class Network:  # pylint: disable=too-many-public-methods
         return Svg(svg_and_metadata[0], svg_and_metadata[1])
 
 
-    def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: Union[str, list[str]],
+    def get_network_area_diagram_displayed_voltage_levels(self, voltage_level_ids: str | list[str],
                                                           depth: int = 0) -> list[str]:
         """
         Gathers the name of the displayed voltage levels of a network-area diagram in a list, according to
@@ -678,8 +677,8 @@ class Network:  # pylint: disable=too-many-public-methods
                           bus_descriptions=bus_descriptions_df, vl_descriptions=vl_infos_df)
 
 
-    def get_elements_ids(self, element_type: ElementType, nominal_voltages: Set[float] | None = None,
-                         countries: Set[str] | None = None,
+    def get_elements_ids(self, element_type: ElementType, nominal_voltages: set[float] | None = None,
+                         countries: set[str] | None = None,
                          main_connected_component: bool = True, main_synchronous_component: bool = True,
                          not_connected_to_same_bus_at_both_sides: bool = False) -> list[str]:
         return _pp.get_network_elements_ids(self._handle, element_type,
@@ -4424,7 +4423,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.DC_BUS, df, **kwargs)
 
-    def create_extensions(self, extension_name: str, df: Union[DataFrame, list[DataFrame | None]] | None = None,
+    def create_extensions(self, extension_name: str, df: DataFrame | list[DataFrame | None] | None = None,
                           **kwargs: ArrayLike) -> None:
         """
         create extensions of network elements with data provided as a :class:`~pandas.DataFrame`.
@@ -4586,7 +4585,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return BusBreakerTopology(self._handle, voltage_level_id)
 
-    def merge(self, networks: Union[Network, Sequence[Network]]) -> None:
+    def merge(self, networks: Network | Sequence[Network]) -> None:
         """
         Merges networks into this one.
 
@@ -6162,7 +6161,7 @@ class Network:  # pylint: disable=too-many-public-methods
         c_df = _create_c_dataframe(df, metadata)
         _pp.remove_aliases(self._handle, c_df)
 
-    def remove_elements(self, elements_ids: Union[str, list[str]]) -> None:
+    def remove_elements(self, elements_ids: str | list[str]) -> None:
         """
         Removes elements from the network.
 
@@ -6319,7 +6318,7 @@ class Network:  # pylint: disable=too-many-public-methods
         c_df = _create_properties_c_dataframe(df)
         _pp.add_network_element_properties(self._handle, c_df)
 
-    def remove_elements_properties(self, ids: Union[str, list[str]], properties: Union[str, list[str]]) -> None:
+    def remove_elements_properties(self, ids: str | list[str], properties: str | list[str]) -> None:
         """
         Remove properties from a list of network elements
 
@@ -6342,7 +6341,7 @@ class Network:  # pylint: disable=too-many-public-methods
             properties = [properties]
         _pp.remove_network_element_properties(self._handle, ids, properties)
 
-    def remove_extensions(self, extension_name: str, ids: Union[str, list[str]]) -> None:
+    def remove_extensions(self, extension_name: str, ids: str | list[str]) -> None:
         """
         Removes network elements extensions, given the extension's name.
 

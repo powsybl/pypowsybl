@@ -14,10 +14,7 @@ from pandas import DataFrame
 
 from os import PathLike
 
-from typing import (
-    Union,
-    Any
-)
+from typing import Any
 
 class Crac:
     """
@@ -28,7 +25,7 @@ class Crac:
         self._handle = handle
 
     @classmethod
-    def from_file_source(cls, network: Network, crac_file: Union[str, PathLike]) -> Any :
+    def from_file_source(cls, network: Network, crac_file: str | PathLike) -> Any :
         return Crac.from_buffer_source(network, io.BytesIO(open(path_to_str(crac_file), "rb").read()))
 
     @classmethod

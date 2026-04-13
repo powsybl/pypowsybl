@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from __future__ import annotations
-from typing import Union, Callable
+from collections.abc import Callable
 import pandas as pd
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
@@ -74,8 +74,8 @@ class FlowDecomposition:
                                                           elements_ids=elements_ids)
         return self
 
-    def add_monitored_elements(self, branch_ids: Union[list[str], str],
-                               contingency_ids: Union[list[str], str] | None = None,
+    def add_monitored_elements(self, branch_ids: list[str] | str,
+                               contingency_ids: list[str] | str | None = None,
                                contingency_context_type: ContingencyContextType = ContingencyContextType.ALL) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition.
@@ -95,7 +95,7 @@ class FlowDecomposition:
             self.add_precontingency_monitored_elements(branch_ids)
         return self
 
-    def add_precontingency_monitored_elements(self, branch_ids: Union[list[str], str]) -> FlowDecomposition:
+    def add_precontingency_monitored_elements(self, branch_ids: list[str] | str) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition on precontingency state (XNE(s)).
 
@@ -107,8 +107,8 @@ class FlowDecomposition:
         _pypowsybl.add_precontingency_monitored_elements_for_flow_decomposition(self._handle, branch_ids)
         return self
 
-    def add_postcontingency_monitored_elements(self, branch_ids: Union[list[str], str],
-                                               contingency_ids: Union[list[str], str]) -> FlowDecomposition:
+    def add_postcontingency_monitored_elements(self, branch_ids: list[str] | str,
+                                               contingency_ids: list[str] | str) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition on postcontingency state (XNEC(s)).
         This will create a XNEC for each valid pair of branch and contingency.

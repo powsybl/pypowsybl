@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Tuple
 from pypowsybl._pypowsybl import (
     create_voltage_initializer_params,
     voltage_initializer_add_variable_shunt_compensators,
@@ -76,7 +75,7 @@ class VoltageInitializerParameters:
         for transformer_id in transformer_id_list:
             voltage_initializer_add_variable_two_windings_transformers(self._handle, transformer_id)
 
-    def add_specific_low_voltage_limits(self, low_limits: list[Tuple[str, bool, float]]) -> None:
+    def add_specific_low_voltage_limits(self, low_limits: list[tuple[str, bool, float]]) -> None:
         """
         Indicate to voltage initializer to override the network low voltages limits,
         limit can be given relative to former limit or absolute.
@@ -92,7 +91,7 @@ class VoltageInitializerParameters:
         for voltage_level_id, is_relative, limit in low_limits:
             voltage_initializer_add_specific_low_voltage_limits(self._handle, voltage_level_id, is_relative, limit)
 
-    def add_specific_high_voltage_limits(self, high_limits: list[Tuple[str, bool, float]]) -> None:
+    def add_specific_high_voltage_limits(self, high_limits: list[tuple[str, bool, float]]) -> None:
         """
         Indicate to voltage initializer to override the network high voltages limits,
         limit can be given relative to previous limit or absolute.
@@ -108,7 +107,7 @@ class VoltageInitializerParameters:
         for voltage_level_id, is_relative, limit in high_limits:
             voltage_initializer_add_specific_high_voltage_limits(self._handle, voltage_level_id, is_relative, limit)
 
-    def add_specific_voltage_limits(self, limits: dict[str, Tuple[float, float]]) -> None:
+    def add_specific_voltage_limits(self, limits: dict[str, tuple[float, float]]) -> None:
         """
         Indicate to voltage initializer to override the network voltages limits.
         Limits are given relative to previous limits.

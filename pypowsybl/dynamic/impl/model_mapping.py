@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
@@ -977,7 +976,7 @@ class ModelMapping:
         dfs = [df, tfo_df, mp1_df, mp2_df, mp3_df, mp4_df, mp5_df]
         self._add_all_dynamic_mappings('TapChangerBlocking', [DataFrame() if df is None else df for df in dfs])
 
-    def add_dynamic_model(self, category_name: str, df: Union[DataFrame, list[DataFrame | None]] | None = None, **kwargs: ArrayLike) -> None:
+    def add_dynamic_model(self, category_name: str, df: DataFrame | list[DataFrame | None] | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic model from category_name
 

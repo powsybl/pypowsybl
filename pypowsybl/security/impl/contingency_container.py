@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Callable
+from collections.abc import Callable
 from pypowsybl import _pypowsybl
 
 class ContingencyContainer:

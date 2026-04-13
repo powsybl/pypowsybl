@@ -15,10 +15,7 @@ from pandas import DataFrame
 from pypowsybl.utils import path_to_str
 from os import PathLike
 
-from typing import (
-    Union,
-    Any
-)
+from typing import Any
 
 class RaoResult:
     """
@@ -31,7 +28,7 @@ class RaoResult:
         self._status = _pypowsybl.get_rao_result_status(self._handle_result)
 
     @classmethod
-    def from_file_source(cls, crac: Crac, result_file: Union[str, PathLike]) -> Any :
+    def from_file_source(cls, crac: Crac, result_file: str | PathLike) -> Any :
         return RaoResult.from_buffer_source(crac, io.BytesIO(open(path_to_str(result_file), "rb").read()))
 
     @classmethod

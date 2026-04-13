@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Union
-
 import warnings
 import pandas as pd
 from pandas import DataFrame
@@ -666,7 +664,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame | None = None,
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def transform_list_to_str(entry: Union[str, list[str]]) -> str:
+def transform_list_to_str(entry: str | list[str]) -> str:
     if isinstance(entry, list):
         return ','.join(str(e.replace(' ', '')) for e in entry)
     return entry.replace(' ', '')
@@ -767,7 +765,7 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, list[str]], raise_exception: bool = True,
+def remove_voltage_levels(network: Network, voltage_level_ids: str | list[str], raise_exception: bool = True,
                           reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> None:
     """
     Remove all voltage levels from a list and all their connectables.
@@ -793,8 +791,8 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, list[s
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, list[str]],
-                      shunt_compensator_ids: dict[str, Union[str, list[str]]] | None = None,
+def remove_hvdc_lines(network: Network, hvdc_line_ids: str | list[str],
+                      shunt_compensator_ids: dict[str, str | list[str]] | None = None,
                       raise_exception: bool = True, reporter: ReportNode | None = None,
                       report_node: ReportNode | None = None) -> None:
     """
@@ -999,7 +997,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame | None = 
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def remove_feeder_bays(network: Network, connectable_ids: Union[str, list[str]], raise_exception: bool = True,
+def remove_feeder_bays(network: Network, connectable_ids: str | list[str], raise_exception: bool = True,
                        reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> None:
     """
     Remove all feeders from a list as well as their bays: the connectables will be removed and all equipment connecting
@@ -1029,7 +1027,7 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, list[str]],
                                      raise_exception,
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, list[str]] | None = None,
+def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: str | list[str] | None = None,
                                                                    report_node: ReportNode | None = None) -> None:
     """
     Breaks the 3-windings transformers of a network into 3 2-windings transformers.
@@ -1048,7 +1046,7 @@ def replace_3_windings_transformers_with_3_2_windings_transformers(network: Netw
     _pp.split_or_merge_transformers(network._handle, transformer_ids, False,
                                     None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
-def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, list[str]] | None = None,
+def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: str | list[str] | None = None,
                                                                    report_node: ReportNode | None = None) -> None:
     """
     Creates 3 windings transformers on a network by merging 3 2-windings transformers that respect certain criteria.

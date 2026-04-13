@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 from __future__ import annotations
 
-from typing import Type, Literal, Any
+from typing import Literal, Any
 
 import numpy as np
 from pypowsybl._pypowsybl import Grid2opDoubleValueType
@@ -47,7 +47,7 @@ class Backend:
     def __enter__(self) -> Backend:
         return self
 
-    def __exit__(self, exc_type: Type[BaseException] | None,
+    def __exit__(self, exc_type: type[BaseException] | None,
                        exc_value: BaseException | None,
                        traceback: object | None) -> Literal[False]:
         self.close()

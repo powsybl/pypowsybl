@@ -6,12 +6,12 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from os import PathLike
-from typing import Union, Any
+from typing import Any
 import pandas as pd
 import numpy as np
 from pypowsybl import _pypowsybl
 
-PathOrStr = Union[str, PathLike]
+PathOrStr = str | PathLike
 
 
 def create_data_frame_from_series_array(series_array: _pypowsybl.SeriesArray) -> pd.DataFrame:

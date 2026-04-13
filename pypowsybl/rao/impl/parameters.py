@@ -6,7 +6,7 @@
 #
 import io
 import json
-from typing import Union, Any
+from typing import Any
 from os import PathLike
 
 from pypowsybl import _pypowsybl
@@ -107,7 +107,7 @@ class Parameters:
         self._init_from_c(RaoParameters())
 
     @classmethod
-    def from_file_source(cls, parameters_file: Union[str, PathLike]) -> Any :
+    def from_file_source(cls, parameters_file: str | PathLike) -> Any :
         parameters = io.BytesIO(open(path_to_str(parameters_file), "rb").read())
         return cls.from_buffer_source(parameters)
 

@@ -13,7 +13,8 @@ from pypowsybl._pypowsybl import (
     PyPowsyblError
 )
 import warnings
-from typing import Sequence, Any
+from collections.abc import Sequence
+from typing import Any
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
