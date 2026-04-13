@@ -11,6 +11,8 @@ Provides utility methods for dataframes handling:
  - creation of C API dataframes
  - ...
 """
+from __future__ import annotations
+
 from typing import Any as _Any
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
