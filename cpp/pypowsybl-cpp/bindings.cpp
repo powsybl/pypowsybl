@@ -35,7 +35,7 @@ pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& paramete
 py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
 
-void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId,
                             const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
                             pypowsybl::JavaHandle* reportNode, py::object resultsFuture);
 
@@ -588,6 +588,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("component_mode", &pypowsybl::LoadFlowParameters::component_mode)
             .def_readwrite("hvdc_ac_emulation", &pypowsybl::LoadFlowParameters::hvdc_ac_emulation)
             .def_readwrite("dc_power_factor", &pypowsybl::LoadFlowParameters::dc_power_factor)
+            .def_readwrite("dc", &pypowsybl::LoadFlowParameters::dc)
             .def_readwrite("provider_parameters_keys", &pypowsybl::LoadFlowParameters::provider_parameters_keys)
             .def_readwrite("provider_parameters_values", &pypowsybl::LoadFlowParameters::provider_parameters_values);
 
@@ -634,10 +635,10 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("provider_parameters_values", &pypowsybl::DynamicSimulationParameters::provider_parameters_values);
 
     m.def("run_loadflow", &pypowsybl::runLoadFlow, "Run a load flow", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
+          py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     m.def("run_loadflow_async", &runLoadFlowAsyncPython, "Run a load flow asynchronously", py::call_guard<py::gil_scoped_release>(),
-          py::arg("network"), py::arg("variant_id"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"),
+          py::arg("network"), py::arg("variant_id"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"),
           py::arg("results_future"));
 
     m.def("run_loadflow_validation", &pypowsybl::runLoadFlowValidation, "Run a load flow validation", py::arg("network"),
@@ -971,7 +972,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("run_security_analysis", &pypowsybl::runSecurityAnalysis, "Run a security analysis", py::call_guard<py::gil_scoped_release>(),
           py::arg("security_analysis_context"), py::arg("network"), py::arg("parameters"),
-          py::arg("provider"), py::arg("dc"), py::arg("report_node"));
+          py::arg("provider"), py::arg("report_node"));
 
     m.def("create_sensitivity_analysis", &pypowsybl::createSensitivityAnalysis, "Create run_sea sensitivity analysis");
 
@@ -989,7 +990,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("sensitivity_variable_type"));
 
     m.def("run_sensitivity_analysis", &pypowsybl::runSensitivityAnalysis, "Run a sensitivity analysis", py::call_guard<py::gil_scoped_release>(),
-          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("dc"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
+          py::arg("sensitivity_analysis_context"), py::arg("network"), py::arg("parameters"), py::arg("provider"), py::arg("report_node"));
 
     py::class_<matrix>(m, "Matrix", py::buffer_protocol())
             .def_buffer([](matrix& m) -> py::buffer_info {
@@ -1407,7 +1408,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("update_grid2op_double_value", &::pyUpdateGrid2opDoubleValue, "From a Grid2op backend update a double value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("update_grid2op_integer_value", &::pyUpdateGrid2opIntegerValue, "From a Grid2op backend update a integer value vector", py::arg("backend"), py::arg("value_type"), py::arg("value"), py::arg("changed"));
     m.def("check_grid2op_isolated_and_disconnected_injections", &pypowsybl::checkGrid2opIsolatedAndDisconnectedInjections, "From a Grid2op backend check if there is isolated or disconnected injections", py::arg("backend"));
-    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("dc"), py::arg("parameters"),
+    m.def("run_grid2op_loadflow", &pypowsybl::runGrid2opLoadFlow, "From a Grid2op backend, run a load flow", py::call_guard<py::gil_scoped_release>(), py::arg("backend"), py::arg("parameters"),
         py::arg("report_node"));
 }
 
@@ -1431,7 +1432,7 @@ void onLoadFlowException(const char* message, void* resultFuturePtr) {
     }
 }
 
-void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId, bool dc,
+void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::string& variantId,
                             const pypowsybl::LoadFlowParameters& parameters, const std::string& provider,
                             pypowsybl::JavaHandle* reportNode, py::object resultsFuture) {
     auto c_parameters = parameters.to_c_struct();
@@ -1442,7 +1443,6 @@ void runLoadFlowAsyncPython(const pypowsybl::JavaHandle& network, const std::str
     pypowsybl::PowsyblCaller::get()->callJava(::runLoadFlowAsync,
                                               network,
                                               (char*) variantId.data(),
-                                              dc,
                                               c_parameters.get(),
                                               (char*) provider.data(),
                                               (reportNode == nullptr) ? nullptr : *reportNode,
