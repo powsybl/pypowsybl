@@ -6,7 +6,7 @@
 #
 import io
 import json
-from typing import Union, Dict, Any
+from typing import Union, Any
 from os import PathLike
 
 from pypowsybl import _pypowsybl
@@ -30,7 +30,7 @@ class Parameters:
                  second_preventive_rao_parameters: SecondPreventiveRaoParameters | None = None,
                  not_optimized_cnecs_parameters: NotOptimizedCnecsParameters | None = None,
                  loadflow_and_sensitivity_parameters: LoadFlowAndSensitivityParameters | None = None,
-                 provider_parameters: Dict[str, str] | None = None) -> None:
+                 provider_parameters: dict[str, str] | None = None) -> None:
         self._init_with_default_values()
         if objective_function_parameters is not None:
             self.objective_function_parameters = objective_function_parameters
@@ -124,7 +124,7 @@ class Parameters:
     def serialize_to_binary_buffer(self) -> io.BytesIO:
         return io.BytesIO(_pypowsybl.serialize_rao_parameters(self._to_c_parameters()))
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return json.load(self.serialize_to_binary_buffer())
 
     def __repr__(self) -> str:

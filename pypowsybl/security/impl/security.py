@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import Union, List
+from typing import Union
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 
@@ -85,10 +85,10 @@ class SecurityAnalysis(ContingencyContainer):
                                              None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def add_monitored_elements(self, contingency_context_type: ContingencyContextType = ContingencyContextType.ALL,
-                               contingency_ids: Union[List[str], str] | None = None,
-                               branch_ids: List[str] | None = None,
-                               voltage_level_ids: List[str] | None = None,
-                               three_windings_transformer_ids: List[str] | None = None) -> None:
+                               contingency_ids: Union[list[str], str] | None = None,
+                               branch_ids: list[str] | None = None,
+                               voltage_level_ids: list[str] | None = None,
+                               three_windings_transformer_ids: list[str] | None = None) -> None:
         """ Add elements to be monitored by the security analysis. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -120,9 +120,9 @@ class SecurityAnalysis(ContingencyContainer):
                                           three_windings_transformer_ids, contingency_ids)
 
     def add_precontingency_monitored_elements(self,
-                                              branch_ids: List[str] | None = None,
-                                              voltage_level_ids: List[str] | None = None,
-                                              three_windings_transformer_ids: List[str] | None = None) -> None:
+                                              branch_ids: list[str] | None = None,
+                                              voltage_level_ids: list[str] | None = None,
+                                              three_windings_transformer_ids: list[str] | None = None) -> None:
         """ Add elements to be monitored by the security analysis on precontingency state. The security analysis result
         will provide additional information for those elements, like the power and current values.
 
@@ -136,10 +136,10 @@ class SecurityAnalysis(ContingencyContainer):
                                            voltage_level_ids=voltage_level_ids,
                                            three_windings_transformer_ids=three_windings_transformer_ids)
 
-    def add_postcontingency_monitored_elements(self, contingency_ids: Union[List[str], str],
-                                               branch_ids: List[str] | None = None,
-                                               voltage_level_ids: List[str] | None = None,
-                                               three_windings_transformer_ids: List[str] | None = None) -> None:
+    def add_postcontingency_monitored_elements(self, contingency_ids: Union[list[str], str],
+                                               branch_ids: list[str] | None = None,
+                                               voltage_level_ids: list[str] | None = None,
+                                               three_windings_transformer_ids: list[str] | None = None) -> None:
         """ Add elements to be monitored by the security analysis for specific contingencies.
         The security analysis result will provide additional information for those elements, like the power and current values.
 
@@ -245,9 +245,9 @@ class SecurityAnalysis(ContingencyContainer):
         _pypowsybl.add_terminals_connection_action(self._handle, action_id, element_id, side, opening)
 
 
-    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: List[str],
-                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: List[str] | None = None,
-                              violation_types: List[ViolationType] | None = None) -> None:
+    def add_operator_strategy(self, operator_strategy_id: str, contingency_id: str, action_ids: list[str],
+                              condition_type: ConditionType = ConditionType.TRUE_CONDITION, violation_subject_ids: list[str] | None = None,
+                              violation_types: list[ViolationType] | None = None) -> None:
         """ Add an operator strategy to the specified contingency
 
         Args:

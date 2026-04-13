@@ -11,7 +11,7 @@ Provides utility methods for dataframes handling:
  - creation of C API dataframes
  - ...
 """
-from typing import Any as _Any, Dict as _Dict, List
+from typing import Any as _Any
 from pandas import DataFrame, Index, MultiIndex
 import numpy as np
 from numpy.typing import ArrayLike as _ArrayLike
@@ -31,7 +31,7 @@ def _to_array(value: _Any) -> np.ndarray:
     return as_array
 
 
-def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFrame:
+def _adapt_kwargs(metadata: list[_pp.SeriesMetadata], **kwargs: _Any) -> DataFrame:
     """
     Converts named arguments to a dataframe.
     """
@@ -62,7 +62,7 @@ def _adapt_kwargs(metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> DataFra
     return DataFrame(index=index, data=data)
 
 
-def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame | None = None, **kwargs: _Any) -> DataFrame:
+def _adapt_df_or_kwargs(metadata: list[_pp.SeriesMetadata], df: DataFrame | None = None, **kwargs: _Any) -> DataFrame:
     """
     Ensures we get a dataframe, either from a ready to use dataframe, or from keyword arguments.
     """
@@ -73,7 +73,7 @@ def _adapt_df_or_kwargs(metadata: List[_pp.SeriesMetadata], df: DataFrame | None
     return df
 
 
-def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]) -> _pp.Dataframe:
+def _create_c_dataframe(df: DataFrame, series_metadata: list[_pp.SeriesMetadata]) -> _pp.Dataframe:
     """
     Creates the C representation of a dataframe.
     """
@@ -110,15 +110,15 @@ def _create_c_dataframe(df: DataFrame, series_metadata: List[_pp.SeriesMetadata]
     return _pp.create_dataframe(columns_values, columns_names, columns_types, is_index)
 
 
-def _find_index_in_metadata(series_metadata: List[_pp.SeriesMetadata]) -> _pp.SeriesMetadata:
+def _find_index_in_metadata(series_metadata: list[_pp.SeriesMetadata]) -> _pp.SeriesMetadata:
     return [s for s in series_metadata if s.is_index][0]
 
 
-def _add_index_to_kwargs(series_metadata: List[_pp.SeriesMetadata], **kwargs: _Any) -> _Dict:
+def _add_index_to_kwargs(series_metadata: list[_pp.SeriesMetadata], **kwargs: _Any) -> dict:
     """autofill kwargs with a default index (like pandas would do)
 
     Args:
-        series_metadata (List[_pp.SeriesMetadata]): metadata to make match the id column name
+        series_metadata (list[_pp.SeriesMetadata]): metadata to make match the id column name
 
     Returns:
         Dict: new kwargs with the index if it was not present
@@ -178,9 +178,9 @@ def _adapt_properties_kwargs(**kwargs: _ArrayLike) -> DataFrame:
     return DataFrame(index=index, data=data)
 
 
-def _get_c_dataframes(dfs: List[DataFrame | None], metadata: List[List[_pp.SeriesMetadata]],
-                      **kwargs: _ArrayLike) -> List[_pp.Dataframe | None]:
-    c_dfs: List[_pp.Dataframe | None] = []
+def _get_c_dataframes(dfs: list[DataFrame | None], metadata: list[list[_pp.SeriesMetadata]],
+                      **kwargs: _ArrayLike) -> list[_pp.Dataframe | None]:
+    c_dfs: list[_pp.Dataframe | None] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     for i, df in enumerate(dfs):
         if df is None:

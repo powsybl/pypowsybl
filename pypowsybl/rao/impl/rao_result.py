@@ -17,9 +17,7 @@ from os import PathLike
 
 from typing import (
     Union,
-    Dict,
-    Any,
-    List
+    Any
 )
 
 class RaoResult:
@@ -75,7 +73,7 @@ class RaoResult:
         serie_flow = _pypowsybl.get_cost_results(self._handle_crac, self._handle_result)
         return create_data_frame_from_series_array(serie_flow)
 
-    def get_virtual_cost_names(self) -> List[str]:
+    def get_virtual_cost_names(self) -> list[str]:
         return _pypowsybl.get_virtual_cost_names(self._handle_result)
 
     def get_virtual_cost_results(self, virtual_cost_name: str) -> DataFrame:
@@ -95,5 +93,5 @@ class RaoResult:
         """
         return io.BytesIO(_pypowsybl.serialize_rao_results_to_buffer(self._handle_result, self._handle_crac))
 
-    def to_json(self) -> Dict[str, Any]:
+    def to_json(self) -> dict[str, Any]:
         return json.load(self.serialize_to_binary_buffer())

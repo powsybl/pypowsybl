@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict
 from pypowsybl.loadflow.impl.util import parameters_from_c
 from pypowsybl import _pypowsybl
 from pypowsybl.loadflow import Parameters as LfParameters
@@ -35,7 +34,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
     def __init__(self,
                  load_flow_parameters: LfParameters | None = None,
                  increased_violations_parameters: IncreasedViolationsParameters | None = None,
-                 provider_parameters: Dict[str, str] | None = None):
+                 provider_parameters: dict[str, str] | None = None):
         self._init_with_default_values()
         if load_flow_parameters is not None:
             self.load_flow_parameters = load_flow_parameters

@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
 from pandas import DataFrame
 from pypowsybl.network import Network
 from pypowsybl import _pypowsybl as _pp
@@ -43,7 +42,7 @@ class Simulation:  # pylint: disable=too-few-public-methods
 
 
     @staticmethod
-    def get_provider_parameters_names() -> List[str]:
+    def get_provider_parameters_names() -> list[str]:
         """
         Get list of parameters for Dynawo provider.
 

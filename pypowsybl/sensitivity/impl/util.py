@@ -6,7 +6,6 @@
 #
 from datetime import datetime
 from enum import Enum
-from typing import List
 
 from pypowsybl._pypowsybl import PyPowsyblError
 
@@ -59,7 +58,7 @@ def create_country_zone(network: Network, country: str,
     return Zone(country, shift_keys_by_id)
 
 
-def create_zone_from_injections_and_shift_keys(id: str, injection_index: List[str], shift_keys: List[float]) -> Zone:
+def create_zone_from_injections_and_shift_keys(id: str, injection_index: list[str], shift_keys: list[float]) -> Zone:
     """ Create country zone with custom generator name and shift keys
         Args:
             country: Identifier of the zone
@@ -72,7 +71,7 @@ def create_zone_from_injections_and_shift_keys(id: str, injection_index: List[st
     return Zone(id, shift_keys_by_id)
 
 
-def create_zones_from_glsk_file(network: Network, glsk_file: str, instant: datetime) -> List[Zone]:
+def create_zones_from_glsk_file(network: Network, glsk_file: str, instant: datetime) -> list[Zone]:
     """ Create country zones from glsk file for a given datetime
         Args:
             glsk_file: UCTE glsk file
@@ -131,7 +130,7 @@ def get_default_provider() -> str:
     return _pypowsybl.get_default_sensitivity_analysis_provider()
 
 
-def get_provider_names() -> List[str]:
+def get_provider_names() -> list[str]:
     """
     Get list of supported provider names
 
@@ -141,7 +140,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_sensitivity_analysis_provider_names()
 
 
-def get_provider_parameters_names(provider: str = '') -> List[str]:
+def get_provider_parameters_names(provider: str = '') -> list[str]:
     """
     Get list of parameters for the specified sensitivity analysis provider.
 

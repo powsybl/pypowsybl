@@ -8,13 +8,11 @@ from pypowsybl._pypowsybl import (
     RaoParameters
 )
 
-from typing import List
-
 
 class TopoOptimizationParameters:
     def __init__(self, max_preventive_search_tree_depth: int | None = None,
                  max_curative_search_tree_depth: int | None = None,
-                 predefined_combinations: List[List[str]] | None = None,
+                 predefined_combinations: list[list[str]] | None = None,
                  relative_min_impact_threshold: float | None = None,
                  absolute_min_impact_threshold: float | None = None,
                  skip_actions_far_from_most_limiting_element: bool | None = None,

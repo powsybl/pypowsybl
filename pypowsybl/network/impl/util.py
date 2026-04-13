@@ -4,13 +4,12 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Dict
 from pandas import DataFrame
 import pypowsybl._pypowsybl as _pp
 from pypowsybl.utils import create_data_frame_from_series_array
 
 # Type definition
-ParamsDict = Dict[str, str] | None
+ParamsDict = dict[str, str] | None
 
 
 def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
@@ -21,7 +20,7 @@ def _series_metadata_repr(self: _pp.SeriesMetadata) -> str:
 _pp.SeriesMetadata.__repr__ = _series_metadata_repr  # type: ignore
 
 
-def get_import_formats() -> List[str]:
+def get_import_formats() -> list[str]:
     """
     Get list of supported import formats
 
@@ -31,7 +30,7 @@ def get_import_formats() -> List[str]:
     return _pp.get_network_import_formats()
 
 
-def get_import_supported_extensions() -> List[str]:
+def get_import_supported_extensions() -> list[str]:
     """
     Get list of supported import extensions
 
@@ -41,7 +40,7 @@ def get_import_supported_extensions() -> List[str]:
     return _pp.get_network_import_supported_extensions()
 
 
-def get_export_formats() -> List[str]:
+def get_export_formats() -> list[str]:
     """
     Get list of supported export formats
 
@@ -51,7 +50,7 @@ def get_export_formats() -> List[str]:
     return _pp.get_network_export_formats()
 
 
-def get_import_post_processors() -> List[str]:
+def get_import_post_processors() -> list[str]:
     """
     Get list of supported import post processors
 
@@ -102,7 +101,7 @@ def get_export_parameters(fmt: str) -> DataFrame:
     return create_data_frame_from_series_array(series_array)
 
 
-def get_extensions_names() -> List[str]:
+def get_extensions_names() -> list[str]:
     """
     Get the list of available extensions.
 
@@ -122,7 +121,7 @@ def get_extensions_information() -> DataFrame:
     return create_data_frame_from_series_array(_pp.get_extensions_information())
 
 
-def get_single_line_diagram_component_library_names() -> List[str]:
+def get_single_line_diagram_component_library_names() -> list[str]:
     """
 
     :return: the list of component library names that can be used with single line diagram

@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict, List
 import numpy as np
 import pandas as pd
 from pypowsybl import _pypowsybl
@@ -25,8 +24,8 @@ class SensitivityAnalysisResult:
 
     def __init__(self,
                  result_context_ptr: _pypowsybl.JavaHandle,
-                 functions_ids: Dict[str, List[str]],
-                 function_data_frame_index: Dict[str, List[str]]):
+                 functions_ids: dict[str, list[str]],
+                 function_data_frame_index: dict[str, list[str]]):
         self._handle = result_context_ptr
         self.result_context_ptr = result_context_ptr
         self.functions_ids = functions_ids

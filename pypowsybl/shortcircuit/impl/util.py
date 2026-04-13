@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
 from pypowsybl import _pypowsybl
 from .short_circuit_analysis import ShortCircuitAnalysis
 
@@ -45,7 +44,7 @@ def get_default_provider() -> str:
     return _pypowsybl.get_default_shortcircuit_analysis_provider()
 
 
-def get_provider_names() -> List[str]:
+def get_provider_names() -> list[str]:
     """
     Get list of supported provider names
 
@@ -55,7 +54,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_shortcircuit_provider_names()
 
 
-def get_provider_parameters_names(provider: str = '') -> List[str]:
+def get_provider_parameters_names(provider: str = '') -> list[str]:
     """
     Get list of parameters for the specified short-circuit analysis provider.
 

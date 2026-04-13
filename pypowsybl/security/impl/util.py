@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
-
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import LimitViolation, PreContingencyResult, PostContingencyResult, OperatorStrategyResult
 from .security import SecurityAnalysis
@@ -47,7 +45,7 @@ def get_default_provider() -> str:
     return _pypowsybl.get_default_security_analysis_provider()
 
 
-def get_provider_names() -> List[str]:
+def get_provider_names() -> list[str]:
     """
     Get list of supported provider names
 
@@ -57,7 +55,7 @@ def get_provider_names() -> List[str]:
     return _pypowsybl.get_security_analysis_provider_names()
 
 
-def get_provider_parameters_names(provider: str = '') -> List[str]:
+def get_provider_parameters_names(provider: str = '') -> list[str]:
     """
     Get list of parameters for the specified security analysis provider.
 

@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import List
 
 from numpy.typing import ArrayLike
 from pandas import DataFrame
@@ -36,7 +35,7 @@ class ShortCircuitAnalysis:
     def set_bus_fault(self, bus_id: str, element_id: str, r: ArrayLike, x: ArrayLike) -> None:
         self.set_faults(id=bus_id, element_id=element_id, r=r, x=x, fault_type='BUS_FAULT')
 
-    def _set_faults(self, dfs: List[DataFrame | None], **kwargs: ArrayLike) -> None:
+    def _set_faults(self, dfs: list[DataFrame | None], **kwargs: ArrayLike) -> None:
         metadata = _pypowsybl.get_faults_dataframes_metadata()
         c_dfs = _get_c_dataframes(dfs, [metadata], **kwargs)
         _pypowsybl.set_faults(self._handle, c_dfs[0])

@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Union
+from typing import Union
 from numpy.typing import ArrayLike
 from pandas import DataFrame
 from pypowsybl import _pypowsybl as _pp
@@ -19,7 +19,7 @@ class ModelMapping:
     def __init__(self) -> None:
         self._handle = _pp.create_dynamic_model_mapping()
 
-    def get_categories_names(self) -> List[str]:
+    def get_categories_names(self) -> list[str]:
         """
         Get the dynamic model categories
 
@@ -37,7 +37,7 @@ class ModelMapping:
         """
         return create_data_frame_from_series_array(_pp.get_categories_information())
 
-    def get_supported_models(self, category_name: str = '') -> List[str]:
+    def get_supported_models(self, category_name: str = '') -> list[str]:
         """
         Get the supported dynamic models for a given category or for all categories if no category_name is given
 
@@ -977,7 +977,7 @@ class ModelMapping:
         dfs = [df, tfo_df, mp1_df, mp2_df, mp3_df, mp4_df, mp5_df]
         self._add_all_dynamic_mappings('TapChangerBlocking', [DataFrame() if df is None else df for df in dfs])
 
-    def add_dynamic_model(self, category_name: str, df: Union[DataFrame, List[DataFrame | None]] | None = None, **kwargs: ArrayLike) -> None:
+    def add_dynamic_model(self, category_name: str, df: Union[DataFrame, list[DataFrame | None]] | None = None, **kwargs: ArrayLike) -> None:
         """
         Add a dynamic model from category_name
 
@@ -1006,11 +1006,11 @@ class ModelMapping:
                                         data=[('LOAD', 'lab', 'BUS', 'LoadPQ')])
                     model_mapping.add_dynamic_model(category_name='Load', df)
         """
-        if not isinstance(df, List):
+        if not isinstance(df, list):
             df = [df]
         self._add_all_dynamic_mappings(category_name, df, **kwargs)
 
-    def _add_all_dynamic_mappings(self, category_name: str, mapping_dfs: List[DataFrame | None], **kwargs: ArrayLike) -> None:
+    def _add_all_dynamic_mappings(self, category_name: str, mapping_dfs: list[DataFrame | None], **kwargs: ArrayLike) -> None:
         metadata = _pp.get_dynamic_mappings_meta_data(category_name)
         c_dfs = _get_c_dataframes(mapping_dfs, metadata, **kwargs)
         _pp.add_all_dynamic_mappings(self._handle, category_name, c_dfs)

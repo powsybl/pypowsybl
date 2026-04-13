@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 
-from typing import Dict
 from pypowsybl._pypowsybl import (
     VoltageInitializerStatus,
     voltage_initializer_get_status,
@@ -23,7 +22,7 @@ class VoltageInitializerResults:
     def __init__(self, result_handle: JavaHandle) -> None:
         self._handle = result_handle
         self._status: VoltageInitializerStatus = voltage_initializer_get_status(self._handle)
-        self._indicators: Dict[str, str] = voltage_initializer_get_indicators(self._handle)
+        self._indicators: dict[str, str] = voltage_initializer_get_indicators(self._handle)
 
     def apply_all_modifications(self, network: Network) -> None:
         """
@@ -44,7 +43,7 @@ class VoltageInitializerResults:
         return self._status
 
     @property
-    def indicators(self) -> Dict[str, str]:
+    def indicators(self) -> dict[str, str]:
         """
         Returns:
             The indicators as a dict of the optimisation

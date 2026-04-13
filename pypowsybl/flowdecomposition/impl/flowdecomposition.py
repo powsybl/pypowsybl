@@ -6,7 +6,7 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from __future__ import annotations
-from typing import Union, List, Callable
+from typing import Union, Callable
 import pandas as pd
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ContingencyContextType, DefaultXnecProvider
@@ -44,7 +44,7 @@ class FlowDecomposition:
             contingency_id = element_id
         return self.add_multiple_elements_contingency(elements_ids=[element_id], contingency_id=contingency_id)
 
-    def add_single_element_contingencies(self, element_ids: List[str],
+    def add_single_element_contingencies(self, element_ids: list[str],
                                          contingency_id_provider: Callable[[str], str] | None = None) -> FlowDecomposition:
         """
         Add a contingency for each element (n N-1 states).
@@ -59,7 +59,7 @@ class FlowDecomposition:
                                                                                             element_id))
         return self
 
-    def add_multiple_elements_contingency(self, elements_ids: List[str],
+    def add_multiple_elements_contingency(self, elements_ids: list[str],
                                           contingency_id:  str | None = None) -> FlowDecomposition:
         """
         Add a contingency with multiple elements (1 N-k state).
@@ -74,8 +74,8 @@ class FlowDecomposition:
                                                           elements_ids=elements_ids)
         return self
 
-    def add_monitored_elements(self, branch_ids: Union[List[str], str],
-                               contingency_ids: Union[List[str], str] | None = None,
+    def add_monitored_elements(self, branch_ids: Union[list[str], str],
+                               contingency_ids: Union[list[str], str] | None = None,
                                contingency_context_type: ContingencyContextType = ContingencyContextType.ALL) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition.
@@ -95,7 +95,7 @@ class FlowDecomposition:
             self.add_precontingency_monitored_elements(branch_ids)
         return self
 
-    def add_precontingency_monitored_elements(self, branch_ids: Union[List[str], str]) -> FlowDecomposition:
+    def add_precontingency_monitored_elements(self, branch_ids: Union[list[str], str]) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition on precontingency state (XNE(s)).
 
@@ -107,8 +107,8 @@ class FlowDecomposition:
         _pypowsybl.add_precontingency_monitored_elements_for_flow_decomposition(self._handle, branch_ids)
         return self
 
-    def add_postcontingency_monitored_elements(self, branch_ids: Union[List[str], str],
-                                               contingency_ids: Union[List[str], str]) -> FlowDecomposition:
+    def add_postcontingency_monitored_elements(self, branch_ids: Union[list[str], str],
+                                               contingency_ids: Union[list[str], str]) -> FlowDecomposition:
         """
         Add branches to be monitored by the flow decomposition on postcontingency state (XNEC(s)).
         This will create a XNEC for each valid pair of branch and contingency.

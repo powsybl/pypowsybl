@@ -13,7 +13,7 @@ from pypowsybl._pypowsybl import (
     PyPowsyblError
 )
 import warnings
-from typing import Sequence, Dict, Any
+from typing import Sequence, Any
 
 # enforcing some class metadata on classes imported from C extension,
 # in particular for sphinx documentation to work correctly,
@@ -94,7 +94,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  connected_component_mode: ConnectedComponentMode | None = None,
                  dc_power_factor: float | None = None,
                  hvdc_ac_emulation: bool | None = None,
-                 provider_parameters: Dict[str, str] | None = None):
+                 provider_parameters: dict[str, str] | None = None):
         self._init_with_default_values()
         if voltage_init_mode is not None:
             self.voltage_init_mode = voltage_init_mode
@@ -222,10 +222,10 @@ class Parameters:  # pylint: disable=too-few-public-methods
         """
         return pypowsybl._pypowsybl.write_loadflow_parameters_to_json(self._to_c_parameters())
 
-    def __getstate__(self) -> Dict[str, Any]:
+    def __getstate__(self) -> dict[str, Any]:
         return {'json': self.to_json()}
 
-    def __setstate__(self, state: Dict[str, Any]) -> None:
+    def __setstate__(self, state: dict[str, Any]) -> None:
         self._init_from_c(pypowsybl._pypowsybl.create_loadflow_parameters_from_json(state['json']))
 
     def __repr__(self) -> str:

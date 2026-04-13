@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List
-
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import LoadFlowComponentStatus as ComponentStatus
 from .slack_bus_result import SlackBusResult
@@ -55,7 +53,7 @@ class ComponentResult:
         return self._res.reference_bus_id
 
     @property
-    def slack_bus_results(self) -> List[SlackBusResult]:
+    def slack_bus_results(self) -> list[SlackBusResult]:
         """Slack bus results for this component."""
         return [SlackBusResult(sbr) for sbr in self._res.slack_bus_results]
 

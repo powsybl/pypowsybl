@@ -4,8 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import Dict
-
 from pypowsybl import _pypowsybl
 from pypowsybl._pypowsybl import ShortCircuitStudyType, InitialVoltageProfileMode
 
@@ -46,7 +44,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
                  with_voltage_result: bool | None = None,
                  min_voltage_drop_proportional_threshold: float | None = None,
                  study_type: ShortCircuitStudyType | None = None,
-                 provider_parameters: Dict[str, str] | None = None,
+                 provider_parameters: dict[str, str] | None = None,
                  with_fortescue_result: bool | None = None,
                  initial_voltage_profile_mode: InitialVoltageProfileMode | None = None):
         self._init_with_default_values()

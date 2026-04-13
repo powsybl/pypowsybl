@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Union, Dict
+from typing import Union
 
 import warnings
 import pandas as pd
@@ -416,7 +416,7 @@ def create_shunt_compensator_bay(network: Network, shunt_df: DataFrame,
         linear_model_df = pd.DataFrame()
     if non_linear_model_df is None:
         non_linear_model_df = pd.DataFrame()
-    dfs: List[DataFrame | None] = [shunt_df, linear_model_df, non_linear_model_df]
+    dfs: list[DataFrame | None] = [shunt_df, linear_model_df, non_linear_model_df]
     return _create_feeder_bay(network, dfs, ElementType.SHUNT_COMPENSATOR, raise_exception, reporter, report_node)
 
 
@@ -536,7 +536,7 @@ def create_vsc_converter_station_bay(network: Network, df: DataFrame | None = No
                               **kwargs)
 
 
-def _create_feeder_bay(network: Network, dfs: List[DataFrame | None], element_type: _pp.ElementType,
+def _create_feeder_bay(network: Network, dfs: list[DataFrame | None], element_type: _pp.ElementType,
                        raise_exception: bool, reporter: ReportNode | None, report_node: ReportNode | None,
                        **kwargs: ArrayLike) -> None:
     """
@@ -666,7 +666,7 @@ def create_voltage_level_topology(network: Network, df: DataFrame | None = None,
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def transform_list_to_str(entry: Union[str, List[str]]) -> str:
+def transform_list_to_str(entry: Union[str, list[str]]) -> str:
     if isinstance(entry, list):
         return ','.join(str(e.replace(' ', '')) for e in entry)
     return entry.replace(' ', '')
@@ -722,11 +722,11 @@ def create_coupling_device(network: Network, df: DataFrame | None = None, raise_
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def _get_c_dataframes_and_add_element_type(dfs: List[DataFrame | None],
-                                           metadata: List[List[_pp.SeriesMetadata]],
-                                           element_type: _pp.ElementType, **kwargs: ArrayLike) -> List[
+def _get_c_dataframes_and_add_element_type(dfs: list[DataFrame | None],
+                                           metadata: list[list[_pp.SeriesMetadata]],
+                                           element_type: _pp.ElementType, **kwargs: ArrayLike) -> list[
     _pp.Dataframe | None]:
-    c_dfs: List[_pp.Dataframe | None] = []
+    c_dfs: list[_pp.Dataframe | None] = []
     dfs[0] = _adapt_df_or_kwargs(metadata[0], dfs[0], **kwargs)
     if dfs[0] is not None:
         dfs[0]['feeder_type'] = element_type.name
@@ -767,7 +767,7 @@ def get_unused_order_positions_after(network: Network, busbar_section_id: str) -
     return pd.Interval(left=positions[0], right=positions[1], closed='both')
 
 
-def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[str]], raise_exception: bool = True,
+def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, list[str]], raise_exception: bool = True,
                           reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> None:
     """
     Remove all voltage levels from a list and all their connectables.
@@ -793,8 +793,8 @@ def remove_voltage_levels(network: Network, voltage_level_ids: Union[str, List[s
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, List[str]],
-                      shunt_compensator_ids: Dict[str, Union[str, List[str]]] | None = None,
+def remove_hvdc_lines(network: Network, hvdc_line_ids: Union[str, list[str]],
+                      shunt_compensator_ids: dict[str, Union[str, list[str]]] | None = None,
                       raise_exception: bool = True, reporter: ReportNode | None = None,
                       report_node: ReportNode | None = None) -> None:
     """
@@ -999,7 +999,7 @@ def create_2_windings_transformer_bays(network: Network, df: DataFrame | None = 
                                     None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
 
-def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]], raise_exception: bool = True,
+def remove_feeder_bays(network: Network, connectable_ids: Union[str, list[str]], raise_exception: bool = True,
                        reporter: ReportNode | None = None, report_node: ReportNode | None = None) -> None:
     """
     Remove all feeders from a list as well as their bays: the connectables will be removed and all equipment connecting
@@ -1029,7 +1029,7 @@ def remove_feeder_bays(network: Network, connectable_ids: Union[str, List[str]],
                                      raise_exception,
                                      None if report_node is None else report_node._report_node)  # pylint: disable=protected-access
 
-def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] | None = None,
+def replace_3_windings_transformers_with_3_2_windings_transformers(network: Network, transformer_ids: Union[str, list[str]] | None = None,
                                                                    report_node: ReportNode | None = None) -> None:
     """
     Breaks the 3-windings transformers of a network into 3 2-windings transformers.
@@ -1048,7 +1048,7 @@ def replace_3_windings_transformers_with_3_2_windings_transformers(network: Netw
     _pp.split_or_merge_transformers(network._handle, transformer_ids, False,
                                     None if report_node is None else report_node._report_node) # pylint: disable=protected-access
 
-def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, List[str]] | None = None,
+def replace_3_2_windings_transformers_with_3_windings_transformers(network: Network, transformer_ids: Union[str, list[str]] | None = None,
                                                                    report_node: ReportNode | None = None) -> None:
     """
     Creates 3 windings transformers on a network by merging 3 2-windings transformers that respect certain criteria.

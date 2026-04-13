@@ -4,7 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
-from typing import List, Callable
+from typing import Callable
 from pypowsybl import _pypowsybl
 
 class ContingencyContainer:
@@ -22,7 +22,7 @@ class ContingencyContainer:
         """
         _pypowsybl.add_contingency(self._handle, contingency_id if contingency_id else element_id, [element_id])
 
-    def add_multiple_elements_contingency(self, elements_ids: List[str], contingency_id: str) -> None:
+    def add_multiple_elements_contingency(self, elements_ids: list[str], contingency_id: str) -> None:
         """
         Add one N-K contingency.
 
@@ -32,7 +32,7 @@ class ContingencyContainer:
         """
         _pypowsybl.add_contingency(self._handle, contingency_id, elements_ids)
 
-    def add_single_element_contingencies(self, elements_ids: List[str],
+    def add_single_element_contingencies(self, elements_ids: list[str],
                                          contingency_id_provider: Callable[[str], str] | None = None) -> None:
         """
         Add multiple N-1 contingencies.

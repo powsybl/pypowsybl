@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import warnings
-from typing import Dict, List
 import pandas as pd
 from pypowsybl import _pypowsybl
 from .dc_sensitivity_analysis_result import DcSensitivityAnalysisResult
@@ -22,8 +21,8 @@ class AcSensitivityAnalysisResult(DcSensitivityAnalysisResult):
 
     def __init__(self,
                  result_context_ptr: _pypowsybl.JavaHandle,
-                 functions_ids: Dict[str, List[str]],
-                 function_data_frame_index: Dict[str, List[str]]):
+                 functions_ids: dict[str, list[str]],
+                 function_data_frame_index: dict[str, list[str]]):
         DcSensitivityAnalysisResult.__init__(self, result_context_ptr, functions_ids, function_data_frame_index)
 
     def get_bus_voltages_sensitivity_matrix(self, matrix_id: str = DEFAULT_MATRIX_ID, contingency_id:  str | None = None) -> \
