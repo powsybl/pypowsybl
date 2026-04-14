@@ -385,16 +385,16 @@ These network modifications can be created to apply active power change across o
    :nosignatures:
 
    Scalable.scale
-   ElementScalable
+   InjectionScalable
    StackScalable
-   StackScalable.from_ids
+   StackScalable.from_injections
    StackScalable.from_scalables
    ProportionalScalable
-   ProportionalScalable.from_ids_and_percentages
+   ProportionalScalable.from_injections_and_percentages
    ProportionalScalable.from_scalables_and_percentages
-   ProportionalScalable.from_ids_and_distribution_mode
+   ProportionalScalable.from_injections_and_distribution_mode
    UpDownScalable
-   UpDownScalable.from_ids
+   UpDownScalable.from_injections
    UpDownScalable.from_scalables
 
 The ``scale`` method is parametrized by a ScalingParameters object :
