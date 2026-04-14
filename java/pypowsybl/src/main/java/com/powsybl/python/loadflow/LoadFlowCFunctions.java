@@ -302,6 +302,7 @@ public final class LoadFlowCFunctions {
         cParameters.setReadSlackBus(parameters.isReadSlackBus());
         cParameters.setBalanceType(parameters.getBalanceType().ordinal());
         cParameters.setDcUseTransformerRatio(parameters.isDcUseTransformerRatio());
+        cParameters.setDc(parameters.isDc());
         CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getCountriesToBalance().size() * SizeOf.get(CCharPointerPointer.class));
         ArrayList<Country> countries = new ArrayList<>(parameters.getCountriesToBalance());
         for (int i = 0; i < parameters.getCountriesToBalance().size(); i++) {
