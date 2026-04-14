@@ -126,7 +126,7 @@ public final class LoadFlowCFunctions {
     }
 
     @CEntryPoint(name = "runLoadFlow")
-    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle, boolean dc,
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle networkHandle,
                                                                            LoadFlowParametersPointer loadFlowParametersPtr,
                                                                            CCharPointer provider, ObjectHandle reportNodeHandle,
                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -138,7 +138,7 @@ public final class LoadFlowCFunctions {
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 logger().info("loadflow provider used is : {}", loadFlowProvider.getName());
 
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 LoadFlowResult result = runner.run(network, network.getVariantManager().getWorkingVariantId(),
@@ -162,7 +162,6 @@ public final class LoadFlowCFunctions {
     public static void runLoadFlowAsync(IsolateThread thread,
                                         ObjectHandle networkHandle,
                                         CCharPointer variantId,
-                                        boolean dc,
                                         LoadFlowParametersPointer loadFlowParametersPtr,
                                         CCharPointer provider, ObjectHandle reportNodeHandle,
                                         LoadFlowResultCallback loadFlowResultCallback,
@@ -178,7 +177,7 @@ public final class LoadFlowCFunctions {
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 logger().debug("loadflow provider used is : {}", loadFlowProvider.getName());
 
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 LoadFlow.Runner runner = new LoadFlow.Runner(loadFlowProvider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 runner.runAsync(network, variantIdStr,
@@ -230,7 +229,7 @@ public final class LoadFlowCFunctions {
             @Override
             public CCharPointer get() {
                 String providerName = PyPowsyblConfiguration.getDefaultLoadFlowProvider();
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(false, loadFlowParametersPtr, providerName);
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, providerName);
                 try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
                     JsonLoadFlowParameters.write(parameters, os);
                     os.flush();
