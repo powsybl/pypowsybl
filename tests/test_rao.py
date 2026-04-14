@@ -512,7 +512,7 @@ def test_redispatch_ra_setpoints():
     validate_redispatch_ra_setpoint("rao/crac-simple-rd-ampere.json","rao/rao-parameters-costly-shifted-20-ampere.json", 333.0)
 
 def validate_redispatch_ra_setpoint(crac_file: str, parameters_file: str, set_point: float):
-    network =  pp.network.load(DATA_DIR.joinpath("rao/2Nodes.uct"))
+    network =  pp.network.load(DATA_DIR.joinpath("rao/2nodes.uct"))
     crac = Crac.from_file_source(network, DATA_DIR.joinpath(crac_file))
     parameters = RaoParameters.from_file_source(DATA_DIR.joinpath(parameters_file))
     rao_runner = pp.rao.create_rao()
