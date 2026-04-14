@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: powsybl/powsybl-core
-          ref: powerfactory_elmLodmv_elmXnet_plus_fix
+          ref: pf_integration_gj
           path: powsybl-core
 
       - name: Build and install core
