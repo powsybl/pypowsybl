@@ -219,7 +219,7 @@ public final class RaoCFunctions {
                 raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String providerStr = CTypeUtil.toString(provider);
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-                LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters lfParameters = createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 return ObjectHandles.getGlobal().create(raoContext.runVoltageMonitoring(network, result, providerStr, lfParameters));
 
             }
@@ -239,7 +239,7 @@ public final class RaoCFunctions {
                 raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String providerStr = CTypeUtil.toString(provider);
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-                LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters lfParameters = createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 return ObjectHandles.getGlobal().create(raoContext.runAngleMonitoring(network, result, providerStr, lfParameters));
             }
         });
@@ -504,7 +504,7 @@ public final class RaoCFunctions {
         searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()));
         searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityFailureOvercost(paramPointer.getSensitivityFailureOvercost());
         searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityWithLoadFlowParameters(createSensitivityAnalysisParameters(
-            false, paramPointer.getSensitivityParameters(),
+            paramPointer.getSensitivityParameters(),
             getProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()))));
 
         Map<String, String> extensionData = getExtensionData(paramPointer);

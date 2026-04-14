@@ -149,7 +149,7 @@ public final class SensitivityAnalysisCFunctions {
 
     @CEntryPoint(name = "runSensitivityAnalysis")
     public static ObjectHandle runSensitivityAnalysis(IsolateThread thread, ObjectHandle sensitivityAnalysisContextHandle,
-                                                      ObjectHandle networkHandle, boolean dc, SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPtr,
+                                                      ObjectHandle networkHandle, SensitivityAnalysisParametersPointer sensitivityAnalysisParametersPtr,
                                                       CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
@@ -159,7 +159,7 @@ public final class SensitivityAnalysisCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 SensitivityAnalysisProvider provider = SensitivityAnalysisCUtils.getSensitivityAnalysisProvider(CTypeUtil.toString(providerName));
                 logger().info("Sensitivity analysis provider used for sensitivity analysis is : {}", provider.getName());
-                SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(dc, sensitivityAnalysisParametersPtr, provider);
+                SensitivityAnalysisParameters sensitivityAnalysisParameters = SensitivityAnalysisCUtils.createSensitivityAnalysisParameters(sensitivityAnalysisParametersPtr, provider);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
                 SensitivityAnalysisResultContext resultContext = analysisContext.run(network, sensitivityAnalysisParameters, provider.getName(), reportNode);
                 return ObjectHandles.getGlobal().create(resultContext);

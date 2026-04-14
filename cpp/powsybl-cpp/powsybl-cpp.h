@@ -326,6 +326,7 @@ public:
     ComponentMode component_mode;
     bool hvdc_ac_emulation;
     double dc_power_factor;
+    bool dc;
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
 };
@@ -466,6 +467,10 @@ public:
     EdgeInfoType info_middle_side1;
     EdgeInfoType info_middle_side2;
     EdgeInfoType info_side_internal;
+    double scale_factor;
+    double timeout_seconds;
+    bool edge_info_included;
+    bool voltage_level_legends_included;
 };
 
 //=======short-circuit analysis==========
@@ -706,7 +711,7 @@ std::string saveNetworkToString(const JavaHandle& network, const std::string& fo
 
 void reduceNetwork(const JavaHandle& network, const double v_min, const double v_max, const std::vector<std::string>& ids, const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines);
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& validationParameters);
 
@@ -750,7 +755,7 @@ void addContingencyFromJsonFile(const JavaHandle& analysisContext, const std::st
 
 void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& jsonFilePath);
 
-JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, bool dc, JavaHandle* reportNode);
+JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 JavaHandle createSensitivityAnalysis();
 
@@ -788,7 +793,7 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
                      const std::vector<std::string>& variablesIds, const std::vector<std::string>& contingenciesIds, contingency_context_type ContingencyContextType,
                      sensitivity_function_type sensitivityFunctionType, sensitivity_variable_type sensitivityVariableType);
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode);
 
 matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string &contingencyId);
 
@@ -1086,7 +1091,7 @@ array* getGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opDoubleValue
 void updateGrid2opDoubleValue(const JavaHandle& backendHandle, Grid2opUpdateDoubleValueType valueType, double* valuePtr, int* changedPtr);
 void updateGrid2opIntegerValue(const JavaHandle& backendHandle, Grid2opUpdateIntegerValueType valueType, int* valuePtr, int* changedPtr);
 bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHandle);
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters, JavaHandle* reportNode);
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, JavaHandle* reportNode);
 
 }
 #endif //PYPOWSYBL_H

@@ -236,7 +236,7 @@ public final class Grid2opCFunctions {
     }
 
     @CEntryPoint(name = "runGrid2opLoadFlow")
-    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle backendHandle, boolean dc,
+    public static ArrayPointer<LoadFlowComponentResultPointer> runLoadFlow(IsolateThread thread, ObjectHandle backendHandle,
                                                                            PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
                                                                            ObjectHandle reportNodeHandle,
                                                                            PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
@@ -245,7 +245,7 @@ public final class Grid2opCFunctions {
             public ArrayPointer<LoadFlowComponentResultPointer> get() throws IOException {
                 Backend backend = ObjectHandles.getGlobal().get(backendHandle);
                 ReportNode reportNode = ReportCUtils.getReportNode(reportNodeHandle);
-                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(dc, loadFlowParametersPtr, backend.getLoadFlowProvider());
+                LoadFlowParameters parameters = LoadFlowCUtils.createLoadFlowParameters(loadFlowParametersPtr, backend.getLoadFlowProvider());
                 LoadFlowResult result = backend.runLoadFlow(parameters, reportNode);
                 return createLoadFlowComponentResultArrayPointer(result);
             }
