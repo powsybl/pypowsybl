@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from .element import ElementScalable
+from .injection import InjectionScalable
 from .scalable import Scalable, JavaScalableType
 
 
@@ -28,8 +28,8 @@ class UpDownScalable(Scalable):
                          scalables=[self.up_scalable, self.down_scalable])
 
     @classmethod
-    def from_ids(cls, up_injection_id: str, down_injection_id: str,
-                 min_value: Optional[float] = None, max_value: Optional[float] = None) -> UpDownScalable:
+    def from_injections(cls, up_injection_id: str, down_injection_id: str,
+                        min_value: Optional[float] = None, max_value: Optional[float] = None) -> UpDownScalable:
         """
         Create an UpDownScalable from two injection ids.
 
@@ -39,7 +39,7 @@ class UpDownScalable(Scalable):
             min_value (optional): The minimum active power value the modification can reach
             max_value (optional): The maximum active power value the modification can reach
         """
-        return cls(up_scalable=ElementScalable(up_injection_id), down_scalable=ElementScalable(down_injection_id),
+        return cls(up_scalable=InjectionScalable(up_injection_id), down_scalable=InjectionScalable(down_injection_id),
                    min_value=min_value, max_value=max_value)
 
     @classmethod

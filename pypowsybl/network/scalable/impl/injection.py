@@ -12,7 +12,7 @@ from typing import Optional
 from .scalable import Scalable, JavaScalableType
 
 
-class ElementScalable(Scalable):
+class InjectionScalable(Scalable):
     """
     Scalable based on a single injection.
 

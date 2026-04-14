@@ -7,6 +7,7 @@
 #
 from __future__ import annotations
 
+from abc import ABC
 from enum import Enum
 from typing import Optional, List
 
@@ -23,7 +24,8 @@ class JavaScalableType(Enum):
     PROPORTIONAL = 2
     UP_DOWN = 3
 
-class Scalable:
+
+class Scalable(ABC):
     """
     Basic abstraction of a scalable network modification.
     """

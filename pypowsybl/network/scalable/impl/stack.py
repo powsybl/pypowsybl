@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from .element import ElementScalable
+from .injection import InjectionScalable
 from .scalable import Scalable, JavaScalableType
 
 
@@ -28,7 +28,7 @@ class StackScalable(Scalable):
                          scalables=scalables)
 
     @classmethod
-    def from_ids(cls, injection_ids: List[str], min_value: Optional[float] = None, max_value: Optional[float] = None) -> StackScalable:
+    def from_injections(cls, injection_ids: List[str], min_value: Optional[float] = None, max_value: Optional[float] = None) -> StackScalable:
         """
         Create a StackScalable from a list of injection ids.
 
@@ -37,8 +37,8 @@ class StackScalable(Scalable):
             min_value (optional): The minimum active power value the modification can reach
             max_value (optional): The maximum active power value the modification can reach
         """
-        return cls(scalables=[ElementScalable(injection_id=name) for name in injection_ids],
-            min_value=min_value, max_value=max_value)
+        return cls(scalables=[InjectionScalable(injection_id=name) for name in injection_ids],
+                   min_value=min_value, max_value=max_value)
 
     @classmethod
     def from_scalables(cls, scalables: List[Scalable], min_value: Optional[float] = None, max_value: Optional[float] = None) -> StackScalable:

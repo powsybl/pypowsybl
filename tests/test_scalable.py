@@ -6,7 +6,7 @@
 #
 import pypowsybl as pp
 from pypowsybl._pypowsybl import ScalingConvention, ScalingType, Priority, DistributionMode
-from pypowsybl.network import ElementScalable, StackScalable, ScalingParameters, ProportionalScalable, UpDownScalable
+from pypowsybl.network import InjectionScalable, StackScalable, ScalingParameters, ProportionalScalable, UpDownScalable
 
 
 def test_element_scalable():
@@ -14,13 +14,13 @@ def test_element_scalable():
     assert n.get_generators().loc["GEN", "target_p"] == 607.0
     assert n.get_loads().loc["LOAD", "p0"] == 600.0
 
-    gen_scalable = ElementScalable(injection_id="GEN")
+    gen_scalable = InjectionScalable(injection_id="GEN")
 
     done = gen_scalable.scale(n, asked=50)
     assert done == 50.0
     assert n.get_generators().loc["GEN", "target_p"] == 657.0
 
-    load_scalable = ElementScalable(injection_id="LOAD", max_value=700)
+    load_scalable = InjectionScalable(injection_id="LOAD", max_value=700)
     parameters = ScalingParameters(scaling_convention=ScalingConvention.LOAD_SCALING_CONVENTION)
     done = load_scalable.scale(n, parameters=parameters, asked=200)
     assert done == 100.0
@@ -32,8 +32,8 @@ def test_stack_scalable():
 
     assert n.get_generators().loc["GEN", "target_p"] == 607.0
     assert n.get_generators().loc["GEN2", "target_p"] == 607.0
-    scal1 = ElementScalable(injection_id="GEN", max_value=1000)
-    scal2 = ElementScalable(injection_id="GEN2", max_value=1000)
+    scal1 = InjectionScalable(injection_id="GEN", max_value=1000)
+    scal2 = InjectionScalable(injection_id="GEN2", max_value=1000)
     generators_scalable = StackScalable.from_scalables(scalables=[scal1, scal2])
 
     done = generators_scalable.scale(n, asked=700)
@@ -48,7 +48,7 @@ def test_stack_scalable():
     assert n1.get_generators().loc["GEN2", "target_p"] == 1000.0
 
     n2 = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
-    generators_scalable_from_injections = StackScalable.from_ids(injection_ids=["GEN", "GEN2"], max_value=3000)
+    generators_scalable_from_injections = StackScalable.from_injections(injection_ids=["GEN", "GEN2"], max_value=3000)
     done = generators_scalable_from_injections.scale(n2, asked=1500)
     assert done == 1500.0
     assert n2.get_generators().loc["GEN", "target_p"] == 2107.0
@@ -59,8 +59,8 @@ def test_proportional_scalable():
 
     assert n.get_generators().loc["GEN", "target_p"] == 607.0
     assert n.get_generators().loc["GEN2", "target_p"] == 607.0
-    scal1 = ElementScalable(injection_id="GEN")
-    scal2 = ElementScalable(injection_id="GEN2")
+    scal1 = InjectionScalable(injection_id="GEN")
+    scal2 = InjectionScalable(injection_id="GEN2")
     generators_scalable = ProportionalScalable.from_scalables_and_percentages(scalables=[scal1, scal2], percentages=[10, 90])
 
     done = generators_scalable.scale(n, asked=1000)
@@ -69,15 +69,15 @@ def test_proportional_scalable():
     assert n.get_generators().loc["GEN2", "target_p"] == 1507.0
 
     n.update_generators(id=["GEN", "GEN2"], target_p=[100, 900])
-    gen_scalable_from_distribution_model = ProportionalScalable.from_ids_and_distribution_mode(injection_ids=["GEN", "GEN2"],
+    gen_scalable_from_distribution_model = ProportionalScalable.from_injections_and_distribution_mode(injection_ids=["GEN", "GEN2"],
                                                                 mode=DistributionMode.PROPORTIONAL_TO_TARGETP,
                                                                 network=n)
     assert gen_scalable_from_distribution_model.percentages == [10, 90]
 
 def test_up_down_scalable():
     n = pp.network.create_eurostag_tutorial_example1_with_more_generators_network()
-    scal1 = ElementScalable(injection_id="GEN")
-    scal2 = ElementScalable(injection_id="GEN2")
+    scal1 = InjectionScalable(injection_id="GEN")
+    scal2 = InjectionScalable(injection_id="GEN2")
     up_down_scalable = UpDownScalable.from_scalables(up_scalable=scal1, down_scalable=scal2, min_value=0)
 
     done = up_down_scalable.scale(n, asked=1000)

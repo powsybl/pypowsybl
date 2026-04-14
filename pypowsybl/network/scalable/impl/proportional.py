@@ -11,7 +11,7 @@ from typing import List, Optional
 
 from pypowsybl._pypowsybl import DistributionMode, compute_proportional_scalable_percentages
 
-from .element import ElementScalable
+from .injection import InjectionScalable
 from .scalable import Scalable, JavaScalableType
 from ... import Network
 
@@ -33,8 +33,8 @@ class ProportionalScalable(Scalable):
                          scalables=scalables, percentages=self.percentages)
 
     @classmethod
-    def from_ids_and_percentages(cls, injection_ids: List[str], percentages: List[float],
-                                 min_value: Optional[float] = None, max_value: Optional[float] = None) -> ProportionalScalable:
+    def from_injections_and_percentages(cls, injection_ids: List[str], percentages: List[float],
+                                        min_value: Optional[float] = None, max_value: Optional[float] = None) -> ProportionalScalable:
         """
         Create a ProportionalScalable from a list of injection IDs and their corresponding percentage of power repartition.
 
@@ -44,7 +44,7 @@ class ProportionalScalable(Scalable):
             min_value: Minimum value for the scalable. Defaults to None.
             max_value: Maximum value for the scalable. Defaults to None.
         """
-        return cls([ElementScalable(injection_id=name) for name in injection_ids], percentages=percentages,
+        return cls([InjectionScalable(injection_id=name) for name in injection_ids], percentages=percentages,
                    min_value=min_value, max_value=max_value)
 
     @classmethod
@@ -62,10 +62,13 @@ class ProportionalScalable(Scalable):
         return cls(scalables=scalables, percentages=percentages, min_value=min_value, max_value=max_value)
 
     @classmethod
-    def from_ids_and_distribution_mode(cls, injection_ids: List[str], network: Network, mode: DistributionMode,
+    def from_injections_and_distribution_mode(cls, injection_ids: List[str], network: Network, mode: DistributionMode,
                                   min_value: Optional[float] = None, max_value: Optional[float] = None) -> ProportionalScalable:
         """
-        Create a ProportionalScalable from a list of injection IDs and their corresponding percentage of power repartition.
+        Create a ProportionalScalable from a list of injection IDs, computing their respective percentage of power repartition
+        according to a given distribution mode.
+
+        For example, with UNIFORM_DISTRIBUTION, all injections will have the same percentage, which is 1 / len(injection_ids).
 
         Args:
             injection_ids: List of injection IDs.
@@ -76,7 +79,7 @@ class ProportionalScalable(Scalable):
             min_value: Minimum value for the scalable. Defaults to None.
             max_value: Maximum value for the scalable. Defaults to None.
         """
-        return cls(scalables=[ElementScalable(injection_id=name) for name in injection_ids],
+        return cls(scalables=[InjectionScalable(injection_id=name) for name in injection_ids],
                    percentages=cls.compute_scalables_percentages(injection_ids, network, mode),
                    min_value=min_value, max_value=max_value)
 
