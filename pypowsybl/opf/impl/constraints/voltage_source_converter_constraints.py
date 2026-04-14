@@ -4,6 +4,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # SPDX-License-Identifier: MPL-2.0
 #
+import pyoptinterface as poi
 from pyoptinterface import ipopt, nl
 
 from pypowsybl.opf.impl.model.constraints import Constraints
@@ -36,18 +37,18 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 if control_mode == "P_PCC":
                     p_ac_eq = conv_p_var - target_p
-                    model.add_linear_constraint(p_ac_eq == 0.0)
+                    model.add_linear_constraint(p_ac_eq, poi.Eq, 0.0)
 
                 # if control_mode == "V_DC":
                 #     v_dc_eq = v1_var - v2_var - target_v_dc
-                #     model.add_linear_constraint(v_dc_eq == 0.0)
+                #     model.add_linear_constraint(v_dc_eq, poi.Eq, 0.0)
 
                 if voltage_regulator_on:
                     bus1_v_eq = bus1_v_var - target_v_ac
-                    model.add_linear_constraint(bus1_v_eq == 0.0)
+                    model.add_linear_constraint(bus1_v_eq, poi.Eq, 0.0)
                 else:
                     q_ac_eq = conv_q_var - target_q
-                    model.add_linear_constraint(q_ac_eq == 0.0)
+                    model.add_linear_constraint(q_ac_eq, poi.Eq, 0.0)
 
                 # P_loss = loss_1 + loss_2*I_ac + loss_3*I_ac**2 with the 3 loss coefficients
                 i_ac_var = nl.sqrt(nl.pow(conv_p_var,2) + nl.pow(conv_q_var,2))/1000.0

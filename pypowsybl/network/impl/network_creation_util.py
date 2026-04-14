@@ -14,6 +14,7 @@ import pypowsybl._pypowsybl as _pp
 from pypowsybl.report import ReportNode
 from pypowsybl.utils import path_to_str
 from .network import Network
+import pypowsybl as pp
 
 DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_node instead."
 
