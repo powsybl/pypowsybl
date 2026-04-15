@@ -343,6 +343,7 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-loadflow</artifactId>
+            <version>2.3.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
