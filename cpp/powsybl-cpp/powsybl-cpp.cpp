@@ -2155,7 +2155,34 @@ void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& p
 
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, paramsHandle, twoWindingTransformerRatioVariableScalingFactor);
+}
 
+void voltageInitializerSetPenaltyInvestReaNeg(const JavaHandle& paramsHandle, double penaltyInvestReaNeg) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyInvestReaNeg, paramsHandle, penaltyInvestReaNeg);
+}
+
+void voltageInitializerSetPenaltyInvestReaPos(const JavaHandle& paramsHandle, double penaltyInvestReaPos) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyInvestReaPos, paramsHandle, penaltyInvestReaPos);
+}
+
+void voltageInitializerSetPenaltyActivePower(const JavaHandle& paramsHandle, double penaltyActivePower) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyActivePower, paramsHandle, penaltyActivePower);
+}
+
+void voltageInitializerSetPenaltyUnitsReactive(const JavaHandle& paramsHandle, double penaltyUnitsReactive) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyUnitsReactive, paramsHandle, penaltyUnitsReactive);
+}
+
+void voltageInitializerSetPenaltyTransfoRatio(const JavaHandle& paramsHandle, double penaltyTransfoRatio) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyTransfoRatio, paramsHandle, penaltyTransfoRatio);
+}
+
+void voltageInitializerSetPenaltyVoltageTargetRatio(const JavaHandle& paramsHandle, double penaltyVoltageTargetRatio) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyVoltageTargetRatio, paramsHandle, penaltyVoltageTargetRatio);
+}
+
+void voltageInitializerSetPenaltyVoltageTargetData(const JavaHandle& paramsHandle, double penaltyVoltageTargetData) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyVoltageTargetData, paramsHandle, penaltyVoltageTargetData);
 }
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
