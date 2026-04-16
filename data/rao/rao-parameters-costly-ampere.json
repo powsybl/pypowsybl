@@ -1,0 +1,56 @@
+{
+  "version": "3.3",
+  "objective-function": {
+    "type": "MIN_COST",
+    "enforce-curative-security": false
+  },
+  "extensions": {
+    "open-rao-search-tree-parameters": {
+      "objective-function": {
+        "curative-min-obj-improvement": 10000.0
+      },
+      "range-actions-optimization": {
+        "max-mip-iterations": 10,
+        "pst-sensitivity-threshold": 1.0E-6,
+        "pst-model": "APPROXIMATED_INTEGERS",
+        "hvdc-sensitivity-threshold": 1.0E-6,
+        "injection-ra-sensitivity-threshold": 1.0E-6,
+        "linear-optimization-solver": {
+          "solver": "CBC",
+          "relative-mip-gap": 1.0E-4,
+          "solver-specific-parameters": null
+        }
+      },
+      "load-flow-and-sensitivity-computation": {
+        "load-flow-provider": "OpenLoadFlow",
+        "sensitivity-provider": "OpenLoadFlow",
+        "sensitivity-failure-overcost": 10000.0,
+        "sensitivity-parameters": {
+          "version": "1.0",
+          "load-flow-parameters": {
+            "version": "1.10",
+            "voltageInitMode": "UNIFORM_VALUES",
+            "transformerVoltageControlOn": false,
+            "phaseShifterRegulationOn": false,
+            "useReactiveLimits": true,
+            "twtSplitShuntAdmittance": false,
+            "shuntCompensatorVoltageControlOn": false,
+            "readSlackBus": true,
+            "writeSlackBus": true,
+            "dc": false,
+            "distributedSlack": true,
+            "balanceType": "PROPORTIONAL_TO_GENERATION_P",
+            "dcUseTransformerRatio": true,
+            "countriesToBalance": [],
+            "componentMode": "MAIN_CONNECTED",
+            "hvdcAcEmulation": true
+          }
+        }
+      },
+      "costly-min-margin-parameters": {
+        "shifted-violation-penalty": 1000.0,
+        "shifted-violation-threshold": 0.0
+      }
+    }
+  }
+}

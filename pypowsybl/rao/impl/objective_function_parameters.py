@@ -13,7 +13,6 @@ from pypowsybl._pypowsybl import (
 
 class ObjectiveFunctionParameters:
     def __init__(self, objective_function_type: Optional[ObjectiveFunctionType] = None,
-                 curative_min_obj_improvement: Optional[float] = None,
                  enforce_curative_security: Optional[bool] = None,
                  rao_parameters: Optional[RaoParameters] = None) -> None:
         if rao_parameters is not None:
@@ -22,8 +21,6 @@ class ObjectiveFunctionParameters:
             self._init_with_default_values()
         if objective_function_type is not None:
             self.objective_function_type = objective_function_type
-        if curative_min_obj_improvement is not None:
-            self.curative_min_obj_improvement = curative_min_obj_improvement
         if enforce_curative_security is not None:
             self.enforce_curative_security = enforce_curative_security
 
@@ -38,6 +35,5 @@ class ObjectiveFunctionParameters:
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" \
                f"objective_function_type={self.objective_function_type.name}" \
-               f", curative_min_obj_improvement={self.curative_min_obj_improvement!r}" \
                f", enforce_curative_security={self.enforce_curative_security!r}" \
                f")"
