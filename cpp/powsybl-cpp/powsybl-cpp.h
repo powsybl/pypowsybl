@@ -1039,6 +1039,13 @@ void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsH
 void voltageInitializerSetDefaultConstraintScalingFactor(const JavaHandle& paramsHandle, double defaultConstraintScalingFactor);
 void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& paramsHandle, double reactiveSlackVariableScalingFactor);
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor);
+void voltageInitializerSetPenaltyInvestReaNeg(const JavaHandle& paramsHandle, double penaltyInvestReaNeg);
+void voltageInitializerSetPenaltyInvestReaPos(const JavaHandle& paramsHandle, double penaltyInvestReaPos);
+void voltageInitializerSetPenaltyActivePower(const JavaHandle& paramsHandle, double penaltyActivePower);
+void voltageInitializerSetPenaltyUnitsReactive(const JavaHandle& paramsHandle, double penaltyUnitsReactive);
+void voltageInitializerSetPenaltyTransfoRatio(const JavaHandle& paramsHandle, double penaltyTransfoRatio);
+void voltageInitializerSetPenaltyVoltageTargetRatio(const JavaHandle& paramsHandle, double penaltyVoltageTargetRatio);
+void voltageInitializerSetPenaltyVoltageTargetData(const JavaHandle& paramsHandle, double penaltyVoltageTargetData);
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
 VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle);

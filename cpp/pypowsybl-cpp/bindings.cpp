@@ -276,6 +276,14 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_reactive_slack_variable_scaling_factor", &pypowsybl::voltageInitializerSetReactiveSlackVariableScalingFactor, py::arg("params_handle"), py::arg("reactive_slack_variable_scaling_factor"));
     m.def("voltage_initializer_set_twt_ratio_variable_scaling_factor", &pypowsybl::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, py::arg("params_handle"), py::arg("twt_ratio_variable_scaling_factor"));
 
+    m.def("voltage_initializer_set_penalty_invest_rea_neg", &pypowsybl::voltageInitializerSetPenaltyInvestReaNeg, py::arg("params_handle"), py::arg("penalty_invest_rea_neg"));
+    m.def("voltage_initializer_set_penalty_invest_rea_pos", &pypowsybl::voltageInitializerSetPenaltyInvestReaPos, py::arg("params_handle"), py::arg("penalty_invest_rea_pos"));
+    m.def("voltage_initializer_set_penalty_active_power", &pypowsybl::voltageInitializerSetPenaltyActivePower, py::arg("params_handle"), py::arg("penalty_active_power"));
+    m.def("voltage_initializer_set_penalty_units_reactive", &pypowsybl::voltageInitializerSetPenaltyUnitsReactive, py::arg("params_handle"), py::arg("penalty_units_reactive"));
+    m.def("voltage_initializer_set_penalty_transfo_ratio", &pypowsybl::voltageInitializerSetPenaltyTransfoRatio, py::arg("params_handle"), py::arg("penalty_transfo_ratio"));
+    m.def("voltage_initializer_set_penalty_voltage_target_ratio", &pypowsybl::voltageInitializerSetPenaltyVoltageTargetRatio, py::arg("params_handle"), py::arg("penalty_voltage_target_ratio"));
+    m.def("voltage_initializer_set_penalty_voltage_target_data", &pypowsybl::voltageInitializerSetPenaltyVoltageTargetData, py::arg("params_handle"), py::arg("penalty_voltage_target_data"));
+
     m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
     m.def("voltage_initializer_set_log_level_ampl", &pypowsybl::voltageInitializerSetLogLevelAmpl, py::arg("params_handle"), py::arg("log_level_ampl"));

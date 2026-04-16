@@ -50,6 +50,14 @@ def test_parameters():
     params.set_reactive_slack_variable_scaling_factor(0.2)
     params.set_twt_ratio_variable_scaling_factor(0.002)
 
+    params.set_penalty_invest_rea_neg(0.001)
+    params.set_penalty_invest_rea_pos(0.001)
+    params.set_penalty_active_power(0.001)
+    params.set_penalty_units_reactive(0.001)
+    params.set_penalty_transfo_ratio(0.001)
+    params.set_penalty_voltage_target_ratio(0.001)
+    params.set_penalty_voltage_target_data(0.001)
+
 
 @pytest.mark.skip(reason="CI doesn't have a Ampl and Knitro runtime.")
 def test_runner():
