@@ -1,7 +1,5 @@
 [
   {
-    "interfaces": [
-      "com.artelys.knitro.api.nativelibrary.KNLibrary"
-    ]
+    "interfaces":["com.artelys.knitro.api.nativelibrary.KNLibrary"]
   }
 ]

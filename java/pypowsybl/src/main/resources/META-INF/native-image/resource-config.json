@@ -1,10 +1,6 @@
 {
   "resources":{
-  "includes":[
-    {"pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"},
-    {"pattern":"\\QMETA-INF/services/javax.xml.datatype.DatatypeFactory\\E"}, 
-    {"pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"},
-    {"pattern":"\\Qcom/sun/jna/win32-x86-64/jnidispatch.dll\\E"}, {
+  "includes":[{
     "pattern":"\\QMETA-INF/lib/windows_64/math.dll\\E"
   }, {
     "pattern":"\\QMETA-INF/services/ch.qos.logback.classic.spi.Configurator\\E"
@@ -33,7 +29,15 @@
   }, {
     "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
   }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.bind.JAXBContext\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.datatype.DatatypeFactory\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/javax.xml.parsers.SAXParserFactory\\E"
+  }, {
     "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
+  }, {
+    "pattern":"\\Qcom/sun/jna/win32-x86-64/jnidispatch.dll\\E"
   }, {
     "pattern":"\\Qieee9cdf.txt\\E"
   }, {
@@ -48,10 +52,8 @@
     "pattern":"\\Qnatives/windows_64/math.dll\\E"
   }, {
     "pattern":"\\Qwindows_64/math.dll\\E"
-  }
-  ]},
-  "bundles":[
-    {"name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"}, {
+  }]},
+  "bundles":[{
     "name":"com.powsybl.commons.reports",
     "locales":[""]
   }, {
@@ -66,5 +68,7 @@
   }, {
     "name":"com.powsybl.pypowsybl.reports",
     "locales":[""]
+  }, {
+    "name":"com.sun.org.apache.xml.internal.serializer.XMLEntities"
   }]
 }
