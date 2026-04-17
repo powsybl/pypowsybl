@@ -14,13 +14,11 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.openloadflow.knitro.solver.KnitroLoadFlowParameters;
 import com.powsybl.openloadflow.knitro.solver.KnitroSolverFactory;
-import com.powsybl.openloadflow.network.SlackBusSelectionMode;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.Util.freeCharPtrPtr;
