@@ -12,11 +12,15 @@ import com.powsybl.commons.extensions.Extension;
 import com.powsybl.iidm.network.Country;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
+import com.powsybl.openloadflow.knitro.solver.KnitroLoadFlowParameters;
+import com.powsybl.openloadflow.knitro.solver.KnitroSolverFactory;
+import com.powsybl.openloadflow.network.SlackBusSelectionMode;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.PyPowsyblApiHeader.LoadFlowParametersPointer;
 import com.powsybl.python.commons.PyPowsyblConfiguration;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.powsybl.python.commons.Util.freeCharPtrPtr;
@@ -90,6 +94,13 @@ public final class LoadFlowCUtils {
                 parameters.addExtension((Class) ext.getClass(), ext);
             }
         });
+
+        String solverType = specificParametersProperties.get("acSolverType");
+        if (solverType != null && solverType.equals(KnitroSolverFactory.NAME)) {
+            KnitroLoadFlowParameters knitroParameters = KnitroLoadFlowParameters.load();
+            knitroParameters.update(specificParametersProperties);
+            parameters.addExtension(KnitroLoadFlowParameters.class, knitroParameters);
+        }
         return parameters;
     }
 
