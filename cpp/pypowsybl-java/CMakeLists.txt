@@ -70,9 +70,9 @@ endif()
 
 # Maven command
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(MAVEN_CMD "mvnw.cmd")
+    set(MAVEN_CMD "${CMAKE_CURRENT_SOURCE_DIR}/../../java/mvnw.cmd")
 else()
-    set(MAVEN_CMD "./mvnw")
+    set(MAVEN_CMD "${CMAKE_CURRENT_SOURCE_DIR}/../../java/mvnw")
 endif()
 
 ExternalProject_Add(mvn
