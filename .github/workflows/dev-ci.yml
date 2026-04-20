@@ -211,12 +211,12 @@ jobs:
       - name: Build with Maven (Ubuntu)
         working-directory: ./java
         run: >
-          mvn --batch-mode install
+          mvn -B -ntp -Pjacoco install
 
       - name: Run SonarCloud analysis
         working-directory: ./java
         run: >
-          mvn --batch-mode -DskipTests sonar:sonar
+          mvn -B -ntp -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=powsybl-ci-github
           -Dsonar.projectKey=powsybl_pypowsybl-java
