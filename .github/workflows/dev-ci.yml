@@ -7,14 +7,19 @@ permissions: { }
 
 jobs:
   manylinux_build:
-    name: Build linux wheel
+    name: Build ${{ matrix.config.name }} wheel
     if: github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.config.os }}
     permissions:
       contents: read
     container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     strategy:
       matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+          }
         python:
           - {
             name: cp310,
