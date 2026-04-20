@@ -31,12 +31,6 @@ jobs:
       - name: Install Linux Packages
         run: dnf install -y wget
 
-      - name: Install Maven
-        run: |
-          wget -q https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.14/apache-maven-3.9.14-bin.tar.gz -P /tmp
-          tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.14/bin >> $GITHUB_PATH
-
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@60c26726de13f8b90771df4bc1641a52a3159994 # v1.5.2
         with:
@@ -75,28 +69,6 @@ jobs:
 
       - name: Type checking
         run: mypy -p pypowsybl
-
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
 
       - name: Run doc examples
         working-directory: ./docs
@@ -192,8 +164,75 @@ jobs:
           cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
           cmake --build . --config Release
 
+  sonar_python:
+    name: Run SonarCloud analysis for Python code (${{ matrix.config.name }})
+    if: github.event.pull_request.head.repo.fork == false
+    runs-on: ${{ matrix.config.os }}
+    permissions:
+      contents: read
+      pull-requests: read
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+    strategy:
+      matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+          }
+        python:
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
+          }
+
+    steps:
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@60c26726de13f8b90771df4bc1641a52a3159994 # v1.5.2
+        with:
+          java-version: '21'
+          distribution: 'graalvm'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Setup path
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Install the package
+        run: |
+          pip install .
+          python3 setup.py develop
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Sonar analysis
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+
   sonar_java:
-    name: Run SonarCloud analysis for Java code
+    name: Run SonarCloud analysis for Java code (linux)
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.fork == false
     permissions:
@@ -216,12 +255,12 @@ jobs:
       - name: Build with Maven (Ubuntu)
         working-directory: ./java
         run: >
-          mvn -B -ntp -Pjacoco install
+          ./mvnw -B -ntp -Pjacoco install
 
       - name: Run SonarCloud analysis
         working-directory: ./java
         run: >
-          mvn -B -ntp -DskipTests sonar:sonar
+          ./mvnw -B -ntp -DskipTests sonar:sonar
           -Dsonar.host.url=https://sonarcloud.io
           -Dsonar.organization=powsybl-ci-github
           -Dsonar.projectKey=powsybl_pypowsybl-java
