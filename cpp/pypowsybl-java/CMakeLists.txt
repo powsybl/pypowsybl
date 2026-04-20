@@ -77,7 +77,7 @@ endif()
 
 ExternalProject_Add(mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_SRC_DIR}
-    PATCH_COMMAND ${MAVEN_CMD} --batch-mode clean package
+    PATCH_COMMAND ${MAVEN_CMD} -B -ntp clean package
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""
