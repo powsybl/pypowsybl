@@ -7,7 +7,7 @@ permissions: { }
 
 jobs:
   manylinux_build:
-    name: Build linux ${{ matrix.python.name }} wheel
+    name: Build linux wheel
     if: github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
@@ -106,7 +106,7 @@ jobs:
           cmake --build . --config Release
 
   macos_windows_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    name: Build ${{ matrix.config.name }} wheel
     if: github.event.pull_request.head.repo.fork == false
     runs-on: ${{ matrix.config.os }}
     permissions:
