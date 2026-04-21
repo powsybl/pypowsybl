@@ -68,7 +68,7 @@ jobs:
         if: steps.cache-native.outputs.cache-hit == 'true'
         run: |
           unzip dist/binaries.zip -d dist/native
-          echo "PYPOWSYBL_NATIVE_BUILD_DIR=dist/native" >> $GITHUB_ENV
+          echo "PYPOWSYBL_NATIVE_BUILD_DIR=${{ github.workspace }}/dist/native" >> $GITHUB_ENV
 
       - name: Build wheel
         run: |
@@ -170,7 +170,7 @@ jobs:
         if: steps.cache-native.outputs.cache-hit == 'true'
         run: |
           unzip dist/binaries.zip -d dist/native
-          echo "PYPOWSYBL_NATIVE_BUILD_DIR=dist/native" >> $GITHUB_ENV
+          echo "PYPOWSYBL_NATIVE_BUILD_DIR=${{ github.workspace }}/dist/native" >> $GITHUB_ENV
 
       - name: Build wheel
         if: steps.cache-native.outputs.cache-hit == 'true'
@@ -266,11 +266,11 @@ jobs:
 
       - name: Unzip cached native libraries
         if: steps.cache-native.outputs.cache-hit == 'true'
-        run: unzip dist/binaries.zip -d dist/native
+        run: |
+          unzip dist/binaries.zip -d dist/native
+          echo "PYPOWSYBL_NATIVE_BUILD_DIR=${{ github.workspace }}/dist/native" >> $GITHUB_ENV
 
       - name: Install the package
-        env:
-          PYPOWSYBL_NATIVE_BUILD_DIR: ${{ steps.cache-native.outputs.cache-hit == 'true' && 'dist/native' || '' }}
         run: |
           pip install .
           python3 setup.py develop
