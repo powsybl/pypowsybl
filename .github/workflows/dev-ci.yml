@@ -114,6 +114,7 @@ jobs:
           java-version: '21'
           distribution: 'graalvm'
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          cache: 'maven'
 
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -131,10 +132,29 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
+          
+      - name: Cache native libraries
+        id: cache-native
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: dist/binaries.zip
+          key: ${{ matrix.config.name }}-native-${{ hashFiles('java/**', 'cpp/**/**/CMakeLists.txt') }}
 
-      - name: Build wheel
+      - name: Build wheel (full, includes native-image)
+        if: steps.cache-native.outputs.cache-hit != 'true'
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+
+      - name: Unzip cached native libraries
+        if: steps.cache-native.outputs.cache-hit == 'true'
+        run: unzip dist/binaries.zip -d dist/native
+
+      - name: Build wheel (reuses cached native libs)
+        if: steps.cache-native.outputs.cache-hit == 'true'
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+          PYPOWSYBL_NATIVE_BUILD_DIR: dist/native
         run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
 
       - name: Install wheel
