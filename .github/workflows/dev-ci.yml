@@ -6,19 +6,34 @@ on:
 permissions: { }
 
 jobs:
-  manylinux_build:
+  build:
     name: Build ${{ matrix.config.name }} wheel
     if: github.event.pull_request.head.repo.fork == false
     runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
     permissions:
       contents: read
-    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     strategy:
+      fail-fast: false
       matrix:
         config:
           - {
             name: linux,
             os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+            wheel-dir: "wheelhouse",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+            wheel-dir: "dist",
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+            wheel-dir: "dist",
           }
         python:
           - {
@@ -26,77 +41,45 @@ jobs:
             abi: cp310,
             version: '3.10',
           }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Install Linux Packages
+        if: matrix.config.name == 'linux'
         run: dnf install -y wget
 
       - name: Setup path
+        if: matrix.config.name == 'linux'
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
       - name: Setup environment
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
-          python-command: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python
-
-      - name: Build wheel
-        run: |
-          python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
-
-      - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
-
-      - name: Checks and tests
-        uses: ./.github/actions/checks-after-build
-        with:
-          python-command: /opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/python
-
-  macos_windows_build:
-    name: Build ${{ matrix.config.name }} wheel
-    if: github.event.pull_request.head.repo.fork == false
-    runs-on: ${{ matrix.config.os }}
-    permissions:
-      contents: read
-    strategy:
-      matrix:
-        config:
-          - {
-            name: darwin,
-            os: macos-15-intel,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-          }
-        python:
-          - {
-            name: cp310,
-            version: '3.10',
-          }
-
-    steps:
-      - name: Setup environment
-        uses: ./.github/actions/setup-before-build
-        with:
-          cache-prefix: ${{ matrix.config.name }}
-          python-already-available: "false"
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
           python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
 
       - name: Build wheel
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
-        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+        run: |
+          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          if [ "${{ matrix.config.name }}" == "linux" ]; then
+            auditwheel repair dist/*.whl
+          fi
 
       - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
+        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
 
       - name: Checks and tests
         uses: ./.github/actions/checks-after-build
+        with:
+          python-command: ${{ env.PYTHON }}
 
   sonar_python:
     name: Run SonarCloud analysis for Python code (${{ matrix.config.name }})
@@ -131,11 +114,11 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
+          fetch-depth: "0"
 
       - name: Install the package
         run: |
-          pip install .
-          python3 setup.py develop
+          pip install -e .
 
       - name: Generate coverage
         run: |

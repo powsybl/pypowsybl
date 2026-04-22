@@ -13,6 +13,9 @@ inputs:
   python-version:
     default: "3.10"
     description: "Python version to use"
+  fetch-depth:
+    default: "1"
+    description: "Fetch depth for checkout"
 runs:
   using: "composite"
   steps:
@@ -26,11 +29,11 @@ runs:
     - name: Checkout sources
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       with:
-        fetch-depth: 0
+        fetch-depth: ${{ inputs.fetch-depth }}
         submodules: true
 
     - name: Setup Python
-      if: ${{ inputs.install-python == 'false' }}
+      if: ${{ inputs.python-already-available == 'false' }}
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
       with:
         python-version: ${{ inputs.python-version }}
@@ -55,11 +58,11 @@ runs:
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
       with:
         path: dist/binaries.zip
-        key: ${{ inputs.cache-prefix }}-native-${{ hashFiles('java/**', 'cpp/**/**/CMakeLists.txt') }}
+        key: ${{ inputs.cache-prefix }}-native-${{ hashFiles('java/**/pom.xml', 'java/**/src/main/**', 'cpp/**/CMakeLists.txt', 'cpp/**/*.h', 'cpp/**/*.cpp') }}
 
     - name: Unzip cached native libraries
       if: steps.cache-native.outputs.cache-hit == 'true'
       shell: bash
       run: |
         unzip dist/binaries.zip -d dist/native
-        echo "PYPOWSYBL_NATIVE_BUILD_DIR=${{ github.workspace }}/dist/native" >> $GITHUB_ENV
+        echo "PYPOWSYBL_NATIVE_BUILD_DIR=$GITHUB_WORKSPACE/dist/native" >> $GITHUB_ENV
