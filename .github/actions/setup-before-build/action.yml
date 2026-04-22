@@ -13,9 +13,6 @@ inputs:
   python-version:
     default: "3.10"
     description: "Python version to use"
-  fetch-depth:
-    default: "1"
-    description: "Fetch depth for checkout"
 runs:
   using: "composite"
   steps:
@@ -25,12 +22,6 @@ runs:
         java-version: '21'
         distribution: 'graalvm'
         github-token: ${{ github.token }}
-
-    - name: Checkout sources
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      with:
-        fetch-depth: ${{ inputs.fetch-depth }}
-        submodules: true
 
     - name: Setup Python
       if: ${{ inputs.python-already-available == 'false' }}

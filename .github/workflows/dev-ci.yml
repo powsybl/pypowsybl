@@ -48,6 +48,11 @@ jobs:
         shell: bash
 
     steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+
       - name: Install Linux Packages
         if: matrix.config.name == 'linux'
         run: dnf install -y wget
@@ -104,6 +109,12 @@ jobs:
           }
 
     steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          submodules: true
+
       - name: Install Linux Packages
         run: dnf install -y wget
 
@@ -114,7 +125,6 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: ${{ matrix.config.name }}
-          fetch-depth: "0"
 
       - name: Install the package
         run: |
