@@ -81,32 +81,43 @@ jobs:
       - name: Install wheel
         run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
 
-      - name: Checks and tests
-        uses: ./.github/actions/checks-after-build
-        with:
-          python-command: ${{ env.PYTHON }}
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        shell: bash
+        run: ${{ env.PYTHON }} basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        shell: bash
+        run: ${{ env.PYTHON }} -m pytest
+
+      - name: Type checking
+        shell: bash
+        run: mypy -p pypowsybl
+
+      - name: Run doc examples
+        working-directory: ./docs
+        shell: bash
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        shell: bash
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
 
   sonar_python:
-    name: Run SonarCloud analysis for Python code (${{ matrix.config.name }})
+    name: Run SonarCloud analysis for Python code (linux)
     if: github.event.pull_request.head.repo.fork == false
-    runs-on: ${{ matrix.config.os }}
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: read
     container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
-    strategy:
-      matrix:
-        config:
-          - {
-            name: linux,
-            os: ubuntu-latest,
-          }
-        python:
-          - {
-            name: cp310,
-            abi: cp310,
-            version: '3.10',
-          }
+    env:
+      PYTHON_VERSION: cp310
 
     steps:
       - name: Checkout sources
@@ -119,12 +130,12 @@ jobs:
         run: dnf install -y wget
 
       - name: Setup path
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+        run: echo "/opt/python/${{ env.PYTHON_VERSION }}-${{ env.PYTHON_VERSION }}/bin/" >> $GITHUB_PATH
 
       - name: Setup environment
         uses: ./.github/actions/setup-before-build
         with:
-          cache-prefix: ${{ matrix.config.name }}
+          cache-prefix: "linux"
 
       - name: Install the package
         run: |

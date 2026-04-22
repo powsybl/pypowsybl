@@ -6,7 +6,7 @@ inputs:
     description: "Prefix added to the cache key"
   python-already-available:
     default: "true"
-    description: "Should Python be installed?"
+    description: "Is Python already installed?"
   python-command:
     default: "python3"
     description: "Python command to use"
