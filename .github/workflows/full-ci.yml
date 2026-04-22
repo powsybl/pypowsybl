@@ -11,130 +11,106 @@ on:
       - published
 
 
-permissions:
-  contents: write
+permissions: { }
 
 jobs:
-  manylinux_complete_build:
-    name: Build linux native libraries and ${{ matrix.python.name }} wheel
-    runs-on: ubuntu-latest
-    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+  native_lib_build:
+    name: Build ${{ matrix.config.name }} native libraries
+    runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
+    permissions:
+      contents: write
     strategy:
       matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-15-xlarge,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+          }
         python:
           - {
             name: cp310,
             abi: cp310,
             version: '3.10'
           }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
 
     steps:
-      - name: Install Linux Packages
-        run: dnf install -y wget
-
-      - name: Install Maven
-        run: |
-          wget -q https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.14/apache-maven-3.9.14-bin.tar.gz -P /tmp
-          tar xf /tmp/apache-maven-*.tar.gz -C /opt
-          echo /opt/apache-maven-3.9.14/bin >> $GITHUB_PATH
-
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
 
-      - name: Setup path
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+      - name: Install Linux Packages
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: dnf install -y wget
 
-      - name: Install dependencies
-        run: pip3 install -r requirements.txt
-
-      - name: Build wheel
-        run: |
-          python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
-
-      - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
-      - name: Run tests
-        working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Dev install  # In order to generate coverage and linting, we need to install in sources
-        run: |
-          pip3 uninstall -y pypowsybl
-          python3 setup.py develop
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: sonarsource/sonarcloud-github-action@v2.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_ACCESS_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Setup environment and build native libraries
+        uses: ./.github/actions/setup-before-build
         with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+          cache-prefix: ${{ matrix.config.name }}
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
 
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v4
-        with:
-          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
-          path: wheelhouse/*.whl
-
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
-        with:
-          name: binaries-linux.zip
-          retention-days: 1
-          path: |
-            dist/binaries.zip
-
-      - name: Upload release binaries
-        if: ${{ github.event_name == 'release' }}
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/binaries.zip
-          asset_name: binaries-${{ github.event.release.tag_name }}-linux.zip
-          asset_content_type: application/zip
-
-  manylinux_python_build:
-    name: Build linux ${{ matrix.python.name }} wheel (without rebuilding native libraries)
-    runs-on: ubuntu-latest
-    needs: manylinux_complete_build
-    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+  python_wheels_build:
+    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+    needs: native_lib_build
+    runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
+    permissions:
+      contents: write
     strategy:
       matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+            wheel-dir: "wheelhouse",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+            wheel-dir: "dist",
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-15,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
+            wheel-dir: "dist",
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+            wheel-dir: "dist",
+          }
         python:
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10'
+          }
           - {
             name: cp311,
             abi: cp311,
@@ -155,46 +131,45 @@ jobs:
             abi: cp314,
             version: '3.14'
           }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           submodules: true
 
-      - name: Setup path
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
-
-      - name: Install dependencies
-        run: pip3 install -r requirements.txt
-
-      - name: Download native libraries
-        uses: actions/download-artifact@v4
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
         with:
-          name: binaries-linux.zip
-
-      - name: Set up native libraries
-        run: |
-          unzip binaries.zip
+          cache-prefix: ${{ matrix.config.name }}
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
 
       - name: Build wheel
         env:
-          PYPOWSYBL_NATIVE_BUILD_DIR: ${{ github.workspace }}
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
         run: |
-          python3 setup.py bdist_wheel
-          auditwheel repair dist/*.whl
+          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          if [ "${{ matrix.config.name }}" == "linux" ]; then
+            auditwheel repair dist/*.whl
+          fi
 
       - name: Install wheel
-        run: pip3 install wheelhouse/*.whl --user
+        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
-        run: python3 basic_import_test.py
+        run: ${{ env.PYTHON }} basic_import_test.py
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
-        run: |
-          pytest
+        run: ${{ env.PYTHON }} -m pytest
 
       - name: Type checking
         run: mypy -p pypowsybl
@@ -204,222 +179,76 @@ jobs:
         run: make html doctest SPHINXOPTS="-W"
 
       - name: Upload wheel
-        uses: actions/upload-artifact@v4
-        with:
-          name: pypowsybl-wheel-linux-${{ matrix.python.name }}
-          path: wheelhouse/*.whl
-
-  macos_windows_complete_build:
-    name: Build ${{ matrix.config.name }} native libraries and ${{ matrix.python.name }} wheel
-    runs-on: ${{ matrix.config.os }}
-    strategy:
-      matrix:
-        config:
-          - {
-            name: darwin,
-            os: macos-15-intel,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: darwin-arm64,
-            os: macos-15-xlarge,
-            macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-          }
-        python:
-          - {
-            name: cp310,
-            version: '3.10',
-          }
-
-    steps:
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python.version }}
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Build wheel
-        env:
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
-        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-
-      - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-        
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
         with:
           name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
+          path: ${{ matrix.config.wheel-dir }}/*.whl
 
-      - name: Upload binaries
-        uses: actions/upload-artifact@v4
+  sonar_python:
+    name: Run SonarCloud analysis for Python code (linux)
+    needs: native_lib_build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+    env:
+      PYTHON_VERSION: cp310
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          name: binaries-${{ matrix.config.name }}.zip
-          retention-days: 1
-          path: |
-            dist/binaries.zip
+          fetch-depth: 0
+          submodules: true
 
-      - name: Upload release binaries
-        if: ${{ github.event_name == 'release' }}
-        uses: actions/upload-release-asset@v1.0.1
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
+      - name: Setup path
+        run: echo "/opt/python/${{ env.PYTHON_VERSION }}-${{ env.PYTHON_VERSION }}/bin/" >> $GITHUB_PATH
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: "linux"
+
+      - name: Install the package
+        run: |
+          pip install -e .
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Sonar analysis
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./dist/binaries.zip
-          asset_name: binaries-${{ github.event.release.tag_name }}-${{ matrix.config.name }}.zip
-          asset_content_type: application/zip
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
 
-  macos_windows_python_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel (without rebuilding native libraries)
-    runs-on: ${{ matrix.config.os }}
-    needs: macos_windows_complete_build
-    strategy:
-      matrix:
-        config:
-          - {
-            name: darwin,
-            os: macos-15-intel,
-            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: darwin-arm64,
-            os: macos-15,
-            macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-arm64", # needed to avoid the wheel to be named -universal2
-          }
-          - {
-            name: windows,
-            os: windows-2022,
-          }
-        python:
-          - {
-            name: cp311,
-            version: '3.11',
-          }
-          - {
-            name: cp312,
-            version: '3.12',
-          }
-          - {
-            name: cp313,
-            version: '3.13',
-          }
-          - {
-            name: cp314,
-            version: '3.14',
-          }
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python.version }}
-
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-
-      - name: Download native libraries
-        uses: actions/download-artifact@v4
-        with:
-          name: binaries-${{ matrix.config.name }}.zip
-
-      - name: Set up native libraries
-        run: |
-          unzip binaries.zip
-
-      - name: Build wheel
-        env:
-          PYPOWSYBL_NATIVE_BUILD_DIR: ${{ github.workspace }}
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
-        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-
-      - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
-
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v4
-        with:
-          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
-
-
-  package:
-    name: Package wheels
+  package_publish_wheels:
+    name: Package and publish wheels
     runs-on: ubuntu-latest
-    needs: [manylinux_complete_build, manylinux_python_build, macos_windows_complete_build, macos_windows_python_build]
+    needs: [native_lib_build, python_wheels_build, sonar_python]
 
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           path: download
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
         with:
           name: pypowsybl-wheels
           path: |
@@ -432,13 +261,77 @@ jobs:
           python -m pip install --user --upgrade twine packaging
           python -m twine upload --username __token__ --password ${{ secrets.PYPI_TOKEN }} download/*/*.whl
 
+  publish_native_binaries:
+    name: Publish ${{ matrix.config.name }} native library binaries
+    needs: [native_lib_build, python_wheels_build, sonar_python]
+    runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
+    if: ${{ github.event_name == 'release' }}
+    permissions:
+      contents: write
+    strategy:
+      matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+          }
+          - {
+            name: darwin-arm64,
+            os: macos-15,
+            macosx_deployment_target: "11", # first arm64 version of macosx
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+          }
+        python:
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10'
+          }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+
+      - name: Setup environment and build native libraries
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: ${{ matrix.config.name }}
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
+
+      - name: Rename binaries for release
+        shell: bash
+        working-directory: ./dist
+        run: |
+          mv binaries.zip binaries-${{ github.event.release.tag_name }}-${{ matrix.config.name }}.zip
+
+      - name: Upload release package
+        if: ${{ github.event_name == 'release' }}
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        with:
+          working_directory: dist
+          files: binaries-${{ github.event.release.tag_name }}-${{ matrix.config.name }}.zip
+
   sonar_java:
     name: Run SonarCloud analysis for Java code (linux)
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork == false
     permissions:
       contents: read
-      pull-requests: read
 
     steps:
       - name: Checkout sources
