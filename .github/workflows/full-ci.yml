@@ -143,6 +143,11 @@ jobs:
         with:
           submodules: true
 
+      - name: Install Linux Packages
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: dnf install -y wget
+
       - name: Setup environment
         uses: ./.github/actions/setup-before-build
         with:
