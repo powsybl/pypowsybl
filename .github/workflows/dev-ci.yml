@@ -57,10 +57,6 @@ jobs:
         if: matrix.config.name == 'linux'
         run: dnf install -y wget
 
-      - name: Setup path
-        if: matrix.config.name == 'linux'
-        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
-
       - name: Setup environment
         uses: ./.github/actions/setup-before-build
         with:
