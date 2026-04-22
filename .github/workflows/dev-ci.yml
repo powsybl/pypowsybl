@@ -79,25 +79,20 @@ jobs:
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
-        shell: bash
         run: ${{ env.PYTHON }} basic_import_test.py
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
-        shell: bash
         run: ${{ env.PYTHON }} -m pytest
 
       - name: Type checking
-        shell: bash
         run: mypy -p pypowsybl
 
       - name: Run doc examples
         working-directory: ./docs
-        shell: bash
         run: make html doctest SPHINXOPTS="-W"
 
       - name: Test standalone cpp build
-        shell: bash
         working-directory: ./dist
         run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
           unzip binaries.zip && mkdir build && cd build
