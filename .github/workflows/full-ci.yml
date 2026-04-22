@@ -70,6 +70,15 @@ jobs:
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
+      - name: Build wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: |
+          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          if [ "${{ matrix.config.name }}" == "linux" ]; then
+            auditwheel repair dist/*.whl
+          fi
+
   python_wheels_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
     needs: native_lib_build
