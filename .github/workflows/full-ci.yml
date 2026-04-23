@@ -50,6 +50,9 @@ jobs:
           }
     env:
       PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout sources
