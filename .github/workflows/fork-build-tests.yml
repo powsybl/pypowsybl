@@ -1,0 +1,453 @@
+name: CI on forks - build and tests
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  build-tests:
+    name: Build ${{ matrix.config.name }} wheel
+    if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
+    runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+            wheel-dir: "wheelhouse",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+            wheel-dir: "dist",
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+            wheel-dir: "dist",
+          }
+        python:
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
+          }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+
+      - name: Install Linux Packages
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: dnf install -y wget
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: ${{ matrix.config.name }}
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
+
+      - name: Setup path
+        if: matrix.config.name == 'linux'
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Build wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: |
+          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          if [ "${{ matrix.config.name }}" == "linux" ]; then
+            auditwheel repair dist/*.whl
+          fi
+
+      - name: Install wheel
+        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: ${{ env.PYTHON }} basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: ${{ env.PYTHON }} -m pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+
+  prepare_sonar_python:
+    name: Run SonarCloud analysis for Python code (linux)
+    if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+    env:
+      PYTHON_VERSION: cp310
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
+      - name: Setup path
+        run: echo "/opt/python/${{ env.PYTHON_VERSION }}-${{ env.PYTHON_VERSION }}/bin/" >> $GITHUB_PATH
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: "linux"
+
+      - name: Install the package
+        run: |
+          pip install -e .
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Save coverage report and other data for SonarCloud
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: python-data-for-sonar-analysis-${{ github.event.pull_request.number }}
+          retention-days: 1
+          path: |
+            coverage.xml
+
+      - name: Save PR Information
+        env:
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          mkdir -p python-pr-info
+          echo "$REPO_NAME" > python-pr-info/repo-name
+          echo "$HEAD_REF" > python-pr-info/head-ref
+          echo "$HEAD_SHA" > python-pr-info/head-sha
+          echo "$PR_NUMBER" > python-pr-info/pr-number
+          echo "$BASE_REF" > python-pr-info/base-ref
+
+      - name: Upload Python PR Information
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: python-pr-info-${{ github.event.pull_request.number }}
+          path: python-pr-info/
+          retention-days: 1
+
+  prepare_sonar_java:
+    name: Run SonarCloud analysis for Java code (linux)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build with Maven (Ubuntu)
+        working-directory: ./java
+        run: ./mvnw -B -ntp -Pjacoco install
+
+      - name: Regroup dependencies in target folders
+        working-directory: ./java
+        run: ./mvnw dependency:copy-dependencies
+
+      - name: Save classes and Jacoco report
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: java-data-for-sonar-analysis-${{ github.event.pull_request.number }}
+          retention-days: 1
+          path: |
+            java/*/target/classes
+            java/*/target/generated-sources
+            java/pypowsybl/target/dependency
+            java/pypowsybl/target/site/jacoco/jacoco.xml
+
+      - name: Save PR Information
+        env:
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          mkdir -p java-pr-info
+          echo "$REPO_NAME" > java-pr-info/repo-name
+          echo "$HEAD_REF" > java-pr-info/head-ref
+          echo "$HEAD_SHA" > java-pr-info/head-sha
+          echo "$PR_NUMBER" > java-pr-info/pr-number
+          echo "$BASE_REF" > java-pr-info/base-ref
+
+      - name: Upload PR Information
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: java-pr-info-${{ github.event.pull_request.number }}
+          path: java-pr-info/
+          retention-days: 1
+
+  sonar_python:
+    name: Run SonarCloud analysis for Python code (linux)
+    needs: prepare_sonar_python # TODO: Move this job to a specific workflow
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false # TODO: switch to conf for forks
+    permissions:
+      contents: read
+      pull-requests: read
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+    env:
+      PYTHON_VERSION: cp310
+
+    steps:
+      - name: Download PR information
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: python-pr-info-*
+          path: ${{ runner.temp }}/python-pr-info-extracted
+          merge-multiple: true
+#          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
+#          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
+
+      - name: Extract PR Information
+        run: |
+          REPO_NAME=$(cat ${{ runner.temp }}/python-pr-info-extracted/repo-name)
+          HEAD_REF=$(cat ${{ runner.temp }}/python-pr-info-extracted/head-ref)
+          HEAD_SHA=$(cat ${{ runner.temp }}/python-pr-info-extracted/head-sha)
+          PR_NUMBER=$(cat ${{ runner.temp }}/python-pr-info-extracted/pr-number)
+          BASE_REF=$(cat ${{ runner.temp }}/python-pr-info-extracted/base-ref)
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "HEAD_REF=$HEAD_REF" >> $GITHUB_ENV
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "BASE_REF=$BASE_REF" >> $GITHUB_ENV
+          echo "PR information extracted: $REPO_NAME $HEAD_REF $HEAD_SHA $PR_NUMBER $BASE_REF"
+
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ env.HEAD_REF }}
+          repository: ${{ env.REPO_NAME }}
+          fetch-depth: 0
+
+      - name: Download coverage report for SonarCloud
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: python-data-for-sonar-analysis-*
+          merge-multiple: true
+          path: .
+  #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
+  #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
+
+      - name: Sonar analysis
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
+            "-Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
+            "-Dsonar.pullrequest.branch=${{ env.HEAD_REF }}"
+            "-Dsonar.pullrequest.base=${{ env.BASE_REF }}"
+            -Dsonar.pullrequest.provider=github
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+            -Dsonar.scm.provider=git
+            -Dsonar.scm.revision=${{ env.HEAD_SHA }}
+            -Dsonar.qualitygate.wait=true
+
+  sonar_java:
+    name: Run SonarCloud analysis for Java code (linux)
+    needs: prepare_sonar_java # TODO: Move this job to a specific workflow
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false # TODO: switch to conf for forks
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Download PR information
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: java-pr-info-*
+          path: ${{ runner.temp }}/java-pr-info-extracted
+          merge-multiple: true
+      #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
+      #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
+
+      - name: Extract PR Information
+        run: |
+          REPO_NAME=$(cat ${{ runner.temp }}/java-pr-info-extracted/repo-name)
+          HEAD_REF=$(cat ${{ runner.temp }}/java-pr-info-extracted/head-ref)
+          HEAD_SHA=$(cat ${{ runner.temp }}/java-pr-info-extracted/head-sha)
+          PR_NUMBER=$(cat ${{ runner.temp }}/java-pr-info-extracted/pr-number)
+          BASE_REF=$(cat ${{ runner.temp }}/java-pr-info-extracted/base-ref)
+          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
+          echo "HEAD_REF=$HEAD_REF" >> $GITHUB_ENV
+          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
+          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
+          echo "BASE_REF=$BASE_REF" >> $GITHUB_ENV
+          echo "PR information extracted: $REPO_NAME $HEAD_REF $HEAD_SHA $PR_NUMBER $BASE_REF"
+
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ env.HEAD_REF }}
+          repository: ${{ env.REPO_NAME }}
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Download Sonar analysis data
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: java-data-for-sonar-analysis-*
+          path: .
+          merge-multiple: true
+      #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
+      #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
+
+      - name: Prepare Sonar Analysis
+        run: |
+          echo "Checking required directories..."
+          if [ -f "java/pypowsybl/target/site/jacoco/jacoco.xml" ]; then
+            echo "Jacoco report found"
+          else
+            echo "Warning: Jacoco report not found at expected location"
+          fi
+          echo "Finding sources and binaries..."
+          SOURCES=$(find . -type d -path "*/main/java" | sort -u | paste -sd "," -)
+          if [ -z "$SOURCES" ]; then
+            echo "Warning: No source directories found!"
+          else
+            echo "SOURCES : $SOURCES"
+            echo "SOURCES=$SOURCES" >> $GITHUB_ENV
+          fi
+          GENERATED=$(find . -type d -path "*/target/generated-sources" | sort -u | paste -sd "," -)
+          if [ -z "$GENERATED" ]; then
+            echo "Warning: No generated source directories found!"
+          else
+            echo "GENERATED : $GENERATED"
+            echo "GENERATED=$GENERATED" >> $GITHUB_ENV
+          fi
+          TESTS=$(find . -type d -path "*/test/java" | sort -u | paste -sd "," -)
+          if [ -z "$TESTS" ]; then
+            echo "Warning: No test directories found!"
+          else
+            echo "TESTS : $TESTS"
+            echo "TESTS=$TESTS" >> $GITHUB_ENV
+          fi
+          BINARIES=$(find . -type d -path "*/target/classes" | sort -u | paste -sd "," -)
+          if [ -z "$BINARIES" ]; then
+            echo "Warning: No binaries directories found!"
+          else
+            echo "BINARIES : $BINARIES"
+            echo "BINARIES=$BINARIES" >> $GITHUB_ENV
+          fi
+          LIBRARIES="java/pypowsybl/target/dependency"
+          if [ -z "$LIBRARIES" ]; then
+            echo "Warning: No libraries directory found!"
+          else
+            echo "LIBRARIES : $LIBRARIES"
+            echo "LIBRARIES=$LIBRARIES" >> $GITHUB_ENV
+          fi
+
+      # This sonar action should NOT be replaced by a direct use of the mvn verify command since we don't want external
+      # code to run in a workflow_run workflow (it may lead to security issues).
+      - name: Run Sonar Analysis (Java)
+        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=powsybl_pypowsybl-java
+            -Dsonar.organization=powsybl-ci-github
+            "-Dsonar.sources=${{ env.SOURCES }}"
+            "-Dsonar.generatedSources=${{ env.GENERATED }}"
+            "-Dsonar.tests=${{ env.TESTS }}"
+            "-Dsonar.java.binaries=${{ env.BINARIES }}"
+            "-Dsonar.java.libraries=${{ env.LIBRARIES }}"
+            "-Dsonar.java.test.libraries=${{ env.LIBRARIES }}"
+            "-Dsonar.coverage.jacoco.xmlReportPaths=java/pypowsybl/target/site/jacoco/jacoco.xml"
+            "-Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
+            "-Dsonar.pullrequest.branch=${{ env.HEAD_REF }}"
+            "-Dsonar.pullrequest.base=${{ env.BASE_REF }}"
+            -Dsonar.pullrequest.provider=github
+            -Dsonar.pullrequest.github.repository=${{ github.repository }}
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.scm.provider=git
+            -Dsonar.qualitygate.wait=true
+            -Dsonar.scm.revision=${{ env.HEAD_SHA }}
+
+      - name: Delete artifacts used in analysis
+        if: always()
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            let artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            for (const artifact of artifacts.data.artifacts) {
+              if (
+                artifact.name.startsWith("java-data-for-sonar-analysis-") ||
+                artifact.name.startsWith("java-pr-info-")
+              ) {
+                console.log(`Deleting artifact: ${artifact.name} (ID: ${artifact.id})`);
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id
+                });
+              }
+            }
