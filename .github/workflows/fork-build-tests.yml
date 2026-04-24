@@ -8,7 +8,7 @@ permissions: {}
 jobs:
   build-tests:
     name: Build ${{ matrix.config.name }} wheel
-    if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
+    if: github.event.pull_request.head.repo.fork == true
     runs-on: ${{ matrix.config.os }}
     container: ${{ matrix.config.container }}
     strategy:
@@ -104,7 +104,7 @@ jobs:
 
   prepare_sonar_python:
     name: Prepare data for Python SonarCloud analysis (linux)
-    if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
+    if: github.event.pull_request.head.repo.fork == true
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     env:
@@ -173,7 +173,7 @@ jobs:
   prepare_sonar_java:
     name: Prepare data for Java SonarCloud analysis (linux)
     runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
+    if: github.event.pull_request.head.repo.fork == true
 
     steps:
       - name: Checkout sources
@@ -228,229 +228,3 @@ jobs:
           name: java-pr-info-${{ github.event.pull_request.number }}
           path: java-pr-info/
           retention-days: 1
-
-  sonar_python:
-    name: Run SonarCloud analysis for Python code (linux)
-    needs: prepare_sonar_python # TODO: Move this job to a specific workflow
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork == false # TODO: switch to conf for forks
-    permissions:
-      contents: read
-      pull-requests: read
-    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
-    env:
-      PYTHON_VERSION: cp310
-
-    steps:
-      - name: Download PR information
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: python-pr-info-*
-          path: python-pr-info-extracted
-          merge-multiple: true
-#          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
-#          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
-
-      - name: Extract PR Information
-        run: |
-          REPO_NAME=$(cat python-pr-info-extracted/repo-name)
-          HEAD_REF=$(cat python-pr-info-extracted/head-ref)
-          HEAD_SHA=$(cat python-pr-info-extracted/head-sha)
-          PR_NUMBER=$(cat python-pr-info-extracted/pr-number)
-          BASE_REF=$(cat python-pr-info-extracted/base-ref)
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-          echo "HEAD_REF=$HEAD_REF" >> $GITHUB_ENV
-          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          echo "BASE_REF=$BASE_REF" >> $GITHUB_ENV
-          echo "PR information extracted: $REPO_NAME $HEAD_REF $HEAD_SHA $PR_NUMBER $BASE_REF"
-
-      - name: Checkout sources
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ env.HEAD_REF }}
-          repository: ${{ env.REPO_NAME }}
-          fetch-depth: 0
-
-      - name: Download coverage report for SonarCloud
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: python-data-for-sonar-analysis-*
-          merge-multiple: true
-          path: .
-  #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
-  #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
-
-      - name: Sonar analysis
-        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-            "-Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
-            "-Dsonar.pullrequest.branch=${{ env.HEAD_REF }}"
-            "-Dsonar.pullrequest.base=${{ env.BASE_REF }}"
-            -Dsonar.pullrequest.provider=github
-            -Dsonar.pullrequest.github.repository=${{ github.repository }}
-            -Dsonar.scm.provider=git
-            -Dsonar.scm.revision=${{ env.HEAD_SHA }}
-            -Dsonar.qualitygate.wait=true
-
-  sonar_java:
-    name: Run SonarCloud analysis for Java code (linux)
-    needs: prepare_sonar_java # TODO: Move this job to a specific workflow
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.head.repo.fork == false # TODO: switch to conf for forks
-    permissions:
-      contents: read
-      pull-requests: read
-
-    steps:
-      - name: Download PR information
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: java-pr-info-*
-          path: ${{ runner.temp }}/java-pr-info-extracted
-          merge-multiple: true
-      #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
-      #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
-
-      - name: Extract PR Information
-        run: |
-          REPO_NAME=$(cat ${{ runner.temp }}/java-pr-info-extracted/repo-name)
-          HEAD_REF=$(cat ${{ runner.temp }}/java-pr-info-extracted/head-ref)
-          HEAD_SHA=$(cat ${{ runner.temp }}/java-pr-info-extracted/head-sha)
-          PR_NUMBER=$(cat ${{ runner.temp }}/java-pr-info-extracted/pr-number)
-          BASE_REF=$(cat ${{ runner.temp }}/java-pr-info-extracted/base-ref)
-          echo "REPO_NAME=$REPO_NAME" >> $GITHUB_ENV
-          echo "HEAD_REF=$HEAD_REF" >> $GITHUB_ENV
-          echo "HEAD_SHA=$HEAD_SHA" >> $GITHUB_ENV
-          echo "PR_NUMBER=$PR_NUMBER" >> $GITHUB_ENV
-          echo "BASE_REF=$BASE_REF" >> $GITHUB_ENV
-          echo "PR information extracted: $REPO_NAME $HEAD_REF $HEAD_SHA $PR_NUMBER $BASE_REF"
-
-      - name: Checkout sources
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ env.HEAD_REF }}
-          repository: ${{ env.REPO_NAME }}
-          fetch-depth: 0
-
-      - name: Set up JDK 21
-        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-          cache: 'maven'
-
-      - name: Download Sonar analysis data
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: java-data-for-sonar-analysis-*
-          path: java
-          merge-multiple: true
-      #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
-      #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
-
-      - name: Prepare Sonar Analysis
-        run: |
-          echo "=== Listing downloaded artifact structure ==="
-          ls -laR java/
-          echo "============================================="
-          echo "Checking required directories..."
-          if [ -f "java/pypowsybl/target/site/jacoco/jacoco.xml" ]; then
-            echo "Jacoco report found"
-          else
-            echo "Warning: Jacoco report not found at expected location"
-          fi
-          echo "Finding sources and binaries..."
-          SOURCES=$(find . -type d -path "*/main/java" | sort -u | paste -sd "," -)
-          if [ -z "$SOURCES" ]; then
-            echo "Warning: No source directories found!"
-          else
-            echo "SOURCES : $SOURCES"
-            echo "SOURCES=$SOURCES" >> $GITHUB_ENV
-          fi
-          GENERATED=$(find . -type d -path "*/target/generated-sources" | sort -u | paste -sd "," -)
-          if [ -z "$GENERATED" ]; then
-            echo "Warning: No generated source directories found!"
-          else
-            echo "GENERATED : $GENERATED"
-            echo "GENERATED=$GENERATED" >> $GITHUB_ENV
-          fi
-          TESTS=$(find . -type d -path "*/test/java" | sort -u | paste -sd "," -)
-          if [ -z "$TESTS" ]; then
-            echo "Warning: No test directories found!"
-          else
-            echo "TESTS : $TESTS"
-            echo "TESTS=$TESTS" >> $GITHUB_ENV
-          fi
-          BINARIES=$(find . -type d -path "*/target/classes" | sort -u | paste -sd "," -)
-          if [ -z "$BINARIES" ]; then
-            echo "Warning: No binaries directories found!"
-          else
-            echo "BINARIES : $BINARIES"
-            echo "BINARIES=$BINARIES" >> $GITHUB_ENV
-          fi
-          LIBRARIES="java/pypowsybl/target/dependency"
-          if [ -z "$LIBRARIES" ]; then
-            echo "Warning: No libraries directory found!"
-          else
-            echo "LIBRARIES : $LIBRARIES"
-            echo "LIBRARIES=$LIBRARIES" >> $GITHUB_ENV
-          fi
-
-      # This sonar action should NOT be replaced by a direct use of the mvn verify command since we don't want external
-      # code to run in a workflow_run workflow (it may lead to security issues).
-      - name: Run Sonar Analysis (Java)
-        uses: SonarSource/sonarqube-scan-action@a31c9398be7ace6bbfaf30c0bd5d415f843d45e9 # v7.0.0
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=powsybl_pypowsybl-java
-            -Dsonar.organization=powsybl-ci-github
-            "-Dsonar.sources=${{ env.SOURCES }}"
-            "-Dsonar.generatedSources=${{ env.GENERATED }}"
-            "-Dsonar.tests=${{ env.TESTS }}"
-            "-Dsonar.java.binaries=${{ env.BINARIES }}"
-            "-Dsonar.java.libraries=${{ env.LIBRARIES }}"
-            "-Dsonar.java.test.libraries=${{ env.LIBRARIES }}"
-            "-Dsonar.coverage.jacoco.xmlReportPaths=java/pypowsybl/target/site/jacoco/jacoco.xml"
-            "-Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
-            "-Dsonar.pullrequest.branch=${{ env.HEAD_REF }}"
-            "-Dsonar.pullrequest.base=${{ env.BASE_REF }}"
-            -Dsonar.pullrequest.provider=github
-            -Dsonar.pullrequest.github.repository=${{ github.repository }}
-            -Dsonar.host.url=https://sonarcloud.io
-            -Dsonar.scm.provider=git
-            -Dsonar.qualitygate.wait=true
-            -Dsonar.scm.revision=${{ env.HEAD_SHA }}
-
-#      - name: Delete artifacts used in analysis
-#        if: always()
-#        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
-#        with:
-#          github-token: ${{ secrets.GITHUB_TOKEN }}
-#          script: |
-#            let artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-#               owner: context.repo.owner,
-#               repo: context.repo.repo,
-#               run_id: context.payload.workflow_run.id,
-#            });
-#            for (const artifact of artifacts.data.artifacts) {
-#              if (
-#                artifact.name.startsWith("java-data-for-sonar-analysis-") ||
-#                artifact.name.startsWith("java-pr-info-")
-#              ) {
-#                console.log(`Deleting artifact: ${artifact.name} (ID: ${artifact.id})`);
-#                await github.rest.actions.deleteArtifact({
-#                  owner: context.repo.owner,
-#                  repo: context.repo.repo,
-#                  artifact_id: artifact.id
-#                });
-#              }
-#            }
