@@ -356,6 +356,9 @@ jobs:
 
       - name: Prepare Sonar Analysis
         run: |
+          echo "=== Listing downloaded artifact structure ==="
+          ls -laR java/
+          echo "============================================="
           echo "Checking required directories..."
           if [ -f "java/pypowsybl/target/site/jacoco/jacoco.xml" ]; then
             echo "Jacoco report found"
@@ -370,21 +373,21 @@ jobs:
             echo "SOURCES : $SOURCES"
             echo "SOURCES=$SOURCES" >> $GITHUB_ENV
           fi
-          GENERATED=$(find . -type d -path "java/*/target/generated-sources" | sort -u | paste -sd "," -)
+          GENERATED=$(find . -type d -path "*/target/generated-sources" | sort -u | paste -sd "," -)
           if [ -z "$GENERATED" ]; then
             echo "Warning: No generated source directories found!"
           else
             echo "GENERATED : $GENERATED"
             echo "GENERATED=$GENERATED" >> $GITHUB_ENV
           fi
-          TESTS=$(find . -type d -path "java/*/test/java" | sort -u | paste -sd "," -)
+          TESTS=$(find . -type d -path "*/test/java" | sort -u | paste -sd "," -)
           if [ -z "$TESTS" ]; then
             echo "Warning: No test directories found!"
           else
             echo "TESTS : $TESTS"
             echo "TESTS=$TESTS" >> $GITHUB_ENV
           fi
-          BINARIES=$(find . -type d -path "java/*/target/classes" | sort -u | paste -sd "," -)
+          BINARIES=$(find . -type d -path "*/target/classes" | sort -u | paste -sd "," -)
           if [ -z "$BINARIES" ]; then
             echo "Warning: No binaries directories found!"
           else
