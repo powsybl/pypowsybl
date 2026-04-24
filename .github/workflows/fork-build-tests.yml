@@ -103,7 +103,7 @@ jobs:
           cmake --build . --config Release
 
   prepare_sonar_python:
-    name: Run SonarCloud analysis for Python code (linux)
+    name: Prepare data for Python SonarCloud analysis (linux)
     if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
     runs-on: ubuntu-latest
     container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
@@ -171,7 +171,7 @@ jobs:
           retention-days: 1
 
   prepare_sonar_java:
-    name: Run SonarCloud analysis for Java code (linux)
+    name: Prepare data for Java SonarCloud analysis (linux)
     runs-on: ubuntu-latest
     if: github.event.pull_request.head.repo.fork == false # TODO: switch to true
 
@@ -277,7 +277,7 @@ jobs:
         with:
           pattern: python-data-for-sonar-analysis-*
           merge-multiple: true
-          path: java
+          path: .
   #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
   #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
 
@@ -349,7 +349,7 @@ jobs:
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           pattern: java-data-for-sonar-analysis-*
-          path: .
+          path: java
           merge-multiple: true
       #          run-id: ${{ github.event.workflow_run.id }} # TODO: uncomment once in a dedicated workflow
       #          github-token: ${{ secrets.GITHUB_TOKEN }} # TODO: uncomment once in a dedicated workflow
