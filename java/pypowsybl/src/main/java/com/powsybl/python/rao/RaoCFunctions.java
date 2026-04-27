@@ -16,15 +16,33 @@ import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.openrao.data.crac.api.Crac;
+import com.powsybl.openrao.data.crac.api.CracCreationContext;
 import com.powsybl.openrao.data.crac.api.RaUsageLimits;
+import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
+import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
-import com.powsybl.openrao.raoapi.parameters.*;
-import com.powsybl.openrao.raoapi.parameters.extensions.*;
+import com.powsybl.openrao.raoapi.parameters.LoopFlowParameters;
+import com.powsybl.openrao.raoapi.parameters.MnecParameters;
+import com.powsybl.openrao.raoapi.parameters.ObjectiveFunctionParameters;
+import com.powsybl.openrao.raoapi.parameters.RaoParameters;
+import com.powsybl.openrao.raoapi.parameters.RelativeMarginsParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.FastRaoParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.OpenRaoSearchTreeParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoCostlyMinMarginParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoLoopFlowParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoMnecParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoRangeActionsOptimizationParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SearchTreeRaoRelativeMarginsParameters;
+import com.powsybl.openrao.raoapi.parameters.extensions.SecondPreventiveRaoParameters;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.PyPowsyblApiHeader.*;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.ExceptionHandlerPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.RaoComputationStatus;
+import com.powsybl.python.commons.PyPowsyblApiHeader.RaoParametersPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
@@ -41,16 +59,54 @@ import org.graalvm.nativeimage.c.type.CTypeConversion;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.function.Supplier;
 
-import static com.powsybl.python.commons.CTypeUtil.*;
-import static com.powsybl.python.commons.Util.*;
+import static com.powsybl.python.commons.CTypeUtil.arrayPointerToStringListList;
+import static com.powsybl.python.commons.CTypeUtil.freeNestedArrayPointer;
+import static com.powsybl.python.commons.CTypeUtil.stringListListToArrayPointer;
+import static com.powsybl.python.commons.Util.PointerProvider;
+import static com.powsybl.python.commons.Util.binaryBufferToBytes;
+import static com.powsybl.python.commons.Util.doCatch;
+import static com.powsybl.python.commons.Util.freeProviderParameters;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
-import static com.powsybl.python.rao.RaoDataframes.*;
+import static com.powsybl.python.rao.RaoDataframes.cracAngleCnecs;
+import static com.powsybl.python.rao.RaoDataframes.cracBoundaryLineActions;
+import static com.powsybl.python.rao.RaoDataframes.cracContingencies;
+import static com.powsybl.python.rao.RaoDataframes.cracContingencyElements;
+import static com.powsybl.python.rao.RaoDataframes.cracCounterTradeRangeActions;
+import static com.powsybl.python.rao.RaoDataframes.cracFlowCnecs;
+import static com.powsybl.python.rao.RaoDataframes.cracGeneratorActions;
+import static com.powsybl.python.rao.RaoDataframes.cracInjectionRaElements;
+import static com.powsybl.python.rao.RaoDataframes.cracInjectionRangeActions;
+import static com.powsybl.python.rao.RaoDataframes.cracInstantsMapper;
+import static com.powsybl.python.rao.RaoDataframes.cracLoadActions;
+import static com.powsybl.python.rao.RaoDataframes.cracNetworkActions;
+import static com.powsybl.python.rao.RaoDataframes.cracOnConstraintUsageRules;
+import static com.powsybl.python.rao.RaoDataframes.cracOnContingencyStateUsageRules;
+import static com.powsybl.python.rao.RaoDataframes.cracOnFlowConstraintInCountryUsageRules;
+import static com.powsybl.python.rao.RaoDataframes.cracOnInstantUsageRules;
+import static com.powsybl.python.rao.RaoDataframes.cracPerTsoUsageLimits;
+import static com.powsybl.python.rao.RaoDataframes.cracPstTapPositionActions;
+import static com.powsybl.python.rao.RaoDataframes.cracRangeActions;
+import static com.powsybl.python.rao.RaoDataframes.cracRanges;
+import static com.powsybl.python.rao.RaoDataframes.cracRemedialActionsUsageLimits;
+import static com.powsybl.python.rao.RaoDataframes.cracShuntCompensatorPositionActions;
+import static com.powsybl.python.rao.RaoDataframes.cracSwitchActions;
+import static com.powsybl.python.rao.RaoDataframes.cracSwitchPairs;
+import static com.powsybl.python.rao.RaoDataframes.cracTerminalConnectionActions;
+import static com.powsybl.python.rao.RaoDataframes.cracThresholds;
+import static com.powsybl.python.rao.RaoDataframes.cracVoltageCnecs;
+import static com.powsybl.python.rao.RaoDataframes.createVirtualCostResultMapper;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
@@ -93,7 +149,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "serializeRaoParameters")
     public static ArrayPointer<CCharPointer> serializeRaoParameters(IsolateThread thread, RaoParametersPointer raoParameters,
-                                                                                       ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                    ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointer> get() throws IOException {
@@ -106,6 +162,34 @@ public final class RaoCFunctions {
                 }
             }
         });
+    }
+
+    @CEntryPoint(name = "loadCracWithParameters")
+    public static ObjectHandle loadCracWithParameters(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracFilePtr, CCharPointer creationParametersFilePtr, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String cracFile = CTypeUtil.toString(cracFilePtr);
+                String creationParametersFile = CTypeUtil.toString(creationParametersFilePtr);
+                return ObjectHandles.getGlobal().create(readCracWithParameters(network, cracFile, creationParametersFile));
+            }
+        });
+    }
+
+    public static Crac readCracWithParameters(Network network, String cracFile, String creationParametersFile) {
+        try (FileInputStream cracInputStream = new FileInputStream(cracFile)) {
+            CracCreationParameters cracCreationParameters = JsonCracCreationParameters.read(Path.of(creationParametersFile));
+            CracCreationContext cracCreationContext = Crac.readWithContext(cracFile, cracInputStream, network, cracCreationParameters);
+            Crac crac = cracCreationContext.getCrac();
+            if (crac != null) {
+                return crac;
+            } else {
+                throw new PowsyblException("Error while reading CRAC file, please enable detailed log for more information.");
+            }
+        } catch (IOException e) {
+            throw new PowsyblException("Error while reading CRAC file, please enable detailed log for more information: %s.".formatted(e.getMessage()));
+        }
     }
 
     @CEntryPoint(name = "loadCracBufferedSource")
@@ -208,8 +292,8 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "runVoltageMonitoring")
     public static ObjectHandle runVoltageMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle cracHandle, ObjectHandle contextHandle,
-                                     PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                     CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                    PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
+                                                    CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
@@ -228,8 +312,8 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "runAngleMonitoring")
     public static ObjectHandle runAngleMonitoring(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle resultHandle, ObjectHandle cracHandle, ObjectHandle contextHandle,
-                                     PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
-                                     CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  PyPowsyblApiHeader.LoadFlowParametersPointer loadFlowParametersPtr,
+                                                  CCharPointer provider, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
@@ -247,7 +331,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "serializeRaoResultsToBuffer")
     public static ArrayPointer<CCharPointer> serializeRaoResultsToBuffer(IsolateThread thread, ObjectHandle raoResultHandle,
-        ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                         ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CCharPointer> get() throws IOException {
@@ -282,7 +366,8 @@ public final class RaoCFunctions {
                     case PARTIAL_FAILURE -> {
                         return RaoComputationStatus.PARTIAL_FAILURE;
                     }
-                    default -> throw new PowsyblException("Unexpected computation status : " + result.getComputationStatus());
+                    default ->
+                        throw new PowsyblException("Unexpected computation status : " + result.getComputationStatus());
                 }
             }
         });
@@ -430,7 +515,7 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "freeRaoParameters")
     public static void freeRaoParameters(IsolateThread thread, RaoParametersPointer parametersPointer,
-                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+                                         ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {

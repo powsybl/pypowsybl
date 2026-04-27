@@ -381,6 +381,11 @@
             <artifactId>powsybl-open-reac</artifactId>
             <version>${powsybl-open-reac.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-nc</artifactId>
+            <version>7.2.0</version>
+        </dependency>
 
         <!-- test -->
         <dependency>

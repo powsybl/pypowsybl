@@ -28,6 +28,7 @@ py::bytes saveNetworkToBinaryBufferPython(const pypowsybl::JavaHandle& network, 
 void updateNetworkFromBinaryBuffersPython(const pypowsybl::JavaHandle& network, std::vector<py::buffer> byteBuffers, const std::map<std::string, std::string>& parameters, const std::vector<std::string>& postProcessors, pypowsybl::JavaHandle* reportNode);
 
 
+pypowsybl::JavaHandle loadCracWithParametersFromPaths(const pypowsybl::JavaHandle& networkHandle, const std::string& cracFile, const std::string& creationParametersFile);
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac);
 pypowsybl::JavaHandle loadGlskSource(const py::buffer& glsk);
 pypowsybl::JavaHandle loadResultSource(const pypowsybl::JavaHandle& cracHandle, const py::buffer& result);
@@ -1341,6 +1342,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("create_rao", &pypowsybl::createRao, "Create rao context");
     m.def("run_rao", &pypowsybl::runRaoWithParameters, py::call_guard<py::gil_scoped_release>(), "Run a rao from buffered inputs",
         py::arg("network"), py::arg("crac"), py::arg("rao_context"), py::arg("parameters"), py::arg("rao_provider"));
+    m.def("load_crac_with_parameters", ::loadCracWithParametersFromPaths, "Read CRAC from file and parameters", py::arg("network"), py::arg("crac_file"), py::arg("creation_parameters_file"));
     m.def("load_crac_source", ::loadCracSource, py::call_guard<py::gil_scoped_release>(), "Set crac source",
             py::arg("network"), py::arg("crac_source"));
     m.def("load_glsk_source", ::loadGlskSource, py::call_guard<py::gil_scoped_release>(), "Set glsk source", py::arg("glsk_source"));
@@ -1589,6 +1591,10 @@ void updateNetworkFromBinaryBuffersPython(const pypowsybl::JavaHandle& network, 
     pypowsybl::PowsyblCaller::get()->callJava(::updateNetworkFromBinaryBuffers, network, dataPtrs, dataSizes, byteBuffers.size(), parameterNamesPtr.get(),
                                               parameterNames.size(), parameterValuesPtr.get(), parameterValues.size(), postProcessorsPtr.get(),
                                               postProcessors.size(), (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
+pypowsybl::JavaHandle loadCracWithParametersFromPaths(const pypowsybl::JavaHandle& networkHandle, const std::string& cracFile, const std::string& creationParametersFile) {
+    return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadCracWithParameters, networkHandle, (char*) cracFile.data(), (char*) creationParametersFile.data());
 }
 
 pypowsybl::JavaHandle loadCracSource(const pypowsybl::JavaHandle& networkHandle, const py::buffer& crac) {

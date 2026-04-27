@@ -5,6 +5,10 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import io
+import json
+import shutil
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from pypowsybl import _pypowsybl
 from pypowsybl.network import Network
@@ -16,7 +20,7 @@ from os import PathLike
 
 from typing import (
     Union,
-    Any
+    Any, Optional
 )
 
 class Crac:
@@ -26,6 +30,20 @@ class Crac:
 
     def __init__(self, handle: _pypowsybl.JavaHandle):
         self._handle = handle
+
+    @classmethod
+    def load(cls, network: Network, crac_file: Union[str, PathLike], creation_parameters_file: Optional[Union[str, PathLike]] = None) -> "Crac":
+        with TemporaryDirectory() as tmp_dir:
+            tmp_dir = Path(tmp_dir)
+            if creation_parameters_file is None:
+                creation_parameters_file = tmp_dir / "crac-creation-parameters.json"
+                with open(str(creation_parameters_file), "w") as outfile:
+                    json.dump({"crac-factory": "CracImplFactory"}, outfile)
+            else:
+                shutil.copyfile(creation_parameters_file, tmp_dir / "crac-creation-parameters.json")
+            crac_filename = Path(crac_file).name
+            shutil.copyfile(crac_file, tmp_dir / crac_filename)
+            return cls(_pypowsybl.load_crac_with_parameters(network._handle, str(tmp_dir / crac_filename), str(tmp_dir / "crac-creation-parameters.json")))
 
     @classmethod
     def from_file_source(cls, network: Network, crac_file: Union[str, PathLike]) -> Any :
