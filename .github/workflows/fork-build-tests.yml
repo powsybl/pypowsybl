@@ -1,0 +1,230 @@
+name: CI on forks - build and tests
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  build-tests:
+    name: Build ${{ matrix.config.name }} wheel
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {
+            name: linux,
+            os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+            wheel-dir: "wheelhouse",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+            wheel-dir: "dist",
+          }
+          - {
+            name: windows,
+            os: windows-2022,
+            wheel-dir: "dist",
+          }
+        python:
+          - {
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
+          }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+
+      - name: Install Linux Packages
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: dnf install -y wget
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: ${{ matrix.config.name }}
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
+
+      - name: Setup path
+        if: matrix.config.name == 'linux'
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Build wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: |
+          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          if [ "${{ matrix.config.name }}" == "linux" ]; then
+            auditwheel repair dist/*.whl
+          fi
+
+      - name: Install wheel
+        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: ${{ env.PYTHON }} basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: ${{ env.PYTHON }} -m pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+
+  prepare_sonar_python:
+    name: Prepare data for Python SonarCloud analysis (linux)
+    if: github.event.pull_request.head.repo.fork == true
+    runs-on: ubuntu-latest
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+    env:
+      PYTHON_VERSION: cp310
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
+      - name: Setup path
+        run: echo "/opt/python/${{ env.PYTHON_VERSION }}-${{ env.PYTHON_VERSION }}/bin/" >> $GITHUB_PATH
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: "linux"
+
+      - name: Install the package
+        run: |
+          pip install -e .
+
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Save coverage report and other data for SonarCloud
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: python-data-for-sonar-analysis-${{ github.event.pull_request.number }}
+          retention-days: 1
+          path: |
+            coverage.xml
+
+      - name: Save PR Information
+        env:
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          mkdir -p python-pr-info
+          echo "$REPO_NAME" > python-pr-info/repo-name
+          echo "$HEAD_REF" > python-pr-info/head-ref
+          echo "$HEAD_SHA" > python-pr-info/head-sha
+          echo "$PR_NUMBER" > python-pr-info/pr-number
+          echo "$BASE_REF" > python-pr-info/base-ref
+
+      - name: Upload Python PR Information
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: python-pr-info-${{ github.event.pull_request.number }}
+          path: python-pr-info/
+          retention-days: 1
+
+  prepare_sonar_java:
+    name: Prepare data for Java SonarCloud analysis (linux)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == true
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build with Maven (Ubuntu)
+        working-directory: ./java
+        run: ./mvnw -B -ntp -Pjacoco install
+
+      - name: Regroup dependencies in target folders
+        working-directory: ./java
+        run: ./mvnw dependency:copy-dependencies
+
+      - name: Save classes and Jacoco report
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: java-data-for-sonar-analysis-${{ github.event.pull_request.number }}
+          retention-days: 1
+          path: |
+            java/*/target/classes
+            java/*/target/generated-sources
+            java/pypowsybl/target/dependency
+            java/pypowsybl/target/site/jacoco/jacoco.xml
+
+      - name: Save PR Information
+        env:
+          REPO_NAME: ${{ github.event.pull_request.head.repo.full_name }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+        run: |
+          mkdir -p java-pr-info
+          echo "$REPO_NAME" > java-pr-info/repo-name
+          echo "$HEAD_REF" > java-pr-info/head-ref
+          echo "$HEAD_SHA" > java-pr-info/head-sha
+          echo "$PR_NUMBER" > java-pr-info/pr-number
+          echo "$BASE_REF" > java-pr-info/base-ref
+
+      - name: Upload PR Information
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # 7.0.0
+        with:
+          name: java-pr-info-${{ github.event.pull_request.number }}
+          path: java-pr-info/
+          retention-days: 1
