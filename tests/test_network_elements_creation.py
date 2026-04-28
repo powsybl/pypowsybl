@@ -318,15 +318,15 @@ NGEN_NHV1  2  2  1  1  0.5
 def test_phase_tap_changers_creation():
     n = pn.create_four_substations_node_breaker_network()
     n.create_2_windings_transformers(dataframe_from_string("""
-id          r   x  g    b  rated_u1  rated_u2 voltage_level1_id voltage_level2_id  node1  node2                                                                                         
+id          r   x  g    b  rated_u1  rated_u2 voltage_level1_id voltage_level2_id  node1  node2
 TWT_TEST  0.1  10  1  0.1       400       158             S1VL1             S1VL2      1      2
 """))
     ptc_df = dataframe_from_string("""
-id        target_deadband  regulation_mode  target_value  low_tap  tap  regulating  regulated_side                                                  
+id        target_deadband  regulation_mode  target_value  low_tap  tap  regulating  regulated_side
 TWT_TEST                2  CURRENT_LIMITER           300        0    1        True             TWO
 """)
     steps_df = dataframe_from_string("""
-id        b  g  r  x  rho  alpha                          
+id        b  g  r  x  rho  alpha
 TWT_TEST  2  2  1  1  0.5    0.1
 TWT_TEST  2  2  1  1  0.5    0.1
 """)
@@ -1238,3 +1238,20 @@ def test_dc_ground_creation():
                             columns=['name', 'dc_node_id', 'r'],
                             data=[['', 'dcNodeGbMid', 0.0], ['', 'dcNodeFrMid', 0.0], ['', 'dcNodeGbMid', 0.1]])
     pd.testing.assert_frame_equal(expected, n.get_dc_grounds(), check_dtype=False)
+
+
+def test_dc_switch_creation():
+    n = pypowsybl.network.create_dc_detailed_dc_switch_2_nodes()
+    n.create_dc_switches(
+        pd.DataFrame(index=['DC_SWITCH_TEST'],
+                     columns=['r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
+                     data=[[0.2, 'dcNode1', 'dcNode2', 'BREAKER', True]]))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch', 'DC_SWITCH_TEST', ]),
+                            columns=['name', 'r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
+                            data=[['', 0.1, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False],
+                                  ['', 0.2, 'dcNode1', 'dcNode2', 'BREAKER', True]])
+
+    dc_switches = n.get_dc_switches()
+    # check_like = True to avoid testing column ordering
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)

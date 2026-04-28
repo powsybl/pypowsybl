@@ -153,6 +153,7 @@ Supported elements are:
  - DC lines
  - voltage source converters
  - DC grounds
+ - DC switches
 
 Each element of the network is mapped to one row of the dataframe, an each element attribute
 is mapped to one column of the dataframe (a :class:`~pandas.Series`).
@@ -565,7 +566,7 @@ Now you can draw the single line diagrams of *VL1* and *VL2* to check that the l
    :class: forced-white-background
 
 Here, similarly to busbar sections, the load and the line are randomly localized on the diagram.
-You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be 
+You can add extensions on the line and on the load to specify where they are localized in the busbar sections and if they must be
 drawn on the top or on the bottom. We choose that the load *load1* is the first feeder of the busbar
 section and on the bottom of *VL1*. The line *line1* is the second one and directed to the top on *VL1*. On *VL2*, the line
 is also on top. The relative position between the load and the line is specified with the order in the position

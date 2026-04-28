@@ -683,6 +683,8 @@ void applySolvedTapPositionAndSolvedSectionCount(const JavaHandle& network);
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
 
+bool updateDcSwitchPosition(const JavaHandle& network, const std::string& id, bool open);
+
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected, bool allowDisconnectors,
                              bool allowFictitious);
 
