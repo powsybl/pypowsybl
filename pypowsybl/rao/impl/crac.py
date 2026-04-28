@@ -33,17 +33,19 @@ class Crac:
 
     @classmethod
     def load(cls, network: Network, crac_file: Union[str, PathLike], creation_parameters_file: Optional[Union[str, PathLike]] = None) -> "Crac":
+        crac_filename = Path(crac_file).name
+        parameters_filename = "crac-creation-parameters.json"
         with TemporaryDirectory() as tmp_dir:
-            tmp_dir = Path(tmp_dir)
+            tmp_path = Path(tmp_dir)
+            crac_path = tmp_path / crac_filename
+            parameters_path = tmp_path / parameters_filename
             if creation_parameters_file is None:
-                creation_parameters_file = tmp_dir / "crac-creation-parameters.json"
-                with open(str(creation_parameters_file), "w") as outfile:
+                with open(str(parameters_path), "w") as outfile:
                     json.dump({"crac-factory": "CracImplFactory"}, outfile)
             else:
-                shutil.copyfile(creation_parameters_file, tmp_dir / "crac-creation-parameters.json")
-            crac_filename = Path(crac_file).name
-            shutil.copyfile(crac_file, tmp_dir / crac_filename)
-            return cls(_pypowsybl.load_crac_with_parameters(network._handle, str(tmp_dir / crac_filename), str(tmp_dir / "crac-creation-parameters.json")))
+                shutil.copyfile(creation_parameters_file, parameters_path)
+            shutil.copyfile(crac_file, crac_path)
+            return cls(_pypowsybl.load_crac_with_parameters(network._handle, str(crac_path), str(parameters_path)))
 
     @classmethod
     def from_file_source(cls, network: Network, crac_file: Union[str, PathLike]) -> Any :
@@ -164,6 +166,7 @@ class Crac:
         series = _pypowsybl.get_max_elementary_actions_per_tso_usage_limits(self._handle)
         return create_data_frame_from_series_array(series)
 
+    # TODO: import contingency name
     def get_contingencies(self) -> DataFrame:
         """
         Get the CRAC contingencies in a DataFrame.
