@@ -16,8 +16,9 @@ jobs:
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
     permissions:
+      actions: write
       contents: read
-      pull-requests: read
+      pull-requests: write
     container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     env:
       PYTHON_VERSION: cp310
@@ -112,8 +113,9 @@ jobs:
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
     permissions:
+      actions: write
       contents: read
-      pull-requests: read
+      pull-requests: write
 
     steps:
       - name: Download PR information
