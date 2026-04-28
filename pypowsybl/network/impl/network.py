@@ -217,6 +217,36 @@ class Network:  # pylint: disable=too-many-public-methods
     def close_switch(self, id: str) -> bool:
         return _pp.update_switch_position(self._handle, id, False)
 
+    def open_dc_switch(self, id: str) -> bool:
+        """
+        Opens a DC switch.
+
+        Args:
+            id: the identifier of the DC switch to open.
+
+        Returns:
+            ``True`` if the switch state changed (was closed before), ``False`` if it was already open.
+
+        See Also:
+            :meth:`close_dc_switch`, :meth:`get_dc_switches`
+        """
+        return _pp.update_dc_switch_position(self._handle, id, True)
+
+    def close_dc_switch(self, id: str) -> bool:
+        """
+        Closes a DC switch.
+
+        Args:
+            id: the identifier of the DC switch to close.
+
+        Returns:
+            ``True`` if the switch state changed (was open before), ``False`` if it was already closed.
+
+        See Also:
+            :meth:`open_dc_switch`, :meth:`get_dc_switches`
+        """
+        return _pp.update_dc_switch_position(self._handle, id, False)
+
     def connect(self, id: str, operate_disconnectors: bool = False, operate_fictitious: bool = False) -> bool:
         """
         Connects a connectable element's terminal or terminals.
@@ -348,7 +378,7 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         .. deprecated:: 1.14.0
           Use :meth:`reduce_by_voltage_range`, :meth:`reduce_by_ids` or :meth:`reduce_by_ids_and_depths` instead depending on your use case.
-        
+
         Reduce to a smaller network according to the following parameters
 
         :param v_min: minimum voltage of the voltage levels kept after reducing
@@ -3204,6 +3234,37 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.DC_GROUND, all_attributes, attributes, **kwargs)
 
+    def get_dc_switches(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
+        r"""
+        Get a dataframe of DC switches.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: the data to be selected, as named arguments.
+
+        Returns:
+            the DC switches dataframe
+
+        Notes:
+            The resulting dataframe, depending on the parameters, will include the following columns:
+
+              - **name**: optional human-readable name
+              - **dc_node1_id**: identifier of the first DC node the switch connects
+              - **dc_node2_id**: identifier of the second DC node the switch connects
+              - **kind**: the kind of DC switch (BREAKER or DISCONNECTOR)
+              - **open**: ``True`` if the switch is open, ``False`` if it is closed
+              - **r**: resistance of the DC switch (in Ohm)
+              - **fictitious** (optional): ``True`` if the element is part of the model and not of the actual network
+
+            This dataframe is indexed on the DC switch ID.
+
+        See Also:
+            :meth:`update_dc_switches`, :meth:`create_dc_switches`
+        """
+        return self.get_elements(ElementType.DC_SWITCH, all_attributes, attributes, **kwargs)
+
     def get_dc_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None, **kwargs: ArrayLike) -> DataFrame:
         r"""
         Get a dataframe of dc buses.
@@ -4398,6 +4459,38 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.update_dc_grounds(id=['DG1', 'DG2'], r=[2.0, 0.0])
         """
         return self._update_elements(ElementType.DC_GROUND, df, **kwargs)
+
+    def update_dc_switches(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Update DC switches with data provided as a dataframe or as named arguments.
+
+        Args:
+            df: the data to be updated, as a dataframe.
+            kwargs: the data to be updated, as named arguments.
+                    Arguments can be single values or any type of sequence.
+                    In the case of sequences, all arguments must have the same length.
+
+        Notes:
+            Attributes that can be updated are:
+
+            - `name`
+            - `open`
+            - `r`
+            - `fictitious`
+
+        See Also:
+            :meth:`get_dc_switches`, :meth:`open_dc_switch`, :meth:`close_dc_switch`
+
+        Examples:
+            Some examples using keyword arguments:
+
+            .. code-block:: python
+
+                network.update_dc_switches(id='DS1', r=0.5)
+                network.update_dc_switches(id='DS1', open=True)
+                network.update_dc_switches(id=['DS1', 'DS2'], r=[0.5, 0.0])
+        """
+        return self._update_elements(ElementType.DC_SWITCH, df, **kwargs)
 
     def update_dc_buses(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """
@@ -5738,6 +5831,43 @@ class Network:  # pylint: disable=too-many-public-methods
                 network.create_dc_grounds(id='DG1', dc_node_id="DN1", r=1.0)
         """
         return self._create_elements(ElementType.DC_GROUND, [df], **kwargs)
+
+    def create_dc_switches(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates DC switches.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: the identifier of the new DC switch
+            - **name**: an optional human-readable name
+            - **dc_node1_id**: identifier of the first DC node the switch connects
+            - **dc_node2_id**: identifier of the second DC node the switch connects
+            - **kind**: the kind of DC switch (BREAKER or DISCONNECTOR)
+            - **open**: ``True`` to create the switch in open state, ``False`` for closed (default)
+            - **r**: resistance of the DC switch (in Ohm)
+            - **fictitious**: ``True`` if the element is part of the model and not of the actual network
+
+        See Also:
+            :meth:`get_dc_switches`
+
+        Examples:
+            Using keyword arguments:
+
+            .. code-block:: python
+
+                network.create_dc_switches(id='DS1', dc_node1_id='DN1', dc_node2_id='DN2',
+                                           kind='BREAKER', open=False, r=0.0)
+        """
+        return self._create_elements(ElementType.DC_SWITCH, [df], **kwargs)
 
     def create_operational_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

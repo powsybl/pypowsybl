@@ -256,6 +256,13 @@ def create_dc_detailed_vsc_asymmetrical_monopole_network(allow_variant_multi_thr
     return _create_network('dc_detailed_vsc_asymmetrical_monopole', '', allow_variant_multi_thread_access)
 
 
+def create_dc_detailed_dc_switch_2_nodes(allow_variant_multi_thread_access: bool = False) -> Network:
+    """
+    Create a simple two-DC-node network with a DC switch.
+    """
+    return _create_network('dc_detailed_dc_switch_2_nodes', '', allow_variant_multi_thread_access)
+
+
 def is_loadable(file: Union[str, PathLike]) -> bool:
     """
       Check if a file is a loadable network.

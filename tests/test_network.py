@@ -1098,15 +1098,15 @@ def test_sld_svg():
 
     sld_multi_substation3 = n.get_matrix_multi_substation_single_line_diagram([['S1'],['S2']])
     assert re.search('.*<svg.*', sld_multi_substation3.svg)
-    assert len(sld_multi_substation3.metadata) > 0   
-    
+    assert len(sld_multi_substation3.metadata) > 0
+
     sld_multi_substation4 = n.get_matrix_multi_substation_single_line_diagram([['S1', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation4.svg)
-    assert len(sld_multi_substation4.metadata) > 0    
+    assert len(sld_multi_substation4.metadata) > 0
 
     sld_multi_substation5 = n.get_matrix_multi_substation_single_line_diagram([['S1', ''], ['', 'S2']])
     assert re.search('.*<svg.*', sld_multi_substation5.svg)
-    assert len(sld_multi_substation5.metadata) > 0    
+    assert len(sld_multi_substation5.metadata) > 0
 
 def test_sld_svg_backward_compatibility():
     n = pp.network.create_four_substations_node_breaker_network()
@@ -1194,7 +1194,7 @@ def test_nad_fixed_positions():
     assert re.search('.*<svg.*', nad1.svg)
     assert len(nad1.metadata) > 0
 
-    fixed_positions_df2 = pd.DataFrame.from_records(index='id', 
+    fixed_positions_df2 = pd.DataFrame.from_records(index='id',
                                                    data=[{'id': 'VL8', 'x': 10.0, 'y': 20.0,
                                                           'legend_shift_x': 50.0, 'legend_shift_y': 51.0,
                                                           'legend_connection_shift_x': 52.0, 'legend_connection_shift_y': 53.0}])
@@ -1305,7 +1305,7 @@ def test_nad_profile():
     assert list(default_profile.vl_descriptions) == ['type', 'description']
     assert list(default_profile.injections_labels.columns) == ["labelInternal", "labelExternal", "arrow"]
 
-    
+
 def test_sld_profile():
     diagram_profile = SldProfile()
     assert not diagram_profile.labels
@@ -2703,6 +2703,60 @@ def test_dc_grounds():
     pd.testing.assert_frame_equal(expected, dc_grounds, check_dtype=False, atol=1e-2)
 
 
+def test_dc_switches():
+    n = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    n.update_dc_switches(pd.DataFrame(data={'r': 0.0}, index=['dcSwitch']))
+
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['name', 'r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
+                            data=[['', 0.0, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False],])
+    dc_switches = n.get_dc_switches()
+    # check_like = True to avoid testing column ordering - not specified
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    dc_switches = n.get_dc_switches(attributes=['dc_node1_id'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['dc_node1_id'], data=[['dcNode1'],])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    has_changed = n.open_dc_switch('dcSwitch')
+    assert has_changed
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[True],])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    has_changed = n.open_dc_switch('dcSwitch')
+    assert not has_changed
+
+    has_changed = n.close_dc_switch('dcSwitch')
+    assert has_changed
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[False],])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    # update open state via dataframe
+    n.update_dc_switches(id='dcSwitch', open=True)
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[True],])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    n.update_dc_switches(id='dcSwitch', open=False)
+    dc_switches = n.get_dc_switches(attributes=['open'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['open'], data=[[False],])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    # update name via dataframe
+    n.update_dc_switches(id='dcSwitch', name='My DC Switch')
+    dc_switches = n.get_dc_switches(attributes=['name'])
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
+                            columns=['name'], data=[['My DC Switch'],])
+    pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+
 def test_dc_buses():
     n = pp.network.create_dc_detailed_vsc_symmetrical_monopole_network()
     n.update_dc_buses(pd.DataFrame(data={'v': 100}, index=['dcNodeFrPos_dcBus']))
@@ -2902,7 +2956,7 @@ def test_is_loadable():
         file.touch()
         assert not pp.network.is_loadable(file)
 
-        
+
 def test_alpha_rho_transfo2():
     network = pp.network.create_micro_grid_be_network()
     transfo2 = network.get_2_windings_transformers(attributes=['rho', 'alpha'])
@@ -3007,6 +3061,8 @@ def test_create_dc_detailed_network():
     assert 'VscSymmetricalMonopole+FR+GB' == n.id
     n = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
     assert 'VscAsymmetricalMonopole+FR+GB' == n.id
+    n2 = pp.network.create_dc_detailed_dc_switch_2_nodes()
+    assert 'Simple2NodesDcSwitch' == n2.id
 
 if __name__ == '__main__':
     unittest.main()

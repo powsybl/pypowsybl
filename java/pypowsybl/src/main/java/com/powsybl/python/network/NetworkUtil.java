@@ -46,6 +46,29 @@ public final class NetworkUtil {
         return false;
     }
 
+    /**
+     * Change the position of a DC Switch.
+     * @param network where to find the DC switch.
+     * @param dcSwitchId id in the network.
+     * @param open new position of the switch (open <=> true)
+     * @return true iff the switch position was actually changed.
+     */
+    static boolean updateDcSwitchPosition(Network network, String dcSwitchId, boolean open) {
+        DcSwitch sw = network.getDcSwitch(dcSwitchId);
+        if (sw == null) {
+            throw new PowsyblException("DcSwitch '" + dcSwitchId + "' not found");
+        }
+        boolean wasOpen = sw.isOpen();
+        // setOpen is activated only if there is a change
+        // to avoid triggering listeners uselessly
+        if (open != wasOpen) {
+            sw.setOpen(open);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     static boolean updateConnectableStatus(Network network, String id, boolean connected, boolean allowDisconnectors, boolean allowFictitious) {
         Identifiable<?> equipment = network.getIdentifiable(id);
         if (equipment == null) {

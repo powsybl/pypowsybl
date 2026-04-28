@@ -25,6 +25,7 @@ import com.powsybl.iidm.network.test.HvdcTestNetwork;
 import com.powsybl.iidm.network.test.TwoVoltageLevelNetworkFactory;
 import com.powsybl.python.network.NetworkUtilTest;
 import com.powsybl.python.network.Networks;
+
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -903,6 +904,23 @@ class NetworkDataframesTest {
         assertThat(series)
                 .extracting(Series::getName)
                 .containsExactly("id", "name", "dc_node_id", "r");
+    }
+
+    @Test
+    void dcSwitches() {
+        Network network = DcDetailedNetworkFactory.createSimple2NodesDcSwitch();
+        List<Series> series = createDataFrame(DC_SWITCH, network);
+
+        assertThat(series)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r");
+        // fictitious is hidden by default
+
+        // With all columns
+        List<Series> allAttributeSeries = createDataFrame(DC_SWITCH, network, new DataframeFilter(ALL_ATTRIBUTES, Collections.emptyList()));
+        assertThat(allAttributeSeries)
+                .extracting(Series::getName)
+                .containsExactly("id", "name", "dc_node1_id", "dc_node2_id", "kind", "open", "r", "fictitious");
     }
 
     @Test
