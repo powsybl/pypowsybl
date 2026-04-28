@@ -44,10 +44,24 @@ def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     create_shunts(n, n_pdp)
     create_lines(n, n_pdp)
     create_transformers(n, n_pdp)
+    create_switches(n, n_pdp)
     create_extensions(n, slack_weight_by_gen_id)
 
     return n
 
+def create_switches(n: Network, n_pdp: pandapowerNet) -> None:
+    if len(n_pdp.switch) > 0:
+        bus_switches = n_pdp.switch.loc[n_pdp.switch.et == "b"]
+        # line_switches = n_pdp.switch.loc[n_pdp.switch.et == "l"]
+        if len(bus_switches) > 0:
+            switch_id = generate_bb_switch_id(bus_switches)
+            vl_id = build_voltage_level_id(n_pdp.bus.loc[bus_switches['bus']].index.astype(str))
+            bus_id1 = build_bus_id(n_pdp.bus.loc[bus_switches['bus']].index.astype(str)).tolist()
+            bus_id2 = build_bus_id(n_pdp.bus.loc[bus_switches['element']].index.astype(str)).tolist()
+            open = (~(bus_switches['closed'].values)).tolist()
+            kind = ['BREAKER'] * len(bus_switches)
+            n.create_switches(id=switch_id, voltage_level_id=vl_id, bus1_id=bus_id1, bus2_id=bus_id2,
+                              kind=kind, open=open)
 
 def create_extensions(n: Network, slack_weight_by_gen_id: Dict[str, float]) -> None:
     if len(slack_weight_by_gen_id) > 0:
@@ -72,8 +86,31 @@ def get_name(df: pd.DataFrame, name: str) -> pd.Series:
     return name_cleaned.astype(str)
 
 
-def build_voltage_level_id(bus: Series) -> pd.Series:
-    return 'sub_' + bus
+def build_voltage_level_id(vn_kv: Series, all_vn_kv: Series | None = None) -> pd.Series:
+    """
+    Create voltage_level_id for a bus subset.
+
+    Parameters
+    ----------
+    vn_kv : Series
+        Voltage levels for the buses you are currently processing.
+    all_vn_kv : Series, optional
+        Voltage levels from the full network. If given, IDs are built from the
+        full set so subsets keep consistent numbering.
+
+    Returns
+    -------
+    Series
+        Same length as vn_kv, with IDs like sub_0, sub_1, ...
+    """
+    reference = all_vn_kv if all_vn_kv is not None else vn_kv
+
+    level_map = {
+        value: f"sub_{i}"
+        for i, value in enumerate(pd.unique(reference))
+    }
+
+    return vn_kv.map(level_map)
 
 
 def build_bus_id(bus: Series) -> pd.Series:
@@ -107,6 +144,13 @@ def build_transformer_id(row: pd.Series, index: int, index_offset: int) -> str:
 def generate_transformer_id(df: pd.DataFrame, index_offset: int) -> pd.Series:
     return df.apply(lambda row: build_transformer_id(row, row.name, index_offset), axis=1)
 
+def build_bb_switch_id(row: pd.Series, index: int) -> str:
+    bus = row['bus']
+    element = row['element']
+    return f'{bus}_{element}_{index}'
+
+def generate_bb_switch_id(df: pd.DataFrame) -> pd.Series:
+    return df.apply(lambda row: build_bb_switch_id(row, row.name), axis=1)
 
 def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.trafo) > 0:
@@ -114,8 +158,8 @@ def create_transformers(n: Network, n_pdp: pandapowerNet) -> None:
         trafo_and_bus = n_pdp.trafo.merge(bus.rename(columns=lambda x: x + '_lv_bus'), left_on='lv_bus', right_index=True, how='left')
         trafo_id = generate_transformer_id(trafo_and_bus, len(n_pdp.line))
         name = get_name(trafo_and_bus, 'name')
-        vl1_id = build_voltage_level_id(trafo_and_bus['hv_bus'].astype(str))
-        vl2_id = build_voltage_level_id(trafo_and_bus['lv_bus'].astype(str))
+        vl1_id = build_voltage_level_id(n_pdp.bus.loc[trafo_and_bus['hv_bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv'])
+        vl2_id = build_voltage_level_id(n_pdp.bus.loc[trafo_and_bus['lv_bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv'])
         connectable_bus1_id = build_bus_id(trafo_and_bus['hv_bus'].astype(str))
         connectable_bus2_id = build_bus_id(trafo_and_bus['lv_bus'].astype(str))
         bus1_id = np.where(trafo_and_bus['in_service'], connectable_bus1_id, "")
@@ -159,8 +203,8 @@ def create_lines(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.line) > 0:
         line_id = generate_line_id(n_pdp.line)
         name = get_name(n_pdp.line, 'name')
-        vl1_id = build_voltage_level_id(n_pdp.line['from_bus'].astype(str))
-        vl2_id = build_voltage_level_id(n_pdp.line['to_bus'].astype(str))
+        vl1_id = build_voltage_level_id(n_pdp.bus.loc[n_pdp.line['from_bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv'])
+        vl2_id = build_voltage_level_id(n_pdp.bus.loc[n_pdp.line['to_bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv'])
         connectable_bus1_id = build_bus_id(n_pdp.line['from_bus'].astype(str))
         connectable_bus2_id = build_bus_id(n_pdp.line['to_bus'].astype(str))
         bus1_id = np.where(n_pdp.line['in_service'], connectable_bus1_id, "")
@@ -181,7 +225,7 @@ def create_shunts(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.shunt) > 0:
         shunt_id = generate_injection_id(n_pdp.shunt, 'shunt')
         name = get_name(n_pdp.shunt, 'name').tolist()
-        vl_id = build_voltage_level_id(n_pdp.shunt['bus'].astype(str)).tolist()
+        vl_id = build_voltage_level_id(n_pdp.bus.loc[n_pdp.shunt['bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv']).tolist()
         connectable_bus_id = build_bus_id(n_pdp.shunt['bus'].astype(str)).tolist()
         bus_id = np.where(n_pdp.shunt['in_service'], connectable_bus_id, "")
         model_type = ['LINEAR'] * len(n_pdp.shunt)
@@ -214,7 +258,7 @@ def _create_generators(n: Network, gen: DataFrame, bus: DataFrame, slack_weight_
         gen_and_bus: DataFrame = gen.merge(bus, left_on='bus', right_index=True, how='left', suffixes=('', '_x'))
         gen_id = generate_injection_id(gen_and_bus, 'gen' if generator_type != PandaPowerGeneratorType.STATIC_GENERATOR else 'sgen')
         name = get_name(gen_and_bus, 'name')
-        vl_id = build_voltage_level_id(gen_and_bus['bus'].astype(str))
+        vl_id = build_voltage_level_id(bus.loc[gen_and_bus['bus'], 'vn_kv'], all_vn_kv=bus['vn_kv'])
         connectable_bus_id = build_bus_id(gen_and_bus['bus'].astype(str)).tolist()
         bus_id = np.where(gen_and_bus['in_service'], connectable_bus_id, "")
         target_p = create_generator_target_p(gen_and_bus, generator_type)
@@ -282,7 +326,7 @@ def create_loads(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.load) > 0:
         load_id = generate_injection_id(n_pdp.load, 'load')
         name = get_name(n_pdp.load, 'name')
-        vl_id = build_voltage_level_id(n_pdp.load['bus'].astype(str))
+        vl_id = build_voltage_level_id(n_pdp.bus.loc[n_pdp.load['bus'], 'vn_kv'], all_vn_kv=n_pdp.bus['vn_kv'])
         connectable_bus_id = build_bus_id(n_pdp.load['bus'].astype(str)).tolist()
         bus_id = np.where(n_pdp.load['in_service'], connectable_bus_id, "")
         p0 = n_pdp.load['p_mw']
@@ -294,16 +338,15 @@ def create_loads(n: Network, n_pdp: pandapowerNet) -> None:
 
 def create_buses(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.bus) > 0:
-        vl_id = build_voltage_level_id(n_pdp.bus.index.astype(str))
-        topology_kind = ['BUS_BREAKER'] * len(n_pdp.bus)
-        nominal_v = n_pdp.bus['vn_kv']
-        low_voltage_limit = n_pdp.bus['min_vm_pu'] * nominal_v if 'min_vm_pu' in n_pdp.bus.columns else None
-        high_voltage_limit = n_pdp.bus['max_vm_pu'] * nominal_v if 'max_vm_pu' in n_pdp.bus.columns else None
-        substation_id = ['s'] * len(n_pdp.bus)
+        vl_id = build_voltage_level_id(n_pdp.bus['vn_kv'])
+        unique_vl_id = pd.unique(vl_id)
+        topology_kind = ['BUS_BREAKER'] * len(unique_vl_id)
+        nominal_v = pd.unique(n_pdp.bus['vn_kv'])
+        substation_id = ['s'] * len(unique_vl_id)
         # TODO: topology kind should have a default value
         # None voltage limit values are well treated when creating DataFrame
-        n.create_voltage_levels(id=vl_id, substation_id=substation_id, topology_kind=topology_kind, nominal_v=nominal_v,
-                                low_voltage_limit=low_voltage_limit, high_voltage_limit=high_voltage_limit) # type: ignore
+        n.create_voltage_levels(id=unique_vl_id, substation_id=substation_id, topology_kind=topology_kind, nominal_v=nominal_v,
+                                low_voltage_limit=None, high_voltage_limit=None) # type: ignore
         bus_id = build_bus_id(n_pdp.bus.index.astype(str))
         name = get_name(n_pdp.bus, 'name')
         n.create_buses(id=bus_id, name=name, voltage_level_id=vl_id)
