@@ -339,9 +339,9 @@ def create_loads(n: Network, n_pdp: pandapowerNet) -> None:
 def create_buses(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.bus) > 0:
         vl_id = build_voltage_level_id(n_pdp.bus['vn_kv'])
-        unique_vl_id = pd.unique(vl_id)
+        unique_vl_id = pd.unique(vl_id).tolist()
         topology_kind = ['BUS_BREAKER'] * len(unique_vl_id)
-        nominal_v = pd.unique(n_pdp.bus['vn_kv'])
+        nominal_v = pd.unique(n_pdp.bus['vn_kv']).tolist()
         substation_id = ['s'] * len(unique_vl_id)
         # TODO: topology kind should have a default value
         # None voltage limit values are well treated when creating DataFrame
