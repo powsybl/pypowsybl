@@ -520,6 +520,12 @@ def validate_redispatch_ra_setpoint(crac_file: str, parameters_file: str, set_po
     df = result.get_range_action_results()
     assert math.isclose(set_point, df.loc[df['remedial_action_id'] == 'redispatching']['optimized_set_point'])
 
+def test_load_crac_without_parameters():
+    network = pp.network.load(DATA_DIR.joinpath("rao/rao_network.uct"))
+    crac = pp.rao.Crac.load(network, DATA_DIR.joinpath("rao/rao_crac.json"))
+    assert len(crac.get_flow_cnecs()) == 7
+    assert len(crac.get_pst_range_actions()) == 1
+
 def test_import_crac_from_nc_profiles():
     network = pp.network.load(DATA_DIR.joinpath("rao/16Nodes.zip"))
     crac = pp.rao.Crac.load(network, DATA_DIR.joinpath("rao/NetworkCodesProfiles.zip"), DATA_DIR.joinpath("rao/nc-crac-parameters.json"))
