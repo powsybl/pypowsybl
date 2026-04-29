@@ -37,13 +37,13 @@ import com.powsybl.nad.NadParameters;
 import com.powsybl.nad.layout.*;
 import com.powsybl.nad.model.Point;
 import com.powsybl.nad.svg.*;
-import com.powsybl.nad.svg.EdgeInfoEnum;
-import com.powsybl.nad.svg.EdgeInfoParameters;
 import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
+import com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import com.powsybl.python.commons.Util;
+import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.dataframe.CDoubleSeries;
 import com.powsybl.python.dataframe.CIntSeries;
 import com.powsybl.python.dataframe.CStringSeries;
@@ -1144,6 +1144,19 @@ public final class NetworkCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 String idStr = CTypeUtil.toString(id);
                 return NetworkUtil.updateSwitchPosition(network, idStr, open);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "updateDcSwitchPosition")
+    public static boolean updateDcSwitchPosition(IsolateThread thread, ObjectHandle networkHandle, CCharPointer id, boolean open,
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new BooleanSupplier() {
+            @Override
+            public boolean getAsBoolean() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                String idStr = CTypeUtil.toString(id);
+                return NetworkUtil.updateDcSwitchPosition(network, idStr, open);
             }
         });
     }

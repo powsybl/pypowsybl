@@ -57,7 +57,8 @@ public final class NetworkElementAdders {
             Map.entry(DC_LINE, new DcLineDataframeAdder()),
             Map.entry(DC_NODE, new DcNodeDataframeAdder()),
             Map.entry(VOLTAGE_SOURCE_CONVERTER, new VoltageSourceConverterDataFrameAdder()),
-            Map.entry(DC_GROUND, new DcGroundDataFrameAdder())
+            Map.entry(DC_GROUND, new DcGroundDataFrameAdder()),
+            Map.entry(DC_SWITCH, new DcSwitchDataFrameAdder())
     );
 
     private static final Map<String, NetworkElementAdder> EXTENSIONS_ADDERS = NetworkExtensions.createExtensionsAdders();

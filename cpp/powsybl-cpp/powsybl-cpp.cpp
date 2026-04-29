@@ -621,7 +621,7 @@ std::shared_ptr<sensitivity_analysis_parameters> SensitivityAnalysisParameters::
         delete ptr;
     });
 }
-  
+
 void SensitivityAnalysisParameters::load_to_c_struct(sensitivity_analysis_parameters& params) const {
     params.flow_flow_sensitivity_value_threshold = flow_flow_sensitivity_value_threshold;
     params.voltage_voltage_sensitivity_value_threshold = voltage_voltage_sensitivity_value_threshold;
@@ -917,6 +917,10 @@ void reduceNetwork(const JavaHandle& network, double v_min, double v_max, const 
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {
     return PowsyblCaller::get()->callJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
+}
+
+bool updateDcSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {
+    return PowsyblCaller::get()->callJava<bool>(::updateDcSwitchPosition, network, (char*) id.data(), open);
 }
 
 bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected,
@@ -1248,7 +1252,7 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
        ToCharPtrPtr variableIdPtr(variablesIds);
        ToCharPtrPtr contingenciesIdPtr(contingenciesIds);
        PowsyblCaller::get()->callJava(::addFactorMatrix, sensitivityAnalysisContext, branchIdPtr.get(), branchesIds.size(),
-                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(), 
+                  variableIdPtr.get(), variablesIds.size(), contingenciesIdPtr.get(), contingenciesIds.size(),
                   (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 

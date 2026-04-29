@@ -106,6 +106,7 @@ public final class NetworkDataframes {
         mappers.put(DataframeElementType.DC_NODE, dcNodes());
         mappers.put(DataframeElementType.VOLTAGE_SOURCE_CONVERTER, voltageSourceConverters());
         mappers.put(DataframeElementType.DC_GROUND, dcGrounds());
+        mappers.put(DataframeElementType.DC_SWITCH, dcSwitches());
         mappers.put(DataframeElementType.DC_BUS, dcBuses());
         return Collections.unmodifiableMap(mappers);
     }
@@ -1064,6 +1065,24 @@ public final class NetworkDataframes {
                 .strings("name", dn -> dn.getOptionalName().orElse(""), Identifiable::setName)
                 .strings("dc_node_id", dg -> dg.getDcTerminal().getDcNode().getId())
                 .doubles("r", (dg, context) -> dg.getR(), (dg, r, context) -> dg.setR(r))
+                .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
+                .addProperties()
+                .build();
+    }
+
+    /**
+     * Fetch DC Switches from the network in a Python DataFrame.
+     * @return a data frame with all fields.
+     */
+    private static NetworkDataframeMapper dcSwitches() {
+        return NetworkDataframeMapperBuilder.ofStream(Network::getDcSwitchStream, getOrThrow(Network::getDcSwitch, "Dc switch"))
+                .stringsIndex("id", DcSwitch::getId)
+                .strings("name", ds -> ds.getOptionalName().orElse(""), Identifiable::setName)
+                .strings("dc_node1_id", ds -> ds.getDcNode1().getId())
+                .strings("dc_node2_id", ds -> ds.getDcNode2().getId())
+                .enums("kind", DcSwitchKind.class, DcSwitch::getKind)
+                .booleans("open", ds -> ds.isOpen(), DcSwitch::setOpen)
+                .doubles("r", (ds, context) -> ds.getR(), (ds, r, context) -> ds.setR(r))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()
                 .build();
