@@ -38,6 +38,82 @@ Here is a code example of how to configure and run the RAO:
     >>> rao_result.status()
     <RaoComputationStatus.DEFAULT: 0>
 
+Import a JSON CRAC file
++++++++++++++++++++++++
+
+Given a JSON OpenRAO CRAC file, you can import the CRAC data in pypowsybl using ``Crac.from_file_source``:
+
+.. code-block:: python
+
+    crac = Crac.from_file_source(network, "path/to/crac.json")
+
+Import a CRAC file from NC profiles
++++++++++++++++++++++++++++++++++++
+
+You can also import a CRAC from native business data. Currently, pypowsybl allows the import of
+`ENTSO-E's Network Codes profiles <https://www.entsoe.eu/data/cim/cim-for-grid-models-exchange/#_Network_Code__NC__profiles>`_.
+All the profiles need to be gathered in the same ZIP archive.
+
+To guide the CRAC importer in its interpretation of the native format, you need to provide set of
+`CRAC creation parameters <https://powsybl.readthedocs.io/projects/openrao/en/stable/input-data/crac/creation-parameters.html>`_
+to the ``Crac.from_file_source`` method. A JSON example is provided below.
+
+.. code-block:: json
+
+    {
+      "crac-factory": "CracImplFactory",
+      "extensions": {
+        "NcCracCreatorParameters": {
+          "timestamp": "2026-04-27T16:58:00Z",
+          "capacity-calculation-region-eic-code": "10Y1001C--00095L",
+          "tsos-which-do-not-use-patl-in-final-state": [
+            "REE"
+          ],
+          "curative-instants": [
+            {
+              "name": "curative 1",
+              "application-time": 300
+            },
+            {
+              "name": "curative 2",
+              "application-time": 600
+            },
+            {
+              "name": "curative 3",
+              "application-time": 1200
+            }
+          ],
+          "borders": [
+            {
+              "name": "ES-FR",
+              "eic": "10YDOM--ES-FR--D",
+              "default-for-tso": "RTE"
+            },
+            {
+              "name": "ES-PT",
+              "eic": "10YDOM--ES-PT--T",
+              "default-for-tso": "REN"
+            }
+          ],
+          "restricted-curative-batches-per-tso": {
+            "REE": [
+              "curative 1",
+              "curative 2"
+            ],
+            "REN": [
+              "curative 1"
+            ]
+          }
+        }
+      }
+    }
+
+In pypowsybl you simply need to provide the path to the JSON CRAC creation parameters file:
+
+.. code-block:: python
+
+    crac = Crac.load(network, "path/to/crac.json", creation_parameters_file="path/to/parameters.json")
+
 Monitoring API
 --------------
 
