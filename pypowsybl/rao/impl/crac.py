@@ -29,12 +29,12 @@ class Crac:
         self._handle = handle
 
     @classmethod
-    def from_file_source(cls, network: Network, crac_file: Union[str, PathLike], parameters_file: Optional[Union[str, PathLike]] = None) -> Any :
-        if parameters_file is not None:
-            parameters_source =  io.BytesIO(open(path_to_str(parameters_file), "rb").read())
+    def from_file_source(cls, network: Network, crac_file: Union[str, PathLike], creation_parameters_file: Optional[Union[str, PathLike]] = None) -> Any :
+        if creation_parameters_file is not None:
+            creation_parameters_source =  io.BytesIO(open(path_to_str(creation_parameters_file), "rb").read())
         else:
-            parameters_source = None
-        return Crac.from_buffer_source(network, io.BytesIO(open(path_to_str(crac_file), "rb").read()), path_to_str(crac_file), parameters_source)
+            creation_parameters_source = None
+        return Crac.from_buffer_source(network, io.BytesIO(open(path_to_str(crac_file), "rb").read()), path_to_str(crac_file), creation_parameters_source)
 
     @classmethod
     def from_buffer_source(cls, network: Network, crac_source: io.BytesIO, crac_file_name: Optional[str] = 'crac.json', parameters_source: Optional[io.BytesIO] = None) -> Any :
