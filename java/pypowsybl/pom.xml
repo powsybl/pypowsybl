@@ -421,6 +421,11 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-nc</artifactId>
+            <version>7.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>open-rao-search-tree-rao</artifactId>
         </dependency>
         <dependency>

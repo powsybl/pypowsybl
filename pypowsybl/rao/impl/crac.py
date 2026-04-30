@@ -11,6 +11,7 @@ from pypowsybl.network import Network
 from pypowsybl.utils import path_to_str
 from pypowsybl.utils import create_data_frame_from_series_array
 from pandas import DataFrame
+from typing import Optional
 
 from os import PathLike
 
@@ -28,12 +29,18 @@ class Crac:
         self._handle = handle
 
     @classmethod
-    def from_file_source(cls, network: Network, crac_file: Union[str, PathLike]) -> Any :
-        return Crac.from_buffer_source(network, io.BytesIO(open(path_to_str(crac_file), "rb").read()))
+    def from_file_source(cls, network: Network, crac_file: Union[str, PathLike], parameters_file: Optional[Union[str, PathLike]] = None) -> Any :
+        if parameters_file is not None:
+            parameters_source =  io.BytesIO(open(path_to_str(parameters_file), "rb").read())
+        else:
+            parameters_source = None
+        return Crac.from_buffer_source(network, io.BytesIO(open(path_to_str(crac_file), "rb").read()), path_to_str(crac_file), parameters_source)
 
     @classmethod
-    def from_buffer_source(cls, network: Network, crac_source: io.BytesIO) -> Any :
-        return cls(_pypowsybl.load_crac_source(network._handle, crac_source.getbuffer()))
+    def from_buffer_source(cls, network: Network, crac_source: io.BytesIO, crac_file_name: Optional[str] = 'crac.json', parameters_source: Optional[io.BytesIO] = None) -> Any :
+        if parameters_source is None:
+            parameters_source = io.BytesIO(b"{\"crac-factory\": \"CracImplFactory\"}")
+        return cls(_pypowsybl.load_crac_source_with_parameters(network._handle, crac_source.getbuffer(), crac_file_name, parameters_source.getbuffer()))
 
     def get_instants(self) -> DataFrame:
         """
