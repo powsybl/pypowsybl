@@ -5,11 +5,8 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 import pathlib
-import sys
 
 import pytest
-if sys.version_info.minor == 13:
-    pytest.skip("No pandapower version compatible with python 3.13 yet.", allow_module_level=True)
 
 try:
     import pandapower as pdp
@@ -42,9 +39,9 @@ def run_and_compare(pdp_n, expected_bus_count: int):
                                    distributed_slack=True)
     results = pp.loadflow.run_ac(n, param)
     assert pp.loadflow.ComponentStatus.CONVERGED == results[0].status
-    pdp_v = list(pdp_n.res_bus['vm_pu'] * pdp_n.bus['vn_kv'])
+    pdp_v = sorted(list(pdp_n.res_bus['vm_pu'] * pdp_n.bus['vn_kv']))
     buses = n.get_bus_breaker_view_buses()
-    v = list(buses['v_mag'])
+    v = sorted(list(buses['v_mag']))
     for index, (pdp_v_val, v_val) in enumerate(zip(pdp_v, v)):
         assert pdp_v_val == pytest.approx(v_val, abs=EPS_V, rel=EPS_V), f"Voltage mismatch at index {index}: {pdp_v_val} != {v_val}"
 
@@ -87,3 +84,8 @@ def test_pandapower_four_loads_with_branches_out():
 
 def test_educ_case14_storage():
     run_and_compare(pdp.from_json(DATA_DIR / 'educ_case14_storage.json'), 14)
+
+def test_switch_conversion():
+    # expected_bus_count is 2 because of the switch between bus 1 and bus 2 in the pdp case
+    # causing them to be merged into a single bus in pypowsybl
+    run_and_compare(pdp.from_json(DATA_DIR / 'switch_conversion_test_case.json'), 2)
