@@ -147,10 +147,6 @@ public final class RaoCFunctions {
         ByteBuffer bufferCreationParameters = CTypeConversion.asByteBuffer(creationParameterBuffer, creationParameterSize);
         InputStream streamCreationParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferCreationParameters));
         CracCreationParameters creationParameters = JsonCracCreationParameters.read(streamCreationParameters);
-        (new ServiceLoaderCache(Importer.class)).getServices().forEach(service -> {
-            System.out.println("Available service  : " + service.getClass().getName());
-        });
-
         try {
             Crac crac = Crac.read(filename, streamedCrac, network, creationParameters);
             if (crac != null) {
