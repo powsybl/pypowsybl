@@ -8,7 +8,6 @@
 package com.powsybl.python.rao;
 
 import com.powsybl.commons.PowsyblException;
-import com.powsybl.commons.util.ServiceLoaderCache;
 import com.powsybl.dataframe.DataframeFilter;
 import com.powsybl.dataframe.DataframeMapper;
 import com.powsybl.glsk.api.GlskDocument;
@@ -18,7 +17,6 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.RaUsageLimits;
-import com.powsybl.openrao.data.crac.api.io.Importer;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
