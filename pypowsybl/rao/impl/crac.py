@@ -37,7 +37,7 @@ class Crac:
         return Crac.from_buffer_source(network, io.BytesIO(open(path_to_str(crac_file), "rb").read()), path_to_str(crac_file), creation_parameters_source)
 
     @classmethod
-    def from_buffer_source(cls, network: Network, crac_source: io.BytesIO, crac_file_name: Optional[str], parameters_source: Optional[io.BytesIO] = None) -> Any :
+    def from_buffer_source(cls, network: Network, crac_source: io.BytesIO, crac_file_name: Optional[str] = None, parameters_source: Optional[io.BytesIO] = None) -> Any :
         if parameters_source is None:
             parameters_source = io.BytesIO(b"{\"crac-factory\": \"CracImplFactory\"}")
         if crac_file_name is None:
