@@ -112,7 +112,7 @@ In pypowsybl you simply need to provide the path to the JSON CRAC creation param
 
 .. code-block:: python
 
-    crac = Crac.load(network, "path/to/crac.json", creation_parameters_file="path/to/parameters.json")
+    crac = Crac.from_file_source(network, "path/to/crac.json", creation_parameters_file="path/to/parameters.json")
 
 Monitoring API
 --------------
