@@ -17,6 +17,8 @@ import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
 import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.openrao.data.crac.api.RaUsageLimits;
+import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
+import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.*;
@@ -108,13 +110,15 @@ public final class RaoCFunctions {
         });
     }
 
-    @CEntryPoint(name = "loadCracBufferedSource")
-    public static ObjectHandle loadCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer, int cracBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "loadCracBufferedSourceWithParameters")
+    public static ObjectHandle loadCracBufferedSourceWithParameters(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer,
+                                                                    int cracBufferSize, CCharPointer filenamePtr, CCharPointer creationParameterBuffer,
+                                                                    int creationParameterSize, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
-                return ObjectHandles.getGlobal().create(createCrac(network, cracBuffer, cracBufferSize));
+                return ObjectHandles.getGlobal().create(createCracWithParameters(network, cracBuffer, cracBufferSize, filenamePtr, creationParameterBuffer, creationParameterSize));
             }
         });
     }
@@ -128,6 +132,25 @@ public final class RaoCFunctions {
                 return crac;
             } else {
                 throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
+            }
+        } catch (IOException e) {
+            throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
+        }
+    }
+
+    public static Crac createCracWithParameters(Network network, CCharPointer cracBuffer, int cracBufferSize, CCharPointer filenamePtr, CCharPointer creationParameterBuffer, int creationParameterSize) {
+        ByteBuffer bufferCrac = CTypeConversion.asByteBuffer(cracBuffer, cracBufferSize);
+        InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
+        String filename = CTypeUtil.toString(filenamePtr);
+        ByteBuffer bufferCreationParameters = CTypeConversion.asByteBuffer(creationParameterBuffer, creationParameterSize);
+        InputStream streamCreationParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferCreationParameters));
+        CracCreationParameters creationParameters = JsonCracCreationParameters.read(streamCreationParameters);
+        try {
+            Crac crac = Crac.read(filename, streamedCrac, network, creationParameters);
+            if (crac != null) {
+                return crac;
+            } else {
+                throw new PowsyblException("Error while reading crac, please enable detailed log for more information.");
             }
         } catch (IOException e) {
             throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());

@@ -32,6 +32,7 @@
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
+        <powsybl-open-rao.version>7.2.0</powsybl-open-rao.version>
     </properties>
 
     <build>
@@ -418,6 +419,11 @@
         <dependency>
             <groupId>com.powsybl</groupId>
             <artifactId>open-rao-crac-io-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
+            <artifactId>open-rao-crac-io-nc</artifactId>
+            <version>${powsybl-open-rao.version}</version>
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
