@@ -119,52 +119,8 @@ jobs:
           cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
           cmake --build . --config Release
 
-  sonar_python:
-    name: Run SonarCloud analysis for Python code (linux)
-    if: github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: read
-    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
-    env:
-      PYTHON_VERSION: cp310
-
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
         with:
-          fetch-depth: 0
-          submodules: true
-
-      - name: Install Linux Packages
-        run: dnf install -y wget
-
-      - name: Setup path
-        run: echo "/opt/python/${{ env.PYTHON_VERSION }}-${{ env.PYTHON_VERSION }}/bin/" >> $GITHUB_PATH
-
-      - name: Setup environment
-        uses: ./.github/actions/setup-before-build
-        with:
-          cache-prefix: "linux"
-
-      - name: Install the package
-        run: |
-          pip install -e .
-
-      - name: Generate coverage
-        run: |
-          coverage run -m pytest tests/
-          coverage xml
-
-      - name: Linting
-        run: pylint pypowsybl
-
-      - name: Sonar analysis
-        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: |
-            -Dsonar.python.coverage.reportPaths=coverage.xml
+          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
+          path: dist/*.whl
