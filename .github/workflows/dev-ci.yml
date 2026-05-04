@@ -6,30 +6,48 @@ on:
 permissions: { }
 
 jobs:
-  macos_windows_build:
-    name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
+  build:
+    name: Build ${{ matrix.config.name }} wheel
+    if: github.event.pull_request.head.repo.fork == false
     runs-on: ${{ matrix.config.os }}
+    container: ${{ matrix.config.container }}
+    permissions:
+      contents: read
     strategy:
+      fail-fast: false
       matrix:
         config:
           - {
+            name: linux,
+            os: ubuntu-latest,
+            container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
+            wheel-dir: "wheelhouse",
+          }
+          - {
+            name: darwin,
+            os: macos-15-intel,
+            macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
+            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
+            wheel-dir: "dist",
+          }
+          - {
             name: windows,
             os: windows-2022,
+            wheel-dir: "dist",
           }
         python:
           - {
-            name: cp312,
-            version: '3.12',
+            name: cp310,
+            abi: cp310,
+            version: '3.10',
           }
+    env:
+      PYTHON: ${{ matrix.config.name == 'linux' && format('/opt/python/{0}-{1}/bin/python', matrix.python.name, matrix.python.abi) || 'python' }}
+    defaults:
+      run:
+        shell: bash
 
     steps:
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          java-version: '21'
-          distribution: 'graalvm'
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Checkout core sources
         uses: actions/checkout@v4
         with:
@@ -52,6 +70,74 @@ jobs:
         shell: bash
         run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: true
+
+      - name: Install Linux Packages
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: dnf install -y wget
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
+        with:
+          cache-prefix: ${{ matrix.config.name }}
+          python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
+          python-version: ${{ matrix.python.version }}
+          python-command: ${{ env.PYTHON }}
+
+      - name: Setup path
+        if: matrix.config.name == 'linux'
+        run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
+
+      - name: Build wheel
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
+        run: |
+          ${{ env.PYTHON }} setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
+          if [ "${{ matrix.config.name }}" == "linux" ]; then
+            auditwheel repair dist/*.whl
+          fi
+
+      - name: Install wheel
+        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
+
+      - name: Run basic pypowsybl import
+        working-directory: ./tests
+        run: ${{ env.PYTHON }} basic_import_test.py
+
+      - name: Run tests
+        working-directory: ./tests # Run in subdir to use installed lib, not sources
+        run: ${{ env.PYTHON }} -m pytest
+
+      - name: Type checking
+        run: mypy -p pypowsybl
+
+      - name: Run doc examples
+        working-directory: ./docs
+        run: make html doctest SPHINXOPTS="-W"
+
+      - name: Test standalone cpp build
+        working-directory: ./dist
+        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
+          unzip binaries.zip && mkdir build && cd build
+          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
+          cmake --build . --config Release
+
+  sonar_python:
+    name: Run SonarCloud analysis for Python code (linux)
+    if: github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
+    env:
+      PYTHON_VERSION: cp310
+
+    steps:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -90,20 +176,39 @@ jobs:
           args: |
             -Dsonar.python.coverage.reportPaths=coverage.xml
 
-      - name: Run doc examples
-        working-directory: ./docs
-        run: make html doctest SPHINXOPTS="-W"
+  sonar_java:
+    name: Run SonarCloud analysis for Java code (linux)
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.repo.fork == false
+    permissions:
+      contents: read
+      pull-requests: read
 
-      - name: Test standalone cpp build
-        shell: bash
-        working-directory: ./dist
-        run: | #Unzip binaries.zip produced by setup.py and try to build only the cpp API and bindings with it
-          unzip binaries.zip && mkdir build && cd build
-          cmake $GITHUB_WORKSPACE/cpp  -DBUILD_PYPOWSYBL_JAVA=OFF -DPYPOWSYBL_JAVA_LIBRARY_DIR=$GITHUB_WORKSPACE/dist/lib -DPYPOWSYBL_JAVA_INCLUDE_DIR=$GITHUB_WORKSPACE/dist/include
-          cmake --build . --config Release
-
-      - name: Upload wheel
-        uses: actions/upload-artifact@v4
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          name: pypowsybl-wheel-${{ matrix.config.name }}-${{ matrix.python.name }}
-          path: dist/*.whl
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build with Maven (Ubuntu)
+        working-directory: ./java
+        run: >
+          ./mvnw -B -ntp -Pjacoco install
+
+      - name: Run SonarCloud analysis
+        working-directory: ./java
+        run: >
+          ./mvnw -B -ntp -DskipTests sonar:sonar
+          -Dsonar.host.url=https://sonarcloud.io
+          -Dsonar.organization=powsybl-ci-github
+          -Dsonar.projectKey=powsybl_pypowsybl-java
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
