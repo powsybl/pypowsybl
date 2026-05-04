@@ -3,6 +3,8 @@ name: Dev CI
 on:
   pull_request:
 
+permissions: { }
+
 jobs:
   macos_windows_build:
     name: Build ${{ matrix.config.name }} ${{ matrix.python.name }} wheel
@@ -51,39 +53,42 @@ jobs:
         run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
+          fetch-depth: 0
           submodules: true
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Install Linux Packages
+        run: dnf install -y wget
+
+      - name: Setup path
+        run: echo "/opt/python/${{ env.PYTHON_VERSION }}-${{ env.PYTHON_VERSION }}/bin/" >> $GITHUB_PATH
+
+      - name: Setup environment
+        uses: ./.github/actions/setup-before-build
         with:
-          python-version: ${{ matrix.python.version }}
+          cache-prefix: "linux"
 
-      - name: Install Python dependencies
+      - name: Install the package
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          pip install -e .
 
-      - name: Build wheel
+      - name: Generate coverage
+        run: |
+          coverage run -m pytest tests/
+          coverage xml
+
+      - name: Linting
+        run: pylint pypowsybl
+
+      - name: Sonar analysis
+        uses: SonarSource/sonarqube-scan-action@299e4b793aaa83bf2aba7c9c14bedbb485688ec4 # v7.1.0
         env:
-          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
-        run: python setup.py bdist_wheel ${{ matrix.config.bdist_wheel_args }}
-
-      - name: Install wheel
-        shell: bash
-        run: python -m pip install dist/*.whl --user
-
-      - name: Run basic pypowsybl import
-        working-directory: ./tests
-        run: python3 basic_import_test.py
-
-      - name: Run tests
-        working-directory: ./tests
-        run: python3 -m pytest
-
-      - name: Type checking
-        run: mypy -p pypowsybl
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: |
+            -Dsonar.python.coverage.reportPaths=coverage.xml
 
       - name: Run doc examples
         working-directory: ./docs

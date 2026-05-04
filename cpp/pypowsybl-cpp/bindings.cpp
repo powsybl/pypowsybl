@@ -16,6 +16,7 @@ class PYBIND11_EXPORT PyPowsyblError;
 }
 #include "powsybl-cpp.h"
 #include "pylogging.h"
+#include <iostream>
 
 namespace py = pybind11;
 
@@ -274,6 +275,14 @@ void voltageInitializerBinding(py::module_& m) {
     m.def("voltage_initializer_set_default_constraint_scaling_factor", &pypowsybl::voltageInitializerSetDefaultConstraintScalingFactor, py::arg("params_handle"), py::arg("default_constraint_scaling_factor"));
     m.def("voltage_initializer_set_reactive_slack_variable_scaling_factor", &pypowsybl::voltageInitializerSetReactiveSlackVariableScalingFactor, py::arg("params_handle"), py::arg("reactive_slack_variable_scaling_factor"));
     m.def("voltage_initializer_set_twt_ratio_variable_scaling_factor", &pypowsybl::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, py::arg("params_handle"), py::arg("twt_ratio_variable_scaling_factor"));
+
+    m.def("voltage_initializer_set_penalty_invest_rea_neg", &pypowsybl::voltageInitializerSetPenaltyInvestReaNeg, py::arg("params_handle"), py::arg("penalty_invest_rea_neg"));
+    m.def("voltage_initializer_set_penalty_invest_rea_pos", &pypowsybl::voltageInitializerSetPenaltyInvestReaPos, py::arg("params_handle"), py::arg("penalty_invest_rea_pos"));
+    m.def("voltage_initializer_set_penalty_active_power", &pypowsybl::voltageInitializerSetPenaltyActivePower, py::arg("params_handle"), py::arg("penalty_active_power"));
+    m.def("voltage_initializer_set_penalty_units_reactive", &pypowsybl::voltageInitializerSetPenaltyUnitsReactive, py::arg("params_handle"), py::arg("penalty_units_reactive"));
+    m.def("voltage_initializer_set_penalty_transfo_ratio", &pypowsybl::voltageInitializerSetPenaltyTransfoRatio, py::arg("params_handle"), py::arg("penalty_transfo_ratio"));
+    m.def("voltage_initializer_set_penalty_voltage_target_ratio", &pypowsybl::voltageInitializerSetPenaltyVoltageTargetRatio, py::arg("params_handle"), py::arg("penalty_voltage_target_ratio"));
+    m.def("voltage_initializer_set_penalty_voltage_target_data", &pypowsybl::voltageInitializerSetPenaltyVoltageTargetData, py::arg("params_handle"), py::arg("penalty_voltage_target_data"));
 
     m.def("run_voltage_initializer", &pypowsybl::runVoltageInitializer, py::arg("debug"), py::arg("network_handle"), py::arg("params_handle"));
 
@@ -888,7 +897,12 @@ PYBIND11_MODULE(_pypowsybl, m) {
             .def_readwrite("sensitivity_parameters", &pypowsybl::RaoParameters::sensitivity_parameters)
             .def_readwrite("sensitivity_failure_overcost", &pypowsybl::RaoParameters::sensitivity_failure_overcost)
             .def_readwrite("provider_parameters_keys", &pypowsybl::RaoParameters::provider_parameters_keys)
-            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values);
+            .def_readwrite("provider_parameters_values", &pypowsybl::RaoParameters::provider_parameters_values)
+            .def_readwrite("fast_rao_ext", &pypowsybl::RaoParameters::fast_rao_ext)
+            .def_readwrite("number_of_cnecs_to_add", &pypowsybl::RaoParameters::number_of_cnecs_to_add)
+            .def_readwrite("add_unsecure_cnecs", &pypowsybl::RaoParameters::add_unsecure_cnecs)
+            .def_readwrite("margin_limit", &pypowsybl::RaoParameters::margin_limit)
+            .def_readwrite("search_tree_parameters_ext", &pypowsybl::RaoParameters::search_tree_parameters_ext);
 
     py::class_<network_metadata, std::shared_ptr<network_metadata>>(m, "NetworkMetadata")
             .def_property_readonly("id", [](const network_metadata& att) {
@@ -1239,6 +1253,46 @@ PYBIND11_MODULE(_pypowsybl, m) {
 
     m.def("split_or_merge_transformers", &pypowsybl::splitOrMergeTransformers, "Replace 3-windings transformers with 3 2-windings transformers",
           py::arg("network"), py::arg("transformer_ids"), py::arg("merge"), py::arg("report_node"));
+
+    m.def("create_scalable", &pypowsybl::createScalable, "Create a Scalable", py::arg("type"), py::arg("injection_id"),
+        py::arg("min_value"), py::arg("max_value"), py::arg("children"), py::arg("percentages"));
+
+    m.def("scale", &pypowsybl::scale, "Scale active power according to the provided Scalable", py::arg("network"), py::arg("scalable"),
+          py::arg("scaling_parameters"), py::arg("asked"));
+
+    m.def("compute_proportional_scalable_percentages", &pypowsybl::computeProportionalScalablePercentages, "Computes distribution percentages",
+        py::arg("injection_id"), py::arg("mode"), py::arg("network"));
+
+    py::enum_<pypowsybl::ScalingType>(m, "ScalingType")
+            .value("DELTA_P", pypowsybl::ScalingType::DELTA_P)
+            .value("TARGET_P", pypowsybl::ScalingType::TARGET_P);
+
+    py::enum_<pypowsybl::Priority>(m, "Priority")
+            .value("RESPECT_OF_VOLUME_ASKED", pypowsybl::Priority::RESPECT_OF_VOLUME_ASKED)
+            .value("RESPECT_OF_DISTRIBUTION", pypowsybl::Priority::RESPECT_OF_DISTRIBUTION)
+            .value("ONESHOT", pypowsybl::Priority::ONESHOT);
+
+    py::enum_<pypowsybl::ScalingConvention>(m, "ScalingConvention")
+            .value("GENERATOR_SCALING_CONVENTION", pypowsybl::ScalingConvention::GENERATOR_SCALING_CONVENTION)
+            .value("LOAD_SCALING_CONVENTION", pypowsybl::ScalingConvention::LOAD_SCALING_CONVENTION);
+
+    py::class_<pypowsybl::ScalingParameters>(m, "ScalingParameters")
+        .def(py::init(&pypowsybl::createScalingParameters))
+        .def_readwrite("scaling_convention", &pypowsybl::ScalingParameters::scaling_convention)
+        .def_readwrite("constant_power_factor", &pypowsybl::ScalingParameters::constant_power_factor)
+        .def_readwrite("reconnect", &pypowsybl::ScalingParameters::reconnect)
+        .def_readwrite("allows_generator_out_of_active_power_limits", &pypowsybl::ScalingParameters::allows_generator_out_of_active_power_limits)
+        .def_readwrite("priority", &pypowsybl::ScalingParameters::priority)
+        .def_readwrite("scaling_type", &pypowsybl::ScalingParameters::scaling_type)
+        .def_readwrite("ignored_injection_ids", &pypowsybl::ScalingParameters::ignored_injection_ids);
+
+    py::enum_<distribution_mode>(m, "DistributionMode")
+            .value("PROPORTIONAL_TO_TARGETP", PROPORTIONAL_TO_TARGETP)
+            .value("PROPORTIONAL_TO_PMAX", PROPORTIONAL_TO_PMAX)
+            .value("PROPORTIONAL_TO_DIFF_PMAX_TARGETP", PROPORTIONAL_TO_DIFF_PMAX_TARGETP)
+            .value("PROPORTIONAL_TO_DIFF_TARGETP_PMIN", PROPORTIONAL_TO_DIFF_TARGETP_PMIN)
+            .value("PROPORTIONAL_TO_P0", PROPORTIONAL_TO_P0)
+            .value("UNIFORM_DISTRIBUTION", UNIFORM_DISTRIBUTION);
 
     py::enum_<pypowsybl::InitialVoltageProfileMode>(m, "InitialVoltageProfileMode", "configure the voltage profile to use for the short-circuit study")
             .value("NOMINAL", pypowsybl::InitialVoltageProfileMode::NOMINAL,

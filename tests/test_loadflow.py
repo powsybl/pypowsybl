@@ -334,6 +334,7 @@ def test_parameters_json_round_trip():
         voltage_init_mode=lf.VoltageInitMode.DC_VALUES,
         provider_parameters={"slackDistributionFailureBehavior": "LEAVE_ON_SLACK_BUS"},
         dc_use_transformer_ratio=True,
+        dc=True
     )
     json_str = params.to_json()
 
@@ -342,6 +343,7 @@ def test_parameters_json_round_trip():
     assert params_reloaded.balance_type == params.balance_type
     assert params_reloaded.voltage_init_mode == params.voltage_init_mode
     assert params_reloaded.dc_use_transformer_ratio == params.dc_use_transformer_ratio
+    assert params_reloaded.dc == params.dc
     assert params_reloaded.provider_parameters != {}
     assert params_reloaded.provider_parameters["slackDistributionFailureBehavior"] == "LEAVE_ON_SLACK_BUS"
 

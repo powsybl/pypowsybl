@@ -307,6 +307,7 @@ private:
 
 class LoadFlowParameters {
 public:
+    LoadFlowParameters();
     LoadFlowParameters(loadflow_parameters* src);
     std::shared_ptr<loadflow_parameters> to_c_struct() const;
     void load_to_c_struct(loadflow_parameters& params) const;
@@ -367,6 +368,7 @@ public:
 
 class SensitivityAnalysisParameters {
 public:
+    SensitivityAnalysisParameters();
     SensitivityAnalysisParameters(sensitivity_analysis_parameters* src);
     std::shared_ptr<sensitivity_analysis_parameters> to_c_struct() const;
     void load_to_c_struct(sensitivity_analysis_parameters& params) const;
@@ -471,6 +473,37 @@ public:
     double timeout_seconds;
     bool edge_info_included;
     bool voltage_level_legends_included;
+};
+
+enum ScalingType {
+    DELTA_P = 0,
+    TARGET_P,
+};
+
+enum Priority {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+};
+
+enum ScalingConvention {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+};
+
+class ScalingParameters {
+public:
+    ScalingParameters(scaling_parameters* src);
+    std::shared_ptr<scaling_parameters> to_c_struct() const;
+    void load_to_c_struct(scaling_parameters& params) const;
+
+    ScalingConvention scaling_convention;
+    bool constant_power_factor;
+    bool reconnect;
+    bool allows_generator_out_of_active_power_limits;
+    Priority priority;
+    ScalingType scaling_type;
+    std::vector<std::string> ignored_injection_ids;
 };
 
 //=======short-circuit analysis==========
@@ -590,6 +623,14 @@ public:
 
     std::vector<std::string> provider_parameters_keys;
     std::vector<std::string> provider_parameters_values;
+
+    // Fast Rao extension
+    bool fast_rao_ext;
+    int number_of_cnecs_to_add;
+    bool add_unsecure_cnecs;
+    double margin_limit;
+
+    bool search_tree_parameters_ext;
 };
 
 RaoParameters* createRaoParameters();
@@ -998,6 +1039,13 @@ void voltageInitializerSetDefaultVariableScalingFactor(const JavaHandle& paramsH
 void voltageInitializerSetDefaultConstraintScalingFactor(const JavaHandle& paramsHandle, double defaultConstraintScalingFactor);
 void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& paramsHandle, double reactiveSlackVariableScalingFactor);
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor);
+void voltageInitializerSetPenaltyInvestReaNeg(const JavaHandle& paramsHandle, double penaltyInvestReaNeg);
+void voltageInitializerSetPenaltyInvestReaPos(const JavaHandle& paramsHandle, double penaltyInvestReaPos);
+void voltageInitializerSetPenaltyActivePower(const JavaHandle& paramsHandle, double penaltyActivePower);
+void voltageInitializerSetPenaltyUnitsReactive(const JavaHandle& paramsHandle, double penaltyUnitsReactive);
+void voltageInitializerSetPenaltyTransfoRatio(const JavaHandle& paramsHandle, double penaltyTransfoRatio);
+void voltageInitializerSetPenaltyVoltageTargetRatio(const JavaHandle& paramsHandle, double penaltyVoltageTargetRatio);
+void voltageInitializerSetPenaltyVoltageTargetData(const JavaHandle& paramsHandle, double penaltyVoltageTargetData);
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle);
 VoltageInitializerStatus voltageInitializerGetStatus(const JavaHandle& resultHandle);
@@ -1013,6 +1061,11 @@ std::vector<std::vector<SeriesMetadata>> getModificationMetadataWithElementType(
 void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* dataframe, network_modification_type networkModificationType, bool throwException, JavaHandle* reportNode);
 
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode);
+
+JavaHandle createScalable(int scalableType, const std::string& injectionId, double minValue, double maxValue, std::vector<JavaHandle> children, std::vector<double> percentages);
+double scale(JavaHandle network, JavaHandle scalable, const ScalingParameters& scalingParameters, double asked);
+std::vector<double> computeProportionalScalablePercentages(const std::vector<std::string>& injectionIds, distribution_mode mode, JavaHandle network);
+ScalingParameters* createScalingParameters();
 
 void setDefaultShortCircuitAnalysisProvider(const std::string& shortCircuitAnalysisProvider);
 std::string getDefaultShortCircuitAnalysisProvider();

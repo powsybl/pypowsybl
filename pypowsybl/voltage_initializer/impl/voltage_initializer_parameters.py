@@ -36,7 +36,14 @@ from pypowsybl._pypowsybl import (
     voltage_initializer_set_default_variable_scaling_factor,
     voltage_initializer_set_default_constraint_scaling_factor,
     voltage_initializer_set_reactive_slack_variable_scaling_factor,
-    voltage_initializer_set_twt_ratio_variable_scaling_factor)
+    voltage_initializer_set_twt_ratio_variable_scaling_factor,
+    voltage_initializer_set_penalty_invest_rea_neg,
+    voltage_initializer_set_penalty_invest_rea_pos,
+    voltage_initializer_set_penalty_active_power,
+    voltage_initializer_set_penalty_units_reactive,
+    voltage_initializer_set_penalty_transfo_ratio,
+    voltage_initializer_set_penalty_voltage_target_ratio,
+    voltage_initializer_set_penalty_voltage_target_data)
 
 class VoltageInitializerParameters:
     """
@@ -332,3 +339,61 @@ class VoltageInitializerParameters:
             twt_ratio_variable_scaling_factor: is > 0.
         """
         voltage_initializer_set_twt_ratio_variable_scaling_factor(self._handle, twt_ratio_variable_scaling_factor)
+
+    def set_penalty_invest_rea_neg(self, penalty_invest_rea_neg: float) -> None:
+        """
+        Args:
+            penalty_invest_rea_neg: is > 0.
+        """
+        voltage_initializer_set_penalty_invest_rea_neg(self._handle, penalty_invest_rea_neg)
+
+    def set_penalty_invest_rea_pos(self, penalty_invest_rea_pos: float) -> None:
+        """
+        Args:
+            penalty_invest_rea_pos: is > 0.
+        """
+        voltage_initializer_set_penalty_invest_rea_pos(self._handle, penalty_invest_rea_pos)
+
+    def set_penalty_active_power(self, penalty_active_power: float) -> None:
+        """
+        Sets the penalty for active power generation in the ACOPF objective.
+        Not setting it restores the historical default value.
+
+        Args:
+            penalty_active_power: is > 0.
+        """
+        voltage_initializer_set_penalty_active_power(self._handle, penalty_active_power)
+
+    def set_penalty_units_reactive(self, penalty_units_reactive: float) -> None:
+        """
+        Args:
+            penalty_units_reactive: is > 0.
+        """
+        voltage_initializer_set_penalty_units_reactive(self._handle, penalty_units_reactive)
+
+    def set_penalty_transfo_ratio(self, penalty_transfo_ratio: float) -> None:
+        """
+        Args:
+            penalty_transfo_ratio: is > 0.
+        """
+        voltage_initializer_set_penalty_transfo_ratio(self._handle, penalty_transfo_ratio)
+
+    def set_penalty_voltage_target_ratio(self, penalty_voltage_target_ratio: float) -> None:
+        """
+        Sets the penalty for the voltage target ratio term in the ACOPF objective.
+        Not setting it restores the historical default value.
+
+        Args:
+            penalty_voltage_target_ratio: is > 0.
+        """
+        voltage_initializer_set_penalty_voltage_target_ratio(self._handle, penalty_voltage_target_ratio)
+
+    def set_penalty_voltage_target_data(self, penalty_voltage_target_data: float) -> None:
+        """
+        Sets the penalty for the voltage target data term in the ACOPF objective.
+        Not setting it restores the historical default value.
+
+        Args:
+            penalty_voltage_target_data: is > 0.
+        """
+        voltage_initializer_set_penalty_voltage_target_data(self._handle, penalty_voltage_target_data)

@@ -42,10 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 
@@ -116,6 +113,16 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsLong();
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return 0;
+        }
+    }
+
+    public static double doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, DoubleSupplier supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.getAsDouble();
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return 0;
