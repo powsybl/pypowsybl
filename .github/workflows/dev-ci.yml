@@ -75,7 +75,7 @@ jobs:
 
       - name: Build and install core
         shell: bash
-        run: mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
+        run: ./mvnw --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
 
       - name: Checkout olf sources
         uses: actions/checkout@v4
@@ -86,7 +86,7 @@ jobs:
 
       - name: Build and install olf
         shell: bash
-        run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
+        run: ./mvnw --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
       - name: Setup path
         if: matrix.config.name == 'linux'
@@ -206,7 +206,7 @@ jobs:
 
       - name: Build and install core
         shell: bash
-        run: mvn --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
+        run: ./mvnw --batch-mode -DskipTests=true --file powsybl-core/pom.xml install
 
       - name: Checkout olf sources
         uses: actions/checkout@v4
@@ -217,7 +217,7 @@ jobs:
 
       - name: Build and install olf
         shell: bash
-        run: mvn --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
+        run: ./mvnw --batch-mode -DskipTests=true --file powsybl-open-loadflow/pom.xml install
 
       - name: Build with Maven (Ubuntu)
         working-directory: ./java
