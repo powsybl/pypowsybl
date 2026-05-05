@@ -379,6 +379,10 @@
         </dependency>
         <dependency>
             <groupId>com.powsybl</groupId>
+            <artifactId>powsybl-loadflow-validation</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.powsybl</groupId>
             <artifactId>powsybl-open-reac</artifactId>
             <version>${powsybl-open-reac.version}</version>
         </dependency>
