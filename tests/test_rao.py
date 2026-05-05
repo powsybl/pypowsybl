@@ -521,5 +521,33 @@ def validate_redispatch_ra_setpoint(crac_file: str, parameters_file: str, set_po
     assert math.isclose(set_point, df.loc[df['remedial_action_id'] == 'redispatching']['optimized_set_point'])
 
 
+def test_import_crac_from_nc_profiles():
+    network = pp.network.load(DATA_DIR.joinpath("rao/16Nodes.zip"))
+    crac = pp.rao.Crac.from_file_source(network, DATA_DIR.joinpath("rao/NetworkCodesProfiles.zip"), DATA_DIR.joinpath("rao/nc-crac-parameters.json"))
+
+    expected_instants = pd.DataFrame(
+        {
+            "id": ["preventive", "outage", "auto", "curative 1", "curative 2", "curative 3"],
+            "kind": ["PREVENTIVE", "OUTAGE", "AUTO", "CURATIVE", "CURATIVE", "CURATIVE"],
+            "order": [0, 1, 2, 3, 4, 5],
+        }
+    ).set_index("id", inplace=False)
+    pd.testing.assert_frame_equal(expected_instants, crac.get_instants(), check_dtype=False)
+
+    assert sorted(list(crac.get_contingencies().index)) == ["contingency-1", "contingency-2"]
+
+    assert len(crac.get_flow_cnecs()) == 39
+
+    expected_network_actions = pd.DataFrame(
+        {
+            "id": ["remedial-action-2", "remedial-action-1"],
+            "name": ["RTE_RA2", "RTE_RA1"],
+            "operator": ["RTE", "RTE"],
+            "speed": [None, None],
+            "activation_cost": [None, None]
+        }
+    ).set_index("id", inplace=False)
+    pd.testing.assert_frame_equal(expected_network_actions, crac.get_network_actions(), check_dtype=False)
+
 if __name__ == '__main__':
     unittest.main()
