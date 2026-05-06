@@ -1651,21 +1651,23 @@ public final class NetworkCFunctions {
     }
 
     private static Map<String, CustomLabelProvider.BranchLabels> getNadCustomBranchLabels(int rowCount, StringSeries idSeries,
-                                                                                                StringSeries side1Label, StringSeries middleLabel,
-                                                                                                StringSeries side2Label, StringSeries arrow1,
+                                                                                                StringSeries side1InternalLabel, StringSeries side1ExternalLabel,
+                                                                                                StringSeries middle1Label, StringSeries middle2Label,
+                                                                                                StringSeries side2InternalLabel, StringSeries side2ExternalLabel,
+                                                                                                StringSeries arrow1, StringSeries arrowMiddle,
                                                                                                 StringSeries arrow2) {
         Map<String, CustomLabelProvider.BranchLabels> nadCustomBranchLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idSeries.get(i);
             CustomLabelProvider.BranchLabels labels = new CustomLabelProvider.BranchLabels(
-                    getValueFromSeriesOrNull(side1Label, i),
-                    null,
-                    getValueFromSeriesOrNull(middleLabel, i),
-                    null,
-                    getValueFromSeriesOrNull(side2Label, i),
-                    null,
+                    getValueFromSeriesOrNull(side1InternalLabel, i),
+                    getValueFromSeriesOrNull(side1ExternalLabel, i),
+                    getValueFromSeriesOrNull(middle1Label, i),
+                    getValueFromSeriesOrNull(middle2Label, i),
+                    getValueFromSeriesOrNull(side2InternalLabel, i),
+                    getValueFromSeriesOrNull(side2ExternalLabel, i),
                     getDirectionFromSeriesOrNull(arrow1, i),
-                    null,
+                    getDirectionFromSeriesOrNull(arrowMiddle, i),
                     getDirectionFromSeriesOrNull(arrow2, i)
             );
             nadCustomBranchLabels.put(id, labels);
@@ -1676,9 +1678,12 @@ public final class NetworkCFunctions {
     private static Map<String, CustomLabelProvider.ThreeWtLabels> getNadCustomThreeWtLabels(UpdatingDataframe threeWtLabelsDataframe) {
         int rowCount = threeWtLabelsDataframe.getRowCount();
         StringSeries idS = threeWtLabelsDataframe.getStrings("id");
-        StringSeries side1S = threeWtLabelsDataframe.getStrings("side1");
-        StringSeries side2S = threeWtLabelsDataframe.getStrings("side2");
-        StringSeries side3S = threeWtLabelsDataframe.getStrings("side3");
+        StringSeries side1InternalS = threeWtLabelsDataframe.getStrings("side1Internal");
+        StringSeries side1ExternalS = threeWtLabelsDataframe.getStrings("side1External");
+        StringSeries side2InternalS = threeWtLabelsDataframe.getStrings("side2Internal");
+        StringSeries side2ExternalS = threeWtLabelsDataframe.getStrings("side2External");
+        StringSeries side3InternalS = threeWtLabelsDataframe.getStrings("side3Internal");
+        StringSeries side3ExternalS = threeWtLabelsDataframe.getStrings("side3External");
         StringSeries arrow1S = threeWtLabelsDataframe.getStrings("arrow1");
         StringSeries arrow2S = threeWtLabelsDataframe.getStrings("arrow2");
         StringSeries arrow3S = threeWtLabelsDataframe.getStrings("arrow3");
@@ -1687,12 +1692,12 @@ public final class NetworkCFunctions {
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
             CustomLabelProvider.ThreeWtLabels labels = new CustomLabelProvider.ThreeWtLabels(
-                    getValueFromSeriesOrNull(side1S, i),
-                    null,
-                    getValueFromSeriesOrNull(side2S, i),
-                    null,
-                    getValueFromSeriesOrNull(side3S, i),
-                    null,
+                    getValueFromSeriesOrNull(side1InternalS, i),
+                    getValueFromSeriesOrNull(side1ExternalS, i),
+                    getValueFromSeriesOrNull(side2InternalS, i),
+                    getValueFromSeriesOrNull(side2ExternalS, i),
+                    getValueFromSeriesOrNull(side3InternalS, i),
+                    getValueFromSeriesOrNull(side3ExternalS, i),
                     getDirectionFromSeriesOrNull(arrow1S, i),
                     getDirectionFromSeriesOrNull(arrow2S, i),
                     getDirectionFromSeriesOrNull(arrow3S, i)
@@ -1705,15 +1710,16 @@ public final class NetworkCFunctions {
     private static Map<String, CustomLabelProvider.InjectionLabels> getNadCustomInjectionsLabels(UpdatingDataframe injectionLabelsDataframe) {
         int rowCount = injectionLabelsDataframe.getRowCount();
         StringSeries idS = injectionLabelsDataframe.getStrings("id");
-        StringSeries labelS = injectionLabelsDataframe.getStrings("label");
+        StringSeries labelInternalS = injectionLabelsDataframe.getStrings("labelInternal");
+        StringSeries labelExternalS = injectionLabelsDataframe.getStrings("labelExternal");
         StringSeries arrowS = injectionLabelsDataframe.getStrings("arrow");
 
         Map<String, CustomLabelProvider.InjectionLabels> nadCustomInjectionsLabels = new HashMap<>();
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
             CustomLabelProvider.InjectionLabels labels = new CustomLabelProvider.InjectionLabels(
-                    getValueFromSeriesOrNull(labelS, i),
-                    null,
+                    getValueFromSeriesOrNull(labelInternalS, i),
+                    getValueFromSeriesOrNull(labelExternalS, i),
                     getDirectionFromSeriesOrNull(arrowS, i)
             );
             nadCustomInjectionsLabels.put(id, labels);
@@ -1766,9 +1772,11 @@ public final class NetworkCFunctions {
             final Map<String, CustomLabelProvider.BranchLabels> branchLabels;
             if (customLabelsDataframe != null) {
                 branchLabels = getNadCustomBranchLabels(customLabelsDataframe.getRowCount(), customLabelsDataframe.getStrings("id"),
-                        customLabelsDataframe.getStrings("side1"),
-                        customLabelsDataframe.getStrings("middle"), customLabelsDataframe.getStrings("side2"),
-                        customLabelsDataframe.getStrings("arrow1"), customLabelsDataframe.getStrings("arrow2"));
+                        customLabelsDataframe.getStrings("side1Internal"),
+                        customLabelsDataframe.getStrings("side1External"), customLabelsDataframe.getStrings("middle1"),
+                        customLabelsDataframe.getStrings("middle2"), customLabelsDataframe.getStrings("side2Internal"),
+                        customLabelsDataframe.getStrings("side2External"), customLabelsDataframe.getStrings("arrow1"),
+                        customLabelsDataframe.getStrings("arrowMiddle"), customLabelsDataframe.getStrings("arrow2"));
             } else {
                 branchLabels = Collections.emptyMap();
             }
