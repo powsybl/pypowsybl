@@ -579,6 +579,9 @@ SecurityAnalysisParameters::SecurityAnalysisParameters(security_analysis_paramet
     low_voltage_absolute_threshold = (double) src->low_voltage_absolute_threshold;
     high_voltage_proportional_threshold = (double) src->high_voltage_proportional_threshold;
     high_voltage_absolute_threshold = (double) src->high_voltage_absolute_threshold;
+    monitored_element_power_modification_threshold = (double) src->monitored_element_power_modification_threshold;
+    monitored_element_voltage_modification_absolute_threshold = (double) src->monitored_element_voltage_modification_absolute_threshold;
+    monitored_element_voltage_modification_proportional_threshold = (double) src->monitored_element_voltage_modification_proportional_threshold;
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
@@ -590,6 +593,9 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
     res->low_voltage_absolute_threshold = (double) low_voltage_absolute_threshold;
     res->high_voltage_proportional_threshold = (double) high_voltage_proportional_threshold;
     res->high_voltage_absolute_threshold = (double) high_voltage_absolute_threshold;
+    res->monitored_element_power_modification_threshold = (double) monitored_element_power_modification_threshold;
+    res->monitored_element_voltage_modification_absolute_threshold = (double) monitored_element_voltage_modification_absolute_threshold;
+    res->monitored_element_voltage_modification_proportional_threshold = (double) monitored_element_voltage_modification_proportional_threshold;
 
     providerParametersToCStruct(res->provider_parameters, provider_parameters_keys, provider_parameters_values);
     //Memory has been allocated here on C side, we need to clean it up on C side (not java side)

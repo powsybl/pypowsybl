@@ -438,6 +438,24 @@ public final class PyPowsyblApiHeader {
 
         @CField("high_voltage_absolute_threshold")
         void setHighVoltageAbsoluteThreshold(double highVoltageAbsoluteThreshold);
+
+        @CField("monitored_element_power_modification_threshold")
+        double getMonitoredElementPowerModificationThreshold();
+
+        @CField("monitored_element_power_modification_threshold")
+        void setMonitoredElementPowerModificationThreshold(double monitoredElementPowerModificationThreshold);
+
+        @CField("monitored_element_voltage_modification_absolute_threshold")
+        double getMonitoredElementVoltageModificationAbsoluteThreshold();
+
+        @CField("monitored_element_voltage_modification_absolute_threshold")
+        void setMonitoredElementVoltageModificationAbsoluteThreshold(double monitoredElementVoltageModificationAbsoluteThreshold);
+
+        @CField("monitored_element_voltage_modification_proportional_threshold")
+        double getMonitoredElementVoltageModificationProportionalThreshold();
+
+        @CField("monitored_element_voltage_modification_proportional_threshold")
+        void setMonitoredElementVoltageModificationProportionalThreshold(double monitoredElementVoltageModificationProportionalThreshold);
     }
 
     @CStruct("sensitivity_analysis_parameters")

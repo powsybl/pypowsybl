@@ -64,7 +64,11 @@ public final class SecurityAnalysisCUtils {
                         .setHighVoltageAbsoluteThreshold(securityAnalysisParametersPointer.getHighVoltageAbsoluteThreshold())
                         .setHighVoltageProportionalThreshold(securityAnalysisParametersPointer.getHighVoltageProportionalThreshold())
                         .setLowVoltageAbsoluteThreshold(securityAnalysisParametersPointer.getLowVoltageAbsoluteThreshold())
-                        .setLowVoltageProportionalThreshold(securityAnalysisParametersPointer.getLowVoltageProportionalThreshold()));
+                        .setLowVoltageProportionalThreshold(securityAnalysisParametersPointer.getLowVoltageProportionalThreshold()))
+                .setModifiedMonitoredElementsParameters(new SecurityAnalysisParameters.ModifiedMonitoredElementsParameters()
+                        .setPowerModificationThreshold(securityAnalysisParametersPointer.getMonitoredElementPowerModificationThreshold())
+                        .setVoltageModificationProportionalThreshold(securityAnalysisParametersPointer.getMonitoredElementVoltageModificationProportionalThreshold())
+                        .setVoltageModificationAbsoluteThreshold(securityAnalysisParametersPointer.getMonitoredElementVoltageModificationAbsoluteThreshold()));
     }
 
     private static Map<String, String> getSpecificParameters(PyPowsyblApiHeader.SecurityAnalysisParametersPointer securityAnalysisParametersPointer) {

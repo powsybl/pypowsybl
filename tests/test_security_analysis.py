@@ -120,6 +120,25 @@ def test_flow_transfer():
     assert branch_results.loc['NHV1_NHV2_2', '', 'NHV1_NHV2_1']['flow_transfer'] == pytest.approx(1.01876, abs=1e-5)
 
 
+def test_filtering_monitored_results():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingencies(['NHV1_NHV2_1'])
+    sa.add_monitored_elements(branch_ids=['NGEN_NHV1'])
+
+    parameters = pp.security.Parameters()
+    sa_result = sa.run_ac(n, parameters)
+    branch_results = sa_result.branch_results
+    p1N = branch_results.loc['', '', 'NGEN_NHV1']['p1']
+    p1Nm1 = branch_results.loc['NHV1_NHV2_1', '', 'NGEN_NHV1']['p1']
+    assert abs(p1N - p1Nm1) / p1N < 0.01
+
+    parameters.modified_monitored_elements_parameters.power_modification_threshold = 0.01
+    sa_result = sa.run_ac(n, parameters)
+    branch_results = sa_result.branch_results
+    assert ('NHV1_NHV2_1', '', 'NGEN_NHV1') not in branch_results.index
+
+
 def test_dc_analysis():
     n = pp.network.create_eurostag_tutorial_example1_with_power_limits_network()
     n.update_loads(id='LOAD', p0=900)

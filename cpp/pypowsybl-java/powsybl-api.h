@@ -97,6 +97,9 @@ typedef struct security_analysis_parameters_struct {
     double low_voltage_absolute_threshold;
     double high_voltage_proportional_threshold;
     double high_voltage_absolute_threshold;
+    double monitored_element_power_modification_threshold;
+    double monitored_element_voltage_modification_absolute_threshold;
+    double monitored_element_voltage_modification_proportional_threshold;
 } security_analysis_parameters;
 
 typedef struct sensitivity_analysis_parameters_struct {
