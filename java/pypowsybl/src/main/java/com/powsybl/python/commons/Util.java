@@ -26,7 +26,7 @@ import com.powsybl.openreac.parameters.input.algo.OpenReacSolverLogLevel;
 import com.powsybl.openreac.parameters.input.algo.ReactiveSlackBusesMode;
 import com.powsybl.openreac.parameters.output.OpenReacStatus;
 import com.powsybl.python.dataframe.CDataframeHandler;
-import com.powsybl.security.LimitViolationType;
+import com.powsybl.contingency.violations.LimitViolationType;
 import com.powsybl.sensitivity.SensitivityFunctionType;
 import com.powsybl.sensitivity.SensitivityVariableType;
 import org.graalvm.nativeimage.UnmanagedMemory;
@@ -42,10 +42,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 import static com.powsybl.python.commons.PyPowsyblApiHeader.*;
 
@@ -116,6 +113,16 @@ public final class Util {
         exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
         try {
             return supplier.getAsLong();
+        } catch (Throwable t) {
+            setException(exceptionHandlerPtr, t);
+            return 0;
+        }
+    }
+
+    public static double doCatch(PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr, DoubleSupplier supplier) {
+        exceptionHandlerPtr.setMessage(WordFactory.nullPointer());
+        try {
+            return supplier.getAsDouble();
         } catch (Throwable t) {
             setException(exceptionHandlerPtr, t);
             return 0;
@@ -222,8 +229,8 @@ public final class Util {
             case GROUND -> PyPowsyblApiHeader.ElementType.GROUND;
             case BATTERY -> PyPowsyblApiHeader.ElementType.BATTERY;
             case SHUNT_COMPENSATOR -> PyPowsyblApiHeader.ElementType.SHUNT_COMPENSATOR;
-            case DANGLING_LINE -> PyPowsyblApiHeader.ElementType.DANGLING_LINE;
-            case DANGLING_LINE_GENERATION -> PyPowsyblApiHeader.ElementType.DANGLING_LINE_GENERATION;
+            case BOUNDARY_LINE -> PyPowsyblApiHeader.ElementType.BOUNDARY_LINE;
+            case BOUNDARY_LINE_GENERATION -> PyPowsyblApiHeader.ElementType.BOUNDARY_LINE_GENERATION;
             case TIE_LINE -> PyPowsyblApiHeader.ElementType.TIE_LINE;
             case LCC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION -> PyPowsyblApiHeader.ElementType.VSC_CONVERTER_STATION;
@@ -275,8 +282,8 @@ public final class Util {
             case GROUND -> DataframeElementType.GROUND;
             case BATTERY -> DataframeElementType.BATTERY;
             case SHUNT_COMPENSATOR -> DataframeElementType.SHUNT_COMPENSATOR;
-            case DANGLING_LINE -> DataframeElementType.DANGLING_LINE;
-            case DANGLING_LINE_GENERATION -> DataframeElementType.DANGLING_LINE_GENERATION;
+            case BOUNDARY_LINE -> DataframeElementType.BOUNDARY_LINE;
+            case BOUNDARY_LINE_GENERATION -> DataframeElementType.BOUNDARY_LINE_GENERATION;
             case TIE_LINE -> DataframeElementType.TIE_LINE;
             case LCC_CONVERTER_STATION -> DataframeElementType.LCC_CONVERTER_STATION;
             case VSC_CONVERTER_STATION -> DataframeElementType.VSC_CONVERTER_STATION;

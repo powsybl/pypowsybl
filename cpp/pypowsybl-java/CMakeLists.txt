@@ -68,9 +68,16 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(NATIVE_IMAGE_INSTALL_EXTRA_COMMAND COMMAND install_name_tool -id @loader_path/${PYPOWSYBL_JAVA_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB})
 endif()
 
+# Maven command
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(MAVEN_CMD "${CMAKE_CURRENT_SOURCE_DIR}/../../java/mvnw.cmd")
+else()
+    set(MAVEN_CMD "${CMAKE_CURRENT_SOURCE_DIR}/../../java/mvnw")
+endif()
+
 ExternalProject_Add(mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_SRC_DIR}
-    PATCH_COMMAND mvn --batch-mode clean package
+    PATCH_COMMAND ${MAVEN_CMD} -B -ntp clean package
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ""

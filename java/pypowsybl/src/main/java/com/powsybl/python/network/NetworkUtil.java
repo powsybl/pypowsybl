@@ -11,10 +11,12 @@ import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
+import com.powsybl.iidm.network.util.SwitchPredicates;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,33 +46,40 @@ public final class NetworkUtil {
         return false;
     }
 
-    static boolean updateConnectableStatus(Network network, String id, boolean connected) {
+    static boolean updateConnectableStatus(Network network, String id, boolean connected, boolean allowDisconnectors, boolean allowFictitious) {
         Identifiable<?> equipment = network.getIdentifiable(id);
         if (equipment == null) {
             throw new PowsyblException("Equipment '" + id + "' not found");
+        } else if (equipment instanceof TieLine tieLine) {
+            boolean connected1 = updateConnectableStatus(network, tieLine.getBoundaryLine1().getId(), connected,
+                    allowDisconnectors, allowFictitious);
+            boolean connected2 = updateConnectableStatus(network, tieLine.getBoundaryLine2().getId(), connected,
+                    allowDisconnectors, allowFictitious);
+            return connected1 && connected2;
         }
-        if (!(equipment instanceof Connectable)) {
+        if (!(equipment instanceof Connectable<?> connectable)) {
             throw new PowsyblException("Equipment '" + id + "' is not a connectable");
         }
-        if (equipment instanceof Injection<?> injection) {
-            if (connected) {
-                return injection.getTerminal().connect();
+        Predicate<Switch> predicate;
+        if (allowFictitious) {
+            if (allowDisconnectors) {
+                predicate = SwitchPredicates.IS_BREAKER_OR_DISCONNECTOR;
             } else {
-                return injection.getTerminal().disconnect();
+                predicate = SwitchPredicates.IS_BREAKER;
             }
-        } else if (equipment instanceof Branch<?> branch) {
-            boolean done1;
-            boolean done2;
-            if (connected) {
-                done1 = branch.getTerminal1().connect();
-                done2 = branch.getTerminal2().connect();
+        } else {
+            if (allowDisconnectors) {
+                predicate = SwitchPredicates.IS_NONFICTIONAL;
             } else {
-                done1 = branch.getTerminal1().disconnect();
-                done2 = branch.getTerminal2().disconnect();
+                predicate = SwitchPredicates.IS_NONFICTIONAL_BREAKER;
             }
-            return done1 || done2;
         }
-        return false;
+
+        if (connected) {
+            return connectable.connect(predicate);
+        } else {
+            return connectable.disconnect(predicate);
+        }
     }
 
     private static boolean isInMainCc(Terminal t) {
@@ -163,10 +172,10 @@ public final class NetworkUtil {
                     (String) branch.getSelectedOperationalLimitsGroupId2().orElse(null),
                     branch.getTerminal2().getVoltageLevel().getNominalV());
         });
-        network.getDanglingLineStream().forEach(danglingLine ->
-            addOperationalLimitGroupsLimits(limits, danglingLine.getOperationalLimitsGroups(), danglingLine, NONE,
-                    danglingLine.getSelectedOperationalLimitsGroupId().orElse(null),
-                    danglingLine.getTerminal().getVoltageLevel().getNominalV())
+        network.getBoundaryLineStream().forEach(boundaryLine ->
+            addOperationalLimitGroupsLimits(limits, boundaryLine.getOperationalLimitsGroups(), boundaryLine, NONE,
+                    boundaryLine.getSelectedOperationalLimitsGroupId().orElse(null),
+                    boundaryLine.getTerminal().getVoltageLevel().getNominalV())
         );
         network.getThreeWindingsTransformerStream().forEach(twt -> {
             addOperationalLimitGroupsLimits(limits, twt.getLeg1().getOperationalLimitsGroups(), twt, ONE,

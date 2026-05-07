@@ -72,6 +72,7 @@ typedef struct loadflow_parameters_struct {
     int component_mode;
     unsigned char hvdc_ac_emulation;
     double dc_power_factor;
+    unsigned char dc;
 } loadflow_parameters;
 
 typedef struct loadflow_validation_parameters_struct {
@@ -155,8 +156,8 @@ typedef enum {
     SHUNT_COMPENSATOR,
     NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
     LINEAR_SHUNT_COMPENSATOR_SECTION,
-    DANGLING_LINE,
-    DANGLING_LINE_GENERATION,
+    BOUNDARY_LINE,
+    BOUNDARY_LINE_GENERATION,
     TIE_LINE,
     LCC_CONVERTER_STATION,
     VSC_CONVERTER_STATION,
@@ -371,7 +372,6 @@ typedef struct sld_parameters_struct {
 } sld_parameters;
 
 typedef struct nad_parameters_struct {
-    unsigned char edge_name_displayed;
     unsigned char edge_info_along_edge;
     unsigned char id_displayed;
     int power_value_precision;
@@ -383,18 +383,17 @@ typedef struct nad_parameters_struct {
     int layout_type;
     int scaling_factor;
     double radius_factor;
-    int edge_info_displayed;
     unsigned char voltage_level_details;
     unsigned char injections_added;
+    int info_side_external;
+    int info_middle_side1;
+    int info_middle_side2;
+    int info_side_internal;
+    double scale_factor;
+    double timeout_seconds;
+    unsigned char edge_info_included;
+    unsigned char voltage_level_legends_included;
 } nad_parameters;
-
-typedef enum {
-    DISCONNECT = 0,
-    NODE_FAULT,
-    ACTIVE_POWER_VARIATION,
-    REACTIVE_POWER_VARIATION,
-    REFERENCE_VOLTAGE_VARIATION,
-} EventMappingType;
 
 typedef enum {
     CURVE = 0,
@@ -524,7 +523,6 @@ typedef struct rao_parameters_struct {
   struct provider_parameters_struct provider_parameters;
   int objective_function_type; // Objective function parameters
   unsigned char enforce_curative_security;
-  int unit; // Objective function parameters
   double curative_min_obj_improvement;
 
   // range action solver
@@ -561,4 +559,46 @@ typedef struct rao_parameters_struct {
   char* sensitivity_provider;
   struct sensitivity_analysis_parameters_struct* sensitivity_parameters;
   double sensitivity_failure_overcost;
+  unsigned char fast_rao_ext;
+  int number_of_cnecs_to_add;
+  unsigned char add_unsecure_cnecs;
+  double margin_limit;
+
+  unsigned char search_tree_parameters;
 } rao_parameters;
+
+typedef struct scaling_parameters_struct {
+    int scaling_convention;
+    unsigned char constant_power_factor;
+    unsigned char reconnect;
+    unsigned char allows_generator_out_of_active_power_limits;
+    int priority;
+    int scaling_type;
+    char** ignored_injection_ids;
+    int ignored_injection_ids_count;
+} scaling_parameters;
+
+typedef enum {
+    DELTA_P = 0,
+    TARGET_P,
+} scaling_type;
+
+typedef enum {
+    RESPECT_OF_VOLUME_ASKED = 0,
+    RESPECT_OF_DISTRIBUTION,
+    ONESHOT,
+} priority;
+
+typedef enum {
+    GENERATOR_SCALING_CONVENTION = 0,
+    LOAD_SCALING_CONVENTION,
+} scaling_convention;
+
+typedef enum {
+    PROPORTIONAL_TO_TARGETP = 0,
+    PROPORTIONAL_TO_PMAX,
+    PROPORTIONAL_TO_DIFF_PMAX_TARGETP,
+    PROPORTIONAL_TO_DIFF_TARGETP_PMIN,
+    PROPORTIONAL_TO_P0,
+    UNIFORM_DISTRIBUTION,
+} distribution_mode;

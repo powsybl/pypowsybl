@@ -406,6 +406,90 @@ public final class VoltageInitializerCFunctions {
         });
     }
 
+    @CEntryPoint(name = "voltageInitializerSetPenaltyInvestReaNeg")
+    public static void setPenaltyInvestReaNeg(IsolateThread thread, ObjectHandle paramsHandle, double penaltyInvestReaNeg,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyInvestReaNeg(penaltyInvestReaNeg);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetPenaltyInvestReaPos")
+    public static void setPenaltyInvestReaPos(IsolateThread thread, ObjectHandle paramsHandle, double penaltyInvestReaPos,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyInvestReaPos(penaltyInvestReaPos);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetPenaltyActivePower")
+    public static void setPenaltyActivePower(IsolateThread thread, ObjectHandle paramsHandle, double penaltyActivePower,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyActivePower(penaltyActivePower);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetPenaltyUnitsReactive")
+    public static void setPenaltyUnitsReactive(IsolateThread thread, ObjectHandle paramsHandle, double penaltyUnitsReactive,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyUnitsReactive(penaltyUnitsReactive);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetPenaltyTransfoRatio")
+    public static void setPenaltyTransfoRatio(IsolateThread thread, ObjectHandle paramsHandle, double penaltyTransfoRatio,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyTransfoRatio(penaltyTransfoRatio);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetPenaltyVoltageTargetRatio")
+    public static void setPenaltyVoltageTargetRatio(IsolateThread thread, ObjectHandle paramsHandle, double penaltyVoltageRatio,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyVoltageTargetRatio(penaltyVoltageRatio);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "voltageInitializerSetPenaltyVoltageTargetData")
+    public static void setPenaltyVoltageTargetData(IsolateThread thread, ObjectHandle paramsHandle, double penaltyVoltageTargetData,
+                                                                          PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                OpenReacParameters params = ObjectHandles.getGlobal().get(paramsHandle);
+                params.setPenaltyVoltageTargetData(penaltyVoltageTargetData);
+            }
+        });
+    }
+
     @CEntryPoint(name = "voltageInitializerApplyAllModifications")
     public static void applyAllModifications(IsolateThread thread, ObjectHandle resultHandle,
             ObjectHandle networkHandle, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {

@@ -36,7 +36,7 @@ public final class NetworkElementAdders {
             Map.entry(VSC_CONVERTER_STATION, new VscStationDataframeAdder()),
             Map.entry(LCC_CONVERTER_STATION, new LccStationDataframeAdder()),
             Map.entry(BUSBAR_SECTION, new BusBarDataframeAdder()),
-            Map.entry(DANGLING_LINE, new DanglingLineDataframeAdder()),
+            Map.entry(BOUNDARY_LINE, new BoundaryLineDataframeAdder()),
             Map.entry(VOLTAGE_LEVEL, new VoltageLevelDataframeAdder()),
             Map.entry(SUBSTATION, new SubstationDataframeAdder()),
             Map.entry(HVDC_LINE, new HvdcDataframeAdder()),

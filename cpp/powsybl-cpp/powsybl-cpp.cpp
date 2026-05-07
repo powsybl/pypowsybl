@@ -318,6 +318,9 @@ void freeStringListListArray(array mainArray) {
     delete[] mainArray.ptr;
 }
 
+LoadFlowParameters::LoadFlowParameters() {
+}
+
 LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     voltage_init_mode = static_cast<VoltageInitMode>(src->voltage_init_mode);
     transformer_voltage_control_on = (bool) src->transformer_voltage_control_on;
@@ -333,6 +336,7 @@ LoadFlowParameters::LoadFlowParameters(loadflow_parameters* src) {
     component_mode = static_cast<ComponentMode>(src->component_mode);
     hvdc_ac_emulation = (bool) src->hvdc_ac_emulation;
     dc_power_factor = (double) src->dc_power_factor;
+    dc = (bool) src ->dc;
     copyCharPtrPtrToVector(src->countries_to_balance, src->countries_to_balance_count, countries_to_balance);
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
@@ -354,6 +358,7 @@ void LoadFlowParameters::load_to_c_struct(loadflow_parameters& res) const {
     res.component_mode = component_mode;
     res.hvdc_ac_emulation = (unsigned char) hvdc_ac_emulation;
     res.dc_power_factor = dc_power_factor;
+    res.dc = dc;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
 }
 
@@ -373,118 +378,144 @@ void deleteSensitivityAnalysisParameters(sensitivity_analysis_parameters* ptr) {
     pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
 }
 
-RaoParameters::RaoParameters(rao_parameters* src):
-   sensitivity_parameters(src->sensitivity_parameters)
-{
+RaoParameters::RaoParameters(rao_parameters* src) {
     objective_function_type = static_cast<ObjectiveFunctionType>(src->objective_function_type);
-    unit = static_cast<Unit>(src->unit);
-    curative_min_obj_improvement = src->curative_min_obj_improvement;
     enforce_curative_security = (bool) src->enforce_curative_security;
-
-    solver = static_cast<Solver>(src->solver);
-    relative_mip_gap = src->relative_mip_gap;
-    if (src->solver_specific_parameters != nullptr) {
-        solver_specific_parameters = toString(src->solver_specific_parameters);
-    }
 
     // range action optimization parameters
     pst_ra_min_impact_threshold = src->pst_ra_min_impact_threshold;
     hvdc_ra_min_impact_threshold = src->hvdc_ra_min_impact_threshold;
     injection_ra_min_impact_threshold = src->injection_ra_min_impact_threshold;
-    max_mip_iterations = src->max_mip_iterations;
-    pst_sensitivity_threshold = src->pst_sensitivity_threshold;
-    hvdc_sensitivity_threshold = src->hvdc_sensitivity_threshold;
-    injection_ra_sensitivity_threshold = src->injection_ra_sensitivity_threshold;
-    pst_model = static_cast<PstModel>(src->pst_model);
-    ra_range_shrinking = static_cast<RaRangeShrinking>(src->ra_range_shrinking);
 
     // topo optimization parameters
-    max_preventive_search_tree_depth = src->max_preventive_search_tree_depth;
-    max_curative_search_tree_depth = src->max_curative_search_tree_depth;
-    // Missing predefinedCombinations (list of list of string..)
-    predefined_combinations = arrayToStringVectorVector(src->predefined_combinations);
-
     relative_min_impact_threshold = src->relative_min_impact_threshold;
     absolute_min_impact_threshold = src->absolute_min_impact_threshold;
-    skip_actions_far_from_most_limiting_element = (bool) src->skip_actions_far_from_most_limiting_element;
-    max_number_of_boundaries_for_skipping_actions = src->max_number_of_boundaries_for_skipping_actions;
-
-    // Multithreading parameters
-    available_cpus = src->available_cpus;
-
-    // Second preventive rao parameters
-    execution_condition = static_cast<ExecutionCondition>(src->execution_condition);
-    hint_from_first_preventive_rao = (bool) src->hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
     do_not_optimize_curative_cnecs_for_tsos_without_cras = (bool) src->do_not_optimize_curative_cnecs_for_tsos_without_cras;
 
-    // Load flow and sensitivity parameters
-    load_flow_provider = toString(src->load_flow_provider);
-    sensitivity_provider = toString(src->sensitivity_provider);
-    sensitivity_failure_overcost = src->sensitivity_failure_overcost;
-
     providerParametersFromCStruct(src->provider_parameters, provider_parameters_keys, provider_parameters_values);
+
+    // Fast rao extension
+    fast_rao_ext = (bool) src->fast_rao_ext;
+    if (fast_rao_ext) {
+      number_of_cnecs_to_add = src->number_of_cnecs_to_add;
+      add_unsecure_cnecs = (bool) src->add_unsecure_cnecs;
+      margin_limit = src->margin_limit;
+    }
+
+    search_tree_parameters_ext = (bool) src->search_tree_parameters;
+    if (search_tree_parameters_ext) {
+      curative_min_obj_improvement = src->curative_min_obj_improvement;
+
+      solver = static_cast<Solver>(src->solver);
+      relative_mip_gap = src->relative_mip_gap;
+      if (src->solver_specific_parameters != nullptr) {
+         solver_specific_parameters = toString(src->solver_specific_parameters);
+      }
+
+      max_mip_iterations = src->max_mip_iterations;
+      pst_sensitivity_threshold = src->pst_sensitivity_threshold;
+      hvdc_sensitivity_threshold = src->hvdc_sensitivity_threshold;
+      injection_ra_sensitivity_threshold = src->injection_ra_sensitivity_threshold;
+      pst_model = static_cast<PstModel>(src->pst_model);
+      ra_range_shrinking = static_cast<RaRangeShrinking>(src->ra_range_shrinking);
+
+      max_preventive_search_tree_depth = src->max_preventive_search_tree_depth;
+      max_curative_search_tree_depth = src->max_curative_search_tree_depth;
+      // Missing predefinedCombinations (list of list of string..)
+      predefined_combinations = arrayToStringVectorVector(src->predefined_combinations);
+
+      skip_actions_far_from_most_limiting_element = (bool) src->skip_actions_far_from_most_limiting_element;
+      max_number_of_boundaries_for_skipping_actions = src->max_number_of_boundaries_for_skipping_actions;
+
+      // Multithreading parameters
+      available_cpus = src->available_cpus;
+
+      // Second preventive rao parameters
+      execution_condition = static_cast<ExecutionCondition>(src->execution_condition);
+      hint_from_first_preventive_rao = (bool) src->hint_from_first_preventive_rao;
+
+      // Load flow and sensitivity parameters
+      load_flow_provider = toString(src->load_flow_provider);
+      sensitivity_provider = toString(src->sensitivity_provider);
+      sensitivity_failure_overcost = src->sensitivity_failure_overcost;
+
+      sensitivity_parameters = SensitivityAnalysisParameters(src->sensitivity_parameters);
+    }
 }
 
 void RaoParameters::load_to_c_struct(rao_parameters& res) const {
     res.objective_function_type = objective_function_type;
-    res.unit = unit;
-    res.curative_min_obj_improvement = curative_min_obj_improvement;
     res.enforce_curative_security = enforce_curative_security;
-
-    res.solver = int(solver);
-    res.relative_mip_gap = relative_mip_gap;
-    res.solver_specific_parameters = copyStringToCharPtr(solver_specific_parameters);
 
     // range action optimization parameters
     res.pst_ra_min_impact_threshold = pst_ra_min_impact_threshold;
     res.hvdc_ra_min_impact_threshold = hvdc_ra_min_impact_threshold;
     res.injection_ra_min_impact_threshold = injection_ra_min_impact_threshold;
-    res.max_mip_iterations = max_mip_iterations;
-    res.pst_sensitivity_threshold = pst_sensitivity_threshold;
-    res.hvdc_sensitivity_threshold = hvdc_sensitivity_threshold;
-    res.injection_ra_sensitivity_threshold = injection_ra_sensitivity_threshold;
-    res.pst_model = int(pst_model);
-    res.ra_range_shrinking = int(ra_range_shrinking);
 
     // topo optimization parameters
-    res.max_preventive_search_tree_depth = max_preventive_search_tree_depth;
-    res.max_curative_search_tree_depth = max_curative_search_tree_depth;
-    // Missing predefinedCombinations (list of list of string..)
-    res.predefined_combinations = stringVectorVectorToArray(predefined_combinations);
     res.relative_min_impact_threshold = relative_min_impact_threshold;
     res.absolute_min_impact_threshold = absolute_min_impact_threshold;
-    res.skip_actions_far_from_most_limiting_element = skip_actions_far_from_most_limiting_element;
-    res.max_number_of_boundaries_for_skipping_actions = max_number_of_boundaries_for_skipping_actions;
-
-    // Multithreading parameters
-    res.available_cpus = available_cpus;
-
-    // Second preventive rao parameters
-    res.execution_condition = int(execution_condition);
-    res.hint_from_first_preventive_rao = hint_from_first_preventive_rao;
 
     // Not optimized cnec parameters
     res.do_not_optimize_curative_cnecs_for_tsos_without_cras = do_not_optimize_curative_cnecs_for_tsos_without_cras;
 
-    // Load flow and sensitivity parameters
-    res.load_flow_provider = copyStringToCharPtr(load_flow_provider);
-    res.sensitivity_provider = copyStringToCharPtr(sensitivity_provider);
-    res.sensitivity_parameters = new sensitivity_analysis_parameters();
-    sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
-    res.sensitivity_failure_overcost = sensitivity_failure_overcost;
     providerParametersToCStruct(res.provider_parameters, provider_parameters_keys, provider_parameters_values);
+
+    res.search_tree_parameters = search_tree_parameters_ext;
+    if (res.search_tree_parameters) {
+      res.curative_min_obj_improvement = curative_min_obj_improvement;
+      res.solver = int(solver);
+      res.relative_mip_gap = relative_mip_gap;
+      res.solver_specific_parameters = copyStringToCharPtr(solver_specific_parameters);
+
+      res.max_mip_iterations = max_mip_iterations;
+      res.pst_sensitivity_threshold = pst_sensitivity_threshold;
+      res.hvdc_sensitivity_threshold = hvdc_sensitivity_threshold;
+      res.injection_ra_sensitivity_threshold = injection_ra_sensitivity_threshold;
+      res.pst_model = int(pst_model);
+      res.ra_range_shrinking = int(ra_range_shrinking);
+
+      res.max_preventive_search_tree_depth = max_preventive_search_tree_depth;
+      res.max_curative_search_tree_depth = max_curative_search_tree_depth;
+      res.predefined_combinations = stringVectorVectorToArray(predefined_combinations);
+      res.skip_actions_far_from_most_limiting_element = skip_actions_far_from_most_limiting_element;
+      res.max_number_of_boundaries_for_skipping_actions = max_number_of_boundaries_for_skipping_actions;
+
+      // Multithreading parameters
+      res.available_cpus = available_cpus;
+
+      // Second preventive rao parameters
+      res.execution_condition = int(execution_condition);
+      res.hint_from_first_preventive_rao = hint_from_first_preventive_rao;
+
+      // Load flow and sensitivity parameters
+      res.load_flow_provider = copyStringToCharPtr(load_flow_provider);
+      res.sensitivity_provider = copyStringToCharPtr(sensitivity_provider);
+      res.sensitivity_parameters = new sensitivity_analysis_parameters();
+      sensitivity_parameters.load_to_c_struct(*(res.sensitivity_parameters));
+      res.sensitivity_failure_overcost = sensitivity_failure_overcost;
+    }
+    // Fast rao extension
+    res.fast_rao_ext = fast_rao_ext;
+    if (res.fast_rao_ext) {
+      res.number_of_cnecs_to_add = number_of_cnecs_to_add;
+      res.add_unsecure_cnecs = add_unsecure_cnecs;
+      res.margin_limit = margin_limit;
+    }
 }
 
 std::shared_ptr<rao_parameters> RaoParameters::to_c_struct() const {
     rao_parameters* res = new rao_parameters();
     load_to_c_struct(*res);
     return std::shared_ptr<rao_parameters>(res, [](rao_parameters* ptr){
-        deleteSensitivityAnalysisParameters(ptr->sensitivity_parameters);
-        freeStringListListArray(ptr->predefined_combinations);
-        delete ptr->load_flow_provider;
-        delete ptr->sensitivity_provider;
+        if ((bool) ptr->search_tree_parameters) {
+          deleteSensitivityAnalysisParameters(ptr->sensitivity_parameters);
+          freeStringListListArray(ptr->predefined_combinations);
+          delete ptr->load_flow_provider;
+          delete ptr->sensitivity_provider;
+        }
         pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_keys, ptr->provider_parameters.provider_parameters_keys_count);
         pypowsybl::deleteCharPtrPtr(ptr->provider_parameters.provider_parameters_values, ptr->provider_parameters.provider_parameters_values_count);
         delete ptr;
@@ -566,6 +597,9 @@ std::shared_ptr<security_analysis_parameters> SecurityAnalysisParameters::to_c_s
         deleteSecurityAnalysisParameters(ptr);
         delete ptr;
     });
+}
+
+SensitivityAnalysisParameters::SensitivityAnalysisParameters() {
 }
 
 SensitivityAnalysisParameters::SensitivityAnalysisParameters(sensitivity_analysis_parameters* src):
@@ -874,19 +908,21 @@ std::string saveNetworkToString(const JavaHandle& network, const std::string& fo
 }
 
 void reduceNetwork(const JavaHandle& network, double v_min, double v_max, const std::vector<std::string>& ids,
-                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withDangLingLines) {
+                   const std::vector<std::string>& vls, const std::vector<int>& depths, bool withBoundaryLines) {
     ToCharPtrPtr elementIdPtr(ids);
     ToCharPtrPtr vlsPtr(vls);
     ToIntPtr depthsPtr(depths);
-    PowsyblCaller::get()->callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withDangLingLines);
+    PowsyblCaller::get()->callJava(::reduceNetwork, network, v_min, v_max, elementIdPtr.get(), ids.size(), vlsPtr.get(), vls.size(), depthsPtr.get(), depths.size(), withBoundaryLines);
 }
 
 bool updateSwitchPosition(const JavaHandle& network, const std::string& id, bool open) {
     return PowsyblCaller::get()->callJava<bool>(::updateSwitchPosition, network, (char*) id.data(), open);
 }
 
-bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected) {
-    return PowsyblCaller::get()->callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected);
+bool updateConnectableStatus(const JavaHandle& network, const std::string& id, bool connected,
+                             bool allowDisconnectors, bool allowFictitious) {
+    return PowsyblCaller::get()->callJava<bool>(::updateConnectableStatus, network, (char*) id.data(), connected,
+        allowDisconnectors, allowFictitious);
 }
 
 std::vector<std::string> getNetworkElementsIds(const JavaHandle& network, element_type elementType, const std::vector<double>& nominalVoltages,
@@ -917,7 +953,8 @@ RaoParameters* createRaoParameters() {
         //Memory has been allocated on java side, we need to clean it up on java side
         PowsyblCaller::get()->callJava(::freeRaoParameters, ptr);
     });
-    return new RaoParameters(parameters.get());
+    auto v = new RaoParameters(parameters.get());
+    return v;
 }
 
 LoadFlowValidationParameters* createValidationConfig() {
@@ -958,11 +995,11 @@ DynamicSimulationParameters* createDynamicSimulationParameters() {
     return new DynamicSimulationParameters(parameters.get());
 }
 
-LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters,
+LoadFlowComponentResultArray* runLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters,
                                           const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
     return new LoadFlowComponentResultArray(
-            PowsyblCaller::get()->callJava<array*>(::runLoadFlow, network, dc, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode));
+            PowsyblCaller::get()->callJava<array*>(::runLoadFlow, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 SeriesArray* runLoadFlowValidation(const JavaHandle& network, validation_type validationType, const LoadFlowValidationParameters& loadflow_validation_parameters) {
@@ -1054,6 +1091,10 @@ SeriesArray* getNetworkAreaDiagramDefaultTwtLabels(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultThreeWtLabels, network));
 }
 
+SeriesArray* getNetworkAreaDiagramDefaultInjectionsLabels(const JavaHandle& network) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultInjectionsLabels, network));
+}
+
 SeriesArray* getNetworkAreaDiagramDefaultBusDescriptions(const JavaHandle& network) {
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkAreaDiagramDefaultBusDescriptions, network));
 }
@@ -1080,9 +1121,9 @@ void exportToJson(const JavaHandle& securityAnalysisResult, const std::string& j
 }
 
 JavaHandle runSecurityAnalysis(const JavaHandle& securityAnalysisContext, const JavaHandle& network, const SecurityAnalysisParameters& parameters,
-                               const std::string& provider, bool dc, JavaHandle* reportNode) {
+                               const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), dc, (reportNode == nullptr) ? nullptr : *reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runSecurityAnalysis, securityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 JavaHandle createSensitivityAnalysis() {
@@ -1211,9 +1252,9 @@ void addFactorMatrix(const JavaHandle& sensitivityAnalysisContext, std::string m
                   (char*) matrixId.c_str(), ContingencyContextType, sensitivityFunctionType, sensitivityVariableType);
 }
 
-JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, bool dc, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
+JavaHandle runSensitivityAnalysis(const JavaHandle& sensitivityAnalysisContext, const JavaHandle& network, SensitivityAnalysisParameters& parameters, const std::string& provider, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, dc, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::runSensitivityAnalysis, sensitivityAnalysisContext, network, c_parameters.get(), (char *) provider.data(), (reportNode == nullptr) ? nullptr : *reportNode);
 }
 
 matrix* getSensitivityMatrix(const JavaHandle& sensitivityAnalysisResultContext, const std::string& matrixId, const std::string& contingencyId) {
@@ -1603,7 +1644,6 @@ SldParameters::SldParameters(sld_parameters* src) {
 }
 
 NadParameters::NadParameters(nad_parameters* src) {
-    edge_name_displayed = (bool) src->edge_name_displayed;
     edge_info_along_edge = (bool) src->edge_info_along_edge;
     id_displayed = (bool) src->id_displayed;
     power_value_precision = src->power_value_precision;
@@ -1615,9 +1655,16 @@ NadParameters::NadParameters(nad_parameters* src) {
     layout_type = static_cast<NadLayoutType>(src->layout_type);
     scaling_factor = src->scaling_factor;
     radius_factor = src->radius_factor;
-    edge_info_displayed = static_cast<EdgeInfoType>(src->edge_info_displayed);
     voltage_level_details = (bool) src->voltage_level_details;
     injections_added = (bool) src->injections_added;
+    info_side_external = static_cast<EdgeInfoType>(src->info_side_external);
+    info_middle_side1 = static_cast<EdgeInfoType>(src->info_middle_side1);
+    info_middle_side2 = static_cast<EdgeInfoType>(src->info_middle_side2);
+    info_side_internal = static_cast<EdgeInfoType>(src->info_side_internal);
+    scale_factor = src->scale_factor;
+    timeout_seconds = src->timeout_seconds;
+    edge_info_included = (bool) src->edge_info_included;
+    voltage_level_legends_included = (bool) src->voltage_level_legends_included;
 }
 
 void SldParameters::sld_to_c_struct(sld_parameters& res) const {
@@ -1635,7 +1682,6 @@ void SldParameters::sld_to_c_struct(sld_parameters& res) const {
 }
 
 void NadParameters::nad_to_c_struct(nad_parameters& res) const {
-    res.edge_name_displayed = (unsigned char) edge_name_displayed;
     res.edge_info_along_edge = (unsigned char) edge_info_along_edge;
     res.id_displayed = (unsigned char) id_displayed;
     res.power_value_precision = power_value_precision;
@@ -1647,9 +1693,16 @@ void NadParameters::nad_to_c_struct(nad_parameters& res) const {
     res.layout_type = (int) layout_type;
     res.scaling_factor = scaling_factor;
     res.radius_factor = radius_factor;
-    res.edge_info_displayed = (int) edge_info_displayed;
     res.voltage_level_details = (unsigned char) voltage_level_details;
     res.injections_added = (unsigned char) injections_added;
+    res.info_side_external = (int) info_side_external;
+    res.info_middle_side1 = (int) info_middle_side1;
+    res.info_middle_side2 = (int) info_middle_side2;
+    res.info_side_internal = (int) info_side_internal;
+    res.scale_factor = scale_factor;
+    res.timeout_seconds = timeout_seconds;
+    res.edge_info_included = (unsigned char) edge_info_included;
+    res.voltage_level_legends_included = (unsigned char) voltage_level_legends_included;
 }
 
 std::shared_ptr<sld_parameters> SldParameters::to_c_struct() const {
@@ -1721,13 +1774,13 @@ void addDynamicMappings(JavaHandle dynamicMappingHandle, std::string categoryNam
     PowsyblCaller::get()->callJava<>(::addDynamicMappings, dynamicMappingHandle, (char*) categoryName.c_str(), dataframes);
 }
 
-void addEventMappings(JavaHandle eventMappingHandle, EventMappingType mappingType, dataframe* mappingDf) {
-    PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, mappingType, mappingDf);
+void addEventMappings(JavaHandle eventMappingHandle, std::string eventName, dataframe* mappingDf) {
+    PowsyblCaller::get()->callJava<>(::addEventMappings, eventMappingHandle, (char*) eventName.c_str(), mappingDf);
 }
 
-void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, bool isDynamic, OutputVariableType variableType) {
+void addOutputVariables(JavaHandle outputVariablesHandle, std::string dynamicId, std::vector<std::string>& variables, OutputVariableType variableType) {
     ToCharPtrPtr variablesPtr(variables);
-    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), isDynamic, variableType);
+    PowsyblCaller::get()->callJava<>(::addOutputVariables, outputVariablesHandle, (char*) dynamicId.c_str(), variablesPtr.get(), variables.size(), variableType);
 }
 
 DynamicSimulationStatus getDynamicSimulationResultsStatus(JavaHandle resultsHandle) {
@@ -1764,6 +1817,10 @@ std::vector<std::string> getSupportedModels(std::string categoryName) {
     return vector.get();
 }
 
+SeriesArray* getSupportedModelsInformation(std::string categoryName) {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSupportedModelsInformation, (char*) categoryName.c_str()));
+}
+
 std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string categoryName) {
     dataframes_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframes_metadata*>(::getDynamicMappingsMetaData, (char*) categoryName.c_str());
     std::vector<std::vector<SeriesMetadata>> res;
@@ -1774,11 +1831,15 @@ std::vector<std::vector<SeriesMetadata>> getDynamicMappingsMetaData(std::string 
         return res;
 }
 
-std::vector<SeriesMetadata> getEventMappingsMetaData(EventMappingType mappingType) {
-    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getEventMappingsMetaData, mappingType);
+std::vector<SeriesMetadata> getEventMappingsMetaData(std::string eventName) {
+    dataframe_metadata* metadata = pypowsybl::PowsyblCaller::get()->callJava<dataframe_metadata*>(::getEventMappingsMetaData, (char*) eventName.c_str());
     std::vector<SeriesMetadata> res = convertDataframeMetadata(metadata);
     PowsyblCaller::get()->callJava(::freeDataframeMetadata, metadata);
     return res;
+}
+
+SeriesArray* getEventsInformation() {
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getEventsInformation));
 }
 
 std::vector<SeriesMetadata> getModificationMetadata(network_modification_type networkModificationType) {
@@ -1805,6 +1866,79 @@ void createNetworkModification(pypowsybl::JavaHandle network, dataframe_array* d
 void splitOrMergeTransformers(pypowsybl::JavaHandle network, const std::vector<std::string>& transformerIds, bool merge, JavaHandle* reportNode) {
     ToCharPtrPtr transformerIdsPtr(transformerIds);
     pypowsybl::PowsyblCaller::get()->callJava(::splitOrMergeTransformers, network, transformerIdsPtr.get(), transformerIds.size(), merge, (reportNode == nullptr) ? nullptr : *reportNode);
+}
+
+JavaHandle createScalable(int scalableType, const std::string &injectionId, double minValue, double maxValue,
+    std::vector<JavaHandle> children, std::vector<double> percentages) {
+    std::vector<void*> childrenPtrs;
+    childrenPtrs.reserve(children.size());
+    for (auto & i : children) {
+        void* ptr = i;
+        childrenPtrs.push_back(ptr);
+    }
+    const int childrenCount = childrenPtrs.size();
+    void** childrenData = childrenPtrs.data();
+    const ToDoublePtr percentagesPtr(percentages);
+
+    return PowsyblCaller::get()->callJava<JavaHandle>(::createScalable, scalableType, copyStringToCharPtr(injectionId),
+        minValue, maxValue, childrenData, childrenCount, percentagesPtr.get(), percentages.size());
+}
+
+std::vector<double> computeProportionalScalablePercentages(const std::vector<std::string>& injectionIds, distribution_mode mode, JavaHandle network) {
+    ToCharPtrPtr injectionIdsPtr(injectionIds);
+    auto countriesArrayPtr = PowsyblCaller::get()->callJava<array*>(::computeProportionalScalablePercentages, injectionIdsPtr.get(),
+        injectionIds.size(), mode, network);
+    ToPrimitiveVector<double> values(countriesArrayPtr);
+    return values.get();
+}
+
+double scale(JavaHandle network, JavaHandle scalable, const ScalingParameters& scalingParameters, double asked) {
+    auto c_scaling_parameters = scalingParameters.to_c_struct();
+    return PowsyblCaller::get()->callJava<double>(::scale, network, scalable, c_scaling_parameters.get(), asked);
+}
+
+void deleteScalingParameters(scaling_parameters* ptr) {
+    pypowsybl::deleteCharPtrPtr(ptr->ignored_injection_ids, ptr->ignored_injection_ids_count);
+}
+
+ScalingParameters::ScalingParameters(scaling_parameters* src) {
+    scaling_convention = static_cast<ScalingConvention>(src->scaling_convention);
+    constant_power_factor = (bool) src->constant_power_factor;
+    reconnect = (bool) src->reconnect;
+    allows_generator_out_of_active_power_limits = (bool) src->allows_generator_out_of_active_power_limits;
+    priority = static_cast<Priority>(src->priority);
+    scaling_type = static_cast<ScalingType>(src->scaling_type);
+    copyCharPtrPtrToVector(src->ignored_injection_ids, src->ignored_injection_ids_count, ignored_injection_ids);
+}
+
+void ScalingParameters::load_to_c_struct(scaling_parameters& res) const {
+    res.scaling_convention = scaling_convention;
+    res.constant_power_factor = (unsigned char) constant_power_factor;
+    res.reconnect = (unsigned char) reconnect;
+    res.allows_generator_out_of_active_power_limits = (unsigned char) allows_generator_out_of_active_power_limits;
+    res.priority = priority;
+    res.scaling_type = scaling_type;
+    res.ignored_injection_ids = pypowsybl::copyVectorStringToCharPtrPtr(ignored_injection_ids);
+    res.ignored_injection_ids_count = ignored_injection_ids.size();
+}
+
+std::shared_ptr<scaling_parameters> ScalingParameters::to_c_struct() const {
+    scaling_parameters* res = new scaling_parameters();
+    load_to_c_struct(*res);
+    //Memory has been allocated here on C side, we need to clean it up on C side (not java side)
+    return std::shared_ptr<scaling_parameters>(res, [](scaling_parameters* ptr){
+        deleteScalingParameters(ptr);
+        delete ptr;
+    });
+}
+
+ ScalingParameters* createScalingParameters() {
+    scaling_parameters* parameters_ptr = PowsyblCaller::get()->callJava<scaling_parameters*>(::createScalingParameters);
+    auto parameters = std::shared_ptr<scaling_parameters>(parameters_ptr, [](scaling_parameters* ptr){
+       //Memory has been allocated on java side, we need to clean it up on java side
+       PowsyblCaller::get()->callJava(::freeScalingParameters, ptr);
+    });
+    return new ScalingParameters(parameters.get());
 }
 
 /*---------------------------------SHORT-CIRCUIT ANALYSIS---------------------------*/
@@ -2021,7 +2155,34 @@ void voltageInitializerSetReactiveSlackVariableScalingFactor(const JavaHandle& p
 
 void voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor(const JavaHandle& paramsHandle, double twoWindingTransformerRatioVariableScalingFactor) {
     pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetTwoWindingTransformerRatioVariableScalingFactor, paramsHandle, twoWindingTransformerRatioVariableScalingFactor);
+}
 
+void voltageInitializerSetPenaltyInvestReaNeg(const JavaHandle& paramsHandle, double penaltyInvestReaNeg) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyInvestReaNeg, paramsHandle, penaltyInvestReaNeg);
+}
+
+void voltageInitializerSetPenaltyInvestReaPos(const JavaHandle& paramsHandle, double penaltyInvestReaPos) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyInvestReaPos, paramsHandle, penaltyInvestReaPos);
+}
+
+void voltageInitializerSetPenaltyActivePower(const JavaHandle& paramsHandle, double penaltyActivePower) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyActivePower, paramsHandle, penaltyActivePower);
+}
+
+void voltageInitializerSetPenaltyUnitsReactive(const JavaHandle& paramsHandle, double penaltyUnitsReactive) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyUnitsReactive, paramsHandle, penaltyUnitsReactive);
+}
+
+void voltageInitializerSetPenaltyTransfoRatio(const JavaHandle& paramsHandle, double penaltyTransfoRatio) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyTransfoRatio, paramsHandle, penaltyTransfoRatio);
+}
+
+void voltageInitializerSetPenaltyVoltageTargetRatio(const JavaHandle& paramsHandle, double penaltyVoltageTargetRatio) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyVoltageTargetRatio, paramsHandle, penaltyVoltageTargetRatio);
+}
+
+void voltageInitializerSetPenaltyVoltageTargetData(const JavaHandle& paramsHandle, double penaltyVoltageTargetData) {
+    pypowsybl::PowsyblCaller::get()->callJava(::voltageInitializerSetPenaltyVoltageTargetData, paramsHandle, penaltyVoltageTargetData);
 }
 
 void voltageInitializerApplyAllModifications(const JavaHandle& resultHandle, const JavaHandle& networkHandle) {
@@ -2091,6 +2252,130 @@ SeriesArray* getVirtualCostsResults(const JavaHandle& cracHandle, const JavaHand
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVirtualCostResults, cracHandle, resultHandle, (char*) virtualCostName.c_str()));
 }
 
+SeriesArray* getInstants(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getInstants, cracHandle));
+}
+
+SeriesArray* getMaxRemedialActionsUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionsUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxTopologicalActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxTopologicalActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxPstActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxPstActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxRemedialActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxRemedialActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getMaxElementaryActionsPerTsoUsageLimits(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getMaxElementaryActionsPerTsoUsageLimits, cracHandle));
+}
+
+SeriesArray* getCracContingencies(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracContingencies, cracHandle));
+}
+
+SeriesArray* getCracContingencyElements(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracContingencyElements, cracHandle));
+}
+
+SeriesArray* getFlowCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getFlowCnecs, cracHandle));
+}
+
+SeriesArray* getAngleCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getAngleCnecs, cracHandle));
+}
+
+SeriesArray* getVoltageCnecs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getVoltageCnecs, cracHandle));
+}
+
+SeriesArray* getThresholds(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getThresholds, cracHandle));
+}
+
+SeriesArray* getCracPstRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracPstRangeActions, cracHandle));
+}
+
+SeriesArray* getCracHvdcRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracHvdcRangeActions, cracHandle));
+}
+
+SeriesArray* getCracInjectionRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracInjectionRangeActions, cracHandle));
+}
+
+SeriesArray* getNetworkElementIdsAndKeys(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getNetworkElementIdsAndKeys, cracHandle));
+}
+
+SeriesArray* getCracCounterTradeRangeActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracCounterTradeRangeActions, cracHandle));
+}
+
+SeriesArray* getCracRangeActionRanges(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracRangeActionRanges, cracHandle));
+}
+
+SeriesArray* getCracNetworkActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracNetworkActions, cracHandle));
+}
+
+SeriesArray* getCracTerminalConnectionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracTerminalConnectionActions, cracHandle));
+}
+
+SeriesArray* getCracPstTapPositionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracPstTapPositionActions, cracHandle));
+}
+
+SeriesArray* getCracGeneratorActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracGeneratorActions, cracHandle));
+}
+
+SeriesArray* getCracLoadActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracLoadActions, cracHandle));
+}
+
+SeriesArray* getCracBoundaryLineActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracBoundaryLineActions, cracHandle));
+}
+
+SeriesArray* getCracShuntCompensatorPositionActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracShuntCompensatorPositionActions, cracHandle));
+}
+
+SeriesArray* getCracSwitchActions(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracSwitchActions, cracHandle));
+}
+
+SeriesArray* getCracSwitchPairs(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getCracSwitchPairs, cracHandle));
+}
+
+SeriesArray* getOnInstantUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnInstantUsageRules, cracHandle));
+}
+
+SeriesArray* getOnContingencyStateUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnContingencyStateUsageRules, cracHandle));
+}
+
+SeriesArray* getOnConstraintUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnConstraintUsageRules, cracHandle));
+}
+
+SeriesArray* getOnFlowConstraintInCountryUsageRules(const JavaHandle& cracHandle) {
+  return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getOnFlowConstraintInCountryUsageRules, cracHandle));
+}
+
 JavaHandle getCrac(const JavaHandle& raoContext) {
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::getCrac, raoContext);
 }
@@ -2156,9 +2441,10 @@ bool checkGrid2opIsolatedAndDisconnectedInjections(const JavaHandle& backendHand
     return pypowsybl::PowsyblCaller::get()->callJava<bool>(::checkGrid2opIsolatedAndDisconnectedInjections, backendHandle);
 }
 
-LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, bool dc, const LoadFlowParameters& parameters) {
+LoadFlowComponentResultArray* runGrid2opLoadFlow(const JavaHandle& network, const LoadFlowParameters& parameters, JavaHandle* reportNode) {
     auto c_parameters = parameters.to_c_struct();
-    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, dc, c_parameters.get()));
+    return new LoadFlowComponentResultArray(PowsyblCaller::get()->callJava<array*>(::runGrid2opLoadFlow, network, c_parameters.get(),
+        (reportNode == nullptr) ? nullptr : *reportNode));
 }
 
 }

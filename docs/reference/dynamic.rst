@@ -15,6 +15,7 @@ ModelMapping
     ModelMapping.get_categories_names
     ModelMapping.get_categories_information
     ModelMapping.get_supported_models
+    ModelMapping.get_supported_models_information
     ModelMapping.add_dynamic_model
     ModelMapping.add_base_load
     ModelMapping.add_load_one_transformer
@@ -32,6 +33,7 @@ ModelMapping
     ModelMapping.add_hvdc_vsc
     ModelMapping.add_base_transformer
     ModelMapping.add_base_static_var_compensator
+    ModelMapping.add_shunt
     ModelMapping.add_base_line
     ModelMapping.add_base_bus
     ModelMapping.add_infinite_bus
@@ -50,11 +52,13 @@ EventMapping
    :toctree: api/
 
     EventMapping
+    EventMapping.get_events_information
     EventMapping.add_disconnection
     EventMapping.add_active_power_variation
     EventMapping.add_reactive_power_variation
     EventMapping.add_reference_voltage_variation
     EventMapping.add_node_fault
+    EventMapping.add_event_model
 
 OutputVariableMapping
 ---------------------
@@ -62,6 +66,8 @@ OutputVariableMapping
     :toctree: api/
 
     OutputVariableMapping
+    OutputVariableMapping.add_curves
+    OutputVariableMapping.add_final_state_values
     OutputVariableMapping.add_dynamic_model_curves
     OutputVariableMapping.add_standard_model_curves
     OutputVariableMapping.add_dynamic_model_final_state_values

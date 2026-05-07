@@ -126,8 +126,8 @@ class NetworkElementAddersTest {
     }
 
     @Test
-    void danglingLine() {
-        var network = DanglingLineNetworkFactory.create();
+    void boundaryLine() {
+        var network = BoundaryLineNetworkFactory.create();
         var dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", "dl2");
         addStringColumn(dataframe, "name", "name-dl2");
@@ -141,13 +141,13 @@ class NetworkElementAddersTest {
         addDoubleColumn(dataframe, "p0", 102d);
         addDoubleColumn(dataframe, "q0", 151d);
         var emptyGenerationDataframe = new DefaultUpdatingDataframe(0);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, emptyGenerationDataframe));
-        assertEquals(2, network.getDanglingLineCount());
+        NetworkElementAdders.addElements(DataframeElementType.BOUNDARY_LINE, network, List.of(dataframe, emptyGenerationDataframe));
+        assertEquals(2, network.getBoundaryLineCount());
     }
 
     @Test
-    void danglingLineWithGeneration() {
-        var network = DanglingLineNetworkFactory.create();
+    void boundaryLineWithGeneration() {
+        var network = BoundaryLineNetworkFactory.create();
         var dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", "dl2");
         addStringColumn(dataframe, "name", "name-dl2");
@@ -169,10 +169,10 @@ class NetworkElementAddersTest {
         addDoubleColumn(generationDataframe, "target_q", 151d);
         addDoubleColumn(generationDataframe, "target_v", 100d);
         addIntColumn(generationDataframe, "voltage_regulator_on", 1);
-        NetworkElementAdders.addElements(DataframeElementType.DANGLING_LINE, network, List.of(dataframe, generationDataframe));
+        NetworkElementAdders.addElements(DataframeElementType.BOUNDARY_LINE, network, List.of(dataframe, generationDataframe));
 
-        assertEquals(2, network.getDanglingLineCount());
-        DanglingLine dl = network.getDanglingLine("dl2");
+        assertEquals(2, network.getBoundaryLineCount());
+        BoundaryLine dl = network.getBoundaryLine("dl2");
         assertTrue(Optional.ofNullable(dl.getGeneration()).isPresent());
         assertTrue(dl.getGeneration().isVoltageRegulationOn());
     }
@@ -657,7 +657,7 @@ class NetworkElementAddersTest {
                 .add();
         var dataframe = new DefaultUpdatingDataframe(4);
         addStringColumn(dataframe, "id", "area1", "area1", "area2", "area2");
-        addStringColumn(dataframe, "boundary_type", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE", "DANGLING_LINE");
+        addStringColumn(dataframe, "boundary_type", "BOUNDARY_LINE", "BOUNDARY_LINE", "BOUNDARY_LINE", "BOUNDARY_LINE");
         addStringColumn(dataframe, "element", "NHV1_XNODE1", "NHV1_XNODE2", "XNODE1_NHV2", "XNODE2_NHV2");
         addIntColumn(dataframe, "ac", 1, 1, 1, 1);
         assertEquals(0, area1.getAreaBoundaryStream().count());

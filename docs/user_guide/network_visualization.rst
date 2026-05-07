@@ -328,20 +328,26 @@ Network-area diagrams can be customized through NadParameters:
 
     >>> from pypowsybl.network import NadParameters
     >>> network = pp.network.create_ieee14()
-    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False, injections_added=True))
+    >>> edge_info_parameters = EdgeInfoParameters(info_side_external=EdgeInfoType.ACTIVE_POWER, info_middle_side1=EdgeInfoType.EMPTY, info_middle_side2=EdgeInfoType.EMPTY, info_side_internal=EdgeInfoType.EMPTY)
+    >>> nad = network.get_network_area_diagram('VL6', nad_parameters=NadParameters(edge_name_displayed=True, id_displayed=True, edge_info_along_edge=False, power_value_precision=1, angle_value_precision=0, current_value_precision=1, voltage_value_precision=0, bus_legend=False, substation_description_displayed=True, edge_info_displayed=EdgeInfoType.REACTIVE_POWER, voltage_level_details=False, injections_added=True, edge_info_parameters=edge_info_parameters, scale_factor=1.0, timeout_seconds = 10, edge_info_included=True, voltage_level_legends_included=True))
 
-    - edge_name_displayed: if true, names along lines and transformer legs are displayed (default value false)
+    - edge_name_displayed (deprecated, use edge_info_parameters instead): if true, names along lines and transformer legs are displayed (default value false)
     - id_displayed: if true, the equipment ids are displayed. If false, the equipment names are displayed (if a name is null, then the id is displayed) (default value false)
     - edge_info_along_edge: if true, the edge information (P or Q values for example) is displayed alongside the edge. If false, the edge information is displayed perpendicularly to the edge (default value true)
     - power_value_precision: number of digits after the decimal point for power values (default value 0)
     - angle_value_precision: number of digits after the decimal point for angle values (default value 1)
     - current_value_precision: number of digits after the decimal point for current values (default value 0)
-    - voltage_value_precision: number of digits after the decimal point for voltage values(default value 1)
+    - voltage_value_precision: number of digits after the decimal point for voltage values (default value 1)
     - bus_legend: if true, angle and voltage values associated to a voltage level are displayed in a text box. If false, only the voltage level name is displayed (default value true)
     - substation_description_displayed: if true, the substation name is added to the voltage level info on the diagram (default value false)
-    - edge_info_displayed: type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
+    - edge_info_displayed (deprecated, use edge_info_parameters instead): type of info displayed (EdgeInfoType.ACTIVE_POWER(default),EdgeInfoType.REACTIVE_POWER or EdgeInfoType.CURRENT)
     - voltage_level_details: if true, additional information about voltage levels is displayed in text boxes. The content of the additional information is determined by the label provider that is used.
     - injections_added: if true, the injections present on the bus nodes of the voltage levels are displayed.
+    - edge_info_parameters: type of info displayed (default value: info_side_external=EdgeInfoType.ACTIVE_POWER, info_middle_side1=EdgeInfoType.EMPTY, info_middle_side2=EdgeInfoType.EMPTY, info_side_internal=EdgeInfoType.EMPTY)
+    - scale_factor: factor of which the whole NAD will be scaled (default value 1.0)
+    - timeout_seconds: timeout in seconds for the force layout (default value 10.)
+    - edge_info_included: if true, the resulting SVG will contain the edge info data. If false, this data will only be in the metadata.
+    - voltage_level_legends_included: if true, the resulting SVG will contain the voltage level legends data. If false, this data will only be in the metadata.
 
 
 

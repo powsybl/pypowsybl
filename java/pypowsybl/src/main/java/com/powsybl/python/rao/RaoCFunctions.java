@@ -15,8 +15,10 @@ import com.powsybl.glsk.api.io.GlskDocumentImporters;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.loadflow.LoadFlowParameters;
 import com.powsybl.loadflow.LoadFlowProvider;
-import com.powsybl.openrao.commons.Unit;
 import com.powsybl.openrao.data.crac.api.Crac;
+import com.powsybl.openrao.data.crac.api.RaUsageLimits;
+import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
+import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.*;
@@ -39,7 +41,10 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.function.Supplier;
@@ -47,7 +52,7 @@ import java.util.function.Supplier;
 import static com.powsybl.python.commons.CTypeUtil.*;
 import static com.powsybl.python.commons.Util.*;
 import static com.powsybl.python.loadflow.LoadFlowCUtils.createLoadFlowParameters;
-import static com.powsybl.python.rao.RaoDataframes.createVirtualCostResultMapper;
+import static com.powsybl.python.rao.RaoDataframes.*;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.convertToSensitivityAnalysisParametersPointer;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCFunctions.getProvider;
 import static com.powsybl.python.sensitivity.SensitivityAnalysisCUtils.createSensitivityAnalysisParameters;
@@ -105,13 +110,15 @@ public final class RaoCFunctions {
         });
     }
 
-    @CEntryPoint(name = "loadCracBufferedSource")
-    public static ObjectHandle loadCracBufferedSource(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer, int cracBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+    @CEntryPoint(name = "loadCracBufferedSourceWithParameters")
+    public static ObjectHandle loadCracBufferedSourceWithParameters(IsolateThread thread, ObjectHandle networkHandle, CCharPointer cracBuffer,
+                                                                    int cracBufferSize, CCharPointer filenamePtr, CCharPointer creationParameterBuffer,
+                                                                    int creationParameterSize, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ObjectHandle get() throws IOException {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
-                return ObjectHandles.getGlobal().create(createCrac(network, cracBuffer, cracBufferSize));
+                return ObjectHandles.getGlobal().create(createCracWithParameters(network, cracBuffer, cracBufferSize, filenamePtr, creationParameterBuffer, creationParameterSize));
             }
         });
     }
@@ -125,6 +132,25 @@ public final class RaoCFunctions {
                 return crac;
             } else {
                 throw new PowsyblException("Error while reading json crac, please enable detailed log for more information.");
+            }
+        } catch (IOException e) {
+            throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
+        }
+    }
+
+    public static Crac createCracWithParameters(Network network, CCharPointer cracBuffer, int cracBufferSize, CCharPointer filenamePtr, CCharPointer creationParameterBuffer, int creationParameterSize) {
+        ByteBuffer bufferCrac = CTypeConversion.asByteBuffer(cracBuffer, cracBufferSize);
+        InputStream streamedCrac = new ByteArrayInputStream(binaryBufferToBytes(bufferCrac));
+        String filename = CTypeUtil.toString(filenamePtr);
+        ByteBuffer bufferCreationParameters = CTypeConversion.asByteBuffer(creationParameterBuffer, creationParameterSize);
+        InputStream streamCreationParameters = new ByteArrayInputStream(binaryBufferToBytes(bufferCreationParameters));
+        CracCreationParameters creationParameters = JsonCracCreationParameters.read(streamCreationParameters);
+        try {
+            Crac crac = Crac.read(filename, streamedCrac, network, creationParameters);
+            if (crac != null) {
+                return crac;
+            } else {
+                throw new PowsyblException("Error while reading crac, please enable detailed log for more information.");
             }
         } catch (IOException e) {
             throw new PowsyblException("Cannot read provided crac data : " + e.getMessage());
@@ -216,7 +242,7 @@ public final class RaoCFunctions {
                 raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String providerStr = CTypeUtil.toString(provider);
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-                LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters lfParameters = createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 return ObjectHandles.getGlobal().create(raoContext.runVoltageMonitoring(network, result, providerStr, lfParameters));
 
             }
@@ -236,7 +262,7 @@ public final class RaoCFunctions {
                 raoContext.setCrac(ObjectHandles.getGlobal().get(cracHandle));
                 String providerStr = CTypeUtil.toString(provider);
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
-                LoadFlowParameters lfParameters = createLoadFlowParameters(false, loadFlowParametersPtr, loadFlowProvider);
+                LoadFlowParameters lfParameters = createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 return ObjectHandles.getGlobal().create(raoContext.runAngleMonitoring(network, result, providerStr, lfParameters));
             }
         });
@@ -431,13 +457,16 @@ public final class RaoCFunctions {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
-                // Top level string parameters are freed by toString call on c side
-                // Free predefined combinations
-                freeNestedArrayPointer(parametersPointer.getPredefinedCombinations());
 
-                // Free sensitivity parameters
-                LoadFlowCUtils.freeLoadFlowParametersContent(parametersPointer.getSensitivityParameters().getLoadFlowParameters());
-                UnmanagedMemory.free(parametersPointer.getSensitivityParameters());
+                if (parametersPointer.getSearchTreeParameters()) {
+                    // Top level string parameters are freed by toString call on c side
+                    // Free predefined combinations
+                    freeNestedArrayPointer(parametersPointer.getPredefinedCombinations());
+
+                    // Free sensitivity parameters
+                    LoadFlowCUtils.freeLoadFlowParametersContent(parametersPointer.getSensitivityParameters().getLoadFlowParameters());
+                    UnmanagedMemory.free(parametersPointer.getSensitivityParameters());
+                }
 
                 // Free extensions
                 freeProviderParameters(parametersPointer.getProviderParameters());
@@ -450,153 +479,182 @@ public final class RaoCFunctions {
 
     private static RaoParameters convertToRaoParameters(RaoParametersPointer paramPointer) {
         RaoParameters raoParameters = new RaoParameters();
-
-        raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters());
-        OpenRaoSearchTreeParameters searchTreeParameters = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
         raoParameters.getObjectiveFunctionParameters().setType(
             ObjectiveFunctionParameters.ObjectiveFunctionType.values()[paramPointer.getObjectiveFunctionType()]);
-        searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
-        raoParameters.getObjectiveFunctionParameters().setUnit(Unit.values()[paramPointer.getUnit()]);
         raoParameters.getObjectiveFunctionParameters().setEnforceCurativeSecurity(paramPointer.getEnforceCurativeSecurity());
-
-        // Range action optimization solver
-        searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
-            .setSolver(SearchTreeRaoRangeActionsOptimizationParameters.Solver.values()[paramPointer.getSolver()]);
-        searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
-            .setRelativeMipGap(paramPointer.getRelativeMipGap());
-        searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
-            .setSolverSpecificParameters(CTypeUtil.toString(paramPointer.getSolverSpecificParameters()));
 
         // Range action optimization parameters
         raoParameters.getRangeActionsOptimizationParameters().setPstRAMinImpactThreshold(paramPointer.getPstRaMinImpactThreshold());
         raoParameters.getRangeActionsOptimizationParameters().setHvdcRAMinImpactThreshold(paramPointer.getHvdcRaMinImpactThreshold());
         raoParameters.getRangeActionsOptimizationParameters().setInjectionRAMinImpactThreshold(paramPointer.getInjectionRaMinImpactThreshold());
-        searchTreeParameters.getRangeActionsOptimizationParameters().setMaxMipIterations(paramPointer.getMaxMipIterations());
-        searchTreeParameters.getRangeActionsOptimizationParameters().setPstSensitivityThreshold(paramPointer.getPstSensitivityThreshold());
-        searchTreeParameters.getRangeActionsOptimizationParameters().setHvdcSensitivityThreshold(paramPointer.getHvdcSensitivityThreshold());
-        searchTreeParameters.getRangeActionsOptimizationParameters().setPstModel(SearchTreeRaoRangeActionsOptimizationParameters.PstModel.values()[paramPointer.getPstModel()]);
-        searchTreeParameters.getRangeActionsOptimizationParameters().setInjectionRaSensitivityThreshold(paramPointer.getInjectionRaSensitivityThreshold());
-        searchTreeParameters.getRangeActionsOptimizationParameters().setRaRangeShrinking(SearchTreeRaoRangeActionsOptimizationParameters.RaRangeShrinking.values()[paramPointer.getRaRangeShrinking()]);
 
         // Topo optimization parameters
         raoParameters.getTopoOptimizationParameters().setRelativeMinImpactThreshold(paramPointer.getRelativeMinImpactThreshold());
         raoParameters.getTopoOptimizationParameters().setAbsoluteMinImpactThreshold(paramPointer.getAbsoluteMinImpactThreshold());
-        searchTreeParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
-        searchTreeParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
-        searchTreeParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
-        searchTreeParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
-        searchTreeParameters.getTopoOptimizationParameters().setMaxNumberOfBoundariesForSkippingActions(paramPointer.getMaxNumberOfBoundariesForSkippingActions());
-
-        // Multithreading parameters
-        searchTreeParameters.getMultithreadingParameters().setAvailableCPUs(paramPointer.getAvailableCpus());
-
-        // Second preventive parameters
-        searchTreeParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
-        searchTreeParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
 
         // Not optimized cnec parameters
         raoParameters.getNotOptimizedCnecsParameters().setDoNotOptimizeCurativeCnecsForTsosWithoutCras(paramPointer.getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
-        // Load flow and sensitivity providers
-        searchTreeParameters.getLoadFlowAndSensitivityParameters().setLoadFlowProvider(CTypeUtil.toString(paramPointer.getLoadFlowProvider()));
-        searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()));
-        searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityFailureOvercost(paramPointer.getSensitivityFailureOvercost());
-        searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityWithLoadFlowParameters(createSensitivityAnalysisParameters(
-            false, paramPointer.getSensitivityParameters(),
-            getProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()))));
-
         Map<String, String> extensionData = getExtensionData(paramPointer);
+
         if (hasExtensionData(extensionData, RaoUtils.MNEC_EXT_PREFIX)) {
             MnecParameters mnecExt = RaoUtils.buildMnecParametersExtension(extensionData);
             raoParameters.setMnecParameters(mnecExt);
-        }
-        if (hasExtensionData(extensionData, RaoUtils.MNEC_ST_EXT_PREFIX)) {
-            SearchTreeRaoMnecParameters searchTreeMnecExt = RaoUtils.buildMnecSearchTreeParametersExtension(extensionData);
-            searchTreeParameters.setMnecParameters(searchTreeMnecExt);
         }
         if (hasExtensionData(extensionData, RaoUtils.RELATIVE_MARGIN_EXT_PREFIX)) {
             RelativeMarginsParameters relativeMargingExt = RaoUtils.buildRelativeMarginsParametersExtension(extensionData);
             raoParameters.setRelativeMarginsParameters(relativeMargingExt);
         }
-        if (hasExtensionData(extensionData, RaoUtils.RELATIVE_MARGIN_ST_EXT_PREFIX)) {
-            SearchTreeRaoRelativeMarginsParameters searchTreeRelativeMarginsParameters = RaoUtils.buildRelativeMarginsSearchTreeParametersExtension(extensionData);
-            searchTreeParameters.setRelativeMarginsParameters(searchTreeRelativeMarginsParameters);
-        }
         if (hasExtensionData(extensionData, RaoUtils.LOOP_FLOW_EXT_PREFIX)) {
             LoopFlowParameters loopFlowExt = RaoUtils.buildLoopFlowParametersExtension(extensionData);
             raoParameters.setLoopFlowParameters(loopFlowExt);
         }
-        if (hasExtensionData(extensionData, RaoUtils.LOOP_FLOW_ST_EXT_PREFIX)) {
-            SearchTreeRaoLoopFlowParameters searchTreeLoopFlowExt = RaoUtils.buildLoopFlowSearchTreeParametersExtension(extensionData);
-            searchTreeParameters.setLoopFlowParameters(searchTreeLoopFlowExt);
+
+        if (paramPointer.getSearchTreeParameters()) {
+            raoParameters.addExtension(OpenRaoSearchTreeParameters.class, new OpenRaoSearchTreeParameters());
+            OpenRaoSearchTreeParameters searchTreeParameters = raoParameters.getExtension(OpenRaoSearchTreeParameters.class);
+
+            searchTreeParameters.getObjectiveFunctionParameters().setCurativeMinObjImprovement(paramPointer.getCurativeMinObjImprovement());
+
+            // Range action optimization solver
+            searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
+                .setSolver(SearchTreeRaoRangeActionsOptimizationParameters.Solver.values()[paramPointer.getSolver()]);
+            searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
+                .setRelativeMipGap(paramPointer.getRelativeMipGap());
+            searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver()
+                .setSolverSpecificParameters(CTypeUtil.toString(paramPointer.getSolverSpecificParameters()));
+
+            searchTreeParameters.getRangeActionsOptimizationParameters().setMaxMipIterations(paramPointer.getMaxMipIterations());
+            searchTreeParameters.getRangeActionsOptimizationParameters().setPstSensitivityThreshold(paramPointer.getPstSensitivityThreshold());
+            searchTreeParameters.getRangeActionsOptimizationParameters().setHvdcSensitivityThreshold(paramPointer.getHvdcSensitivityThreshold());
+            searchTreeParameters.getRangeActionsOptimizationParameters().setPstModel(SearchTreeRaoRangeActionsOptimizationParameters.PstModel.values()[paramPointer.getPstModel()]);
+            searchTreeParameters.getRangeActionsOptimizationParameters().setInjectionRaSensitivityThreshold(paramPointer.getInjectionRaSensitivityThreshold());
+            searchTreeParameters.getRangeActionsOptimizationParameters().setRaRangeShrinking(SearchTreeRaoRangeActionsOptimizationParameters.RaRangeShrinking.values()[paramPointer.getRaRangeShrinking()]);
+
+            searchTreeParameters.getTopoOptimizationParameters().setMaxPreventiveSearchTreeDepth(paramPointer.getMaxPreventiveSearchTreeDepth());
+            searchTreeParameters.getTopoOptimizationParameters().setMaxCurativeSearchTreeDepth(paramPointer.getMaxCurativeSearchTreeDepth());
+            searchTreeParameters.getTopoOptimizationParameters().setPredefinedCombinations(arrayPointerToStringListList(paramPointer.getPredefinedCombinations()));
+            searchTreeParameters.getTopoOptimizationParameters().setSkipActionsFarFromMostLimitingElement(paramPointer.getSkipActionsFarFromMostLimitingElement());
+            searchTreeParameters.getTopoOptimizationParameters().setMaxNumberOfBoundariesForSkippingActions(paramPointer.getMaxNumberOfBoundariesForSkippingActions());
+
+            // Multithreading parameters
+            searchTreeParameters.getMultithreadingParameters().setAvailableCPUs(paramPointer.getAvailableCpus());
+
+            // Second preventive parameters
+            searchTreeParameters.getSecondPreventiveRaoParameters().setExecutionCondition(SecondPreventiveRaoParameters.ExecutionCondition.values()[paramPointer.getExecutionCondition()]);
+            searchTreeParameters.getSecondPreventiveRaoParameters().setHintFromFirstPreventiveRao(paramPointer.getHintFromFirstPreventiveRao());
+
+            // Load flow and sensitivity providers
+            searchTreeParameters.getLoadFlowAndSensitivityParameters().setLoadFlowProvider(CTypeUtil.toString(paramPointer.getLoadFlowProvider()));
+            searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()));
+            searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityFailureOvercost(paramPointer.getSensitivityFailureOvercost());
+            searchTreeParameters.getLoadFlowAndSensitivityParameters().setSensitivityWithLoadFlowParameters(createSensitivityAnalysisParameters(
+                paramPointer.getSensitivityParameters(),
+                getProvider(CTypeUtil.toString(paramPointer.getSensitivityProvider()))));
+
+            if (hasExtensionData(extensionData, RaoUtils.MNEC_ST_EXT_PREFIX)) {
+                SearchTreeRaoMnecParameters searchTreeMnecExt = RaoUtils.buildMnecSearchTreeParametersExtension(extensionData);
+                searchTreeParameters.setMnecParameters(searchTreeMnecExt);
+            }
+            if (hasExtensionData(extensionData, RaoUtils.RELATIVE_MARGIN_ST_EXT_PREFIX)) {
+                SearchTreeRaoRelativeMarginsParameters searchTreeRelativeMarginsParameters = RaoUtils.buildRelativeMarginsSearchTreeParametersExtension(extensionData);
+                searchTreeParameters.setRelativeMarginsParameters(searchTreeRelativeMarginsParameters);
+            }
+            if (hasExtensionData(extensionData, RaoUtils.LOOP_FLOW_ST_EXT_PREFIX)) {
+                SearchTreeRaoLoopFlowParameters searchTreeLoopFlowExt = RaoUtils.buildLoopFlowSearchTreeParametersExtension(extensionData);
+                searchTreeParameters.setLoopFlowParameters(searchTreeLoopFlowExt);
+            }
+            if (hasExtensionData(extensionData, RaoUtils.COSTLY_MIN_MARGIN_ST_EXT_PREFIX)) {
+                SearchTreeRaoCostlyMinMarginParameters searchTreeCostlyMinMarginExt = RaoUtils.buildCostlyMinMarginSearchTreeParametersExtension(extensionData);
+                searchTreeParameters.setMinMarginsParameters(searchTreeCostlyMinMarginExt);
+            }
         }
-        if (hasExtensionData(extensionData, RaoUtils.COSTLY_MIN_MARGIN_ST_EXT_PREFIX)) {
-            SearchTreeRaoCostlyMinMarginParameters searchTreeCostlyMinMarginExt = RaoUtils.buildCostlyMinMarginSearchTreeParametersExtension(extensionData);
-            searchTreeParameters.setMinMarginsParameters(searchTreeCostlyMinMarginExt);
+
+        // Fast Rao Extension
+        if (paramPointer.getFastRaoExt()) {
+            FastRaoParameters fastRaoParameters = new FastRaoParameters();
+            fastRaoParameters.setNumberOfCnecsToAdd(paramPointer.getNumberOfCnecsToAdd());
+            fastRaoParameters.setAddUnsecureCnecs(paramPointer.getAddUnsecureCnecs());
+            fastRaoParameters.setMarginLimit(paramPointer.getMarginLimit());
+            raoParameters.addExtension(FastRaoParameters.class, fastRaoParameters);
         }
         return raoParameters;
     }
 
     private static RaoParametersPointer convertToRaoParametersPointer(RaoParameters parameters) {
         RaoParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(RaoParametersPointer.class));
-        OpenRaoSearchTreeParameters searchTreeParameters = parameters.getExtension(OpenRaoSearchTreeParameters.class);
-        if (searchTreeParameters == null) {
-            searchTreeParameters = new OpenRaoSearchTreeParameters();
-        }
 
         // Objective function parameters
         paramsPtr.setObjectiveFunctionType(parameters.getObjectiveFunctionParameters().getType().ordinal());
-        paramsPtr.setUnit(parameters.getObjectiveFunctionParameters().getUnit().ordinal());
         paramsPtr.setEnforceCurativeSecurity(parameters.getObjectiveFunctionParameters().getEnforceCurativeSecurity());
-        paramsPtr.setCurativeMinObjImprovement(searchTreeParameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
-
-        // Range action optimization solver
-        paramsPtr.setSolver(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolver().ordinal());
-        paramsPtr.setRelativeMipGap(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getRelativeMipGap());
-        paramsPtr.setSolverSpecificParameters(CTypeUtil.toCharPtr(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolverSpecificParameters()));
 
         // Range action optimization parameters
         paramsPtr.setPstRaMinImpactThreshold(parameters.getRangeActionsOptimizationParameters().getPstRAMinImpactThreshold());
         paramsPtr.setHvdcRaMinImpactThreshold(parameters.getRangeActionsOptimizationParameters().getHvdcRAMinImpactThreshold());
         paramsPtr.setInjectionRaMinImpactThreshold(parameters.getRangeActionsOptimizationParameters().getInjectionRAMinImpactThreshold());
 
-        paramsPtr.setMaxMipIterations(searchTreeParameters.getRangeActionsOptimizationParameters().getMaxMipIterations());
-        paramsPtr.setPstSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getPstSensitivityThreshold());
-        paramsPtr.setHvdcSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getHvdcSensitivityThreshold());
-        paramsPtr.setPstModel(searchTreeParameters.getRangeActionsOptimizationParameters().getPstModel().ordinal());
-        paramsPtr.setInjectionRaSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getInjectionRaSensitivityThreshold());
-        paramsPtr.setRaRangeShrinking(searchTreeParameters.getRangeActionsOptimizationParameters().getRaRangeShrinking().ordinal());
-
         // Topo optimization parameters
         paramsPtr.setRelativeMinImpactThreshold(parameters.getTopoOptimizationParameters().getRelativeMinImpactThreshold());
         paramsPtr.setAbsoluteMinImpactThreshold(parameters.getTopoOptimizationParameters().getAbsoluteMinImpactThreshold());
-        paramsPtr.setMaxPreventiveSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxPreventiveSearchTreeDepth());
-        paramsPtr.setMaxCurativeSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxCurativeSearchTreeDepth());
-        paramsPtr.setSkipActionsFarFromMostLimitingElement(searchTreeParameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
-        paramsPtr.setMaxNumberOfBoundariesForSkippingActions(searchTreeParameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());
-
-        stringListListToArrayPointer(paramsPtr.getPredefinedCombinations(), searchTreeParameters.getTopoOptimizationParameters().getPredefinedCombinations());
-
-        // Multithreading parameters
-        paramsPtr.setAvailableCpus(searchTreeParameters.getMultithreadingParameters().getAvailableCPUs());
-
-        // Second preventive parameters
-        paramsPtr.setExecutionCondition(searchTreeParameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
-        paramsPtr.setHintFromFirstPreventiveRao(searchTreeParameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
 
         // Not optimized cnec parameters
         paramsPtr.setDoNotOptimizeCurativeCnecsForTsosWithoutCras(parameters.getNotOptimizedCnecsParameters().getDoNotOptimizeCurativeCnecsForTsosWithoutCras());
 
-        // Load flow and sensitivity providers
-        paramsPtr.setLoadFlowProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
-        paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
-        paramsPtr.setSensitivityParameters(
-            convertToSensitivityAnalysisParametersPointer(
-                searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters(),
-                searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
-        paramsPtr.setSensitivityFailureOvercost(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
+        OpenRaoSearchTreeParameters searchTreeParameters = parameters.getExtension(OpenRaoSearchTreeParameters.class);
+        if (searchTreeParameters != null) {
+            paramsPtr.setSearchTreeParameters(true);
+            paramsPtr.setCurativeMinObjImprovement(searchTreeParameters.getObjectiveFunctionParameters().getCurativeMinObjImprovement());
+
+            // Range action optimization solver
+            paramsPtr.setSolver(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolver().ordinal());
+            paramsPtr.setRelativeMipGap(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getRelativeMipGap());
+            paramsPtr.setSolverSpecificParameters(CTypeUtil.toCharPtr(searchTreeParameters.getRangeActionsOptimizationParameters().getLinearOptimizationSolver().getSolverSpecificParameters()));
+
+            paramsPtr.setMaxMipIterations(searchTreeParameters.getRangeActionsOptimizationParameters().getMaxMipIterations());
+            paramsPtr.setPstSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getPstSensitivityThreshold());
+            paramsPtr.setHvdcSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getHvdcSensitivityThreshold());
+            paramsPtr.setPstModel(searchTreeParameters.getRangeActionsOptimizationParameters().getPstModel().ordinal());
+            paramsPtr.setInjectionRaSensitivityThreshold(searchTreeParameters.getRangeActionsOptimizationParameters().getInjectionRaSensitivityThreshold());
+            paramsPtr.setRaRangeShrinking(searchTreeParameters.getRangeActionsOptimizationParameters().getRaRangeShrinking().ordinal());
+
+            paramsPtr.setMaxPreventiveSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxPreventiveSearchTreeDepth());
+            paramsPtr.setMaxCurativeSearchTreeDepth(searchTreeParameters.getTopoOptimizationParameters().getMaxCurativeSearchTreeDepth());
+            paramsPtr.setSkipActionsFarFromMostLimitingElement(searchTreeParameters.getTopoOptimizationParameters().getSkipActionsFarFromMostLimitingElement());
+            paramsPtr.setMaxNumberOfBoundariesForSkippingActions(searchTreeParameters.getTopoOptimizationParameters().getMaxNumberOfBoundariesForSkippingActions());
+
+            stringListListToArrayPointer(paramsPtr.getPredefinedCombinations(), searchTreeParameters.getTopoOptimizationParameters().getPredefinedCombinations());
+
+            // Multithreading parameters
+            paramsPtr.setAvailableCpus(searchTreeParameters.getMultithreadingParameters().getAvailableCPUs());
+
+            // Second preventive parameters
+            paramsPtr.setExecutionCondition(searchTreeParameters.getSecondPreventiveRaoParameters().getExecutionCondition().ordinal());
+            paramsPtr.setHintFromFirstPreventiveRao(searchTreeParameters.getSecondPreventiveRaoParameters().getHintFromFirstPreventiveRao());
+
+            // Load flow and sensitivity providers
+            paramsPtr.setLoadFlowProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
+            paramsPtr.setSensitivityProvider(CTypeUtil.toCharPtr(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityProvider()));
+            paramsPtr.setSensitivityParameters(
+                convertToSensitivityAnalysisParametersPointer(
+                    searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityWithLoadFlowParameters(),
+                    searchTreeParameters.getLoadFlowAndSensitivityParameters().getLoadFlowProvider()));
+            paramsPtr.setSensitivityFailureOvercost(searchTreeParameters.getLoadFlowAndSensitivityParameters().getSensitivityFailureOvercost());
+        } else {
+            paramsPtr.setSearchTreeParameters(false);
+        }
 
         convertExtensionData(parameters, paramsPtr);
+
+        // Fast Rao parameters extension
+        FastRaoParameters fastRaoParameters = parameters.getExtension(FastRaoParameters.class);
+        if (fastRaoParameters != null) {
+            paramsPtr.setFastRaoExt(true);
+            paramsPtr.setNumberOfCnecsToAdd(fastRaoParameters.getNumberOfCnecsToAdd());
+            paramsPtr.setAddUnsecureCnecs(fastRaoParameters.getAddUnsecureCnecs());
+            paramsPtr.setMarginLimit(fastRaoParameters.getMarginLimit());
+        } else {
+            paramsPtr.setFastRaoExt(false);
+        }
         return paramsPtr;
     }
 
@@ -648,5 +706,170 @@ public final class RaoCFunctions {
         parameterPointer.getProviderParameters().setProviderParametersKeysCount(keys.size());
         parameterPointer.getProviderParameters().setProviderParametersValues(Util.getStringListAsPtr(values));
         parameterPointer.getProviderParameters().setProviderParametersValuesCount(values.size());
+    }
+
+    @CEntryPoint(name = "getInstants")
+    public static ArrayPointer<SeriesPointer> getInstants(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracInstantsMapper(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxRemedialActionsUsageLimits")
+    public static ArrayPointer<SeriesPointer> getMaxRemedialActionsUsageLimits(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRemedialActionsUsageLimits(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxTopologicalActionsPerTsoUsageLimits")
+    public static ArrayPointer<SeriesPointer> getMaxTopologicalActionsPerTsoUsageLimits(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimits(RaUsageLimits::getMaxTopoPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxPstActionsPerTsoUsageLimits")
+    public static ArrayPointer<SeriesPointer> getMaxPstActionsPerTsoUsageLimits(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimits(RaUsageLimits::getMaxPstPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxRemedialActionsPerTsoUsageLimits")
+    public static ArrayPointer<SeriesPointer> getMaxRemedialActionsPerTsoUsageLimits(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimits(RaUsageLimits::getMaxRaPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getMaxElementaryActionsPerTsoUsageLimits")
+    public static ArrayPointer<SeriesPointer> getMaxElementaryActionsPerTsoUsageLimits(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPerTsoUsageLimits(RaUsageLimits::getMaxElementaryActionsPerTso), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracContingencies")
+    public static ArrayPointer<SeriesPointer> getCracContingencies(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracContingencies(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracContingencyElements")
+    public static ArrayPointer<SeriesPointer> getCracContingencyElements(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracContingencyElements(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getFlowCnecs")
+    public static ArrayPointer<SeriesPointer> getFlowCnecs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracFlowCnecs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getAngleCnecs")
+    public static ArrayPointer<SeriesPointer> getAngleCnecs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracAngleCnecs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getVoltageCnecs")
+    public static ArrayPointer<SeriesPointer> getVoltageCnecs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracVoltageCnecs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getThresholds")
+    public static ArrayPointer<SeriesPointer> getThresholds(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracThresholds(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracPstRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracPstRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getPstRangeActions().stream().toList()), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracHvdcRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracHvdcRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getHvdcRangeActions().stream().toList()), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracInjectionRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracInjectionRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracInjectionRangeActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getNetworkElementIdsAndKeys")
+    public static ArrayPointer<SeriesPointer> getNetworkElementIdsAndKeys(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracInjectionRaElements(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracCounterTradeRangeActions")
+    public static ArrayPointer<SeriesPointer> getCracCounterTradeRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracCounterTradeRangeActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracRangeActionRanges")
+    public static ArrayPointer<SeriesPointer> getCracRangeActionRanges(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracRanges(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracNetworkActions")
+    public static ArrayPointer<SeriesPointer> getCracNetworkActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracNetworkActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracTerminalConnectionActions")
+    public static ArrayPointer<SeriesPointer> getCracTerminalConnectionActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracTerminalConnectionActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracPstTapPositionActions")
+    public static ArrayPointer<SeriesPointer> getCracPstTapPositionActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracPstTapPositionActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracGeneratorActions")
+    public static ArrayPointer<SeriesPointer> getCracGeneratorActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracGeneratorActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracLoadActions")
+    public static ArrayPointer<SeriesPointer> getCracLoadActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracLoadActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracBoundaryLineActions")
+    public static ArrayPointer<SeriesPointer> getCracBoundaryLineActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracBoundaryLineActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracShuntCompensatorPositionActions")
+    public static ArrayPointer<SeriesPointer> getCracShuntCompensatorPositionActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracShuntCompensatorPositionActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracSwitchActions")
+    public static ArrayPointer<SeriesPointer> getCracSwitchActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracSwitchActions(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getCracSwitchPairs")
+    public static ArrayPointer<SeriesPointer> getCracSwitchPairs(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracSwitchPairs(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnInstantUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnInstantUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnInstantUsageRules(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnContingencyStateUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnContingencyStateUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnContingencyStateUsageRules(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnConstraintUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnConstraintUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnConstraintUsageRules(), exceptionHandlerPtr);
+    }
+
+    @CEntryPoint(name = "getOnFlowConstraintInCountryUsageRules")
+    public static ArrayPointer<SeriesPointer> getOnFlowConstraintInCountryUsageRules(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return cracGenericMethod(thread, cracHandle, cracOnFlowConstraintInCountryUsageRules(), exceptionHandlerPtr);
+    }
+
+    public static ArrayPointer<SeriesPointer> cracGenericMethod(IsolateThread thread, ObjectHandle cracHandle, DataframeMapper<Crac, Void> mapper, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Crac crac = ObjectHandles.getGlobal().get(cracHandle);
+                return Dataframes.createCDataframe(mapper, crac);
+            }
+        });
     }
 }

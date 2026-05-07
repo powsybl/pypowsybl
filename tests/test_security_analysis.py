@@ -416,9 +416,16 @@ def test_add_contingencies_from_json_file():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
     sa.add_contingencies_from_json_file(str(DATA_DIR.joinpath('contingencies.json')))
-    sa_result = sa.run_ac(n)
+    report_node = rp.ReportNode()
+    sa_result = sa.run_ac(n, report_node=report_node)
+    tmp = str(report_node).split("""+ Post-contingency simulation 'contingency3'""")
+    others_report = tmp[0]
+    ctg3_report = tmp[1] # contingency 3 has OLF extension configured to disable all outer loops
+    assert 'Outer loop' in others_report
+    assert 'Outer loop' not in ctg3_report
     assert 'contingency' in sa_result.post_contingency_results.keys()
     assert 'contingency2' in sa_result.post_contingency_results.keys()
+    assert 'contingency3' in sa_result.post_contingency_results.keys()
 
 def test_add_operator_strategies_and_actions_from_json_file():
     n = pp.network.create_four_substations_node_breaker_network()

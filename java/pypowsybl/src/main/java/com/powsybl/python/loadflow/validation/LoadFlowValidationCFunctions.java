@@ -169,7 +169,7 @@ public final class LoadFlowValidationCFunctions {
         validationConfig.setLoadFlowName(CTypeUtil.toString(loadFlowValidationParametersPtr.getLoadFlowName()));
         validationConfig.setEpsilonX(loadFlowValidationParametersPtr.getEpsilonX());
         validationConfig.setApplyReactanceCorrection(loadFlowValidationParametersPtr.isApplyReactanceCorrection());
-        validationConfig.setLoadFlowParameters(LoadFlowCUtils.convertLoadFlowParameters(false, loadFlowValidationParametersPtr.getLoadFlowParameters()));
+        validationConfig.setLoadFlowParameters(LoadFlowCUtils.convertLoadFlowParameters(loadFlowValidationParametersPtr.getLoadFlowParameters()));
         validationConfig.setOkMissingValues(loadFlowValidationParametersPtr.isOkMissingValues());
         validationConfig.setNoRequirementIfReactiveBoundInversion(loadFlowValidationParametersPtr.isNoRequirementIfReactiveBoundInversion());
         validationConfig.setCompareResults(loadFlowValidationParametersPtr.isCompareResults());

@@ -325,6 +325,12 @@ public final class PyPowsyblApiHeader {
 
         @CField("dc_power_factor")
         void setDcPowerFactor(double dcPowerFactor);
+
+        @CField("dc")
+        boolean getDc();
+
+        @CField("dc")
+        void setDc(boolean dc);
     }
 
     @CStruct("loadflow_validation_parameters")
@@ -597,8 +603,8 @@ public final class PyPowsyblApiHeader {
         SHUNT_COMPENSATOR,
         NON_LINEAR_SHUNT_COMPENSATOR_SECTION,
         LINEAR_SHUNT_COMPENSATOR_SECTION,
-        DANGLING_LINE,
-        DANGLING_LINE_GENERATION,
+        BOUNDARY_LINE,
+        BOUNDARY_LINE_GENERATION,
         TIE_LINE,
         LCC_CONVERTER_STATION,
         VSC_CONVERTER_STATION,
@@ -1111,12 +1117,6 @@ public final class PyPowsyblApiHeader {
 
     @CStruct("nad_parameters")
     public interface NadParametersPointer extends PointerBase {
-        @CField("edge_name_displayed")
-        void setEdgeNameDisplayed(boolean edgeNameDisplayed);
-
-        @CField("edge_name_displayed")
-        boolean isEdgeNameDisplayed();
-
         @CField("id_displayed")
         void setIdDisplayed(boolean idDisplayed);
 
@@ -1172,22 +1172,16 @@ public final class PyPowsyblApiHeader {
         int getLayoutType();
 
         @CField("scaling_factor")
-        int getScalingFactor();
-
-        @CField("scaling_factor")
         void setScalingFactor(int scalingFactor);
 
-        @CField("radius_factor")
-        double getRadiusFactor();
+        @CField("scaling_factor")
+        int getScalingFactor();
 
         @CField("radius_factor")
         void setRadiusFactor(double radiusFactor);
 
-        @CField("edge_info_displayed")
-        void setEdgeInfoDisplayed(int edgeInfoDisplayed);
-
-        @CField("edge_info_displayed")
-        int getEdgeInfoDisplayed();
+        @CField("radius_factor")
+        double getRadiusFactor();
 
         @CField("voltage_level_details")
         void setVoltageLevelDetails(boolean isVoltageLevelDetails);
@@ -1200,6 +1194,54 @@ public final class PyPowsyblApiHeader {
 
         @CField("injections_added")
         boolean isInjectionsAdded();
+
+        @CField("info_side_external")
+        void setInfoSideExternal(int infoSideExternal);
+
+        @CField("info_side_external")
+        int getInfoSideExternal();
+
+        @CField("info_middle_side1")
+        void setInfoMiddleSide1(int infoMiddleSide1);
+
+        @CField("info_middle_side1")
+        int getInfoMiddleSide1();
+
+        @CField("info_middle_side2")
+        void setInfoMiddleSide2(int infoMiddleSide2);
+
+        @CField("info_middle_side2")
+        int getInfoMiddleSide2();
+
+        @CField("info_side_internal")
+        void setInfoSideInternal(int infoSideInternal);
+
+        @CField("info_side_internal")
+        int getInfoSideInternal();
+
+        @CField("scale_factor")
+        double getScaleFactor();
+
+        @CField("scale_factor")
+        void setScaleFactor(double scaleFactor);
+
+        @CField("timeout_seconds")
+        double getTimeoutSeconds();
+
+        @CField("timeout_seconds")
+        void setTimeoutSeconds(double timeoutSeconds);
+
+        @CField("edge_info_included")
+        void setEdgeInfoIncluded(boolean edgeInfoIncluded);
+
+        @CField("edge_info_included")
+        boolean isEdgeInfoIncluded();
+
+        @CField("voltage_level_legends_included")
+        void setVoltageLevelLegendsIncluded(boolean voltageLevelLegendsIncluded);
+
+        @CField("voltage_level_legends_included")
+        boolean isVoltageLevelLegendsIncluded();
     }
 
     @CStruct("dynamic_simulation_parameters")
@@ -1219,21 +1261,6 @@ public final class PyPowsyblApiHeader {
 
         @CField("stop_time")
         void setStopTime(double stopTime);
-    }
-
-    @CEnum("EventMappingType")
-    public enum EventMappingType {
-        DISCONNECT,
-        NODE_FAULT,
-        ACTIVE_POWER_VARIATION,
-        REACTIVE_POWER_VARIATION,
-        REFERENCE_VOLTAGE_VARIATION;
-
-        @CEnumValue
-        public native int getCValue();
-
-        @CEnumLookup
-        public static native EventMappingType fromCValue(int value);
     }
 
     @CEnum("OutputVariableType")
@@ -1434,12 +1461,6 @@ public final class PyPowsyblApiHeader {
         @CField("enforce_curative_security")
         void setEnforceCurativeSecurity(boolean enforceCurativeSecurity);
 
-        @CField("unit")
-        int getUnit();
-
-        @CField("unit")
-        void setUnit(int unit);
-
         @CField("curative_min_obj_improvement")
         double getCurativeMinObjImprovement();
 
@@ -1609,6 +1630,140 @@ public final class PyPowsyblApiHeader {
 
         @CField("sensitivity_failure_overcost")
         void setSensitivityFailureOvercost(double sensitivityFailureOvercost);
+
+        @CField("fast_rao_ext")
+        boolean getFastRaoExt();
+
+        @CField("fast_rao_ext")
+        void setFastRaoExt(boolean fastRaoExt);
+
+        @CField("number_of_cnecs_to_add")
+        int getNumberOfCnecsToAdd();
+
+        @CField("number_of_cnecs_to_add")
+        void setNumberOfCnecsToAdd(int numberOfCnecsToAdd);
+
+        @CField("add_unsecure_cnecs")
+        boolean getAddUnsecureCnecs();
+
+        @CField("add_unsecure_cnecs")
+        void setAddUnsecureCnecs(boolean addUnsecureCnecs);
+
+        @CField("margin_limit")
+        double getMarginLimit();
+
+        @CField("margin_limit")
+        void setMarginLimit(double marginLimit);
+
+        @CField("search_tree_parameters")
+        boolean getSearchTreeParameters();
+
+        @CField("search_tree_parameters")
+        void setSearchTreeParameters(boolean searchTreeParameters);
     }
 
+    @CStruct("scaling_parameters")
+    public interface ScalingParametersPointer extends PointerBase {
+
+        @CField("scaling_convention")
+        int getScalingConvention();
+
+        @CField("scaling_convention")
+        void setScalingConvention(int scalingConvention);
+
+        @CField("constant_power_factor")
+        boolean isConstantPowerFactor();
+
+        @CField("constant_power_factor")
+        void setConstantPowerFactor(boolean constantPowerFactor);
+
+        @CField("reconnect")
+        boolean isReconnect();
+
+        @CField("reconnect")
+        void setReconnect(boolean reconnect);
+
+        @CField("allows_generator_out_of_active_power_limits")
+        boolean isAllowsGeneratorOutOfActivePowerLimits();
+
+        @CField("allows_generator_out_of_active_power_limits")
+        void setAllowsGeneratorOutOfActivePowerLimits(boolean allowsGeneratorOutOfActivePowerLimits);
+
+        @CField("priority")
+        int getPriority();
+
+        @CField("priority")
+        void setPriority(int priority);
+
+        @CField("scaling_type")
+        int getScalingType();
+
+        @CField("scaling_type")
+        void setScalingType(int scalingType);
+
+        @CField("ignored_injection_ids")
+        CCharPointerPointer getIgnoredInjectionIds();
+
+        @CField("ignored_injection_ids")
+        void setIgnoredInjectionIds(CCharPointerPointer ignoredInjectionIds);
+
+        @CField("ignored_injection_ids_count")
+        int getIgnoredInjectionIdsCount();
+
+        @CField("ignored_injection_ids_count")
+        void setIgnoredInjectionIdsCount(int ignoredInjectionIdsCount);
+    }
+
+    @CEnum("scaling_type")
+    public enum ScalingType {
+        DELTA_P,
+        TARGET_P;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ScalingType fromCValue(int value);
+    }
+
+    @CEnum("priority")
+    public enum Priority {
+        RESPECT_OF_VOLUME_ASKED,
+        RESPECT_OF_DISTRIBUTION,
+        ONESHOT;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native Priority fromCValue(int value);
+    }
+
+    @CEnum("scaling_convention")
+    public enum ScalingConvention {
+        GENERATOR,
+        LOAD;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native ScalingConvention fromCValue(int value);
+    }
+
+    @CEnum("distribution_mode")
+    public enum DistributionMode {
+        PROPORTIONAL_TO_TARGETP,
+        PROPORTIONAL_TO_PMAX,
+        PROPORTIONAL_TO_DIFF_PMAX_TARGETP,
+        PROPORTIONAL_TO_DIFF_TARGETP_PMIN,
+        PROPORTIONAL_TO_P0,
+        UNIFORM_DISTRIBUTION;
+
+        @CEnumValue
+        public native int getCValue();
+
+        @CEnumLookup
+        public static native DistributionMode fromCValue(int value);
+    }
 }
