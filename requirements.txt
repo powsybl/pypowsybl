@@ -5,7 +5,7 @@ networkx
 matplotlib==3.9.2
 pybind11[global]==2.13.6
 cmake>=3.20
-pyoptinterface==0.5.1
+pyoptinterface==0.6.1
 tabulate==0.9.0
 
 # optional dependencies
