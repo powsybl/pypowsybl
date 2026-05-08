@@ -1660,12 +1660,12 @@ public final class NetworkCFunctions {
         for (int i = 0; i < rowCount; i++) {
             String id = idSeries.get(i);
             CustomLabelProvider.BranchLabels labels = new CustomLabelProvider.BranchLabels(
-                    getValueFromSeriesOrNull(side1InternalLabel, i),
-                    getValueFromSeriesOrNull(side1ExternalLabel, i),
-                    getValueFromSeriesOrNull(middle1Label, i),
-                    getValueFromSeriesOrNull(middle2Label, i),
-                    getValueFromSeriesOrNull(side2InternalLabel, i),
-                    getValueFromSeriesOrNull(side2ExternalLabel, i),
+                    getNonEmptyValueFromSeries(side1InternalLabel, i),
+                    getNonEmptyValueFromSeries(side1ExternalLabel, i),
+                    getNonEmptyValueFromSeries(middle1Label, i),
+                    getNonEmptyValueFromSeries(middle2Label, i),
+                    getNonEmptyValueFromSeries(side2InternalLabel, i),
+                    getNonEmptyValueFromSeries(side2ExternalLabel, i),
                     getDirectionFromSeriesOrNull(arrow1, i),
                     getDirectionFromSeriesOrNull(arrowMiddle, i),
                     getDirectionFromSeriesOrNull(arrow2, i)
@@ -1692,12 +1692,12 @@ public final class NetworkCFunctions {
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
             CustomLabelProvider.ThreeWtLabels labels = new CustomLabelProvider.ThreeWtLabels(
-                    getValueFromSeriesOrNull(side1InternalS, i),
-                    getValueFromSeriesOrNull(side1ExternalS, i),
-                    getValueFromSeriesOrNull(side2InternalS, i),
-                    getValueFromSeriesOrNull(side2ExternalS, i),
-                    getValueFromSeriesOrNull(side3InternalS, i),
-                    getValueFromSeriesOrNull(side3ExternalS, i),
+                    getNonEmptyValueFromSeries(side1InternalS, i),
+                    getNonEmptyValueFromSeries(side1ExternalS, i),
+                    getNonEmptyValueFromSeries(side2InternalS, i),
+                    getNonEmptyValueFromSeries(side2ExternalS, i),
+                    getNonEmptyValueFromSeries(side3InternalS, i),
+                    getNonEmptyValueFromSeries(side3ExternalS, i),
                     getDirectionFromSeriesOrNull(arrow1S, i),
                     getDirectionFromSeriesOrNull(arrow2S, i),
                     getDirectionFromSeriesOrNull(arrow3S, i)
@@ -1718,8 +1718,8 @@ public final class NetworkCFunctions {
         for (int i = 0; i < rowCount; i++) {
             String id = idS.get(i);
             CustomLabelProvider.InjectionLabels labels = new CustomLabelProvider.InjectionLabels(
-                    getValueFromSeriesOrNull(labelInternalS, i),
-                    getValueFromSeriesOrNull(labelExternalS, i),
+                    getNonEmptyValueFromSeries(labelInternalS, i),
+                    getNonEmptyValueFromSeries(labelExternalS, i),
                     getDirectionFromSeriesOrNull(arrowS, i)
             );
             nadCustomInjectionsLabels.put(id, labels);
