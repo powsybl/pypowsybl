@@ -36,6 +36,17 @@ runs:
       run: |
         ${{ inputs.python-command }} -m pip install --upgrade pip
         ${{ inputs.python-command }} -m pip install -r requirements.txt
+        
+    - name: Install Miniconda (for ipopt native libs)
+      shell: bash
+      run: |
+        curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+        bash miniconda.sh -b -p $HOME/miniconda
+        $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
+
+    - name: Export ipopt lib path
+      shell: bash
+      run: echo "LD_LIBRARY_PATH=$HOME/miniconda/lib:$LD_LIBRARY_PATH" >> $GITHUB_ENV
 
     - name: Cache Maven repository
       uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
