@@ -22,6 +22,8 @@ jobs:
             os: ubuntu-latest,
             container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
             wheel-dir: "wheelhouse",
+            miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh",
+            lib-path-var: "LD_LIBRARY_PATH",
           }
           - {
             name: darwin,
@@ -29,11 +31,15 @@ jobs:
             macosx_deployment_target: "10.16", # to ensure pip finds wheel when Big Sur is configured to return 10.16 as version instead of 11.0
             bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
             wheel-dir: "dist",
+            miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh",
+            lib-path-var: "DYLD_LIBRARY_PATH",
           }
           - {
             name: windows,
             os: windows-2022,
             wheel-dir: "dist",
+            miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe",
+            lib-path-var: "PATH",
           }
         python:
           - {
@@ -65,6 +71,24 @@ jobs:
           python-already-available: ${{ matrix.config.name == 'linux' && 'true' || 'false' }}
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
+
+      - name: Install Miniconda and cyipopt (Linux/macOS)
+        if: matrix.config.name != 'windows'
+        shell: bash
+        run: |
+          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.sh
+          bash miniconda.sh -b -p $HOME/miniconda
+          $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
+          echo "${{ matrix.config.lib-path-var }}=$HOME/miniconda/lib:${${{ matrix.config.lib-path-var }}}" >> $GITHUB_ENV
+
+      - name: Install Miniconda and cyipopt (Windows)
+        if: matrix.config.name == 'windows'
+        shell: pwsh
+        run: |
+          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.exe
+          Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
+          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge cyipopt -y
+          echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Setup path
         if: matrix.config.name == 'linux'
