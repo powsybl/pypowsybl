@@ -80,7 +80,7 @@ jobs:
           fi
 
       - name: Install wheel
-        run: ${{ env.PYTHON }} -m pip install ''${{ matrix.config.wheel-dir }}/*.whl[pandapower, opf]' --user
+        run: ${{ env.PYTHON }} -m pip install ${{ matrix.config.wheel-dir }}/*.whl --user
 
       - name: Run basic pypowsybl import
         working-directory: ./tests
