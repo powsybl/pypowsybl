@@ -138,7 +138,7 @@ class BranchFlowConstraints(Constraints):
             a1 = alpha
             branch_num = len(network_cache.lines) + transfo_num
             branch_index = variable_context.branch_num_2_index[branch_num]
-            self.add_branch_constraint(branch_index, row.bus1_id, row.bus2_id, network_cache, model,
+            self.add_branch_constraint(branch_index, t_row.bus1_id, t_row.bus2_id, network_cache, model,
                                        r, x, g1, b1, g2, b2, r1, a1,
                                        variable_context)
 
