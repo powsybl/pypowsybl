@@ -4,6 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from pypowsybl.network import Network
+from pypowsybl.opf.impl.util import HvdcRow
 from pypowsybl.opf.impl.model.bounds import Bounds
 
 
@@ -63,18 +64,18 @@ class NetworkCache:
             | (transfos_and_buses['connected_component_3'] == 0) & (transfos_and_buses['synchronous_component_3'] == 0)]
 
     @staticmethod
-    def _build_branches(network: Network, buses: DataFrame):
+    def _build_branches(network: Network, buses: DataFrame) -> DataFrame:
         branches = network.get_branches(attributes=['bus1_id', 'bus2_id'])
         return NetworkCache._filter_branches(branches, buses)
 
     @staticmethod
-    def _build_2w_transformers(network: Network, buses: DataFrame):
+    def _build_2w_transformers(network: Network, buses: DataFrame) -> DataFrame:
         transfos = network.get_2_windings_transformers(
             attributes=['bus1_id', 'bus2_id', 'rho', 'alpha', 'r_at_current_tap', 'x_at_current_tap', 'g_at_current_tap', 'b_at_current_tap'])
         return NetworkCache._filter_branches(transfos, buses)
 
     @staticmethod
-    def _build_3w_transformers(network: Network, buses: DataFrame):
+    def _build_3w_transformers(network: Network, buses: DataFrame) -> DataFrame:
         transfos = network.get_3_windings_transformers(
             attributes=['bus1_id', 'bus2_id', 'bus3_id',
                         'rated_u0',
@@ -85,17 +86,17 @@ class NetworkCache:
         return NetworkCache._filter_3w_transformers(transfos, buses)
 
     @staticmethod
-    def _build_lines(network: Network, buses: DataFrame):
+    def _build_lines(network: Network, buses: DataFrame) -> DataFrame:
         lines = network.get_lines(attributes=['bus1_id', 'bus2_id', 'r', 'x', 'g1', 'g2', 'b1', 'b2'])
         return NetworkCache._filter_branches(lines, buses)
 
     @staticmethod
-    def _build_shunt_compensators(network: Network, buses: DataFrame):
+    def _build_shunt_compensators(network: Network, buses: DataFrame) -> DataFrame:
         shunts = network.get_shunt_compensators(attributes=['bus_id', 'g', 'b'])
         return NetworkCache._filter_injections(shunts, buses)
 
     @staticmethod
-    def _build_static_var_compensators(network: Network, buses: DataFrame):
+    def _build_static_var_compensators(network: Network, buses: DataFrame) -> DataFrame:
         svcs = network.get_static_var_compensators(attributes=['bus_id', 'b_min', 'b_max', 'regulated_bus_id'])
         return NetworkCache._filter_injections(svcs, buses)
 
@@ -119,12 +120,12 @@ class NetworkCache:
 
     @staticmethod
     def _build_hvdc_lines(network: Network, vsc_converter_stations: DataFrame, lcc_converter_stations: DataFrame,
-                          buses: DataFrame):
+                          buses: DataFrame) -> DataFrame:
         hvdc_lines = network.get_hvdc_lines(attributes=['converter_station1_id', 'converter_station2_id', 'converters_mode', 'nominal_v', 'r'])
         return NetworkCache._filter_hvdc_lines(hvdc_lines, vsc_converter_stations, lcc_converter_stations, buses)
 
     @staticmethod
-    def _build_vsc_converter_stations(network: Network, buses: DataFrame):
+    def _build_vsc_converter_stations(network: Network, buses: DataFrame) -> DataFrame:
         stations = network.get_vsc_converter_stations(attributes=['bus_id', 'loss_factor', 'min_q_at_target_p', 'max_q_at_target_p',
                                                                   'target_v', 'target_q', 'voltage_regulator_on', 'hvdc_line_id',
                                                                   'regulated_bus_id'])
@@ -134,7 +135,7 @@ class NetworkCache:
         return NetworkCache._filter_injections(stations, buses)
 
     @staticmethod
-    def _build_lcc_converter_stations(network: Network, buses: DataFrame):
+    def _build_lcc_converter_stations(network: Network, buses: DataFrame) -> DataFrame:
         stations = network.get_lcc_converter_stations(attributes=['bus_id', 'loss_factor', 'power_factor', 'hvdc_line_id'])
         if len(stations) > 0:
             hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p'])
@@ -142,19 +143,19 @@ class NetworkCache:
         return NetworkCache._filter_injections(stations, buses)
 
     @staticmethod
-    def _build_loads(network: Network, buses: DataFrame):
+    def _build_loads(network: Network, buses: DataFrame) -> DataFrame:
         loads = network.get_loads(attributes=['bus_id', 'p0', 'q0'])
         return NetworkCache._filter_injections(loads, buses)
 
     @staticmethod
-    def _build_generators(network: Network, buses: DataFrame):
+    def _build_generators(network: Network, buses: DataFrame) -> DataFrame:
         generators = network.get_generators(
             attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q',
                         'target_v', 'voltage_regulator_on', 'regulated_bus_id'])
         return NetworkCache._filter_injections(generators, buses)
 
     @staticmethod
-    def _build_buses(network: Network, voltage_levels: DataFrame):
+    def _build_buses(network: Network, voltage_levels: DataFrame) -> DataFrame:
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
         buses = buses[(buses['synchronous_component'] == 0) & (buses['connected_component'] == 0)]
         return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left')
@@ -164,12 +165,12 @@ class NetworkCache:
         return network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit', 'nominal_v'])
 
     @staticmethod
-    def _build_dangling_lines(network: Network, buses: DataFrame):
+    def _build_dangling_lines(network: Network, buses: DataFrame) -> DataFrame:
         dangling_lines = network.get_dangling_lines(attributes=['bus_id', 'r', 'x', 'g', 'b', 'p0', 'q0', 'paired'])
         return NetworkCache._filter_injections(dangling_lines, buses)
 
     @staticmethod
-    def _build_batteries(network: Network, buses: DataFrame):
+    def _build_batteries(network: Network, buses: DataFrame) -> DataFrame:
         batteries = network.get_batteries(attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q'])
         if len(batteries):
             voltage_regulation = network.get_extensions('voltageRegulation')
@@ -188,12 +189,12 @@ class NetworkCache:
         return limits[limits['side'] == 'ONE'][['value']], limits[limits['side'] == 'TWO'][['value']]
 
     @staticmethod
-    def _build_stack_terminal(network: Network, buses: DataFrame):
+    def _build_stack_terminal(network: Network, buses: DataFrame) -> DataFrame:
         slack_terminal = network.get_extensions('slackTerminal')
         return NetworkCache._filter_injections(slack_terminal, buses)
 
     @staticmethod
-    def _build_reactive_capability_curve_points(network: Network, generators: DataFrame, vsc_converter_stations: DataFrame):
+    def _build_reactive_capability_curve_points(network: Network, generators: DataFrame, vsc_converter_stations: DataFrame) -> DataFrame:
         points = network.get_reactive_capability_curve_points()
         if len(points) == 0:
             return points
@@ -281,11 +282,11 @@ class NetworkCache:
         return self._reactive_capability_curve_points
 
     @staticmethod
-    def is_rectifier(vsc_cs_id: str, hvdc_line_row) -> bool:
+    def is_rectifier(vsc_cs_id: str, hvdc_line_row: HvdcRow) -> bool:
         return ((vsc_cs_id == hvdc_line_row.converter_station1_id and hvdc_line_row.converters_mode == 'SIDE_1_RECTIFIER_SIDE_2_INVERTER')
                 or (vsc_cs_id == hvdc_line_row.converter_station2_id and hvdc_line_row.converters_mode == 'SIDE_1_INVERTER_SIDE_2_RECTIFIER'))
 
-    def is_too_small_reactive_power_bounds(self, q_bounds: Bounds):
+    def is_too_small_reactive_power_bounds(self, q_bounds: Bounds) -> bool:
         return abs(q_bounds.max_value - q_bounds.min_value) < 1.0 / self._network.nominal_apparent_power
 
     def update_generators(self,
@@ -296,7 +297,7 @@ class NetworkCache:
                           connected_gen_voltage_regulator_on: list[bool],
                           connected_gen_p: list[float],
                           connected_gen_q: list[float],
-                          disconnected_gen_ids: list[str] = None):
+                          disconnected_gen_ids: list[str] | None = None) -> None:
 
         if connected_gen_ids:
             self._network.update_generators(id=connected_gen_ids,
@@ -322,7 +323,7 @@ class NetworkCache:
                          connected_bat_voltage_regulator_on: list[bool],
                          connected_bat_p: list[float],
                          connected_bat_q: list[float],
-                         disconnected_bat_ids: list[str] = None):
+                         disconnected_bat_ids: list[str] | None = None) -> None:
         if connected_bat_ids:
             self._network.update_batteries(id=connected_bat_ids,
                                            target_p=connected_bat_target_p,
@@ -348,7 +349,7 @@ class NetworkCache:
                                       connected_vsc_cs_voltage_regulator_on: list[bool],
                                       connected_vsc_cs_p: list[float],
                                       connected_vsc_cs_q: list[float],
-                                      disconnected_vsc_cs_ids: list[str]):
+                                      disconnected_vsc_cs_ids: list[str]) -> None:
 
         if connected_vsc_cs_ids:
             self._network.update_vsc_converter_stations(id=connected_vsc_cs_ids,
@@ -365,7 +366,7 @@ class NetworkCache:
 
         self._vsc_converter_stations = self._build_vsc_converter_stations(self._network, self._buses)
 
-    def update_hvdc_lines(self, hvdc_line_ids: list[str], hvdc_line_target_p: list[float]):
+    def update_hvdc_lines(self, hvdc_line_ids: list[str], hvdc_line_target_p: list[float]) -> None:
         self._network.update_hvdc_lines(id=hvdc_line_ids, target_p=hvdc_line_target_p)
         self._hvdc_lines = self._build_hvdc_lines(self._network, self._vsc_converter_stations, self._lcc_converter_stations, self._buses)
 
@@ -376,7 +377,7 @@ class NetworkCache:
                                        connected_svc_regulation_mode: list[str],
                                        connected_svc_p: list[float],
                                        connected_svc_q: list[float],
-                                       disconnected_svc_ids: list[str]):
+                                       disconnected_svc_ids: list[str]) -> None:
         if connected_svc_ids:
             self._network.update_static_var_compensators(id=connected_svc_ids,
                                                          target_q=connected_svc_target_q,
@@ -396,7 +397,7 @@ class NetworkCache:
                                   connected_shunt_ids: list[str],
                                   connected_shunt_p: list[float],
                                   connected_shunt_q: list[float],
-                                  disconnected_shunt_ids: list[str]):
+                                  disconnected_shunt_ids: list[str]) -> None:
         if connected_shunt_ids:
             self._network.update_shunt_compensators(id=connected_shunt_ids,
                                                     p=connected_shunt_p,
@@ -414,7 +415,7 @@ class NetworkCache:
                         branch_p1: list[float],
                         branch_p2: list[float],
                         branch_q1: list[float],
-                        branch_q2: list[float]):
+                        branch_q2: list[float]) -> None:
         self._network.update_branches(id=branch_ids,
                                       p1=branch_p1,
                                       p2=branch_p2,
@@ -432,7 +433,7 @@ class NetworkCache:
                                t3_q2: list[float],
                                t3_q3: list[float],
                                t3_v: list[float],
-                               t3_angle: list[float]):
+                               t3_angle: list[float]) -> None:
         self._network.update_3_windings_transformers(id=t3_ids,
                                                      p1=t3_p1,
                                                      p2=t3_p2,
@@ -449,7 +450,7 @@ class NetworkCache:
     def update_buses(self,
                      bus_ids: list[str],
                      bus_v_mag: list[float],
-                     bus_v_angle: list[float]):
+                     bus_v_angle: list[float]) -> None:
         self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
         self._buses = self._build_buses(self._network, self._voltage_levels)
 
@@ -459,7 +460,7 @@ class NetworkCache:
                               connected_dl_angle: list[float],
                               connected_dl_p: list[float],
                               connected_dl_q: list[float],
-                              disconnected_dl_ids: list[str]):
+                              disconnected_dl_ids: list[str]) -> None:
         if connected_dl_ids:
             self._network.update_dangling_lines(id=connected_dl_ids,
                                                         p=connected_dl_p,

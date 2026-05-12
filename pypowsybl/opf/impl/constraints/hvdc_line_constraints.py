@@ -1,22 +1,25 @@
+from typing import cast
+
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.util import HvdcRow
 
 
-def hvdc_line_losses(p, r, sb):
+def hvdc_line_losses(p: float, r: float, sb: float) -> float:
     return r * p * p / sb
 
 
-def add_converter_losses(p, loss_factor):
+def add_converter_losses(p: float, loss_factor: float) -> float:
     return p * (1.0 - loss_factor / 100.0)
 
 
 class HvdcLineConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: Model) -> None:
-        for hvdc_line_row in network_cache.hvdc_lines.itertuples(index=False):
+        for hvdc_line_row in cast(list[HvdcRow], network_cache.hvdc_lines.itertuples(index=False)):
             cs1_id, cs2_id, r, nominal_v = hvdc_line_row.converter_station1_id, hvdc_line_row.converter_station2_id, hvdc_line_row.r, hvdc_line_row.nominal_v
             cs1_num = network_cache.vsc_converter_stations.index.get_loc(cs1_id)
             cs2_num = network_cache.vsc_converter_stations.index.get_loc(cs2_id)
@@ -29,6 +32,8 @@ class HvdcLineConstraints(Constraints):
 
             loss_factor1 = cs1_row.loss_factor
             loss_factor2 = cs2_row.loss_factor
+            assert isinstance(loss_factor1, float)
+            assert isinstance(loss_factor2, float)
             sb = network_cache.network.nominal_apparent_power
             if NetworkCache.is_rectifier(cs1_id, hvdc_line_row):
                 p_rectifier = add_converter_losses(p1_var, loss_factor1)

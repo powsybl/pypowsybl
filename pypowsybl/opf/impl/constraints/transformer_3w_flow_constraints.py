@@ -1,4 +1,5 @@
 from math import hypot, atan2
+from typing import cast
 
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
@@ -6,13 +7,14 @@ from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
+from pypowsybl.opf.impl.util import Transformer3WRow
 
 
 class Transformer3wFlowConstraints(Constraints):
     @staticmethod
     def _create_leg_constraint(leg_r: float, leg_x: float, leg_g: float, leg_b: float, rho: float, alpha: float,
                                bus_id: str, t3_index: int, leg_index: int, parameters: ModelParameters, network_cache: NetworkCache,
-                               variable_context: VariableContext, model: Model):
+                               variable_context: VariableContext, model: Model) -> None:
         r = leg_r
         x = leg_x
         if parameters.twt_split_shunt_admittance:
@@ -51,7 +53,7 @@ class Transformer3wFlowConstraints(Constraints):
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: Model) -> None:
-        for t3_num, row in enumerate(network_cache.transformers_3w.itertuples(index=False)):
+        for t3_num, row in enumerate(cast(list[Transformer3WRow], network_cache.transformers_3w.itertuples(index=False))):
             t3_index = variable_context.t3_num_2_index[t3_num]
             leg1_r, leg2_r, leg3_r = row.r1_at_current_tap, row.r2_at_current_tap, row.r3_at_current_tap
             leg1_x, leg2_x, leg3_x = row.x1_at_current_tap, row.x2_at_current_tap, row.x3_at_current_tap

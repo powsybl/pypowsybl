@@ -3,12 +3,12 @@ import time
 
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
-from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
-from pypowsybl.opf.impl.model.model import Model, IpoptModel, KnitroModel, create_model
+from pypowsybl.opf.impl.model.model import Model, create_model
 
 logger = logging.getLogger(__name__)
 
@@ -43,8 +43,8 @@ class OpfModel:
         variable_context = VariableContext.build(network_cache, model)
 
         # variable bounds
-        for variable_bounds in variable_bounds:
-            variable_bounds.add(parameters, network_cache, variable_context, model)
+        for variable_bound in variable_bounds:
+            variable_bound.add(parameters, network_cache, variable_context, model)
 
         # constraints
         for constraint in constraints:
@@ -59,7 +59,7 @@ class OpfModel:
 
         return OpfModel(network_cache, model, variable_context)
 
-    def update_network(self):
+    def update_network(self) -> None:
         self.variable_context.update_network(self.network_cache, self.model)
 
     def analyze_violations(self, parameters: ModelParameters) -> None:

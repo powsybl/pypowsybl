@@ -7,11 +7,11 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 
 class CostFunction(ABC):
-    def __init__(self, name):
+    def __init__(self, name: str):
         self._name = name
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @abstractmethod

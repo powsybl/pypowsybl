@@ -1,13 +1,18 @@
+from typing import cast
+
 import pyoptinterface as poi
 from pyoptinterface import ExprBuilder
 
 from pypowsybl.opf.impl.model.cost_function import CostFunction
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
+from pypowsybl.opf.impl.util import ConverterStationRow
 
 
 class RedispatchingCostFunction(CostFunction):
-    def __init__(self, target_p_l1_weight=0.1, target_p_l2_weight=1.0, target_v_l2_weight=0.5):
+    def __init__(self, target_p_l1_weight: float = 0.1,
+                 target_p_l2_weight: float = 1.0,
+                 target_v_l2_weight: float = 0.5):
         super().__init__('Redispatching')
         self._target_p_l1_weight = target_p_l1_weight
         self._target_p_l2_weight = target_p_l2_weight
@@ -27,7 +32,7 @@ class RedispatchingCostFunction(CostFunction):
                     v_var = variable_context.v_vars[bus_num]
                     cost += self._target_v_l2_weight * (v_var - gen_row.target_v) * (v_var - gen_row.target_v)
 
-        for vsc_cs_num, vsc_cs_row in enumerate(network_cache.vsc_converter_stations.itertuples()):
+        for vsc_cs_num, vsc_cs_row in enumerate(cast(list[ConverterStationRow], network_cache.vsc_converter_stations.itertuples(index=True))):
             if vsc_cs_row.bus_id:
                 if NetworkCache.is_rectifier(vsc_cs_row.Index, vsc_cs_row):
                     vsc_cs_p_expr = poi.ExprBuilder()

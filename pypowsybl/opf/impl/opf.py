@@ -27,6 +27,7 @@ from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import Mi
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.cost_function import CostFunction
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
@@ -78,7 +79,7 @@ class OptimalPowerFlow:
             constraints.append(ReactiveCapabilityCurveConstraints())
         if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
             constraints.append(CurrentLimitConstraints())
-            cost_function = RedispatchingCostFunction(1.0, 1.0, 1.0)
+            cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
         else:
             cost_function = MinimizeAgainstReferenceCostFunction()
         model_parameters = ModelParameters(parameters.reactive_bounds_reduction,

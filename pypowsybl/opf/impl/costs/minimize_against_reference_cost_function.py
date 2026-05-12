@@ -1,3 +1,5 @@
+from typing import cast
+
 import pyoptinterface as poi
 from pandas import DataFrame
 from pyoptinterface import ExprBuilder
@@ -5,10 +7,11 @@ from pyoptinterface import ExprBuilder
 from pypowsybl.opf.impl.model.cost_function import CostFunction
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
+from pypowsybl.opf.impl.util import ConverterStationRow
 
 
 class MinimizeAgainstReferenceCostFunction(CostFunction):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('Minimize against reference')
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
@@ -36,7 +39,7 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
                     v_var = variable_context.v_vars[bus_num]
                     cost += (v_var - bat_row.target_v) * (v_var - bat_row.target_v)
 
-        for vsc_cs_num, vsc_cs_row in enumerate(network_cache.vsc_converter_stations.itertuples()):
+        for vsc_cs_num, vsc_cs_row in enumerate(cast(list[ConverterStationRow], network_cache.vsc_converter_stations.itertuples())):
             if vsc_cs_row.bus_id:
                 if NetworkCache.is_rectifier(vsc_cs_row.Index, vsc_cs_row):
                     vsc_cs_p_expr = poi.ExprBuilder()

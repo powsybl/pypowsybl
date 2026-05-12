@@ -41,7 +41,7 @@ class Bounds:
         return f"[{self._min_value}, {self._max_value}]"
 
     @staticmethod
-    def get_voltage_bounds(_low_voltage_limit: float | None, _high_voltage_limit: float | None, default_voltage_bounds: 'Bounds'):
+    def get_voltage_bounds(_low_voltage_limit: float | None, _high_voltage_limit: float | None, default_voltage_bounds: 'Bounds') -> 'Bounds':
         return default_voltage_bounds  # FIXME get from voltage level dataframe
 
     @staticmethod

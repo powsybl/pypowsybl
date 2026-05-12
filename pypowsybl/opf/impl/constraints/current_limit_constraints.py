@@ -1,21 +1,23 @@
 import logging
-from typing import Any
+from typing import Any, cast
 
 import pyoptinterface as poi
+from pandas import DataFrame
 
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.variable_context import VariableContext
-from pypowsybl.opf.impl.util import TRACE_LEVEL
+from pypowsybl.opf.impl.util import TRACE_LEVEL, BranchRow
 
 logger = logging.getLogger(__name__)
 
 class CurrentLimitConstraints(Constraints):
 
     @staticmethod
-    def _create_limit_constraints_for_side(side: str, branch_row, current_limits, model, p: Any, q: Any):
+    def _create_limit_constraints_for_side(side: str, branch_row: BranchRow, current_limits: DataFrame,
+                                           model: Model, p: Any, q: Any) -> None:
         if branch_row.Index in current_limits.index:
             limit_row = current_limits.loc[branch_row.Index]
             if branch_row.bus1_id and branch_row.bus2_id:
@@ -29,7 +31,7 @@ class CurrentLimitConstraints(Constraints):
             variable_context: VariableContext, model: Model) -> None:
         current_limits1 = network_cache.current_limits1
         current_limits2 = network_cache.current_limits2
-        for branch_num, branch_row in enumerate(network_cache.lines.itertuples()):
+        for branch_num, branch_row in enumerate(cast(list[BranchRow], network_cache.lines.itertuples())):
             branch_index = variable_context.branch_num_2_index[branch_num]
 
             self._create_limit_constraints_for_side('1', branch_row, current_limits1, model,

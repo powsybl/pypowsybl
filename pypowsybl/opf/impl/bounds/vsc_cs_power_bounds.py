@@ -1,4 +1,5 @@
 import logging
+from typing import cast
 
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -6,15 +7,15 @@ from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
-from pypowsybl.opf.impl.util import TRACE_LEVEL
+from pypowsybl.opf.impl.util import TRACE_LEVEL, ConverterStationRow
 
 logger = logging.getLogger(__name__)
 
 class VscCsPowerBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: Model):
+            variable_context: VariableContext, model: Model) -> None:
         # VSC converter station active and reactive power bounds
-        for vsc_cs_num, row in enumerate(network_cache.vsc_converter_stations.itertuples()):
+        for vsc_cs_num, row in enumerate(cast(list[ConverterStationRow], network_cache.vsc_converter_stations.itertuples())):
             if row.bus_id:
                 p_bounds = Bounds(-row.max_p, row.max_p).mirror()
                 logger.log(TRACE_LEVEL,

@@ -1,4 +1,5 @@
 import logging
+from typing import cast
 
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -6,15 +7,15 @@ from pypowsybl.opf.impl.model.variable_bounds import VariableBounds
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
-from pypowsybl.opf.impl.util import TRACE_LEVEL
+from pypowsybl.opf.impl.util import TRACE_LEVEL, Transformer3WRow
 
 logger = logging.getLogger(__name__)
 
 
 class Transformer3wMiddleVoltageBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: Model):
-        for t3_num, t3_row in enumerate(network_cache.transformers_3w.itertuples()):
+            variable_context: VariableContext, model: Model) -> None:
+        for t3_num, t3_row in enumerate(cast(list[Transformer3WRow], network_cache.transformers_3w.itertuples())):
             if t3_row.bus1_id or t3_row.bus2_id or t3_row.bus3_id:
                 v_bounds = Bounds.get_voltage_bounds(None, None, parameters.default_voltage_bounds)
                 logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to 3 windings transformer middle '{t3_row.Index}' (num={t3_num})'")

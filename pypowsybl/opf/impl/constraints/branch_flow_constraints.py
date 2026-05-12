@@ -1,4 +1,5 @@
 from math import hypot, atan2
+from typing import cast
 
 from pyoptinterface import nl
 
@@ -7,14 +8,17 @@ from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.variable_context import VariableContext
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.util import BranchRow, Transformer2WRow
 
 R2 = 1.0
 A2 = 0.0
 
 class BranchFlowConstraints(Constraints):
     @staticmethod
-    def add_closed_branch_constraint(a1: float, b1: float, b2: float, g1: float, g2: float, ksi: float, model, p1_var, p2_var, ph1_var,
-                                     ph2_var, q1_var, q2_var, r1: float, v1_var, v2_var, y: float):
+    def add_closed_branch_constraint(a1: float, b1: float, b2: float, g1: float, g2: float, ksi: float, model: Model,
+                                     p1_var: float, p2_var: float, ph1_var: float,
+                                     ph2_var: float, q1_var: float, q2_var: float,
+                                     r1: float, v1_var: float, v2_var: float, y: float) -> None:
         with nl.graph():
             sin_ksi = nl.sin(ksi)
             cos_ksi = nl.cos(ksi)
@@ -36,8 +40,9 @@ class BranchFlowConstraints(Constraints):
             model.add_nl_constraint(q2_eq == 0.0)
 
     @staticmethod
-    def add_open_side1_branch_constraint(b1: float, b2: float, g1: float, g2: float, ksi: float, model, p2_var, q2_var, v2_var,
-                                         y: float):
+    def add_open_side1_branch_constraint(b1: float, b2: float, g1: float, g2: float, ksi: float,
+                                         model: Model, p2_var: float, q2_var: float, v2_var: float,
+                                         y: float) -> None:
         with nl.graph():
             sin_ksi = nl.sin(ksi)
             cos_ksi = nl.cos(ksi)
@@ -52,8 +57,9 @@ class BranchFlowConstraints(Constraints):
             model.add_nl_constraint(q2_eq == 0.0)
 
     @staticmethod
-    def add_open_side2_branch_constraint(b1: float, b2: float, g1: float, g2: float, ksi: float, model, p1_var, q1_var,
-                                         r1: float, v1_var, y: float):
+    def add_open_side2_branch_constraint(b1: float, b2: float, g1: float, g2: float, ksi: float,
+                                         model: Model, p1_var: float, q1_var: float,
+                                         r1: float, v1_var: float, y: float) -> None:
         with nl.graph():
             sin_ksi = nl.sin(ksi)
             cos_ksi = nl.cos(ksi)
@@ -68,7 +74,7 @@ class BranchFlowConstraints(Constraints):
             model.add_nl_constraint(q1_eq == 0.0)
 
     @staticmethod
-    def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model,
+    def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model: Model,
                               r: float, x: float, g1: float, b1: float, g2: float, b2: float, r1: float, a1: float,
                               variable_context: VariableContext) -> None:
         z = hypot(r, x)
@@ -107,7 +113,7 @@ class BranchFlowConstraints(Constraints):
 
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: Model) -> None:
-        for branch_num, row in enumerate(network_cache.lines.itertuples(index=False)):
+        for branch_num, row in enumerate(cast(list[BranchRow], network_cache.lines.itertuples(index=False))):
             r, x, g1, b1, g2, b2 = row.r, row.x, row.g1, row.b1, row.g2, row.b2
             r1 = 1.0
             a1 = 0.0
@@ -116,8 +122,8 @@ class BranchFlowConstraints(Constraints):
                                        r, x, g1, b1, g2, b2, r1, a1,
                                        variable_context)
 
-        for transfo_num, row in enumerate(network_cache.transformers_2w.itertuples(index=True)):
-            r, x, g, b, rho, alpha = row.r_at_current_tap, row.x_at_current_tap, row.g_at_current_tap, row.b_at_current_tap, row.rho, row.alpha
+        for transfo_num, t_row in enumerate(cast(list[Transformer2WRow], network_cache.transformers_2w.itertuples(index=True))):
+            r, x, g, b, rho, alpha = t_row.r_at_current_tap, t_row.x_at_current_tap, t_row.g_at_current_tap, t_row.b_at_current_tap, t_row.rho, t_row.alpha
             if parameters.twt_split_shunt_admittance:
                 g1 = g / 2
                 g2 = g / 2

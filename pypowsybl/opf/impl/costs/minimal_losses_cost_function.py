@@ -7,7 +7,7 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 
 
 class MinimalLossesCostFunction(CostFunction):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__('Minimal losses power')
 
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:

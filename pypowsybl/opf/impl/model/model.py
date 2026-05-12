@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Protocol, Any
 
+import numpy as np
 import pyoptinterface as poi
 
 from pypowsybl.opf.impl.model.model_parameters import SolverType
@@ -17,7 +18,7 @@ class Model(Protocol):
 
     def get_model_attribute(self, attr: poi.ModelAttribute) -> Any: ...
 
-    def add_m_variables(self, n: int, name: str | None = None): ...  # returns a list/array of poi.Variable
+    def add_m_variables(self, n: int, name: str | None = None) -> np.ndarray: ...  # returns a list/array of poi.Variable
 
     def add_linear_constraint(self, expr: poi.ExprBuilder, sense: Any, rhs: float) -> None: ...
 
@@ -37,7 +38,7 @@ class Model(Protocol):
 
 
 class IpoptModel(Model):
-    def __init__(self):
+    def __init__(self) -> None:
         from pyoptinterface import ipopt
         self._model = ipopt.Model()
         self._model.set_raw_parameter("print_user_options", "yes")
@@ -53,7 +54,7 @@ class IpoptModel(Model):
     def get_model_attribute(self, attr: poi.ModelAttribute) -> Any:
         return self._model.get_model_attribute(attr)
 
-    def add_m_variables(self, n: int, name: str | None = None):
+    def add_m_variables(self, n: int, name: str | None = None) -> np.ndarray:
         return self._model.add_m_variables(n, name=name)
 
     def add_linear_constraint(self, expr: poi.ExprBuilder, sense: Any, rhs: float) -> None:
@@ -82,7 +83,7 @@ class IpoptModel(Model):
 
 
 class KnitroModel(Model):
-    def __init__(self):
+    def __init__(self) -> None:
         from pyoptinterface import knitro
         self._model = knitro.Model()
 
@@ -95,7 +96,7 @@ class KnitroModel(Model):
     def get_model_attribute(self, attr: poi.ModelAttribute) -> Any:
         return self._model.get_model_attribute(attr)
 
-    def add_m_variables(self, n: int, name: str | None = None):
+    def add_m_variables(self, n: int, name: str | None = None) -> np.ndarray:
         return self._model.add_m_variables(n, name=name)
 
     def add_linear_constraint(self, expr: poi.ExprBuilder, sense: Any, rhs: float) -> None:
@@ -125,7 +126,7 @@ class KnitroModel(Model):
 
 def create_model(solver_type: SolverType, solver_options: dict[str, object]) -> Model:
     if solver_type == SolverType.IPOPT:
-        model = IpoptModel()
+        model: Model = IpoptModel()
     elif solver_type == SolverType.KNITRO:
         model = KnitroModel()
     else:

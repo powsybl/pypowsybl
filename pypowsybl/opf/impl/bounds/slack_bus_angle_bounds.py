@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class SlackBusAngleBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
-            variable_context: VariableContext, model: Model):
+            variable_context: VariableContext, model: Model) -> None:
         # slack bus angle forced to 0
         slack_bus_id = network_cache.slack_terminal.iloc[0].bus_id if len(network_cache.slack_terminal) > 0 else network_cache.buses.iloc[0].name
         slack_bus_num = network_cache.buses.index.get_loc(slack_bus_id)

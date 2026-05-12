@@ -12,5 +12,5 @@ class VariableBounds(ABC):
             parameters: ModelParameters,
             network_cache: NetworkCache,
             variable_context: VariableContext,
-            model: Model):
+            model: Model) -> None:
         pass

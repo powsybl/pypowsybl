@@ -11,7 +11,7 @@ class OptimalPowerFlowMode(Enum):
 class OptimalPowerFlowParameters:
     def __init__(self,
                  reactive_bounds_reduction: float = 0.1,
-                 twt_split_shunt_admittance = False,
+                 twt_split_shunt_admittance: bool = False,
                  mode: OptimalPowerFlowMode = OptimalPowerFlowMode.LOADFLOW,
                  default_voltage_bounds: tuple[float, float] = (0.8, 1.1),
                  solver_type: SolverType = SolverType.IPOPT,
