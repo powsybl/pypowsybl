@@ -91,5 +91,6 @@ class Parameters:  # pylint: disable=too-few-public-methods
         return f"{self.__class__.__name__}(" \
                f", load_flow_parameters={self.load_flow_parameters!r}" \
                f", increased_violations={self.increased_violations!r}" \
+               f", modified_monitored_elements_parameters={self.modified_monitored_elements_parameters!r}" \
                f", provider_parameters={self.provider_parameters!r}" \
                f")"
