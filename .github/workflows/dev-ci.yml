@@ -157,6 +157,14 @@ jobs:
         with:
           cache-prefix: "linux"
 
+      - name: Install Miniconda and cyipopt
+        shell: bash
+        run: |
+          curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
+          bash miniconda.sh -b -p $HOME/miniconda
+          $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
+          echo "LD_LIBRARY_PATH=$HOME/miniconda/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+
       - name: Install the package
         run: |
           pip install -e .
