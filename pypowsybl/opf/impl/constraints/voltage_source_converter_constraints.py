@@ -6,7 +6,6 @@
 #
 import pyoptinterface as poi
 from pyoptinterface import ipopt, nl
-
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
@@ -39,9 +38,9 @@ class VoltageSourceConverterConstraints(Constraints):
                     p_ac_eq = conv_p_var - target_p
                     model.add_linear_constraint(p_ac_eq, poi.Eq, 0.0)
 
-                # if control_mode == "V_DC":
-                #     v_dc_eq = v1_var - v2_var - target_v_dc
-                #     model.add_linear_constraint(v_dc_eq, poi.Eq, 0.0)
+                if control_mode == "V_DC":
+                    v_dc_eq = v1_var - v2_var - target_v_dc
+                    model.add_linear_constraint(v_dc_eq, poi.Eq, 0.0)
 
                 if voltage_regulator_on:
                     bus1_v_eq = bus1_v_var - target_v_ac
@@ -57,6 +56,7 @@ class VoltageSourceConverterConstraints(Constraints):
                 # P_dc = -P_ac - P_loss because we consider that the power P_dc injected in DC is positive,
                 # and the power P_ac flowing out of AC is negative
                 # FIXME : I needed to add 1e-10 because at the initialization v1_var = v2_var and the opf never converge
-                conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs(v1_var - v2_var + 1e-10)
+                #conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs (v1_var - v2_var + 1e-10)
+                conv_p_dc_eq = conv_p_var + conv_i_var * nl.abs(v1_var - v2_var) - p_loss
 
                 model.add_nl_constraint(conv_p_dc_eq == 0.0)

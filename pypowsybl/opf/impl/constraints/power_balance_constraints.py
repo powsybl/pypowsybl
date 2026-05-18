@@ -92,8 +92,8 @@ class PowerBalanceConstraints(Constraints):
             if bus_id:
                 conv_index = variable_context.conv_num_2_index[conv_num]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                buses_balance.p_load[bus_num]-= variable_context.conv_p_vars[conv_index]
-                buses_balance.q_load[bus_num]-= variable_context.conv_q_vars[conv_index]
+                buses_balance.p_load[bus_num] -= variable_context.conv_p_vars[conv_index]
+                buses_balance.q_load[bus_num] -= variable_context.conv_q_vars[conv_index]
 
         # boundary lines
         bl_buses_balance = self.BusesBalance(len(variable_context.bl_v_vars))
@@ -104,6 +104,7 @@ class PowerBalanceConstraints(Constraints):
         PowerBalanceConstraints._add_3wts_buses_expr(buses_balance, t3_buses_balance, network_cache, variable_context)
 
         return buses_balance.to_expr() + bl_buses_balance.to_expr() + t3_buses_balance.to_expr()
+
 
     @staticmethod
     def _add_branch_buses_expr(buses_balance: BusesBalance, network_cache: NetworkCache,

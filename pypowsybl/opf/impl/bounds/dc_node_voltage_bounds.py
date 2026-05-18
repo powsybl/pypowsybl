@@ -20,6 +20,8 @@ logger = logging.getLogger(__name__)
 class DcNodeVoltageBounds(VariableBounds):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: ipopt.Model):
+        dc_node_count = len(network_cache.dc_nodes)
+        grounded_node_ids = {row.dc_node_id for row in network_cache.dc_grounds.itertuples(index=False)}
         for dc_node_num, row in enumerate(network_cache.dc_nodes.itertuples()):
             #TODO add voltage limits in DC node core modelization
             low_voltage_limit = -2.0
@@ -28,4 +30,10 @@ class DcNodeVoltageBounds(VariableBounds):
             logger.log(TRACE_LEVEL, f"Add voltage magnitude bounds {v_bounds} to dc_node '{row.Index}' (num={dc_node_num})'")
             model.set_variable_bounds(variable_context.v_dc_vars[dc_node_num],
                                       *Bounds.fix(row.Index, v_bounds.min_value, v_bounds.max_value))
-            model.set_variable_start(variable_context.v_dc_vars[dc_node_num], 1.0)
+            # "1e-4 * (dc_node_num - (dc_node_count-1)/2)" : centered, deterministic and guaranteed functional initialization for nonlinear VSC coupling constraint (conv_i * |v1-v2|) to avoir v1=V2 at start which stops solver at first iteration
+            start_v_ungrounded_dc_node= 1.0 + 1e-4 * (dc_node_num - (dc_node_count-1)/2)
+            # initializating grounded nodes at 0 makes ipopt solver converge in fewer iterations than initializing them all using start_v_ungrounded_dc_node.
+            start_v = 0.0 if row.Index in grounded_node_ids else start_v_ungrounded_dc_node
+            model.set_variable_start(variable_context.v_dc_vars[dc_node_num], start_v)
+
+            
