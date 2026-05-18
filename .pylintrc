@@ -92,6 +92,7 @@ disable=unexpected-special-method-signature,
     #TODO: decide on the following checks. In practice it seems often legit.
     too-many-instance-attributes,
     too-many-arguments,
+    logging-fstring-interpolation,
     #TODO: following checks should be enforced in the future
     line-too-long,
     missing-function-docstring,
