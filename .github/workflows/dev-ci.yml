@@ -72,8 +72,8 @@ jobs:
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
-      - name: Install Miniconda and cyipopt (Linux/macOS)
-        if: matrix.config.name != 'windows'
+      - name: Install Miniconda and cyipopt (Linux)
+        if: matrix.config.name == 'linux'
         shell: bash
         run: |
           curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.sh
