@@ -14,14 +14,14 @@ from pypowsybl._pypowsybl import ElementType
 from pypowsybl.network import Network
 from pypowsybl.opf.impl.bounds.battery_power_bounds import BatteryPowerBounds
 from pypowsybl.opf.impl.bounds.bus_voltage_bounds import BusVoltageBounds
-from pypowsybl.opf.impl.bounds.dangling_line_voltage_bounds import DanglingLineVoltageBounds
+from pypowsybl.opf.impl.bounds.boundary_line_voltage_bounds import BoundaryLineVoltageBounds
 from pypowsybl.opf.impl.bounds.generator_power_bounds import GeneratorPowerBounds
 from pypowsybl.opf.impl.bounds.slack_bus_angle_bounds import SlackBusAngleBounds
 from pypowsybl.opf.impl.bounds.transformer_3w_middle_voltage_bounds import Transformer3wMiddleVoltageBounds
 from pypowsybl.opf.impl.bounds.vsc_cs_power_bounds import VscCsPowerBounds
 from pypowsybl.opf.impl.constraints.branch_flow_constraints import BranchFlowConstraints
 from pypowsybl.opf.impl.constraints.current_limit_constraints import CurrentLimitConstraints
-from pypowsybl.opf.impl.constraints.dangling_line_flow_constraints import DanglingLineFlowConstraints
+from pypowsybl.opf.impl.constraints.boundary_line_flow_constraints import BoundaryLineFlowConstraints
 from pypowsybl.opf.impl.constraints.hvdc_line_constraints import HvdcLineConstraints
 from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanceConstraints
 from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
@@ -73,14 +73,14 @@ class OptimalPowerFlow:
                            GeneratorPowerBounds(),
                            BatteryPowerBounds(),
                            VscCsPowerBounds(),
-                           DanglingLineVoltageBounds(),
+                           BoundaryLineVoltageBounds(),
                            Transformer3wMiddleVoltageBounds()]
         constraints: list[Constraints] = [BranchFlowConstraints(),
                                           ShuntFlowConstraints(),
                                           StaticVarCompensatorReactiveLimitsConstraints(),
                                           HvdcLineConstraints(),
                                           PowerBalanceConstraints(),
-                                          DanglingLineFlowConstraints(),
+                                          BoundaryLineFlowConstraints(),
                                           Transformer3wFlowConstraints()]
         if parameters.full_reactive_capability_curve:
             constraints.append(ReactiveCapabilityCurveConstraints())

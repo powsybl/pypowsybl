@@ -129,19 +129,19 @@ class PowerBalanceConstraints(Constraints):
                 buses_balance.p_gen[bus_num].append(variable_context.vsc_cs_p_vars[vsc_cs_index])
                 buses_balance.q_gen[bus_num].append(variable_context.vsc_cs_q_vars[vsc_cs_index])
 
-        # dangling lines
-        dl_buses_balance = self.BusesBalance(len(variable_context.dl_v_vars))
-        for dl_num, dl_row in enumerate(cast(list[BoundaryLineRow], network_cache.dangling_lines.itertuples(index=False))):
-            bus_id = dl_row.bus_id
+        # boundary lines
+        bl_buses_balance = self.BusesBalance(len(variable_context.bl_v_vars))
+        for bl_num, bl_row in enumerate(cast(list[BoundaryLineRow], network_cache.boundary_lines.itertuples(index=False))):
+            bus_id = bl_row.bus_id
             if bus_id:
-                dl_index = variable_context.dl_num_2_index[dl_num]
+                bl_index = variable_context.bl_num_2_index[bl_num]
                 bus_num = network_cache.buses.index.get_loc(bus_id)
-                buses_balance.p_gen[bus_num].append(variable_context.dl_branch_p1_vars[dl_index])
-                buses_balance.q_gen[bus_num].append(variable_context.dl_branch_q1_vars[dl_index])
-                dl_buses_balance.p_gen[dl_index].append(variable_context.dl_branch_p2_vars[dl_index])
-                dl_buses_balance.q_gen[dl_index].append(variable_context.dl_branch_q2_vars[dl_index])
-                dl_buses_balance.p_load[dl_index] -= dl_row.p0
-                dl_buses_balance.q_load[dl_index] -= dl_row.q0
+                buses_balance.p_gen[bus_num].append(variable_context.bl_branch_p1_vars[bl_index])
+                buses_balance.q_gen[bus_num].append(variable_context.bl_branch_q1_vars[bl_index])
+                bl_buses_balance.p_gen[bl_index].append(variable_context.bl_branch_p2_vars[bl_index])
+                bl_buses_balance.q_gen[bl_index].append(variable_context.bl_branch_q2_vars[bl_index])
+                bl_buses_balance.p_load[bl_index] -= bl_row.p0
+                bl_buses_balance.q_load[bl_index] -= bl_row.q0
 
         # 3 windings transformers
         t3_buses_balance = self.BusesBalance(len(variable_context.t3_middle_v_vars))
@@ -182,4 +182,4 @@ class PowerBalanceConstraints(Constraints):
                     t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg3_index])
                     t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg3_index])
 
-        return buses_balance.to_expr() + dl_buses_balance.to_expr() + t3_buses_balance.to_expr()
+        return buses_balance.to_expr() + bl_buses_balance.to_expr() + t3_buses_balance.to_expr()

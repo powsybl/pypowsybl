@@ -39,12 +39,12 @@ class VariableContext:
     open_side1_branch_q2_vars: Any
     open_side2_branch_p1_vars: Any
     open_side2_branch_q1_vars: Any
-    dl_v_vars: Any
-    dl_ph_vars: Any
-    dl_branch_p1_vars: Any
-    dl_branch_p2_vars: Any
-    dl_branch_q1_vars: Any
-    dl_branch_q2_vars: Any
+    bl_v_vars: Any
+    bl_ph_vars: Any
+    bl_branch_p1_vars: Any
+    bl_branch_p2_vars: Any
+    bl_branch_q1_vars: Any
+    bl_branch_q2_vars: Any
     t3_middle_v_vars: Any
     t3_middle_ph_vars: Any
     t3_closed_branch_p1_vars: Any
@@ -61,7 +61,7 @@ class VariableContext:
     shunt_num_2_index: list[int]
     svc_num_2_index: list[int]
     vsc_cs_num_2_index: list[int]
-    dl_num_2_index: list[int]
+    bl_num_2_index: list[int]
     t3_num_2_index: list[int]
     t3_leg1_num_2_index: list[int]
     t3_leg2_num_2_index: list[int]
@@ -172,20 +172,20 @@ class VariableContext:
         open_side2_branch_p1_vars = model.add_m_variables(len(open_side2_branch_nums), name='open_side2_branch_p1')
         open_side2_branch_q1_vars = model.add_m_variables(len(open_side2_branch_nums), name='open_side2_branch_q1')
 
-        dl_count = len(network_cache.dangling_lines)
-        dl_nums: list[int] = []
-        dl_num_2_index = [-1] * dl_count
-        for dl_num, row in enumerate(network_cache.dangling_lines.itertuples()):
+        bl_count = len(network_cache.boundary_lines)
+        bl_nums: list[int] = []
+        bl_num_2_index = [-1] * bl_count
+        for bl_num, row in enumerate(network_cache.boundary_lines.itertuples()):
             if row.bus_id:
-                dl_num_2_index[dl_num] = len(dl_nums)
-                dl_nums.append(dl_num)
+                bl_num_2_index[bl_num] = len(bl_nums)
+                bl_nums.append(bl_num)
 
-        dl_v_vars = model.add_m_variables(len(dl_nums), name="dl_v")
-        dl_ph_vars = model.add_m_variables(len(dl_nums), name="dl_ph")
-        dl_branch_p1_vars = model.add_m_variables(len(dl_nums), name="dl_branch_p1")
-        dl_branch_p2_vars = model.add_m_variables(len(dl_nums), name="dl_branch_p2")
-        dl_branch_q1_vars = model.add_m_variables(len(dl_nums), name="dl_branch_q1")
-        dl_branch_q2_vars = model.add_m_variables(len(dl_nums), name="dl_branch_q2")
+        bl_v_vars = model.add_m_variables(len(bl_nums), name="bl_v")
+        bl_ph_vars = model.add_m_variables(len(bl_nums), name="bl_ph")
+        bl_branch_p1_vars = model.add_m_variables(len(bl_nums), name="bl_branch_p1")
+        bl_branch_p2_vars = model.add_m_variables(len(bl_nums), name="bl_branch_p2")
+        bl_branch_q1_vars = model.add_m_variables(len(bl_nums), name="bl_branch_q1")
+        bl_branch_q2_vars = model.add_m_variables(len(bl_nums), name="bl_branch_q2")
 
         t3_count = len(network_cache.transformers_3w)
         t3_nums: list[int] = []
@@ -240,9 +240,9 @@ class VariableContext:
                                closed_branch_p2_vars, closed_branch_q2_vars,
                                open_side1_branch_p2_vars, open_side1_branch_q2_vars,
                                open_side2_branch_p1_vars, open_side2_branch_q1_vars,
-                               dl_v_vars, dl_ph_vars,
-                               dl_branch_p1_vars, dl_branch_p2_vars,
-                               dl_branch_q1_vars, dl_branch_q2_vars,
+                               bl_v_vars, bl_ph_vars,
+                               bl_branch_p1_vars, bl_branch_p2_vars,
+                               bl_branch_q1_vars, bl_branch_q2_vars,
                                t3_middle_v_vars, t3_middle_ph_vars,
                                t3_closed_branch_p1_vars, t3_closed_branch_p2_vars,
                                t3_closed_branch_q1_vars, t3_closed_branch_q2_vars,
@@ -253,7 +253,7 @@ class VariableContext:
                                shunt_num_2_index,
                                svc_num_2_index,
                                vsc_cs_num_2_index,
-                               dl_num_2_index,
+                               bl_num_2_index,
                                t3_num_2_index, t3_leg1_num_2_index, t3_leg2_num_2_index, t3_leg3_num_2_index)
 
     def _update_generators(self, network_cache: NetworkCache, model: Model) -> None:
@@ -613,37 +613,37 @@ class VariableContext:
 
         network_cache.update_buses(bus_ids, bus_v_mag, bus_v_angle)
 
-    def _update_dangling_lines(self, network_cache: NetworkCache, model: Model)-> None:
-        connected_dl_ids = []
-        connected_dl_v = []
-        connected_dl_angle = []
-        connected_dl_p = []
-        connected_dl_q = []
-        disconnected_dl_ids = []
-        for dl_num, (dl_id, row) in enumerate(network_cache.dangling_lines.iterrows()):
-            dl_index = self.dl_num_2_index[dl_num]
+    def _update_boundary_lines(self, network_cache: NetworkCache, model: Model)-> None:
+        connected_bl_ids = []
+        connected_bl_v = []
+        connected_bl_angle = []
+        connected_bl_p = []
+        connected_bl_q = []
+        disconnected_bl_ids = []
+        for bl_num, (bl_id, row) in enumerate(network_cache.boundary_lines.iterrows()):
+            bl_index = self.bl_num_2_index[bl_num]
 
             if row.bus_id:
-                v = model.get_value(self.dl_v_vars[dl_index])
-                angle = model.get_value(self.dl_ph_vars[dl_index])
-                connected_dl_ids.append(dl_id.__str__())
-                connected_dl_v.append(v * row.nominal_v)
-                connected_dl_angle.append(math.degrees(angle))
-                p = model.get_value(self.dl_branch_p1_vars[dl_index])
-                q = model.get_value(self.dl_branch_q1_vars[dl_index])
-                connected_dl_p.append(p)
-                connected_dl_q.append(q)
-                logger.log(TRACE_LEVEL, f"Update dangling line '{dl_id}' (num={dl_num}): v={v}, angle={angle}, p={p}, q={q}")
+                v = model.get_value(self.bl_v_vars[bl_index])
+                angle = model.get_value(self.bl_ph_vars[bl_index])
+                connected_bl_ids.append(bl_id.__str__())
+                connected_bl_v.append(v * row.nominal_v)
+                connected_bl_angle.append(math.degrees(angle))
+                p = model.get_value(self.bl_branch_p1_vars[bl_index])
+                q = model.get_value(self.bl_branch_q1_vars[bl_index])
+                connected_bl_p.append(p)
+                connected_bl_q.append(q)
+                logger.log(TRACE_LEVEL, f"Update boundary line '{bl_id}' (num={bl_num}): v={v}, angle={angle}, p={p}, q={q}")
             else:
-                disconnected_dl_ids.append(dl_id.__str__())
-                logger.log(TRACE_LEVEL, f"Update disconnected dangling line '{dl_id}' (num={dl_num})")
+                disconnected_bl_ids.append(bl_id.__str__())
+                logger.log(TRACE_LEVEL, f"Update disconnected boundary line '{bl_id}' (num={bl_num})")
 
-        network_cache.update_dangling_lines(connected_dl_ids,
-                                            connected_dl_v,
-                                            connected_dl_angle,
-                                            connected_dl_p,
-                                            connected_dl_q,
-                                            disconnected_dl_ids)
+        network_cache.update_boundary_lines(connected_bl_ids,
+                                            connected_bl_v,
+                                            connected_bl_angle,
+                                            connected_bl_p,
+                                            connected_bl_q,
+                                            disconnected_bl_ids)
 
     def update_network(self, network_cache: NetworkCache, model: Model) -> None:
         self._update_generators(network_cache, model)
@@ -655,4 +655,4 @@ class VariableContext:
         self._update_branches(network_cache, model)
         self._update_transformers_3w(network_cache, model)
         self._update_buses(network_cache, model)
-        self._update_dangling_lines(network_cache, model)
+        self._update_boundary_lines(network_cache, model)

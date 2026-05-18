@@ -32,7 +32,7 @@ class NetworkCache:
         self._transformers_2w = self._build_2w_transformers(network, self.buses)
         self._transformers_3w = self._build_3w_transformers(network, self.buses)
         self._branches = self._build_branches(network, self.buses)
-        self._dangling_lines = self._build_dangling_lines(network, self.buses)
+        self._boundary_lines = self._build_boundary_lines(network, self.buses)
         self._batteries = self._build_batteries(network, self.buses)
         self._current_limits1, self._current_limits2 = self._build_current_limits(network)
         self._slack_terminal = self._build_stack_terminal(network, self.buses)
@@ -172,9 +172,9 @@ class NetworkCache:
         return network.get_voltage_levels(attributes=['low_voltage_limit', 'high_voltage_limit', 'nominal_v'])
 
     @staticmethod
-    def _build_dangling_lines(network: Network, buses: DataFrame) -> DataFrame:
-        dangling_lines = network.get_dangling_lines(attributes=['bus_id', 'r', 'x', 'g', 'b', 'p0', 'q0', 'paired'])
-        return NetworkCache._filter_injections(dangling_lines, buses)
+    def _build_boundary_lines(network: Network, buses: DataFrame) -> DataFrame:
+        boundary_lines = network.get_boundary_lines(attributes=['bus_id', 'r', 'x', 'g', 'b', 'p0', 'q0', 'paired'])
+        return NetworkCache._filter_injections(boundary_lines, buses)
 
     @staticmethod
     def _build_batteries(network: Network, buses: DataFrame) -> DataFrame:
@@ -265,8 +265,8 @@ class NetworkCache:
         return self._hvdc_lines
 
     @property
-    def dangling_lines(self) -> DataFrame:
-        return self._dangling_lines
+    def boundary_lines(self) -> DataFrame:
+        return self._boundary_lines
 
     @property
     def batteries(self) -> DataFrame:
@@ -461,27 +461,27 @@ class NetworkCache:
         self._network.update_buses(id=bus_ids, v_mag=bus_v_mag, v_angle=bus_v_angle)
         self._buses = self._build_buses(self._network, self._voltage_levels)
 
-    def update_dangling_lines(self,
-                              connected_dl_ids: list[str],
-                              connected_dl_v: list[float],
-                              connected_dl_angle: list[float],
-                              connected_dl_p: list[float],
-                              connected_dl_q: list[float],
-                              disconnected_dl_ids: list[str]) -> None:
-        if connected_dl_ids:
-            self._network.update_dangling_lines(id=connected_dl_ids,
-                                                        p=connected_dl_p,
-                                                        q=connected_dl_q)
-            self._network.add_elements_properties(id=connected_dl_ids,
-                                                          v=connected_dl_v,
-                                                          angle=connected_dl_angle)
+    def update_boundary_lines(self,
+                              connected_bl_ids: list[str],
+                              connected_bl_v: list[float],
+                              connected_bl_angle: list[float],
+                              connected_bl_p: list[float],
+                              connected_bl_q: list[float],
+                              disconnected_bl_ids: list[str]) -> None:
+        if connected_bl_ids:
+            self._network.update_boundary_lines(id=connected_bl_ids,
+                                                        p=connected_bl_p,
+                                                        q=connected_bl_q)
+            self._network.add_elements_properties(id=connected_bl_ids,
+                                                          v=connected_bl_v,
+                                                          angle=connected_bl_angle)
 
-        if disconnected_dl_ids:
-            self._network.update_dangling_lines(id=disconnected_dl_ids,
-                                                        p=[0.0] * len(disconnected_dl_ids),
-                                                        q=[0.0] * len(disconnected_dl_ids))
-            self._network.add_elements_properties(id=disconnected_dl_ids,
-                                                          v=[math.nan] * len(disconnected_dl_ids),
-                                                          angle=[math.nan] * len(disconnected_dl_ids))
+        if disconnected_bl_ids:
+            self._network.update_boundary_lines(id=disconnected_bl_ids,
+                                                        p=[0.0] * len(disconnected_bl_ids),
+                                                        q=[0.0] * len(disconnected_bl_ids))
+            self._network.add_elements_properties(id=disconnected_bl_ids,
+                                                          v=[math.nan] * len(disconnected_bl_ids),
+                                                          angle=[math.nan] * len(disconnected_bl_ids))
 
-        self._dangling_lines = self._build_dangling_lines(self._network, self._buses)
+        self._boundary_lines = self._build_boundary_lines(self._network, self._buses)
