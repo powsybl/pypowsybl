@@ -35,7 +35,7 @@ from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCo
 from pypowsybl.opf.impl.model.bounds import Bounds
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.cost_function import CostFunction
-from pypowsybl.opf.impl.model.model_parameters import ModelParameters, SolverType
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
 from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.network_statistics import NetworkStatistics
@@ -124,7 +124,7 @@ class OptimalPowerFlow:
 
         network_cache.network.per_unit = False # FIXME design to improve
 
-        return status == poi.TerminationStatusCode.OPTIMAL or status == poi.TerminationStatusCode.LOCALLY_SOLVED
+        return status in (poi.TerminationStatusCode.OPTIMAL, poi.TerminationStatusCode.LOCALLY_SOLVED)
 
 
 def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:

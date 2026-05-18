@@ -26,9 +26,9 @@ class NetworkStatistics:
     def _get_column(self, element_type: ElementType, attribute_id: str) -> Optional[Series]:
         if element_type == ElementType.GENERATOR:
             return self._network_cache.generators[attribute_id] if len(self._network_cache.generators) > 0 else None
-        elif element_type == ElementType.BATTERY:
+        if element_type == ElementType.BATTERY:
             return self._network_cache.batteries[attribute_id] if len(self._network_cache.batteries) > 0 else None
-        elif element_type == ElementType.VSC_CONVERTER_STATION:
+        if element_type == ElementType.VSC_CONVERTER_STATION:
             return self._network_cache.vsc_converter_stations[attribute_id] if len(self._network_cache.vsc_converter_stations) > 0 else None
         else:
             raise ValueError(f"Unknown element type: {element_type}")
@@ -53,4 +53,4 @@ class NetworkStatistics:
             headers = ['', 'Min', 'Max', 'Mean', 'Std', 'Median']
             table = tabulate(table_data, headers=headers, floatfmt='.3f', tablefmt='simple')
 
-            logger.info(f"\nStatistics: {element_type} - {attribute_id}\n{table}")
+            logger.info("\nStatistics: %s - %s\n%s", element_type, attribute_id, table)
