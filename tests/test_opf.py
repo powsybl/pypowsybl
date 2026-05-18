@@ -18,9 +18,8 @@ from pypowsybl.opf.impl.model.model_parameters import SolverType
 from pypowsybl.opf.impl.opf import OptimalPowerFlowParameters
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowMode
 
-import sys
 import platform
-if sys.platform == 'darwin' and platform.machine() == 'x86_64':
+if platform.system() == 'Darwin' and platform.machine() == 'x86_64':
     pytest.skip("No version compatible with x86_64 macOS.", allow_module_level=True)
 
 @pytest.fixture(autouse=True)
