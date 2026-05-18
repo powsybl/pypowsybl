@@ -37,7 +37,7 @@ class Model(Protocol):
 
     def set_variable_start(self, var: Any, value: float) -> None: ...
 
-    def add_nl_constraint(self, constraint: Any) -> None: ...
+    def add_nl_constraint(self, expr: poi.ExprBuilder, sense: Any, rhs: float) -> None: ...
 
     def add_quadratic_constraint(self, *args: Any, **kwargs: Any) -> None: ...
 
@@ -79,8 +79,8 @@ class IpoptModel(Model):
     def set_variable_start(self, var: Any, value: float) -> None:
         self._model.set_variable_start(var, value)
 
-    def add_nl_constraint(self, constraint: Any) -> None:
-        self._model.add_nl_constraint(constraint)
+    def add_nl_constraint(self, expr: poi.ExprBuilder, sense: Any, rhs: float) -> None:
+        self._model.add_nl_constraint(expr, sense, rhs)
 
     def add_quadratic_constraint(self, *args: Any, **kwargs: Any) -> None:
         self._model.add_quadratic_constraint(*args, **kwargs)
@@ -121,8 +121,8 @@ class KnitroModel(Model):
     def set_variable_start(self, var: Any, value: float) -> None:
         self._model.set_variable_start(var, value)
 
-    def add_nl_constraint(self, constraint: Any) -> None:
-        self._model.add_nl_constraint(constraint)
+    def add_nl_constraint(self, expr: poi.ExprBuilder, sense: Any, rhs: float) -> None:
+        self._model.add_nl_constraint(expr, sense, rhs)
 
     def add_quadratic_constraint(self, *args: Any, **kwargs: Any) -> None:
         self._model.add_quadratic_constraint(*args, **kwargs)

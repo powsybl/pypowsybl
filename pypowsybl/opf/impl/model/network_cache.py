@@ -114,12 +114,13 @@ class NetworkCache:
             return hvdc_lines
         converter_stations = pd.concat([vsc_converter_stations[['bus_id']], lcc_converter_stations[['bus_id']]])
         hvdc_lines_and_buses = pd.merge(hvdc_lines, converter_stations, left_on='converter_station1_id',
-                                        right_index=True, how='left')
+                                        right_index=True, how='left', validate='1:1')
         hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, converter_stations, left_on='converter_station2_id',
-                                        right_index=True, suffixes=('', '_2'), how='left')
-        hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, buses, left_on='bus_id', right_index=True, how='left')
+                                        right_index=True, suffixes=('', '_2'), how='left', validate='1:1')
+        hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, buses, left_on='bus_id', right_index=True, how='left',
+                                        validate='m:1')
         hvdc_lines_and_buses = pd.merge(hvdc_lines_and_buses, buses, left_on='bus_id_2', right_index=True,
-                                        suffixes=('', '_2'), how='left')
+                                        suffixes=('', '_2'), how='left', validate='m:1')
         return hvdc_lines_and_buses[
             (hvdc_lines_and_buses['connected_component'] == 0) & (hvdc_lines_and_buses['synchronous_component'] == 0) & (
                     hvdc_lines_and_buses['connected_component_2'] == 0) & (
@@ -138,7 +139,7 @@ class NetworkCache:
                                                                   'regulated_bus_id'])
         if len(stations) > 0:
             hvdc_lines = network.get_hvdc_lines(attributes=['converter_station1_id', 'converter_station2_id', 'converters_mode', 'target_p', 'max_p'])
-            stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
+            stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left', validate="m:1")
         return NetworkCache._filter_injections(stations, buses)
 
     @staticmethod
@@ -146,7 +147,7 @@ class NetworkCache:
         stations = network.get_lcc_converter_stations(attributes=['bus_id', 'loss_factor', 'power_factor', 'hvdc_line_id'])
         if len(stations) > 0:
             hvdc_lines = network.get_hvdc_lines(attributes=['converters_mode', 'target_p', 'max_p'])
-            stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left')
+            stations = pd.merge(stations, hvdc_lines, left_on='hvdc_line_id', right_index=True, how='left', validate="m:1")
         return NetworkCache._filter_injections(stations, buses)
 
     @staticmethod
@@ -165,7 +166,7 @@ class NetworkCache:
     def _build_buses(network: Network, voltage_levels: DataFrame) -> DataFrame:
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
         buses = buses[(buses['synchronous_component'] == 0) & (buses['connected_component'] == 0)]
-        return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left')
+        return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left', validate='m:1')
 
     @staticmethod
     def _build_voltage_levels(network: Network) -> DataFrame:
@@ -181,7 +182,7 @@ class NetworkCache:
         batteries = network.get_batteries(attributes=['bus_id', 'min_p', 'max_p', 'min_q_at_target_p', 'max_q_at_target_p', 'target_p', 'target_q'])
         if len(batteries):
             voltage_regulation = network.get_extensions('voltageRegulation')
-            batteries = pd.merge(batteries, voltage_regulation, left_index=True, right_on='id', how='left')
+            batteries = pd.merge(batteries, voltage_regulation, left_index=True, right_on='id', how='left', validate='1:1')
             batteries['voltage_regulator_on'] = batteries['voltage_regulator_on'].fillna(False)
             batteries = NetworkCache._filter_injections(batteries, buses)
             # FIXME to remove when extensions will be per united

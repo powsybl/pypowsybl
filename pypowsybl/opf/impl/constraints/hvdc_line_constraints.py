@@ -7,6 +7,8 @@
 #
 from typing import cast
 
+from pyoptinterface import Eq
+
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -27,7 +29,7 @@ class HvdcLineConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache,
             variable_context: VariableContext, model: Model) -> None:
         for hvdc_line_row in cast(list[HvdcRow], network_cache.hvdc_lines.itertuples(index=False)):
-            cs1_id, cs2_id, r, nominal_v = hvdc_line_row.converter_station1_id, hvdc_line_row.converter_station2_id, hvdc_line_row.r, hvdc_line_row.nominal_v
+            cs1_id, cs2_id, r = hvdc_line_row.converter_station1_id, hvdc_line_row.converter_station2_id, hvdc_line_row.r
             cs1_num = network_cache.vsc_converter_stations.index.get_loc(cs1_id)
             cs2_num = network_cache.vsc_converter_stations.index.get_loc(cs2_id)
             cs1_row = network_cache.vsc_converter_stations.loc[cs1_id]
@@ -51,4 +53,4 @@ class HvdcLineConstraints(Constraints):
                 p_eq = add_converter_losses(p_rectifier - hvdc_line_losses(p_rectifier, r, sb),
                                             loss_factor1) + p1_var
 
-            model.add_quadratic_constraint(p_eq == 0.0)
+            model.add_quadratic_constraint(p_eq, Eq, 0.0)

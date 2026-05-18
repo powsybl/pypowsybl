@@ -6,6 +6,9 @@
 # SPDX-License-Identifier: MPL-2.0
 #
 from typing import NamedTuple, cast
+
+from pyoptinterface import Eq
+
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -32,5 +35,5 @@ class ShuntFlowConstraints(Constraints):
                 p_eq = g * v_var * v_var - p_var
                 q_eq = -b * v_var * v_var - q_var
 
-                model.add_quadratic_constraint(p_eq == 0.0)
-                model.add_quadratic_constraint(q_eq == 0.0)
+                model.add_quadratic_constraint(p_eq, Eq, 0.0)
+                model.add_quadratic_constraint(q_eq, Eq, 0.0)

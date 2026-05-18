@@ -53,7 +53,6 @@ class Transformer3wFlowConstraints(Constraints):
             BranchFlowConstraints.add_closed_branch_constraint(a1, b1, b2, g1, g2, ksi, model, p1_var, p2_var, ph1_var, ph2_var, q1_var, q2_var, r1, v1_var, v2_var, y)
         else:
             v2_var = variable_context.t3_middle_v_vars[t3_index]
-            ph2_var = variable_context.t3_middle_ph_vars[t3_index]
             p2_var = variable_context.t3_open_side1_branch_p2_vars[leg_index]
             q2_var = variable_context.t3_open_side1_branch_q2_vars[leg_index]
             BranchFlowConstraints.add_open_side1_branch_constraint(b1, b2, g1, g2, ksi, model, p2_var, q2_var, v2_var, y)

@@ -8,7 +8,7 @@
 from math import hypot, atan2
 from typing import cast
 
-from pyoptinterface import nl
+from pyoptinterface import nl, Eq
 
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -41,10 +41,10 @@ class BranchFlowConstraints(Constraints):
             p2_eq = R2 * v2_var * (g2 * R2 * v2_var - y * r1 * v1_var * sin_theta2 + y * R2 * v2_var * sin_ksi) - p2_var
             q2_eq = R2 * v2_var * (-b2 * R2 * v2_var - y * r1 * v1_var * cos_theta2 + y * R2 * v2_var * cos_ksi) - q2_var
 
-            model.add_nl_constraint(p1_eq == 0.0)
-            model.add_nl_constraint(q1_eq == 0.0)
-            model.add_nl_constraint(p2_eq == 0.0)
-            model.add_nl_constraint(q2_eq == 0.0)
+            model.add_nl_constraint(p1_eq, Eq, 0.0)
+            model.add_nl_constraint(q1_eq, Eq,  0.0)
+            model.add_nl_constraint(p2_eq, Eq, 0.0)
+            model.add_nl_constraint(q2_eq, Eq, 0.0)
 
     @staticmethod
     def add_open_side1_branch_constraint(b1: float, b2: float, g1: float, g2: float, ksi: float,
@@ -60,8 +60,8 @@ class BranchFlowConstraints(Constraints):
             q2_eq = -R2 * R2 * v2_var * v2_var * (
                         b2 + y * y * b1 / shunt - (b1 * b1 + g1 * g1) * y * cos_ksi / shunt) - q2_var
 
-            model.add_nl_constraint(p2_eq == 0.0)
-            model.add_nl_constraint(q2_eq == 0.0)
+            model.add_nl_constraint(p2_eq, Eq, 0.0)
+            model.add_nl_constraint(q2_eq, Eq, 0.0)
 
     @staticmethod
     def add_open_side2_branch_constraint(b1: float, b2: float, g1: float, g2: float, ksi: float,
@@ -77,8 +77,8 @@ class BranchFlowConstraints(Constraints):
             q1_eq = -r1 * r1 * v1_var * v1_var * (
                         b1 + y * y * b2 / shunt - (b2 * b2 + g2 * g2) * y * cos_ksi / shunt) - q1_var
 
-            model.add_nl_constraint(p1_eq == 0.0)
-            model.add_nl_constraint(q1_eq == 0.0)
+            model.add_nl_constraint(p1_eq, Eq, 0.0)
+            model.add_nl_constraint(q1_eq, Eq, 0.0)
 
     @staticmethod
     def add_branch_constraint(branch_index: int, bus1_id: str, bus2_id: str, network_cache: NetworkCache, model: Model,
