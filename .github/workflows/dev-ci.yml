@@ -22,23 +22,17 @@ jobs:
             os: ubuntu-latest,
             container: "quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1",
             wheel-dir: "wheelhouse",
-            miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh",
-            lib-path-var: "LD_LIBRARY_PATH",
           }
           - {
             name: darwin-arm64,
             os: macos-15-xlarge,
             macosx_deployment_target: "11", # first arm64 version of macosx
             wheel-dir: "dist",
-            miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh",
-            lib-path-var: "DYLD_LIBRARY_PATH",
           }
           - {
             name: windows,
             os: windows-2022,
             wheel-dir: "dist",
-            miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe",
-            lib-path-var: "PATH",
           }
         python:
           - {
@@ -75,6 +69,34 @@ jobs:
         if: matrix.config.name == 'linux'
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
+      - name: Install Ipopt (Linux, via micromamba)
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: |
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt mumps
+          echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+      - name: Install Ipopt (macOS, via Homebrew)
+        if: startsWith(matrix.config.name, 'darwin-arm64')
+        shell: bash
+        run: |
+          brew update
+          brew install mumps ipopt
+          MUMPS_LIB="$(brew --prefix mumps)/lib"
+          IPOPT_LIB="$(brew --prefix ipopt)/lib"
+          echo "DYLD_LIBRARY_PATH=${IPOPT_LIB}:${MUMPS_LIB}:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+      - name: Install Ipopt (Windows, via micromamba)
+        if: matrix.config.name == 'windows'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://micro.mamba.pm/api/micromamba/win-64/latest -OutFile micromamba.tar.bz2
+          tar -xvjf micromamba.tar.bz2
+          # ipopt from conda-forge is built with MUMPS bundled (libcoinmumps)
+          .\Library\bin\micromamba.exe create -y -p $env:USERPROFILE\ipopt-env -c conda-forge ipopt mumps
+          echo "PATH=$env:USERPROFILE\ipopt-env\Library\bin;$env:PATH" >> $env:GITHUB_ENV
+
       - name: Build wheel
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
@@ -90,24 +112,6 @@ jobs:
       - name: Run basic pypowsybl import
         working-directory: ./tests
         run: ${{ env.PYTHON }} basic_import_test.py
-
-      - name: Install Miniconda and cyipopt (Linux/MacOS)
-        if: matrix.config.name != 'windows'
-        shell: bash
-        run: |
-          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.sh
-          bash miniconda.sh -b -p $HOME/miniconda
-          $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
-          echo "${{ matrix.config.lib-path-var }}=$HOME/miniconda/lib:${${{ matrix.config.lib-path-var }}}" >> $GITHUB_ENV
-
-      - name: Install Miniconda and cyipopt (Windows)
-        if: matrix.config.name == 'windows'
-        shell: pwsh
-        run: |
-          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.exe
-          Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
-          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge cyipopt -y
-          echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
@@ -156,13 +160,13 @@ jobs:
         with:
           cache-prefix: "linux"
 
-      - name: Install Miniconda and cyipopt
+      - name: Install Ipopt
+        if: matrix.config.name == 'linux'
         shell: bash
         run: |
-          curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh
-          bash miniconda.sh -b -p $HOME/miniconda
-          $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
-          echo "LD_LIBRARY_PATH=$HOME/miniconda/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt mumps
+          echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install the package
         run: |
