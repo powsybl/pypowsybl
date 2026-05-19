@@ -26,7 +26,7 @@ jobs:
             lib-path-var: "LD_LIBRARY_PATH",
           }
           - {
-            name: darwin,
+            name: darwin-arm64,
             os: macos-15-xlarge,
             macosx_deployment_target: "11", # first arm64 version of macosx
             wheel-dir: "dist",
