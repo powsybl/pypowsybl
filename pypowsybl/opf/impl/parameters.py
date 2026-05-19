@@ -21,15 +21,13 @@ class OptimalPowerFlowParameters:
                  twt_split_shunt_admittance: bool = False,
                  mode: OptimalPowerFlowMode = OptimalPowerFlowMode.LOADFLOW,
                  default_voltage_bounds: tuple[float, float] = (0.8, 1.1),
-                 solver_type: SolverType = SolverType.IPOPT,
-                 full_reactive_capability_curve: bool = False) -> None:
+                 solver_type: SolverType = SolverType.IPOPT) -> None:
         self._reactive_bounds_reduction = reactive_bounds_reduction
         self._twt_split_shunt_admittance = twt_split_shunt_admittance
         self._mode = mode
         self._default_voltage_bounds = default_voltage_bounds
         self._solver_type = solver_type
         self._solver_options: dict[str, object] = {}
-        self._full_reactive_capability_curve = full_reactive_capability_curve
 
     @property
     def reactive_bounds_reduction(self) -> float:
@@ -81,12 +79,4 @@ class OptimalPowerFlowParameters:
 
     def with_solver_options(self, options: dict[str, object]) -> "OptimalPowerFlowParameters":
         self._solver_options.update(options)
-        return self
-
-    @property
-    def full_reactive_capability_curve(self) -> bool:
-        return self._full_reactive_capability_curve
-
-    def with_full_reactive_capability_curve(self, full_reactive_capability_curve: bool) -> "OptimalPowerFlowParameters":
-        self._full_reactive_capability_curve = full_reactive_capability_curve
         return self

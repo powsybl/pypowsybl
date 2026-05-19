@@ -27,8 +27,6 @@ from pypowsybl.opf.impl.constraints.power_balance_constraints import PowerBalanc
 from pypowsybl.opf.impl.constraints.shunt_flow_constraints import ShuntFlowConstraints
 from pypowsybl.opf.impl.constraints.static_var_compensator_reactive_limits_constraints import \
     StaticVarCompensatorReactiveLimitsConstraints
-from pypowsybl.opf.impl.constraints.reactive_capability_curve_constraints import \
-    ReactiveCapabilityCurveConstraints
 from pypowsybl.opf.impl.constraints.transformer_3w_flow_constraints import Transformer3wFlowConstraints
 from pypowsybl.opf.impl.costs.minimize_against_reference_cost_function import MinimizeAgainstReferenceCostFunction
 from pypowsybl.opf.impl.costs.redispatching_cost_function import RedispatchingCostFunction
@@ -82,8 +80,6 @@ class OptimalPowerFlow:
                                           PowerBalanceConstraints(),
                                           BoundaryLineFlowConstraints(),
                                           Transformer3wFlowConstraints()]
-        if parameters.full_reactive_capability_curve:
-            constraints.append(ReactiveCapabilityCurveConstraints())
         if parameters.mode == OptimalPowerFlowMode.REDISPATCHING:
             constraints.append(CurrentLimitConstraints())
             cost_function: CostFunction = RedispatchingCostFunction(1.0, 1.0, 1.0)
@@ -93,8 +89,7 @@ class OptimalPowerFlow:
                                            parameters.twt_split_shunt_admittance,
                                            Bounds(parameters.default_voltage_bounds[0], parameters.default_voltage_bounds[1]),
                                            parameters.solver_type,
-                                           parameters.solver_options,
-                                           parameters.full_reactive_capability_curve)
+                                           parameters.solver_options)
         opf_model = OpfModel.build(network_cache, model_parameters, variable_bounds, constraints, cost_function)
 
         network_stats = NetworkStatistics(network_cache)
