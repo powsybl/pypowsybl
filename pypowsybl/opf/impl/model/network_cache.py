@@ -42,7 +42,7 @@ class NetworkCache:
     def _filter_injections(injections: DataFrame, buses: DataFrame) -> DataFrame:
         if len(injections) == 0:
             return injections
-        injections_and_buses = pd.merge(injections, buses, right_index=True, left_on='bus_id', how='left')
+        injections_and_buses = pd.merge(injections, buses, right_index=True, left_on='bus_id', how='left', validate='m:1')
         return injections_and_buses[
             (injections_and_buses['connected_component'] == 0) & (injections_and_buses['synchronous_component'] == 0)]
 
@@ -50,9 +50,9 @@ class NetworkCache:
     def _filter_branches(branches: DataFrame, buses: DataFrame) -> DataFrame:
         if len(branches) == 0:
             return branches
-        branches_and_buses = pd.merge(branches, buses, left_on='bus1_id', right_index=True, how='left')
+        branches_and_buses = pd.merge(branches, buses, left_on='bus1_id', right_index=True, how='left', validate='m:1')
         branches_and_buses = pd.merge(branches_and_buses, buses, left_on='bus2_id', right_index=True,
-                                      suffixes=('', '_2'), how='left')
+                                      suffixes=('', '_2'), how='left', validate='m:1')
         return branches_and_buses[
             (branches_and_buses['connected_component'] == 0) & (branches_and_buses['synchronous_component'] == 0) | (
                     branches_and_buses['connected_component_2'] == 0) & (
@@ -62,9 +62,11 @@ class NetworkCache:
     def _filter_3w_transformers(transformers_3w: DataFrame, buses: DataFrame) -> DataFrame:
         if len(transformers_3w) == 0:
             return transformers_3w
-        transfos_and_buses = pd.merge(transformers_3w, buses, left_on='bus1_id', right_index=True, how='left')
-        transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus2_id', right_index=True, suffixes=('', '_2'), how='left')
-        transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus3_id', right_index=True, suffixes=('', '_3'), how='left')
+        transfos_and_buses = pd.merge(transformers_3w, buses, left_on='bus1_id', right_index=True, how='left', validate='m:1')
+        transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus2_id', right_index=True, suffixes=('', '_2'),
+                                      how='left', validate='m:1')
+        transfos_and_buses = pd.merge(transfos_and_buses, buses, left_on='bus3_id', right_index=True, suffixes=('', '_3'),
+                                      how='left', validate='m:1')
         return transfos_and_buses[
             (transfos_and_buses['connected_component'] == 0) & (transfos_and_buses['synchronous_component'] == 0)
             | (transfos_and_buses['connected_component_2'] == 0) & (transfos_and_buses['synchronous_component_2'] == 0)

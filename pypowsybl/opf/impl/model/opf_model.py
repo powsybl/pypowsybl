@@ -76,8 +76,9 @@ class OpfModel:
             v_bounds = Bounds.get_voltage_bounds(row.low_voltage_limit, row.high_voltage_limit, parameters.default_voltage_bounds)
             if not v_bounds.contains(v):
                 logger.error(f"Voltage magnitude violation: bus '{bus_id}' (num={bus_num}) {v} not in {v_bounds}")
+        self._check_generator_limits()
 
-        # check generator limits
+    def _check_generator_limits(self) -> None:
         for gen_num, (gen_id, row) in enumerate(self.network_cache.generators.iterrows()):
             if row.bus_id:
                 gen_p_index = self.variable_context.gen_p_num_2_index[gen_num]
