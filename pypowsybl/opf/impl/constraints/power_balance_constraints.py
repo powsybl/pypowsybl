@@ -44,9 +44,9 @@ class PowerBalanceConstraints(Constraints):
     def create_bus_expr_list(self, network_cache: NetworkCache, variable_context: VariableContext) -> list[poi.ExprBuilder]:
         buses_balance = self.BusesBalance(len(network_cache.buses))
 
-        self._add_branch_buses_expr(buses_balance, network_cache, variable_context)
-        self._add_generators_buses_expr(buses_balance, network_cache, variable_context)
-        self._add_batteries_buses_expr(buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_branch_buses_expr(buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_generators_buses_expr(buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_batteries_buses_expr(buses_balance, network_cache, variable_context)
 
         # static var compensators
         for svc_num, svc_row in enumerate(cast(list[ConnectableRow], network_cache.static_var_compensators.itertuples(index=False))):
@@ -88,11 +88,11 @@ class PowerBalanceConstraints(Constraints):
 
         # boundary lines
         bl_buses_balance = self.BusesBalance(len(variable_context.bl_v_vars))
-        self._add_bl_buses_expr(buses_balance, bl_buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_bl_buses_expr(buses_balance, bl_buses_balance, network_cache, variable_context)
 
         # 3 windings transformers
         t3_buses_balance = self.BusesBalance(len(variable_context.t3_middle_v_vars))
-        self._add_3wts_buses_expr(buses_balance, t3_buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_3wts_buses_expr(buses_balance, t3_buses_balance, network_cache, variable_context)
 
         return buses_balance.to_expr() + bl_buses_balance.to_expr() + t3_buses_balance.to_expr()
 
@@ -174,32 +174,23 @@ class PowerBalanceConstraints(Constraints):
                 leg2_index = variable_context.t3_leg2_num_2_index[t3_num]
                 leg3_index = variable_context.t3_leg3_num_2_index[t3_num]
 
-                if t3_row.bus1_id:
-                    bus1_num = network_cache.buses.index.get_loc(t3_row.bus1_id)
-                    buses_balance.p_gen[bus1_num].append(variable_context.t3_closed_branch_p1_vars[leg1_index])
-                    buses_balance.q_gen[bus1_num].append(variable_context.t3_closed_branch_q1_vars[leg1_index])
-                    t3_buses_balance.p_gen[t3_index].append(variable_context.t3_closed_branch_p2_vars[leg1_index])
-                    t3_buses_balance.q_gen[t3_index].append(variable_context.t3_closed_branch_q2_vars[leg1_index])
-                else:
-                    t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg1_index])
-                    t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg1_index])
+                PowerBalanceConstraints._add_leg_buses_expr(t3_index, t3_row.bus1_id, leg1_index, network_cache, variable_context,
+                                    buses_balance, t3_buses_balance)
+                PowerBalanceConstraints._add_leg_buses_expr(t3_index, t3_row.bus2_id, leg2_index, network_cache, variable_context,
+                                    buses_balance, t3_buses_balance)
+                PowerBalanceConstraints._add_leg_buses_expr(t3_index, t3_row.bus3_id, leg3_index, network_cache, variable_context,
+                                    buses_balance, t3_buses_balance)
 
-                if t3_row.bus2_id:
-                    bus2_num = network_cache.buses.index.get_loc(t3_row.bus2_id)
-                    buses_balance.p_gen[bus2_num].append(variable_context.t3_closed_branch_p1_vars[leg2_index])
-                    buses_balance.q_gen[bus2_num].append(variable_context.t3_closed_branch_q1_vars[leg2_index])
-                    t3_buses_balance.p_gen[t3_index].append(variable_context.t3_closed_branch_p2_vars[leg2_index])
-                    t3_buses_balance.q_gen[t3_index].append(variable_context.t3_closed_branch_q2_vars[leg2_index])
-                else:
-                    t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg2_index])
-                    t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg2_index])
-
-                if t3_row.bus3_id:
-                    bus3_num = network_cache.buses.index.get_loc(t3_row.bus3_id)
-                    buses_balance.p_gen[bus3_num].append(variable_context.t3_closed_branch_p1_vars[leg3_index])
-                    buses_balance.q_gen[bus3_num].append(variable_context.t3_closed_branch_q1_vars[leg3_index])
-                    t3_buses_balance.p_gen[t3_index].append(variable_context.t3_closed_branch_p2_vars[leg3_index])
-                    t3_buses_balance.q_gen[t3_index].append(variable_context.t3_closed_branch_q2_vars[leg3_index])
-                else:
-                    t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg3_index])
-                    t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg3_index])
+    @staticmethod
+    def _add_leg_buses_expr(t3_index, bus_id: str, leg_index: int,
+                            network_cache: NetworkCache, variable_context: VariableContext,
+                            buses_balance: BusesBalance, t3_buses_balance: BusesBalance):
+        if bus_id:
+            bus_num = network_cache.buses.index.get_loc(bus_id)
+            buses_balance.p_gen[bus_num].append(variable_context.t3_closed_branch_p1_vars[leg_index])
+            buses_balance.q_gen[bus_num].append(variable_context.t3_closed_branch_q1_vars[leg_index])
+            t3_buses_balance.p_gen[t3_index].append(variable_context.t3_closed_branch_p2_vars[leg_index])
+            t3_buses_balance.q_gen[t3_index].append(variable_context.t3_closed_branch_q2_vars[leg_index])
+        else:
+            t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg_index])
+            t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg_index])

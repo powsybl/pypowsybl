@@ -24,50 +24,55 @@ class MinimizeAgainstReferenceCostFunction(CostFunction):
     def create(self, network_cache: NetworkCache, variable_context: VariableContext) -> ExprBuilder:
         cost = poi.ExprBuilder()
 
-        self._add_generators_cost(cost, network_cache, variable_context)
-        self._add_batteries_cost(cost, network_cache, variable_context)
-        self._add_vsc_converter_stations_cost(cost, network_cache, variable_context)
+        cost += self._create_generators_cost(network_cache, variable_context)
+        cost += self._create_batteries_cost(network_cache, variable_context)
+        cost += self._create_vsc_converter_stations_cost(network_cache, variable_context)
         return cost
 
     @staticmethod
-    def _add_generators_cost(cost: poi.ExprBuilder, network_cache: NetworkCache,
-                             variable_context: VariableContext) -> None:
+    def _create_generators_cost(network_cache: NetworkCache, variable_context: VariableContext) -> poi.ExprBuilder:
+        res = poi.ExprBuilder()
         for gen_num, gen_row in enumerate(network_cache.generators.itertuples(index=False)):
             if gen_row.bus_id:
                 gen_p_expr = poi.ExprBuilder()
                 gen_p_expr += variable_context.gen_p_vars[gen_num]
                 gen_p_expr += gen_row.target_p
-                cost += gen_p_expr * gen_p_expr
+                res += gen_p_expr * gen_p_expr
                 if gen_row.voltage_regulator_on:
                     bus_num = network_cache.buses.index.get_loc(gen_row.bus_id)
                     v_var = variable_context.v_vars[bus_num]
-                    cost += (v_var - gen_row.target_v) * (v_var - gen_row.target_v)
+                    res += (v_var - gen_row.target_v) * (v_var - gen_row.target_v)
+        return res
 
     @staticmethod
-    def _add_batteries_cost(cost: poi.ExprBuilder, network_cache: NetworkCache,
-                            variable_context: VariableContext) -> None:
+    def _create_batteries_cost(network_cache: NetworkCache, variable_context: VariableContext) -> poi.ExprBuilder:
+        res = poi.ExprBuilder()
         for bat_num, bat_row in enumerate(network_cache.batteries.itertuples(index=False)):
             if bat_row.bus_id:
                 bat_p_expr = poi.ExprBuilder()
                 bat_p_expr += variable_context.bat_p_vars[bat_num]
                 bat_p_expr += bat_row.target_p
-                cost += bat_p_expr * bat_p_expr
+                res += bat_p_expr * bat_p_expr
                 if bat_row.voltage_regulator_on:
                     bus_num = network_cache.buses.index.get_loc(bat_row.bus_id)
                     v_var = variable_context.v_vars[bus_num]
-                    cost += (v_var - bat_row.target_v) * (v_var - bat_row.target_v)
+                    res += (v_var - bat_row.target_v) * (v_var - bat_row.target_v)
+        return res
 
     @staticmethod
-    def _add_vsc_converter_stations_cost(cost: poi.ExprBuilder, network_cache: NetworkCache,
-                                         variable_context: VariableContext) -> None:
-        for vsc_cs_num, vsc_cs_row in enumerate(cast(list[ConverterStationRow], network_cache.vsc_converter_stations.itertuples())):
+    def _create_vsc_converter_stations_cost(network_cache: NetworkCache,
+                                            variable_context: VariableContext) -> poi.ExprBuilder:
+        res = poi.ExprBuilder()
+        for vsc_cs_num, vsc_cs_row in enumerate(cast(list[ConverterStationRow],
+                                                     network_cache.vsc_converter_stations.itertuples())):
             if vsc_cs_row.bus_id:
                 if NetworkCache.is_rectifier(vsc_cs_row.Index, vsc_cs_row):
                     vsc_cs_p_expr = poi.ExprBuilder()
                     vsc_cs_p_expr += variable_context.vsc_cs_p_vars[vsc_cs_num]
                     vsc_cs_p_expr -= vsc_cs_row.target_p
-                    cost += vsc_cs_p_expr * vsc_cs_p_expr
+                    res += vsc_cs_p_expr * vsc_cs_p_expr
                 if vsc_cs_row.voltage_regulator_on:
                     bus_num = network_cache.buses.index.get_loc(vsc_cs_row.bus_id)
                     v_var = variable_context.v_vars[bus_num]
-                    cost += (v_var - vsc_cs_row.target_v) * (v_var - vsc_cs_row.target_v)
+                    res += (v_var - vsc_cs_row.target_v) * (v_var - vsc_cs_row.target_v)
+        return res
