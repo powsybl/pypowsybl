@@ -71,24 +71,6 @@ jobs:
           python-version: ${{ matrix.python.version }}
           python-command: ${{ env.PYTHON }}
 
-      - name: Install Miniconda and cyipopt (Linux/MacOS)
-        if: matrix.config.name != 'windows'
-        shell: bash
-        run: |
-          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.sh
-          bash miniconda.sh -b -p $HOME/miniconda
-          $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
-          echo "${{ matrix.config.lib-path-var }}=$HOME/miniconda/lib:${${{ matrix.config.lib-path-var }}}" >> $GITHUB_ENV
-
-      - name: Install Miniconda and cyipopt (Windows)
-        if: matrix.config.name == 'windows'
-        shell: pwsh
-        run: |
-          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.exe
-          Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
-          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge cyipopt -y
-          echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
-
       - name: Setup path
         if: matrix.config.name == 'linux'
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
@@ -108,6 +90,24 @@ jobs:
       - name: Run basic pypowsybl import
         working-directory: ./tests
         run: ${{ env.PYTHON }} basic_import_test.py
+
+      - name: Install Miniconda and cyipopt (Linux/MacOS)
+        if: matrix.config.name != 'windows'
+        shell: bash
+        run: |
+          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.sh
+          bash miniconda.sh -b -p $HOME/miniconda
+          $HOME/miniconda/bin/conda install -c conda-forge cyipopt -y
+          echo "${{ matrix.config.lib-path-var }}=$HOME/miniconda/lib:${${{ matrix.config.lib-path-var }}}" >> $GITHUB_ENV
+
+      - name: Install Miniconda and cyipopt (Windows)
+        if: matrix.config.name == 'windows'
+        shell: pwsh
+        run: |
+          curl -fsSL ${{ matrix.config.miniconda-url }} -o miniconda.exe
+          Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
+          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge cyipopt -y
+          echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Run tests
         working-directory: ./tests # Run in subdir to use installed lib, not sources
