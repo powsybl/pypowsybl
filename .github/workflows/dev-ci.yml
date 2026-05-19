@@ -96,11 +96,18 @@ jobs:
       - name: Install Ipopt (Windows, via micromamba)
         if: matrix.config.name == 'windows'
         shell: pwsh
+        env:
+          MAMBA_ROOT_PREFIX: ${{ github.workspace }}\micromamba-root
+          MAMBA_NO_BANNER: "1"
         run: |
           curl.exe -L -o micromamba.tar.bz2 https://micro.mamba.pm/api/micromamba/win-64/latest
           tar -xvjf micromamba.tar.bz2
           # ipopt from conda-forge is built with MUMPS bundled (libcoinmumps)
-          .\Library\bin\micromamba.exe create -y -p $env:USERPROFILE\ipopt-env -c conda-forge ipopt
+          .\Library\bin\micromamba.exe create -y -p $env:USERPROFILE\ipopt-env ` 
+              -c conda-forge `
+              --override-channels `
+              --no-rc `
+              ipopt
           echo "PATH=$env:USERPROFILE\ipopt-env\Library\bin;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Build wheel
