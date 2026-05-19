@@ -1083,6 +1083,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
           py::arg("is_index"));
 
     m.def("get_network_metadata", &pypowsybl::getNetworkMetadata, "get attributes", py::arg("network"));
+    m.def("set_network_case_date", &pypowsybl::setNetworkCaseDate, "set case date (seconds since epoch)", py::arg("network"), py::arg("case_date"));
+    m.def("set_network_name", &pypowsybl::setNetworkName, "set network name", py::arg("network"), py::arg("name"));
     m.def("get_working_variant_id", &pypowsybl::getWorkingVariantId, "get the current working variant id", py::arg("network"));
     m.def("set_working_variant", &pypowsybl::setWorkingVariant, "set working variant", py::arg("network"), py::arg("variant"));
     m.def("remove_variant", &pypowsybl::removeVariant, "remove a variant", py::arg("network"), py::arg("variant"));

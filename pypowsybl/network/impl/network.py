@@ -93,6 +93,11 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._name
 
+    @name.setter
+    def name(self, value: str) -> None:
+        _pp.set_network_name(self._handle, value)
+        self._name = value
+
     @property
     def source_format(self) -> str:
         """
@@ -106,6 +111,11 @@ class Network:  # pylint: disable=too-many-public-methods
         Date of this network case, in UTC timezone.
         """
         return self._case_date
+
+    @case_date.setter
+    def case_date(self, value: datetime.datetime) -> None:
+        _pp.set_network_case_date(self._handle, value.timestamp())
+        self._case_date = value.astimezone(timezone.utc)
 
     @property
     def forecast_distance(self) -> datetime.timedelta:
