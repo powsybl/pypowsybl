@@ -29,7 +29,6 @@ jobs:
             name: darwin,
             os: macos-15-xlarge,
             macosx_deployment_target: "11", # first arm64 version of macosx
-            bdist_wheel_args: "--plat-name macosx-11.0-x86_64", # needed to avoid the wheel to be named -universal2
             wheel-dir: "dist",
             miniconda-url: "https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh",
             lib-path-var: "DYLD_LIBRARY_PATH",
