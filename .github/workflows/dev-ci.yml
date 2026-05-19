@@ -89,9 +89,9 @@ jobs:
         run: |
           brew update
           brew install ipopt
-          MUMPS_LIB="$(brew --prefix mumps)/lib"
           IPOPT_LIB="$(brew --prefix ipopt)/lib"
-          echo "DYLD_LIBRARY_PATH=${IPOPT_LIB}:${MUMPS_LIB}:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
+          otool -L "$(brew --prefix ipopt)/lib/libipopt.dylib"
+          echo "DYLD_LIBRARY_PATH=${IPOPT_LIB}:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install Ipopt (Windows, via micromamba)
         if: matrix.config.name == 'windows'
