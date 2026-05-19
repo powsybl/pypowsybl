@@ -161,7 +161,6 @@ jobs:
           cache-prefix: "linux"
 
       - name: Install Ipopt
-        if: matrix.config.name == 'linux'
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
