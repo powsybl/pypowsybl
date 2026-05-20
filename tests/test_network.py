@@ -245,6 +245,27 @@ def test_network_attributes():
     assert 'test' == n.source_format
 
 
+def test_network_attributes_setters():
+    n = pp.network.create_eurostag_tutorial_example1_network()
+    n.name = 'new_name'
+    assert 'new_name' == n.name
+
+    new_date = datetime.datetime(2021, 9, 29, 17, 45, 0, tzinfo=datetime.timezone.utc)
+    n.case_date = new_date
+    assert new_date == n.case_date
+
+    # Non-UTC timezone should be converted to UTC (fixed offset, not DST-dependent)
+    date_utc_plus2 = datetime.datetime(2026, 4, 29, 19, 46, 0,
+                                       tzinfo=datetime.timezone(datetime.timedelta(hours=2)))
+    n.case_date = date_utc_plus2
+    assert datetime.datetime(2026, 4, 29, 17, 46, 0, tzinfo=datetime.timezone.utc) == n.case_date
+
+    # Save and reload to verify the date was propagated to the underlying Java layer
+    buf = n.save_to_binary_buffer('BIIDM', {})
+    n2 = pp.network.load_from_binary_buffers([buf], {})
+    assert datetime.datetime(2026, 4, 29, 17, 46, 0, tzinfo=datetime.timezone.utc) == n2.case_date
+
+
 def test_network_representation():
     n = pp.network.create_eurostag_tutorial_example1_network()
     expected = 'Network(id=sim1, name=sim1, case_date=2018-01-01 10:00:00+00:00, ' + \
