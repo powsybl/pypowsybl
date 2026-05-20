@@ -16,8 +16,9 @@ jobs:
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
     permissions:
+      actions: write
       contents: read
-      pull-requests: read
+      pull-requests: write
     container: quay.io/pypa/manylinux_2_28_x86_64:2026.03.09-1
     env:
       PYTHON_VERSION: cp310
@@ -49,9 +50,22 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ env.HEAD_REF }}
+          ref: ${{ env.HEAD_SHA }}
           repository: ${{ env.REPO_NAME }}
           fetch-depth: 0
+
+      - name: Fetch base branch from target repository
+        run: |
+          git config --global --add safe.directory $GITHUB_WORKSPACE
+          git remote add upstream https://github.com/${{ github.repository }}.git
+          git fetch upstream ${{ env.BASE_REF }}
+          git branch ${{ env.BASE_REF }} refs/remotes/upstream/${{ env.BASE_REF }}
+          if [ "${{ env.HEAD_REF }}" = "${{ env.BASE_REF }}" ]; then
+            FORK_OWNER=$(echo "${{ env.REPO_NAME }}" | cut -d'/' -f1)
+            echo "SONAR_PR_BRANCH=${FORK_OWNER}:${{ env.HEAD_REF }}" >> $GITHUB_ENV
+          else
+            echo "SONAR_PR_BRANCH=${{ env.HEAD_REF }}" >> $GITHUB_ENV
+          fi
 
       - name: Download coverage report for SonarCloud
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -71,7 +85,7 @@ jobs:
           args: |
             -Dsonar.python.coverage.reportPaths=coverage.xml
             "-Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
-            "-Dsonar.pullrequest.branch=${{ env.HEAD_REF }}"
+            "-Dsonar.pullrequest.branch=${{ env.SONAR_PR_BRANCH }}"
             "-Dsonar.pullrequest.base=${{ env.BASE_REF }}"
             -Dsonar.pullrequest.provider=github
             -Dsonar.pullrequest.github.repository=${{ github.repository }}
@@ -112,8 +126,9 @@ jobs:
       github.event.workflow_run.event == 'pull_request' &&
       github.event.workflow_run.conclusion == 'success'
     permissions:
+      actions: write
       contents: read
-      pull-requests: read
+      pull-requests: write
 
     steps:
       - name: Download PR information
@@ -142,9 +157,21 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ env.HEAD_REF }}
+          ref: ${{ env.HEAD_SHA }}
           repository: ${{ env.REPO_NAME }}
           fetch-depth: 0
+
+      - name: Fetch base branch from target repository
+        run: |
+          git remote add upstream https://github.com/${{ github.repository }}.git
+          git fetch upstream ${{ env.BASE_REF }}
+          git branch ${{ env.BASE_REF }} refs/remotes/upstream/${{ env.BASE_REF }}
+          if [ "${{ env.HEAD_REF }}" = "${{ env.BASE_REF }}" ]; then
+            FORK_OWNER=$(echo "${{ env.REPO_NAME }}" | cut -d'/' -f1)
+            echo "SONAR_PR_BRANCH=${FORK_OWNER}:${{ env.HEAD_REF }}" >> $GITHUB_ENV
+          else
+            echo "SONAR_PR_BRANCH=${{ env.HEAD_REF }}" >> $GITHUB_ENV
+          fi
 
       - name: Set up JDK 21
         uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
@@ -226,7 +253,7 @@ jobs:
             "-Dsonar.java.test.libraries=${{ env.LIBRARIES }}"
             "-Dsonar.coverage.jacoco.xmlReportPaths=java/pypowsybl/target/site/jacoco/jacoco.xml"
             "-Dsonar.pullrequest.key=${{ env.PR_NUMBER }}"
-            "-Dsonar.pullrequest.branch=${{ env.HEAD_REF }}"
+            "-Dsonar.pullrequest.branch=${{ env.SONAR_PR_BRANCH }}"
             "-Dsonar.pullrequest.base=${{ env.BASE_REF }}"
             -Dsonar.pullrequest.provider=github
             -Dsonar.pullrequest.github.repository=${{ github.repository }}
