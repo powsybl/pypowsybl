@@ -817,6 +817,14 @@ std::shared_ptr<network_metadata> getNetworkMetadata(const JavaHandle& network) 
     });
 }
 
+void setNetworkCaseDate(const JavaHandle& network, double caseDate) {
+    PowsyblCaller::get()->callJava<>(::setNetworkCaseDate, network, caseDate);
+}
+
+void setNetworkName(const JavaHandle& network, std::string& name) {
+    PowsyblCaller::get()->callJava<>(::setNetworkName, network, (char*) name.c_str());
+}
+
 bool isNetworkLoadable(const std::string& file) {
     return PowsyblCaller::get()->callJava<bool>(::isNetworkLoadable, (char*) file.data());
 }
