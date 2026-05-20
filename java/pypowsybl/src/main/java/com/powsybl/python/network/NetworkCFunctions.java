@@ -60,6 +60,9 @@ import com.powsybl.sld.svg.LabelProvider;
 import com.powsybl.sld.svg.styles.DefaultStyleProviderFactory;
 import com.powsybl.sld.svg.styles.NominalVoltageStyleProviderFactory;
 import com.powsybl.sld.svg.styles.iidm.CustomTopologicalStyleProvider;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.graalvm.nativeimage.IsolateThread;
@@ -167,6 +170,31 @@ public final class NetworkCFunctions {
             @Override
             public void run() {
                 freeNetworkMetadata(ptr);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setNetworkCaseDate")
+    public static void setNetworkCaseDate(IsolateThread thread, ObjectHandle networkHandle,
+                                          double caseDate, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.setCaseDate(ZonedDateTime.ofInstant(
+                    Instant.ofEpochMilli((long) (caseDate * 1000)), ZoneOffset.UTC));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "setNetworkName")
+    public static void setNetworkName(IsolateThread thread, ObjectHandle networkHandle,
+                                      CCharPointer name, ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                network.setName(CTypeUtil.toString(name));
             }
         });
     }
