@@ -182,9 +182,9 @@ class PowerBalanceConstraints(Constraints):
                                     buses_balance, t3_buses_balance)
 
     @staticmethod
-    def _add_leg_buses_expr(t3_index, bus_id: str, leg_index: int,
+    def _add_leg_buses_expr(t3_index: int, bus_id: str, leg_index: int,
                             network_cache: NetworkCache, variable_context: VariableContext,
-                            buses_balance: BusesBalance, t3_buses_balance: BusesBalance):
+                            buses_balance: BusesBalance, t3_buses_balance: BusesBalance) -> None:
         if bus_id:
             bus_num = network_cache.buses.index.get_loc(bus_id)
             buses_balance.p_gen[bus_num].append(variable_context.t3_closed_branch_p1_vars[leg_index])
