@@ -44,15 +44,14 @@ def convert_from_pandapower(n_pdp: pandapowerNet) -> Network:
     create_shunts(n, n_pdp)
     create_lines(n, n_pdp)
     create_transformers(n, n_pdp)
-    create_switches(n, n_pdp)
+    create_switches_between_buses(n, n_pdp)
     create_extensions(n, slack_weight_by_gen_id)
 
     return n
 
-def create_switches(n: Network, n_pdp: pandapowerNet) -> None:
+def create_switches_between_buses(n: Network, n_pdp: pandapowerNet) -> None:
     if len(n_pdp.switch) > 0:
         bus_switches = n_pdp.switch.loc[n_pdp.switch.et == "b"]
-        # line_switches = n_pdp.switch.loc[n_pdp.switch.et == "l"]
         if len(bus_switches) > 0:
             switch_id = generate_bb_switch_id(bus_switches)
             vl_id = build_voltage_level_id(n_pdp.bus.loc[bus_switches['bus']].index.astype(str))
