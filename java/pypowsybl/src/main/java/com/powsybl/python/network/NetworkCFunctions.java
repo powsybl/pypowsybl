@@ -41,7 +41,6 @@ import com.powsybl.nad.svg.iidm.DefaultLabelProviderFactory;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.PyPowsyblApiHeader.*;
 import com.powsybl.python.commons.Util;
 import com.powsybl.python.commons.Util.PointerProvider;
 import com.powsybl.python.dataframe.CDoubleSeries;

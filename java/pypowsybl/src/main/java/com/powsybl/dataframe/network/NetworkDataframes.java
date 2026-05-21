@@ -1082,7 +1082,7 @@ public final class NetworkDataframes {
                 .strings("dc_node1_id", ds -> ds.getDcNode1().getId())
                 .strings("dc_node2_id", ds -> ds.getDcNode2().getId())
                 .enums("kind", DcSwitchKind.class, DcSwitch::getKind)
-                .booleans("open", ds -> ds.isOpen(), DcSwitch::setOpen)
+                .booleans("open", DcSwitch::isOpen, DcSwitch::setOpen)
                 .doubles("r", (ds, context) -> ds.getR(), (ds, r, context) -> ds.setR(r))
                 .booleans("fictitious", Identifiable::isFictitious, Identifiable::setFictitious, false)
                 .addProperties()

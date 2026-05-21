@@ -60,8 +60,7 @@ public final class NetworkUtil {
             throw new PowsyblException("DcSwitch '" + dcSwitchId + "' not found");
         }
         boolean wasOpen = sw.isOpen();
-        // setOpen is activated only if there is a change
-        // to avoid triggering listeners uselessly
+        // only call setOpen on actual change to avoid triggering listeners
         if (open != wasOpen) {
             sw.setOpen(open);
             return true;

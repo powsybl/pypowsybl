@@ -1262,7 +1262,7 @@ def test_dc_switch_creation():
                      columns=['r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
                      data=[[0.2, 'dcNode1', 'dcNode2', 'BREAKER', True]]))
 
-    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch', 'DC_SWITCH_TEST', ]),
+    expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch', 'DC_SWITCH_TEST']),
                             columns=['name', 'r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
                             data=[['', 0.1, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False],
                                   ['', 0.2, 'dcNode1', 'dcNode2', 'BREAKER', True]])

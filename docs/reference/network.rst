@@ -42,12 +42,11 @@ Following methods may be used to create a new network instance:
 
    create_dc_detailed_lcc_bipole_ground_return_network
    create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network
-   create_dc_detailed_lcc_bipole_ground_return_negative_pole_outage_network
    create_dc_detailed_lcc_bipole_ground_return_with_dc_line_segments_network
    create_dc_detailed_lcc_bipole_metallic_return_network
    create_dc_detailed_vsc_symmetrical_monopole_network
    create_dc_detailed_vsc_asymmetrical_monopole_network
-   create_dc_detailed_dc_switch
+   create_dc_detailed_dc_switch_2_nodes
 
 
 Network properties
