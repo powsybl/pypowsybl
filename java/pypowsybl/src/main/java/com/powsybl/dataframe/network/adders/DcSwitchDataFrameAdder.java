@@ -30,7 +30,6 @@ import com.powsybl.iidm.network.Network;
  */
 public class DcSwitchDataFrameAdder extends AbstractSimpleAdder {
 
-    // List of columns in the data series
     private static final List<SeriesMetadata> METADATA = List.of(
             SeriesMetadata.stringIndex("id"),
             SeriesMetadata.strings("name"),

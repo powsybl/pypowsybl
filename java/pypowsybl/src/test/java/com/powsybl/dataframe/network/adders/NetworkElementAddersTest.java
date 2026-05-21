@@ -753,7 +753,7 @@ class NetworkElementAddersTest {
         DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
         addStringColumn(dataframe, "id", "DC_SWITCH_TEST");
         addDoubleColumn(dataframe, "r", 1.23);
-        // switch nodes to test update of node ids
+        // deliberately reversed from the factory default to verify node IDs are set correctly
         addStringColumn(dataframe, "dc_node1_id", "dcNode2");
         addStringColumn(dataframe, "dc_node2_id", "dcNode1");
         addStringColumn(dataframe, "kind", "BREAKER");
@@ -762,5 +762,12 @@ class NetworkElementAddersTest {
         NetworkElementAdders.addElements(DataframeElementType.DC_SWITCH, network, singletonList(dataframe));
 
         assertEquals(2, network.getDcSwitchCount());
+        DcSwitch dcSwitch = network.getDcSwitch("DC_SWITCH_TEST");
+        assertNotNull(dcSwitch);
+        assertEquals(1.23, dcSwitch.getR(), 0.0);
+        assertEquals("dcNode2", dcSwitch.getDcNode1().getId());
+        assertEquals("dcNode1", dcSwitch.getDcNode2().getId());
+        assertEquals(DcSwitchKind.BREAKER, dcSwitch.getKind());
+        assertTrue(dcSwitch.isOpen());
     }
 }

@@ -2730,21 +2730,21 @@ def test_dc_switches():
 
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
                             columns=['name', 'r', 'dc_node1_id', 'dc_node2_id', 'kind', 'open'],
-                            data=[['', 0.0, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False],])
+                            data=[['', 0.0, 'dcNode1', 'dcNode2', 'DISCONNECTOR', False]])
     dc_switches = n.get_dc_switches()
     # check_like = True to avoid testing column ordering - not specified
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
     dc_switches = n.get_dc_switches(attributes=['dc_node1_id'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
-                            columns=['dc_node1_id'], data=[['dcNode1'],])
+                            columns=['dc_node1_id'], data=[['dcNode1']])
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
     has_changed = n.open_dc_switch('dcSwitch')
     assert has_changed
     dc_switches = n.get_dc_switches(attributes=['open'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
-                            columns=['open'], data=[[True],])
+                            columns=['open'], data=[[True]])
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
     has_changed = n.open_dc_switch('dcSwitch')
@@ -2754,27 +2754,30 @@ def test_dc_switches():
     assert has_changed
     dc_switches = n.get_dc_switches(attributes=['open'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
-                            columns=['open'], data=[[False],])
+                            columns=['open'], data=[[False]])
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
+
+    has_changed = n.close_dc_switch('dcSwitch')
+    assert not has_changed
 
     # update open state via dataframe
     n.update_dc_switches(id='dcSwitch', open=True)
     dc_switches = n.get_dc_switches(attributes=['open'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
-                            columns=['open'], data=[[True],])
+                            columns=['open'], data=[[True]])
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
     n.update_dc_switches(id='dcSwitch', open=False)
     dc_switches = n.get_dc_switches(attributes=['open'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
-                            columns=['open'], data=[[False],])
+                            columns=['open'], data=[[False]])
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
     # update name via dataframe
     n.update_dc_switches(id='dcSwitch', name='My DC Switch')
     dc_switches = n.get_dc_switches(attributes=['name'])
     expected = pd.DataFrame(index=pd.Series(name='id', data=['dcSwitch']),
-                            columns=['name'], data=[['My DC Switch'],])
+                            columns=['name'], data=[['My DC Switch']])
     pd.testing.assert_frame_equal(expected, dc_switches, check_dtype=False, check_like=True)
 
 
