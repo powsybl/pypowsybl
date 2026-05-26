@@ -770,12 +770,12 @@ public final class RaoCFunctions {
 
     @CEntryPoint(name = "getCracPstRangeActions")
     public static ArrayPointer<SeriesPointer> getCracPstRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getPstRangeActions().stream().toList()), exceptionHandlerPtr);
+        return cracGenericMethod(thread, cracHandle, cracPstRangeActions(crac -> crac.getPstRangeActions().stream().toList()), exceptionHandlerPtr);
     }
 
     @CEntryPoint(name = "getCracHvdcRangeActions")
     public static ArrayPointer<SeriesPointer> getCracHvdcRangeActions(IsolateThread thread, ObjectHandle cracHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
-        return cracGenericMethod(thread, cracHandle, cracRangeActions(crac -> crac.getHvdcRangeActions().stream().toList()), exceptionHandlerPtr);
+        return cracGenericMethod(thread, cracHandle, cracHvdcRangeActions(crac -> crac.getHvdcRangeActions().stream().toList()), exceptionHandlerPtr);
     }
 
     @CEntryPoint(name = "getCracInjectionRangeActions")
