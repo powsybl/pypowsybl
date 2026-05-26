@@ -46,8 +46,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.network_statistics import NetworkStatistics
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters, OptimalPowerFlowMode
-from pypowsybl.opf.impl.detailed_dc_network_validator import DetailedDcNetworkValidator
-
+from pypowsybl.opf.impl.acdc_network_validator import AcdcNetworkValidator
 logger = logging.getLogger(__name__)
 
 
@@ -76,7 +75,7 @@ class OptimalPowerFlow:
         network_cache = NetworkCache(self._network)
 
         if parameters.mode == OptimalPowerFlowMode.ACDC:
-            DetailedDcNetworkValidator(network_cache).validate()
+            AcdcNetworkValidator(network_cache).validate()
 
         variable_bounds = [BusVoltageBounds(),
                            SlackBusAngleBounds(),
