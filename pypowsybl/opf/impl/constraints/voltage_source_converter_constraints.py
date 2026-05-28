@@ -57,6 +57,6 @@ class VoltageSourceConverterConstraints(Constraints):
                 # and the power P_ac flowing out of AC is negative
                 # FIXME : I needed to add 1e-10 because at the initialization v1_var = v2_var and the opf never converge
                 #conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs (v1_var - v2_var + 1e-10)
-                conv_p_dc_eq = conv_p_var + conv_i_var * nl.abs(v1_var - v2_var) - p_loss
+                conv_p_dc_eq = conv_p_var + conv_i_var * (v1_var - v2_var) - p_loss
 
                 model.add_nl_constraint(conv_p_dc_eq == 0.0)
