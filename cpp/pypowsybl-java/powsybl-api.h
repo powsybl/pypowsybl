@@ -130,6 +130,7 @@ typedef struct post_contingency_result_struct {
     char* contingency_id;
     int status;
     array limit_violations;
+    array disconnected_elements;
 } post_contingency_result;
 
 typedef struct pre_contingency_result_struct {

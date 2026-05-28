@@ -41,7 +41,38 @@ class SecurityAnalysisResult:
     @property
     def post_contingency_results(self) -> Dict[str, PostContingencyResult]:
         """
-        Results for the contingencies, as a dictionary contingency ID -> result.
+        Results for the contingencies.
+
+        This property returns a dictionary of :class:`PostContingencyResult` objects for each contingency.
+
+        Returns:
+            A dictionary contingency ID -> post-contingency result. Each
+            :class:`PostContingencyResult` contains the computation status, the
+            contingency-specific limit violations and, when available, the
+            disconnected elements reported by the connectivity result.
+
+        Example:
+
+            .. code-block:: python
+
+                post_result = result.post_contingency_results['First contingency']
+                post_result.status
+                post_result.limit_violations
+
+        Example with contingency propagation information:
+
+            .. code-block:: python
+
+                params = pp.security.Parameters(provider_parameters={
+                    'contingencyPropagation': 'true',
+                    'createResultExtension': 'true',
+                })
+                result = security_analysis.run_ac(network, parameters=params)
+                post_result = result.post_contingency_results['Busbar contingency']
+                sorted(post_result.disconnected_elements)
+                # ['LD6', 'LINE_S3S4', 'SVC']
+
+        To get a dataframe view of all violations, use :attr:`limit_violations`.
         """
         return self._post_contingency_results
 
@@ -115,6 +146,18 @@ class SecurityAnalysisResult:
     def limit_violations(self) -> pd.DataFrame:
         """
         All limit violations in a dataframe representation.
+
+        The dataframe uses a multi-index ``('contingency_id', 'subject_id')``.
+        ``contingency_id`` is empty for pre-contingency violations and contains
+        the contingency ID for post-contingency violations. ``subject_id`` is the
+        ID of the equipment or voltage level on which the violation is reported.
+
+        The dataframe columns are ``subject_name``, ``limit_type``,
+        ``limit_name``, ``limit``, ``acceptable_duration``,
+        ``limit_reduction``, ``value`` and ``side``.
+
+        Returns:
+            A dataframe containing one row per violated limit.
         """
         return self._limit_violations
 
