@@ -52,11 +52,13 @@ class VoltageSourceConverterConstraints(Constraints):
                 # P_loss = loss_1 + loss_2*I_ac + loss_3*I_ac**2 with the 3 loss coefficients
                 i_ac_var = nl.sqrt(nl.pow(conv_p_var,2) + nl.pow(conv_q_var,2))/1000.0
                 p_loss = idle_loss + switching_loss*i_ac_var + resistive_loss*nl.pow(i_ac_var,2)
-
+                # Denis comments:
                 # P_dc = -P_ac - P_loss because we consider that the power P_dc injected in DC is positive,
                 # and the power P_ac flowing out of AC is negative
                 # FIXME : I needed to add 1e-10 because at the initialization v1_var = v2_var and the opf never converge
                 #conv_p_dc_eq = (-conv_p_var - p_loss) - conv_i_var * nl.abs (v1_var - v2_var + 1e-10)
+                # New signed equation:     P_AC + P_DC = P_loss with P_DC = I * (V(dc_node1) - V(dc_node2))
+
                 conv_p_dc_eq = conv_p_var + conv_i_var * (v1_var - v2_var) - p_loss
 
                 model.add_nl_constraint(conv_p_dc_eq == 0.0)

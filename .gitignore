@@ -61,10 +61,3 @@ tests/_trial_temp/*
 
 # Documentation generated files (autosummary)
 docs/reference/api/
-
-.venv/
-
-test-runs/
-
-tests/
-
