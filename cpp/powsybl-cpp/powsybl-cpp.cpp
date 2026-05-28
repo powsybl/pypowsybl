@@ -1380,6 +1380,11 @@ SeriesArray* getBusBreakerViewElements(const JavaHandle& network, std::string& v
     return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getBusBreakerViewElements, network, (char*) voltageLevel.c_str()));
 }
 
+SeriesArray* getSwitchFlows(const JavaHandle& network, const std::vector<std::string>& switchIds) {
+    ToCharPtrPtr switchIdsPtr(switchIds);
+    return new SeriesArray(PowsyblCaller::get()->callJava<array*>(::getSwitchFlows, network, switchIdsPtr.get(), switchIds.size()));
+}
+
 void updateNetworkElementsWithSeries(pypowsybl::JavaHandle network, dataframe* dataframe, element_type elementType, bool perUnit, double nominalApparentPower) {
     pypowsybl::PowsyblCaller::get()->callJava<>(::updateNetworkElementsWithSeries, network, elementType, dataframe, perUnit, nominalApparentPower);
 }

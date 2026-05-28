@@ -1135,6 +1135,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_bus_breaker_view_buses", &pypowsybl::getBusBreakerViewBuses,
     "get all buses for a voltage level in bus breaker view", py::arg("network"), py::arg("voltage_level"));
     m.def("get_bus_breaker_view_switches", &pypowsybl::getBusBreakerViewSwitches, "get all switches for a voltage level", py::arg("network"), py::arg("voltage_level"));
+    m.def("get_switch_flows", &pypowsybl::getSwitchFlows, "get active and reactive flows for the provided switches", py::arg("network"), py::arg("switch_ids"));
     m.def("get_limit_violations", &pypowsybl::getLimitViolations, "get limit violations of a security analysis", py::arg("result"));
 
     m.def("get_branch_results", &pypowsybl::getBranchResults, "create a table with all branch results computed after security analysis",

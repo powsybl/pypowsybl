@@ -880,6 +880,20 @@ public final class NetworkCFunctions {
         });
     }
 
+    @CEntryPoint(name = "getSwitchFlows")
+    public static ArrayPointer<SeriesPointer> getSwitchFlows(IsolateThread thread, ObjectHandle networkHandle,
+                                                             CCharPointerPointer switchIdsPtr, int switchIdsCount,
+                                                             PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ArrayPointer<SeriesPointer> get() {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> switchIds = CTypeUtil.toStringList(switchIdsPtr, switchIdsCount);
+                return Dataframes.createCDataframe(Dataframes.switchFlowMapper(), NetworkUtil.getSwitchFlowResults(network, switchIds));
+            }
+        });
+    }
+
     @CEntryPoint(name = "merge")
     public static ObjectHandle merge(IsolateThread thread, VoidPointerPointer networkHandles, int networkCount,
                                      ExceptionHandlerPointer exceptionHandlerPtr) {

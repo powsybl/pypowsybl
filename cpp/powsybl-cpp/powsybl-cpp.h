@@ -896,6 +896,8 @@ SeriesArray* getBusBreakerViewBuses(const JavaHandle& network,std::string& volta
 
 SeriesArray* getBusBreakerViewElements(const JavaHandle& network,std::string& voltageLevel);
 
+SeriesArray* getSwitchFlows(const JavaHandle& network, const std::vector<std::string>& switchIds);
+
 /**
  * Metadata of the dataframe of network elements data for a given element type.
  */
