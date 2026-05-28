@@ -33,6 +33,7 @@
         <maven-dependency-plugin.version>3.6.0</maven-dependency-plugin.version>
         <zstdjni.version>1.5.5-3</zstdjni.version>
         <google.ortools.version>9.10.4067</google.ortools.version>
+        <jna.version>5.17.0</jna.version>
     </properties>
 
     <build>
@@ -117,6 +118,12 @@
                                     <groupId>com.powsybl</groupId>
                                     <artifactId>powsybl-math-native</artifactId>
                                     <destFileName>powsybl-math-native.jar</destFileName>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>net.java.dev.jna</groupId>
+                                    <artifactId>jna</artifactId>
+                                    <destFileName>jna.jar</destFileName>
+                                    <version>${jna.version}</version>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
