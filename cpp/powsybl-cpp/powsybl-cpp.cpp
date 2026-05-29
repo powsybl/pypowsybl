@@ -147,6 +147,11 @@ Array<limit_violation>::~Array() {
 }
 
 template<>
+Array<char*>::~Array() {
+    // already freed by the owner structure
+}
+
+template<>
 Array<series>::~Array() {
     PowsyblCaller::get()->callJava<>(::freeSeriesArray, delegate_);
 }

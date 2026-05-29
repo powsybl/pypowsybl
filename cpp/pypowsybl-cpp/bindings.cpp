@@ -951,6 +951,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
             });
 
     bindArray<pypowsybl::LimitViolationArray>(m, "LimitViolationArray");
+    bindArray<pypowsybl::StringArray>(m, "StringArray");
 
     py::class_<post_contingency_result>(m, "PostContingencyResult")
             .def_property_readonly("contingency_id", [](const post_contingency_result& r) {
@@ -963,13 +964,7 @@ PYBIND11_MODULE(_pypowsybl, m) {
                 return pypowsybl::LimitViolationArray((array *) & r.limit_violations);
             })
             .def_property_readonly("disconnected_elements", [](const post_contingency_result& r) {
-                std::vector<std::string> disconnectedElements;
-                auto elementsPtr = static_cast<char**>(r.disconnected_elements.ptr);
-                disconnectedElements.reserve(r.disconnected_elements.length);
-                for (int i = 0; i < r.disconnected_elements.length; ++i) {
-                    disconnectedElements.emplace_back(elementsPtr[i] ? elementsPtr[i] : "");
-                }
-                return disconnectedElements;
+                return pypowsybl::StringArray((array *) & r.disconnected_elements);
             });
     bindArray<pypowsybl::PostContingencyResultArray>(m, "PostContingencyResultArray");
 

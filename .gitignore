@@ -13,7 +13,6 @@ __pycache__/
 *.py[cod]
 build/
 /venv
-.venv
 
 # Distribution
 /dist
