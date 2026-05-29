@@ -146,18 +146,6 @@ class SecurityAnalysisResult:
     def limit_violations(self) -> pd.DataFrame:
         """
         All limit violations in a dataframe representation.
-
-        The dataframe uses a multi-index ``('contingency_id', 'subject_id')``.
-        ``contingency_id`` is empty for pre-contingency violations and contains
-        the contingency ID for post-contingency violations. ``subject_id`` is the
-        ID of the equipment or voltage level on which the violation is reported.
-
-        The dataframe columns are ``subject_name``, ``limit_type``,
-        ``limit_name``, ``limit``, ``acceptable_duration``,
-        ``limit_reduction``, ``value`` and ``side``.
-
-        Returns:
-            A dataframe containing one row per violated limit.
         """
         return self._limit_violations
 
