@@ -82,7 +82,7 @@ def test_update_network_from_binary_buffers():
 
 
 def test_load_post_processor():
-    assert ['geoJsonImporter', 'loadflowResultsCompletion', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
+    assert ['geoJsonImporter', 'replaceTieLinesByLines'] == pp.network.get_import_post_processors()
     pp.network.load(DATA_DIR.joinpath('CGMES_Full.zip'), post_processors=['replaceTieLinesByLines'])
 
 
