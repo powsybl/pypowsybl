@@ -6,25 +6,28 @@ logger = logging.getLogger(__name__)
 
 
 class AcdcNetworkValidator:
-    """ 
-    Pre-solver verification for current ACDC OPF implementation 
+    """
+    Pre-solver verification for current ACDC OPF implementation.
 
     Fatal checks:
-    
     - each VSC terminal voltage zone must use one nominal voltage base;
+
+    Warning checks:
+    - each DC-line connected component should have at least one VSC in V_DC mode;
+    - a V_DC converter target_v_dc sign should be consistent with the grounded terminal orientation.
     """
 
     def __init__(self, network_cache: NetworkCache):
         self._network_cache = network_cache
-        
+
     def validate(self) -> None:
         if self._network_cache.dc_nodes.empty:
             return
 
         self._check_all_dc_nodes_have_same_nominal_voltage()
+        self._warn_vdc_converter_grounded_terminal_target_sign()
         self._check_dc_line_components_have_vdc_converter()
 
-   
     def _check_all_dc_nodes_have_same_nominal_voltage(self) -> None:
         dc_nodes = self._network_cache.dc_nodes
 
@@ -50,7 +53,92 @@ class AcdcNetworkValidator:
                 "ACDC OPF currently requires one nominal voltage base for the whole DC network."
             )
 
+    def _warn_vdc_converter_grounded_terminal_target_sign(self) -> None:
+        """
+        Warn when a V_DC converter target_v_dc sign looks inconsistent with the grounded terminal.
 
+        Sign convention:
+        - target_v_dc = V(dc_node1) - V(dc_node2)
+
+        Therefore:
+        - if dc_node2 is grounded, a positive target_v_dc is the usual positive-pole orientation;
+        - if dc_node1 is grounded, a negative target_v_dc is the usual reversed-terminal orientation.
+
+        This is only a warning because negative-pole or advanced formulations may be valid.
+        """
+        vscs = self._network_cache.voltage_source_converters
+
+        if vscs.empty:
+            return
+
+        dc_grounds = getattr(self._network_cache, "dc_grounds", None)
+
+        if dc_grounds is None or dc_grounds.empty:
+            return
+
+        grounded_nodes = set(dc_grounds["dc_node_id"].dropna())
+
+        for vsc_id, row in vscs.iterrows():
+            if row.control_mode != "V_DC":
+                continue
+
+            target_v_dc = row.target_v_dc
+
+            if target_v_dc != target_v_dc:
+                continue
+
+            dc_node1_id = row.dc_node1_id
+            dc_node2_id = row.dc_node2_id
+
+            dc_node1_grounded = dc_node1_id in grounded_nodes
+            dc_node2_grounded = dc_node2_id in grounded_nodes
+
+            if dc_node1_grounded and dc_node2_grounded and abs(target_v_dc) > 0.0:
+                logger.warning(
+                    "\nDetailed-DC topology warning for ACDC OPF.\n\n"
+                    "VSC '%s' is in V_DC mode and both DC terminals are grounded, but target_v_dc is non-zero.\n\n"
+                    "dc_node1_id: %s\n"
+                    "dc_node2_id: %s\n"
+                    "target_v_dc: %s\n\n"
+                    "Since target_v_dc = V(dc_node1) - V(dc_node2), this is suspicious.",
+                    vsc_id,
+                    dc_node1_id,
+                    dc_node2_id,
+                    target_v_dc,
+                )
+                continue
+
+            if dc_node1_grounded and not dc_node2_grounded and target_v_dc > 0.0:
+                logger.warning(
+                    "\nDetailed-DC topology warning for ACDC OPF.\n\n"
+                    "VSC '%s' is in V_DC mode with dc_node1 grounded and target_v_dc > 0.\n\n"
+                    "dc_node1_id: %s grounded\n"
+                    "dc_node2_id: %s not grounded\n"
+                    "target_v_dc: %s\n\n"
+                    "Since target_v_dc = V(dc_node1) - V(dc_node2), this asks the grounded terminal to be "
+                    "above dc_node2. This may be intentional for an advanced or negative-pole formulation, "
+                    "but it is suspicious under the usual grounded-reference convention.",
+                    vsc_id,
+                    dc_node1_id,
+                    dc_node2_id,
+                    target_v_dc,
+                )
+
+            if dc_node2_grounded and not dc_node1_grounded and target_v_dc < 0.0:
+                logger.warning(
+                    "\nDetailed-DC topology warning for ACDC OPF.\n\n"
+                    "VSC '%s' is in V_DC mode with dc_node2 grounded and target_v_dc < 0.\n\n"
+                    "dc_node1_id: %s not grounded\n"
+                    "dc_node2_id: %s grounded\n"
+                    "target_v_dc: %s\n\n"
+                    "Since target_v_dc = V(dc_node1) - V(dc_node2), this asks dc_node1 to be below the "
+                    "grounded terminal. This may be intentional for an advanced or negative-pole formulation, "
+                    "but it is suspicious under the usual grounded-reference convention.",
+                    vsc_id,
+                    dc_node1_id,
+                    dc_node2_id,
+                    target_v_dc,
+                )
 
     def _check_dc_line_components_have_vdc_converter(self) -> None:
         """

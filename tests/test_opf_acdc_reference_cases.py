@@ -202,9 +202,11 @@ def test_asymmetric_dc_line_analytical_closed_form_full_test():
         V_DC_REF_KV
         + math.sqrt(V_DC_REF_KV**2 - 4.0 * R_DC_OHM * abs(P_REF_B_MW))
     ) / 2.0
+    
+    expected_converter_losses = 2.0 * 0.5
 
     expected_line_loss = (V_DC_REF_KV - expected_v1b) ** 2 / R_DC_OHM
-    expected_gen_a = abs(P_REF_B_MW) + expected_line_loss
+    expected_gen_a = abs(P_REF_B_MW) + expected_line_loss + expected_converter_losses
     expected_gen_b = P_LOAD_B_MW + P_REF_B_MW
 
     assert abs((v1a - v2a) - V_DC_REF_KV) < ATOL_KV
