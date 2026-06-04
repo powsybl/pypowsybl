@@ -1085,5 +1085,9 @@ The same API can also be used with a dataframe:
     ... }])
     >>> net.create_voltage_angle_limits(df)
 
+Voltage angle limits are identified by their own `id`. If you insert another voltage angle limit on the same pair of
+terminals but with a different `id`, both limits are kept. As a result, `get_voltage_angle_limits()` will show two
+rows for the same endpoints, one for each limit id.
+
 Voltage angle limits are also used by security analysis. When they are violated, the security-analysis results expose them through the `limit_violations` dataframe with `LOW_VOLTAGE_ANGLE` or `HIGH_VOLTAGE_ANGLE` as `limit_type`.
 

@@ -63,12 +63,6 @@ public class VoltageAngleLimitsDataframeAdder extends AbstractSimpleAdder {
          * At least one of {@code low_limit} or {@code high_limit} must be defined.
          */
         private void create(Network network, int row) {
-            String id = ids.get(row);
-            VoltageAngleLimit existing = network.getVoltageAngleLimit(id);
-            if (existing != null) {
-                existing.remove();
-            }
-
             Terminal terminalFrom = NetworkUtils.getTerminalOrThrow(network, fromElementIds.get(row), getSideValue(fromSides, row));
             Terminal terminalTo = NetworkUtils.getTerminalOrThrow(network, toElementIds.get(row), getSideValue(toSides, row));
             boolean hasLowLimit = hasValue(lowLimits, row);
@@ -76,6 +70,12 @@ public class VoltageAngleLimitsDataframeAdder extends AbstractSimpleAdder {
 
             if (!hasLowLimit && !hasHighLimit) {
                 throw new PowsyblException("At least one of low_limit or high_limit must be provided.");
+            }
+
+            String id = ids.get(row);
+            VoltageAngleLimit existing = network.getVoltageAngleLimit(id);
+            if (existing != null) {
+                existing.remove();
             }
 
             VoltageAngleLimitAdder adder = network.newVoltageAngleLimit()

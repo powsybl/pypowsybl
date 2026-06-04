@@ -7,26 +7,60 @@
  */
 package com.powsybl.dataframe.network.adders;
 
-import com.powsybl.cgmes.extensions.CgmesMetadataModels;
-import com.powsybl.dataframe.DataframeElementType;
-import com.powsybl.dataframe.update.*;
-import com.powsybl.entsoe.util.EntsoeArea;
-import com.powsybl.entsoe.util.EntsoeGeographicalCode;
-import com.powsybl.iidm.network.*;
-import com.powsybl.iidm.network.extensions.*;
-import com.powsybl.iidm.network.test.*;
-import com.powsybl.python.network.Networks;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
+import static java.util.Collections.singletonList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import com.powsybl.cgmes.extensions.CgmesMetadataModels;
+import com.powsybl.commons.PowsyblException;
+import com.powsybl.dataframe.DataframeElementType;
+import com.powsybl.dataframe.update.DefaultUpdatingDataframe;
+import com.powsybl.dataframe.update.TestDoubleSeries;
+import com.powsybl.dataframe.update.TestIntSeries;
+import com.powsybl.dataframe.update.TestStringSeries;
+import com.powsybl.dataframe.update.UpdatingDataframe;
+import com.powsybl.entsoe.util.EntsoeArea;
+import com.powsybl.entsoe.util.EntsoeGeographicalCode;
+import com.powsybl.iidm.network.ApparentPowerLimits;
+import com.powsybl.iidm.network.BoundaryLine;
+import com.powsybl.iidm.network.Generator;
+import com.powsybl.iidm.network.HvdcLine;
+import com.powsybl.iidm.network.LoadType;
+import com.powsybl.iidm.network.MinMaxReactiveLimits;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.iidm.network.OperationalLimitsGroup;
+import com.powsybl.iidm.network.ShuntCompensatorLinearModel;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.LINEAR;
 import static com.powsybl.iidm.network.ShuntCompensatorModelType.NON_LINEAR;
-import static java.util.Collections.singletonList;
-import static org.junit.jupiter.api.Assertions.*;
+import com.powsybl.iidm.network.ShuntCompensatorNonLinearModel;
+import com.powsybl.iidm.network.StaticVarCompensator;
+import com.powsybl.iidm.network.Substation;
+import com.powsybl.iidm.network.ThreeSides;
+import com.powsybl.iidm.network.TwoSides;
+import com.powsybl.iidm.network.VoltageAngleLimit;
+import com.powsybl.iidm.network.extensions.ActivePowerControl;
+import com.powsybl.iidm.network.extensions.GeneratorEntsoeCategory;
+import com.powsybl.iidm.network.extensions.HvdcAngleDroopActivePowerControl;
+import com.powsybl.iidm.network.extensions.HvdcOperatorActivePowerRange;
+import com.powsybl.iidm.network.extensions.SecondaryVoltageControl;
+import com.powsybl.iidm.network.test.BoundaryLineNetworkFactory;
+import com.powsybl.iidm.network.test.DcDetailedNetworkFactory;
+import com.powsybl.iidm.network.test.EurostagTutorialExample1Factory;
+import com.powsybl.iidm.network.test.HvdcTestNetwork;
+import com.powsybl.iidm.network.test.ShuntTestCaseFactory;
+import com.powsybl.iidm.network.test.SvcTestCaseFactory;
+import com.powsybl.iidm.network.test.ThreeWindingsTransformerNetworkFactory;
+import com.powsybl.python.network.Networks;
 
 /**
  * @author Yichen TANG {@literal <yichen.tang at rte-france.com>}
@@ -606,6 +640,39 @@ class NetworkElementAddersTest {
         VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
         assertNotNull(limit);
         assertEquals("3WT", limit.getTerminalFrom().getConnectable().getId());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
+        assertEquals(-15.0, limit.getLowLimit().orElseThrow());
+        assertEquals(20.0, limit.getHighLimit().orElseThrow());
+    }
+
+    @Test
+    void malformedVoltageAngleLimitsDoNotOverwriteExistingEntry() {
+        Network network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+
+        DefaultUpdatingDataframe validDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(validDataframe, "id", "VAL-1");
+        addStringColumn(validDataframe, "from_element_id", "3WT");
+        addStringColumn(validDataframe, "from_side", "ONE");
+        addStringColumn(validDataframe, "to_element_id", "3WT");
+        addStringColumn(validDataframe, "to_side", "THREE");
+        addDoubleColumn(validDataframe, "low_limit", -15.0);
+        addDoubleColumn(validDataframe, "high_limit", 20.0);
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(validDataframe));
+
+        DefaultUpdatingDataframe malformedDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(malformedDataframe, "id", "VAL-1");
+        addStringColumn(malformedDataframe, "from_element_id", "3WT");
+        addStringColumn(malformedDataframe, "from_side", "ONE");
+        addStringColumn(malformedDataframe, "to_element_id", "3WT");
+        addStringColumn(malformedDataframe, "to_side", "THREE");
+
+        PowsyblException exception = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(malformedDataframe)));
+        assertEquals("At least one of low_limit or high_limit must be provided.", exception.getMessage());
+
+        VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
+        assertNotNull(limit);
         assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
         assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
         assertEquals(-15.0, limit.getLowLimit().orElseThrow());
