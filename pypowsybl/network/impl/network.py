@@ -4575,6 +4575,63 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self._update_elements(ElementType.OPERATIONAL_LIMITS, df, **kwargs)
 
+    def get_voltage_angle_limits(self, all_attributes: bool = False, attributes: Optional[List[str]] = None) -> DataFrame:
+        """
+        Get the list of voltage angle limits.
+
+        The resulting dataframe will include the following columns:
+
+          - **id**: identifier of the voltage angle limit
+          - **from_element_id**: identifier of the connectable owning the "from" terminal
+          - **from_side**: side of the "from" terminal for sided elements (ONE, TWO, THREE)
+          - **to_element_id**: identifier of the connectable owning the "to" terminal
+          - **to_side**: side of the "to" terminal for sided elements (ONE, TWO, THREE)
+          - **low_limit**: optional lower angle limit value
+          - **high_limit**: optional upper angle limit value
+
+        The index of the dataframe is the voltage angle limit **id**.
+
+        Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes:     attributes to include in the dataframe. The 2 parameters are mutually
+                            exclusive. If no parameter is specified, the dataframe will include the default attributes.
+
+        Examples:
+
+            .. code-block:: python
+
+                import pypowsybl as pp
+
+                network = pp.network.create_eurostag_tutorial_example1_network()
+                network.create_voltage_angle_limits(
+                    id='NHV1_NHV2_1_ANGLE',
+                    from_element_id='NHV1_NHV2_1',
+                    from_side='ONE',
+                    to_element_id='NHV1_NHV2_1',
+                    to_side='TWO',
+                    low_limit=-30.0,
+                    high_limit=30.0,
+                )
+                angle_limits = network.get_voltage_angle_limits()
+                angle_limits.columns.tolist()
+                line_limit = angle_limits.loc['NHV1_NHV2_1_ANGLE']
+
+            .. code-block:: python
+
+                {
+                    'from_element_id': 'NHV1_NHV2_1',
+                    'from_side': 'ONE',
+                    'to_element_id': 'NHV1_NHV2_1',
+                    'to_side': 'TWO',
+                    'low_limit': -30.0,
+                    'high_limit': 30.0,
+                }
+
+        Returns:
+            All voltage angle limits on the network.
+        """
+        return self.get_elements(ElementType.VOLTAGE_ANGLE_LIMITS, all_attributes, attributes)
+
     def get_node_breaker_topology(self, voltage_level_id: str) -> NodeBreakerTopology:
         """
         Get the node breaker description of the topology of a voltage level.
@@ -5796,6 +5853,66 @@ class Network:  # pylint: disable=too-many-public-methods
             kwargs.pop('element_type')
 
         return self._create_elements(ElementType.OPERATIONAL_LIMITS, [df], **kwargs)
+
+    def create_voltage_angle_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
+        """
+        Creates voltage angle limits.
+
+        Notes:
+
+            Data may be provided as a dataframe or as keyword arguments.
+            In the latter case, all arguments must have the same length.
+
+            Valid attributes are:
+
+            - **id**: identifier of the voltage angle limit
+            - **from_element_id**: identifier of the connectable owning the "from" terminal
+            - **from_side**: side of the "from" terminal for sided elements (ONE, TWO, THREE)
+            - **to_element_id**: identifier of the connectable owning the "to" terminal
+            - **to_side**: side of the "to" terminal for sided elements (ONE, TWO, THREE)
+            - **low_limit**: optional lower angle limit value, in degrees
+            - **high_limit**: optional upper angle limit value, in degrees
+
+            If a voltage angle limit already exists with the same identifier, it is replaced.
+            At least one of **low_limit** or **high_limit** must be provided.
+
+        Args:
+            df: Attributes as a dataframe.
+            kwargs: Attributes as keyword arguments.
+
+        Examples:
+
+            Create a symmetric angle window on a line, between its two terminals:
+
+            .. code-block:: python
+
+                import pypowsybl as pp
+
+                network = pp.network.create_eurostag_tutorial_example1_network()
+                network.create_voltage_angle_limits(
+                    id='NHV1_NHV2_1_ANGLE',
+                    from_element_id='NHV1_NHV2_1',
+                    from_side='ONE',
+                    to_element_id='NHV1_NHV2_1',
+                    to_side='TWO',
+                    low_limit=-30.0,
+                    high_limit=30.0,
+                )
+
+            Create a limit with only an upper bound:
+
+            .. code-block:: python
+
+                network.create_voltage_angle_limits(
+                    id='NHV1_NHV2_2_MAX_ANGLE',
+                    from_element_id='NHV1_NHV2_2',
+                    from_side='ONE',
+                    to_element_id='NHV1_NHV2_2',
+                    to_side='TWO',
+                    high_limit=25.0,
+                )
+        """
+        return self._create_elements(ElementType.VOLTAGE_ANGLE_LIMITS, [df], **kwargs)
 
     def create_minmax_reactive_limits(self, df: Optional[DataFrame] = None, **kwargs: ArrayLike) -> None:
         """

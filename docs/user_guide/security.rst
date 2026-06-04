@@ -37,6 +37,28 @@ the violations created by the contingency, they are collected by contingency in 
                       NHV1_NHV2_2                   CURRENT  permanent   500.0           2147483647              1.0  1477.824335  TWO
                       VLHV1                     LOW_VOLTAGE              400.0           2147483647              1.0   392.158685
 
+  The same `limit_violations` dataframe is also used for voltage angle violations when voltage angle limits are defined on the network.
+  In that case, the `limit_type` column contains `LOW_VOLTAGE_ANGLE` or `HIGH_VOLTAGE_ANGLE`:
+
+  .. code-block:: python
+
+    >>> network = pp.network.create_eurostag_tutorial_example1_network()
+    >>> network.create_voltage_angle_limits(
+    ...     id='NHV1_NHV2_1_ANGLE',
+    ...     from_element_id='NHV1_NHV2_1',
+    ...     from_side='ONE',
+    ...     to_element_id='NHV1_NHV2_1',
+    ...     to_side='TWO',
+    ...     low_limit=-5.0,
+    ...     high_limit=5.0,
+    ... )
+    >>> sa = pp.security.create_analysis()
+    >>> sa.add_single_element_contingency('NHV1_NHV2_1', 'First contingency')
+    >>> sa_result = sa.run_ac(network)
+    >>> angle_violations = sa_result.limit_violations[
+    ...     sa_result.limit_violations['limit_type'].isin(['LOW_VOLTAGE_ANGLE', 'HIGH_VOLTAGE_ANGLE'])
+    ... ]
+
 It is also possible to get a JSON file with the full security analysis results, just by using the `export_to_json` method, like in the example below :
 
 .. doctest::

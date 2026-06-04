@@ -590,6 +590,29 @@ class NetworkElementAddersTest {
     }
 
     @Test
+    void voltageAngleLimits() {
+        Network network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "VAL-1");
+        addStringColumn(dataframe, "from_element_id", "3WT");
+        addStringColumn(dataframe, "from_side", "ONE");
+        addStringColumn(dataframe, "to_element_id", "3WT");
+        addStringColumn(dataframe, "to_side", "THREE");
+        addDoubleColumn(dataframe, "low_limit", -15.0);
+        addDoubleColumn(dataframe, "high_limit", 20.0);
+
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(dataframe));
+
+        VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
+        assertNotNull(limit);
+        assertEquals("3WT", limit.getTerminalFrom().getConnectable().getId());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
+        assertEquals(-15.0, limit.getLowLimit().orElseThrow());
+        assertEquals(20.0, limit.getHighLimit().orElseThrow());
+    }
+
+    @Test
     void area() {
         var network = EurostagTutorialExample1Factory.create();
         var dataframe = new DefaultUpdatingDataframe(1);
