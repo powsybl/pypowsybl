@@ -61,4 +61,4 @@ class VoltageSourceConverterConstraints(Constraints):
 
                 conv_p_dc_eq = conv_p_var + conv_i_var * (v1_var - v2_var) - p_loss
 
-                model.add_nl_constraint(conv_p_dc_eq == 0.0)
+                model.add_nl_constraint(conv_p_dc_eq, poi.Eq, 0.0)
