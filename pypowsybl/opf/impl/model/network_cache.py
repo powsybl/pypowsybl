@@ -170,7 +170,7 @@ class NetworkCache:
     def _build_buses(network: Network, voltage_levels: DataFrame) -> DataFrame:
         buses = network.get_buses(attributes=['voltage_level_id', 'connected_component', 'synchronous_component'])
         buses = buses[buses['connected_component'] == 0]
-        return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left')
+        return pd.merge(buses, voltage_levels, left_on='voltage_level_id', right_index=True, how='left', validate='m:1')
 
     @staticmethod
     def _build_voltage_levels(network: Network) -> DataFrame:
