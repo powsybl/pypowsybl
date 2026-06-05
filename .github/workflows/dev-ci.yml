@@ -70,6 +70,23 @@ jobs:
         if: matrix.config.name == 'linux'
         run: echo "/opt/python/${{ matrix.python.name }}-${{ matrix.python.abi }}/bin/" >> $GITHUB_PATH
 
+      - name: Install Ipopt (Linux, via micromamba)
+        if: matrix.config.name == 'linux'
+        shell: bash
+        run: |
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt mumps
+          echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
+
+      - name: Install Miniconda and cyipopt (Windows)
+        if: matrix.config.name == 'windows'
+        shell: pwsh
+        run: |
+          curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe -o miniconda.exe
+          Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
+          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge cyipopt -y
+          echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
+
       - name: Build wheel
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.config.macosx_deployment_target }}
@@ -132,6 +149,13 @@ jobs:
         uses: ./.github/actions/setup-before-build
         with:
           cache-prefix: "linux"
+
+      - name: Install IPOPT (via micromamba)
+        shell: bash
+        run: |
+          curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt mumps
+          echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install the package
         run: |
