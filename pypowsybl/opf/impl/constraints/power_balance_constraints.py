@@ -88,10 +88,12 @@ class PowerBalanceConstraints(Constraints):
 
         # voltage source converters
         for conv_num, row in enumerate(network_cache.voltage_source_converters.itertuples(index=False)):
-            bus_id = row.bus_id
-            if bus_id:
+            bus1_id = row.bus1_id
+            if bus1_id:
                 conv_index = variable_context.conv_num_2_index[conv_num]
-                bus_num = network_cache.buses.index.get_loc(bus_id)
+                bus_num = network_cache.buses.index.get_loc(bus1_id)
+                assert isinstance(bus_num, int)
+                # Power at VSC terminal is in load sign convention. P_AC > 0 means AC -> DC, P_DC > 0 means DC -> AC.
                 buses_balance.p_load[bus_num] -= variable_context.conv_p_vars[conv_index]
                 buses_balance.q_load[bus_num] -= variable_context.conv_q_vars[conv_index]
 
