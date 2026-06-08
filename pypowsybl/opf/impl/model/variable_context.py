@@ -734,7 +734,6 @@ class VariableContext:
                 dc_node2_num = network_cache.dc_nodes.index.get_loc(dc_node2_id)
                 v2 = model.get_value(self.v_dc_vars[dc_node2_num])
             v_dc = v1 - v2
-            conv_target_v_dc.append(v_dc)
             if bus1_id:
                 bus_num = network_cache.buses.index.get_loc(bus1_id)
 
@@ -745,14 +744,17 @@ class VariableContext:
                 conv_p.append(p_ac)
                 conv_target_p.append(p_ac)
 
-                q = model.get_value(self.conv_q_vars[conv_index])
-                conv_q.append(q)
+                q_ac = model.get_value(self.conv_q_vars[conv_index])
+                conv_q.append(q_ac)
+                conv_target_q.append(q_ac)
 
                 i = model.get_value(self.conv_i_vars[conv_index])
                 p_dc1 = i * v1
                 p_dc2 = i * v2
                 conv_p_dc1.append(p_dc1)
                 conv_p_dc2.append(p_dc2)
+                
+                conv_target_v_dc.append(v_dc)
 
                 v_ac = model.get_value(self.v_vars[bus_num])
                 conv_target_v_ac.append(v_ac)

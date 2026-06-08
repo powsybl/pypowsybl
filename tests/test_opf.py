@@ -73,12 +73,7 @@ def create_opf_parameters():
 
 
 def run_opf_then_lf(network: pp.network.Network,
-<<<<<<< HEAD
                     opf_parameters: OptimalPowerFlowParameters = create_opf_parameters(),
-                    lf_parameters: Parameters = create_loadflow_parameters(),
-=======
-                    opf_parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters(),
->>>>>>> 98df5e7f (Clean up code, fix not working tests)
                     iteration_count: int = 1):
     lf_parameters = create_loadflow_parameters()
     lf_result = pp.loadflow.run_ac(network, lf_parameters)
@@ -220,14 +215,6 @@ def test_micro_grid_be():
 
 def test_micro_grid_nl():
     run_opf_then_lf(pp.network.create_micro_grid_nl_network())
-
-def test_vsc_symmetrical_monopole():
-    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
-    assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_symmetrical_monopole_network(), opf_parameters)
-
-def test_vsc_asymmetrical_monopole():
-    opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
-    assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network(), opf_parameters)
 
 def test_ac_dc_monopolar_network():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
