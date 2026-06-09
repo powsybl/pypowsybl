@@ -32,6 +32,7 @@ pypowsybl::JavaHandle loadCracSourceWithParameters(const pypowsybl::JavaHandle& 
 pypowsybl::JavaHandle loadGlskSource(const py::buffer& glsk);
 pypowsybl::JavaHandle loadResultSource(const pypowsybl::JavaHandle& cracHandle, const py::buffer& result);
 pypowsybl::RaoParameters* loadRaoParametersFromBuffer(const py::buffer& parameters);
+pypowsybl::JavaHandle loadTimeCoupledConstraintsSource(const py::buffer& timeCoupledConstraintsBuffer);
 
 py::bytes saveRaoParametersToBinaryBuffer(const pypowsybl::RaoParameters& rao_parameters);
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoContext, const pypowsybl::JavaHandle& crac);
@@ -1375,6 +1376,8 @@ PYBIND11_MODULE(_pypowsybl, m) {
     m.def("get_virtual_cost_results", &pypowsybl::getVirtualCostsResults, "Get rao virtual cost results", py::arg("crac"), py::arg("rao_result"), py::arg("virtual_cost_name"));
     m.def("run_voltage_monitoring", &pypowsybl::runVoltageMonitoring, py::call_guard<py::gil_scoped_release>(), "Run voltage monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
     m.def("run_angle_monitoring", &pypowsybl::runAngleMonitoring, py::call_guard<py::gil_scoped_release>(), "Run angle monitoring", py::arg("network"), py::arg("result_handle"), py::arg("crac_handle"), py::arg("context_handle"), py::arg("load_flow_parameters"), py::arg("provider"));
+    m.def("run_marmot", &pypowsybl::runMarmot, py::call_guard<py::gil_scoped_release>(), "Run marmot", py::arg("timestamps"), py::arg("networks"), py::arg("cracs"), py::arg("parameters"), py::arg("constraints"));
+    m.def("load_time_coupled_constraints", ::loadTimeCoupledConstraintsSource, py::call_guard<py::gil_scoped_release>(), "Load time coupled constraints", py::arg("constraints_source"));
 
     m.def("get_instants", &pypowsybl::getInstants, "Get crac instants", py::arg("crac"));
     m.def("get_max_remedial_actions_usage_limits", &pypowsybl::getMaxRemedialActionsUsageLimits, "Get max remedial actions usage limit", py::arg("crac"));
@@ -1615,6 +1618,11 @@ pypowsybl::JavaHandle loadResultSource(const pypowsybl::JavaHandle& cracHandle, 
     py::buffer_info resultInfo = result.request();
     return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadResultFromBufferedSource,
      cracHandle, static_cast<char*>(resultInfo.ptr), resultInfo.size);
+}
+
+pypowsybl::JavaHandle loadTimeCoupledConstraintsSource(const py::buffer& timeCoupledConstraintsBuffer) {
+    py::buffer_info constraintsInfo = timeCoupledConstraintsBuffer.request();
+    return pypowsybl::PowsyblCaller::get()->callJava<pypowsybl::JavaHandle>(::loadTimeCoupledConstraints, static_cast<char*>(constraintsInfo.ptr), constraintsInfo.size);
 }
 
 py::bytes saveRaoResultsToBinaryBuffer(const pypowsybl::JavaHandle& raoResult, const pypowsybl::JavaHandle& crac) {

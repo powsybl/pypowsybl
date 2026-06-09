@@ -20,6 +20,8 @@ import com.powsybl.openrao.data.crac.api.RaUsageLimits;
 import com.powsybl.openrao.data.crac.api.parameters.CracCreationParameters;
 import com.powsybl.openrao.data.crac.api.parameters.JsonCracCreationParameters;
 import com.powsybl.openrao.data.raoresult.api.RaoResult;
+import com.powsybl.openrao.data.timecoupledconstraints.TimeCoupledConstraints;
+import com.powsybl.openrao.data.timecoupledconstraints.io.JsonTimeCoupledConstraints;
 import com.powsybl.openrao.raoapi.json.JsonRaoParameters;
 import com.powsybl.openrao.raoapi.parameters.*;
 import com.powsybl.openrao.raoapi.parameters.extensions.*;
@@ -46,6 +48,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -264,6 +267,37 @@ public final class RaoCFunctions {
                 LoadFlowProvider loadFlowProvider = LoadFlowCUtils.getLoadFlowProvider(providerStr);
                 LoadFlowParameters lfParameters = createLoadFlowParameters(loadFlowParametersPtr, loadFlowProvider);
                 return ObjectHandles.getGlobal().create(raoContext.runAngleMonitoring(network, result, providerStr, lfParameters));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "loadTimeCoupledConstraints")
+    public static ObjectHandle loadTimeCoupledConstraints(IsolateThread thread, CCharPointer constraintsBuffer,
+                                                          int constraintsBufferSize, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                ByteBuffer byteBufferConstraints = CTypeConversion.asByteBuffer(constraintsBuffer, constraintsBufferSize);
+                InputStream streamConstraints = new ByteArrayInputStream(binaryBufferToBytes(byteBufferConstraints));
+                TimeCoupledConstraints timeCoupledConstraints = JsonTimeCoupledConstraints.read(streamConstraints);
+                return ObjectHandles.getGlobal().create(timeCoupledConstraints);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "runMarmot")
+    public static ObjectHandle runMarmot(IsolateThread thread, CCharPointerPointer timestampsPtr, VoidPointerPointer networkHandles, VoidPointerPointer cracHandles, int elementCount,
+                                      RaoParametersPointer parametersPointer, ObjectHandle timeCoupledConstraintHandle, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() throws IOException {
+                List<Network> networks = toObjectHandleList(networkHandles, elementCount);
+                List<Crac> cracs = toObjectHandleList(cracHandles, elementCount);
+                List<OffsetDateTime> timestamps = toStringList(timestampsPtr, elementCount).stream().map(OffsetDateTime::parse).toList();
+                RaoParameters raoParameters = convertToRaoParameters(parametersPointer);
+                TimeCoupledConstraints constraints = ObjectHandles.getGlobal().get(timeCoupledConstraintHandle);
+                RaoResult result = RaoContext.runMarmot(timestamps, networks, cracs, raoParameters, constraints);
+                return ObjectHandles.getGlobal().create(result);
             }
         });
     }

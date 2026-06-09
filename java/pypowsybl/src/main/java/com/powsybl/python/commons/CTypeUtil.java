@@ -11,6 +11,8 @@ import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
+import org.graalvm.nativeimage.ObjectHandle;
+import org.graalvm.nativeimage.ObjectHandles;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.*;
@@ -114,6 +116,15 @@ public final class CTypeUtil {
             ints.add(j);
         }
         return ints;
+    }
+
+    public static <T> List<T> toObjectHandleList(PyPowsyblApiHeader.VoidPointerPointer handlePtr, int length) {
+        List<T> objectList = new ArrayList<>(length);
+        for (int i = 0; i < length; i++) {
+            ObjectHandle handle = handlePtr.read(i);
+            objectList.add(ObjectHandles.getGlobal().get(handle));
+        }
+        return objectList;
     }
 
     /**

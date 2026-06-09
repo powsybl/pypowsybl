@@ -191,6 +191,7 @@ typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
+void** objectHandleVectorToPtr(std::vector<JavaHandle>& handles);
 
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {
@@ -1143,6 +1144,8 @@ JavaHandle createDefaultRaoParameters();
 JavaHandle runRaoWithParameters(const JavaHandle& networkHandle, const JavaHandle& cracHandle, const JavaHandle& raoHandle, const RaoParameters& parameters, const std::string& raoProvider);
 JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider);
+JavaHandle runMarmot(const std::vector<std::string>& timestamps, std::vector<JavaHandle>& networks, std::vector<JavaHandle>& cracs,
+                     const RaoParameters& parameters, const JavaHandle& constraints);
 
 JavaHandle createGrid2opBackend(const JavaHandle& networkHandle, bool considerOpenBranchReactiveFlow, bool checkIsolatedAndDisconnectedInjections, int busesPerVoltageLevel, bool connectAllElementsToFirstBus);
 void freeGrid2opBackend(const JavaHandle& backendHandle);

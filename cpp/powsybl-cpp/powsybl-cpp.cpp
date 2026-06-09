@@ -725,15 +725,19 @@ JavaHandle createNetwork(const std::string& name, const std::string& id, bool al
     return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data(), allowVariantMultiThreadAccess);
 }
 
-JavaHandle merge(std::vector<JavaHandle>& networks) {
-    std::vector<void*> networksPtrs;
-    networksPtrs.reserve(networks.size());
-    for (int i = 0; i < networks.size(); ++i) {
-        void* ptr = networks[i];
-        networksPtrs.push_back(ptr);
+void** objectHandleVectorToPtr(std::vector<JavaHandle>& handles) {
+    std::vector<void*> handlePtrs;
+    handlePtrs.reserve(handles.size());
+    for (int i = 0; i < handles.size(); ++i) {
+       void* ptr = handles[i];
+       handlePtrs.push_back(ptr);
     }
-    int networkCount = networksPtrs.size();
-    void** networksData = (void**) networksPtrs.data();
+    return (void**) handlePtrs.data();
+}
+
+JavaHandle merge(std::vector<JavaHandle>& networks) {
+    int networkCount = networks.size();
+    void** networksData = objectHandleVectorToPtr(networks);
 
     return PowsyblCaller::get()->callJava<JavaHandle>(::merge, networksData, networkCount);
 }
@@ -2418,6 +2422,16 @@ JavaHandle runVoltageMonitoring(const JavaHandle& networkHandle, const JavaHandl
 JavaHandle runAngleMonitoring(const JavaHandle& networkHandle, const JavaHandle& resultHandle, const JavaHandle& cracHandle, const JavaHandle& contextHandle, const LoadFlowParameters& parameters, const std::string& provider) {
     auto c_loadflow_parameters = parameters.to_c_struct();
     return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runAngleMonitoring, networkHandle, resultHandle, cracHandle, contextHandle, c_loadflow_parameters.get(), (char *) provider.data());
+}
+
+JavaHandle runMarmot(const std::vector<std::string>& timestamps, std::vector<JavaHandle>& networks, std::vector<JavaHandle>& cracs,
+                     const RaoParameters& parameters, const JavaHandle& constraints) {
+    auto c_parameters = parameters.to_c_struct();
+    int count = timestamps.size();
+    ToCharPtrPtr timestampsPtr(timestamps);
+    void** networksData = objectHandleVectorToPtr(networks);
+    void** cracsData = objectHandleVectorToPtr(cracs);
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runMarmot, timestampsPtr.get(), networksData, cracsData, count, c_parameters.get(), constraints);
 }
 
 
