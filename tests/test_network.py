@@ -1937,7 +1937,7 @@ def test_switch_flows():
     # This is the default openloadflow parameter for active power mismatch -> we can not expect better.
     maxActivePowerMismatch = 1e-2
 
-    switch_flows = network.get_switch_flows(['S1VL2_COUPLER'])
+    switch_flows = network.get_switch_flows('S1VL2_COUPLER')
     flow = switch_flows.loc['S1VL2_COUPLER']
     assert list(switch_flows.columns) == ['p', 'q']
 
