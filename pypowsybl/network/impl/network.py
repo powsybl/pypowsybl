@@ -776,6 +776,12 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         self._handle = _pp.detach_sub_network(self._handle)
 
+    def flatten(self) -> None:
+        """
+        Flatten the subnetworks to the current network.
+        """
+        self._handle = _pp.flatten(self._handle)
+
     def get_buses(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                   **kwargs: ArrayLike) -> DataFrame:
         r"""
