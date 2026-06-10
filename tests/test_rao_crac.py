@@ -155,33 +155,36 @@ class TestRaoCrac:
     def test_pst_range_actions(self):
         df = self.crac.get_pst_range_actions()
         assert ['name', 'operator', 'network_element_id', 'group_id', 'speed', 'activation_cost',
-                'variation_cost_up', 'variation_cost_down'] == list(df.columns)
+                'variation_cost_up', 'variation_cost_down', 'initial_tap'] == list(df.columns)
         action = df.loc['pstRange1Id']
 
         assert 'pstRange1Name' == action['name']
         assert 'RTE' == action['operator']
         assert 'pst' == action['network_element_id']
+        assert 2 == action['initial_tap']
 
     def test_hvdc_range_actions(self):
         df = self.crac.get_hvdc_range_actions()
         assert ['name', 'operator', 'network_element_id', 'group_id', 'speed', 'activation_cost',
-                'variation_cost_up', 'variation_cost_down'] == list(df.columns)
+                'variation_cost_up', 'variation_cost_down', 'initial_set_point'] == list(df.columns)
         action = df.loc['hvdcRange1Id']
 
         assert 'hvdcRange1Name' == action['name']
         assert 'RTE' == action['operator']
         assert 'hvdc' == action['network_element_id']
+        assert 100.0 == action['initial_set_point']
 
     def test_injection_range_actions(self):
         df = self.crac.get_injection_range_actions()
         assert ['name', 'operator', 'group_id', 'speed', 'activation_cost',
-                'variation_cost_up', 'variation_cost_down'] == list(df.columns)
+                'variation_cost_up', 'variation_cost_down', 'initial_set_point'] == list(df.columns)
         action = df.loc['injectionRange1Id']
 
         assert 'injectionRange1Name' == action['name']
         assert 30 == action['speed']
         assert math.isclose(800.0, action['activation_cost'])
         assert math.isclose(2000.0, action['variation_cost_up'])
+        assert 50.0 == action['initial_set_point']
 
     def test_network_elements_ids_and_keys(self):
         df = self.crac.get_network_element_ids_and_keys()
@@ -195,11 +198,12 @@ class TestRaoCrac:
     def test_counter_trade_range_actions(self):
         df = self.crac.get_counter_trade_range_actions()
         assert ['name', 'operator', 'exporting_country', 'importing_country', 'group_id', 'speed', 'activation_cost',
-                'variation_cost_up', 'variation_cost_down'] == list(df.columns)
+                'variation_cost_up', 'variation_cost_down', 'initial_set_point'] == list(df.columns)
         action = df.loc['counterTradeRange1Id']
         assert 'counterTradeRange1Name' == action['name']
         assert 30 == action['speed']
         assert math.isclose(10000.0, action['activation_cost'])
+        assert 0.0 == action['initial_set_point']
 
     def test_ranges(self):
         df = self.crac.get_ranges()

@@ -522,18 +522,35 @@ public final class RaoDataframes {
         return thresholds;
     }
 
-    public static <T extends RangeAction<?>> DataframeMapper<Crac, Void> cracRangeActions(Function<Crac, List<T>> actionsSupplier) {
-        return new DataframeMapperBuilder<Crac, T, Void>()
+    public static DataframeMapper<Crac, Void> cracPstRangeActions(Function<Crac, List<PstRangeAction>> actionsSupplier) {
+        return new DataframeMapperBuilder<Crac, PstRangeAction, Void>()
             .itemsProvider(actionsSupplier)
-            .stringsIndex("id", T::getId)
-            .strings("name", T::getName)
-            .strings("operator", T::getOperator)
+            .stringsIndex("id", PstRangeAction::getId)
+            .strings("name", PstRangeAction::getName)
+            .strings("operator", PstRangeAction::getOperator)
             .strings("network_element_id", a -> a.getNetworkElements().stream().toList().getFirst().getId())
             .strings("group_id", a -> a.getGroupId().orElse(""))
             .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
             .strings("activation_cost", a -> a.getActivationCost().map(Object::toString).orElse(""))
             .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(Object::toString).orElse(""))
             .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(Object::toString).orElse(""))
+            .ints("initial_tap", PstRangeAction::getInitialTap)
+            .build();
+    }
+
+    public static DataframeMapper<Crac, Void> cracHvdcRangeActions(Function<Crac, List<HvdcRangeAction>> actionsSupplier) {
+        return new DataframeMapperBuilder<Crac, HvdcRangeAction, Void>()
+            .itemsProvider(actionsSupplier)
+            .stringsIndex("id", HvdcRangeAction::getId)
+            .strings("name", HvdcRangeAction::getName)
+            .strings("operator", HvdcRangeAction::getOperator)
+            .strings("network_element_id", a -> a.getNetworkElements().stream().toList().getFirst().getId())
+            .strings("group_id", a -> a.getGroupId().orElse(""))
+            .optionalInts("speed", a -> a.getSpeed().map(OptionalInt::of).orElse(OptionalInt.empty()))
+            .strings("activation_cost", a -> a.getActivationCost().map(Object::toString).orElse(""))
+            .strings("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(Object::toString).orElse(""))
+            .strings("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(Object::toString).orElse(""))
+            .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
             .build();
     }
 
@@ -548,6 +565,7 @@ public final class RaoDataframes {
             .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
             .build();
     }
 
@@ -579,6 +597,7 @@ public final class RaoDataframes {
             .optionalDoubles("activation_cost", a -> a.getActivationCost().map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_up", a -> a.getVariationCost(VariationDirection.UP).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
             .optionalDoubles("variation_cost_down", a -> a.getVariationCost(VariationDirection.DOWN).map(OptionalDouble::of).orElseGet(OptionalDouble::empty))
+            .doubles("initial_set_point", StandardRangeAction::getInitialSetpoint)
             .build();
     }
 
