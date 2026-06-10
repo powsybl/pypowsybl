@@ -194,13 +194,13 @@ jobs:
           otool -L "$(brew --prefix ipopt)/lib/libipopt.dylib"
           echo "DYLD_LIBRARY_PATH=${IPOPT_LIB}:${DYLD_LIBRARY_PATH}" >> $GITHUB_ENV
 
-      - name: Install Miniconda and cyipopt (Windows)
+      - name: Install Ipopt (Windows, via miniconda)
         if: matrix.config.name == 'windows'
         shell: pwsh
         run: |
-          curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe -o miniconda.exe
+          curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-py313_26.3.2-2-Windows-x86_64.exe -o miniconda.exe
           Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
-          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge cyipopt -y
+          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge ipopt mumps -y
           echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Build wheel
