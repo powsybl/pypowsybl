@@ -1,0 +1,196 @@
+#
+# Copyright (c) 2026, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
+from typing import cast
+
+import pyoptinterface as poi
+
+from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
+from pypowsybl.opf.impl.model.variable_context import VariableContext
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.util import BranchRow, GeneratorRow, LoadRow, ConnectableRow, BoundaryLineRow
+
+
+class PowerBalanceConstraints(Constraints):
+
+    def add(self, parameters: ModelParameters, network_cache: NetworkCache,
+            variable_context: VariableContext, model: Model) -> None:
+        for bus_expr in self.create_bus_expr_list(network_cache, variable_context):
+            model.add_linear_constraint(bus_expr, poi.Eq, 0.0)
+
+
+    class BusesBalance:
+        def __init__(self, bus_count: int):
+            self.p_gen: list[list] = [[] for _ in range(bus_count)]
+            self.q_gen: list[list] = [[] for _ in range(bus_count)]
+            self.p_load = [0.0 for _ in range(bus_count)]
+            self.q_load = [0.0 for _ in range(bus_count)]
+
+        @staticmethod
+        def _to_expr(bus_gen: list, bus_load: list) -> list[poi.ExprBuilder]:
+            return [poi.ExprBuilder() + poi.quicksum(gen) - load
+                    for gen, load in zip(bus_gen, bus_load)]
+
+        def to_expr(self) -> list[poi.ExprBuilder]:
+            return self._to_expr(self.p_gen, self.p_load) + self._to_expr(self.q_gen, self.q_load)
+
+
+    def create_bus_expr_list(self, network_cache: NetworkCache, variable_context: VariableContext) -> list[poi.ExprBuilder]:
+        buses_balance = self.BusesBalance(len(network_cache.buses))
+
+        PowerBalanceConstraints._add_branch_buses_expr(buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_generators_buses_expr(buses_balance, network_cache, variable_context)
+        PowerBalanceConstraints._add_batteries_buses_expr(buses_balance, network_cache, variable_context)
+
+        # static var compensators
+        for svc_num, svc_row in enumerate(cast(list[ConnectableRow], network_cache.static_var_compensators.itertuples(index=False))):
+            bus_id = svc_row.bus_id
+            if bus_id:
+                svc_index = variable_context.svc_num_2_index[svc_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                buses_balance.q_gen[bus_num].append(variable_context.svc_q_vars[svc_index])
+
+        # aggregated loads
+        loads_sum = network_cache.loads.groupby("bus_id", as_index=False).agg({"p0": "sum", "q0": "sum"})
+        for load_row in cast(list[LoadRow], loads_sum.itertuples(index=False)):
+            bus_id = load_row.bus_id
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                assert isinstance(bus_num, int)
+                buses_balance.p_load[bus_num] -= load_row.p0
+                buses_balance.q_load[bus_num] -= load_row.q0
+
+        # shunts
+        for shunt_num, shunt_row in enumerate(cast(list[ConnectableRow], network_cache.shunts.itertuples(index=False))):
+            bus_id = shunt_row.bus_id
+            if bus_id:
+                shunt_index = variable_context.shunt_num_2_index[shunt_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                assert isinstance(bus_num, int)
+                buses_balance.p_gen[bus_num].append(variable_context.shunt_p_vars[shunt_index])
+                buses_balance.q_gen[bus_num].append(variable_context.shunt_q_vars[shunt_index])
+
+        # VSC converter stations
+        for vsc_cs_num, vsc_row in enumerate(cast(list[ConnectableRow], network_cache.vsc_converter_stations.itertuples(index=False))):
+            bus_id = vsc_row.bus_id
+            if bus_id:
+                vsc_cs_index = variable_context.vsc_cs_num_2_index[vsc_cs_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                assert isinstance(bus_num, int)
+                buses_balance.p_gen[bus_num].append(variable_context.vsc_cs_p_vars[vsc_cs_index])
+                buses_balance.q_gen[bus_num].append(variable_context.vsc_cs_q_vars[vsc_cs_index])
+
+        # boundary lines
+        bl_buses_balance = self.BusesBalance(len(variable_context.bl_v_vars))
+        PowerBalanceConstraints._add_bl_buses_expr(buses_balance, bl_buses_balance, network_cache, variable_context)
+
+        # 3 windings transformers
+        t3_buses_balance = self.BusesBalance(len(variable_context.t3_middle_v_vars))
+        PowerBalanceConstraints._add_3wts_buses_expr(buses_balance, t3_buses_balance, network_cache, variable_context)
+
+        return buses_balance.to_expr() + bl_buses_balance.to_expr() + t3_buses_balance.to_expr()
+
+    @staticmethod
+    def _add_branch_buses_expr(buses_balance: BusesBalance, network_cache: NetworkCache,
+                               variable_context: VariableContext) -> None:
+        for branch_num, row in enumerate(cast(list[BranchRow], network_cache.branches.itertuples(index=False))):
+            branch_index = variable_context.branch_num_2_index[branch_num]
+            if row.bus1_id and row.bus2_id:
+                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
+                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
+                buses_balance.p_gen[bus1_num].append(variable_context.closed_branch_p1_vars[branch_index])
+                buses_balance.q_gen[bus1_num].append(variable_context.closed_branch_q1_vars[branch_index])
+                buses_balance.p_gen[bus2_num].append(variable_context.closed_branch_p2_vars[branch_index])
+                buses_balance.q_gen[bus2_num].append(variable_context.closed_branch_q2_vars[branch_index])
+            elif row.bus2_id:
+                bus2_num = network_cache.buses.index.get_loc(row.bus2_id)
+                buses_balance.p_gen[bus2_num].append(variable_context.open_side1_branch_p2_vars[branch_index])
+                buses_balance.q_gen[bus2_num].append(variable_context.open_side1_branch_q2_vars[branch_index])
+            elif row.bus1_id:
+                bus1_num = network_cache.buses.index.get_loc(row.bus1_id)
+                buses_balance.p_gen[bus1_num].append(variable_context.open_side2_branch_p1_vars[branch_index])
+                buses_balance.q_gen[bus1_num].append(variable_context.open_side2_branch_q1_vars[branch_index])
+
+    @staticmethod
+    def _add_generators_buses_expr(buses_balance: BusesBalance, network_cache: NetworkCache,
+                                   variable_context: VariableContext) -> None:
+        for gen_num, gen_row in enumerate(cast(list[GeneratorRow], network_cache.generators.itertuples(index=False))):
+            bus_id = gen_row.bus_id
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                assert isinstance(bus_num, int)
+                gen_p_index = variable_context.gen_p_num_2_index[gen_num]
+                gen_q_index = variable_context.gen_q_num_2_index[gen_num]
+                buses_balance.p_gen[bus_num].append(variable_context.gen_p_vars[gen_p_index])
+                if gen_q_index == -1:  # invalid
+                    buses_balance.q_load[bus_num] += gen_row.target_q
+                else:
+                    buses_balance.q_gen[bus_num].append(variable_context.gen_q_vars[gen_q_index])
+
+    @staticmethod
+    def _add_batteries_buses_expr(buses_balance: BusesBalance, network_cache: NetworkCache,
+                                  variable_context: VariableContext) -> None:
+        for bat_num, bat_row in enumerate(cast(list[GeneratorRow], network_cache.batteries.itertuples(index=False))):
+            bus_id = bat_row.bus_id
+            if bus_id:
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                assert isinstance(bus_num, int)
+                bat_p_index = variable_context.bat_p_num_2_index[bat_num]
+                bat_q_index = variable_context.bat_q_num_2_index[bat_num]
+                buses_balance.p_gen[bus_num].append(variable_context.bat_p_vars[bat_p_index])
+                if bat_q_index == -1:  # invalid
+                    buses_balance.q_load[bus_num] += bat_row.target_q
+                else:
+                    buses_balance.q_gen[bus_num].append(variable_context.bat_q_vars[bat_q_index])
+
+    @staticmethod
+    def _add_bl_buses_expr(buses_balance: BusesBalance, bl_buses_balance: BusesBalance,
+                           network_cache: NetworkCache, variable_context: VariableContext) -> None:
+        for bl_num, bl_row in enumerate(cast(list[BoundaryLineRow], network_cache.boundary_lines.itertuples(index=False))):
+            bus_id = bl_row.bus_id
+            if bus_id:
+                bl_index = variable_context.bl_num_2_index[bl_num]
+                bus_num = network_cache.buses.index.get_loc(bus_id)
+                buses_balance.p_gen[bus_num].append(variable_context.bl_branch_p1_vars[bl_index])
+                buses_balance.q_gen[bus_num].append(variable_context.bl_branch_q1_vars[bl_index])
+                bl_buses_balance.p_gen[bl_index].append(variable_context.bl_branch_p2_vars[bl_index])
+                bl_buses_balance.q_gen[bl_index].append(variable_context.bl_branch_q2_vars[bl_index])
+                bl_buses_balance.p_load[bl_index] -= bl_row.p0
+                bl_buses_balance.q_load[bl_index] -= bl_row.q0
+
+    @staticmethod
+    def _add_3wts_buses_expr(buses_balance: BusesBalance, t3_buses_balance: BusesBalance,
+                             network_cache: NetworkCache, variable_context: VariableContext) -> None:
+        for t3_num, (t3_id, t3_row) in enumerate(network_cache.transformers_3w.iterrows()):
+            t3_index = variable_context.t3_num_2_index[t3_num]
+            if t3_row.bus1_id or t3_row.bus2_id or t3_row.bus3_id:
+                leg1_index = variable_context.t3_leg1_num_2_index[t3_num]
+                leg2_index = variable_context.t3_leg2_num_2_index[t3_num]
+                leg3_index = variable_context.t3_leg3_num_2_index[t3_num]
+
+                PowerBalanceConstraints._add_leg_buses_expr(t3_index, t3_row.bus1_id, leg1_index, network_cache, variable_context,
+                                    buses_balance, t3_buses_balance)
+                PowerBalanceConstraints._add_leg_buses_expr(t3_index, t3_row.bus2_id, leg2_index, network_cache, variable_context,
+                                    buses_balance, t3_buses_balance)
+                PowerBalanceConstraints._add_leg_buses_expr(t3_index, t3_row.bus3_id, leg3_index, network_cache, variable_context,
+                                    buses_balance, t3_buses_balance)
+
+    @staticmethod
+    def _add_leg_buses_expr(t3_index: int, bus_id: str, leg_index: int,
+                            network_cache: NetworkCache, variable_context: VariableContext,
+                            buses_balance: BusesBalance, t3_buses_balance: BusesBalance) -> None:
+        if bus_id:
+            bus_num = network_cache.buses.index.get_loc(bus_id)
+            buses_balance.p_gen[bus_num].append(variable_context.t3_closed_branch_p1_vars[leg_index])
+            buses_balance.q_gen[bus_num].append(variable_context.t3_closed_branch_q1_vars[leg_index])
+            t3_buses_balance.p_gen[t3_index].append(variable_context.t3_closed_branch_p2_vars[leg_index])
+            t3_buses_balance.q_gen[t3_index].append(variable_context.t3_closed_branch_q2_vars[leg_index])
+        else:
+            t3_buses_balance.p_gen[t3_index].append(variable_context.t3_open_side1_branch_p2_vars[leg_index])
+            t3_buses_balance.q_gen[t3_index].append(variable_context.t3_open_side1_branch_q2_vars[leg_index])
