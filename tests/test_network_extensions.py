@@ -10,6 +10,7 @@ import pathlib
 import pytest
 import util
 
+import pypowsybl
 import pypowsybl.network
 import pypowsybl.network as pn
 
@@ -224,6 +225,31 @@ def test_transformer_phase_angle_clock_extensions():
     recreated_three_windings_extension = three_windings_network.get_extensions('threeWindingsTransformerPhaseAngleClock').loc[transformer_t3_id]
     assert recreated_three_windings_extension.phase_angle_clock_leg2 == 0
     assert recreated_three_windings_extension.phase_angle_clock_leg3 == 6
+
+
+def test_transformer_phase_angle_clock_extension_invalid_range():
+    two_windings_network = pn.create_ieee14()
+    transformer_t1_id = two_windings_network.get_2_windings_transformers().index[0]
+    for invalid_value in (-1, 12):
+        with pytest.raises(pypowsybl.PyPowsyblError,
+                           match=f'Unexpected value for phaseAngleClock: {invalid_value}'):
+            two_windings_network.create_extensions('twoWindingsTransformerPhaseAngleClock',
+                                                   id=transformer_t1_id,
+                                                   phase_angle_clock=invalid_value)
+
+    for invalid_kwargs, invalid_value in (
+        ({'phase_angle_clock_leg2': -1, 'phase_angle_clock_leg3': 5}, -1),
+        ({'phase_angle_clock_leg2': 12, 'phase_angle_clock_leg3': 5}, 12),
+        ({'phase_angle_clock_leg2': 5, 'phase_angle_clock_leg3': -1}, -1),
+        ({'phase_angle_clock_leg2': 5, 'phase_angle_clock_leg3': 12}, 12),
+    ):
+        three_windings_network = util.create_three_windings_transformer_network()
+        transformer_t3_id = three_windings_network.get_3_windings_transformers().index[0]
+        with pytest.raises(pypowsybl.PyPowsyblError,
+                           match=f'Unexpected value for phaseAngleClock: {invalid_value}'):
+            three_windings_network.create_extensions('threeWindingsTransformerPhaseAngleClock',
+                                                     id=transformer_t3_id,
+                                                     **invalid_kwargs)
 
 
 def test_load_detail():
