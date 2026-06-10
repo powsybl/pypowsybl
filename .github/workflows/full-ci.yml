@@ -181,7 +181,7 @@ jobs:
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt mumps
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19 mumps==5.1.2
           echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install Ipopt (macOS arm64, via Homebrew)
@@ -200,7 +200,7 @@ jobs:
         run: |
           curl -fsSL https://repo.anaconda.com/miniconda/Miniconda3-py313_26.3.2-2-Windows-x86_64.exe -o miniconda.exe
           Start-Process -FilePath miniconda.exe -ArgumentList "/S /D=$env:USERPROFILE\miniconda" -Wait
-          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge ipopt mumps -y
+          & "$env:USERPROFILE\miniconda\Scripts\conda.exe" install -c conda-forge ipopt==3.14.19 mumps==5.1.2 -y
           echo "PATH=$env:USERPROFILE\miniconda\Library\bin;$env:PATH" >> $env:GITHUB_ENV
 
       - name: Build wheel
@@ -271,7 +271,7 @@ jobs:
         shell: bash
         run: |
           curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba
-          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt mumps
+          ./bin/micromamba create -y -p $HOME/ipopt-env -c conda-forge ipopt==3.14.19 mumps==5.1.2
           echo "LD_LIBRARY_PATH=$HOME/ipopt-env/lib:${LD_LIBRARY_PATH}" >> $GITHUB_ENV
 
       - name: Install the package
