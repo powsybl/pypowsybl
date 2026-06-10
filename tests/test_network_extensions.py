@@ -674,6 +674,7 @@ def test_batteries_voltage_regulation():
     network.remove_extensions('voltageRegulation', ['BAT'])
     assert network.get_extensions('voltageRegulation').empty
 
+
 def test_get_extensions_information():
     extensions_information = pypowsybl.network.get_extensions_information()
     assert extensions_information.loc['cgmesMetadataModels']['detail'] == 'Provides information about CGMES metadata models'
