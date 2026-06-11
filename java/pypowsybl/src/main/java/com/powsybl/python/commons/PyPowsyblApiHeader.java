@@ -565,6 +565,9 @@ public final class PyPowsyblApiHeader {
         @CFieldAddress("limit_violations")
         ArrayPointer<LimitViolationPointer> limitViolations();
 
+        @CFieldAddress("disconnected_elements")
+        ArrayPointer<CCharPointerPointer> disconnectedElements();
+
         PostContingencyResultPointer addressOf(int index);
     }
 

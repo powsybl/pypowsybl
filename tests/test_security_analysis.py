@@ -278,6 +278,19 @@ def test_different_equipment_contingency():
     assert 'Twt contingency' in sa_result.post_contingency_results.keys()
     assert 'Switch contingency' in sa_result.post_contingency_results.keys()
 
+def test_post_contingency_disconnected_elements():
+    n = pp.network.create_four_substations_node_breaker_network()
+    sa = pp.security.create_analysis()
+    sa.add_single_element_contingency('S4VL1_BBS', 'Busbar contingency')
+    params = pp.security.Parameters(provider_parameters={
+        'contingencyPropagation': 'true',
+        'createResultExtension': 'true',
+    })
+
+    sa_result = sa.run_ac(n, parameters=params)
+
+    assert sorted(sa_result.find_post_contingency_result('Busbar contingency').disconnected_elements) == ['LD6', 'LINE_S3S4', 'SVC']
+
 def test_load_action():
     n = pp.network.create_eurostag_tutorial_example1_network()
     sa = pp.security.create_analysis()
