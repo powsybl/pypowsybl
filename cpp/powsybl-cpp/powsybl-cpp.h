@@ -189,7 +189,6 @@ typedef Array<loadflow_component_result> LoadFlowComponentResultArray;
 typedef Array<post_contingency_result> PostContingencyResultArray;
 typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
-typedef Array<char*> StringArray;
 typedef Array<series> SeriesArray;
 
 
