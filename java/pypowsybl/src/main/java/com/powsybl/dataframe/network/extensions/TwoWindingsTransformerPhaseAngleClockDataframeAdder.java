@@ -6,6 +6,9 @@
  */
 package com.powsybl.dataframe.network.extensions;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.adders.AbstractSimpleAdder;

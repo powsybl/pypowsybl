@@ -1044,3 +1044,65 @@ Using the same example as above :
     LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT     False
     LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP      True
 
+
+Using network extensions
+------------------------
+
+Network extensions are exposed through a small set of generic methods:
+
+- :func:`get_extensions_names` to list the available extension names
+- :func:`get_extensions_information` to inspect the dataframe schema of each extension
+- :meth:`Network.get_extensions` to read extension data
+- :meth:`Network.create_extensions`, :meth:`Network.update_extensions` and :meth:`Network.remove_extensions` to manage extension data
+
+Pypowsybl mostly exposes the powsybl-core extension model as read/write dataframes. For the semantic meaning of a specific extension,
+refer to the `powsybl-core extensions documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/latest/grid_model/extensions.html>`_.
+
+For example, transformer phase-angle-clock extensions can be discovered from the extension catalog:
+
+.. code-block:: python
+
+    >>> available_extensions = pp.network.get_extensions_names()
+    >>> available_extensions[0:5]
+    ['activePowerControl',
+    'branchObservability',
+    'busbarSectionPosition',
+    'cgmesMetadataModels',
+    'coordinatedReactiveControl']
+
+    >>> extensions_information = pp.network.get_extensions_information()
+    >>> extensions_information.loc['twoWindingsTransformerPhaseAngleClock', 'attributes']
+    'index : id (str), phase_angle_clock (int)'
+
+Sticking to the phase clock extension as an example, create, update and remove can be used as follows.
+
+.. code-block:: python
+
+    >>> network = pp.network.create_ieee14()
+    >>> transformer_id = network.get_2_windings_transformers().index[0]
+
+    >>> network.create_extensions(
+    ...     'twoWindingsTransformerPhaseAngleClock',
+    ...     id=transformer_id,
+    ...     phase_angle_clock=5,
+    ... )
+
+    >>> phase_angle_clock = network.get_extensions('twoWindingsTransformerPhaseAngleClock').loc[transformer_id]
+    >>> phase_angle_clock.phase_angle_clock
+    5
+
+    >>> network.update_extensions(
+    ...     'twoWindingsTransformerPhaseAngleClock',
+    ...     id=transformer_id,
+    ...     phase_angle_clock=11,
+    ... )
+
+    >>> network.get_extensions('twoWindingsTransformerPhaseAngleClock').loc[transformer_id].phase_angle_clock
+    11
+
+    >>> network.remove_extensions('twoWindingsTransformerPhaseAngleClock', [transformer_id])
+    >>> network.get_extensions('twoWindingsTransformerPhaseAngleClock').empty
+    True
+
+The same workflow applies to other extensions.
+

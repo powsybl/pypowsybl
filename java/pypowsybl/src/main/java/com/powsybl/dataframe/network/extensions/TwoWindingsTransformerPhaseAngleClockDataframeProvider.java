@@ -6,6 +6,10 @@
  */
 package com.powsybl.dataframe.network.extensions;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import com.google.auto.service.AutoService;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.network.ExtensionInformation;
