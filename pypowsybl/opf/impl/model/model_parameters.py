@@ -11,6 +11,12 @@ from pypowsybl.opf.impl.model.bounds import Bounds
 
 
 class SolverType(Enum):
+    """Solver types supported by the OPF implementation.
+
+    Members:
+        IPOPT
+        KNITRO
+    """
     IPOPT = "IPOPT"
     KNITRO = "KNITRO"
 

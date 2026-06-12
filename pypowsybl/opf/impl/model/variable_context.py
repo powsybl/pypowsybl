@@ -17,6 +17,20 @@ from pypowsybl.opf.impl.util import TRACE_LEVEL, HvdcRow
 
 logger = logging.getLogger(__name__)
 
+def set_dc_node_voltage_starts(network_cache: NetworkCache, model: Model, v_dc_vars: Any) -> None:
+    dc_node_count = len(network_cache.dc_nodes)
+    grounded_dc_nodes_ids = {row.dc_node_id for row in network_cache.dc_grounds.itertuples(index=False)}
+
+    for dc_node_num, row in enumerate(network_cache.dc_nodes.itertuples()):
+        if row.Index in grounded_dc_nodes_ids:
+            start_v = 0.0
+        else:
+            #hack to guarantee functional initialization for P_DC = (conv_i * |v1-v2|). The hack avoids V1=V2 at start which stops solver at first iteration
+            start_v = 1.0 + 1e-4 * (dc_node_num - (dc_node_count - 1) / 2)
+        logger.log(TRACE_LEVEL,
+                    f"Set start value {start_v} for voltage variable of dc node '{row.Index}' (num={dc_node_num})")
+        model.set_variable_start(v_dc_vars[dc_node_num], start_v)
+
 
 @dataclass
 class VariableContext:
@@ -83,6 +97,7 @@ class VariableContext:
         v_vars = model.add_m_variables(bus_count, name="v")
         ph_vars = model.add_m_variables(bus_count, name="ph")
         v_dc_vars = model.add_m_variables(dc_node_count, name="v_dc")
+        set_dc_node_voltage_starts(network_cache, model, v_dc_vars)
 
         gen_count = len(network_cache.generators)
         gen_p_nums: list[int] = []

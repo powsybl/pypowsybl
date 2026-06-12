@@ -1,4 +1,4 @@
-# Copyright (c) 2025, SuperGrid Institute (http://www.supergrid-institute.com)
+# Copyright (c) 2026, SuperGrid Institute (http://www.supergrid-institute.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -49,10 +49,12 @@ class VoltageSourceConverterConstraints(Constraints):
                     q_ac_eq = conv_q_var - target_q
                     model.add_linear_constraint(q_ac_eq, poi.Eq, 0.0)
 
-                # P_loss = loss_1 + loss_2*I_ac + loss_3*I_ac**2 with the 3 loss coefficients
-                i_ac_var = nl.sqrt(nl.pow(conv_p_var,2) + nl.pow(conv_q_var,2))/1000.0
-                p_loss = idle_loss + switching_loss*i_ac_var + resistive_loss*nl.pow(i_ac_var,2)
+                # P_loss = loss_1 + loss_2*I_dc + loss_3*I_dc**2 with the 3 loss coefficients
+                i_dc_var = nl.abs(conv_i_var)
+                p_loss = idle_loss + switching_loss*i_dc_var + resistive_loss*nl.pow(i_dc_var,2)
                 # VSC power balance equation: P_AC + P_DC = P_loss with P_DC = I * (V(dc_node1) - V(dc_node2))
                 conv_p_dc_eq = conv_p_var + conv_i_var * (v1_var - v2_var) - p_loss
 
                 model.add_nl_constraint(conv_p_dc_eq, poi.Eq, 0.0)
+                
+                

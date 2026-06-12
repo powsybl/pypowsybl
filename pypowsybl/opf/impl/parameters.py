@@ -11,18 +11,37 @@ from pypowsybl.opf.impl.model.model_parameters import SolverType
 
 
 class OptimalPowerFlowMode(Enum):
+    """Enumeration of optimal power flow execution modes.
+    Attributes:
+        LOADFLOW: OPF based on a standard AC load-flow formulation.
+        REDISPATCHING: OPF with a redispatching-oriented objective and current-limit constraints.
+        ACDC: OPF including detailed DC components and associated validation rules.
+    """
     LOADFLOW = "LOADFLOW"
     REDISPATCHING = "REDISPATCHING"
     ACDC = "ACDC"
 
 
 class OptimalPowerFlowParameters:
+    """Container for optimal power flow solver configuration parameters."""
+
     def __init__(self,
                  reactive_bounds_reduction: float = 0.1,
                  twt_split_shunt_admittance: bool = False,
                  mode: OptimalPowerFlowMode = OptimalPowerFlowMode.LOADFLOW,
                  default_voltage_bounds: tuple[float, float] = (0.8, 1.1),
                  solver_type: SolverType = SolverType.IPOPT) -> None:
+        """Initialize optimal power flow parameters.
+
+        Args:
+            reactive_bounds_reduction: Fraction to reduce reactive power bounds.
+            twt_split_shunt_admittance: Whether to split shunt admittance between
+                pi-branch terminals.
+            mode: Optimal power flow mode to use.
+            default_voltage_bounds: Default voltage magnitude bounds as a tuple
+                (min, max).
+            solver_type: Solver type for the optimal power flow solver.
+        """
         self._reactive_bounds_reduction = reactive_bounds_reduction
         self._twt_split_shunt_admittance = twt_split_shunt_admittance
         self._mode = mode

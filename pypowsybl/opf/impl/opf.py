@@ -46,7 +46,7 @@ from pypowsybl.opf.impl.model.network_cache import NetworkCache
 from pypowsybl.opf.impl.model.opf_model import OpfModel
 from pypowsybl.opf.impl.network_statistics import NetworkStatistics
 from pypowsybl.opf.impl.parameters import OptimalPowerFlowParameters, OptimalPowerFlowMode
-from pypowsybl.opf.impl.acdc_network_validator import AcdcNetworkValidator
+from pypowsybl.opf.impl.acdc_network_validator import validate_acdc_network
 logger = logging.getLogger(__name__)
 
 
@@ -72,10 +72,12 @@ class OptimalPowerFlow:
         self._network = network
 
     def run(self, parameters: OptimalPowerFlowParameters) -> bool:
-        network_cache = NetworkCache(self._network)
 
         if parameters.mode == OptimalPowerFlowMode.ACDC:
-            AcdcNetworkValidator(network_cache).validate()
+            validate_acdc_network(self._network)
+
+        network_cache = NetworkCache(self._network)
+
 
         variable_bounds = [BusVoltageBounds(),
                            SlackBusAngleBounds(),
@@ -143,5 +145,15 @@ class OptimalPowerFlow:
 
 
 def run_ac(network: Network, parameters: OptimalPowerFlowParameters = OptimalPowerFlowParameters()) -> bool:
+    """Run AC optimal power flow on the provided network.
+
+    Args:
+        network (Network): The network on which to solve the optimal power flow.
+        parameters (OptimalPowerFlowParameters, optional): Optimization parameters and solver settings.
+            Defaults to OptimalPowerFlowParameters().
+
+    Returns:
+        bool: True if the optimization terminated with an optimal or locally solved status, False otherwise.
+    """
     opf = OptimalPowerFlow(network)
     return opf.run(parameters)

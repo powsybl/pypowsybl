@@ -10,19 +10,22 @@ Running an optimal power flow
 
 You can use the module :mod:`pypowsybl.opf` to run optimal power flow calculations.
 
-Optimal Power Flow (OPF) adds optimization to a standard load-flow calculation. A standard load flow computes branch flows and bus voltages from specified set points, such as generator active power and voltage targets. OPF searches for the best operating point for a given objective, while satisfying the power-flow equations and operational constraints modeled by the OPF implementation.
+A standard load flow solves for branch flows and bus voltages from specified set points, such as generator active power and voltage targets. Optimal Power Flow (OPF) searches for the best operating point for a given objective, while satisfying the power-flow equations and operational constraints modeled by the OPF implementation.
+
+In AC/DC mode, OPF solves a coupled model with AC buses, detailed DC nodes and lines, and voltage source converters (VSCs) linking the AC and DC sides.
+
 
 Running an OPF
 --------------
 
-Start by importing the module:
+Start by importing the network and OPF modules:
 
 .. code-block:: python
 
     import pypowsybl.network as n
     import pypowsybl.opf as opf
 
-Then create a network, configure the OPF parameters, and run the calculation:
+Create a network, select an OPF mode, and run the calculation:
 
 .. code-block:: python
 
@@ -38,127 +41,175 @@ Then create a network, configure the OPF parameters, and run the calculation:
     if not success:
         raise RuntimeError("OPF did not converge")
 
-The :func:`run_ac` function returns ``True`` when the OPF converges and ``False`` otherwise.
 
 Parameters
 ----------
 
-Use :class:`OptimalPowerFlowParameters` to configure the OPF.
+The calculation is configured with :class:`OptimalPowerFlowParameters`.
 
-The main parameters are:
+This user guide only shows the main execution path. For the complete list of parameters, modes, solver options and default values, see the OPF API reference.
 
-- ``mode``: OPF mode to run
-- ``solver_type``: solver used by the OPF
-- ``solver_options``: solver-specific options
-
-Parameters can be passed in the constructor or configured with fluent methods:
-
-.. code-block:: python
-
-    parameters = (
-        opf.OptimalPowerFlowParameters()
-        .with_mode(opf.OptimalPowerFlowMode.REDISPATCHING)
-        .with_solver_type(opf.SolverType.IPOPT)
-        .with_solver_option("max_iter", 50)
-    )
-
-OPF modes
----------
-
-The available modes are defined by :class:`OptimalPowerFlowMode`.
-
-- ``LOADFLOW``: OPF based on a standard AC load-flow formulation
-- ``REDISPATCHING``: OPF with a redispatching-oriented objective and current-limit constraints
-- ``ACDC``: OPF including detailed DC components and associated validation rules
-
-Solvers
--------
-
-The available solvers are defined by :class:`SolverType`.
-
-- ``IPOPT``
-- ``KNITRO``
-
-Select the solver with the ``solver_type`` parameter.
 
 Results
 -------
 
-Run the OPF with :func:`run_ac`.
+The :func:`run_ac` function returns ``True`` when the calculation converges and ``False`` otherwise.
 
-The function returns a boolean convergence status:
+When the calculation converges, solved values are written back to the network object. This includes the computed operating point as well as the solved power flow results of the network. These values can be read from the usual network dataframes.
 
-- ``True``: the OPF converged
-- ``False``: the OPF did not converge
 
-When the OPF succeeds, the network is updated in place with the computed operating point.
+AC/DC model overview
+====================
+
+In AC/DC mode, OPF solves AC and DC equations in the same optimization problem. The model includes:
+
+- AC bus voltage magnitudes and angles;
+- DC node voltages;
+- DC line currents;
+- VSC active and reactive powers;
+- converter DC currents.
+
+DC buses
+--------
+
+Each detailed DC connected component must contain at least one grounded DC node. A grounded DC node has zero potential. Other DC nodes satisfy a current-balance equation:
+
+.. math::
+
+    \sum_i I_i = 0
+
+where the currents are the currents flowing out of the DC node.
+
+
+DC lines
+--------
+
+A DC line between ``dc_node1`` and ``dc_node2`` is modeled with Ohm's law.
+
+For a line resistance ``R`` and node voltages ``V1`` and ``V2``:
+
+.. math::
+
+    I_1 = \frac{V_1 - V_2}{R}
+
+.. math::
+
+    I_2 = \frac{V_2 - V_1}{R}
+
+``I1`` is positive when current flows out of ``dc_node1`` towards the line. ``I2`` is positive when current flows out of ``dc_node2`` towards the line.
+
+
+Voltage source converters
+-------------------------
+
+A voltage source converter links one AC bus to two DC nodes.
+
+A VSC can control either:
+
+- the active power on the AC side, with ``P_PCC`` mode;
+- the voltage difference between its two DC nodes, with ``V_DC`` mode.
+
+For ``P_PCC`` mode, the AC active-power target follows the converter AC-terminal load convention.
+
+For ``V_DC`` mode, the voltage target is:
+
+.. math::
+
+    V(dc\_node1) - V(dc\_node2) = target\_v\_dc
+
+Therefore, a positive ``target_v_dc`` means:
+
+.. math::
+
+    V(dc\_node1) \gt V(dc\_node2)
+
+Converter power balance
+-----------------------
+
+The converter DC current ``I`` is oriented from ``dc_node1`` to ``dc_node2``.
+
+The DC-side converter power is:
+
+.. math::
+
+    P_{DC} = I \cdot (V(dc\_node1) - V(dc\_node2))
+
+The active-power balance of the converter is:
+
+.. math::
+
+    P_{AC} + P_{DC} = P_{loss}
+
+with:
+
+.. math::
+
+    P_{loss} \geq 0
+
+In rectifier mode, power flows from AC to DC:
+
+.. math::
+
+    P_{AC} \gt 0,\quad P_{DC} \lt 0
+
+In inverter mode, power flows from DC to AC:
+
+.. math::
+
+    P_{AC} \lt 0,\quad P_{DC} \gt 0
 
 Sign conventions
-================
+----------------
 
 OPF follows PowSyBl/IIDM sign conventions.
 
-- Loads: positive active and reactive powers are consumption.
-- Generator and battery targets: positive active power means injection into the bus.
-- Terminal flows use the load sign convention: positive means the equipment absorbs power.
-- For a branch, ``p_i,j`` is positive when active power flows out of bus ``i``.
+Loads use the load convention: positive active and reactive powers mean consumption.
 
-- For a VSC in ``P_PCC`` mode, ``target_p`` and the written ``p_ac`` value follow the converter AC-terminal load sign convention.
+Generator targets use the generator convention: positive active power means injection into the bus. Resolved terminal powers use the terminal/load convention: positive means absorption by the equipment.
 
-  - ``target_p > 0`` and ``p_ac > 0`` mean the converter absorbs active power from the AC network.
-  - ``target_p < 0`` and ``p_ac < 0`` mean the converter injects active power into the AC network.
-  - The same applies for reactive power.
+VSC AC powers use the load convention:
 
-- Converter balance follows::
+- ``P_AC > 0`` means the converter absorbs active power from the AC network;
+- ``P_AC < 0`` means the converter injects active power into the AC network.
 
-    P_AC + P_DC = P_loss
+For ``P_PCC`` mode, ``target_p`` and the written ``p_ac`` value both follow this converter AC-terminal convention.
 
-  with ``P_loss >= 0``.
+.. warning::
 
-- The converter DC-side power is oriented as::
+   The written values ``p_dc1`` and ``p_dc2`` are oriented voltage-current products:
 
-    P_DC = I * (V(dc_node1) - V(dc_node2))
+   .. math::
 
-- For a VSC in rectifier mode:
+      p\_dc1 = I \cdot V(dc\_node1)
 
-  - ``P_AC > 0``: the converter absorbs active power from the AC network.
-  - ``P_DC < 0``: the converter injects active power into the DC network.
+   .. math::
 
-- For a VSC in inverter mode:
+      p\_dc2 = I \cdot V(dc\_node2)
 
-  - ``P_AC < 0``: the converter injects active power into the AC network.
-  - ``P_DC > 0``: the converter absorbs active power from the DC network.
+   They should not be interpreted independently as terminal powers in load convention.
 
-- For DC voltage control, ``target_v_dc`` means::
+   The meaningful DC-side converter power is the oriented difference:
 
-    V(dc_node1) - V(dc_node2) = target_v_dc
+   .. math::
 
-  Therefore, a positive ``target_v_dc`` means ``V(dc_node1) > V(dc_node2)``.
+      P_{DC} = p\_dc1 - p\_dc2
 
-- Internally, the converter DC current variable ``I`` is oriented from ``dc_node1`` to ``dc_node2``.
+   which is consistent with the converter balance:
 
-  - ``I > 0`` means current flows from ``dc_node1`` to ``dc_node2``.
-  - ``I < 0`` means current flows from ``dc_node2`` to ``dc_node1``.
+   .. math::
 
-- The written DC-side values ``p_dc1`` and ``p_dc2`` are currently computed from that oriented current and the solved DC node voltages::
+      P_{AC} + P_{DC} = P_{loss}
 
-    p_dc1 = I * V(dc_node1)
-    p_dc2 = I * V(dc_node2)
-
-  These values are oriented voltage-current products used for write-back and diagnostics.
-  They should not be interpreted independently as terminal powers in load sign convention.
-
-- The meaningful oriented DC-side power difference is::
-
-    P_DC = p_dc1 - p_dc2 = I * (V(dc_node1) - V(dc_node2))
-
-  This difference is the value consistent with the converter balance ``P_AC + P_DC = P_loss``.
 
 Per-unit conventions
---------------------
+====================
 
 OPF works internally in per-unit.
 
-- Active and reactive powers use the nominal apparent power base
-- AC voltages use the nominal voltage of the voltage level
-- In AC/DC OPF, all DC nodes in the same detailed DC connected component must have the same nominal voltage, to avoid subtracting DC voltages defined on different bases
+Active and reactive powers use the nominal apparent power base. AC voltages use the nominal voltage of the voltage level.
+
+
+DC voltage bases
+----------------
+
+In AC/DC OPF, all DC nodes in the same detailed DC connected component must have the same nominal voltage. This avoids subtracting DC voltages defined on different bases.

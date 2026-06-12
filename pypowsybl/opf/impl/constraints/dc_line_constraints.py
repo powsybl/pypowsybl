@@ -1,4 +1,4 @@
-# Copyright (c) 2025, SuperGrid Institute (http://www.supergrid-institute.com)
+# Copyright (c) 2026, SuperGrid Institute (http://www.supergrid-institute.com)
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -16,6 +16,11 @@ from pypowsybl.opf.impl.model.variable_context import VariableContext
 class DcLineConstraints(Constraints):
     def add(self, parameters: ModelParameters, network_cache: NetworkCache, variable_context: VariableContext,
             model: ipopt.Model) -> None:
+        
+        # FIXME add DC switch support once the PyPowSyBl DC switch API is available.
+        # DC switches may affect the effective DC topology and/or add additional branches
+        # The DC equations currently only account for DC lines.
+        
         for dc_line_num, dc_line_row in enumerate(network_cache.dc_lines.itertuples(index=False)):
             dc_node1_id, dc_node2_id, r = dc_line_row.dc_node1_id, dc_line_row.dc_node2_id, dc_line_row.r
             dc_node1_num = network_cache.dc_nodes.index.get_loc(dc_node1_id)
@@ -26,6 +31,13 @@ class DcLineConstraints(Constraints):
             v2_var = variable_context.v_dc_vars[dc_node2_num]
             i1_var = variable_context.closed_dc_line_i1_vars[dc_line_index]
             i2_var = variable_context.closed_dc_line_i2_vars[dc_line_index]
+
+
+            # FIXME consider using a single oriented current variable per DC line.
+            # The current formulation uses i1 and i2, but Ohm's law enforces i2 = -i1,
+            # so one variable is redundant. A single current variable would reduce the
+            # OPF dimension, but requires updating DC line variables, bounds, write-back,
+            # current balance constraints, and the DC losses objective consistently.
 
             # i1 is oriented from dc_node1 to dc_node2; i2 is oriented from dc_node2 to dc_node1.
             # Positive terminal current means current leaves the corresponding node and enters the DC line.

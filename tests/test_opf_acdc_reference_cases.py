@@ -1,8 +1,7 @@
 import math
-
+import pytest
 import pypowsybl as pp
 import pypowsybl.opf as opf
-
 
 V_DC_REF_KV = 400.0
 P_REF_B_MW = -30.0
@@ -15,6 +14,14 @@ ATOL_MW = 1e-3
 
 
 def run_acdc(network):
+    """Run an AC/DC optimal power flow on the given network.
+
+    Args:
+        network: A PyPowsybl network containing AC and DC elements.
+
+    Returns:
+        bool: True if the optimal power flow converged, otherwise False.
+    """
     parameters = opf.OptimalPowerFlowParameters(
         mode=opf.OptimalPowerFlowMode.ACDC,
         solver_type=opf.SolverType.IPOPT,
@@ -22,7 +29,17 @@ def run_acdc(network):
     return opf.run_ac(network, parameters)
 
 
-def _build_ac_island(network, suffix, *, with_load=False):
+def build_ac_island(network, suffix, with_load=False):
+    """Create a simple AC island with one generator and optional load.
+
+    Args:
+        network: The PyPowsybl network object to modify.
+        suffix: Suffix used to generate unique IDs for voltage level, bus, and elements.
+        with_load (bool, optional): Whether to add a load to the AC bus. Defaults to False.
+
+    Returns:
+        tuple[str, str]: Voltage level ID and bus ID created for the AC island.
+    """
     voltage_level_id = f"vl{suffix}"
     bus_id = f"b{suffix}"
 
@@ -59,14 +76,19 @@ def _build_ac_island(network, suffix, *, with_load=False):
 
 
 def create_back_to_back_dc_network():
+    """Construct a test network with VSCs connected back-to-back without a DC line on the DC side, and to two AC islands on the AC side.
+
+    Returns:
+        network: A PyPowsybl network containing two voltage source converters connected by DC nodes.
+    """
     n = pp.network.create_empty()
 
     n.create_dc_nodes(id="dn1", nominal_v=400.0)
     n.create_dc_nodes(id="dn2", nominal_v=400.0)
     n.create_dc_grounds(id="dg", r=0.0, dc_node_id="dn2")
 
-    vl_a, bus_a = _build_ac_island(n, "A", with_load=False)
-    vl_b, bus_b = _build_ac_island(n, "B", with_load=True)
+    vl_a, bus_a = build_ac_island(n, "A", with_load=False)
+    vl_b, bus_b = build_ac_island(n, "B", with_load=True)
 
     n.create_voltage_source_converters(
         id="convA",
@@ -105,6 +127,11 @@ def create_back_to_back_dc_network():
 
 
 def create_asymmetric_dc_line_network():
+    """Construct a test network with VSCs connected over a DC line on the DC side, and to two AC islands on the AC side.
+
+    Returns:
+        network: A PyPowsybl network with two DC node pairs, a DC line, and two AC islands.
+    """
     n = pp.network.create_empty()
 
     n.create_dc_nodes(id="dn1A", nominal_v=400.0)
@@ -116,8 +143,8 @@ def create_asymmetric_dc_line_network():
     n.create_dc_grounds(id="dgB", r=0.0, dc_node_id="dn2B")
     n.create_dc_lines(id="dl_AB", dc_node1_id="dn1A", dc_node2_id="dn1B", r=R_DC_OHM)
 
-    vl_a, bus_a = _build_ac_island(n, "A", with_load=False)
-    vl_b, bus_b = _build_ac_island(n, "B", with_load=True)
+    vl_a, bus_a = build_ac_island(n, "A", with_load=False)
+    vl_b, bus_b = build_ac_island(n, "B", with_load=True)
 
     n.create_voltage_source_converters(
         id="convA",
@@ -156,27 +183,58 @@ def create_asymmetric_dc_line_network():
     return n
 
 
+
 def test_back_to_back_dc_analytical():
+    """Verify analytical results for a back-to-back DC network.
+
+    The test checks DC node voltages, converter AC power, and generator targets against expected values.
+    """
     n = create_back_to_back_dc_network()
 
     assert run_acdc(n), "OPF did not converge on back-to-back DC network"
 
     dc_nodes = n.get_dc_nodes()
     vscs = n.get_voltage_source_converters()
+    gens = n.get_generators()
 
-    v1 = dc_nodes.loc["dn1", "v"]
-    v2 = dc_nodes.loc["dn2", "v"]
+    v1 = float(dc_nodes.loc["dn1", "v"])
+    v2 = float(dc_nodes.loc["dn2", "v"])
+
+    p_ac_a = float(vscs.loc["convA", "p_ac"])
+    p_ac_b = float(vscs.loc["convB", "p_ac"])
+
+    g_a_target_p = float(gens.loc["gA", "target_p"])
+    g_b_target_p = float(gens.loc["gB", "target_p"])
+    g_a_terminal_p = float(gens.loc["gA", "p"])
+    g_b_terminal_p = float(gens.loc["gB", "p"])
+
+    expected_gen_a = abs(P_REF_B_MW)
+    expected_gen_b = P_LOAD_B_MW + P_REF_B_MW
 
     assert abs((v1 - v2) - V_DC_REF_KV) < ATOL_KV
     assert abs(v2) < ATOL_KV
-    assert abs(vscs.loc["convB", "p_ac"] - P_REF_B_MW) < ATOL_MW
+
+    assert abs(p_ac_b - P_REF_B_MW) < ATOL_MW
+    assert p_ac_b < 0.0
+
+    assert abs(p_ac_a - expected_gen_a) < ATOL_MW
+    assert p_ac_a > 0.0
+
+    assert abs(g_a_target_p - expected_gen_a) < ATOL_MW
+    assert abs(g_a_terminal_p + expected_gen_a) < ATOL_MW
+
+    assert abs(g_b_target_p - expected_gen_b) < ATOL_MW
+    assert abs(g_b_terminal_p + expected_gen_b) < ATOL_MW
 
 
-import pytest
 
 
 
 def test_asymmetric_dc_line_analytical_closed_form_full_test():
+    """Verify closed-form analytical results for an asymmetric DC line network.
+
+    The test validates DC node voltages, AC converter power, and generator dispatch values against expected analytic values.
+    """
     n = create_asymmetric_dc_line_network()
 
     assert run_acdc(n), "OPF did not converge on asymmetric DC line network"
@@ -229,8 +287,12 @@ def test_asymmetric_dc_line_analytical_closed_form_full_test():
 
 
 def test_official_asymmetrical_monopole_run_ac_is_rejected_for_mixed_nominal_voltages():
+    """Ensure mixed nominal DC voltages are rejected for ACDC optimal power flow.
+
+    The test asserts that run_ac raises a ValueError when DC nodes in the network have differing nominal voltages.
+    """
     n = pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network()
     params = opf.OptimalPowerFlowParameters(mode=opf.OptimalPowerFlowMode.ACDC)
 
-    with pytest.raises(ValueError, match="All DC nodes must have the same nominal voltage"):
+    with pytest.raises(ValueError, match="has several nominal voltages"):
         opf.run_ac(n, params)
