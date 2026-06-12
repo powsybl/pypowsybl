@@ -46,22 +46,18 @@ endmacro()
 
 cmake_path(SET math-native-jar "${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/powsybl-math-native.jar")
 cmake_path(SET ortools-jar "${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/ortools-${CMAKE_SYSTEM_NAME}-${ARCH_ID}.jar")
-cmake_path(SET jna-jar "${PYPOWSYBL_JAVA_SRC_DIR}/target/dependency/jna.jar")
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     extract_and_install_native_lib(${math-native-jar} natives/windows_${OS_BITS} math.dll)
     extract_and_install_native_lib(${ortools-jar} ortools-win32-${ARCH_ID} jniortools.dll)
-    extract_and_install_native_lib(${jna-jar} com/sun/jna/win32-x86-64 jnidispatch.dll)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     extract_and_install_native_lib(${math-native-jar} natives/linux_${OS_BITS} libmath.so)
     extract_and_install_native_lib(${ortools-jar} ortools-linux-${ARCH_ID} libjniortools.so)
     extract_and_install_native_lib(${ortools-jar} ortools-linux-${ARCH_ID} libortools.so.9)
-    extract_and_install_native_lib(${jna-jar} com/sun/jna/linux-x86-64 libjnidispatch.so)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     extract_and_install_native_lib(${math-native-jar} natives/osx_${OS_BITS} libmath.dylib)
     extract_and_install_native_lib(${ortools-jar} ortools-darwin-${ARCH_ID} libjniortools.dylib)
     extract_and_install_native_lib(${ortools-jar} ortools-darwin-${ARCH_ID} libortools.9.dylib)
-    extract_and_install_native_lib(${jna-jar} com/sun/jna/darwin-aarch64 libjnidispatch.jnilib)
 else()
     message(FATAL_ERROR "System not supported: ${CMAKE_SYSTEM_NAME}")
 endif()
@@ -97,7 +93,7 @@ ExternalProject_Add(native-image
     DEPENDS mvn
     SOURCE_DIR ${PYPOWSYBL_JAVA_BIN_DIR}
     DOWNLOAD_COMMAND ""
-    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} -march=compatibility --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -o pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR} --add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.c=ALL-UNNAMED
+    PATCH_COMMAND $ENV{JAVA_HOME}/bin/native-image ${NATIVE_IMAGE_BUILD_OPTIONS} --class-path ${PYPOWSYBL_JAVA_SRC_DIR}/target/pypowsybl-java.jar${EXTRA_JARS} -march=compatibility --no-fallback --shared --gc=${NATIVE_IMAGE_GC} -o pypowsybl-java -H:CLibraryPath=${CMAKE_CURRENT_SOURCE_DIR} -H:+AddAllCharsets --add-exports=org.graalvm.nativeimage.builder/com.oracle.svm.core.c=ALL-UNNAMED
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND ${CMAKE_COMMAND} -E copy ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_OLD_LIB} ${PYPOWSYBL_JAVA_BIN_DIR}/${PYPOWSYBL_JAVA_LIB} ${NATIVE_IMAGE_INSTALL_EXTRA_COMMAND}
