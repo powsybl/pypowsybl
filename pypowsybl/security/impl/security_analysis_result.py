@@ -41,7 +41,38 @@ class SecurityAnalysisResult:
     @property
     def post_contingency_results(self) -> Dict[str, PostContingencyResult]:
         """
-        Results for the contingencies, as a dictionary contingency ID -> result.
+        Results for the contingencies.
+
+        This property returns a dictionary of :class:`PostContingencyResult` objects for each contingency.
+
+        Returns:
+            A dictionary contingency ID -> post-contingency result. Each
+            :class:`PostContingencyResult` contains the computation status, the
+            contingency-specific limit violations and, when available, the
+            disconnected elements reported by the connectivity result.
+
+        Example:
+
+            .. code-block:: python
+
+                post_result = result.post_contingency_results['First contingency']
+                post_result.status
+                post_result.limit_violations
+
+        Example with contingency propagation information:
+
+            .. code-block:: python
+
+                params = pp.security.Parameters(provider_parameters={
+                    'contingencyPropagation': 'true',
+                    'createResultExtension': 'true',
+                })
+                result = security_analysis.run_ac(network, parameters=params)
+                post_result = result.post_contingency_results['Busbar contingency']
+                sorted(post_result.disconnected_elements)
+                # ['LD6', 'LINE_S3S4', 'SVC']
+
+        To get a dataframe view of all violations, use :attr:`limit_violations`.
         """
         return self._post_contingency_results
 

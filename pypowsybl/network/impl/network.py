@@ -2467,6 +2467,71 @@ class Network:  # pylint: disable=too-many-public-methods
         """
         return self.get_elements(ElementType.SWITCH, all_attributes, attributes, **kwargs)
 
+    def get_switch_flows(self, switch_ids: Union[str, List[str]]) -> DataFrame:
+        r"""
+        Get active and reactive flows for a list of switches.
+
+        Args:
+            switch_ids: one switch id or a list of switch ids
+
+        Returns:
+            A dataframe indexed by switch id with the following columns:
+
+            - **p**: active power on switch side 1 (in MW)
+            - **q**: reactive power on switch side 1 (in MVar)
+
+        Side convention:
+            The exposed ``p`` and ``q`` values correspond to the switch flow oriented from side 1 to side 2 in the
+            underlying PowSyBl topology representation of the switch.
+            In bus-breaker topology this corresponds to the switch endpoints ``bus1``.
+            In node-breaker topology this corresponds to the switch endpoints ``node1``.
+            If you need the value on side 2, use the opposite sign: ``p2 = -p`` and ``q2 = -q``. As switches are modelled
+            as zero-impedance elements, the flow on side 2 is always the opposite of the flow on side 1.
+
+        Notes:
+            This method is backed by PowSyBl's Java ``SwitchesFlow`` utility and exposes its side-1 active and reactive
+            power values as ``p`` and ``q``. It will not recompute a loadflow but use whatever loadflow information is
+            available at the terminal nodes during the call.
+
+            As long as there are no parallel switches or loops, the resulting flow over the switch is just the kirchhoff sum
+            on one side and physically meaningful. However, note that ``SwitchesFlow`` does not solve an electrical sharing
+            problem inside a meshed switch subgraph. In the case of parallel or looping switches, the following algorithm is
+            executed to return a deterministic result for each switch:
+
+            1. build a topology graph whose vertices are nodes or buses and whose edges are closed switches and,
+               in node-breaker topology, internal connections,
+            2. sum the terminal injections attached to each vertex,
+            3. select one spanning tree of that graph,
+            4. traverse that tree from the leaves to the root and assign each tree-edge flow from the net
+               downstream injection,
+            5. assign zero flow to switch edges that are outside the selected spanning tree.
+
+            For example, duplicating the ``S1VL2_COUPLER`` breaker in the four-substations node-breaker example with a second
+            closed breaker on the same two nodes yields the full cut flow on one coupler and zero on the other. Opening the
+            coupler that carries the non-zero value moves the full cut flow to the remaining closed coupler. In other words,
+            for meshed switch-only topologies, the reported switch flows are a spanning-tree allocation of the cut
+            flow, not a physical current-sharing result across parallel zero-impedance paths.
+
+        Examples:
+            .. code-block:: python
+
+                net = pp.network.create_four_substations_node_breaker_network()
+                pp.loadflow.run_ac(net)
+                net.get_switch_flows('S1VL2_COUPLER')
+
+            will output something like:
+
+            ============= ======== ============
+            \                    p            q
+            ============= ======== ============
+            id
+            S1VL2_COUPLER    250.0  -299.532312
+            ============= ======== ============
+        """
+        if isinstance(switch_ids, str):
+            switch_ids = [switch_ids]
+        return create_data_frame_from_series_array(_pp.get_switch_flows(self._handle, switch_ids))
+
     def get_ratio_tap_changer_steps(self, all_attributes: bool = False, attributes: Optional[List[str]] = None,
                                     **kwargs: ArrayLike) -> DataFrame:
         r"""
