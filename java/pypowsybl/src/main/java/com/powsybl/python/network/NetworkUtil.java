@@ -12,6 +12,7 @@ import com.powsybl.dataframe.network.extensions.ConnectablePositionFeederData;
 import com.powsybl.iidm.network.*;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.iidm.network.util.SwitchPredicates;
+import com.powsybl.iidm.network.util.SwitchesFlow;
 import com.powsybl.python.commons.PyPowsyblApiHeader;
 
 import java.util.*;
@@ -160,6 +161,20 @@ public final class NetworkUtil {
                     .collect(Collectors.toList());
             default -> throw new PowsyblException("Unsupported element type:" + elementType);
         };
+    }
+
+    static List<SwitchFlowContext> getSwitchFlowResults(Network network, List<String> switchIds) {
+        Map<VoltageLevel, SwitchesFlow> switchesFlowByVoltageLevel = new HashMap<>();
+        return switchIds.stream().map(switchId -> {
+            Switch sw = network.getSwitch(switchId);
+            if (sw == null) {
+                throw new PowsyblException("Switch '" + switchId + "' not found");
+            }
+            SwitchesFlow switchesFlow = switchesFlowByVoltageLevel.computeIfAbsent(sw.getVoltageLevel(), SwitchesFlow::new);
+            return new SwitchFlowContext(switchId,
+                    switchesFlow.getP1(switchId),
+                    switchesFlow.getQ1(switchId));
+        }).toList();
     }
 
     public static Stream<TemporaryLimitData> getLimits(Network network) {

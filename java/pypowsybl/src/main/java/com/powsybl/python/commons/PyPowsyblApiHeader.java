@@ -565,6 +565,9 @@ public final class PyPowsyblApiHeader {
         @CFieldAddress("limit_violations")
         ArrayPointer<LimitViolationPointer> limitViolations();
 
+        @CFieldAddress("disconnected_elements")
+        ArrayPointer<CCharPointerPointer> disconnectedElements();
+
         PostContingencyResultPointer addressOf(int index);
     }
 
@@ -620,6 +623,7 @@ public final class PyPowsyblApiHeader {
         PHASE_TAP_CHANGER,
         REACTIVE_CAPABILITY_CURVE_POINT,
         OPERATIONAL_LIMITS,
+        VOLTAGE_ANGLE_LIMITS,
         SELECTED_OPERATIONAL_LIMITS,
         MINMAX_REACTIVE_LIMITS,
         ALIAS,
