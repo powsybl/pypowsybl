@@ -8,6 +8,7 @@
 package com.powsybl.dataframe.network.adders;
 
 import com.powsybl.cgmes.extensions.CgmesMetadataModels;
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.dataframe.DataframeElementType;
 import com.powsybl.dataframe.update.*;
 import com.powsybl.entsoe.util.EntsoeArea;
@@ -587,6 +588,62 @@ class NetworkElementAddersTest {
         assertTrue(optionalLimits.isPresent());
         assertEquals(600, optionalLimits.get().getPermanentLimit());
         assertEquals(1, optionalLimits.get().getTemporaryLimits().size());
+    }
+
+    @Test
+    void voltageAngleLimits() {
+        Network network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+        DefaultUpdatingDataframe dataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(dataframe, "id", "VAL-1");
+        addStringColumn(dataframe, "from_element_id", "3WT");
+        addStringColumn(dataframe, "from_side", "ONE");
+        addStringColumn(dataframe, "to_element_id", "3WT");
+        addStringColumn(dataframe, "to_side", "THREE");
+        addDoubleColumn(dataframe, "low_limit", -15.0);
+        addDoubleColumn(dataframe, "high_limit", 20.0);
+
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(dataframe));
+
+        VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
+        assertNotNull(limit);
+        assertEquals("3WT", limit.getTerminalFrom().getConnectable().getId());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
+        assertEquals(-15.0, limit.getLowLimit().orElseThrow());
+        assertEquals(20.0, limit.getHighLimit().orElseThrow());
+    }
+
+    @Test
+    void malformedVoltageAngleLimitsDoNotOverwriteExistingEntry() {
+        Network network = ThreeWindingsTransformerNetworkFactory.createWithCurrentLimits();
+
+        DefaultUpdatingDataframe validDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(validDataframe, "id", "VAL-1");
+        addStringColumn(validDataframe, "from_element_id", "3WT");
+        addStringColumn(validDataframe, "from_side", "ONE");
+        addStringColumn(validDataframe, "to_element_id", "3WT");
+        addStringColumn(validDataframe, "to_side", "THREE");
+        addDoubleColumn(validDataframe, "low_limit", -15.0);
+        addDoubleColumn(validDataframe, "high_limit", 20.0);
+        NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(validDataframe));
+
+        DefaultUpdatingDataframe malformedDataframe = new DefaultUpdatingDataframe(1);
+        addStringColumn(malformedDataframe, "id", "VAL-1");
+        addStringColumn(malformedDataframe, "from_element_id", "3WT");
+        addStringColumn(malformedDataframe, "from_side", "ONE");
+        addStringColumn(malformedDataframe, "to_element_id", "3WT");
+        addStringColumn(malformedDataframe, "to_side", "THREE");
+
+        PowsyblException exception = assertThrows(PowsyblException.class,
+                () -> NetworkElementAdders.addElements(DataframeElementType.VOLTAGE_ANGLE_LIMITS, network, singletonList(malformedDataframe)));
+        assertEquals("At least one of low_limit or high_limit must be provided.", exception.getMessage());
+
+        VoltageAngleLimit limit = network.getVoltageAngleLimit("VAL-1");
+        assertNotNull(limit);
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.ONE), limit.getTerminalFrom());
+        assertEquals(network.getThreeWindingsTransformer("3WT").getTerminal(ThreeSides.THREE), limit.getTerminalTo());
+        assertEquals(-15.0, limit.getLowLimit().orElseThrow());
+        assertEquals(20.0, limit.getHighLimit().orElseThrow());
     }
 
     @Test

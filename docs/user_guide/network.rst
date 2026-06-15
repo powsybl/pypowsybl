@@ -1044,3 +1044,51 @@ Using the same example as above :
     LINE1               LINE  TWO               1'  CURRENT      1500                   60       False        DEFAULT     False
     LINE1               LINE  TWO  permanent_limit  CURRENT      1100                   -1       False    OTHER_GROUP      True
 
+Using voltage angle limits
+--------------------------
+
+Voltage angle limits are defined between two terminals. Unlike operational limits, they are not attached to a single element 
+side and they are not organized in operational-limit groups. Also there is currently no temporary/permanent distinction for
+voltage angles.
+
+Each voltage angle limit has its own identifier and may define a lower bound, an upper bound, or both.
+The endpoints are addressed with a connectable identifier and, for sided elements, a side value.
+
+.. code-block:: python
+
+    >>> net = pp.network.create_eurostag_tutorial_example1_network()
+    >>> net.create_voltage_angle_limits(
+    ...     id='NHV1_NHV2_1_ANGLE',
+    ...     from_element_id='NHV1_NHV2_1',
+    ...     from_side='ONE',
+    ...     to_element_id='NHV1_NHV2_1',
+    ...     to_side='TWO',
+    ...     low_limit=-30.0,
+    ...     high_limit=30.0,
+    ... )
+    >>> net.get_voltage_angle_limits()
+                  from_element_id from_side to_element_id to_side  low_limit  high_limit
+    id
+    NHV1_NHV2_1_ANGLE    NHV1_NHV2_1       ONE    NHV1_NHV2_1     TWO      -30.0        30.0
+
+The same API can also be used with a dataframe:
+
+.. code-block:: python
+
+    >>> df = pd.DataFrame.from_records(index='id', data=[{
+    ...     'id': 'NHV1_NHV2_2_MAX_ANGLE',
+    ...     'from_element_id': 'NHV1_NHV2_2',
+    ...     'from_side': 'ONE',
+    ...     'to_element_id': 'NHV1_NHV2_2',
+    ...     'to_side': 'TWO',
+    ...     'high_limit': 25.0,
+    ... }])
+    >>> net.create_voltage_angle_limits(df)
+
+Voltage angle limits are identified by their own `id`. If you insert another voltage angle limit on the same pair of
+terminals but with a different `id`, both limits are kept. As a result, `get_voltage_angle_limits()` will show two
+rows for the same endpoints, one for each limit id, and they will both be checked in the security analysis.
+
+Voltage angle limits are also used by security analysis. When they are violated, the security-analysis results expose them
+through the `limit_violations` dataframe with `LOW_VOLTAGE_ANGLE` or `HIGH_VOLTAGE_ANGLE` as `limit_type`.
+
