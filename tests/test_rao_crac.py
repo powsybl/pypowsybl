@@ -194,7 +194,7 @@ class TestRaoCrac:
 
     def test_counter_trade_range_actions(self):
         df = self.crac.get_counter_trade_range_actions()
-        assert ['name', 'operator', 'exporting_country', 'importing_country', 'group_id', 'speed', 'activation_cost',
+        assert ['name', 'operator', 'exporting_area', 'importing_area', 'group_id', 'speed', 'activation_cost',
                 'variation_cost_up', 'variation_cost_down'] == list(df.columns)
         action = df.loc['counterTradeRange1Id']
         assert 'counterTradeRange1Name' == action['name']
