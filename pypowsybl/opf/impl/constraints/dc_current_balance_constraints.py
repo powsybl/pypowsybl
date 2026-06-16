@@ -6,6 +6,7 @@
 #
 import pyoptinterface as poi
 
+from pypowsybl.opf.impl.model import network_cache
 from pypowsybl.opf.impl.model.constraints import Constraints
 from pypowsybl.opf.impl.model.model import Model
 from pypowsybl.opf.impl.model.model_parameters import ModelParameters
@@ -23,11 +24,9 @@ class DcCurrentBalanceConstraints(Constraints):
 
 def create_dc_current_balance_expressions(network_cache: NetworkCache,
                                            variable_context: VariableContext) -> list[poi.ExprBuilder]:
-    grounded_dc_node_ids = {
-        row.dc_node_id
-        for row in network_cache.dc_grounds.itertuples(index=False)
-    }
 
+    grounded_dc_node_ids = set(network_cache.dc_grounds["dc_node_id"])  
+    
     expressions_by_dc_node_id = {
         dc_node_id: poi.ExprBuilder()
         for dc_node_id in network_cache.dc_nodes.index

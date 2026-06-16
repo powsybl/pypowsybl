@@ -163,19 +163,19 @@ public final class NetworkDataframes {
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI1() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal1());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal1());
     }
 
     static <U extends DcLine> ToDoubleBiFunction<U, NetworkDataframeContext> getPerUnitI2() {
-        return (dl, context) -> perUnitI(context, dl.getDcTerminal2());
+        return (dl, context) -> perUnitDcI(context, dl.getDcTerminal2());
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI1() {
-        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal1().setI(unPerUnitDcI(context, i, dl.getDcTerminal1().getDcNode().getNominalV()));
     }
 
     static <U extends DcLine> DoubleSeriesMapper.DoubleUpdater<U, NetworkDataframeContext> setPerUnitI2() {
-        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
+        return (dl, i, context) -> dl.getDcTerminal2().setI(unPerUnitDcI(context, i, dl.getDcTerminal2().getDcNode().getNominalV()));
     }
 
     static <U extends Injection<U>> Function<U, String> getVoltageLevelId() {
@@ -1040,8 +1040,9 @@ public final class NetworkDataframes {
                         (conv, targetQ, context) -> conv.setReactivePowerSetpoint(unPerUnitPQ(context, targetQ)))
                 .doubles("idle_loss", (conv, context) -> perUnitPQ(context, conv.getIdleLoss()),
                         (conv, idleLoss, context) -> conv.setIdleLoss(unPerUnitPQ(context, idleLoss)))
-                .doubles("switching_loss", (conv, context) -> perUnitV(context, conv.getSwitchingLoss(), conv.getTerminal1()),
-                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitV(context, switchingLoss, conv.getTerminal1())))
+                .doubles("switching_loss",
+                        (conv, context) -> perUnitDcSwitchingLoss(context, conv.getSwitchingLoss(), conv.getDcTerminal1()),
+                        (conv, switchingLoss, context) -> conv.setSwitchingLoss(unPerUnitDcSwitchingLoss(context, switchingLoss, conv.getDcTerminal1())))
                 .doubles("resistive_loss", (conv, context) -> perUnitR(context, conv.getResistiveLoss(), conv.getTerminal1().getVoltageLevel().getNominalV()),
                         (conv, r, context) -> conv.setResistiveLoss(unPerUnitRX(context, r,
                                 conv.getTerminal1().getVoltageLevel().getNominalV(), conv.getTerminal1().getVoltageLevel().getNominalV())))

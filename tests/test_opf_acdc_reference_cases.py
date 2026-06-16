@@ -227,14 +227,7 @@ def test_back_to_back_dc_analytical():
     assert abs(g_b_terminal_p + expected_gen_b) < ATOL_MW
 
 
-
-
-
 def test_asymmetric_dc_line_analytical_closed_form_full_test():
-    """Verify closed-form analytical results for an asymmetric DC line network.
-
-    The test validates DC node voltages, AC converter power, and generator dispatch values against expected analytic values.
-    """
     n = create_asymmetric_dc_line_network()
 
     assert run_acdc(n), "OPF did not converge on asymmetric DC line network"
@@ -256,15 +249,42 @@ def test_asymmetric_dc_line_analytical_closed_form_full_test():
     g_a_terminal_p = float(gens.loc["gA", "p"])
     g_b_terminal_p = float(gens.loc["gB", "p"])
 
-    expected_v1b = (
-        V_DC_REF_KV
-        + math.sqrt(V_DC_REF_KV**2 - 4.0 * R_DC_OHM * abs(P_REF_B_MW))
-    ) / 2.0
-    
-    expected_converter_losses = 2.0 * 0.5
+    idle_loss = 0.5
+    switching_loss = 0.1
+    resistive_loss = 0.2
 
-    expected_line_loss = (V_DC_REF_KV - expected_v1b) ** 2 / R_DC_OHM
-    expected_gen_a = abs(P_REF_B_MW) + expected_line_loss + expected_converter_losses
+    # Current is solved in kA.
+    #
+    # convB equation:
+    # P_ac_B + P_dc_B = loss_B
+    #
+    # with:
+    # P_ac_B = -30 MW
+    # P_dc_B = V_B * i_kA
+    # V_B = 400 - R_line * i_kA
+    # loss_B = idle + switching * (1000 * i_kA) + resistive * i_kA²
+    #
+    # This gives:
+    # (R_line + resistive) * i² + (1000 * switching - V_DC_REF) * i + (idle + abs(P_REF_B)) = 0
+    a = R_DC_OHM + resistive_loss
+    b = 1000.0 * switching_loss - V_DC_REF_KV
+    c = idle_loss + abs(P_REF_B_MW)
+
+    discriminant = b * b - 4.0 * a * c
+    expected_i_ka = (-b - math.sqrt(discriminant)) / (2.0 * a)
+
+    expected_v1b = V_DC_REF_KV - R_DC_OHM * expected_i_ka
+
+    expected_converter_loss = (
+        idle_loss
+        + switching_loss * 1000.0 * expected_i_ka
+        + resistive_loss * expected_i_ka * expected_i_ka
+    )
+
+    expected_p_dc_a = V_DC_REF_KV * expected_i_ka
+    expected_p_ac_a = expected_p_dc_a + expected_converter_loss
+
+    expected_gen_a = expected_p_ac_a
     expected_gen_b = P_LOAD_B_MW + P_REF_B_MW
 
     assert abs((v1a - v2a) - V_DC_REF_KV) < ATOL_KV
@@ -283,8 +303,7 @@ def test_asymmetric_dc_line_analytical_closed_form_full_test():
     assert abs(g_a_target_p - expected_gen_a) < ATOL_MW
     assert abs(g_a_terminal_p + expected_gen_a) < ATOL_MW
 
-    assert abs(p_ac_a - expected_gen_a) < ATOL_MW
-
+    assert abs(p_ac_a - expected_p_ac_a) < ATOL_MW
 
 def test_official_asymmetrical_monopole_run_ac_is_rejected_for_mixed_nominal_voltages():
     """Ensure mixed nominal DC voltages are rejected for ACDC optimal power flow.

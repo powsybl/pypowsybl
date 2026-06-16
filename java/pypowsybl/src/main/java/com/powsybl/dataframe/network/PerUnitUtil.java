@@ -54,6 +54,22 @@ public final class PerUnitUtil {
         return context.isPerUnit() ? i / ((sqrt(3) * nominalV) / (context.getNominalApparentPower() * pow(10, 3))) : i;
     }
 
+    public static double perUnitDcI(NetworkDataframeContext context, DcTerminal terminal) {
+        return perUnitDcI(context, terminal.getI(), terminal.getDcNode().getNominalV());
+    }
+
+    public static double perUnitDcI(NetworkDataframeContext context, double i, double nominalV) {
+        return context.isPerUnit() ? nominalV / (context.getNominalApparentPower() * pow(10, 3)) * i : i;
+    }
+
+    public static double unPerUnitDcI(NetworkDataframeContext context, double i, double nominalV) {
+        return context.isPerUnit() ? i / (nominalV / (context.getNominalApparentPower() * pow(10, 3))) : i;
+    }
+
+    public static double unPerUnitDcI(NetworkDataframeContext context, double i, DcTerminal terminal) {
+        return unPerUnitDcI(context, i, terminal.getDcNode().getNominalV());
+    }
+
     public static double perUnitGSide1(NetworkDataframeContext context, Line line) {
         return perUnitG(context, line.getG1(), line.getR(), line.getX(),
             line.getTerminal1().getVoltageLevel().getNominalV(), line.getTerminal2().getVoltageLevel().getNominalV());
@@ -310,6 +326,14 @@ public final class PerUnitUtil {
 
     public static double perUnitV(NetworkDataframeContext context, double v, double nominalV) {
         return context.isPerUnit() ? v / nominalV : v;
+    }
+
+    public static double perUnitDcSwitchingLoss(NetworkDataframeContext context, double switchingLoss, DcTerminal terminal) {
+        return context.isPerUnit() ? 1000.0 * perUnitV(context, switchingLoss, terminal) : switchingLoss;
+    }
+
+    public static double unPerUnitDcSwitchingLoss(NetworkDataframeContext context, double switchingLoss, DcTerminal terminal) {
+        return context.isPerUnit() ? unPerUnitV(context, switchingLoss / 1000.0, terminal) : switchingLoss;
     }
 
     public static double perUnitRho(NetworkDataframeContext context, TwoWindingsTransformer twt, double rho) {

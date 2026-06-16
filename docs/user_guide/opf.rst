@@ -115,13 +115,8 @@ For ``V_DC`` mode, the voltage target is:
 
 .. math::
 
-    V(dc\_node1) - V(dc\_node2) = target\_v\_dc
+    V\_1 - V\_2 = target\_v\_dc
 
-Therefore, a positive ``target_v_dc`` means:
-
-.. math::
-
-    V(dc\_node1) \gt V(dc\_node2)
 
 Converter power balance
 -----------------------
@@ -132,7 +127,7 @@ The DC-side converter power is:
 
 .. math::
 
-    P_{DC} = I \cdot (V(dc\_node1) - V(dc\_node2))
+    P_{DC} = I \cdot (V\_1 - V\_2)
 
 The active-power balance of the converter is:
 
@@ -145,6 +140,21 @@ with:
 .. math::
 
     P_{loss} \geq 0
+
+
+Converter losses are modeled as a function of the DC current magnitude:
+
+.. math::
+
+    P_{loss} = a + b \cdot |I| + c \cdot |I|^2
+
+where:
+
+- \(I\) is the DC current oriented from ``dc_node1`` to ``dc_node2`` (the same current used in the DC power definition);
+- \(a\) is the idle (no-load) loss;
+- \(b\) is the linear (switching) loss coefficient;
+- \(c\) is the quadratic (resistive) loss coefficient.
+
 
 In rectifier mode, power flows from AC to DC:
 

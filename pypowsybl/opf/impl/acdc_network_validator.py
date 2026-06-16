@@ -38,8 +38,9 @@ def validate_acdc_network(network: Network) -> None:
 
 
 def get_dc_nodes_with_component(dc_nodes, dc_buses):
-    if "dc_component" in dc_nodes.columns:
-        return dc_nodes
+    
+    # DC nodes reference their DC bus. The DC component is carried by the DC bus,
+    # so map each DC node to its component before running component-level checks.
 
     return dc_nodes.merge(
         dc_buses[["dc_component"]],
@@ -75,30 +76,23 @@ def check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_comp
 
 def check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_with_component) -> None:
     node_to_component = dc_nodes_with_component["dc_component"].to_dict()
-    all_dc_components = set(dc_nodes_with_component["dc_component"].dropna())
-    vdc_controlled_components = set()
+    all_dc_components = set(dc_nodes_with_component["dc_component"])
 
+    vdc_controlled_components = set()
     vdc_converters = voltage_source_converters[
         voltage_source_converters["control_mode"] == "V_DC"
     ]
 
     for _, converter in vdc_converters.iterrows():
-        connected_dc_node_ids = []
-
         if converter.dc_connected1:
-            connected_dc_node_ids.append(converter.dc_node1_id)
+            vdc_controlled_components.add(node_to_component[converter.dc_node1_id])
 
         if converter.dc_connected2:
-            connected_dc_node_ids.append(converter.dc_node2_id)
+            vdc_controlled_components.add(node_to_component[converter.dc_node2_id])
 
-        for dc_node_id in connected_dc_node_ids:
-            dc_component = node_to_component.get(dc_node_id)
-            if dc_component is not None:
-                vdc_controlled_components.add(dc_component)
+    if vdc_controlled_components != all_dc_components:
+        components_without_vdc = sorted(all_dc_components - vdc_controlled_components)
 
-    components_without_vdc = sorted(all_dc_components - vdc_controlled_components)
-
-    if components_without_vdc:
         raise ValueError(
             "Invalid detailed-DC network for ACDC OPF: "
             f"DC components have no VSC in V_DC mode: {components_without_vdc}"
