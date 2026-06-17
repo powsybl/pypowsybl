@@ -38,7 +38,7 @@ def test_time_coupled_rao():
     df = runner.run(time_coupled_input, constraints, parameters)
 
     for t in timestamps:
-        rao_result = df[datetime.strptime(t, <sbf>)]
+        rao_result = df[t.strftime('%Y-%m-%dT%H:%M:%S+01:00')]
         assert RaoComputationStatus.DEFAULT == result.status()
 
 if __name__ == '__main__':
