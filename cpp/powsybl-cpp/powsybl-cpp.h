@@ -191,7 +191,7 @@ typedef Array<operator_strategy_result> OperatorStrategyResultArray;
 typedef Array<limit_violation> LimitViolationArray;
 typedef Array<series> SeriesArray;
 
-void** objectHandleVectorToPtr(std::vector<JavaHandle>& handles);
+std::vector<void*> objectHandleVectorToPtrs(std::vector<JavaHandle>& handles);
 
 template<typename T>
 std::vector<T> toVector(array* arrayPtr) {

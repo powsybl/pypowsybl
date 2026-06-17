@@ -71,7 +71,9 @@ public class RaoContext {
     public static RaoResult runMarmot(List<OffsetDateTime> timestamps, List<Network> networks, List<Crac> cracs, RaoParameters parameters, TimeCoupledConstraints timeCoupledConstraints) {
         Map<OffsetDateTime, RaoInput> inputs = new HashMap<>();
         for (int i = 0; i < timestamps.size(); ++i) {
-            inputs.put(timestamps.get(i), RaoInput.build(networks.get(i), cracs.get(i)).build());
+            Network n = networks.get(i);
+            Crac crac = cracs.get(i);
+            inputs.put(timestamps.get(i), RaoInput.build(n, crac).build());
         }
         TimeCoupledRaoInput timeCoupledInput = new TimeCoupledRaoInput(new TemporalDataImpl<>(inputs), timeCoupledConstraints);
         return new Marmot().run(timeCoupledInput, parameters).join();

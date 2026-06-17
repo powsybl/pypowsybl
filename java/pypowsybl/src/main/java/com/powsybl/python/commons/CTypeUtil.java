@@ -8,6 +8,8 @@
 package com.powsybl.python.commons;
 
 import com.powsybl.dataframe.SeriesMetadata;
+import com.powsybl.iidm.network.Network;
+import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
@@ -122,7 +124,8 @@ public final class CTypeUtil {
         List<T> objectList = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {
             ObjectHandle handle = handlePtr.read(i);
-            objectList.add(ObjectHandles.getGlobal().get(handle));
+            T obj = ObjectHandles.getGlobal().get(handle);
+            objectList.add(obj);
         }
         return objectList;
     }
