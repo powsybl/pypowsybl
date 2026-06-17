@@ -8,9 +8,11 @@ from datetime import datetime as Datetime
 
 from pypowsybl import _pypowsybl
 
+from pypowsybl.network import Network
+from .crac import Crac
+
 from typing import (
-    Union,
-    Any
+    Union, Any, List, Tuple
 )
 
 class TimeCoupledRaoInput:
@@ -21,5 +23,8 @@ class TimeCoupledRaoInput:
     def __init__(self):
         self._data = []
 
-    def add_data_point(cls, timestamp: Datetime, network: Network, crac: Crac) -> Any :
+    def add_data_point(self, timestamp: Datetime, network: Network, crac: Crac) -> Any :
         return self._data.append((timestamp, network, crac))
+
+    def get_data(self) -> List[Tuple[Datetime, Network, Crac]]:
+        return self._data

@@ -725,21 +725,20 @@ JavaHandle createNetwork(const std::string& name, const std::string& id, bool al
     return PowsyblCaller::get()->callJava<JavaHandle>(::createNetwork, (char*) name.data(), (char*) id.data(), allowVariantMultiThreadAccess);
 }
 
-void** objectHandleVectorToPtr(std::vector<JavaHandle>& handles) {
+std::vector<void*> objectHandleVectorToPtrs(std::vector<JavaHandle>& handles) {
     std::vector<void*> handlePtrs;
     handlePtrs.reserve(handles.size());
-    for (int i = 0; i < handles.size(); ++i) {
-       void* ptr = handles[i];
-       handlePtrs.push_back(ptr);
+    for (auto & i : handles) {
+        void* ptr = i;
+        handlePtrs.push_back(ptr);
     }
-    return (void**) handlePtrs.data();
+    return handlePtrs;
 }
 
 JavaHandle merge(std::vector<JavaHandle>& networks) {
     int networkCount = networks.size();
-    void** networksData = objectHandleVectorToPtr(networks);
-
-    return PowsyblCaller::get()->callJava<JavaHandle>(::merge, networksData, networkCount);
+    std::vector<void*> networksPtrs = objectHandleVectorToPtrs(networks);
+    return PowsyblCaller::get()->callJava<JavaHandle>(::merge, (void**) networksPtrs.data(), networkCount);
 }
 
 JavaHandle getSubNetwork(const JavaHandle& network, const std::string& subNetworkId) {
@@ -2429,9 +2428,9 @@ JavaHandle runMarmot(const std::vector<std::string>& timestamps, std::vector<Jav
     auto c_parameters = parameters.to_c_struct();
     int count = timestamps.size();
     ToCharPtrPtr timestampsPtr(timestamps);
-    void** networksData = objectHandleVectorToPtr(networks);
-    void** cracsData = objectHandleVectorToPtr(cracs);
-    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runMarmot, timestampsPtr.get(), networksData, cracsData, count, c_parameters.get(), constraints);
+    std::vector<void*> networksPtrs = objectHandleVectorToPtrs(networks);
+    std::vector<void*> cracPtrs = objectHandleVectorToPtrs(cracs);
+    return pypowsybl::PowsyblCaller::get()->callJava<JavaHandle>(::runMarmot, timestampsPtr.get(), (void**) networksPtrs.data(), (void**) cracPtrs.data(), count, c_parameters.get(), constraints);
 }
 
 
