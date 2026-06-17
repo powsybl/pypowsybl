@@ -8,8 +8,6 @@
 package com.powsybl.python.commons;
 
 import com.powsybl.dataframe.SeriesMetadata;
-import com.powsybl.iidm.network.Network;
-import com.powsybl.openrao.data.crac.api.Crac;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.StringMap;
