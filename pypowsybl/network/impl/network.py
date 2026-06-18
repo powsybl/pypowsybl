@@ -2880,9 +2880,13 @@ class Network:  # pylint: disable=too-many-public-methods
         Get a dataframe of aliases of all network elements.
 
         Args:
+            all_attributes: flag for including all attributes in the dataframe, default is false
+            attributes: attributes to include in the dataframe. The 2 parameters are mutually exclusive.
+                        If no parameter is specified, the dataframe will include the default attributes.
+            kwargs: optional filters, passed as named arguments (for example ``id='ELEMENT_ID'``)
 
         Returns:
-            A dataframe of aliases
+            A dataframe of aliases.
 
         Notes:
             The resulting dataframe, depending on the parameters, will include the following columns:
@@ -2892,6 +2896,61 @@ class Network:  # pylint: disable=too-many-public-methods
               - **alias_type**: alias type
 
             This dataframe is indexed on the network element ID.
+
+            For CGMES imports, aliases retention depends on import parameters:
+
+            - If ``iidm.import.cgmes.remove-properties-and-aliases-after-import`` is ``true``,
+              aliases are removed after import and this dataframe may be empty.
+            - If it is ``false``, aliases remain available.
+
+        Examples:
+            Basic usage:
+
+            .. doctest::
+
+                >>> import pypowsybl as pp
+                >>> network = pp.network.create_four_substations_node_breaker_network()
+                >>> network.add_aliases(id='TWT', alias='TWT_ALIAS', alias_type='external')
+                >>> aliases = network.get_aliases()
+                >>> aliases.loc['TWT']['alias']
+                'TWT_ALIAS'
+                >>> aliases.loc['TWT']['alias_type']
+                'external'
+
+            CGMES import example with explicit alias retention:
+
+            .. doctest::
+
+                >>> from pathlib import Path
+                >>> data_dir = globals().get('DATA_DIR', Path(__file__).resolve().parents[3] / 'data')
+                >>> cgmes_zip = data_dir / 'CGMES_Full.zip'
+                >>> network = pp.network.load(
+                ...     str(cgmes_zip),
+                ...     {
+                ...         'iidm.import.cgmes.source-for-iidm-id': 'rdfID',
+                ...         'iidm.import.cgmes.remove-properties-and-aliases-after-import': 'false',
+                ...     },
+                ... )
+                >>> aliases = network.get_aliases()
+                >>> list(aliases[['type', 'alias', 'alias_type']].columns)
+                ['type', 'alias', 'alias_type']
+                >>> len(aliases) > 0
+                True
+
+
+            CGMES import example with aliases removed after import:
+
+            .. doctest::
+
+                >>> network = pp.network.load(
+                ...     str(cgmes_zip),
+                ...     {
+                ...         'iidm.import.cgmes.source-for-iidm-id': 'rdfID',
+                ...         'iidm.import.cgmes.remove-properties-and-aliases-after-import': 'true',
+                ...     },
+                ... )
+                >>> network.get_aliases().empty
+                True
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
 
