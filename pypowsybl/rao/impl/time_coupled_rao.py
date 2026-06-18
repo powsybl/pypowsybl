@@ -20,7 +20,7 @@ class TimeCoupledRao:
     """
     Allows to run a time coupled remedial action optimisation
     """
-    def run(self, time_coupled_inputs: TimeCoupledRaoInput, time_coupled_constraints: TimeCoupledConstraints, parameters: Optional[RaoParameters] = None) -> DataFrame:
+    def run(self, time_coupled_inputs: TimeCoupledRaoInput, time_coupled_constraints: TimeCoupledConstraints, parameters: Optional[RaoParameters] = None) -> pd.DataFrame:
         """
         Run a rao from a set of input buffers
         """
