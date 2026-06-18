@@ -13,7 +13,7 @@ from .crac import Crac
 from .parameters import Parameters as RaoParameters
 from .time_coupled_constraints import TimeCoupledConstraints
 from .time_coupled_rao_input import TimeCoupledRaoInput
-from pandas import DataFrame
+import pandas as pd
 
 
 class TimeCoupledRao:
@@ -32,7 +32,7 @@ class TimeCoupledRao:
         rao_result = _pypowsybl.run_marmot(timestamps=str_timestamps, networks=[n._handle for n in networks], cracs=[c._handle for c in cracs],
           parameters=parameters._to_c_parameters(), constraints=time_coupled_constraints._handle)
 
-        results = dict()
-        for timestamp, crac in zip(str_timestamps, cracs):
-            results[timestamp] = RaoResult(rao_result, crac._handle)
-        return DataFrame.from_dict(results, orient = 'index')
+        results = [RaoResult(rao_result, crac._handle) for crac in cracs]
+        df = pd.DataFrame(list(zip(str_timestamps, results)), columns=['timestamp', 'result'])
+        df.set_index('timestamp')
+        return df
