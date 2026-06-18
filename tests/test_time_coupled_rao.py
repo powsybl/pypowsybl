@@ -13,6 +13,7 @@ from pypowsybl.rao import Crac
 from pypowsybl.rao import TimeCoupledRaoInput
 from pypowsybl.rao import TimeCoupledRao
 from datetime import datetime
+from pypowsybl._pypowsybl import RaoComputationStatus
 
 TEST_DIR = pathlib.Path(__file__).parent
 DATA_DIR = TEST_DIR.parent / 'data/rao/time_coupled_rao'
@@ -35,11 +36,11 @@ def test_time_coupled_rao():
         time_coupled_input.add_data_point(datetime.strptime(t, date_format), n, Crac.from_file_source(n, DATA_DIR.joinpath("crac_" + t + ".json")))
 
     runner = TimeCoupledRao()
-    df = runner.run(time_coupled_input, constraints, parameters)
+    results_df = runner.run(time_coupled_input, constraints, parameters)
 
     for t in timestamps:
-        rao_result = df[datetime.strptime(t, date_format).strftime('%Y-%m-%dT%H:%M:%S+01:00')]
-        assert RaoComputationStatus.DEFAULT == result.status()
+        rao_result = results_df.loc[results_df["timestamp"] == datetime.strptime(t, '%Y%m%d%H%M').strftime('%Y-%m-%dT%H:%M:%S+01:00'), "result"].iloc[0]
+        assert RaoComputationStatus.DEFAULT == rao_result.status()
 
 if __name__ == '__main__':
     unittest.main()
