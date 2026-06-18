@@ -940,6 +940,8 @@ parent network. For example, merging 2 CGMES microgrids yields to a subnetworks 
     >>> be.merge(nl)
     >>> be.flatten()
 
+Please refer to `the java documentation <https://powsybl.readthedocs.io/projects/powsybl-core/en/stable/grid_features/working_with_subnetworks.html#flattening-a-network>`
+for more precisions on extensions and properties handling while flattening a network.
 
 Reducing a network
 ------------------
