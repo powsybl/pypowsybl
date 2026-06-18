@@ -2900,7 +2900,7 @@ class Network:  # pylint: disable=too-many-public-methods
             For CGMES imports, aliases retention depends on import parameters:
 
             - If ``iidm.import.cgmes.remove-properties-and-aliases-after-import`` is ``true``,
-              aliases are removed after import and this dataframe may be empty.
+              aliases are removed after import and this dataframe may be empty (default behaviour)
             - If it is ``false``, aliases remain available.
 
         Examples:
@@ -2917,7 +2917,7 @@ class Network:  # pylint: disable=too-many-public-methods
                 >>> aliases.loc['TWT']['alias_type']
                 'external'
 
-            CGMES import example with explicit alias retention:
+            CGMES import example with explicit alias retention to obtain Terminal IDs and other internal CGMES ids:
 
             .. doctest::
 
@@ -2935,21 +2935,6 @@ class Network:  # pylint: disable=too-many-public-methods
                 >>> list(aliases[['type', 'alias', 'alias_type']].columns)
                 ['type', 'alias', 'alias_type']
                 >>> len(aliases) > 0
-                True
-
-
-            CGMES import example with aliases removed after import:
-
-            .. doctest::
-
-                >>> network = pp.network.load(
-                ...     str(cgmes_zip),
-                ...     {
-                ...         'iidm.import.cgmes.source-for-iidm-id': 'rdfID',
-                ...         'iidm.import.cgmes.remove-properties-and-aliases-after-import': 'true',
-                ...     },
-                ... )
-                >>> network.get_aliases().empty
                 True
         """
         return self.get_elements(ElementType.ALIAS, all_attributes, attributes, **kwargs)
