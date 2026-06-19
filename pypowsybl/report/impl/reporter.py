@@ -15,18 +15,18 @@ DEPRECATED_REPORTER_WARNING = "Use of deprecated attribute reporter. Use report_
 
 class Reporter(ReportNode):  # pylint: disable=too-few-public-methods
     def __init__(self, task_key: str = '', default_name: str = ''):
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         ReportNode.__init__(self, task_key, default_name)
 
     def __repr__(self) -> str:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         return ReportNode.__repr__(self)
 
     @property
     def _reporter_model(self) -> _pp.JavaHandle:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         return self._report_node_handle
 
     def to_json(self) -> str:
-        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning)
+        warnings.warn(DEPRECATED_REPORTER_WARNING, DeprecationWarning, stacklevel=2)
         return ReportNode.to_json(self)

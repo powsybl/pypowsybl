@@ -49,7 +49,7 @@ class SecurityAnalysis(ContingencyContainer):
             A security analysis result, containing information about violations and monitored elements
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning, stacklevel=2)
             report_node = reporter
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
@@ -75,7 +75,7 @@ class SecurityAnalysis(ContingencyContainer):
             A security analysis result, containing information about violations and monitored elements
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning, stacklevel=2)
             report_node = reporter
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters

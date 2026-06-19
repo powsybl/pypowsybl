@@ -37,7 +37,7 @@ class DcSensitivityAnalysis(SensitivityAnalysis):
             a sensitivity analysis result
         """
         if reporter is not None:
-            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning)
+            warnings.warn("Use of deprecated attribute reporter. Use report_node instead.", DeprecationWarning, stacklevel=2)
             report_node = reporter
         sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                            LfParameters) else parameters

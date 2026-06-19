@@ -128,7 +128,7 @@ class Parameters:  # pylint: disable=too-few-public-methods
         if component_mode is not None:
             self.component_mode = component_mode
         if connected_component_mode is not None:
-            warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
+            warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning, stacklevel=2)
             self._convert_to_component_mode(connected_component_mode)
         if hvdc_ac_emulation is not None:
             self.hvdc_ac_emulation = hvdc_ac_emulation
@@ -186,12 +186,12 @@ class Parameters:  # pylint: disable=too-few-public-methods
 
     @property
     def connected_component_mode(self) -> Optional[ConnectedComponentMode]:
-        warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
+        warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning, stacklevel=2)
         return self._convert_to_connected_component_mode()
 
     @connected_component_mode.setter
     def connected_component_mode(self, connected_component_mode: ConnectedComponentMode) -> None:
-        warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning)
+        warnings.warn("connected_component_mode is deprecated, use component_mode parameter instead", DeprecationWarning, stacklevel=2)
         self._convert_to_component_mode(connected_component_mode)
 
     def _convert_to_component_mode(self, connected_component_mode: ConnectedComponentMode) -> None:
