@@ -383,10 +383,10 @@ def load_from_string(file_name: str, file_content: str, parameters: Optional[Dic
     Load a network from a string. File content should be in a supported format.
 
     Args:
-       file_name:    file name
+       file_name:    file name (used to determine the format of the network)
        file_content: file content
        parameters:   a dictionary of import parameters
-       post_processors: a list of import post processors (will be added to the ones defined by the platform config)
+       post_processors: a list of import post-processors (will be added to the ones defined by the platform config)
        reporter: deprecated, use report_node instead
        report_node: the reporter to be used to create an execution report, default is None (no report)
        allow_variant_multi_thread_access: allow multi-thread access to variant (default: False)
