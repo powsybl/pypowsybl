@@ -1,0 +1,59 @@
+name: "Setup before build"
+description: "Set up the environment before building the wheels"
+inputs:
+  cache-prefix:
+    required: true
+    description: "Prefix added to the cache key"
+  python-already-available:
+    default: "true"
+    description: "Is Python already installed?"
+  python-command:
+    default: "python3"
+    description: "Python command to use"
+  python-version:
+    default: "3.10"
+    description: "Python version to use"
+runs:
+  using: "composite"
+  steps:
+    - name: Setup GraalVM
+      uses: graalvm/setup-graalvm@60c26726de13f8b90771df4bc1641a52a3159994 # v1.5.2
+      with:
+        java-version: '21'
+        distribution: 'graalvm'
+        github-token: ${{ github.token }}
+
+    - name: Setup Python
+      if: ${{ inputs.python-already-available == 'false' }}
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+      with:
+        python-version: ${{ inputs.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'requirements.txt'
+
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        ${{ inputs.python-command }} -m pip install --upgrade pip
+        ${{ inputs.python-command }} -m pip install -r requirements.txt
+
+    - name: Cache Maven repository
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+      with:
+        path: ~/.m2/repository
+        key: ${{ inputs.cache-prefix }}-maven-${{ hashFiles('java/**/pom.xml') }}
+        restore-keys: ${{ inputs.cache-prefix }}-maven-
+
+    - name: Cache native libraries
+      id: cache-native
+      uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+      with:
+        path: dist/binaries.zip
+        key: ${{ inputs.cache-prefix }}-native-${{ hashFiles('java/**/pom.xml', 'java/**/src/main/**', 'cpp/**/CMakeLists.txt', 'cpp/**/*.h', 'cpp/**/*.cpp') }}
+
+    - name: Unzip cached native libraries
+      if: steps.cache-native.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        unzip dist/binaries.zip -d dist/native
+        echo "PYPOWSYBL_NATIVE_BUILD_DIR=$GITHUB_WORKSPACE/dist/native" >> $GITHUB_ENV

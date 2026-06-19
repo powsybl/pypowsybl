@@ -16,22 +16,30 @@ class NadProfile:
     This class represents parameters to customize a network area diagram (e.g., labels on branches)."""
 
     _nad_branch_labels_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('side1',0,False,False,False),
-                  _pp.SeriesMetadata('middle',0,False,False,False),
-                  _pp.SeriesMetadata('side2',0,False,False,False),
+                  _pp.SeriesMetadata('side1Internal',0,False,False,False),
+                  _pp.SeriesMetadata('side1External',0,False,False,False),
+                  _pp.SeriesMetadata('middle1',0,False,False,False),
+                  _pp.SeriesMetadata('middle2',0,False,False,False),
+                  _pp.SeriesMetadata('side2Internal',0,False,False,False),
+                  _pp.SeriesMetadata('side2External',0,False,False,False),
                   _pp.SeriesMetadata('arrow1',0,False,False,False),
+                  _pp.SeriesMetadata('arrowMiddle',0,False,False,False),
                   _pp.SeriesMetadata('arrow2',0,False,False,False)]
 
     _nad_three_wt_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('side1',0,False,False,False),
-                  _pp.SeriesMetadata('side2',0,False,False,False),
-                  _pp.SeriesMetadata('side3',0,False,False,False),
+                  _pp.SeriesMetadata('side1Internal',0,False,False,False),
+                  _pp.SeriesMetadata('side1External',0,False,False,False),
+                  _pp.SeriesMetadata('side2Internal',0,False,False,False),
+                  _pp.SeriesMetadata('side2External',0,False,False,False),
+                  _pp.SeriesMetadata('side3Internal',0,False,False,False),
+                  _pp.SeriesMetadata('side3External',0,False,False,False),
                   _pp.SeriesMetadata('arrow1',0,False,False,False),
                   _pp.SeriesMetadata('arrow2',0,False,False,False),
                   _pp.SeriesMetadata('arrow3',0,False,False,False)]
 
     _nad_injections_metadata=[_pp.SeriesMetadata('id',0,True,False,False),
-                  _pp.SeriesMetadata('label',0,False,False,False),
+                  _pp.SeriesMetadata('labelInternal',0,False,False,False),
+                  _pp.SeriesMetadata('labelExternal',0,False,False,False),
                   _pp.SeriesMetadata('arrow',0,False,False,False)]
 
     _nad_descriptions_metadata=[_pp.SeriesMetadata('id',0,True,False,False),

@@ -51,7 +51,6 @@ import com.powsybl.python.commons.Directives;
 import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
 import com.powsybl.python.commons.PyPowsyblApiHeader.DataframePointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.EventMappingType;
 import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
 import com.powsybl.python.commons.Util;
 
@@ -220,31 +219,61 @@ public final class DynamicSimulationCFunctions {
         return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CCharPointerPointer>>() {
             @Override
             public ArrayPointer<CCharPointerPointer> get() throws IOException {
-                return Util.createCharPtrArray(List.copyOf(DynamicMappingHandler.getSupportedModels(CTypeUtil.toString(categoryNamePtr))));
+                String categoryName = CTypeUtil.toString(categoryNamePtr);
+                return Util.createCharPtrArray(List.copyOf(
+                        categoryName.isEmpty() ? DynamicMappingHandler.getAllSupportedModels()
+                        : DynamicMappingHandler.getSupportedModels(categoryName)
+                ));
             }
         });
     }
 
+    @CEntryPoint(name = "getSupportedModelsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getSupportedModelsInformation(IsolateThread thread,
+                                                                                               CCharPointer categoryNamePtr,
+                                                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
+        String categoryName = CTypeUtil.toString(categoryNamePtr);
+        return categoryName.isEmpty()
+                ? Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.allSupportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getDynamicMappingAdders())
+                : Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.supportedModelsDataFrameMapper(),
+                    DynamicMappingHandler.getSupportedModelsInformation(categoryName));
+    }
+
     @CEntryPoint(name = "addEventMappings")
     public static void addEventMappings(IsolateThread thread, ObjectHandle eventMappingHandle,
-                                        EventMappingType mappingType,
+                                        CCharPointer eventNamePtr,
                                         DataframePointer mappingDataframePtr,
                                         ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
                 PythonEventModelsSupplier eventMapping = ObjectHandles.getGlobal().get(eventMappingHandle);
+                String eventName = CTypeUtil.toString(eventNamePtr);
                 UpdatingDataframe mappingDataframe = createDataframe(mappingDataframePtr);
-                EventMappingHandler.addElements(mappingType, eventMapping, mappingDataframe);
+                EventMappingHandler.addElements(eventName, eventMapping, mappingDataframe);
             }
         });
     }
 
     @CEntryPoint(name = "getEventMappingsMetaData")
     public static DataframeMetadataPointer getEventMappingsMetaData(IsolateThread thread,
-                                                                    EventMappingType mappingType,
+                                                                    CCharPointer eventNamePtr,
                                                                     ExceptionHandlerPointer exceptionHandlerPtr) {
-        return doCatch(exceptionHandlerPtr, () -> CTypeUtil.createSeriesMetadata(EventMappingHandler.getMetadata(mappingType)));
+        return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
+            @Override
+            public DataframeMetadataPointer get() {
+                String eventName = CTypeUtil.toString(eventNamePtr);
+                return CTypeUtil.createSeriesMetadata(EventMappingHandler.getMetadata(eventName));
+            }
+        });
+    }
+
+    @CEntryPoint(name = "getEventsInformation")
+    public static ArrayPointer<PyPowsyblApiHeader.SeriesPointer> getEventsInformation(IsolateThread thread,
+                                                                                      ExceptionHandlerPointer exceptionHandlerPtr) {
+        return Dataframes.createCDataframe(DynamicSimulationDataframeMappersUtils.eventInformationDataFrameMapper(),
+                EventMappingHandler.getEventMappingAdders());
     }
 
     @CEntryPoint(name = "addOutputVariables")
@@ -253,7 +282,6 @@ public final class DynamicSimulationCFunctions {
                                           CCharPointer dynamicIdPtr,
                                           CCharPointerPointer variablesPtrPtr,
                                           int variableCount,
-                                          boolean isDynamic,
                                           OutputVariableType variableType,
                                           ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
@@ -262,8 +290,7 @@ public final class DynamicSimulationCFunctions {
                 String dynamicId = CTypeUtil.toString(dynamicIdPtr);
                 List<String> variables = toStringList(variablesPtrPtr, variableCount);
                 PythonOutputVariablesSupplier outputVariablesSupplier = ObjectHandles.getGlobal().get(outputVariablesHandle);
-                outputVariablesSupplier.addOutputVariables(dynamicId, variables, isDynamic, convert(variableType));
-
+                outputVariablesSupplier.addOutputVariables(dynamicId, variables, convert(variableType));
             }
         });
     }

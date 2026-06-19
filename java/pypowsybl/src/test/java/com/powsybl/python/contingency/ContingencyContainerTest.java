@@ -52,11 +52,11 @@ class ContingencyContainerTest {
                     assertThat(c.getElements().get(1)).isInstanceOf(HvdcLineContingency.class);
                 });
 
-        network = DanglingLineNetworkFactory.create();
+        network = BoundaryLineNetworkFactory.create();
         var container3 = new ContingencyContainerImpl();
-        container3.addContingency("ddl", List.of("DL"));
+        container3.addContingency("ddl", List.of("BL"));
         assertThat(container3.createContingencies(network))
-                .hasOnlyOneElementSatisfying(c -> assertThat(c.getElements().get(0)).isInstanceOf(DanglingLineContingency.class));
+                .hasOnlyOneElementSatisfying(c -> assertThat(c.getElements().get(0)).isInstanceOf(BoundaryLineContingency.class));
 
         network = SvcTestCaseFactory.create();
         var container4 = new ContingencyContainerImpl();

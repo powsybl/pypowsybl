@@ -21,8 +21,8 @@ public class BusValidationData {
     double vscCSQ;
     double lineP;
     double lineQ;
-    double danglingLineP;
-    double danglingLineQ;
+    double boundaryLineP;
+    double boundaryLineQ;
     double twtP;
     double twtQ;
     double tltP;
@@ -30,7 +30,7 @@ public class BusValidationData {
     boolean mainComponent;
     boolean validated;
 
-    public BusValidationData(String id, double incomingP, double incomingQ, double loadP, double loadQ, double genP, double genQ, double batP, double batQ, double shuntP, double shuntQ, double svcP, double svcQ, double vscCSP, double vscCSQ, double lineP, double lineQ, double danglingLineP, double danglingLineQ, double twtP, double twtQ, double tltP, double tltQ, boolean mainComponent, boolean validated) {
+    public BusValidationData(String id, double incomingP, double incomingQ, double loadP, double loadQ, double genP, double genQ, double batP, double batQ, double shuntP, double shuntQ, double svcP, double svcQ, double vscCSP, double vscCSQ, double lineP, double lineQ, double boundaryLineP, double boundaryLineQ, double twtP, double twtQ, double tltP, double tltQ, boolean mainComponent, boolean validated) {
         this.id = id;
         this.incomingP = incomingP;
         this.incomingQ = incomingQ;
@@ -48,8 +48,8 @@ public class BusValidationData {
         this.vscCSQ = vscCSQ;
         this.lineP = lineP;
         this.lineQ = lineQ;
-        this.danglingLineP = danglingLineP;
-        this.danglingLineQ = danglingLineQ;
+        this.boundaryLineP = boundaryLineP;
+        this.boundaryLineQ = boundaryLineQ;
         this.twtP = twtP;
         this.twtQ = twtQ;
         this.tltP = tltP;
@@ -126,12 +126,12 @@ public class BusValidationData {
         return lineQ;
     }
 
-    double getDanglingLineP() {
-        return danglingLineP;
+    double getBoundaryLineP() {
+        return boundaryLineP;
     }
 
-    double getDanglingLineQ() {
-        return danglingLineQ;
+    double getBoundaryLineQ() {
+        return boundaryLineQ;
     }
 
     double getTwtP() {

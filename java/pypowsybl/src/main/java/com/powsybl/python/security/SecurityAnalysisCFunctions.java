@@ -11,6 +11,10 @@ import com.powsybl.action.*;
 import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.contingency.ContingencyContext;
+import com.powsybl.contingency.strategy.OperatorStrategy;
+import com.powsybl.contingency.strategy.condition.*;
+import com.powsybl.contingency.violations.LimitViolation;
+import com.powsybl.contingency.violations.LimitViolationType;
 import com.powsybl.dataframe.security.LimitReductionDataframeAdder;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.network.Network;
@@ -21,16 +25,15 @@ import com.powsybl.python.loadflow.LoadFlowCFunctions;
 import com.powsybl.python.loadflow.LoadFlowCUtils;
 import com.powsybl.python.network.Dataframes;
 import com.powsybl.python.network.NetworkCFunctions;
-import com.powsybl.security.*;
-import com.powsybl.security.LimitViolationType;
-import com.powsybl.security.condition.*;
+import com.powsybl.security.SecurityAnalysisParameters;
+import com.powsybl.security.SecurityAnalysisProvider;
+import com.powsybl.security.SecurityAnalysisResult;
 import com.powsybl.security.converter.SecurityAnalysisResultExporter;
 import com.powsybl.security.converter.SecurityAnalysisResultExporters;
 import com.powsybl.security.monitor.StateMonitor;
 import com.powsybl.security.results.OperatorStrategyResult;
 import com.powsybl.security.results.PostContingencyResult;
 import com.powsybl.security.results.PreContingencyResult;
-import com.powsybl.security.strategy.OperatorStrategy;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
@@ -208,6 +211,13 @@ public final class SecurityAnalysisCFunctions {
         createLimitViolationPtr(limitViolationPtr, limitViolations);
         contingencyPtr.limitViolations().setLength(limitViolations.size());
         contingencyPtr.limitViolations().setPtr(limitViolationPtr);
+        List<String> disconnectedElements = postContingencyResult.getConnectivityResult() == null
+            ? List.of()
+            : List.copyOf(postContingencyResult.getConnectivityResult().getDisconnectedElements());
+        PyPowsyblApiHeader.ArrayPointer<CCharPointerPointer> disconnectedElementsPtr = createCharPtrArray(disconnectedElements);
+        contingencyPtr.disconnectedElements().setLength(disconnectedElementsPtr.getLength());
+        contingencyPtr.disconnectedElements().setPtr(disconnectedElementsPtr.getPtr());
+        UnmanagedMemory.free(disconnectedElementsPtr);
     }
 
     private static void setOperatorStrategyResultInSecurityAnalysisResultPointer(OperatorStrategyResultPointer operatorStrategyPtr, OperatorStrategyResult result) {
@@ -276,7 +286,7 @@ public final class SecurityAnalysisCFunctions {
     @CEntryPoint(name = "runSecurityAnalysis")
     public static ObjectHandle runSecurityAnalysis(IsolateThread thread, ObjectHandle securityAnalysisContextHandle,
                                                    ObjectHandle networkHandle, SecurityAnalysisParametersPointer securityAnalysisParametersPointer,
-                                                   CCharPointer providerName, boolean dc, ObjectHandle reportNodeHandle,
+                                                   CCharPointer providerName, ObjectHandle reportNodeHandle,
                                                    PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
@@ -285,7 +295,7 @@ public final class SecurityAnalysisCFunctions {
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 SecurityAnalysisProvider provider = SecurityAnalysisCUtils.getSecurityAnalysisProvider(CTypeUtil.toString(providerName));
                 logger().info("Security analysis provider used for security analysis is : {}", provider.getName());
-                SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(dc, securityAnalysisParametersPointer, provider);
+                SecurityAnalysisParameters securityAnalysisParameters = SecurityAnalysisCUtils.createSecurityAnalysisParameters(securityAnalysisParametersPointer, provider);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
                 SecurityAnalysisResult result = analysisContext.run(network, securityAnalysisParameters, provider.getName(), reportNode);
                 return ObjectHandles.getGlobal().create(result);
@@ -373,6 +383,7 @@ public final class SecurityAnalysisCFunctions {
                         UnmanagedMemory.free(violation.getLimitName());
                     }
                     UnmanagedMemory.free(contingencyResultPtrPlus.limitViolations().getPtr());
+                    freeCharPtrArray(contingencyResultPtrPlus.disconnectedElements());
                 }
                 freeArrayPointer(contingencyResultArrayPtr);
             }

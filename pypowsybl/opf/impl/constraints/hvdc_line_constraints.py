@@ -1,0 +1,56 @@
+#
+# Copyright (c) 2026, RTE (http://www.rte-france.com)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# SPDX-License-Identifier: MPL-2.0
+#
+from typing import cast
+
+from pyoptinterface import Eq
+
+from pypowsybl.opf.impl.model.model import Model
+from pypowsybl.opf.impl.model.constraints import Constraints
+from pypowsybl.opf.impl.model.model_parameters import ModelParameters
+from pypowsybl.opf.impl.model.variable_context import VariableContext
+from pypowsybl.opf.impl.model.network_cache import NetworkCache
+from pypowsybl.opf.impl.util import HvdcRow
+
+
+def hvdc_line_losses(p: float, r: float, sb: float) -> float:
+    return r * p * p / sb
+
+
+def add_converter_losses(p: float, loss_factor: float) -> float:
+    return p * (1.0 - loss_factor / 100.0)
+
+
+class HvdcLineConstraints(Constraints):
+    def add(self, parameters: ModelParameters, network_cache: NetworkCache,
+            variable_context: VariableContext, model: Model) -> None:
+        for hvdc_line_row in cast(list[HvdcRow], network_cache.hvdc_lines.itertuples(index=False)):
+            cs1_id, cs2_id, r = hvdc_line_row.converter_station1_id, hvdc_line_row.converter_station2_id, hvdc_line_row.r
+            cs1_num = network_cache.vsc_converter_stations.index.get_loc(cs1_id)
+            cs2_num = network_cache.vsc_converter_stations.index.get_loc(cs2_id)
+            cs1_row = network_cache.vsc_converter_stations.loc[cs1_id]
+            cs2_row = network_cache.vsc_converter_stations.loc[cs2_id]
+            cs1_index = variable_context.vsc_cs_num_2_index[cs1_num]
+            cs2_index = variable_context.vsc_cs_num_2_index[cs2_num]
+            p1_var = variable_context.vsc_cs_p_vars[cs1_index]
+            p2_var = variable_context.vsc_cs_p_vars[cs2_index]
+
+            loss_factor1 = cs1_row.loss_factor
+            loss_factor2 = cs2_row.loss_factor
+            assert isinstance(loss_factor1, float)
+            assert isinstance(loss_factor2, float)
+            sb = network_cache.network.nominal_apparent_power
+            if NetworkCache.is_rectifier(cs1_id, hvdc_line_row):
+                p_rectifier = add_converter_losses(p1_var, loss_factor1)
+                p_eq = add_converter_losses(p_rectifier - hvdc_line_losses(p_rectifier, r, sb),
+                                            loss_factor2) + p2_var
+            else:
+                p_rectifier = add_converter_losses(p2_var, loss_factor2)
+                p_eq = add_converter_losses(p_rectifier - hvdc_line_losses(p_rectifier, r, sb),
+                                            loss_factor1) + p1_var
+
+            model.add_quadratic_constraint(p_eq, Eq, 0.0)

@@ -7,6 +7,7 @@
  */
 package com.powsybl.python.network;
 
+import com.powsybl.commons.PowsyblException;
 import com.powsybl.commons.report.ReportNode;
 import com.powsybl.dataframe.SeriesMetadata;
 import com.powsybl.dataframe.network.modifications.DataframeNetworkModificationType;
@@ -14,36 +15,46 @@ import com.powsybl.dataframe.network.modifications.NetworkModifications;
 import com.powsybl.dataframe.update.UpdatingDataframe;
 import com.powsybl.iidm.modification.Replace3TwoWindingsTransformersByThreeWindingsTransformers;
 import com.powsybl.iidm.modification.ReplaceThreeWindingsTransformersBy3TwoWindingsTransformers;
+import com.powsybl.iidm.modification.scalable.ProportionalScalable;
+import com.powsybl.iidm.modification.scalable.Scalable;
+import com.powsybl.iidm.modification.scalable.ScalingParameters;
 import com.powsybl.iidm.modification.topology.RemoveFeederBayBuilder;
 import com.powsybl.iidm.modification.topology.RemoveHvdcLineBuilder;
 import com.powsybl.iidm.modification.topology.RemoveVoltageLevelBuilder;
 import com.powsybl.iidm.network.BusbarSection;
+import com.powsybl.iidm.network.Injection;
 import com.powsybl.iidm.network.Network;
 import com.powsybl.iidm.network.VoltageLevel;
 import com.powsybl.iidm.network.extensions.ConnectablePosition;
 import com.powsybl.python.commons.CTypeUtil;
 import com.powsybl.python.commons.Directives;
-import com.powsybl.python.commons.PyPowsyblApiHeader;
-import com.powsybl.python.commons.PyPowsyblApiHeader.ArrayPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.DataframeMetadataPointer;
-import com.powsybl.python.commons.PyPowsyblApiHeader.SeriesPointer;
+import com.powsybl.python.commons.PyPowsyblApiHeader.*;
+import com.powsybl.python.commons.PyPowsyblConfiguration;
 import org.apache.commons.lang3.Range;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.ObjectHandle;
 import org.graalvm.nativeimage.ObjectHandles;
+import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.struct.SizeOf;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CDoublePointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.DoubleSupplier;
 
 import static com.powsybl.iidm.modification.topology.TopologyModificationUtils.*;
+import static com.powsybl.python.commons.CTypeUtil.toDoubleList;
 import static com.powsybl.python.commons.CTypeUtil.toStringList;
 import static com.powsybl.python.commons.Util.*;
+import static com.powsybl.python.commons.Util.convert;
 import static com.powsybl.python.network.NetworkCFunctions.createDataframe;
+import static com.powsybl.python.network.ScalableUtils.*;
+import static com.powsybl.python.network.ScalableUtils.convert;
 
 /**
  * Defines the C functions for network modifications.
@@ -59,7 +70,7 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "getConnectablesOrderPositions")
     public static ArrayPointer<SeriesPointer> getConnectablesOrderPositions(IsolateThread thread, ObjectHandle networkHandle,
-                                                                            CCharPointer voltageLevelId, PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                            CCharPointer voltageLevelId, ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<SeriesPointer> get() throws IOException {
@@ -75,8 +86,8 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "getUnusedConnectableOrderPositions")
     public static ArrayPointer<CIntPointer> getUnusedConnectableOrderPositions(IsolateThread thread, ObjectHandle networkHandle,
-                                                                                                  CCharPointer busbarSectionId, CCharPointer beforeOrAfter,
-                                                                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                               CCharPointer busbarSectionId, CCharPointer beforeOrAfter,
+                                                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public ArrayPointer<CIntPointer> get() throws IOException {
@@ -102,10 +113,10 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "createNetworkModification")
     public static void createNetworkModification(IsolateThread thread, ObjectHandle networkHandle,
-                                                 PyPowsyblApiHeader.DataframeArrayPointer cDataframes,
-                                                 PyPowsyblApiHeader.NetworkModificationType networkModificationType,
+                                                 DataframeArrayPointer cDataframes,
+                                                 NetworkModificationType networkModificationType,
                                                  boolean throwException, ObjectHandle reportNodeHandle,
-                                                 PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                 ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
@@ -123,8 +134,8 @@ public final class NetworkModificationsCFunctions {
 
     @CEntryPoint(name = "getModificationMetadata")
     public static DataframeMetadataPointer getModificationMetadata(IsolateThread thread,
-                                                                                      PyPowsyblApiHeader.NetworkModificationType networkModificationType,
-                                                                                      PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                                   NetworkModificationType networkModificationType,
+                                                                   ExceptionHandlerPointer exceptionHandlerPtr) {
         return doCatch(exceptionHandlerPtr, new PointerProvider<>() {
             @Override
             public DataframeMetadataPointer get() throws IOException {
@@ -138,21 +149,21 @@ public final class NetworkModificationsCFunctions {
     @CEntryPoint(name = "removeElementsModification")
     public static void removeElementsModification(IsolateThread thread, ObjectHandle networkHandle,
                                                   CCharPointerPointer connectableIdsPtrPtr, int connectableIdsCount,
-                                                  PyPowsyblApiHeader.DataframePointer extraDataDfPtr,
-                                                  PyPowsyblApiHeader.RemoveModificationType removeModificationType,
+                                                  DataframePointer extraDataDfPtr,
+                                                  RemoveModificationType removeModificationType,
                                                   boolean throwException, ObjectHandle reportNodeHandle,
-                                                  PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                                  ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
                 List<String> ids = toStringList(connectableIdsPtrPtr, connectableIdsCount);
                 Network network = ObjectHandles.getGlobal().get(networkHandle);
                 ReportNode reportNode = ObjectHandles.getGlobal().get(reportNodeHandle);
-                if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_FEEDER) {
+                if (removeModificationType == RemoveModificationType.REMOVE_FEEDER) {
                     ids.forEach(id -> new RemoveFeederBayBuilder().withConnectableId(id).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
-                } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_VOLTAGE_LEVEL) {
+                } else if (removeModificationType == RemoveModificationType.REMOVE_VOLTAGE_LEVEL) {
                     ids.forEach(id -> new RemoveVoltageLevelBuilder().withVoltageLevelId(id).build().apply(network, throwException, reportNode == null ? ReportNode.NO_OP : reportNode));
-                } else if (removeModificationType == PyPowsyblApiHeader.RemoveModificationType.REMOVE_HVDC_LINE) {
+                } else if (removeModificationType == RemoveModificationType.REMOVE_HVDC_LINE) {
                     UpdatingDataframe extraDataDf = createDataframe(extraDataDfPtr);
                     ids.forEach(hvdcId -> {
                         List<String> shuntCompensatorList = Collections.emptyList();
@@ -174,7 +185,7 @@ public final class NetworkModificationsCFunctions {
     public static void splitOrMergeTransformers(IsolateThread thread, ObjectHandle networkHandle,
                                                CCharPointerPointer transformerIdsPtrPtr,
                                                int transformerIdsCount, boolean merge, ObjectHandle reportNodeHandle,
-                                               PyPowsyblApiHeader.ExceptionHandlerPointer exceptionHandlerPtr) {
+                                               ExceptionHandlerPointer exceptionHandlerPtr) {
         doCatch(exceptionHandlerPtr, new Runnable() {
             @Override
             public void run() {
@@ -198,6 +209,159 @@ public final class NetworkModificationsCFunctions {
                     }
                     modification.apply(network, reportNode == null ? ReportNode.NO_OP : reportNode);
                 }
+            }
+        });
+    }
+
+    @CEntryPoint(name = "createScalable")
+    public static ObjectHandle createScalable(IsolateThread thread, int scalableTypePos, CCharPointer injectionIdPtr,
+                                              double minValue, double maxValue,
+                                              VoidPointerPointer childrenHandles, int childrenCount,
+                                              CDoublePointer percentages, int percentagesCount,
+                                              ExceptionHandlerPointer exceptionHandlerPointer) {
+        return doCatch(exceptionHandlerPointer, new PointerProvider<>() {
+            @Override
+            public ObjectHandle get() {
+                Scalable scalable;
+                ScalableType scalableType = ScalableType.values()[scalableTypePos];
+                boolean withValues = minValue != Double.MIN_VALUE || maxValue != Double.MAX_VALUE;
+                Scalable[] children = checkAndConvertScalableHandleList(childrenHandles, childrenCount, scalableType);
+                switch (scalableType) {
+                    case ELEMENT:
+                        String injectionId = checkInjectionId(injectionIdPtr, scalableType);
+                        scalable = withValues ? Scalable.scalable(injectionId, minValue, maxValue) : Scalable.scalable(injectionId);
+                        break;
+                    case STACK:
+                        scalable = withValues ? Scalable.stack(minValue, maxValue, children) : Scalable.stack(children);
+                        break;
+                    case UPDOWN:
+                        scalable = withValues ? Scalable.upDown(children[0], children[1], minValue, maxValue) :
+                                Scalable.upDown(children[0], children[1]);
+                        break;
+                    case PROPORTIONAL:
+                        if (percentagesCount != childrenCount) {
+                            throw new PowsyblException("Wrong number of percentages for PROPORTIONAL type scalable.");
+                        }
+                        List<Double> percentagesList = toDoubleList(percentages, percentagesCount);
+                        scalable = withValues ? Scalable.proportional(percentagesList, List.of(children), minValue, maxValue)
+                                : Scalable.proportional(percentagesList, List.of(children));
+                        break;
+                    default:
+                        throw new PowsyblException("Scalable type not supported: " + scalableType);
+                }
+                return ObjectHandles.getGlobal().create(scalable);
+            }
+        });
+    }
+
+    private static Scalable[] checkAndConvertScalableHandleList(VoidPointerPointer scalableHandles, int scalableCount, ScalableType scalableType) {
+        if (scalableCount == 0 && scalableType != ScalableType.ELEMENT) {
+            throw new PowsyblException("Scalable children not found for " + scalableType + " type scalable.");
+        }
+        if (scalableCount != 2 && scalableType == ScalableType.UPDOWN) {
+            throw new PowsyblException("Wrong number of children for UPDOWN type scalable.");
+        }
+        Scalable[] scalables = new Scalable[scalableCount];
+        for (int i = 0; i < scalableCount; ++i) {
+            ObjectHandle scalableHandle = scalableHandles.read(i);
+            Scalable scalable = ObjectHandles.getGlobal().get(scalableHandle);
+            scalables[i] = scalable;
+        }
+        return scalables;
+    }
+
+    @CEntryPoint(name = "scale")
+    public static double scale(IsolateThread thread, ObjectHandle networkHandle, ObjectHandle scalableHandle,
+                               ScalingParametersPointer scalingParametersPointer, double asked,
+                               ExceptionHandlerPointer exceptionHandlerPointer) {
+        return doCatch(exceptionHandlerPointer, new DoubleSupplier() {
+            @Override
+            public double getAsDouble() {
+                Scalable scalable = ObjectHandles.getGlobal().get(scalableHandle);
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                ScalingParameters parameters = convertScalingParameters(scalingParametersPointer);
+                return scalable.scale(network, asked, parameters);
+            }
+        });
+    }
+
+    public static void copyToCScalingParameters(ScalingParameters parameters, ScalingParametersPointer cParameters) {
+        cParameters.setScalingConvention(parameters.getScalingConvention().ordinal());
+        cParameters.setConstantPowerFactor(parameters.isConstantPowerFactor());
+        cParameters.setReconnect(parameters.isReconnect());
+        cParameters.setAllowsGeneratorOutOfActivePowerLimits(parameters.isAllowsGeneratorOutOfActivePowerLimits());
+        cParameters.setPriority(parameters.getPriority().ordinal());
+        cParameters.setScalingType(parameters.getScalingType().ordinal());
+        CCharPointerPointer calloc = UnmanagedMemory.calloc(parameters.getIgnoredInjectionIds().size() * SizeOf.get(CCharPointerPointer.class));
+        ArrayList<String> ignoredInjectionIds = new ArrayList<>(parameters.getIgnoredInjectionIds());
+        for (int i = 0; i < parameters.getIgnoredInjectionIds().size(); i++) {
+            calloc.write(i, CTypeUtil.toCharPtr(ignoredInjectionIds.get(i)));
+        }
+        cParameters.setIgnoredInjectionIds(calloc);
+    }
+
+    public static ScalingParametersPointer convertToScalingParametersPointer(ScalingParameters parameters) {
+        ScalingParametersPointer paramsPtr = UnmanagedMemory.calloc(SizeOf.get(ScalingParametersPointer.class));
+        copyToCScalingParameters(parameters, paramsPtr);
+        return paramsPtr;
+    }
+
+    public static ScalingParameters createScalingParameters() {
+        return PyPowsyblConfiguration.isReadConfig() ? ScalingParameters.load() : new ScalingParameters();
+    }
+
+    public static ScalingParameters convertScalingParameters(ScalingParametersPointer scalingParametersPtr) {
+
+        List<String> injectionsIdsStringList = toStringList(scalingParametersPtr.getIgnoredInjectionIds(), scalingParametersPtr.getIgnoredInjectionIdsCount());
+
+        Set<String> ignoredInjectionIds = new HashSet<>();
+        injectionsIdsStringList.forEach(ignoredInjectionIds::add);
+
+        return createScalingParameters()
+                .setScalingConvention(Scalable.ScalingConvention.values()[scalingParametersPtr.getScalingConvention()])
+                .setConstantPowerFactor(scalingParametersPtr.isConstantPowerFactor())
+                .setReconnect(scalingParametersPtr.isReconnect())
+                .setAllowsGeneratorOutOfActivePowerLimits(scalingParametersPtr.isAllowsGeneratorOutOfActivePowerLimits())
+                .setPriority(ScalingParameters.Priority.values()[scalingParametersPtr.getPriority()])
+                .setScalingType(ScalingParameters.ScalingType.values()[scalingParametersPtr.getScalingType()])
+                .setIgnoredInjectionIds(ignoredInjectionIds);
+    }
+
+    public static void freeScalingParametersPointer(ScalingParametersPointer scalingParametersPtr) {
+        freeScalingParametersContent(scalingParametersPtr);
+        UnmanagedMemory.free(scalingParametersPtr);
+    }
+
+    @CEntryPoint(name = "createScalingParameters")
+    public static ScalingParametersPointer createScalingParametersPointer(IsolateThread thread, ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, () -> convertToScalingParametersPointer(createScalingParameters()));
+    }
+
+    @CEntryPoint(name = "freeScalingParameters")
+    public static void freeScalingParameters(IsolateThread thread, ScalingParametersPointer scalingParametersPtr,
+                                             ExceptionHandlerPointer exceptionHandlerPtr) {
+        doCatch(exceptionHandlerPtr, new Runnable() {
+            @Override
+            public void run() {
+                freeScalingParametersPointer(scalingParametersPtr);
+            }
+        });
+    }
+
+    @CEntryPoint(name = "computeProportionalScalablePercentages")
+    public static ArrayPointer<CDoublePointer> computeProportionalScalablePercentages(IsolateThread thread, CCharPointerPointer injectionIdsPtr, int injectionCount,
+                                                              DistributionMode mode, ObjectHandle networkHandle,
+                                                              ExceptionHandlerPointer exceptionHandlerPtr) {
+        return doCatch(exceptionHandlerPtr, new PointerProvider<ArrayPointer<CDoublePointer>>() {
+
+            @Override
+            public ArrayPointer<CDoublePointer> get() throws IOException {
+                Network network = ObjectHandles.getGlobal().get(networkHandle);
+                List<String> injectionIds = toStringList(injectionIdsPtr, injectionCount);
+                List<Injection<?>> injections = getInjections(network, injectionIds);
+                ProportionalScalable.DistributionMode distributionMode = convert(mode);
+                List<Double> percentages = ProportionalScalable.computePercentages(injections, distributionMode);
+                return createDoubleArray(percentages);
             }
         });
     }

@@ -54,8 +54,9 @@ class SecurityAnalysis(ContingencyContainer):
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
+        p.loadflow_parameters.dc = False
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, False,
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider,
                                              None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 
     def run_dc(self, network: Network, parameters: Optional[Union[Parameters, pypowsybl.loadflow.Parameters]] = None,
@@ -79,8 +80,9 @@ class SecurityAnalysis(ContingencyContainer):
         security_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                         pypowsybl.loadflow.Parameters) else parameters
         p = security_parameters._to_c_parameters() if security_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=protected-access
+        p.loadflow_parameters.dc = True
         return SecurityAnalysisResult(
-            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider, True,
+            _pypowsybl.run_security_analysis(self._handle, network._handle, p, provider,
                                              # pylint: disable=protected-access
                                              None if report_node is None else report_node._report_node))  # pylint: disable=protected-access
 

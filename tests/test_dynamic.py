@@ -25,6 +25,18 @@ def test_categories_information():
     assert info_df.loc['TapChangerBlocking']['attribute'] == '[dataframe "Tcb"] index : dynamic_model_id (str), parameter_set_id (str), model_name (str) / [dataframe "Transformers"] index : dynamic_model_id (str), transformer_id (str) / [dataframe "U measurement 1"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 2"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 3"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 4"] index : dynamic_model_id (str), measurement_point_id (str) / [dataframe "U measurement 5"] index : dynamic_model_id (str), measurement_point_id (str)'
     assert info_df.loc['TapChangerBlocking']['description'] == 'Tap changer blocking automation system'
 
+def test_supported_models_information():
+    model_mapping = dyn.ModelMapping()
+    assert model_mapping.get_supported_models()
+    info_df = model_mapping.get_supported_models_information('Load')
+    assert info_df.loc['LoadAlphaBeta']['description'] == 'Voltage-dependent load.'
+    assert info_df.loc['LoadPQ']['description'] == 'PQ load.'
+    all_info_df = model_mapping.get_supported_models_information()
+    assert all_info_df.loc['Line']['description'] == 'Standard line.'
+    assert all_info_df.loc['Line']['category'] == 'Line'
+    assert all_info_df.loc['LoadPQ']['description'] == 'PQ load.'
+    assert all_info_df.loc['LoadPQ']['category'] == 'Load'
+
 def test_add_mapping():
     model_mapping = dyn.ModelMapping()
     # Equipments
@@ -43,6 +55,7 @@ def test_add_mapping():
     model_mapping.add_hvdc_vsc(static_id='HVDC_LINE', parameter_set_id='hvdc_vsc', model_name='HvdcVSCDanglingP')
     model_mapping.add_base_transformer(static_id='TFO', parameter_set_id='tfo', model_name='TransformerFixedRatio')
     model_mapping.add_base_static_var_compensator(static_id='SVARC', parameter_set_id='svarc', model_name='StaticVarCompensatorPV')
+    model_mapping.add_shunt(static_id='SHUNT', parameter_set_id='sh', model_name='ShuntB')
     model_mapping.add_base_line(static_id='LINE', parameter_set_id='l', model_name='Line')
     model_mapping.add_base_bus(static_id='BUS', parameter_set_id='bus', model_name='Bus')
     model_mapping.add_infinite_bus(static_id='BUS', parameter_set_id='inf_bus', model_name='InfiniteBus')
@@ -117,6 +130,14 @@ def test_dynamic_dataframe():
         data=[('DM_TCB', 'B4')])
     model_mapping.add_tap_changer_blocking_automation_system(tcb_df, tfo_df, measurement1_df, measurement2_df)
 
+def test_events_information():
+    event_mapping = dyn.EventMapping()
+    info_df = event_mapping.get_events_information()
+    assert info_df.loc['ActivePowerVariation']['description'] == 'Active power variation on generator or load.'
+    assert info_df.loc['ActivePowerVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_p (double)'
+    assert info_df.loc['ReferenceVoltageVariation']['description'] == 'Reference voltage variation on synchronous/synchronized generator.'
+    assert info_df.loc['ReferenceVoltageVariation']['attribute'] == 'index : static_id (str), start_time (double), delta_u (double)'
+
 
 def test_add_event():
     event_mapping = dyn.EventMapping()
@@ -126,6 +147,8 @@ def test_add_event():
     event_mapping.add_reactive_power_variation(static_id='LOAD', start_time=15, delta_q=3)
     event_mapping.add_reference_voltage_variation(static_id='GEN', start_time=16, delta_u=4)
     event_mapping.add_node_fault(static_id='BUS', start_time=12, fault_time=2, r_pu=0.1, x_pu=0.2)
+    # Event model from event name
+    event_mapping.add_event_model(event_name='ActivePowerVariation', static_id='GEN', start_time=1.5, delta_p=5)
 
 
 def test_add_event_dataframe():
@@ -142,14 +165,27 @@ def test_add_event_dataframe():
 
 def test_add_output_variables():
     variables = dyn.OutputVariableMapping()
-    variables.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
-    variables.add_dynamic_model_curves('test_dyn_load_id_1', ['load_PPu', 'load_QPu'])
-    variables.add_standard_model_curves('test_gen_id_1', 'generator_UStatorPu')
-    variables.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
-    variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', 'load_PPu')
-    variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
-    variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
-    variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
+    variables.add_curves('test_gen_id_1', 'generator_UStatorPu')
+    variables.add_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    variables.add_final_state_values('test_dyn_load_id_2', 'load_PPu')
+    variables.add_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    # deprecated methods
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_curves('test_dyn_load_id_1', 'load_QPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_curves('test_dyn_load_id_1', ['load_PPu', 'load_QPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_curves('test_gen_id_1', 'generator_UStatorPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_curves('test_gen_id_1', ['generator_UStatorPu', 'voltageRegulator_EfdPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', 'load_PPu')
+    with pytest.warns(DeprecationWarning):
+        variables.add_dynamic_model_final_state_values('test_dyn_load_id_2', ['load_PPu', 'load_QPu'])
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_final_state_values('test_bus_id_2', 'Upu_value')
+    with pytest.warns(DeprecationWarning):
+        variables.add_standard_model_final_state_values('test_bus_id_2', ['Upu_value', 'U_value'])
 
 
 def test_default_parameters():

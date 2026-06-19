@@ -44,6 +44,7 @@ public final class TimeSeriesConverter {
     private static void convertDoubleTimeSeries(List<DoubleTimeSeries> timeSeriesList, DataframeHandler dataframeHandler) {
         Objects.requireNonNull(timeSeriesList);
         if (timeSeriesList.isEmpty()) {
+            dataframeHandler.newStringIndex(INDEX_NAME, 0);
             return;
         }
         // check index unicity

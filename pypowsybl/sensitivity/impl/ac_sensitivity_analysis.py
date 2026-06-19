@@ -75,6 +75,7 @@ class AcSensitivityAnalysis(SensitivityAnalysis):
         sensitivity_parameters = Parameters(load_flow_parameters=parameters) if isinstance(parameters,
                                                                                            LfParameters) else parameters
         p: _pypowsybl.SensitivityAnalysisParameters = sensitivity_parameters._to_c_parameters() if sensitivity_parameters is not None else Parameters()._to_c_parameters()  # pylint: disable=W0212
+        p.loadflow_parameters.dc = False
         return AcSensitivityAnalysisResult(
-            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, False, p, provider, None if report_node is None else report_node._report_node), # pylint: disable=protected-access
+            _pypowsybl.run_sensitivity_analysis(self._handle, network._handle, p, provider, None if report_node is None else report_node._report_node), # pylint: disable=protected-access
             functions_ids=self.functions_ids, function_data_frame_index=self.function_data_frame_index)
