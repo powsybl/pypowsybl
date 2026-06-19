@@ -35,6 +35,8 @@ class VoltageSourceConverterConstraints(Constraints):
                 conv_i_var = variable_context.conv_i_vars[converter_num]
 
                 if control_mode == "P_PCC":
+                    # target_p follows the VSC AC-terminal load convention:
+                    # positive P_AC means the converter absorbs active power from the AC network.
                     p_ac_eq = conv_p_var - target_p
                     model.add_linear_constraint(p_ac_eq, poi.Eq, 0.0)
 
@@ -49,12 +51,12 @@ class VoltageSourceConverterConstraints(Constraints):
                     q_ac_eq = conv_q_var - target_q
                     model.add_linear_constraint(q_ac_eq, poi.Eq, 0.0)
 
-                # P_loss = loss_1 + loss_2*I_dc + loss_3*I_dc**2 with the 3 loss coefficients
+                # Converter losses are modeled from the DC current magnitude:
                 i_dc_var = nl.abs(conv_i_var)
                 p_loss = idle_loss + switching_loss*i_dc_var + resistive_loss*nl.pow(i_dc_var,2)
-                # VSC power balance equation: P_AC + P_DC = P_loss with P_DC = I * (V(dc_node1) - V(dc_node2))
+                # Power balance: P_AC + P_DC = P_loss with P_DC = I * (V(dc_node1) - V(dc_node2)) and I oriented from dc_node1 to dc_node2.
+                # Thus rectifier: P_AC > 0, P_DC < 0; inverter: P_AC < 0, P_DC > 0.
                 conv_p_dc_eq = conv_p_var + conv_i_var * (v1_var - v2_var) - p_loss
-
                 model.add_nl_constraint(conv_p_dc_eq, poi.Eq, 0.0)
                 
                 

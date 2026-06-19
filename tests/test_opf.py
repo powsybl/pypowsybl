@@ -248,7 +248,7 @@ def test_vsc_symmetrical_monopole():
 
 '''
 #VSC assymetrical monopole network is defined in powsybl-core in the file DcDetailedNetworkFactory.java
-#It defines two different nominal voltage for the two VSCDC nodes, which is not compliant with the ACDC OPF validation rules. 
+#It defines two different nominal voltage for the two VSC DC nodes, which is not compliant with the ACDC OPF validation rules. 
 def test_vsc_asymmetrical_monopole():
     opf_parameters = OptimalPowerFlowParameters(mode=OptimalPowerFlowMode.ACDC)
     assert pp.opf.run_ac(pp.network.create_dc_detailed_vsc_asymmetrical_monopole_network(), opf_parameters)

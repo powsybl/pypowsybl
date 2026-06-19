@@ -246,3 +246,45 @@ def test_validation_accepts_one_vdc_and_one_pcc_vsc_on_same_dc_component_then_re
 
     with pytest.raises(ValueError, match="no VSC in V_DC mode"):
         validate_acdc_network(invalid_network)
+
+import pandas as pd
+import pytest
+
+from pypowsybl.opf.impl.acdc_network_validator import check_no_dangling_dc_lines
+
+
+def test_check_no_dangling_dc_lines_rejects_line_missing_one_side():
+    dc_lines = pd.DataFrame(
+        {
+            "dc_node1_id": ["dn1", "dn3"],
+            "dc_node2_id": ["dn2", None],
+            "r": [0.1, 0.1],
+        },
+        index=["valid_line", "dangling_line"],
+    )
+
+    with pytest.raises(ValueError, match="DC lines must be connected on both sides"):
+        check_no_dangling_dc_lines(dc_lines)
+
+
+def test_check_no_dangling_dc_lines_accepts_lines_connected_on_both_sides():
+    dc_lines = pd.DataFrame(
+        {
+            "dc_node1_id": ["dn1", "dn3"],
+            "dc_node2_id": ["dn2", "dn4"],
+            "r": [0.1, 0.2],
+        },
+        index=["line1", "line2"],
+    )
+
+    check_no_dangling_dc_lines(dc_lines)
+
+
+def test_check_no_dangling_dc_lines_rejects_disconnected_existing_dc_line():
+    network = create_two_vsc_same_dc_component_network("V_DC")
+
+    dc_lines = network.get_dc_lines()
+    dc_lines.loc["dc_line", "dc_node2_id"] = None
+
+    with pytest.raises(ValueError, match="DC lines must be connected on both sides"):
+        check_no_dangling_dc_lines(dc_lines)

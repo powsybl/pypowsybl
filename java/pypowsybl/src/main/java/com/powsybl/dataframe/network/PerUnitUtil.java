@@ -59,11 +59,11 @@ public final class PerUnitUtil {
     }
 
     public static double perUnitDcI(NetworkDataframeContext context, double i, double nominalV) {
-        return context.isPerUnit() ? nominalV / (context.getNominalApparentPower() * pow(10, 3)) * i : i;
+        return context.isPerUnit() ? nominalV / (context.getNominalApparentPower() * 1e3) * i : i;
     }
 
     public static double unPerUnitDcI(NetworkDataframeContext context, double i, double nominalV) {
-        return context.isPerUnit() ? i / (nominalV / (context.getNominalApparentPower() * pow(10, 3))) : i;
+        return context.isPerUnit() ? i / (nominalV / (context.getNominalApparentPower() * 1e3)) : i;
     }
 
     public static double unPerUnitDcI(NetworkDataframeContext context, double i, DcTerminal terminal) {

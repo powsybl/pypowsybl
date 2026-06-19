@@ -30,9 +30,11 @@ def validate_acdc_network(network: Network) -> None:
     # TODO: add DC switch validation once the PyPowSyBl DC switch API is available.
 
     dc_buses = network.get_dc_buses()
+    dc_lines = network.get_dc_lines()
     voltage_source_converters = network.get_voltage_source_converters()
     dc_nodes_with_component = get_dc_nodes_with_component(dc_nodes, dc_buses)
 
+    check_no_dangling_dc_lines(dc_lines)
     check_dc_nodes_have_same_nominal_voltage_per_dc_component(dc_nodes_with_component)
     check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_with_component)
 
@@ -83,6 +85,8 @@ def check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_w
         voltage_source_converters["control_mode"] == "V_DC"
     ]
 
+    # A DC component is considered voltage-controlled only if at least one VSC in V_DC mode
+    # is electrically connected to one of its DC nodes (via dc_connected1/2).
     for _, converter in vdc_converters.iterrows():
         if converter.dc_connected1:
             vdc_controlled_components.add(node_to_component[converter.dc_node1_id])
@@ -96,4 +100,17 @@ def check_dc_components_have_vdc_converter(voltage_source_converters, dc_nodes_w
         raise ValueError(
             "Invalid detailed-DC network for ACDC OPF: "
             f"DC components have no VSC in V_DC mode: {components_without_vdc}"
+        )
+
+def check_no_dangling_dc_lines(dc_lines) -> None:
+    invalid_lines = []
+
+    for row in dc_lines.itertuples():
+        if not (row.dc_node1_id and row.dc_node2_id):
+            invalid_lines.append(row.Index)
+
+    if invalid_lines:
+        raise ValueError(
+            "Invalid detailed-DC network for ACDC OPF: "
+            f"DC lines must be connected on both sides. Invalid lines: {sorted(invalid_lines)}"
         )

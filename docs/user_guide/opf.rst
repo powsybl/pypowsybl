@@ -12,6 +12,8 @@ You can use the module :mod:`pypowsybl.opf` to run optimal power flow calculatio
 
 A standard load flow solves for branch flows and bus voltages from specified set points, such as generator active power and voltage targets. Optimal Power Flow (OPF) searches for the best operating point for a given objective, while satisfying the power-flow equations and operational constraints modeled by the OPF implementation.
 
+OPF follows PowSyBl/IIDM conventions for signs and units.
+
 In AC/DC mode, OPF solves a coupled model with AC buses, detailed DC nodes and lines, and voltage source converters (VSCs) linking the AC and DC sides.
 
 
@@ -64,10 +66,11 @@ AC/DC model overview
 In AC/DC mode, OPF solves AC and DC equations in the same optimization problem. The model includes:
 
 - AC bus voltage magnitudes and angles;
+- AC generated active and reactive powers;
 - DC node voltages;
 - DC line currents;
 - VSC active and reactive powers;
-- converter DC currents.
+- Converter DC currents.
 
 DC buses
 --------
@@ -109,14 +112,11 @@ A VSC can control either:
 - the active power on the AC side, with ``P_PCC`` mode;
 - the voltage difference between its two DC nodes, with ``V_DC`` mode.
 
-For ``P_PCC`` mode, the AC active-power target follows the converter AC-terminal load convention.
-
 For ``V_DC`` mode, the voltage target is:
 
 .. math::
 
-    V\_1 - V\_2 = target\_v\_dc
-
+    V^{target}_{DC} =V_1 - V_2 
 
 Converter power balance
 -----------------------
@@ -127,7 +127,10 @@ The DC-side converter power is:
 
 .. math::
 
-    P_{DC} = I \cdot (V\_1 - V\_2)
+    P_{DC} = I \cdot (V_1 - V_2)
+
+The AC-side converter active power ``P_AC`` follows the converter AC-terminal load convention. ``P_AC > 0`` means the converter absorbs active power from the AC network, and ``P_AC < 0`` means it injects active power into the AC network. For ``P_PCC`` mode, ``target_p`` and the written ``p_ac`` value follow this convention.
+
 
 The active-power balance of the converter is:
 
@@ -142,6 +145,8 @@ with:
     P_{loss} \geq 0
 
 
+With these conventions, rectifier mode has ``P_AC > 0`` and ``P_DC < 0``. Inverter mode has ``P_AC < 0`` and ``P_DC > 0``.
+
 Converter losses are modeled as a function of the DC current magnitude:
 
 .. math::
@@ -150,10 +155,10 @@ Converter losses are modeled as a function of the DC current magnitude:
 
 where:
 
-- \(I\) is the DC current oriented from ``dc_node1`` to ``dc_node2`` (the same current used in the DC power definition);
-- \(a\) is the idle (no-load) loss;
-- \(b\) is the linear (switching) loss coefficient;
-- \(c\) is the quadratic (resistive) loss coefficient.
+- \(I\) is the DC current oriented from ``dc_node1`` to ``dc_node2``;
+- \(a\) is the idle loss;
+- \(b\) is the switching loss coefficient;
+- \(c\) is the resistive loss coefficient.
 
 
 In rectifier mode, power flows from AC to DC:
@@ -168,58 +173,8 @@ In inverter mode, power flows from DC to AC:
 
     P_{AC} \lt 0,\quad P_{DC} \gt 0
 
-Sign conventions
-----------------
-
-OPF follows PowSyBl/IIDM sign conventions.
-
-Loads use the load convention: positive active and reactive powers mean consumption.
-
-Generator targets use the generator convention: positive active power means injection into the bus. Resolved terminal powers use the terminal/load convention: positive means absorption by the equipment.
-
-VSC AC powers use the load convention:
-
-- ``P_AC > 0`` means the converter absorbs active power from the AC network;
-- ``P_AC < 0`` means the converter injects active power into the AC network.
-
-For ``P_PCC`` mode, ``target_p`` and the written ``p_ac`` value both follow this converter AC-terminal convention.
-
-.. warning::
-
-   The written values ``p_dc1`` and ``p_dc2`` are oriented voltage-current products:
-
-   .. math::
-
-      p\_dc1 = I \cdot V(dc\_node1)
-
-   .. math::
-
-      p\_dc2 = I \cdot V(dc\_node2)
-
-   They should not be interpreted independently as terminal powers in load convention.
-
-   The meaningful DC-side converter power is the oriented difference:
-
-   .. math::
-
-      P_{DC} = p\_dc1 - p\_dc2
-
-   which is consistent with the converter balance:
-
-   .. math::
-
-      P_{AC} + P_{DC} = P_{loss}
-
-
-Per-unit conventions
-====================
-
-OPF works internally in per-unit.
-
-Active and reactive powers use the nominal apparent power base. AC voltages use the nominal voltage of the voltage level.
-
 
 DC voltage bases
-----------------
+================
 
-In AC/DC OPF, all DC nodes in the same detailed DC connected component must have the same nominal voltage. This avoids subtracting DC voltages defined on different bases.
+In AC/DC OPF, all DC nodes in the same detailed DC connected component must have the same nominal voltage.
