@@ -70,7 +70,7 @@ _atexit.register(_pypowsybl.close)
 _pypowsybl.log_max_memory()
 
 # activate DeprecationWarning printing for the package
-warnings.filterwarnings('default', category=DeprecationWarning, module=r'^votre_package\.')
+warnings.filterwarnings('default', category=DeprecationWarning, module='pypowsybl')
 
 
 def set_config_read(read_config: bool = True) -> None:
